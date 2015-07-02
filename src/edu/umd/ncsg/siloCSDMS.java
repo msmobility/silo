@@ -1,11 +1,7 @@
-package com.pb.siloMstm;
+package edu.umd.ncsg;
 
-import com.pb.common.util.ResourceUtil;
-import com.pb.models.silo.SiloModel;
-import com.pb.models.silo.SiloUtil;
-import com.pb.siloMstm.syntheticPop.syntheticPop;
+import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import org.apache.log4j.Logger;
-
 import java.util.ResourceBundle;
 
 /**
