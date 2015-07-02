@@ -16,9 +16,9 @@
  */
 package edu.umd.ncsg;
 
+import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
-import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 
 import java.util.ResourceBundle;
 
@@ -29,8 +29,8 @@ import java.util.ResourceBundle;
  *
  */
 
-public class siloMsp {
-    static Logger logger = Logger.getLogger(siloMsp.class);
+public class SiloMsp {
+    static Logger logger = Logger.getLogger(SiloMsp.class);
 
     /**
      * @param args Arguments fed in from command line

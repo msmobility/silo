@@ -2,6 +2,7 @@ package edu.umd.ncsg;
 
 import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import org.apache.log4j.Logger;
+
 import java.util.ResourceBundle;
 
 /**
@@ -12,9 +13,9 @@ import java.util.ResourceBundle;
  *
  */
 
-public class siloCSDMS {
+public class SiloCSDMS {
     // main class
-    static Logger logger = Logger.getLogger(siloCSDMS.class);
+    static Logger logger = Logger.getLogger(SiloCSDMS.class);
     private static SiloModel model;
     private static long startTime;
 

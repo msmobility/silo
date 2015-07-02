@@ -1,8 +1,6 @@
 package edu.umd.ncsg;
 
 import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SiloModel;
-import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
@@ -20,9 +18,9 @@ import java.util.ResourceBundle;
  *
  */
 
-public class siloMstm {
+public class SiloMstm {
     // main class
-    static Logger logger = Logger.getLogger(siloMstm.class);
+    static Logger logger = Logger.getLogger(SiloMstm.class);
 
 
     public static void main(String[] args) {
