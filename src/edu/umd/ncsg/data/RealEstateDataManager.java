@@ -434,7 +434,8 @@ public class RealEstateDataManager {
                 vacDwellingsByRegion[region][i] = vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1];
                 vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1] = 0;
                 vacDwellingsByRegionPos[region] -= 1;
-                if (ddId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Removed dwelling " + ddId + " from list of vacant dwellings.");
+                if (ddId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Removed dwelling " + ddId +
+                        " from list of vacant dwellings.");
                 found = true;
                 break;
             }
@@ -450,7 +451,8 @@ public class RealEstateDataManager {
         vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dd.getId();
         if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
         if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
-        if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() + " to list of vacant jobs.");
+        if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
+                " to list of vacant dwellings.");
     }
 
 
