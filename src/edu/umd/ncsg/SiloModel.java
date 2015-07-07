@@ -220,6 +220,23 @@ public class SiloModel {
             if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear()) summarizeMicroData(year, move, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
+            // todo: remove this section
+            for (int region: geoData.getRegionList()) {
+                int[] vacantDwelling = RealEstateDataManager.getListOfVacantDwellingsInRegion(region);
+                for (int i = 0; i < vacantDwelling.length; i++) {
+                    try {
+                        Dwelling dd = Dwelling.getDwellingFromId(vacantDwelling[i]);
+                        dd.getId();
+                    } catch (Exception e) {
+                        System.out.println("Could not find dwelling "+i+" "+vacantDwelling[i]+". Got lost somewhere");
+                        closeAllFiles(startTime);
+                        System.exit(1);
+                    }
+                }
+            }
+
+            // todo: end of remove this section
+
             logger.info("  Simulating events");
             // walk through all events
             for (int i = 1; i <= em.getNumberOfEvents(); i++) {

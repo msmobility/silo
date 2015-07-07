@@ -462,10 +462,10 @@ public class MovesModel {
         if (idNewDD > 0) {
             moveHousehold(hh, hh.getDwellingId(), idNewDD);      // Step 3: Move household
             EventManager.countEvent(EventTypes.householdMove);
-            if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+            if (hhId == SiloUtil.trackHh || true) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                     Household.getHouseholdFromId(hhId).getDwellingId());
         } else {
-            if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
+            if (hhId == SiloUtil.trackHh || true) SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
                     "could not find an adequate dwelling.");
         }
     }
@@ -604,7 +604,7 @@ public class MovesModel {
         RealEstateDataManager.removeDwellingFromVacancyList(idNewDD);
         hh.setDwelling(idNewDD);
         Dwelling.getDwellingFromId(idNewDD).setResidentID(hh.getId());
-        if (hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " +
+        if (hh.getId() == SiloUtil.trackHh || true) SiloUtil.trackWriter.println("Household " +
                 hh.getId() + " moved from dwelling " + idOldDD + " to dwelling " + idNewDD + ".");
 
     }

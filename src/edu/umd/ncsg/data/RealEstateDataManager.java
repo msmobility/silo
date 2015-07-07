@@ -107,7 +107,7 @@ public class RealEstateDataManager {
                 float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
                 new Dwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
-                if (id == SiloUtil.trackDd) {
+                if (id == SiloUtil.trackDd || true) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                     Dwelling.getDwellingFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
@@ -140,7 +140,7 @@ public class RealEstateDataManager {
                 vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dwellingId;
                 if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
                 if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
-                if (dwellingId == SiloUtil.trackDd)
+                if (dwellingId == SiloUtil.trackDd || true)
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
             }
         }
@@ -434,7 +434,7 @@ public class RealEstateDataManager {
                 vacDwellingsByRegion[region][i] = vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1];
                 vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1] = 0;
                 vacDwellingsByRegionPos[region] -= 1;
-                if (ddId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Removed dwelling " + ddId +
+                if (ddId == SiloUtil.trackDd || true) SiloUtil.trackWriter.println("Removed dwelling " + ddId +
                         " from list of vacant dwellings.");
                 found = true;
                 break;
@@ -451,7 +451,7 @@ public class RealEstateDataManager {
         vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dd.getId();
         if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
         if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
-        if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
+        if (dd.getId() == SiloUtil.trackDd || true) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
                 " to list of vacant dwellings.");
     }
 

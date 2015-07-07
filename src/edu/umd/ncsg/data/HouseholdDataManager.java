@@ -112,7 +112,7 @@ public class HouseholdDataManager {
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
                 new Household(id, dwellingID, taz, hhSize, autos);  // this automatically puts it in id->household map in Household class
-                if (id == SiloUtil.trackHh) {
+                if (id == SiloUtil.trackHh || true) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
@@ -338,7 +338,7 @@ public class HouseholdDataManager {
             RealEstateDataManager.addDwellingToVacancyList(dd);
         }
         Household.remove(householdId);
-        if (householdId == SiloUtil.trackHh)
+        if (householdId == SiloUtil.trackHh || true)
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
     }
 

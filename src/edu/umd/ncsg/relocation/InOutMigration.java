@@ -176,7 +176,7 @@ public class InOutMigration {
         aoModel.simulateAutoOwnership(hh);
         EventManager.countEvent(EventTypes.inmigration);
         inMigrationPPCounter += hh.getHhSize();
-        if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
+        if (hhId == SiloUtil.trackHh || true) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
         for (Person pp: Household.getHouseholdFromId(hhId).getPersons())
             if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
     }
@@ -188,7 +188,7 @@ public class InOutMigration {
         if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) return;
         EventManager.countEvent(EventTypes.outMigration);
         outMigrationPPCounter += hh.getHhSize();
-        if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
+        if (hhId == SiloUtil.trackHh || true) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         for (Person pp: Household.getHouseholdFromId(hhId).getPersons()) {
             if (pp.getWorkplace() > 0) pp.quitJob(true);
             if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
