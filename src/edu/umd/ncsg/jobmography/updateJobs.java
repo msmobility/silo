@@ -205,8 +205,8 @@ public class updateJobs {
             int id;
             synchronized (Job.class) {
                 id = JobDataManager.getNextJobId();
+                new Job(id, zone, -1, type);
             }
-            new Job(id, zone, -1, type);
             if (id == SiloUtil.trackJj) SiloUtil.trackWriter.println("Job " + id + " of type " + type +
                     " was newly created in zone " + zone + " based on exogenous forecast.");
         }
