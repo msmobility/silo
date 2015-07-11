@@ -193,12 +193,6 @@ public class InOutMigration {
             if (pp.getWorkplace() > 0) pp.quitJob(true);
             if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
         }
-        int ddId = hh.getDwellingId();
-        Dwelling dd = Dwelling.getDwellingFromId(ddId);
-        if (ddId > 0) {
-            dd.setResidentID(-1);
-            RealEstateDataManager.addDwellingToVacancyList(dd);
-        }
         for (Person per: hh.getPersons()) Person.removePerson(per.getId());
         HouseholdDataManager.removeHousehold(hhId);
     }
