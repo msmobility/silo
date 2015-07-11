@@ -117,7 +117,7 @@ public class LeaveParentHhModel {
             // search if dwelling is available
             int newDwellingId = moveM.searchForNewDwelling(new Person[]{per});
             if (newDwellingId < 0) {
-                if (perId == SiloUtil.trackPp || per.getHhId() == SiloUtil.trackHh || true) SiloUtil.trackWriter.println(
+                if (perId == SiloUtil.trackPp || per.getHhId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
                         "Person " + perId + " wanted to but could not leave parental household " + per.getHhId() +
                         " because no appropriate vacant dwelling was found.");
                 IssueCounter.countLackOfDwellingFailedLeavingChild();

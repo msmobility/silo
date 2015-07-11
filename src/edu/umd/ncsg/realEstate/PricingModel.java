@@ -123,7 +123,7 @@ public class PricingModel {
             changeRate = Math.max(changeRate, 1f - maxDelta);
             double newPrice = currentPrice * changeRate;
 
-            if (dd.getId() == SiloUtil.trackDd || true) SiloUtil.trackWriter.println("The monthly costs of dwelling " +
+            if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("The monthly costs of dwelling " +
                     dd.getId() + " was changed from " + currentPrice + " to " + newPrice + " (in 2000$).");
             dd.setPrice((int) (newPrice + 0.5));
             cnt[dto]++;
