@@ -164,6 +164,7 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobArray()) {
+            if (jj == null) continue;   // should not happen, but model crashes without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
                 int region = geoData.getRegionOfZone(jj.getZone());
