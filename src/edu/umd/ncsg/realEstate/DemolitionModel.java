@@ -126,7 +126,7 @@ public class DemolitionModel {
             }
             Dwelling.removeDwelling(dwellingId);
             EventManager.countEvent(EventTypes.ddDemolition);
-            if (dwellingId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Dwelling " +
+            if (dwellingId == SiloUtil.trackDd || true) SiloUtil.trackWriter.println("Dwelling " +
                     dwellingId + " was demolished.");
         }
     }

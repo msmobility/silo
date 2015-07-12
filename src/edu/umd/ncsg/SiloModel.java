@@ -243,7 +243,7 @@ public class SiloModel {
                 //	    if (i%500000==0) logger.info("Processing event " + i);
                 // event[] stores event id in position [0] and person id in position [1]
                 Integer[] event = em.selectNextEvent();
-                if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
+                if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd || true)
                     SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
                             event[1]);
                 if (event[0] == EventTypes.birthday.ordinal()) {
@@ -472,7 +472,7 @@ public class SiloModel {
             //	    if (i%500000==0) logger.info("Processing event " + i);
             // event[] stores event id in position [0] and person id in position [1]
             Integer[] event = em.selectNextEvent();
-            if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
+            if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd || true)
                 SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
                         event[1]);
             if (event[0] == EventTypes.birthday.ordinal()) {

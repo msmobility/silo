@@ -123,7 +123,7 @@ public class ConstructionOverwrite {
             Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zone + "," + DwellingType.values()[dto] + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
-            if (ddId == SiloUtil.trackDd) {
+            if (ddId == SiloUtil.trackDd || true) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 dd.logAttributes(SiloUtil.trackWriter);
             }

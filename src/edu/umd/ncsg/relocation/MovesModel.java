@@ -556,6 +556,11 @@ public class MovesModel {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloModel.rand.nextFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
+
+            if (dd == null) {
+                System.out.println("Missed dwelling: "+i+" "+vacantDwellings[i]);
+            }
+
             int msa = geoData.getMSAOfZone(dd.getZone());
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
