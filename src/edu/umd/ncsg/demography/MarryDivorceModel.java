@@ -347,7 +347,7 @@ public class MarryDivorceModel {
             hhOfPartner2.removePerson(partner2);
             hhOfPartner1.addAdultPerson(partner2);
             moveRemainingPersonsIfAllChildren(hhOfPartner2.getId(), hhOfPartner1);
-            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh || true ||
+            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh ||
                     hhOfPartner2.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + partner1.getId() +
                     " and person " + partner2.getId() + " got married and moved into household " + hhOfPartner1.getId() + ".");
         } else if (moveTo == 2) {
@@ -355,7 +355,7 @@ public class MarryDivorceModel {
             hhOfPartner1.removePerson(partner1);
             hhOfPartner2.addAdultPerson(partner1);
             moveRemainingPersonsIfAllChildren(hhOfPartner1.getId(), hhOfPartner2);
-            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh || true ||
+            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh ||
                     hhOfPartner2.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + partner1.getId() +
                     " and person " + partner2.getId() + " got married and moved into household " + hhOfPartner2.getId() + ".");
         } else {
@@ -401,7 +401,7 @@ public class MarryDivorceModel {
             for (Person per: remainingPersons) {
                 oldHh.removePerson(per);
                 newHh.addAdultPerson(per);
-                if (per.getId() == SiloUtil.trackPp || oldHh.getId() == SiloUtil.trackHh || true ||
+                if (per.getId() == SiloUtil.trackPp || oldHh.getId() == SiloUtil.trackHh ||
                         newHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " +
                         per.getId() + " was moved from household " + oldHh.getId() + " to household " + newHh.getId() +
                         " as remaining child.");
@@ -448,7 +448,7 @@ public class MarryDivorceModel {
             // move divorced person into new dwelling
             move.moveHousehold(newHh, -1, newDwellingId);
             aoModel.simulateAutoOwnership(newHh);
-            if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh || true ||
+            if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");

@@ -371,7 +371,7 @@ public class ConstructionModel {
         RealEstateDataManager.addDwellingToVacancyList(dd);
         EventManager.countEvent(EventTypes.ddConstruction);
 
-        if (ddId == SiloUtil.trackDd || true) {
+        if (ddId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
             dd.logAttributes(SiloUtil.trackWriter);
         }

@@ -480,7 +480,7 @@ public class syntheticPop {
                 SiloUtil.trackWriter.println("Generated household with following attributes:");
                 Household.getHouseholdFromId(newHhId).logAttributes(SiloUtil.trackWriter);
             }
-            if (newDdId == SiloUtil.trackDd || true) {
+            if (newDdId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Generated dwelling with following attributes:");
                 Dwelling.getDwellingFromId(newDdId).logAttributes(SiloUtil.trackWriter);
             }
@@ -805,7 +805,7 @@ public class syntheticPop {
                             dd.getPrice(), 0f, dd.getYearBuilt());
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;
-                    if (newDdId == SiloUtil.trackDd || true) {
+                    if (newDdId == SiloUtil.trackDd) {
                         SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
                         Dwelling.getDwellingFromId(newDdId).logAttributes(SiloUtil.trackWriter);
                     }

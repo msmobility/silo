@@ -418,7 +418,7 @@ public class summarizeData {
             pwd.print(dd.getRestriction());
             pwd.print(",");
             pwd.println(dd.getYearBuilt());
-            if (dd.getId() == SiloUtil.trackDd || true) {
+            if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
                 dd.logAttributes(SiloUtil.trackWriter);
             }

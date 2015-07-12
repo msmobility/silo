@@ -139,7 +139,7 @@ public class LeaveParentHhModel {
             moveM.moveHousehold(hh, -1, newDwellingId);
             aoModel.simulateAutoOwnership(hh);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
-            if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh || true ||
+            if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                     hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has left the parental household " + hhOfThisPerson.getId() +
                     " and established the new household " + newHhId + ".");
