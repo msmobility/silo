@@ -63,8 +63,8 @@ public class transportModel {
     public void writeSocioEconomicDataFileForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 
-        String fileName = (mstmDirectory + "/" + mstmScenario + "/" + rb.getString(PROPERTIES_MSTM_SE_DATA_FILE) + "_" +
-            year + ".csv");
+        String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                rb.getString(PROPERTIES_MSTM_SE_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing socio-economic data for MSTM to file " + fileName);
         // summarize micro data
         int[] hhs = new int[geoData.getZones().length];
