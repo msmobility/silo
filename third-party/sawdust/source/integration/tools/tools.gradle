@@ -1,0 +1,17 @@
+dependsOn(':util')
+dependsOn(':tensor')
+
+jarBaseName = 'sawdust-tools'
+version = '1.0'
+specificationTitle = 'Sawdust Blas Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.tools'
+implementationVendor = 'Parsons Brinckerhoff'
+//baseTestClass = 'com.pb.sawdust.model.integration.blas.BlasPackageTests'
+//baseDependencies = ['../../third_party/jblas/1.2/jblas-1.2.0.jar',
+//                    '../../third_party/jcuda/0.4.0/jcublas-0.4.0-beta1.jar',
+//                    '../../third_party/jcuda/0.4.0/jcuda-0.4.0-beta1.jar']
+//testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+
+apply from: '../../core/build/base_build.gradle'
+

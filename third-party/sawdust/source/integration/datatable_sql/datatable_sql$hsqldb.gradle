@@ -1,0 +1,35 @@
+dependsOn(':util')
+dependsOn(':datatable')
+dependsOn(':datatable_sql')
+dependsOn(':java$6_windows_32bit')
+
+jarBaseName = 'sawdust-datatable-sql-hsqldb'
+version = '1.0'
+specificationTitle = 'Sawdust Datatable Sql HSQLDB Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.tabledata.sql (.impl.hsqldb)'
+implementationVendor = 'Parsons Brinckerhoff'
+baseTestClass = 'com.pb.sawdust.tabledata.sql.impl.hsqldb.HsqldbPackageTests'
+baseDependencies = ['../../third_party/hsqldb/2.2/hsqldb.jar']
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+jreTools = true
+
+apply from: '../../core/build/base_build.gradle'
+
+sourceSets {
+    test.java.srcDirs += '../../core/datatable/src/test/java'
+    main {
+        java.exclude('**/sql/*.java')
+        java.exclude('**/sql/impl/*.java')
+        java.exclude('**/impl/h2/**')
+        java.exclude('**/impl/derby/**')
+        java.exclude('**/impl/sqlite/**')
+    }
+    test {
+        java.exclude('**/h2/**')
+        java.exclude('**/derby/**')
+        java.exclude('**/sqlite/**')
+        java.exclude('**/ImplPackageTests.java')
+        java.exclude('**/SqlPackageTests.java')
+    }
+}

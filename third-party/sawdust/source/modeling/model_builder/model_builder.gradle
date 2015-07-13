@@ -1,0 +1,25 @@
+dependsOn(':util')
+dependsOn(':property')
+dependsOn(':tensor')
+dependsOn(':datatable')
+dependsOn(':models')
+dependsOn(':excel')
+dependsOn(':transcad')
+
+jarBaseName = 'sawdust-model-builder'
+version = '1.0'
+specificationTitle = 'Sawdust Model Builder Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.model.builder'
+implementationVendor = 'Parsons Brinckerhoff'
+baseDependencies = ['../../third_party/antlr/3.4/antlr-3.4-complete.jar',
+                    '../../third_party/poi/3.7/poi-3.7-20101029.jar',
+                    '../../third_party/poi/3.7/poi-ooxml-3.7-20101029.jar']
+
+apply from: '../../core/build/base_build.gradle'
+
+createJarRelease.doFirst {
+    from ('target') {
+        include ('bin/**/*')
+    }
+}
