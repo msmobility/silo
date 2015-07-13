@@ -119,6 +119,7 @@ public class DemolitionModel {
                     move.moveHousehold(hh, -1, idNewDD);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
                 } else {
                     iomig.outMigrateHh(residentId, true);
+                    RealEstateDataManager.removeDwellingFromVacancyList(dwellingId);
                     IssueCounter.countLackOfDwellingForcedOutmigration();
                 }
             } else {
