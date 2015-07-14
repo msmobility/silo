@@ -1,0 +1,16 @@
+dependsOn(':util')
+dependsOn(':tensor')
+
+jarBaseName = 'sawdust-calculator-tensor'
+version = '1.0'
+specificationTitle = 'Sawdust Tensor Calculator Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.calculator.tensor'
+implementationVendor = 'Parsons Brinckerhoff'
+baseTestClass = 'com.pb.sawdust.calculator.tensor.TensorPackageTests'
+baseDependencies = ['../../third_party/jsr166y/jsr166y.jar']
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+skipProjectTests = false
+
+apply from: '../../core/build/base_build.gradle'
+

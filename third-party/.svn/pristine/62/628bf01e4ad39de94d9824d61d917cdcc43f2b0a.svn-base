@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Time-aware Image service">
+    <!--
+         This sample shows how to use a time-aware Image Service layer.
+         The map pays attention to time slider changes and asks the layer
+         in the map to update themselves (if they are time-aware).
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Units;
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.layers.supportClasses.TimeInfo;
+
+            protected function imageLayer_loadHandler(event:LayerEvent):void
+            {
+                timeSlider.createTimeStopsByTimeInterval(imageLayer.timeInfo.timeExtent, 1, TimeInfo.UNIT_MONTHS);
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map timeSlider="{timeSlider}" units="{Units.DECIMAL_DEGREES}">
+        <esri:ArcGISImageServiceLayer id="imageLayer"
+                                      imageFormat="jpg"
+                                      load="imageLayer_loadHandler(event)"
+                                      url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/World/MODIS/ImageServer"/>
+    </esri:Map>
+
+    <esri:TimeSlider id="timeSlider"
+                     top="10"
+                     horizontalCenter="0"
+                     singleThumbAsTimeInstant="true"
+                     thumbMovingRate="1500"/>
+
+</s:Application>

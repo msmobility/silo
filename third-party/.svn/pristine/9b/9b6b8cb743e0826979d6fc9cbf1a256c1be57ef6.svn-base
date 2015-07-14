@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:mx="library://ns.adobe.com/flex/mx" 
+                layout="absolute">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.mio.as3shplib.ShpWriter;
+		
+			import com.esri.ags.tasks.supportClasses.Query;
+            import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.FeatureSet;
+			
+			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
+            import mx.rpc.AsyncResponder;
+            
+            import flash.net.FileReference;
+            
+            private var shpWriter:ShpWriter = null;
+            
+            private var startTime:Number;
+            private var queryTime:Number;
+            private var endTime:Number;
+            
+			private function getCounties():void {
+				downloadBtn.enabled = false;
+				startTime = flash.utils.getTimer();
+				statusLbl.text = "Querying...";
+				
+				var q:Query = new Query();
+				q.outFields = [ "*" ];
+				q.returnGeometry = true;
+				q.where = "1=1";
+				
+				var qt:QueryTask = new QueryTask("http://server.arcgisonline.com/ArcGIS/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/3");
+				qt.execute(q, new AsyncResponder(onResult, onFault));
+			}
+			
+			private function getStates():void {
+				downloadBtn.enabled = false;
+				startTime = flash.utils.getTimer();
+				statusLbl.text = "Querying...";
+				
+				var q:Query = new Query();
+				q.outFields = [ "*" ];
+				q.returnGeometry = true;
+				q.where = "1=1";
+				
+				var qt:QueryTask = new QueryTask("http://server.arcgisonline.com/ArcGIS/rest/services/Demographics/USA_1990-2000_Population_Change/MapServer/4");
+				qt.execute(q, new AsyncResponder(onResult, onFault));
+			}
+			
+			private function getInterstates():void {
+				downloadBtn.enabled = false;
+				startTime = flash.utils.getTimer();
+				statusLbl.text = "Querying...";
+				
+				var q:Query = new Query();
+				q.outFields = [ "*" ];
+				q.returnGeometry = true;
+				q.where = "1=1";
+				
+				var qt:QueryTask = new QueryTask("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Network/USA/MapServer/78");
+				qt.execute(q, new AsyncResponder(onResult, onFault));
+			}
+			
+			private function getEarthquakes():void {
+				downloadBtn.enabled = false;
+				startTime = flash.utils.getTimer();
+				statusLbl.text = "Querying...";
+				
+				var q:Query = new Query();
+				q.outFields = [ "*" ];
+				q.returnGeometry = true;
+				q.where = "1=1";
+				
+				var qt:QueryTask = new QueryTask("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Earthquakes/Since_1970/MapServer/0");
+				qt.execute(q, new AsyncResponder(onResult, onFault));
+			}
+			
+			private function onResult(result:FeatureSet, token:Object=null):void {
+				queryTime = flash.utils.getTimer();
+            	if (result.features.length == 0) {
+            		Alert("No features returned based on the specified query or selected layer contains no features.");
+            		return;
+            	}
+            	
+            	shpWriter = new ShpWriter("shpexport", result.geometryType, result.fields);
+            	shpWriter.write(result.features);
+            	
+            	endTime = flash.utils.getTimer();
+            	
+            	downloadBtn.enabled = true;
+            	statusLbl.text = "Shapefile download ready";
+            	queryTimeLbl.text = "Executed query in " + (queryTime-startTime) + "ms";
+            	shpTimeLbl.text = "Created shapefile in " + (endTime-queryTime) + "ms";
+            }
+            
+            private function onFault(error:Object, token:Object=null):void {
+            	downloadBtn.enabled = false;
+            	statusLbl.text = "Error querying/exporting.";
+            	Alert.show("Error: " + error.toString(), "Error exporting data");
+            }
+            
+            private function doDownload():void {
+            	if (shpWriter != null) {
+            		var fr:FileReference = new FileReference();
+            		fr.save(shpWriter.getData(), "shpexport.zip");
+            	}
+            }
+		]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" height="100%">
+		<s:Label text="Sample ESRI Data:" />
+		<s:Button width="300"
+				  label="USA Counties (Polygon)"
+				  click="getCounties()" />
+				  
+		<s:Button width="300"
+				  label="USA States (Polygon)"
+				  click="getStates()" />
+				  
+		<s:Button width="300"
+				  label="USA Interstates (Polyline)"
+				  click="getInterstates()" />
+				  
+		<s:Button width="300"
+				  label="Earthquakes 1970-2009 (Point)"
+				  click="getEarthquakes()" />
+				  
+		
+		<s:Label id="statusLbl" />
+		<s:Label id="queryTimeLbl" />
+		<s:Label id="shpTimeLbl" />
+		
+		<s:Button width="300"
+				  id="downloadBtn"
+				  enabled="false"
+				  label="Download Shapefile"
+				  click="doDownload()" />
+	</s:VGroup>
+</mx:Application>

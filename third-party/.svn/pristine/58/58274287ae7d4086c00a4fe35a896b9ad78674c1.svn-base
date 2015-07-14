@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Terrain BaseMap with custom data">
+
+    <!--
+         This sample shows how to add multiple layers to your application.
+         The sample consists of three layers, a basemap, demographic data,
+         and finally a reference layer with boundaries and place names.
+
+         The World Terrain Base service, a cached map service from ArcGIS
+         Online is added first. This service was designed to be used as a
+         basemap with additional layers, such as demographic data, displayed
+         on top.
+
+         Next, custom data is added to the map. This can be reference data
+         from ArcGIS Online or your own published map service. When adding
+         this layer to the map the alpha (transparency) is set to 0.5 so
+         that the basemap is visible underneath the demographic data.
+    -->
+
+    <fx:Declarations>
+        <esri:Extent id="initialExtent"
+                     xmin="-514000" ymin="5385000" xmax="4847000" ymax="7641000">
+            <esri:SpatialReference wkid="102100"/>
+        </esri:Extent>
+    </fx:Declarations>
+
+    <esri:Map extent="{initialExtent}">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer"/>
+        <esri:ArcGISDynamicMapServiceLayer alpha="0.5" url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Population_World/MapServer"/>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer"/>
+    </esri:Map>
+
+</s:Application>
+

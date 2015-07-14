@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010-2011 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the Editor component.
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:mx="library://ns.adobe.com/flex/mx"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:components="com.esri.ags.components.*"
+             xmlns:supportClasses="com.esri.ags.skins.supportClasses.*"
+             initialize="editorSkin_initializeHandler(event)">
+
+    <!-- host component -->
+    <fx:Metadata>
+        /**
+         * A strongly typed property that references the component to which this skin is applied.
+         */
+        [HostComponent("com.esri.ags.components.Editor")]
+    </fx:Metadata>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="disabled"/>
+        <s:State name="applyingEdits"/>
+        <s:State name="toolbarNotVisible"/>
+        <s:State name="templateSelected"/>
+        <s:State name="featuresSelected"/>
+    </s:states>
+
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.components.supportClasses.CreateOptions;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.tools.DrawTool;
+
+            import mx.binding.utils.ChangeWatcher;
+            import mx.events.EffectEvent;
+            import mx.events.FlexEvent;
+
+            private var _changeWatcher:ChangeWatcher;
+            private var _createGeometryTypeChanged:Boolean;
+            private var _arrayList:ArrayList;
+
+            [Bindable]
+            [Embed(source="../../../../assets/skins/loader.swf")]
+            private var loader:Class;
+
+            private function editorSkin_initializeHandler(event:FlexEvent):void
+            {
+                _changeWatcher = ChangeWatcher.watch(hostComponent, "createGeometryType", createGeometryType_changeHandler);
+            }
+
+            private function createGeometryType_changeHandler(event:Event = null):void
+            {
+                invalidateProperties();
+                _createGeometryTypeChanged = true;
+            }
+
+            /**
+             * @private
+             */
+            override protected function commitProperties():void
+            {
+                super.commitProperties();
+
+                if (hostComponent.toolbarVisible)
+                {
+                    if (_createGeometryTypeChanged)
+                    {
+                        _createGeometryTypeChanged = false;
+
+                        _arrayList = new ArrayList();
+                        switch (hostComponent.createGeometryType)
+                        {
+                            case Geometry.MAPPOINT:                            
+                            case Geometry.MULTIPOINT:
+                            {
+                                _arrayList.addItem(mapPointIcon);
+                                drawDropDownList.dataProvider = _arrayList;
+                                break;
+                            }
+                            case Geometry.POLYLINE:
+                            {
+                                if (hostComponent.createOptions)
+                                {
+                                    for each (var polylineDrawTool:String in hostComponent.createOptions.polylineDrawTools)
+                                    {
+                                        if (polylineDrawTool == DrawTool.POLYLINE)
+                                        {
+                                            _arrayList.addItem(pointToPointLineIcon);
+                                        }
+                                        if (polylineDrawTool == DrawTool.FREEHAND_POLYLINE)
+                                        {
+                                            _arrayList.addItem(freehandLineIcon);
+                                        }
+                                        if (polylineDrawTool == DrawTool.LINE)
+                                        {
+                                            _arrayList.addItem(lineIcon);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    _arrayList.addItem(pointToPointLineIcon);
+                                    _arrayList.addItem(freehandLineIcon);
+                                }
+                                drawDropDownList.dataProvider = _arrayList;
+                                break;
+                            }
+                            case Geometry.POLYGON:
+                            {
+                                if (hostComponent.createOptions)
+                                {
+                                    for each (var polygonDrawTool:String in hostComponent.createOptions.polygonDrawTools)
+                                    {
+                                        if (polygonDrawTool == DrawTool.POLYGON)
+                                        {
+                                            _arrayList.addItem(pointToPointPolygonIcon);
+                                        }
+                                        if (polygonDrawTool == DrawTool.FREEHAND_POLYGON)
+                                        {
+                                            _arrayList.addItem(freehandPolygonIcon);
+                                        }
+                                        if (polygonDrawTool == DrawTool.EXTENT)
+                                        {
+                                            _arrayList.addItem(extentIcon);
+                                        }
+                                        if (polygonDrawTool == CreateOptions.AUTO_COMPLETE)
+                                        {
+                                            _arrayList.addItem(autoCompleteIcon);
+                                        }
+                                        if (polygonDrawTool == DrawTool.CIRCLE)
+                                        {
+                                            _arrayList.addItem(circleIcon);
+                                        }
+                                        if (polygonDrawTool == DrawTool.ELLIPSE)
+                                        {
+                                            _arrayList.addItem(ellipseIcon);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    _arrayList.addItem(pointToPointPolygonIcon);
+                                    _arrayList.addItem(freehandPolygonIcon);
+                                    _arrayList.addItem(autoCompleteIcon);
+                                    _arrayList.addItem(extentIcon);
+                                    _arrayList.addItem(circleIcon);
+                                    _arrayList.addItem(ellipseIcon);
+                                }
+                                drawDropDownList.dataProvider = _arrayList;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            private function fade_effectEndHandler(event:EffectEvent):void
+            {
+                operationCompleteLabel.includeInLayout = false;
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <!-- Fade Effect -->
+        <!--- @private -->
+        <s:Fade id="fade"
+                alphaFrom="1"
+                alphaTo="0"
+                duration="1500"
+                effectEnd="fade_effectEndHandler(event)"/>
+        <!-- Icon for point drawing -->
+        <!--- @private -->
+        <fx:Object id="mapPointIcon"
+                   drawId="mappoint"
+                   icon="@Embed('../../../../assets/skins/ElementMarker16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreatePointLabel')}"/>
+
+        <!-- Icons for polyline drawing -->
+        <!--- @private -->
+        <fx:Object id="pointToPointLineIcon"
+                   drawId="pointToPointLine"
+                   icon="@Embed('../../../../assets/skins/ElementPolyline16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreatePointToPointLabel')}"/>
+        <!--- @private -->
+        <fx:Object id="freehandLineIcon"
+                   drawId="freehandLine"
+                   icon="@Embed('../../../../assets/skins/ElementFreehand16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateFreehandLabel')}"/>
+        <!--- @private -->
+        <fx:Object id="lineIcon"
+                   drawId="line"
+                   icon="@Embed('../../../../assets/skins/ElementLine16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateLineLabel')}"/>
+
+        <!-- Icons for polygon drawing -->
+        <!--- @private -->
+        <fx:Object id="pointToPointPolygonIcon"
+                   drawId="pointToPointPolygon"
+                   icon="@Embed('../../../../assets/skins/EditingPolygonTool16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreatePointToPointLabel')}"/>
+        <!--- @private -->
+        <fx:Object id="freehandPolygonIcon"
+                   drawId="freehandPolygon"
+                   icon="@Embed('../../../../assets/skins/FreehandPolygon_16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateFreehandLabel')}"/>
+        <!--- @private -->
+        <fx:Object id="extentIcon"
+                   drawId="extent"
+                   icon="@Embed('../../../../assets/skins/EditingExtent_16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateExtentLabel')}"/>
+
+        <!--- @private -->
+        <fx:Object id="circleIcon"
+                   drawId="circle"
+                   icon="@Embed('../../../../assets/skins/EditingCircleTool16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateCircleLabel')}"/>
+
+        <!--- @private -->
+        <fx:Object id="ellipseIcon"
+                   drawId="ellipse"
+                   icon="@Embed('../../../../assets/skins/EditingEllipseTool16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateEllipseLabel')}"/>
+
+        <!--- @private -->
+        <fx:Object id="autoCompleteIcon"
+                   drawId="autoComplete"
+                   icon="@Embed('../../../../assets/skins/EditingAutoCompletePolygonTool16.png')"
+                   label="{resourceManager.getString('ESRIMessages', 'editorCreateAutoCompleteLabel')}"/>
+    </fx:Declarations>
+
+    <s:Scroller width="100%" height="100%"
+                focusEnabled="false"
+                hasFocusableChildren="true"
+                horizontalScrollPolicy="auto"
+                verticalScrollPolicy="auto">
+        <s:HGroup>
+            <!--- TemplatePicker to display and pick feature templates. -->
+            <components:TemplatePicker id="templatePicker"
+                                       width="100%"
+                                       left="0" top="0"
+                                       visible="true"/>
+        </s:HGroup>
+    </s:Scroller>
+    <s:Group width="100%" height="55"
+             horizontalCenter="0"
+             includeInLayout="{hostComponent.toolbarVisible}"
+             verticalCenter="0"
+             visible="{hostComponent.toolbarVisible}">
+        <s:layout>
+            <supportClasses:FlowLayout/>
+        </s:layout>
+
+        <!--- DropDownList for different selection options (new, add, subtract). -->
+        <s:DropDownList id="selectionDropDownList"
+                        width="40" height="25"
+                        enabled.applyingEdits="false"
+                        enabled.normal="true"
+                        enabled.templateSelected="false"
+                        excludeFrom="toolbarNotVisible"
+                        itemRenderer="com.esri.ags.skins.supportClasses.EditorDropDownListItemRenderer"
+                        labelField="label"
+                        skinClass="com.esri.ags.skins.EditorSelectionDropDownListSkin"
+                        toolTip="{resourceManager.getString('ESRIMessages', 'editorSelectionTooltip')}">
+            <s:dataProvider>
+                <s:ArrayList>
+                    <fx:Object icon="@Embed('../../../../assets/skins/NewSelection.png')"
+                               label="{resourceManager.getString('ESRIMessages', 'editorNewSelectionLabel')}"
+                               selectionName="newSelection"/>
+                    <fx:Object icon="@Embed('../../../../assets/skins/AddToSelection.png')"
+                               label="{resourceManager.getString('ESRIMessages', 'editorAddSelectionLabel')}"
+                               selectionName="addToSelection"/>
+                    <fx:Object icon="@Embed('../../../../assets/skins/RemoveFromSelection.png')"
+                               label="{resourceManager.getString('ESRIMessages', 'editorSubtractSelectionLabel')}"
+                               selectionName="subtractFromSelection"/>
+                </s:ArrayList>
+            </s:dataProvider>
+        </s:DropDownList>
+
+        <!--- Button for clearing the current selected features. -->
+        <s:Button id="clearSelectionButton"
+                  width="40" height="25"
+                  enabled.applyingEdits="false"
+                  enabled.featuresSelected="true"
+                  enabled.normal="false"
+                  enabled.templateSelected="false"
+                  excludeFrom="toolbarNotVisible"
+                  skinClass="com.esri.ags.skins.EditorClearSelectionButtonSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'editorClearSelectionTooltip')}"/>
+
+        <!--- Button for deleting the current selected features. -->
+        <s:Button id="deleteButton"
+                  width="40" height="25"
+                  enabled.applyingEdits="false"
+                  enabled.featuresSelected="true"
+                  enabled.normal="false"
+                  enabled.templateSelected="false"
+                  excludeFrom="toolbarNotVisible"
+                  includeInLayout="{hostComponent.toolbarVisible &amp;&amp; hostComponent.deleteEnabled}"
+                  skinClass="com.esri.ags.skins.EditorDeleteButtonSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'editorDeleteTooltip')}"
+                  visible="{hostComponent.toolbarVisible &amp;&amp; hostComponent.deleteEnabled}"/>
+
+        <!--- DropDownList for different feature creation options. The options are based on FeatureTemplate selected from TemplatePicker. -->
+        <s:DropDownList id="drawDropDownList"
+                        width="40" height="25"
+                        enabled.applyingEdits="false"
+                        enabled.featuresSelected="false"
+                        enabled.normal="false"
+                        enabled.templateSelected="true"
+                        excludeFrom="toolbarNotVisible"
+                        includeInLayout="{hostComponent.toolbarVisible}"
+                        itemRenderer="com.esri.ags.skins.supportClasses.EditorDropDownListItemRenderer"
+                        skinClass="com.esri.ags.skins.EditorDrawDropDownListSkin"
+                        toolTip="{resourceManager.getString('ESRIMessages', 'editorCreateOptionsTooltip')}"
+                        visible="{hostComponent.toolbarVisible}"/>
+
+        <!--- Button to perform cut(split) operation on polylines or polygons. -->
+        <s:ToggleButton id="cutButton"
+                        width="40" height="25"
+                        enabled="{hostComponent.updateGeometryEnabled &amp;&amp; hostComponent.featureLayers.length &gt; 0}"
+                        enabled.applyingEdits="false"
+                        enabled.templateSelected="false"
+                        excludeFrom="toolbarNotVisible"
+                        includeInLayout="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarCutVisible}"
+                        skinClass="com.esri.ags.skins.EditorCutButtonSkin"
+                        toolTip="{resourceManager.getString('ESRIMessages', 'editorCutTooltip')}"
+                        visible="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarCutVisible}"/>
+
+        <!--- Button to perform merge operation on selected polygons. -->
+        <s:Button id="mergeButton"
+                  width="40" height="25"
+                  enabled="false"
+                  excludeFrom="toolbarNotVisible"
+                  includeInLayout="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarMergeVisible}"
+                  skinClass="com.esri.ags.skins.EditorMergeButtonSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'editorMergeTooltip')}"
+                  visible="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarMergeVisible}"/>
+
+        <!--- Button to perform reshape operation on selected polyline or polygon. -->
+        <s:ToggleButton id="reshapeButton"
+                        width="40" height="25"
+                        enabled="false"
+                        excludeFrom="toolbarNotVisible"
+                        includeInLayout="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarReshapeVisible}"
+                        skinClass="com.esri.ags.skins.EditorReshapeButtonSkin"
+                        toolTip="{resourceManager.getString('ESRIMessages', 'editorReshapeTooltip')}"
+                        visible="{hostComponent.toolbarVisible  &amp;&amp; hostComponent.toolbarReshapeVisible}"/>
+
+        <!--- Button to undo an operation. -->
+        <s:Button id="undoButton"
+                  width="40" height="25"
+                  excludeFrom="toolbarNotVisible"
+                  includeInLayout="{hostComponent.undoAndRedoItemLimit &gt; 0}"
+                  skinClass="com.esri.ags.skins.EditorUndoButtonSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'editorUndoTooltip')}"
+                  visible="{hostComponent.undoAndRedoItemLimit &gt; 0}"/>
+
+        <!--- Button to redo an operation. -->
+        <s:Button id="redoButton"
+                  width="40" height="25"
+                  excludeFrom="toolbarNotVisible"
+                  includeInLayout="{hostComponent.undoAndRedoItemLimit &gt; 0}"
+                  skinClass="com.esri.ags.skins.EditorRedoButtonSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'editorRedoTooltip')}"
+                  visible="{hostComponent.undoAndRedoItemLimit &gt; 0}"/>
+    </s:Group>
+    <!--- @private -->
+    <s:HGroup width="100%"
+              includeInLayout="false"
+              includeInLayout.applyingEdits="true"
+              verticalAlign="middle"
+              visible="false"
+              visible.applyingEdits="true">
+        <mx:SWFLoader source="{loader}"/>
+        <s:Label id="operationStartLabel" width="100%"/>
+    </s:HGroup>
+    <s:Label id="operationCompleteLabel"
+             width="100%"
+             hideEffect="{fade}"
+             includeInLayout="false"
+             visible="false"/>
+</s:SparkSkin>

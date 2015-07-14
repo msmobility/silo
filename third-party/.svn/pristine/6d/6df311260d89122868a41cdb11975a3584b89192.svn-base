@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Selecting graphcis and displaying results">
+    <!--
+         This sample shows you how to select graphics within an extent
+         and display related information in a results list.
+    -->
+
+    <s:layout>
+        <s:HorizontalLayout paddingLeft="5"
+                            paddingRight="5"
+                            paddingTop="15"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.tasks.QueryTask;
+            import com.esri.ags.tasks.supportClasses.Query;
+
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+            import mx.events.FlexEvent;
+            import mx.rpc.AsyncResponder;
+
+            private function myMap_loadHandler():void
+            {
+                var queryTask:QueryTask = new QueryTask("http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/0");
+                queryTask.useAMF = false;
+                var query:Query = new Query();
+                query.where = "STATE_NAME = 'Washington'";
+                query.outSpatialReference = myMap.spatialReference;
+                query.returnGeometry = true;
+                query.outFields = [ "CITY_NAME" ];
+                queryTask.execute(query, new AsyncResponder(onResult, onFault));
+
+                function onResult(featureSet:FeatureSet, token:Object = null):void
+                {
+                    for each (var myGraphic:Graphic in featureSet.features)
+                    {
+                        myGraphic.symbol = defaultSymbol;
+                        myGraphicsLayer.add(myGraphic);
+                    }
+                }
+                function onFault(info:Object, token:Object = null):void
+                {
+                    Alert.show(info.toString());
+                }
+
+                drawTool.activate(DrawTool.EXTENT);
+            }
+
+            private function drawEndHandler(event:DrawEvent):void
+            {
+
+                var extent:Extent = event.graphic.geometry as Extent;
+                var graphic:Graphic;
+                var results:ArrayCollection = new ArrayCollection;
+                for (var i:Number = 0; i < myGraphicsLayer.graphicProvider.length; i++)
+                {
+                    graphic = myGraphicsLayer.graphicProvider[i] as Graphic;
+                    //if point is contained within extent, highlight it and add for display in results list
+                    if (extent.contains(MapPoint(graphic.geometry)))
+                    {
+                        graphic.symbol = highlightedSymbol;
+                        results.addItem(graphic.attributes.CITY_NAME);
+                    }
+                    //else if point was previously highlighted, reset its symbology
+                    else if (graphic.symbol == highlightedSymbol)
+                    {
+                        graphic.symbol = defaultSymbol;
+                    }
+                }
+                labelPoints.text = "# of points in extent = " + results.length;
+                dg.visible = true;
+                dg.dataProvider = results;
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleMarkerSymbol id="defaultSymbol"
+                                 alpha="0.5"
+                                 color="0x0000FF"
+                                 size="12"
+                                 style="circle">
+            <esri:SimpleLineSymbol/>
+        </esri:SimpleMarkerSymbol>
+
+        <esri:SimpleMarkerSymbol id="highlightedSymbol"
+                                 color="0xFF0000"
+                                 style="circle">
+            <esri:SimpleLineSymbol/>
+        </esri:SimpleMarkerSymbol>
+
+        <esri:SimpleFillSymbol id="sfs"
+                               alpha="0.5"
+                               color="0x000000"
+                               style="solid">
+            <esri:SimpleLineSymbol color="0xFF0000"/>
+        </esri:SimpleFillSymbol>
+
+        <esri:DrawTool id="drawTool"
+                       drawEnd="drawEndHandler(event)"
+                       fillSymbol="{sfs}"
+                       map="{myMap}"/>
+    </fx:Declarations>
+
+    <s:VGroup width="100%" height="100%">
+        <s:Label width="100%"
+                 fontSize="12"
+                 fontWeight="bold"
+                 text="Draw a rectangle to select points within an extent"/>
+        <esri:Map id="myMap" load="myMap_loadHandler()">
+            <esri:extent>
+                <esri:Extent xmin="-14015000" ymin="5558000" xmax="-12757000" ymax="6481000">
+                    <esri:spatialReference>
+                        <esri:SpatialReference wkid="102100"/>
+                    </esri:spatialReference>
+                </esri:Extent>
+            </esri:extent>
+            <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+            <esri:GraphicsLayer id="myGraphicsLayer"/>
+        </esri:Map>
+    </s:VGroup>
+    <s:VGroup width="240" height="100%">
+        <s:Label id="labelPoints"
+                 width="100%"
+                 fontSize="12"
+                 fontWeight="bold"/>
+        <mx:DataGrid id="dg"
+                     width="100%" height="100%"
+                     visible="false">
+            <mx:columns>
+                <mx:DataGridColumn dataField="SELECTED_CITY_NAME"/>
+            </mx:columns>
+        </mx:DataGrid>
+    </s:VGroup>
+
+</s:Application>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Multiple RelationshipQuery and Selections">
+    <!--
+         This sample shows how to use a RelationshipQuery in a service for related features
+         and then query another related table and display the related attribute information.
+         The sample displays a subset of oil fields and wells in Kansas.
+
+         Clicking on a oil field highlights the oil field, then creates a RelationshipQuery that
+         finds and selects the related well features.
+         Once the well fields are selected another RelationshipQuery is used to retrieve information
+         from the KSTOPS table and display the attributes of those features in a DataGrid.
+
+         Note that the code requires a relationshipId. FeatureLayers can have more than one
+         relationship and each relationship is identified by a unique identifier.
+         Use the Services Directory to find the relationship id.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.FeatureLayerEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.tasks.supportClasses.Query;
+            import com.esri.ags.tasks.supportClasses.RelationshipQuery;
+
+            import mx.controls.Alert;
+            import mx.rpc.AsyncResponder;
+
+            private function findWells(event:FeatureLayerEvent):void
+            {
+                var relatedWellsQuery:RelationshipQuery = new RelationshipQuery();
+                relatedWellsQuery.outFields = [ "OBJECTID" ];
+                relatedWellsQuery.relationshipId = 2;
+                // The "2" comes from the service directory of the layer:
+                // Field 2 Wells (2)  -- Related To: Wells  (0)
+                if (event.features.length > 0)
+                {
+                    relatedWellsQuery.objectIds = [ event.features[0].attributes.OBJECTID ];
+                    fieldsLayer.queryRelatedFeatures(relatedWellsQuery, new AsyncResponder(onResult, onFault));
+                    relatedDatagrid.dataProvider = null;
+                    function onResult(relatedRecords:Object, token:Object = null):void
+                    {
+                        var fset:FeatureSet = (relatedRecords[event.features[0].attributes.OBJECTID]);
+                        var selectionQuery:Query = new Query();
+                        var objIds:Array = new Array();
+                        for each (var g:Graphic in fset.features)
+                        {
+                            objIds.push(g.attributes.OBJECTID)
+                        }
+                        selectionQuery.objectIds = objIds;
+                        wellsLayer.selectFeatures(selectionQuery, FeatureLayer.SELECTION_NEW);
+                    }
+                    function onFault(info:Object, token:Object = null):void
+                    {
+                        Alert.show(info.toString(), "Query Problem");
+                    }
+                }
+                else
+                {
+                    Alert.show("No wells found", "Info");
+                }
+            }
+
+            private function findRelatedRecords(event:FeatureLayerEvent):void
+            {
+                var relatedQuery:RelationshipQuery = new RelationshipQuery();
+                relatedQuery.outFields = [ "API_NUMBER", "ELEVATION", "FORMATION", "TOP" ];
+                relatedQuery.relationshipId = 3;
+                // The "3" comes from the service directory of the layer:
+                // Well 2 Tops (3)  -- Related To: KSTOPS  (2)
+                var objIds:Array = new Array();
+                for each (var g:Graphic in event.features)
+                {
+                    objIds.push(g.attributes.OBJECTID)
+                }
+                relatedQuery.objectIds = objIds;
+                wellsLayer.queryRelatedFeatures(relatedQuery, new AsyncResponder(onResult, onFault));
+                relatedDatagrid.dataProvider = null;
+                var attrs:Array = new Array();
+                function onResult(relatedRecords:Object, token:Object = null):void
+                {
+                    for each (var i:FeatureSet in relatedRecords)
+                    {
+                        for each (var j:Graphic in i.features)
+                        {
+                            attrs.push(j.attributes);
+                        }
+                    }
+                    relatedDatagrid.dataProvider = attrs;
+                }
+                function onFault(info:Object, token:Object = null):void
+                {
+                    Alert.show(info.toString(), "Query Problem");
+                }
+            }
+
+            protected function map_mapClickHandler(event:MapMouseEvent):void
+            {
+                var selectionQuery:Query = new Query();
+                selectionQuery.geometry = event.mapPoint;
+                fieldsLayer.selectFeatures(selectionQuery, FeatureLayer.SELECTION_NEW);
+            }
+        ]]>
+    </fx:Script>
+
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+
+    <s:HGroup width="100%" height="100%">
+        <esri:Map id="map"
+                  mapClick="map_mapClickHandler(event)"
+                  openHandCursorVisible="false">
+            <esri:extent>
+                <esri:Extent xmin="-10854000" ymin="4502000" xmax="-10829000" ymax="4524000">
+                    <esri:SpatialReference wkid="102100"/>
+                </esri:Extent>
+            </esri:extent>
+            <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"/>
+            <esri:ArcGISDynamicMapServiceLayer url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Petroleum/KSPetro/MapServer">
+                <esri:visibleLayers>
+                    <s:ArrayCollection>
+                        <fx:Number>0</fx:Number>
+                        <fx:Number>1</fx:Number>
+                    </s:ArrayCollection>
+                </esri:visibleLayers>
+            </esri:ArcGISDynamicMapServiceLayer>
+            <esri:FeatureLayer id="fieldsLayer"
+                               mode="selection"
+                               selectionComplete="findWells(event)"
+                               url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Petroleum/KSPetro/MapServer/1"/>
+            <esri:FeatureLayer id="wellsLayer"
+                               mode="selection"
+                               outFields="*"
+                               selectionComplete="findRelatedRecords(event)"
+                               url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Petroleum/KSPetro/MapServer/0">
+                <esri:infoWindowRenderer>
+                    <fx:Component>
+                        <mx:VBox backgroundColor="0xEEEEEE" label="Well:">
+                            <mx:Label text="ID: {data.OBJECTID}"/>
+                            <mx:Label text="Completion: {data.completion ? new Date(data.completion) : 'No date available'}"/>
+                            <mx:Label text="Plug date: {data.plug_date ? new Date(data.plug_date) : 'No date available'}"/>
+                        </mx:VBox>
+                    </fx:Component>
+                </esri:infoWindowRenderer>
+            </esri:FeatureLayer>
+        </esri:Map>
+        <mx:DataGrid id="relatedDatagrid"
+                     width="50%" height="100%">
+            <mx:columns>
+                <mx:DataGridColumn dataField="API_NUMBER" headerText="API Number"/>
+                <mx:DataGridColumn dataField="ELEVATION" headerText="Elevation"/>
+                <mx:DataGridColumn dataField="TOP" headerText="Top"/>
+                <mx:DataGridColumn dataField="FORMATION" headerText="Formation"/>
+            </mx:columns>
+        </mx:DataGrid>
+    </s:HGroup>
+    <s:Label width="100%" text="Selected features are fetched from the server when selected (using the 'selection' mode) and drawn clientside."/>
+</s:Application>

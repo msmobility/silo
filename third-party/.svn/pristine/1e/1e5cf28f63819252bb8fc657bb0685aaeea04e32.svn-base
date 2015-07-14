@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="Turning individual layers on/off for a WMS map service">
+    <!--
+         @@includeFiles com/esri/ags/samples/WMSLayerTOC.mxml, com/esri/ags/samples/WMSLayerVizRenderer.mxml, com/esri/ags/samples/WMSLayerVisibility.as
+
+         Problem:
+         Allow end-users to easily turn on/off layers for any WMS service.
+
+         Solution:
+         By default, the visible layers (as defined in the service) are used.
+
+         In this example, a datagrid (WMSLayerTOC) with checkboxes for every layer in
+         the current service is displayed.  The datagrid itemrenderer (WMSLayerVizRenderer)
+         will update the map service as users selects/clears checkboxes.
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Units;
+        ]]>
+    </fx:Script>
+    <mx:HDividedBox width="100%" height="100%">
+        <esri:Map units="{Units.DECIMAL_DEGREES}">
+            <esri:WMSLayer id="myWMS" url="http://sampleserver1.arcgisonline.com/arcgis/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/WMSServer?EXCEPTIONS=INIMAGE">
+                <esri:visibleLayers>
+                    <s:ArrayList>
+                        <!--States-->
+                        <fx:String>0</fx:String>
+                    </s:ArrayList>
+                </esri:visibleLayers>
+            </esri:WMSLayer>
+        </esri:Map>
+        <samples:WMSLayerTOC width="210" height="100%"
+                             wmsLayer="{myWMS}"/>
+    </mx:HDividedBox>
+</s:Application>

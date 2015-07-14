@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               initialize="application_initializeHandler(event)"
+               pageTitle="ConvexHull example">
+
+    <!--
+         This sample shows how to take advantage of the convexHull() method
+         on a GeometryService.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.SpatialReference;
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.events.GeometryServiceEvent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.geometry.MapPoint;
+
+            import mx.collections.ArrayCollection;
+            import mx.events.FlexEvent;
+
+            protected function application_initializeHandler(event:FlexEvent):void
+            {
+                drawTool.activate(DrawTool.EXTENT);
+            }
+
+            private function drawEndHandler(event:DrawEvent):void
+            {
+                convexHullResultGraphicsLayer.clear();
+
+                var geometries:Array = [];
+                var extent:Extent = event.graphic.geometry as Extent;
+                var graphics:ArrayCollection = ArrayCollection(myFeatureLayer.graphicProvider);
+                for each (var graphic:Graphic in graphics)
+                {
+                    //if point is within drawn extent, highlight it
+                    if (extent.contains(MapPoint(graphic.geometry)))
+                    {
+                        graphic.symbol = highlightedSymbol;
+                        geometries.push(MapPoint(graphic.geometry));
+                    }
+                    //else if point was previously highlighted, reset its symbology
+                    else if (graphic.symbol == highlightedSymbol)
+                    {
+                        graphic.symbol = defaultSymbol;
+                    }
+                }
+
+                // find convex hull for the selected points
+                geometryService.convexHull(geometries, new SpatialReference(4326));
+            }
+
+            private function convexHullCompleteHandler(event:GeometryServiceEvent):void
+            {
+                var graphic:Graphic = new Graphic(Geometry(event.result));
+                switch (Geometry(event.result).type)
+                {
+                    case Geometry.MAPPOINT:
+                    {
+                        graphic.symbol = convexHullPoint;
+                        break;
+                    }
+                    case Geometry.POLYLINE:
+                    {
+                        graphic.symbol = convexHullPolyline;
+                        break;
+                    }
+                    case Geometry.POLYGON:
+                    {
+                        graphic.symbol = convexHullPolygon;
+                        break;
+                    }
+                }
+                convexHullResultGraphicsLayer.add(graphic);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleMarkerSymbol id="defaultSymbol"
+                                 alpha="0.5"
+                                 color="0x0000FF"
+                                 size="12">
+            <esri:SimpleLineSymbol/>
+        </esri:SimpleMarkerSymbol>
+        <esri:SimpleMarkerSymbol id="highlightedSymbol"
+                                 color="0xFF0000"
+                                 size="12">
+            <esri:SimpleLineSymbol/>
+        </esri:SimpleMarkerSymbol>
+        <esri:SimpleFillSymbol id="convexHullPolygon"
+                               alpha="0.5"
+                               style="solid">
+            <esri:SimpleLineSymbol width="2" color="0xFFFFFF"/>
+        </esri:SimpleFillSymbol>
+        <esri:SimpleLineSymbol id="convexHullPolyline"
+                               width="3"
+                               color="0xFFFFFF"/>
+        <esri:SimpleMarkerSymbol id="convexHullPoint" color="0xFFFFFF"/>
+
+        <esri:DrawTool id="drawTool"
+                       drawEnd="drawEndHandler(event)"
+                       fillSymbol="{convexHullPolygon}"
+                       map="{myMap}"/>
+        <esri:GeometryService id="geometryService"
+                              convexHullComplete="convexHullCompleteHandler(event)"
+                              url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+    </fx:Declarations>
+
+    <s:layout>
+        <s:VerticalLayout paddingTop="7"/>
+    </s:layout>
+
+    <s:Label fontSize="18"
+             fontWeight="bold"
+             text="Calculate Convex Hull"/>
+    <s:Label width="100%"
+             fontSize="13"
+             text="Draw a rectangle around a group of points to calculate the minimum bounding polygon ('convex hull') of the selected points."/>
+    <esri:Map id="myMap">
+        <esri:extent>
+            <esri:Extent xmin="-13661000" ymin="4452000" xmax="-13561000" ymax="4601000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:FeatureLayer id="myFeatureLayer"
+                           outFields="[CITY_NAME]"
+                           symbol="{defaultSymbol}"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/0"/>
+        <esri:GraphicsLayer id="convexHullResultGraphicsLayer"/>
+    </esri:Map>
+
+</s:Application>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010-2011 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default item renderer for the TemplatePicker skin.
+     @private
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:mx="library://ns.adobe.com/flex/mx"
+                name="TemplatePickerListItemRenderer"
+                width="80" height="80"
+                focusEnabled="false"
+                mouseChildren="false">
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="hovered"/>
+        <s:State name="selected"/>
+    </s:states>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.layers.FeatureLayer;
+            import com.esri.ags.symbols.CompositeSymbol;
+            import com.esri.ags.symbols.SimpleFillSymbol;
+            import com.esri.ags.symbols.SimpleLineSymbol;
+            import com.esri.ags.symbols.SimpleMarkerSymbol;
+            import com.esri.ags.symbols.Symbol;
+
+            import flashx.textLayout.formats.TextAlign;
+
+            import mx.binding.utils.ChangeWatcher;
+            import mx.core.IVisualElement;
+
+            import spark.components.List;
+
+            // private var _changeWatcher:ChangeWatcher;
+
+            override public function set data(value:Object):void
+            {
+                super.data = value;
+
+                value.addEventListener(Event.CHANGE, changeEventHandler);
+
+                //First remove everything from the contentGroup
+                contentGroup.removeAllElements();
+
+                // set style on the label
+                templateLabel.setStyle("textAlign", TextAlign.CENTER);
+
+                if (value.featureTemplate)
+                {
+                    templateLabel.text = value.featureTemplate.name;
+                    toolTip = (value.featureTemplate.description != "") ? value.featureTemplate.name + ": " + value.featureTemplate.description : value.featureTemplate.name;
+                }
+
+                if (value.featureLayer.renderer)
+                {
+                    var symbol:Symbol = value.featureLayer.renderer.getSymbol(value.featureTemplate.prototype);
+                    if (symbol)
+                    {
+                        if (symbol is CompositeSymbol)
+                        {
+                            // get default symbol based on geometry type as composite symbols do not support createSwatch()
+                            contentGroup.addElement(IVisualElement(getDefaultSymbolBasedOnGeometry(value.featureLayer).createSwatch(contentGroup.width, contentGroup.height)));
+                        }
+                        else
+                        {
+                            contentGroup.addElement(IVisualElement(symbol.createSwatch(contentGroup.width, contentGroup.height)));
+                        }
+                    }
+                    else
+                    {
+                        enabled = false;
+                    }
+                }
+                else if (value.featureLayer.symbol)
+                {
+                    if (value.featureLayer.symbol is CompositeSymbol)
+                    {
+                        // get default symbol based on geometry type as composite symbols do not support createSwatch()
+                        contentGroup.addElement(IVisualElement(getDefaultSymbolBasedOnGeometry(value.featureLayer).createSwatch(contentGroup.width, contentGroup.height)));
+                    }
+                    else
+                    {
+                        contentGroup.addElement(IVisualElement(Symbol(value.featureLayer.symbol).createSwatch(contentGroup.width, contentGroup.height)));
+                    }
+                }
+                else
+                {
+                    contentGroup.addElement(IVisualElement(getDefaultSymbolBasedOnGeometry(value.featureLayer).createSwatch(contentGroup.width, contentGroup.height)));
+                }
+
+                if (List(owner).enabled && (!value.featureLayer.visible || !value.featureLayer.isInScaleRange))
+                {
+                    enabled = false;
+                }
+            }
+
+            private function getDefaultSymbolBasedOnGeometry(fLayer:FeatureLayer):Symbol
+            {
+                var sym:Symbol;
+                switch (fLayer.layerDetails.geometryType)
+                {
+                    case Geometry.MAPPOINT:
+                    {
+                        sym = new SimpleMarkerSymbol();
+                        break;
+                    }
+                    case Geometry.POLYLINE:
+                    {
+                        sym = new SimpleLineSymbol();
+                        break;
+                    }
+                    case Geometry.POLYGON:
+                    {
+                        sym = new SimpleFillSymbol();
+                        break;
+                    }
+                }
+                return sym;
+            }
+
+            private function changeEventHandler(event:Event):void
+            {
+                //if the layer is invisible or out of scale range disable it
+                enabled = !event.target.featureLayer.visible || !event.target.featureLayer.isInScaleRange ? false : true;
+            }
+        ]]>
+    </fx:Script>
+
+    <!-- border/background rectangle -->
+    <s:Rect left="0" right="0" top="0" bottom="0">
+        <s:stroke>
+            <mx:SolidColorStroke color="0xFFFFFF"
+                                 color.hovered="0x000000"
+                                 color.selected="0x000000"
+                                 weight="2"
+                                 weight.selected="3"/>
+        </s:stroke>
+
+        <s:fill>
+            <mx:SolidColor color.hovered="0xD0E0F0"
+                           color.normal="0xFFFFFF"
+                           color.selected="0xFFFFFF"/>
+        </s:fill>
+    </s:Rect>
+
+    <s:Group id="contentGroup"
+             width="60" height="40"
+             left="10" right="10" top="5" bottom="35"/>
+    <s:Label id="templateLabel"
+             width="40" height="40"
+             left="0" right="0" top="50" bottom="0"
+             maxDisplayedLines="2"/>
+
+</s:ItemRenderer>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Buffer using the Geometry Service">
+    <!--
+         This sample creates buffers around the center of the map. This example just draws the buffers,
+         but the buffers could also be used to perform a task such as returning a list of addresses of
+         people who live within the buffered area.
+    -->
+
+    <s:controlBarLayout>
+        <s:HorizontalLayout horizontalAlign="center"
+                            paddingBottom="7"
+                            paddingTop="7"/>
+    </s:controlBarLayout>
+    <s:controlBarContent>
+        <s:Button click="bufferCenterOfMap()" label="Buffer Center Of Map"/>
+    </s:controlBarContent>
+
+    <fx:Declarations>
+        <esri:SimpleFillSymbol id="sfs" color="0xFF0000">
+            <esri:SimpleLineSymbol color="0x000000"/>
+        </esri:SimpleFillSymbol>
+        <esri:GeometryService id="myGeometryService" url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.SpatialReference;
+            import com.esri.ags.events.GeometryServiceEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.geometry.Polygon;
+            import com.esri.ags.tasks.supportClasses.BufferParameters;
+
+            private function bufferCenterOfMap():void
+            {
+                var myMapCenterPoint:MapPoint = MapPoint(myMap.extent.center);
+
+                var bufferParameters:BufferParameters = new BufferParameters();
+                // Note: As of version 2.0, the GeometryService input is geometries (instead of graphics).
+                bufferParameters.geometries = [ myMapCenterPoint ];
+                bufferParameters.distances = [ 50, 100 ];
+                // Note: As of version 2.0, the buffer constants have been moved to GeometryService.
+                bufferParameters.unit = GeometryService.UNIT_KILOMETER;
+                bufferParameters.bufferSpatialReference = new SpatialReference(4326);
+                bufferParameters.outSpatialReference = myMap.spatialReference;
+
+                myGeometryService.addEventListener(GeometryServiceEvent.BUFFER_COMPLETE, bufferCompleteHandler);
+                myGeometryService.buffer(bufferParameters);
+
+                function bufferCompleteHandler(event:GeometryServiceEvent):void
+                {
+                    myGeometryService.removeEventListener(GeometryServiceEvent.BUFFER_COMPLETE, bufferCompleteHandler);
+                    // Note: As of version 2.0, GeometryService returns geometries (instead of graphics)
+                    for each (var geometry:Polygon in event.result)
+                    {
+                        var graphic:Graphic = new Graphic();
+                        graphic.geometry = geometry;
+                        graphic.symbol = sfs;
+                        graphicsLayer.add(graphic);
+                    }
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map id="myMap"
+              crosshairVisible="true"
+              level="3">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer"/>
+    </esri:Map>
+
+</s:Application>

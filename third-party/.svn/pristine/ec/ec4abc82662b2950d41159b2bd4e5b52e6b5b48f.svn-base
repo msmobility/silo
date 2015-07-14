@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the ScaleBar component - shows both metric and US units.
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        minWidth="200">
+
+    <!-- host component -->
+    <fx:Metadata>
+        /**
+         * A strongly typed property that references the component to which this skin is applied.
+         */
+        [HostComponent("com.esri.ags.components.ScaleBar")]
+    </fx:Metadata>
+
+    <fx:Declarations>
+        <!--- @private -->
+        <s:SolidColorStroke id="solidColorStroke"
+                            color="0x000000"
+                            weight="2"/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+            /**
+             * Here we override the measure method and adjust the position of parts _before_ we
+             * call the super.measure that will define the width and height based on the newly position.
+             */
+            override protected function measure():void
+            {
+                labelUS.text = hostComponent.textUS;
+                labelUS.x = hostComponent.lengthUS - labelUS.getExplicitOrMeasuredWidth() * 0.5;
+
+                labelMetric.text = hostComponent.textMetric;
+                labelMetric.x = hostComponent.lengthMetric - labelMetric.getExplicitOrMeasuredWidth() * 0.5;
+
+                super.measure();
+            }
+        ]]>
+    </fx:Script>
+
+    <s:filters>
+        <mx:GlowFilter alpha="1"
+                       blurX="3"
+                       blurY="3"
+                       color="0xFFFFFF"
+                       strength="7"/>
+    </s:filters>
+
+    <!-- Vertical line on the left edge -->
+    <s:Line stroke="{solidColorStroke}"
+            xFrom="0"
+            xTo="0"
+            yFrom="12"
+            yTo="28"/>
+
+    <!-- Horizontal line from left edge to right most edge -->
+    <s:Line stroke="{solidColorStroke}"
+            xFrom="0"
+            xTo="{Math.max(hostComponent.lengthUS,hostComponent.lengthMetric)}"
+            yFrom="20"
+            yTo="20"/>
+
+    <s:Line stroke="{solidColorStroke}"
+            xFrom="{hostComponent.lengthMetric}"
+            xTo="{hostComponent.lengthMetric}"
+            yFrom="12"
+            yTo="20"/>
+
+    <s:Line stroke="{solidColorStroke}"
+            xFrom="{hostComponent.lengthUS}"
+            xTo="{hostComponent.lengthUS}"
+            yFrom="20"
+            yTo="28"/>
+
+    <!--- Label to display metric text. -->
+    <s:Label id="labelMetric"
+             y="0"
+             color="0x000000"
+             fontFamily="{getStyle('fontFamily')}"
+             fontSize="{getStyle('fontSize')}"
+             fontWeight="{getStyle('fontWeight')}"/>
+
+    <!--- Label to display US text. -->
+    <s:Label id="labelUS"
+             y="30"
+             color="0x000000"
+             fontFamily="{getStyle('fontFamily')}"
+             fontSize="{getStyle('fontSize')}"
+             fontWeight="{getStyle('fontWeight')}"/>
+
+</s:Skin>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Chaining Geoprocessor tasks">
+    <!--
+         1. Click on map to start a DriveTime GP for that point
+         2. When GP completed, draw the drivetimes as well as query for block groups with population data.
+         3. When query completed, sum up the population
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.events.QueryEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.symbols.SimpleFillSymbol;
+            import com.esri.ags.symbols.SimpleLineSymbol;
+            import com.esri.ags.symbols.SimpleMarkerSymbol;
+            import com.esri.ags.tasks.supportClasses.ParameterValue;
+
+            private var gpPending:Boolean;
+
+            private function onMapClick(event:MapMouseEvent):void
+            {
+                graphicsLayer.clear();
+                var mapPoint:MapPoint = event.mapPoint;
+                var graphic:Graphic = new Graphic(mapPoint);
+
+                var featureSet:FeatureSet = new FeatureSet();
+                featureSet.features = [ graphic ];
+                var params:Object =
+                    {
+                        "Input_Location": featureSet,
+                        "Drive_Times": 2
+                    };
+                gp.execute(params);
+                gpPending = true;
+                messages.text = "Executing GP Task...";
+            }
+
+            private function onGPExecuteComplete(event:GeoprocessorEvent):void
+            {
+                gpPending = false;
+                var parameterValue:ParameterValue = event.executeResult.results[0];
+                var fset:FeatureSet = FeatureSet(parameterValue.value);
+                var feature:Graphic = fset.features[0];
+                var symbol:SimpleFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, 0xFF0000, 0.1);
+                symbol.outline = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, 0xFF0000, 1.0, 2);
+                feature.symbol = symbol;
+                graphicsLayer.add(feature);
+
+                query.geometry = feature.geometry;
+                queryTask.execute(query);
+                messages.text = "Executing Query...";
+            }
+
+            private function onQueryExecuteComplete(event:QueryEvent):void
+            {
+                if (gpPending)
+                {
+                    return; // a new gp request has been started
+                }
+                var symbol:SimpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, 0xFFFF00, 0.5);
+                symbol.outline = new SimpleLineSymbol();
+
+                var fset:FeatureSet = event.featureSet;
+                for each (var graphic:Graphic in fset.features)
+                {
+                    graphic.symbol = symbol;
+                    graphicsLayer.add(graphic);
+                }
+                var totalPopulation:Number = sumPopulation(fset);
+                messages.text = "Total population within the drive time area is " + totalPopulation + ".";
+            }
+
+            private function sumPopulation(fset:FeatureSet):Number
+            {
+                var features:Array = fset.features;
+                var popTotal:Number = 0;
+                for each (var graphic:Graphic in features)
+                {
+                    popTotal += graphic.attributes.POP2000;
+                }
+                return popTotal;
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Geoprocessor id="gp"
+                           concurrency="last"
+                           executeComplete="onGPExecuteComplete(event)"
+                           outSpatialReference="{myMap.spatialReference}"
+                           showBusyCursor="true"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Network/ESRI_DriveTime_US/GPServer/CreateDriveTimePolygons"
+                           useAMF="false"/>
+
+        <esri:QueryTask id="queryTask"
+                        concurrency="last"
+                        executeComplete="onQueryExecuteComplete(event)"
+                        showBusyCursor="true"
+                        url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/0"
+                        useAMF="false"/>
+
+        <esri:Query id="query"
+                    outSpatialReference="{myMap.spatialReference}"
+                    returnGeometry="true">
+            <esri:outFields>
+                <fx:String>POP2000</fx:String>
+                <fx:String>HOUSEHOLDS</fx:String>
+                <fx:String>HSE_UNITS</fx:String>
+                <fx:String>TRACT</fx:String>
+                <fx:String>BLOCK</fx:String>
+            </esri:outFields>
+        </esri:Query>
+    </fx:Declarations>
+
+    <s:controlBarLayout>
+        <s:VerticalLayout gap="4"/>
+    </s:controlBarLayout>
+    <s:controlBarContent>
+        <s:Label width="100%"
+                 fontSize="14"
+                 paddingLeft="4"
+                 paddingRight="4"
+                 paddingTop="4"
+                 text="Click the map to execute a 2 minute drive time and then use that result geometry as input into a query."/>
+        <s:Label id="messages"
+                 width="100%"
+                 fontSize="14"
+                 fontStyle="italic"
+                 paddingLeft="4"
+                 paddingRight="4"
+                 paddingTop="4"/>
+    </s:controlBarContent>
+
+    <esri:Map id="myMap"
+              mapClick="onMapClick(event)"
+              openHandCursorVisible="false">
+        <esri:extent>
+            <esri:Extent xmin="-10605000" ymin="4712000" xmax="-10601000" ymax="4718000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer"/>
+    </esri:Map>
+
+</s:Application>

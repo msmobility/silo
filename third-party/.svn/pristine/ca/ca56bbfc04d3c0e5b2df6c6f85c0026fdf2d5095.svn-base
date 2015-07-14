@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+	<!ENTITY properties SYSTEM "file:../common-base/config/properties.xml">
+	<!ENTITY targets SYSTEM "file:../common-base/config/targets.xml">
+]>
+
+<project name="tomcat" default="usage" basedir=".">
+	&properties;
+    &targets;
+
+    <!-- ********************************************************* -->
+    <!-- Setup the classpath -->
+    <path id="compile.classpath">
+        <pathelement path="${build.classes.dir};${basedir}/config"/>
+        
+        <fileset dir="${basedir}">
+            <include name="**/lib/*.jar"/>
+            <include name="**/lib/*.zip"/>
+        </fileset>
+    </path>
+
+
+    <!-- ********************************************************* -->
+    <!-- Compile depedencies -->
+    <target name="pre-build" depends="">
+        <!-- No depedencies -->
+    </target>
+
+
+    <!-- ********************************************************* -->
+    <!-- Create a set of jar files for release -->
+    <target name="release" depends="makejar">
+    </target>
+
+</project>

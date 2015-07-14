@@ -1,0 +1,35 @@
+dependsOn(':util')
+dependsOn(':datatable')
+dependsOn(':datatable_sql')
+dependsOn(':java$6_windows_32bit')
+
+jarBaseName = 'sawdust-datatable-sql-sqlite'
+version = '1.0'
+specificationTitle = 'Sawdust Datatable Sql Sqlite Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.tabledata.sql (.impl.sqlite)'
+implementationVendor = 'Parsons Brinckerhoff'
+baseTestClass = 'com.pb.sawdust.tabledata.sql.impl.sqlite.SqlitePackageTests'
+baseDependencies = ['../../third_party/sqlite-jdbc/3.7/sqlite-jdbc-3.7.2.jar']
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+jreTools = true
+
+apply from: '../../core/build/base_build.gradle'
+
+sourceSets {
+    test.java.srcDirs += '../../core/datatable/src/test/java'
+    main {
+        java.exclude('**/sql/*.java')
+        java.exclude('**/sql/impl/*.java')
+        java.exclude('**/impl/h2/**')
+        java.exclude('**/impl/hsqldb/**')
+        java.exclude('**/impl/derby/**')
+    }
+    test {
+        java.exclude('**/h2/**')
+        java.exclude('**/hsqldb/**')
+        java.exclude('**/derby/**')
+        java.exclude('**/ImplPackageTests.java')
+        java.exclude('**/SqlPackageTests.java')
+    }
+}

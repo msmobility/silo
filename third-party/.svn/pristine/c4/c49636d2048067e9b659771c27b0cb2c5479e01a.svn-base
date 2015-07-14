@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="false" version="1">
+  <includeClasses>
+    <classEntry path="com.mio.as3shplib.ShpWriter"/>
+    <classEntry path="com.mio.as3shplib.ShpConstants"/>
+    <classEntry path="com.mio.as3shplib.DbfWriter"/>
+    <classEntry path="com.mio.as3shplib.PrjWriter"/>
+    <classEntry path="com.mio.as3shplib.ShxWriter"/>
+    <classEntry path="com.mio.as3shplib.WktStrings"/>
+    <classEntry path="com.mio.as3shplib.DbfConstants"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>

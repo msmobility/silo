@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               creationComplete="doExecuteForIdsQuery()"
+               pageTitle="Features in a datagrid">
+    <!--
+         This sample shows how to page through records shown in DataGrid.
+
+         Steps involved:
+         1) Use executeForIds() method to get ids for all records.
+         The executeForIds() method will return an array of object id's.
+         2) Use execute() with WHERE clause to get the attibutes for a subset of features.
+         This will return a FeatureSet to show within the DataGrid.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center" paddingTop="20"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.QueryEvent;
+
+            import mx.collections.ArrayCollection;
+            import mx.controls.dataGridClasses.DataGridColumn;
+            import mx.events.ItemClickEvent;
+
+            import spark.events.IndexChangeEvent;
+
+            //Number of records per page
+            private const recordsPerPage:int = 10;
+
+            //Number of pages beween Previous and Next
+            private const defaultNumberOfPagesBetweenPrevNext:int = 10;
+
+            private var currentNumberOfPagesBetweenPrevNext:int = defaultNumberOfPagesBetweenPrevNext;
+
+            //Array of all ObjectIds for given service populated using executeForIDs call
+            private var objectIdsArray:Array = [];
+
+            //Contains page numbers. This array is used as datasource for repeater to display page Numbe.
+            private var pagesArray:Array = [];
+
+            //Array Index of the firstPage
+            private var currentPageListStartIndex:int = 0;
+
+            private var currentPage:int = 0; //Current Page 0 = not selected.
+            [Bindable]
+            private var numberOfPages:int; //calculated using objectIdsArray and rercordsPerPage
+
+            private function redoFiltering():void
+            {
+                currentNumberOfPagesBetweenPrevNext = defaultNumberOfPagesBetweenPrevNext;
+                objectIdsArray = []; //Array of all ObjectIds for given service populated using executeForIDs call
+                pagesArray = []; //Contains page numbers. This array is used as datasource for repeater to display page number.
+                numberOfPages = 0;
+                currentPage = 0; //Current Page 0 = not selected.
+                currentPageListStartIndex = 0; //Array Index of the firstPage
+                dg_queryResult.dataProvider = null;
+                query.objectIds = []; //remove all the old objectIds
+                doExecuteForIdsQuery();
+            }
+
+            private function doExecuteForIdsQuery():void
+            {
+                //Get all objectIds
+                query.where = txt_ObjectIdWhere.text;
+                queryTask.executeForIds(query);
+            }
+
+            private function onExecuteForIdsComplete(event:QueryEvent):void
+            {
+                objectIdsArray = event.objectIds;
+                lbl_RecordsCount.text = objectIdsArray.length.toString();
+                //calculate number of pages
+                var n:Number = objectIdsArray.length / recordsPerPage
+                numberOfPages = Math.floor(n);
+
+                if (n - Math.floor(n) > 0)
+                {
+                    numberOfPages++;
+                }
+
+                if (numberOfPages < currentNumberOfPagesBetweenPrevNext)
+                {
+                    currentNumberOfPagesBetweenPrevNext = numberOfPages;
+                }
+
+                //populate array with pagenumbers...
+                for (var i:int = 1; i <= numberOfPages; i++)
+                {
+                    pagesArray.push(i);
+                }
+
+                var lastpageIndex:int = currentNumberOfPagesBetweenPrevNext;
+                tbb_pageNumbers.dataProvider = new ArrayCollection(pagesArray.slice(0, lastpageIndex));
+
+                //get first page records
+                if (numberOfPages > 0)
+                {
+                    currentPage = 1;
+                    doQuery(currentPage);
+                    if (numberOfPages > 1) // do bit show pagesnumbers if there is only one page.
+                    {
+                        tbb_pageNumbers.selectedIndex = 0;
+                    }
+                }
+                setPreviousNextVisibility();
+            }
+
+            private function doPageQuery(event:IndexChangeEvent):void
+            {
+                //set selected page as currentPage and performQuery
+                currentPage = int(tbb_pageNumbers.selectedItem);
+                doQuery(currentPage);
+                setPreviousNextVisibility();
+            }
+
+            private function doQuery(startPageId:int):void
+            {
+                var startIndexObjectIDArrayInPage:int = (startPageId - 1) * recordsPerPage;
+                var endIndexObjectIDArrayInPage:int = startIndexObjectIDArrayInPage + recordsPerPage;
+                if (endIndexObjectIDArrayInPage > objectIdsArray.length)
+                {
+                    endIndexObjectIDArrayInPage = objectIdsArray.length;
+                }
+                query.where = "";
+                query.objectIds = objectIdsArray.slice(startIndexObjectIDArrayInPage, endIndexObjectIDArrayInPage);
+
+                //perform Query
+                queryTask.execute(query);
+            }
+
+            private function next():void
+            {
+                currentPage++;
+                setPreviousNextVisibility()
+
+                //shift pages array if the requested page number is not currently displayed.
+                if (currentPage > tbb_pageNumbers.dataProvider[tbb_pageNumbers.dataProvider.length - 1])
+                {
+                    currentPageListStartIndex += 1;
+                    var lastpageIndex:int;
+                    lastpageIndex = currentPageListStartIndex + currentNumberOfPagesBetweenPrevNext
+                    tbb_pageNumbers.dataProvider = new ArrayCollection(pagesArray.slice(currentPageListStartIndex, lastpageIndex));
+                    tbb_pageNumbers.selectedIndex = tbb_pageNumbers.dataProvider.length - 1;
+                }
+                else
+                {
+                    tbb_pageNumbers.selectedIndex += 1;
+                }
+
+                doQuery(currentPage);
+            }
+
+            private function previous():void
+            {
+                currentPage--;
+                setPreviousNextVisibility();
+
+                //shift pages array if the requested page number is not currently displayed.
+                if (currentPage < tbb_pageNumbers.dataProvider[0])
+                {
+                    //btn_Next.visible = true;
+                    currentPageListStartIndex -= 1;
+                    var lastPageIndex:int;
+                    lastPageIndex = currentPageListStartIndex + currentNumberOfPagesBetweenPrevNext
+                    if (lastPageIndex > pagesArray.length - 1)
+                    {
+                        lastPageIndex = pagesArray.length - 1
+                    }
+
+                    tbb_pageNumbers.dataProvider = new ArrayCollection(pagesArray.slice(currentPageListStartIndex, lastPageIndex));
+                    tbb_pageNumbers.selectedIndex = 0;
+                }
+                else
+                {
+                    tbb_pageNumbers.selectedIndex -= 1;
+                }
+                doQuery(currentPage);
+            }
+
+            private function setPreviousNextVisibility():void
+            {
+                //hide previous, next and page numbers container if no records are found or if there is only one page.
+                if (numberOfPages <= 1)
+                {
+                    hb_pagenumberContainer.visible = false;
+                    return;
+                }
+                else
+                {
+                    hb_pagenumberContainer.visible = true;
+                    btn_Next.visible = true;
+                }
+
+                if (currentPage > 1 && currentPage < numberOfPages)
+                {
+                    btn_Next.visible = true;
+                    btn_Previous.visible = true;
+                    return;
+                }
+
+                if (currentPage == numberOfPages)
+                {
+                    btn_Next.visible = false;
+                }
+
+                if (currentPage <= 1)
+                {
+                    btn_Previous.visible = false;
+                }
+                else
+                {
+                    btn_Previous.visible = true
+                }
+            }
+
+            private function formatDate(item:Object, dgColumn:DataGridColumn):String
+            {
+                // converting from milliseconds to Flex date
+                var realDate:Date = new Date(item[dgColumn.dataField]);
+                // returning Date as MM-DD-YY
+                return dateFormatter.format(realDate);
+            }
+
+            private function formatMagnitude(item:Object, dgColumn:DataGridColumn):String
+            {
+                return myOneDecimalFormatter.format(item[dgColumn.dataField]);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:QueryTask id="queryTask"
+                        executeForIdsComplete="onExecuteForIdsComplete(event)"
+                        url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Earthquakes/Since_1970/MapServer/0"
+                        useAMF="true"/>
+
+        <esri:Query id="query">
+            <esri:outFields>
+                <fx:String>OBJECTID</fx:String>
+                <fx:String>Name</fx:String>
+                <fx:String>Magnitude</fx:String>
+                <fx:String>Num_Deaths</fx:String>
+                <fx:String>Date_</fx:String>
+            </esri:outFields>
+        </esri:Query>
+
+        <mx:DateFormatter id="dateFormatter" formatString="YYYY-MM-DD"/>
+
+        <mx:NumberFormatter id="myOneDecimalFormatter"
+                            precision="1"
+                            useThousandsSeparator="true"/>
+    </fx:Declarations>
+
+    <s:Label fontSize="15"
+             fontWeight="bold"
+             horizontalCenter="0"
+             text="EarthQuakes since 1970"/>
+    <s:HGroup verticalAlign="middle">
+        <s:Label text="Search filter:"/>
+        <s:TextInput id="txt_ObjectIdWhere"
+                     width="150"
+                     enter="redoFiltering();"
+                     text="MAGNITUDE &gt; 6"/>
+        <s:Button click="redoFiltering();" label="Search"/>
+    </s:HGroup>
+    <s:HGroup>
+        <s:Label text="Records Found:"/>
+        <s:Label id="lbl_RecordsCount"/>
+    </s:HGroup>
+    <mx:DataGrid id="dg_queryResult"
+                 width="60%"
+                 dataProvider="{queryTask.executeLastResult.attributes}"
+                 rowCount="{recordsPerPage}"
+                 visible="true">
+        <mx:columns>
+            <mx:DataGridColumn dataField="Name" headerText="Location"/>
+            <mx:DataGridColumn dataField="Magnitude"
+                               headerText="Magnitude"
+                               labelFunction="formatMagnitude"/>
+            <mx:DataGridColumn dataField="Date_"
+                               headerText="Date"
+                               labelFunction="formatDate"/>
+            <mx:DataGridColumn dataField="Num_Deaths" headerText="Deaths"/>
+        </mx:columns>
+    </mx:DataGrid>
+    <s:HGroup id="hb_pagenumberContainer" visible="false">
+        <s:Button id="btn_Previous"
+                  click="previous()"
+                  label="Previous"/>
+        <s:ButtonBar id="tbb_pageNumbers"
+                     width="100%"
+                     change="doPageQuery(event)"
+                     color="0x0050AA"
+                     fontWeight="bold"/>
+        <s:Button id="btn_Next"
+                  click="next()"
+                  label="Next"/>
+    </s:HGroup>
+    <s:HGroup>
+        <s:Label text="# Pages:"/>
+        <s:Label text="{numberOfPages}"/>
+    </s:HGroup>
+
+</s:Application>

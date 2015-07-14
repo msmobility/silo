@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the cut button of an Editor component.
+     @private
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             alpha.disabledStates="0.3"
+             minHeight="21"
+             minWidth="21">
+
+    <!-- host component -->
+    <fx:Metadata>
+        <![CDATA[ 
+        [HostComponent("spark.components.ToggleButton")]
+        ]]>
+    </fx:Metadata>
+
+    <fx:Script>
+        /* Define the skin elements that should not be colorized.
+         For toggle button, the graphics are colorized but the icon is not. */
+        static private const exclusions:Array = [ "img" ];
+
+        /**
+         * @copy spark.skins.SparkSkin#colorizeExclusions
+         */
+        override public function get colorizeExclusions():Array
+        {
+            return exclusions;
+        }
+
+        /**
+         * @private
+         */
+        override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+        {
+            var cr:Number = getStyle("cornerRadius");
+
+            if (cornerRadius != cr)
+            {
+                cornerRadius = cr;
+            }
+
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+        }
+
+        [Bindable]
+        public var cornerRadius:Number = 2;
+    </fx:Script>
+
+    <!-- states -->
+    <s:states>
+        <s:State name="up"/>
+        <s:State name="over" stateGroups="overStates"/>
+        <s:State name="down" stateGroups="downStates"/>
+        <s:State name="disabled" stateGroups="disabledStates"/>
+        <s:State name="upAndSelected" stateGroups="selectedStates, selectedUpStates"/>
+        <s:State name="overAndSelected" stateGroups="overStates, selectedStates"/>
+        <s:State name="downAndSelected" stateGroups="downStates, selectedStates"/>
+        <s:State name="disabledAndSelected" stateGroups="selectedUpStates, disabledStates, selectedStates"/>
+    </s:states>
+
+    <!-- layer 1: fill -->
+    <s:Rect left="1" right="1" top="1" bottom="1"
+            radiusX="{cornerRadius}">
+        <s:fill>
+            <s:LinearGradient rotation="90">
+                <s:GradientEntry color="0xFFFFFF"
+                                 color.downStates="0xCACACA"
+                                 color.overStates="0xCACACA"
+                                 color.upAndSelected="0xCACACA"/>
+                <s:GradientEntry color="0xDCDCDC"
+                                 color.downStates="0x8D8D8D"
+                                 color.overStates="0x8D8D8D"
+                                 color.upAndSelected="0x8D8D8D"/>
+            </s:LinearGradient>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 3: fill highlight -->
+    <s:Rect height="9"
+            left="1" right="1" top="1"
+            excludeFrom="downStates"
+            radiusX="{cornerRadius}">
+        <s:fill>
+            <s:SolidColor alpha="0.33"
+                          alpha.overStates="0.12"
+                          alpha.selectedUpStates="0.12"
+                          color="0xFFFFFF"/>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 4: highlight stroke (down state only) -->
+    <s:Rect width="1"
+            left="1" top="1" bottom="1"
+            includeIn="downStates, selectedUpStates, overAndSelected">
+        <s:fill>
+            <s:SolidColor alpha="0.4" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect width="1"
+            right="1" top="1" bottom="1"
+            includeIn="downStates, selectedUpStates, overAndSelected">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect height="1"
+            left="2" right="2" top="1"
+            includeIn="downStates, selectedUpStates, overAndSelected">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect height="1"
+            left="1" right="1" top="2"
+            includeIn="downStates, selectedUpStates, overAndSelected">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 5: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
+    <s:Rect width="38" height="24"
+            left="0" right="0" top="0" bottom="0"
+            radiusX="{cornerRadius}">
+        <s:stroke>
+            <s:SolidColorStroke color="0x131313"/>
+        </s:stroke>
+    </s:Rect>
+
+    <!-- layer 6: icon -->
+    <s:BitmapImage id="img"
+                   left="10" right="10" top="2" bottom="2"
+                   horizontalCenter="0"
+                   source="@Embed('../../../../assets/skins/EditCut16.png')"
+                   verticalCenter="0"/>
+
+</s:SparkSkin>

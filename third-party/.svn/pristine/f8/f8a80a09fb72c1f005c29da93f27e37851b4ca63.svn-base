@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Play with Polyline symbols">
+    <!--
+         This wizard sample allows you to explore symbolizing polylines interactively.
+
+         Polylines are graphics which have Geometry and Symbol.
+         They can be symbolized as either SimpleLineSymbol or CartographicLineSymbol.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            private function toHex(item:Number):String
+            {
+                var hex:String = item.toString(16);
+                return ("00000" + hex.toUpperCase()).substr(-6);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleLineSymbol id="mySymbol"
+                               width="{lineWidth.value}"
+                               alpha="{lineAlpha.value}"
+                               color="{lineColor.selectedColor}"
+                               style="{lineStyle.selectedItem}"/>
+        <esri:CartographicLineSymbol id="myCartoSymbol"
+                                     width="{cartoLineWidth.value}"
+                                     alpha="{cartoLineAlpha.value}"
+                                     cap="{cartoLineCap.selectedItem}"
+                                     color="{cartoLineColor.selectedColor}"
+                                     join="{cartoLineJoin.selectedItem}"
+                                     style="{cartoLineStyle.selectedItem}"/>
+    </fx:Declarations>
+
+    <esri:Map>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer"/>
+        <esri:GraphicsLayer>
+            <esri:Graphic symbol="{mySymbol}" toolTip="Change this polyline using the top Wizard on the right">
+                <esri:geometry>
+                    <esri:Polyline spatialReference="{new SpatialReference(102100)}">
+                        <fx:Array>
+                            <fx:Array>
+                                <esri:MapPoint id="Tokyo"
+                                               x="15558700" y="4259400"/>
+                                <esri:MapPoint id="Beijing"
+                                               x="12959100" y="4851401"/>
+                                <esri:MapPoint id="UlanBator"
+                                               x="11901900" y="6093100"/>
+                                <esri:MapPoint id="Malmo"
+                                               x="1447100" y="7477200"/>
+                                <esri:MapPoint id="SanFrancisco"
+                                               x="-13627100" y="4548900"/>
+                                <esri:MapPoint id="SantaBarbara"
+                                               x="-13330400" y="4086500"/>
+                            </fx:Array>
+                        </fx:Array>
+                    </esri:Polyline>
+                </esri:geometry>
+            </esri:Graphic>
+            <esri:Graphic symbol="{myCartoSymbol}" toolTip="Change this polyline using the bottom Wizard on the right">
+                <esri:geometry>
+                    <esri:Polyline spatialReference="{new SpatialReference(102100)}">
+                        <fx:Array>
+                            <fx:Array>
+                                <esri:MapPoint x="15558700" y="1770100"/>
+                                <esri:MapPoint x="12959100" y="2261100"/>
+                                <esri:MapPoint x="11901900" y="3238400"/>
+                                <esri:MapPoint x="1447100" y="4244300"/>
+                                <esri:MapPoint x="-13627000" y="2012200"/>
+                                <esri:MapPoint x="-13330400" y="1623400"/>
+                                <esri:MapPoint x="-8733100" y="-24400"/>
+                                <esri:MapPoint x="-7449500" y="1175400"/>
+                                <esri:MapPoint x="-6681300" y="-4460100"/>
+                            </fx:Array>
+                        </fx:Array>
+                    </esri:Polyline>
+                </esri:geometry>
+            </esri:Graphic>
+        </esri:GraphicsLayer>
+    </esri:Map>
+    <mx:Panel right="5" top="5"
+              horizontalAlign="right"
+              paddingBottom="0"
+              paddingTop="0"
+              title="Simple Line Properties">
+        <mx:Form alpha="0.8"
+                 backgroundColor="0xEEEEEE"
+                 paddingBottom="5"
+                 paddingTop="5">
+            <mx:FormItem label="Color">
+                <mx:ColorPicker id="lineColor" selectedColor="0x009966"/>
+            </mx:FormItem>
+            <mx:FormItem label="Width:">
+                <s:HSlider id="lineWidth"
+                           width="100"
+                           liveDragging="true"
+                           maximum="20"
+                           minimum="0"
+                           snapInterval="1"
+                           value="8"/>
+            </mx:FormItem>
+            <mx:FormItem label="Alpha:">
+                <s:HSlider id="lineAlpha"
+                           width="100"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           snapInterval="0.01"
+                           value="1"/>
+            </mx:FormItem>
+            <mx:FormItem label="Style:">
+                <s:DropDownList id="lineStyle"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="4">
+                    <s:ArrayList>
+                        <fx:String>dash</fx:String>
+                        <fx:String>dashdot</fx:String>
+                        <fx:String>dashdotdot</fx:String>
+                        <fx:String>dot</fx:String>
+                        <fx:String>solid</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+        </mx:Form>
+    </mx:Panel>
+    <mx:Panel right="5" top="160"
+              horizontalAlign="right"
+              paddingBottom="0"
+              paddingTop="0"
+              title="Cartographic Line Properties">
+        <mx:Form alpha="0.8"
+                 backgroundColor="0xEEEEEE"
+                 paddingBottom="5"
+                 paddingTop="5">
+            <mx:FormItem label="Color">
+                <mx:ColorPicker id="cartoLineColor" selectedColor="0x0066FF"/>
+            </mx:FormItem>
+            <mx:FormItem label="Width:">
+                <s:HSlider id="cartoLineWidth"
+                           width="100"
+                           liveDragging="true"
+                           maximum="20"
+                           minimum="0"
+                           snapInterval="1"
+                           value="8"/>
+            </mx:FormItem>
+            <mx:FormItem label="Alpha:">
+                <s:HSlider id="cartoLineAlpha"
+                           width="100"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           snapInterval="0.01"
+                           value="1"/>
+            </mx:FormItem>
+            <mx:FormItem label="Style:">
+                <s:DropDownList id="cartoLineStyle"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="4">
+                    <s:ArrayList>
+                        <fx:String>dash</fx:String>
+                        <fx:String>dashdot</fx:String>
+                        <fx:String>dashdotdot</fx:String>
+                        <fx:String>dot</fx:String>
+                        <fx:String>solid</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+            <mx:FormItem label="Cap:">
+                <s:DropDownList id="cartoLineCap"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="0">
+                    <s:ArrayList>
+                        <fx:String>butt</fx:String>
+                        <fx:String>round</fx:String>
+                        <fx:String>square</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+            <mx:FormItem label="Join:">
+                <s:DropDownList id="cartoLineJoin"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="1">
+                    <s:ArrayList>
+                        <fx:String>bevel</fx:String>
+                        <fx:String>miter</fx:String>
+                        <fx:String>round</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+        </mx:Form>
+    </mx:Panel>
+    <s:Panel width="90%" height="60"
+             bottom="70"
+             backgroundColor="#D3D1D1"
+             borderAlpha="0.8"
+             horizontalCenter="0"
+             maxWidth="600"
+             title="mxml for Simple Line symbol">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center"
+                                paddingBottom="0"
+                                paddingLeft="0"
+                                paddingRight="0"
+                                paddingTop="0"/>
+        </s:layout>
+        <mx:TextArea width="100%" height="100%"
+                     condenseWhite="true"
+                     paddingBottom="0"
+                     paddingLeft="0"
+                     paddingRight="0"
+                     paddingTop="0">
+            <mx:htmlText>
+                &amp;lt;esri:SimpleLineSymbol color=&quot;0x{toHex(lineColor.selectedColor)}&quot; width=&quot;{lineWidth.value}&quot; alpha=&quot;{lineAlpha.value}&quot; style=&quot;{lineStyle.selectedItem}&quot; /&amp;gt;
+            </mx:htmlText>
+        </mx:TextArea>
+    </s:Panel>
+    <s:Panel width="90%" height="60"
+             bottom="5"
+             backgroundColor="#D3D1D1"
+             borderAlpha="0.8"
+             horizontalCenter="0"
+             maxWidth="800"
+             title="mxml for Cartographic Line Symbol">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center"
+                                paddingBottom="0"
+                                paddingLeft="0"
+                                paddingRight="0"
+                                paddingTop="0"/>
+        </s:layout>
+        <mx:TextArea width="100%" height="100%"
+                     condenseWhite="true"
+                     paddingBottom="0"
+                     paddingLeft="0"
+                     paddingRight="0"
+                     paddingTop="0">
+            <mx:htmlText>
+                &amp;lt;esri:CartographicLineSymbol color=&quot;0x{toHex(cartoLineColor.selectedColor)}&quot; width=&quot;{cartoLineWidth.value}&quot; alpha=&quot;{cartoLineAlpha.value}&quot; style=&quot;{cartoLineStyle.selectedItem}&quot; cap=&quot;{cartoLineCap.selectedItem}&quot; join=&quot;{cartoLineJoin.selectedItem}&quot; /&amp;gt;
+            </mx:htmlText>
+        </mx:TextArea>
+    </s:Panel>
+</s:Application>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Play with Simple Marker symbols">
+    <!--
+         This wizard sample allows you to explore symbolizing points interactively.
+
+         Points (and multipoints) are graphics which have Geometry and Symbol.
+         Points (and multipoints) can be symbolized as either SimpleMarkerSymbol, PictureMarkerSymbol or TextSymbol.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import mx.core.UIComponent;
+            import mx.graphics.ImageSnapshot;
+            import mx.graphics.codec.PNGEncoder;
+
+            private var exportIconFileName:String;
+
+            private function toHex(item:Number):String
+            {
+                var hex:String = item.toString(16);
+                return ("00000" + hex.toUpperCase()).substr(-6);
+            }
+
+            private function onSwatchClick(event:Event):void
+            {
+                var swatch:UIComponent = mySymbol.createSwatch(size.value + outlineWidth.value, size.value + outlineWidth.value);
+
+                // otherwise the sides get cut off when we do ImageSnapshot.captureImage
+                swatch.left = swatch.right = swatch.top = swatch.bottom = 1;
+
+                swatchArea.removeAllElements();
+                swatchArea.addElement(swatch);
+
+                exportButton.enabled = true;
+                swatchButton.label = "Update Swatch";
+
+                exportIconFileName = "my_" + markerStyle.selectedItem + "_icon.png";
+            }
+
+            private function onExportClick(event:Event):void
+            {
+                var imageSnapshot:ImageSnapshot = ImageSnapshot.captureImage(swatchArea, 96, new PNGEncoder());
+                var fileReference:FileReference = new FileReference();
+                fileReference.save(imageSnapshot.data, exportIconFileName);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleMarkerSymbol id="mySymbol"
+                                 alpha="{fillAlpha.value}"
+                                 color="{fillColor.selectedColor}"
+                                 size="{size.value}"
+                                 style="{markerStyle.selectedItem}">
+            <esri:SimpleLineSymbol width="{outlineWidth.value}"
+                                   alpha="{lineAlpha.value}"
+                                   color="{lineColor.selectedColor}"
+                                   style="{lineStyle.selectedItem}"/>
+        </esri:SimpleMarkerSymbol>
+    </fx:Declarations>
+
+    <esri:Map>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer" symbol="{mySymbol}">
+            <esri:Graphic>
+                <esri:geometry>
+                    <esri:MapPoint x="1447153" y="7477225"/>
+                </esri:geometry>
+            </esri:Graphic>
+            <esri:Graphic>
+                <esri:geometry>
+                    <esri:MapPoint x="8107398" y="2151404"/>
+                </esri:geometry>
+            </esri:Graphic>
+            <esri:Graphic>
+                <esri:geometry>
+                    <esri:MapPoint x="3952955" y="4011359"/>
+                </esri:geometry>
+            </esri:Graphic>
+            <esri:Graphic>
+                <esri:geometry>
+                    <esri:MapPoint x="-14963565" y="8030603"/>
+                </esri:geometry>
+            </esri:Graphic>
+        </esri:GraphicsLayer>
+    </esri:Map>
+    <s:Panel right="5" top="5"
+             title="Simple Marker">
+        <s:layout>
+            <s:VerticalLayout horizontalAlign="center" paddingBottom="4"/>
+        </s:layout>
+        <mx:Form width="100%"
+                 paddingBottom="4"
+                 paddingTop="4">
+            <mx:FormItem label="Fill Color:">
+                <mx:ColorPicker id="fillColor" selectedColor="0xDDDD00"/>
+            </mx:FormItem>
+            <mx:FormItem label="Fill Size:">
+                <s:HSlider id="size"
+                           width="100"
+                           liveDragging="true"
+                           maximum="40"
+                           minimum="0"
+                           snapInterval="1.0"
+                           value="20"/>
+            </mx:FormItem>
+            <mx:FormItem label="Fill Alpha:">
+                <s:HSlider id="fillAlpha"
+                           width="100"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           snapInterval="0.01"
+                           value="0.5"/>
+            </mx:FormItem>
+            <mx:FormItem label="Style:">
+                <s:DropDownList id="markerStyle" selectedIndex="0">
+                    <s:ArrayList>
+                        <fx:String>circle</fx:String>
+                        <fx:String>cross</fx:String>
+                        <fx:String>diamond</fx:String>
+                        <fx:String>square</fx:String>
+                        <fx:String>triangle</fx:String>
+                        <fx:String>x</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+            <mx:HRule width="100%"/>
+            <mx:FormItem label="Outline Color">
+                <mx:ColorPicker id="lineColor" selectedColor="0xDD0000"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Width:">
+                <s:HSlider id="outlineWidth"
+                           width="100"
+                           liveDragging="true"
+                           maximum="10"
+                           minimum="0"
+                           snapInterval="1"
+                           value="2"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Alpha:">
+                <s:HSlider id="lineAlpha"
+                           width="100"
+                           liveDragging="true"
+                           maximum="1"
+                           minimum="0"
+                           snapInterval="0.01"
+                           value="1"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Style:">
+                <s:DropDownList id="lineStyle" selectedIndex="0">
+                    <s:ArrayList>
+                        <fx:String>solid</fx:String>
+                        <fx:String>dash</fx:String>
+                        <fx:String>dashdot</fx:String>
+                        <fx:String>dashdotdot</fx:String>
+                        <fx:String>dot</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+        </mx:Form>
+        <mx:HRule width="90%"/>
+        <s:Label fontStyle="italic" text="Optionally, create and export swatch:"/>
+        <s:Button id="swatchButton"
+                  click="onSwatchClick(event)"
+                  label="Create Swatch"/>
+        <s:Group id="swatchArea" minHeight="40"/>
+        <s:Button id="exportButton"
+                  click="onExportClick(event)"
+                  enabled="false"
+                  label="Export to PNG"/>
+    </s:Panel>
+    <s:Panel width="90%" height="95"
+             bottom="5"
+             backgroundColor="#D3D1D1"
+             borderAlpha="0.8"
+             horizontalCenter="0"
+             maxWidth="650"
+             title="Symbol mxml">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center"
+                                paddingBottom="0"
+                                paddingLeft="0"
+                                paddingRight="0"
+                                paddingTop="0"/>
+        </s:layout>
+        <mx:TextArea width="100%" height="55"
+                     condenseWhite="false"
+                     paddingBottom="0"
+                     paddingLeft="0"
+                     paddingRight="0"
+                     paddingTop="0">
+            <mx:htmlText>&amp;lt;esri:SimpleMarkerSymbol id=&quot;sms1&quot; color=&quot;0x{toHex(fillColor.selectedColor)}&quot; size=&quot;{size.value}&quot; alpha=&quot;{fillAlpha.value}&quot; style=&quot;{markerStyle.selectedItem}&quot;&amp;gt;
+    &amp;lt;esri:SimpleLineSymbol color=&quot;0x{toHex(lineColor.selectedColor)}&quot; width=&quot;{outlineWidth.value}&quot; alpha=&quot;{lineAlpha.value}&quot; style=&quot;{lineStyle.selectedItem}&quot; /&amp;gt;
+&amp;lt;/esri:SimpleMarkerSymbol&amp;gt;</mx:htmlText>
+        </mx:TextArea>
+    </s:Panel>
+
+</s:Application>

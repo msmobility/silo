@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:skins="com.esri.ags.samples.skins.*"
+        alpha="0.3"
+        rollOutEffect="{fade10}"
+        rollOverEffect="{fade01}">
+
+    <fx:Metadata>
+        [HostComponent("com.esri.ags.components.Navigation")]
+    </fx:Metadata>
+
+    <fx:Declarations>
+        <s:Fade id="fade01"
+                alphaFrom="0.3"
+                alphaTo="1.0"
+                duration="500"/>
+        <s:Fade id="fade10"
+                alphaFrom="1.0"
+                alphaTo="0.3"
+                duration="500"/>
+    </fx:Declarations>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="disabled"/>
+        <s:State name="normalWithSlider"/>
+        <s:State name="disabledWithSlider"/>
+    </s:states>
+
+    <s:Rect left="0" right="0" top="0" bottom="0"
+            radiusX="10"
+            radiusY="10">
+        <s:stroke>
+            <s:SolidColorStroke color="0x000000" weight="1.0"/>
+        </s:stroke>
+        <s:fill>
+            <s:SolidColor alpha="0.5" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+
+    <s:VGroup gap="7"
+              horizontalAlign="center"
+              minHeight="52"
+              paddingBottom="5"
+              paddingLeft="3"
+              paddingRight="4"
+              paddingTop="4">
+
+        <s:Button id="zoomOutButton"
+                  enabled.disabled="false"
+                  enabled.disabledWithSlider="false"
+                  skinClass="com.esri.ags.samples.skins.NavigationGlobeSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'zoomOutTooltip')}"/>
+
+        <skins:ReversedSlider id="slider"
+                              height="150"
+                              enabled.disabled="false"
+                              enabled.disabledWithSlider="false"
+                              enabled.normalWithSlider="true"
+                              includeIn="normalWithSlider,disabledWithSlider"
+                              liveDragging="false"
+                              showDataTip="true"
+                              skinClass="com.esri.ags.skins.NavigationVSliderSkin"
+                              snapInterval="1"
+                              value="{hostComponent.map.level}"/>
+
+        <s:Button id="zoomInButton"
+                  enabled.disabled="false"
+                  enabled.disabledWithSlider="false"
+                  skinClass="com.esri.ags.samples.skins.NavigationHouseSkin"
+                  toolTip="{resourceManager.getString('ESRIMessages', 'zoomInTooltip')}"/>
+
+    </s:VGroup>
+
+</s:Skin>

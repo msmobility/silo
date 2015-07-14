@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Play with Polygon symbols">
+    <!--
+         This wizard sample allows you to explore symbolizing polygons interactively.
+
+         Polygons are graphics which have Geometry and Symbol.
+         They can be symbolized as either SimpleFillSymbol or PictureFillSymbol.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            private function toHex(item:Number):String
+            {
+                var hex:String = item.toString(16);
+                return ("00000" + hex.toUpperCase()).substr(-6);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleFillSymbol id="mySymbol"
+                               alpha="{fillAlpha.value}"
+                               color="{fillColor.selectedColor}"
+                               style="{fillStyle.selectedItem}">
+            <esri:SimpleLineSymbol width="{outlineWidth.value}"
+                                   alpha="{outlineAlpha.value}"
+                                   color="{outlineColor.selectedColor}"
+                                   style="{outlineStyle.selectedItem}"/>
+        </esri:SimpleFillSymbol>
+    </fx:Declarations>
+
+    <esri:Map>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer"/>
+        <esri:GraphicsLayer symbol="{mySymbol}" toolTip="Change this polygon using the wizard on the right">
+            <esri:Graphic>
+                <esri:Polygon spatialReference="{new SpatialReference(102100)}">
+                    <fx:Array>
+                        <fx:Array>
+                            <esri:MapPoint id="Malmo"
+                                           x="1447100" y="7477200"/>
+                            <esri:MapPoint id="CapeTown"
+                                           x="2050500" y="-4018100"/>
+                            <esri:MapPoint id="Rio"
+                                           x="-4812300" y="-2619900"/>
+                        </fx:Array>
+                    </fx:Array>
+                </esri:Polygon>
+            </esri:Graphic>
+            <esri:Graphic>
+                <esri:geometry>
+                    <esri:Polygon spatialReference="{new SpatialReference(102100)}">
+                        <fx:Array>
+                            <fx:Array>
+                                <esri:MapPoint id="NY"
+                                               x="-8237600" y="5012300"/>
+                                <esri:MapPoint id="MI"
+                                               x="-8905500" y="2999100"/>
+                                <esri:MapPoint id="R"
+                                               x="-13024300" y="4028800"/>
+                            </fx:Array>
+                        </fx:Array>
+                    </esri:Polygon>
+                </esri:geometry>
+            </esri:Graphic>
+        </esri:GraphicsLayer>
+    </esri:Map>
+    <s:Panel right="5" top="5"
+             title="Simple Fill Properties">
+        <mx:Form alpha="0.8"
+                 backgroundColor="0xEEEEEE"
+                 paddingBottom="5"
+                 paddingTop="5">
+            <mx:FormItem label="Color">
+                <mx:ColorPicker id="fillColor" selectedColor="0x00FF66"/>
+            </mx:FormItem>
+            <mx:FormItem label="Alpha:">
+                <mx:HSlider id="fillAlpha"
+                            width="100"
+                            liveDragging="true"
+                            maximum="1.00"
+                            minimum="0.00"
+                            snapInterval="0.01"
+                            value="0.5"/>
+            </mx:FormItem>
+            <mx:FormItem label="Style:">
+                <s:DropDownList id="fillStyle"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="0">
+                    <s:ArrayList>
+                        <fx:String>solid</fx:String>
+                        <fx:String>cross</fx:String>
+                        <fx:String>diagonalcross</fx:String>
+                        <fx:String>horizontal</fx:String>
+                        <fx:String>vertical</fx:String>
+                        <fx:String>backwarddiagonal</fx:String>
+                        <fx:String>forwarddiagonal</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Color">
+                <mx:ColorPicker id="outlineColor" selectedColor="0x006600"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Width:">
+                <mx:HSlider id="outlineWidth"
+                            width="100"
+                            liveDragging="true"
+                            maximum="20"
+                            minimum="0"
+                            snapInterval="1"
+                            value="4"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Alpha:">
+                <mx:HSlider id="outlineAlpha"
+                            width="100"
+                            liveDragging="true"
+                            maximum="1.00"
+                            minimum="0.00"
+                            snapInterval="0.01"
+                            value="1"/>
+            </mx:FormItem>
+            <mx:FormItem label="Outline Style:">
+                <s:DropDownList id="outlineStyle"
+                                top="35"
+                                cornerRadius="0"
+                                fontWeight="normal"
+                                horizontalCenter="0"
+                                selectedIndex="4">
+                    <s:ArrayList>
+                        <fx:String>dash</fx:String>
+                        <fx:String>dashdot</fx:String>
+                        <fx:String>dashdotdot</fx:String>
+                        <fx:String>dot</fx:String>
+                        <fx:String>solid</fx:String>
+                    </s:ArrayList>
+                </s:DropDownList>
+            </mx:FormItem>
+        </mx:Form>
+    </s:Panel>
+    <s:Panel width="90%"
+             bottom="5"
+             backgroundColor="#D3D1D1"
+             borderAlpha="0.7"
+             horizontalCenter="0"
+             maxWidth="600"
+             title="Symbol mxml">
+        <s:layout>
+            <s:HorizontalLayout/>
+        </s:layout>
+        <mx:TextArea width="100%" height="60"
+                     paddingBottom="0"
+                     paddingLeft="0"
+                     paddingRight="0"
+                     paddingTop="0">
+            <mx:htmlText>&amp;lt;esri:SimpleFillSymbol color=&quot;0x{toHex(fillColor.selectedColor)}&quot; alpha=&quot;{fillAlpha.value}&quot; style=&quot;{fillStyle.selectedItem}&quot;&amp;gt;
+    &amp;lt;esri:SimpleLineSymbol color=&quot;0x{toHex(outlineColor.selectedColor)}&quot; width=&quot;{outlineWidth.value}&quot; alpha=&quot;{outlineAlpha.value}&quot; style=&quot;{outlineStyle.selectedItem}&quot; /&amp;gt;
+&amp;lt;/esri:SimpleFillSymbol&amp;gt;</mx:htmlText>
+        </mx:TextArea>
+    </s:Panel>
+
+</s:Application>

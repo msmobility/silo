@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Toggle between Map Services">
+    <!--
+         This sample shows one way of allowing users to change between different basemaps.
+         It also ensures that the levels of detail (LOD) are updated based on which basemap is selected.
+         If all base maps have the same LODs, you wouldn't need the layerShowHandler function.
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.layers.TiledMapServiceLayer;
+
+            import mx.events.FlexEvent;
+
+            private function layerShowHandler(event:FlexEvent):void
+            {
+                // update the LODs/zoomslider to use/show the levels for the selected base map
+                var tiledLayer:TiledMapServiceLayer = event.target as TiledMapServiceLayer;
+                myMap.lods = tiledLayer.tileInfo.lods;
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map id="myMap"
+              level="4"
+              load="myMap.centerAt(new MapPoint(-11713000, 4822000))">
+        <esri:ArcGISTiledMapServiceLayer show="layerShowHandler(event)"
+                                         url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"
+                                         visible="{bb.selectedIndex == 0}"/>
+        <esri:ArcGISTiledMapServiceLayer show="layerShowHandler(event)"
+                                         url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer"
+                                         visible="{bb.selectedIndex == 1}"/>
+        <esri:ArcGISTiledMapServiceLayer show="layerShowHandler(event)"
+                                         url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
+                                         visible="{bb.selectedIndex == 2}"/>
+    </esri:Map>
+    <s:ButtonBar id="bb"
+                 right="5" top="5"
+                 requireSelection="true">
+        <s:dataProvider>
+            <s:ArrayList>
+                <fx:String>Streets</fx:String>
+                <fx:String>U.S. Topo</fx:String>
+                <fx:String>Imagery</fx:String>
+            </s:ArrayList>
+        </s:dataProvider>
+    </s:ButtonBar>
+</s:Application>

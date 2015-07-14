@@ -1,0 +1,14 @@
+dependsOn(':util')
+
+jarBaseName = 'sawdust-datatable'
+version = '1.0'
+specificationTitle = 'Sawdust Datatable Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.tabledata'
+implementationVendor = 'Parsons Brinckerhoff'
+baseTestClass = 'com.pb.sawdust.tabledata.TableDataPackageTests'
+baseDependencies = ['../../third_party/javadbf/0.4/javadbf-0.4.0.jar',
+                    '../../third_party/jcip-annotations/jcip-annotations.jar']
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+
+apply from: '../../core/build/base_build.gradle'

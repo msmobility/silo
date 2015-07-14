@@ -1,0 +1,12 @@
+dependsOn(':util')
+dependsOn(':datatable')
+dependsOn(':tensor')
+
+jarBaseName = 'sawdust-transcad'
+version = '1.0'
+specificationTitle = 'Sawdust TransCAD Integration Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.model.integration.transcad'
+implementationVendor = 'Parsons Brinckerhoff'
+
+apply from: '../../core/build/base_build.gradle'

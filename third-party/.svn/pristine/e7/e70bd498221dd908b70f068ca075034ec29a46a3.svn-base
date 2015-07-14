@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Population for any area">
+    <!--
+         This sample shows how to query a geoprocessing task using a user-drawn geometry.
+         For points and lines (but not areas), the geometries are also buffered before
+         the query.
+
+         Note 1: This sample also shows how to change the scale bar to only show
+         km and meters (no feet and miles) by setting the skin-class of the
+         scale bar to one of the provided alternate skins.
+
+         Note 2: This sample also shows the use of specific zoom in/out and pan buttons.
+         Note that this functionality is already included with the map
+         so most applications wouldn't need these buttons.
+
+         You can zoom in/out with plus and minus sign as well as mouse wheel.
+         You can double-click to recenter and zoom in.
+         You can press Alt when double-clicking to zoom out.
+         You can press Shift and click and drag to draw a rectangle around an area and zoom in.
+         You can press Alt and Shift when drawing the rectangle (rubberbandZoomEnabled) to zoom out.
+         Pan "just works" with the mouse and arrow keys.
+
+         http://help.arcgis.com/en/webapi/flex/apiref/index.html?com/esri/ags/Map.html&com/esri/ags/class-list.html
+    -->
+
+    <s:layout>
+        <s:VerticalLayout gap="10"
+                          paddingBottom="20"
+                          paddingLeft="20"
+                          paddingRight="20"
+                          paddingTop="20"/>
+    </s:layout>
+
+    <fx:Style>
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|ScaleBar
+        {
+            skin-class: ClassReference("com.esri.ags.skins.ScaleBarMetricSkin");
+        }
+    </fx:Style>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.SpatialReference;
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.events.GeometryServiceEvent;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.geometry.Polygon;
+            import com.esri.ags.layers.GraphicsLayer;
+            import com.esri.ags.tasks.supportClasses.BufferParameters;
+            import com.esri.ags.tools.DrawTool;
+            import com.esri.ags.tools.NavigationTool;
+            import com.esri.ags.utils.GeometryUtil;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            import mx.controls.Alert;
+            import mx.events.ItemClickEvent;
+            import mx.rpc.AsyncResponder;
+            import mx.rpc.AsyncToken;
+            import mx.rpc.Fault;
+            import mx.rpc.events.FaultEvent;
+
+            [Bindable]
+            private var mapCoordX:Number = 0;
+
+            [Bindable]
+            private var mapCoordY:Number = 0;
+
+            private function onMouseMove(event:MouseEvent):void
+            {
+                var mapPoint:MapPoint = myMap.toMapFromStage(event.stageX, event.stageY);
+                mapPoint = WebMercatorUtil.webMercatorToGeographic(mapPoint) as MapPoint;
+                mapCoordX = mapPoint.x;
+                mapCoordY = mapPoint.y;
+            }
+
+            private function itemClickHandlerNavigation(event:ItemClickEvent):void
+            {
+                tbb.selectedIndex = -1;
+                drawTool.deactivate();
+                switch (event.label)
+                {
+                    case "Zoom In":
+                    {
+                        navTool.activate(NavigationTool.ZOOM_IN);
+                        break;
+                    }
+                    case "Zoom Out":
+                    {
+                        navTool.activate(NavigationTool.ZOOM_OUT);
+                        break;
+                    }
+                    case "Pan":
+                    {
+                        navTool.activate(NavigationTool.PAN);
+                        break;
+                    }
+                }
+            }
+
+            private function itemClickHandler(event:ItemClickEvent):void
+            {
+                tbb2.selectedIndex = -1;
+                navTool.deactivate();
+                switch (event.index)
+                {
+                    case 0:
+                    {
+                        drawTool.activate(DrawTool.MAPPOINT);
+                        break;
+                    }
+                    case 1:
+                    {
+                        drawTool.activate(DrawTool.POLYLINE);
+                        break;
+                    }
+                    case 2:
+                    {
+                        drawTool.activate(DrawTool.FREEHAND_POLYLINE);
+                        break;
+                    }
+                    case 3:
+                    {
+                        drawTool.activate(DrawTool.POLYGON);
+                        break;
+                    }
+                    case 4:
+                    {
+                        drawTool.activate(DrawTool.FREEHAND_POLYGON);
+                        break;
+                    }
+                }
+            }
+
+            /* Required with a DrawEnd event.*/
+            private function onDrawEnd(event:DrawEvent):void
+            {
+                var graphic:Graphic = event.graphic;
+
+                // adding graphic to the graphics layer
+                myGraphicsLayer.add(graphic);
+
+                switch (graphic.geometry.type)
+                {
+                    case Geometry.MAPPOINT:
+                    {
+                        //bufferFeature();
+                        bufferGeometry(graphic.geometry);
+                        break;
+                    }
+                    case Geometry.POLYLINE:
+                    {
+                        //bufferFeature();
+                        GeometryUtil.normalizeCentralMeridian([ graphic.geometry ], myGeometryService, new AsyncResponder(getNormalizedGeometryFunction, faultHandler));
+                        function getNormalizedGeometryFunction(item:Object, token:Object = null):void
+                        {
+                            bufferGeometry((item as Array)[0] as Geometry);
+                        }
+                        function faultHandler(fault:Fault, asyncToken:AsyncToken):void
+                        {
+//                            for each (var responder:IResponder in asyncToken.responders)
+//                            {
+//                                responder.fault(fault);
+//                            }
+//                            dispatchEvent(new FaultEvent(FaultEvent.FAULT, false, false, fault));
+                        }
+//                        bufferGeometry(graphic.geometry);
+                        break;
+                    }
+                    case Geometry.POLYGON:
+                    {
+                        var geometryPolygon:Polygon = graphic.geometry as Polygon;
+                        myMap.centerAt(geometryPolygon.extent.center);
+                        doGP(geometryPolygon);
+                        break;
+                    }
+                }
+            }
+
+            private function bufferGeometry(geometry:Geometry):void
+            {
+                var bufferParameters:BufferParameters = new BufferParameters();
+                // Note: As of version 2.0, the GeometryService input is geometries (instead of graphics).
+                bufferParameters.geometries = [ geometry ];
+                bufferParameters.distances = [ Number(bufferDistance.text)];
+                // Note: As of version 2.0, the buffer constants have been moved to GeometryService.
+                bufferParameters.unit = GeometryService.UNIT_METER;
+                bufferParameters.outSpatialReference = myMap.spatialReference;
+
+                myGeometryService.addEventListener(GeometryServiceEvent.BUFFER_COMPLETE, bufferCompleteHandler1);
+                myGeometryService.buffer(bufferParameters);
+
+                function bufferCompleteHandler1(event:GeometryServiceEvent):void
+                {
+                    for each (var polygon:Polygon in event.result)
+                    {
+                        var graphic:Graphic = new Graphic(polygon);
+                        graphic.symbol = sfs;
+                        graphic.toolTip = "Buffered Stuff";
+                        myGraphicsLayer.add(graphic);
+                        doGP(graphic.geometry);
+                    }
+                    myGeometryService.removeEventListener(GeometryServiceEvent.BUFFER_COMPLETE, bufferCompleteHandler1);
+                }
+            }
+
+            private function doGP(thisGeometry:Geometry):void
+            {
+                this.cursorManager.setBusyCursor();
+                var inputPolyFS:FeatureSet = new FeatureSet();
+                inputPolyFS.features = [{ geometry: thisGeometry }];
+                var params:Object = { "inputPoly": inputPolyFS };
+                gp.execute(params);
+                // center on buffered feature
+                var geometryPolygon:Polygon = thisGeometry as Polygon;
+                myMap.centerAt(geometryPolygon.extent.center);
+            }
+
+            private function onGeomFault(fe:FaultEvent):void
+            {
+                this.cursorManager.removeBusyCursor();
+                if (fe.type == "fault" && fe.fault.name == "Error" && fe.fault.faultString == "Error Executing Task")
+                {
+                    Alert.show("Oops - no results.  Maybe try a smaller number.");
+                }
+                else
+                {
+                    Alert.show("Unexpected fault:\n" + fe.toString());
+                }
+            }
+
+            private function onGPFault(fe:FaultEvent):void
+            {
+                this.cursorManager.removeBusyCursor();
+                if (fe.type == "fault" && fe.fault.name == "Error" && fe.fault.faultString == "Error Executing Task")
+                {
+                    Alert.show("Oops - no results.  Maybe try a smaller number.");
+                }
+                else
+                {
+                    Alert.show("Unexpected fault:\n" + fe.toString());
+                }
+            }
+
+            private function gpResult(event:GeoprocessorEvent):void
+            {
+                this.cursorManager.removeBusyCursor();
+                // Note: As of version 2.0, the executeResult property name changed from 'parameterValues' to 'results'
+                var pop:Number = event.executeResult.results[0].value.features[0].attributes.SUM;
+                if (pop > 0)
+                {
+                    Alert.show("There are about " + myNumberFormatter.format(pop) + " people in this area.");
+                }
+                else
+                {
+                    Alert.show("Nobody lives here...");
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <mx:NumberFormatter id="myNumberFormatter"
+                            precision="0"
+                            useThousandsSeparator="true"/>
+
+        <!-- Symbol for Polyline and FreeHand_Polyline -->
+        <esri:SimpleLineSymbol id="sls"
+                               width="1"
+                               alpha="1"
+                               color="0xFF0000"
+                               style="dash"/>
+
+        <!-- Symbol for Point -->
+        <esri:SimpleMarkerSymbol id="sms"
+                                 color="0xFF0000"
+                                 size="10"
+                                 style="square">
+            <esri:SimpleLineSymbol width="2" color="0x00FF00"/>
+        </esri:SimpleMarkerSymbol>
+
+        <!-- Symbol for Polygon -->
+        <esri:SimpleFillSymbol id="sfs" alpha="0.8">
+            <esri:SimpleLineSymbol width="4"
+                                   alpha="1"
+                                   color="#FF0000"
+                                   style="solid"/>
+        </esri:SimpleFillSymbol>
+
+        <esri:DrawTool id="drawTool"
+                       drawEnd="onDrawEnd(event)"
+                       fillSymbol="{sfs}"
+                       lineSymbol="{sls}"
+                       map="{myMap}"
+                       markerSymbol="{sms}"/>
+        <esri:NavigationTool id="navTool" map="{myMap}"/>
+        <esri:GeometryService id="myGeometryService"
+                              fault="onGeomFault(event)"
+                              url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+        <esri:Geoprocessor id="gp"
+                           executeComplete="gpResult(event)"
+                           fault="onGPFault(event)"
+                           outSpatialReference="{myMap.spatialReference}"
+                           processSpatialReference="{myMap.spatialReference}"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Population_World/GPServer/PopulationSummary"
+                           useAMF="false"/>
+    </fx:Declarations>
+
+    <mx:ControlBar width="100%" horizontalAlign="center">
+        <s:BorderContainer width="420" height="80"
+                           borderStyle="solid">
+            <s:layout>
+                <s:VerticalLayout horizontalAlign="center"/>
+            </s:layout>
+            <mx:ToggleButtonBar id="tbb"
+                                creationComplete="tbb.selectedIndex = -1"
+                                itemClick="itemClickHandler(event)"
+                                toggleOnClick="true"
+                                valueCommit="if (tbb.selectedIndex == -1) { drawTool.deactivate() }">
+                <mx:dataProvider>
+                    <fx:Object id="p0" icon="@Embed(source='/assets/measure-point.png')"/>
+                    <fx:Object id="p1" icon="@Embed(source='/assets/measure-line.png')"/>
+                    <fx:Object id="p2"
+                               icon="@Embed(source='/assets/measure-line.png')"
+                               label="FreeHand"/>
+                    <fx:Object id="p3" icon="@Embed(source='/assets/measure-poly.png')"/>
+                    <fx:Object id="p4"
+                               icon="@Embed(source='/assets/measure-poly.png')"
+                               label="FreeHand"/>
+                </mx:dataProvider>
+            </mx:ToggleButtonBar>
+            <mx:ControlBar width="100%">
+                <s:Label text="Buffer distance (points &amp; lines):"/>
+                <mx:TextInput id="bufferDistance"
+                              width="45"
+                              maxChars="4"
+                              text="3000"
+                              textAlign="right"/>
+                <s:Label text=" meters."/>
+            </mx:ControlBar>
+        </s:BorderContainer>
+        <mx:ControlBar horizontalGap="0"
+                       paddingBottom="0"
+                       paddingTop="0">
+            <mx:Button click="navTool.zoomToPrevExtent()"
+                       disabledIcon="@Embed('/assets/backward_disabled.png')"
+                       downIcon="@Embed('/assets/backward.png')"
+                       enabled="{!navTool.isFirstExtent}"
+                       overIcon="@Embed('/assets/backward.png')"
+                       upIcon="@Embed('/assets/backward.png')"/>
+            <!-- disabledSkin="@Embed(source='/assets/forward_disabled.png')" -->
+            <mx:Button click="navTool.zoomToNextExtent()"
+                       disabledIcon="@Embed('/assets/forward_disabled.png')"
+                       downIcon="@Embed('/assets/forward.png')"
+                       enabled="{!navTool.isLastExtent}"
+                       overIcon="@Embed('/assets/forward.png')"
+                       upIcon="@Embed('/assets/forward.png')"/>
+        </mx:ControlBar>
+        <s:Button click="myMap.zoomToInitialExtent()" label="Initial Extent"/>
+    </mx:ControlBar>
+    <esri:Map id="myMap"
+              mouseMove="onMouseMove(event)"
+              wrapAround180="true">
+        <esri:extent>
+            <esri:WebMercatorExtent minlon="12.6" minlat="55.3" maxlon="13.1" maxlat="55.7"/>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer"/>
+    </esri:Map>
+    <s:BorderContainer width="100%" height="30"
+                       borderStyle="solid">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+        </s:layout>
+        <s:Label paddingBottom="0" text="Mouse location (latlong) {mapCoordX.toFixed(4)},{mapCoordY.toFixed(4)}"/>
+        <mx:ToggleButtonBar id="tbb2"
+                            creationComplete="tbb2.selectedIndex = -1"
+                            itemClick="itemClickHandlerNavigation(event)"
+                            toggleOnClick="true"
+                            valueCommit="if (tbb2.selectedIndex == -1) { navTool.deactivate() }">
+            <mx:dataProvider>
+                <fx:Array>
+                    <fx:String>Zoom In</fx:String>
+                    <fx:String>Zoom Out</fx:String>
+                    <fx:String>Pan</fx:String>
+                </fx:Array>
+            </mx:dataProvider>
+        </mx:ToggleButtonBar>
+    </s:BorderContainer>
+</s:Application>

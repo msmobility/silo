@@ -1,0 +1,15 @@
+package model
+{
+
+public final class WebMapObject
+{
+    public var id:String;
+
+    public var title:String;
+
+    public var thumbnail:String;
+
+    public var snippet:String;
+}
+
+}

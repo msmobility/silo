@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Turning the zoom slider horizontal">
+    <!--
+         @@includeFiles com/esri/ags/samples/skins/NavigationHorizontalSkin.mxml
+
+         Using a custom Navigation skin to create a horizontal zoom slider
+    -->
+
+    <fx:Style>
+        @namespace s "library://ns.adobe.com/flex/spark";
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|Navigation
+        {
+            skinClass: ClassReference("com.esri.ags.samples.skins.NavigationHorizontalSkin");
+            tickSpacing: 6;
+            left: NaN;
+            top: NaN;
+            bottom: 20;
+            horizontalCenter: 0;
+        }
+    </fx:Style>
+
+    <esri:Map level="3" openHandCursorVisible="false">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+    </esri:Map>
+
+</s:Application>

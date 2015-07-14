@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$MAIN_REPOSITORY$/projects/aquavis/aquavis.iml" filepath="$MAIN_REPOSITORY$/projects/aquavis/aquavis.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/calculator_tensor/calculator_tensor.iml" filepath="$MAIN_REPOSITORY$/core/calculator_tensor/calculator_tensor.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/datatable/datatable.iml" filepath="$MAIN_REPOSITORY$/core/datatable/datatable.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/integration/datatable_sql/datatable_sql.iml" filepath="$MAIN_REPOSITORY$/integration/datatable_sql/datatable_sql.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/derby/10.8/derby-10.8.iml" filepath="$MAIN_REPOSITORY$/third_party/derby/10.8/derby-10.8.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/integration/excel/excel.iml" filepath="$MAIN_REPOSITORY$/integration/excel/excel.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/h2/1.3/h2-1.3.iml" filepath="$MAIN_REPOSITORY$/third_party/h2/1.3/h2-1.3.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/hsqldb/2.2/hsqldb-2.2.iml" filepath="$MAIN_REPOSITORY$/third_party/hsqldb/2.2/hsqldb-2.2.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/javadbf/0.4/javadbf-0.4.iml" filepath="$MAIN_REPOSITORY$/third_party/javadbf/0.4/javadbf-0.4.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jcip-annotations/jcip-annotations.iml" filepath="$MAIN_REPOSITORY$/third_party/jcip-annotations/jcip-annotations.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slf4j/1.6/jcl-over-slf4j-1.6.iml" filepath="$MAIN_REPOSITORY$/third_party/slf4j/1.6/jcl-over-slf4j-1.6.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jtds/1.3/jtds-1.3.iml" filepath="$MAIN_REPOSITORY$/third_party/jtds/1.3/jtds-1.3.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/junit/4.8/junit-4.8.iml" filepath="$MAIN_REPOSITORY$/third_party/junit/4.8/junit-4.8.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jxl/2.6.10/jxl-2.6.10.iml" filepath="$MAIN_REPOSITORY$/third_party/jxl/2.6.10/jxl-2.6.10.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slf4j/1.6/log4j-over-slf4j-1.6.iml" filepath="$MAIN_REPOSITORY$/third_party/slf4j/1.6/log4j-over-slf4j-1.6.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/logback/0.9/logback-0.9.iml" filepath="$MAIN_REPOSITORY$/third_party/logback/0.9/logback-0.9.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/poi/3.7/poi-3.7.iml" filepath="$MAIN_REPOSITORY$/third_party/poi/3.7/poi-3.7.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/property/property.iml" filepath="$MAIN_REPOSITORY$/core/property/property.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/projects/sandag/sandag.iml" filepath="$MAIN_REPOSITORY$/projects/sandag/sandag.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slf4j/1.6/slf4j-1.6.iml" filepath="$MAIN_REPOSITORY$/third_party/slf4j/1.6/slf4j-1.6.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/sqlite-jdbc/3.7/sqlite-jdbc-3.7.iml" filepath="$MAIN_REPOSITORY$/third_party/sqlite-jdbc/3.7/sqlite-jdbc-3.7.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/tensor/tensor.iml" filepath="$MAIN_REPOSITORY$/core/tensor/tensor.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/util/util.iml" filepath="$MAIN_REPOSITORY$/core/util/util.iml" />
+    </modules>
+  </component>
+</project>
+

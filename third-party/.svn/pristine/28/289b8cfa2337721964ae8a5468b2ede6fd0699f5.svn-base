@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="MapClick - click map to get current location">
+    <!--
+         Problem:
+         You want to capture a "click" on the map, but not a pan or other mouse navigation actions.
+         Solution:
+         Use the mapClick property (new in version 1.1 of the ArcGIS API for Flex).
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            private function onMapClick(event:MapMouseEvent):void
+            {
+                var latlong:MapPoint = WebMercatorUtil.webMercatorToGeographic(event.mapPoint) as MapPoint;
+                myMap.infoWindow.label = "You clicked at "
+                    + event.mapPoint.x.toFixed(1) + " / " + event.mapPoint.y.toFixed(1)
+                    + "\nLat/Long is: " + latlong.y.toFixed(6)
+                    + " / " + latlong.x.toFixed(6);
+                myMap.infoWindow.show(event.mapPoint); // "Show the click"
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map id="myMap"
+              mapClick="onMapClick(event)"
+              scale="50000000">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+    </esri:Map>
+</s:Application>

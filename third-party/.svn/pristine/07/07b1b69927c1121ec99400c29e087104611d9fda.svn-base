@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010-2011 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the AttachmentInspector component.
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:supportClasses="com.esri.ags.skins.supportClasses.*">
+
+    <!-- host component -->
+    <fx:Metadata>
+        /**
+         * A strongly typed property that references the component to which this skin is applied.
+         */
+        [HostComponent("com.esri.ags.components.AttachmentInspector")]
+    </fx:Metadata>
+
+    <fx:Declarations>
+        <!--- @private -->
+        <s:Animate id="animate" target="{attachmentLayout}">
+            <!--- @private -->
+            <s:SimpleMotionPath id="simpleMotionPath" property="horizontalScrollPosition"/>
+        </s:Animate>
+
+        <!--- @private -->
+        <mx:NumberFormatter id="numberFormatter"
+                            precision="2"
+                            rounding="nearest"/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.components.supportClasses.AttachmentRemoveEvent;
+            import com.esri.ags.layers.supportClasses.AttachmentInfo;
+            import com.esri.ags.skins.supportClasses.AttachmentMouseEvent;
+            import com.esri.ags.skins.supportClasses.AttachmentRenderer;
+
+            import spark.components.DataGroup;
+            import spark.components.HScrollBar;
+            import spark.events.IndexChangeEvent;
+
+            [Bindable]
+            [Embed(source="../../../../assets/skins/loader.swf")]
+            private var loader:Class;
+
+            private function attachmentInfoList_caretChangeHandler(event:IndexChangeEvent):void
+            {
+                if (event.newIndex != -1) // don't animate if a selected item is unselected
+                {
+                    const scrollPoint:Point = attachmentInfoList.layout.getScrollPositionDeltaToElement(event.newIndex);
+
+                    const duration:Number = (Math.max(scrollPoint.x, attachmentInfoList.layout.target.horizontalScrollPosition) - Math.min(scrollPoint.x, attachmentInfoList.layout.target.horizontalScrollPosition)) * 4;
+
+                    simpleMotionPath.valueFrom = attachmentInfoList.layout.target.horizontalScrollPosition;
+                    simpleMotionPath.valueTo = scrollPoint.x;
+
+                    animate.duration = duration;
+                    animate.play();
+
+                    event.target.invalidateDisplayList();
+                }
+            }
+
+            private function attachmentInfoList_keyUpHandler(event:KeyboardEvent):void
+            {
+                if (event.eventPhase === EventPhase.AT_TARGET && (event.keyCode === 46 || event.keyCode === 8) && hostComponent.deleteEnabled && hostComponent.featureLayer.isEditable) // Delete
+                {
+                    const attachmentInfo:AttachmentInfo = attachmentInfoList.selectedItem as AttachmentInfo;
+                    if (attachmentInfo)
+                    {
+                        dispatchEvent(new AttachmentRemoveEvent(attachmentInfo));
+                    }
+                }
+            }
+
+            private function attachmentInfoList_clickHandler(event:MouseEvent):void
+            {
+                if (!(event.target is Button || event.target is HScrollBar)) // AttachmentMouseEvent not fired while scrolling
+                {
+                    if (!(event.target is DataGroup))
+                    {
+                        const attachmentInfo:AttachmentInfo = attachmentInfoList.selectedItem as AttachmentInfo;
+                        if (attachmentInfo)
+                        {
+                            const type:String = event.type === MouseEvent.CLICK ? AttachmentMouseEvent.ATTACHMENT_CLICK : AttachmentMouseEvent.ATTACHMENT_DOUBLE_CLICK;
+                            const newEvent:AttachmentMouseEvent = new AttachmentMouseEvent(type, attachmentInfo);
+                            newEvent.copyProperties(event);
+                            dispatchEvent(newEvent);
+                            attachmentInfoList.setFocus();
+                        }
+                    }
+                    else
+                    {
+                        attachmentInfoList.selectedIndex = -1;
+                    }
+                }
+            }
+
+            private function attachmentInfoList_addHandler():void
+            {
+                attachmentInfoList.selectedIndex = 0;
+            }
+        ]]>
+    </fx:Script>
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="disabled"/>
+        <s:State name="queryAttachmentInfos" stateGroups="queryAttachmentInfosGroup"/>
+        <s:State name="queryAttachmentInfosWithList" stateGroups="queryAttachmentInfosGroup"/>
+        <s:State name="attachmentLoaded" stateGroups="loadState"/>
+        <s:State name="attachmentLoadedNoAttachmentsInList" stateGroups="noAttachmentsState,loadState"/>
+        <s:State name="noAttachmentsInList" stateGroups="noAttachmentsState"/>
+    </s:states>
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center"/>
+    </s:layout>
+    <!--- @private -->
+    <mx:SWFLoader horizontalAlign="center"
+                  includeIn="queryAttachmentInfosGroup"
+                  minHeight.queryAttachmentInfosWithList="140"
+                  minWidth.queryAttachmentInfosWithList="200"
+                  source="{loader}"/>
+    <!--- List to display the attachments for a feature. -->
+    <supportClasses:AttachmentInfoList id="attachmentInfoList"
+                                       width="100%" height="100%"
+                                       add="callLater(attachmentInfoList_addHandler)"
+                                       caretChange="attachmentInfoList_caretChangeHandler(event)"
+                                       click="attachmentInfoList_clickHandler(event)"
+                                       dataProvider="{hostComponent.attachmentInfos}"
+                                       deleteEnabled="{hostComponent.deleteEnabled}"
+                                       doubleClick="attachmentInfoList_clickHandler(event)"
+                                       doubleClickEnabled="true"
+                                       enabled.disabled="false"
+                                       excludeFrom="noAttachmentsState,queryAttachmentInfosGroup,disabled"
+                                       isEditable="{hostComponent.featureLayer.isEditable}"
+                                       itemRenderer="com.esri.ags.skins.supportClasses.AttachmentRenderer"
+                                       keyUp="attachmentInfoList_keyUpHandler(event)"
+                                       minHeight="140"
+                                       minWidth="200"
+                                       skinClass="spark.skins.spark.ListSkin"
+                                       useVirtualLayout="false">
+        <supportClasses:layout>
+            <!--- @private -->
+            <supportClasses:AttachmentLayout id="attachmentLayout"
+                                             distance="100"
+                                             index="{attachmentInfoList.selectedIndex}"/>
+        </supportClasses:layout>
+    </supportClasses:AttachmentInfoList>
+    <s:Label includeIn="disabled" text="{resourceManager.getString('ESRIMessages', 'attachmentInspectorNoAttachmentsSupported')}"/>
+    <s:Label includeIn="noAttachmentsInList" text="{resourceManager.getString('ESRIMessages', 'attachmentInspectorNoAttachments')}"/>
+    <!--- Button for selecting the item to attach. -->
+    <s:Button id="browseButton"
+              enabled.disabled="false"
+              enabled.queryAttachmentInfos="false"
+              excludeFrom="loadState"
+              includeInLayout="{hostComponent.featureLayer.isEditable &amp;&amp; hostComponent.addEnabled}"
+              label="{resourceManager.getString('ESRIMessages', 'attachmentInspectorBrowseLabel')}"
+              visible="{hostComponent.featureLayer.isEditable &amp;&amp; hostComponent.addEnabled}"/>
+    <s:HGroup includeIn="loadState" verticalAlign="middle">
+        <s:Label text="{hostComponent.attachmentName}"/>
+        <s:Label text="{numberFormatter.format(hostComponent.attachmentSize / 1024.0)+' '+resourceManager.getString('ESRIMessages', 'attachmentInspectorKiloBytes')}"/>
+    </s:HGroup>
+    <s:HGroup includeIn="loadState" verticalAlign="middle">
+        <!--- Button to attach the selected item. -->
+        <s:Button id="addButton" label="{resourceManager.getString('ESRIMessages', 'attachmentInspectorAddLabel')}"/>
+        <!--- Button to clear the current selected item. -->
+        <s:Button id="cancelButton" label="{resourceManager.getString('ESRIMessages', 'attachmentInspectorCancelLabel')}"/>
+    </s:HGroup>
+</s:Skin>

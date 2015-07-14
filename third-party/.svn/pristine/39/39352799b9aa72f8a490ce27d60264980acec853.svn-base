@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:esri="http://www.esri.com/2008/ags"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        initialize="view1_initializeHandler(event)"
+        title="SearchView">
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.WebMapEvent;
+            import com.esri.ags.utils.JSON;
+
+            import model.WebMapObject;
+
+            import mx.collections.ArrayList;
+            import mx.events.FlexEvent;
+            import mx.rpc.events.ResultEvent;
+            import mx.rpc.http.HTTPService;
+
+            import spark.events.IndexChangeEvent;
+            import spark.managers.PersistenceManager;
+            import spark.transitions.SlideViewTransition;
+            import spark.transitions.ViewTransitionDirection;
+
+            private var persistenceManager:PersistenceManager = new PersistenceManager;
+            private var searchText:String;
+            private var searchResults:ArrayList;
+            private var webMapTitle:String;
+
+            protected function view1_initializeHandler(event:FlexEvent):void
+            {
+                searchText = persistenceManager.getProperty("searchText") as String;
+                if (searchText)
+                {
+                    textInput1.text = searchText;
+                }
+                searchResults = persistenceManager.getProperty("searchResults") as ArrayList;
+                if (searchResults)
+                {
+                    searchResultList.dataProvider = searchResults;
+                }
+            }
+
+            private function webmapSearch(searchString:String):void
+            {
+                persistenceManager.setProperty("searchText", textInput1.text);
+                noWebMapsLabel.visible = false;
+                bi.visible = searchLabel.visible = true;
+
+                const params:URLVariables = new URLVariables();
+                params.q = searchString + ' type:"Web Map" -type:"Web Mapping Application" -tags:basemap';
+                params.num = 24;
+                params.f = 'json';
+                const hs:HTTPService = new HTTPService();
+                hs.url = "http://www.arcgis.com/sharing/search";
+                hs.useProxy = false;
+                hs.requestTimeout = 30;
+                hs.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
+                hs.addEventListener(ResultEvent.RESULT, search_resultHandler);
+                hs.send(params);
+            }
+
+            private function search_resultHandler(event:ResultEvent):void
+            {
+                bi.visible = searchLabel.visible = false;
+
+                const source:ArrayList = new ArrayList;
+                const decodedObject:Object = com.esri.ags.utils.JSON.decode(event.result as String);
+                const results:Array = decodedObject.results;
+                if (results && results.length)
+                {
+                    for each (var obj:Object in results)
+                    {
+
+                        const webmap:WebMapObject = new WebMapObject();
+                        webmap.id = obj.id;
+                        webmap.title = obj.title;
+                        webmap.thumbnail = "http://www.arcgis.com/sharing/content/items/" + obj.id + "/info/" + obj.thumbnail;
+                        webmap.snippet = obj.snippet;
+                        source.addItem(webmap);
+                    }
+
+                    persistenceManager.setProperty("searchResults", source);
+                    searchResultList.dataProvider = source;
+                }
+                else
+                {
+                    noWebMapsLabel.visible = true;
+                }
+            }
+
+            protected function searchResultList_changeHandler(event:IndexChangeEvent):void
+            {
+                bi.visible = true;
+                webMapTitle = event.target.selectedItem.title;
+                webMapUtil.createMapById(event.target.selectedItem.id);
+            }
+
+            protected function webMapUtil_createMapByIdCompleteHandler(event:WebMapEvent):void
+            {
+                bi.visible = searchLabel.visible = false;
+
+                event.map.zoomSliderVisible = false;
+                event.map.openHandCursorVisible = false;
+                navigator.pushView(MapView, { map: event.map, view: this, title: webMapTitle });
+            }
+
+            protected function backButton_clickHandler(event:MouseEvent):void
+            {
+                persistenceManager.setProperty("searchText", null);
+                persistenceManager.setProperty("searchResults", null);
+
+                var transition:SlideViewTransition = new SlideViewTransition;
+                transition.direction = ViewTransitionDirection.RIGHT;
+                navigator.pushView(WebMapsView, null, null, transition);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:GeometryServiceSingleton url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+        <esri:WebMapUtil id="webMapUtil" createMapByIdComplete="webMapUtil_createMapByIdCompleteHandler(event)"/>
+    </fx:Declarations>
+
+    <s:navigationContent>
+        <s:Button id="backButton"
+                  click="backButton_clickHandler(event)"
+                  icon="@Embed('assets/back.png')"/>
+    </s:navigationContent>
+
+    <s:titleContent>
+        <s:TextInput id="textInput1"
+                     width="100%"
+                     enter="webmapSearch(textInput1.text)"
+                     prompt="Search web maps"/>
+    </s:titleContent>
+
+    <s:actionContent>
+        <s:Button click="webmapSearch(textInput1.text)" label="Search"/>
+    </s:actionContent>
+
+    <s:List id="searchResultList"
+            width="100%" height="100%"
+            change="searchResultList_changeHandler(event)">
+        <s:itemRenderer>
+            <fx:Component>
+                <s:IconItemRenderer iconField="thumbnail"
+                                    iconHeight="80"
+                                    iconWidth="80"
+                                    labelField="title"/>
+            </fx:Component>
+        </s:itemRenderer>
+    </s:List>
+
+    <s:Label id="noWebMapsLabel"
+             top="10"
+             fontStyle="italic"
+             text="Sorry, no web maps found"
+             visible="false"/>
+    <s:Label id="searchLabel"
+             horizontalCenter="0"
+             text="Searching..."
+             verticalCenter="-20"
+             visible="false"/>
+    <s:BusyIndicator id="bi"
+                     horizontalCenter="0"
+                     verticalCenter="0"
+                     visible="false"/>
+</s:View>

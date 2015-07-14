@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:mx="library://ns.adobe.com/flex/mx">
+
+    <fx:Metadata>
+        [HostComponent("com.esri.ags.components.TimeSlider")]
+    </fx:Metadata>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="disabled"/>
+    </s:states>
+
+    <s:layout>
+        <s:HorizontalLayout verticalAlign="middle"/>
+    </s:layout>
+
+    <fx:Declarations>
+        <mx:DateFormatter id="dateFormatter" formatString="YYYY"/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+            private function dataTipFormatter(value:Number):String
+            {
+                return dateFormatter.format(hostComponent.timeStops[value]);
+            }
+        ]]>
+    </fx:Script>
+
+    <!--<s:Button id="playButton"
+         enabled.disabled="false"
+         label="Play"/>
+
+         <s:Button id="pauseButton"
+         enabled.disabled="false"
+         label="Pause"/>-->
+
+    <!--<s:ToggleButton id="playPauseButton"
+         enabled.disabled="false"
+         skinClass="spark.skins.spark.mediaClasses.normal.PlayPauseButtonSkin"/>-->
+
+    <mx:HSlider id="slider"
+                width="100%"
+                dataTipFormatFunction="dataTipFormatter"
+                enabled.disabled="false"
+                labels="[1970, 2010]"
+                showDataTip="{hostComponent.timeStops != null}"
+                showTrackHighlight="{!(hostComponent.thumbCount == 1 &amp;&amp; hostComponent.singleThumbAsTimeInstant)}"
+                tickInterval="1"/>
+
+    <!--<s:Button id="previousButton"
+         enabled.disabled="false"
+         skinClass="com.esri.ags.skins.TimeSliderPreviousButtonSkin"/>
+
+         <s:Button id="nextButton"
+         enabled.disabled="false"
+         skinClass="com.esri.ags.skins.TimeSliderNextButtonSkin"/>-->
+
+</s:SparkSkin>

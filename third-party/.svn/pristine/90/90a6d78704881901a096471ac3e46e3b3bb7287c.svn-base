@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Get the address for a location">
+    <!--
+         In this sample, the locationToAddressComplete() method of the Locator task
+         is used to find the address (aka reversed geocoding) for a certain location.
+
+         The sample takes the location of a mapClick and sends it to
+         the server for reverse geocoding.  When response completes, the
+         onLocationToAddressComplete() function adds a graphic and an
+         infoWindow.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout paddingBottom="15"
+                          paddingLeft="10"
+                          paddingRight="10"
+                          paddingTop="15"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.LocatorEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.tasks.supportClasses.AddressCandidate;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            import flashx.textLayout.conversion.TextConverter;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            private function onMapClick(event:MapMouseEvent):void
+            {
+                locateTask.locationToAddress(event.mapPoint, 100);
+            }
+
+            private function onLocationToAddressComplete(event:LocatorEvent):void
+            {
+                var candidate:AddressCandidate = event.addressCandidate;
+
+                if (candidate && candidate.address && candidate.address.Address)
+                {
+                    var address:Object = candidate.address;
+
+                    var myGraphic:Graphic = new Graphic(WebMercatorUtil.geographicToWebMercator(candidate.location), mySymbol, address);
+                    myGraphicsLayer.clear();
+                    myGraphicsLayer.add(myGraphic);
+
+                    var htmlText:String = "<b>Address:</b><br>";
+                    htmlText += address.Address + "<br>";
+                    if (address.City && address.State)
+                    {
+                        htmlText += address.City + ", " + address.State + "<br>";
+                    }
+                    textArea.textFlow = TextConverter.importToFlow(htmlText, TextConverter.TEXT_FIELD_HTML_FORMAT);
+
+                    myMap.infoWindow.label = "Reverse Geocode";
+                    myMap.infoWindow.show(myGraphic.geometry as MapPoint);
+                }
+                else
+                {
+                    Alert.show("This location does not have a known street address.");
+                }
+            }
+
+            private function onFault(event:FaultEvent):void
+            {
+                trace(event.fault.name);
+                trace(event.fault.faultCode);
+                trace(event.fault.faultString);
+                trace("D:" + event.fault.faultDetail);
+                if (event.fault.name == 'Error'
+                    && event.fault.faultCode == '500'
+                    && event.fault.faultString == 'An unexpected error occurred processing the request.')
+                {
+                    Alert.show("Did you click too far from a road?\n\n" + event.fault.faultDetail, "No result");
+                }
+                else
+                {
+                    Alert.show(event.fault.faultString + "\n\n" + event.fault.faultDetail, "Reverse Geocoding Error " + event.fault.faultCode);
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Locator id="locateTask"
+                      concurrency="last"
+                      fault="onFault(event)"
+                      locationToAddressComplete="onLocationToAddressComplete(event)"
+                      url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_NA_10/GeocodeServer"/>
+
+        <esri:SimpleMarkerSymbol id="mySymbol"
+                                 alpha="0.5"
+                                 color="0xFF0000"
+                                 size="19"
+                                 style="circle">
+            <esri:SimpleLineSymbol width="2"/>
+        </esri:SimpleMarkerSymbol>
+    </fx:Declarations>
+
+    <s:Label fontSize="12"
+             fontWeight="bold"
+             text="Click on map to obtain the address of a location."/>
+    <esri:Map id="myMap"
+              mapClick="onMapClick(event)"
+              openHandCursorVisible="false">
+        <esri:extent>
+            <esri:WebMercatorExtent minlon="-95.2991" minlat="38.9379" maxlon="-95.2476" maxlat="38.963"/>
+        </esri:extent>
+        <esri:infoWindowContent>
+            <s:TextArea id="textArea"
+                        editable="false"
+                        heightInLines="4"/>
+        </esri:infoWindowContent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer"/>
+    </esri:Map>
+
+</s:Application>

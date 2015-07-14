@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="MapTips - creating custom ToolTips">
+    <!--
+         @@includeFiles com/esri/ags/samples/PanelToolTip.mxml
+
+         There are many options for showing information as a "MapTip".
+         * Use the default ToolTip from the Adobe Flex SDK,
+         * Customize the ToolTip.
+         * Create your own custom ToolTip (this sample).
+
+        When a user moves the mouse pointer over a graphical component,
+        the ToolTip control pops up and displays text that provides information
+        about the component.
+
+         Create custom ToolTips components in flex.
+
+         The default tooltip component in flex is a ToolTip object, so to change this
+         we have to define a component which implements mx.core.IToolTip
+
+         1. Using PanelToolTip as my tooltip component and the code contains simple the set and get methods as below.
+
+         * Listen to the MouseOver event and use the InfoWindow from the ArcGIS API for Flex, see the InfoWindowRollOverSample.mxml sample
+
+         In this sample, we will create a custom tooltip component and use it
+            for two different custom tooltips (one for state data, the other for city data).
+
+         Note: This works when the features are client-side, i.e. with the GraphicsLayer or the FeatureLayer.
+
+         For more information, see http://help.adobe.com/en_US/Flex/4.0/UsingSDK/WS2db454920e96a9e51e63e3d11c0bf60d65-7ff6.html
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GraphicEvent;
+            import com.esri.ags.samples.PanelToolTip;
+
+            import mx.events.ToolTipEvent;
+
+            protected var ptt:PanelToolTip = new PanelToolTip();
+
+            protected function statesFeatureLayer_graphicAddHandler(event:GraphicEvent):void
+            {
+                var graphic:Graphic = event.graphic;
+                /* You must create a blank ToolTip so that the control can dispatch ToolTip-related events.
+                 The new ToolTip will replace this empty ToolTip. */
+                graphic.toolTip = " ";
+                graphic.addEventListener(ToolTipEvent.TOOL_TIP_CREATE, stateToolTipCreateHandler, false, 0, true);
+            }
+
+            protected function citiesFeatureLayer_graphicAddHandler(event:GraphicEvent):void
+            {
+                var graphic:Graphic = event.graphic;
+                /* You must create a blank ToolTip so that the control can dispatch ToolTip-related events.
+                 The new ToolTip will replace this empty ToolTip. */
+                graphic.toolTip = " ";
+                graphic.addEventListener(ToolTipEvent.TOOL_TIP_CREATE, cityToolTipCreateHandler, false, 0, true);
+            }
+
+            protected function stateToolTipCreateHandler(event:ToolTipEvent):void
+            {
+                var graphic:Graphic = event.target as Graphic;
+                ptt.title = graphic.attributes["STATE_NAME"];
+                ptt.population = graphic.attributes["POP2007"];
+                event.toolTip = ptt;
+            }
+
+            protected function cityToolTipCreateHandler(event:ToolTipEvent):void
+            {
+                var graphic:Graphic = event.target as Graphic;
+                ptt.title = graphic.attributes["CITY_NAME"];
+                ptt.population = graphic.attributes["POP1990"];
+                event.toolTip = ptt;
+            }
+        ]]>
+    </fx:Script>
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center" paddingTop="6"/>
+    </s:layout>
+
+    <s:Label fontSize="16"
+             text="Hover over a state or city to see a map tip."
+             toolTip="A Map Tip is a custom ToolTip"/>
+
+    <esri:Map id="map" openHandCursorVisible="false">
+        <esri:extent>
+            <esri:Extent xmin="-14279700" ymin="2402000" xmax="-7011000" ymax="6716700">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/USA_Topo_Maps/MapServer"/>
+        <esri:FeatureLayer id="statesFeatureLayer"
+                           definitionExpression="STATE_NAME NOT IN ('Alaska','Hawaii')"
+                           graphicAdd="statesFeatureLayer_graphicAddHandler(event)"
+                           mode="snapshot"
+                           outFields="[STATE_NAME,POP2007]"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/5">
+            <esri:symbol>
+                <esri:SimpleFillSymbol style="null">
+                    <esri:SimpleLineSymbol width="2"
+                                           alpha="0.5"
+                                           style="solid"/>
+                </esri:SimpleFillSymbol>
+            </esri:symbol>
+        </esri:FeatureLayer>
+        <esri:FeatureLayer id="citiesFeatureLayer"
+                           definitionExpression="POP1990 &gt; 100000 AND STATE_NAME NOT IN ('Alaska','Hawaii')"
+                           graphicAdd="citiesFeatureLayer_graphicAddHandler(event)"
+                           mode="snapshot"
+                           outFields="[CITY_NAME,POP1990]"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/0">
+            <esri:symbol>
+                <esri:SimpleMarkerSymbol color="0xFF0000"
+                                         size="10"
+                                         style="diamond"/>
+            </esri:symbol>
+        </esri:FeatureLayer>
+    </esri:Map>
+
+</s:Application>

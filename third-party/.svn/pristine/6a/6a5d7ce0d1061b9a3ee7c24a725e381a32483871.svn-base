@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="FeatureLayer on demand">
+    <!--
+         This sample shows you how to add InfoWindows to a feature layer.
+         When user clicks on one of the polygon features, the info window popup will show.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+
+    <esri:Map openHandCursorVisible="false">
+        <esri:extent>
+            <!-- Extent for Bloomfield Hills, Michigan -->
+            <esri:Extent xmin="-9271300" ymin="5247400" xmax="-9270300" ymax="5248500">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"/>
+        <esri:FeatureLayer id="fLayer"
+                           mode="onDemand"
+                           outFields="[PARCELID,OWNERNME1,SITEADDRESS,LNDVALUE,USECD]"
+                           url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/BloomfieldHillsMichigan/Parcels/MapServer/2">
+            <esri:symbol>
+                <esri:SimpleFillSymbol id="fillsym" style="null">
+                    <esri:SimpleLineSymbol width="3" color="0xFF0000"/>
+                </esri:SimpleFillSymbol>
+            </esri:symbol>
+            <esri:infoWindowRenderer>
+                <fx:Component>
+                    <mx:VBox backgroundColor="0xffffff"
+                             color="0x444444"
+                             label="Parcel {data.PARCELID}">
+                        <mx:Label text="Owner: {data.OWNERNME1}"/>
+                        <mx:Label text="Address: {data.SITEADDRESS}"/>
+                        <mx:Label text="Land Value: {data.LNDVALUE}"/>
+                        <mx:Label text="Landuse: {data.USECD}"/>
+                    </mx:VBox>
+                </fx:Component>
+            </esri:infoWindowRenderer>
+        </esri:FeatureLayer>
+    </esri:Map>
+
+    <s:Label enabled="{fLayer.loaded}" text="Using the 'onDemand' mode, parcels are fetched 'as needed' when you pan and zoom.  Click any parcel to see more information."/>
+
+</s:Application>

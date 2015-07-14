@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the selection drop down list.
+     @private
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:mx="library://ns.adobe.com/flex/mx"
+             alpha.disabled="0.3"
+             initialize="dropDownListSkin_initializeHandler(event)">
+
+    <!-- host component -->
+    <fx:Metadata>
+        [HostComponent("spark.components.DropDownList")]
+    </fx:Metadata>
+
+    <fx:Script>
+        <![CDATA[
+            import mx.events.FlexEvent;
+
+            import spark.components.DropDownList;
+            import spark.events.IndexChangeEvent;
+
+            [Bindable]
+            [Embed(source="../../../../assets/skins/NoSelection.png")]
+            public var m_embed:Class;
+
+            protected function dropDownListSkin_initializeHandler(event:FlexEvent):void
+            {
+                hostComponent.addEventListener(IndexChangeEvent.CHANGE, dropDownList_changeHandler);
+                hostComponent.addEventListener(FlexEvent.VALUE_COMMIT, dropDownList_valueCommitHandler);
+            }
+
+            private function dropDownList_valueCommitHandler(event:FlexEvent):void
+            {
+                selectIcon();
+            }
+
+            private function dropDownList_changeHandler(event:IndexChangeEvent):void
+            {
+                selectIcon();
+            }
+
+            private function selectIcon():void
+            {
+                if (hostComponent.selectedItem)
+                {
+                    bitmapImage.source = hostComponent.selectedItem.icon;
+                }
+                else
+                {
+                    bitmapImage.source = m_embed;
+                }
+            }
+
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                if (getStyle("borderVisible") == false)
+                {
+                    if (border)
+                    {
+                        border.visible = false;
+                    }
+                    if (background)
+                    {
+                        background.left = background.top = background.right = background.bottom = 0;
+                    }
+                    if (scroller)
+                    {
+                        scroller.minViewportInset = 0;
+                    }
+                }
+                else
+                {
+                    if (border)
+                    {
+                        border.visible = true;
+                    }
+                    if (background)
+                    {
+                        background.left = background.top = background.right = background.bottom = 1;
+                    }
+                    if (scroller)
+                    {
+                        scroller.minViewportInset = 1;
+                    }
+                }
+
+                if (dropShadow)
+                {
+                    dropShadow.visible = getStyle("dropShadowVisible");
+                }
+
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+        ]]>
+    </fx:Script>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="open"/>
+        <s:State name="disabled"/>
+    </s:states>
+
+    <!---
+         The PopUpAnchor control that opens the drop-down list.
+    -->
+    <s:PopUpAnchor id="popUp"
+                   left="0" right="0" top="0" bottom="0"
+                   displayPopUp.normal="false"
+                   displayPopUp.open="true"
+                   includeIn="open"
+                   itemDestructionPolicy="auto"
+                   popUpPosition="below"
+                   popUpWidthMatchesAnchorWidth="false">
+
+        <!---
+             The drop down area of the skin.
+             This includes borders, background colors, scrollers, and filters.
+        -->
+        <s:Group id="dropDown"
+                 maxHeight="134"
+                 minHeight="22">
+
+            <!-- drop shadow -->
+            <s:RectangularDropShadow id="dropShadow"
+                                     left="0" right="0" top="0" bottom="0"
+                                     alpha="0.6"
+                                     angle="90"
+                                     blurX="20"
+                                     blurY="20"
+                                     color="#000000"
+                                     distance="5"/>
+
+            <!-- border -->
+            <s:Rect id="border"
+                    left="0" right="0" top="0" bottom="0">
+                <s:stroke>
+                    <s:SolidColorStroke alpha="{getStyle('borderAlpha')}"
+                                        color="{getStyle('borderColor')}"
+                                        weight="1"/>
+                </s:stroke>
+            </s:Rect>
+
+            <!-- fill -->
+            <!---
+                 Defines the appearance of drop-down list's background fill.
+            -->
+            <s:Rect id="background"
+                    left="1" right="1" top="1" bottom="1">
+                <s:fill>
+                    <!---
+                         The color of the drop down's background fill.
+                         The default color is 0xFFFFFF.
+                    -->
+                    <s:SolidColor id="bgFill" color="0xFFFFFF"/>
+                </s:fill>
+            </s:Rect>
+
+            <s:Scroller id="scroller"
+                        left="0" right="0" top="0" bottom="0"
+                        focusEnabled="false"
+                        minViewportInset="1">
+                <!---
+                     The container for the data items in the drop-down list.
+                -->
+                <s:DataGroup id="dataGroup" itemRenderer="spark.skins.spark.DefaultItemRenderer">
+                    <s:layout>
+                        <s:VerticalLayout gap="0" horizontalAlign="contentJustify"/>
+                    </s:layout>
+                </s:DataGroup>
+            </s:Scroller>
+        </s:Group>
+    </s:PopUpAnchor>
+
+    <!--- The anchor button used by the DropDownList. The default skin is DropDownListButtonSkin. -->
+    <s:Button id="openButton"
+              left="0" right="0" top="0" bottom="0"
+              cornerRadius="{getStyle('cornerRadius')}"
+              focusEnabled="false"
+              skinClass="spark.skins.spark.DropDownListButtonSkin"/>
+
+    <!--- The icon for the DropDownList -->
+    <s:BitmapImage id="bitmapImage"
+                   left="3"
+                   source="{m_embed}"
+                   verticalCenter="0"/>
+
+</s:SparkSkin>
