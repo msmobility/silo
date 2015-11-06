@@ -1,5 +1,0 @@
-rootProject.name = 'geography'
-projectMap = ['core' : ['util','datatable','tensor','calculator_tensor','geography']]
-
-apply from: '../../core/build/base_settings.gradle'
-

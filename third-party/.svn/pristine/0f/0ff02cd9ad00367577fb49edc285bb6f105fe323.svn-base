@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<component inherit-compiler-output="true">
-	<output-test url="file://$MAIN_REPOSITORY$/repo/ide_projects/intellij/reno/out/test/log4j-over-slf4j-1.6"/>
-	<exclude-output/>
-</component>

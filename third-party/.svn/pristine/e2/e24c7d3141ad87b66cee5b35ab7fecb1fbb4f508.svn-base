@@ -1,5 +1,0 @@
-rootProject.name = 'project'
-projectMap = ['third_party' : ['java$7_windows_32bit'],
-              'third_party/slimjim' : ['project']]
-
-apply from: '../../../core/build/base_settings.gradle'

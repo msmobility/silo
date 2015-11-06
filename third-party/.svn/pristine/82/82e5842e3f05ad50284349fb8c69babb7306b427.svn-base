@@ -1,6 +1,0 @@
-rootProject.name = 'transcad'
-projectMap = ['core' : ['util','datatable','tensor'],
-              'integration' : ['transcad']]
-
-apply from: '../../core/build/base_settings.gradle'
-
