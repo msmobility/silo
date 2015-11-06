@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="Extending DynamicMapServiceLayer using ArcGIS API for Flex">
+    <!--
+         @@includeFiles com/esri/ags/samples/CityStatesWMSLayer.as
+
+         This sample shows how base layer classes can be extended to support other layer types,
+         such as Open Geospatial Consortium Web Map Services (OGC WMS).
+
+         In this sample the DynamicMapServiceLayer class is extended.
+         The key method to overwrite is loadMapImage().
+    -->
+    <s:controlBarLayout>
+        <s:HorizontalLayout horizontalAlign="center"
+                            paddingBottom="7"
+                            paddingTop="7"/>
+    </s:controlBarLayout>
+    <s:controlBarContent>
+        <s:Label fontFamily="Verdana"
+                 fontSize="14"
+                 fontWeight="bold"
+                 text="By extending DynamicMapServiceLayer, this application can access dynamic services such as WMS."/>
+    </s:controlBarContent>
+
+    <esri:Map scale="25000000">
+        <samples:CityStatesWMSLayer/>
+    </esri:Map>
+
+</s:Application>

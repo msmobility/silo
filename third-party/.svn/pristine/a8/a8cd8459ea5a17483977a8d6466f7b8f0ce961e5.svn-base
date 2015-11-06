@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/models"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/antlr-3.4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/util"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/tensor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/property"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/datatable"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/excel"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/poi-3.7"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/transcad"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/groovy-1.8.2"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

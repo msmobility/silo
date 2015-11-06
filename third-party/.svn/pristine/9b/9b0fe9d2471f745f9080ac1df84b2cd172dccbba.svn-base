@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="Turning individual layers on/off for an ArcIMS map service">
+    <!--
+         @@includeFiles com/esri/ags/samples/LayerTOC.mxml, com/esri/ags/samples/LayerVizRenderer.mxml
+
+         Problem:
+         Allow end-users to easily turn on/off layers for any ArcIMS service.
+
+         Solution:
+         By default, the visible layers (as defined in the service) are used.
+
+         In this example, a datagrid (LayerTOC) with checkboxes for every layer in
+         the current service is displayed.  The datagrid itemrenderer (LayerVizRenderer)
+         will update the map service as users selects/clears checkboxes.
+    -->
+    <mx:HDividedBox width="100%" height="100%">
+        <esri:Map>
+            <esri:ArcIMSMapServiceLayer id="myArcIMS"
+                                        load="myArcIMS.defaultVisibleLayers()"
+                                        serviceHost="http://www.geographynetwork.com"
+                                        serviceName="{gnServiceName.selectedItem}"/>
+        </esri:Map>
+        <s:VGroup width="260" height="100%"
+                  paddingBottom="5"
+                  paddingRight="5"
+                  paddingTop="5">
+            <s:Label fontWeight="bold" text="Service: {myArcIMS.serviceName}"/>
+            <s:DropDownList id="gnServiceName"
+                            width="100%"
+                            requireSelection="true"
+                            selectedIndex="8">
+                <s:ArrayList>
+                    <fx:String>Atlas_Aquifers</fx:String>
+                    <fx:String>Atlas_Dams</fx:String>
+                    <fx:String>Atlas_Fedlands</fx:String>
+                    <fx:String>Atlas_Precipitation</fx:String>
+                    <fx:String>Atlas_Watersheds</fx:String>
+                    <fx:String>Census_Density</fx:String>
+                    <fx:String>Census_Diversity</fx:String>
+                    <fx:String>Census_Population</fx:String>
+                    <fx:String>Census_TIGER2000</fx:String>
+                    <fx:String>ESRI_Landuse</fx:String>
+                    <fx:String>ESRI_Snow</fx:String>
+                    <fx:String>ESRI_Soil</fx:String>
+                    <fx:String>ESRI_Temp_Yr</fx:String>
+                    <fx:String>ESRI_Veg</fx:String>
+                    <fx:String>UCSB_MAD</fx:String>
+                </s:ArrayList>
+            </s:DropDownList>
+            <samples:LayerTOC mapLayer="{myArcIMS}"/>
+        </s:VGroup>
+    </mx:HDividedBox>
+
+</s:Application>

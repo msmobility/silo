@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Query time-aware layers">
+    <!--
+         @@includeFiles com/esri/ags/samples/skins/MyTimeSliderSkin.mxml
+
+         In ArcGIS Server 10 built-in support was added for Time-Aware layers.
+         On the server you can specify a certain field as a special Time field.
+
+         This time field can be used to set time extent and only ask for data
+         covering certain times.
+
+         Since QueryTask does not automatically get the time extent from the
+         map metadata, we are hardcoding it in this application.  Alternatively,
+         instead of using a QueryTask, we could have used a FeatureLayer in which
+         case we could have gotten the full time extent metadata from the server.
+
+         We're also setting an initial time extent and requesting that data on
+         startup (when map loads).  When a user change the chosen time extent
+         to display, a new query is sent for the new time range.
+
+         To display the data with symbol markers of different size, a ClassBreaksRenderer
+         is used to pick symbol by looking at the "Magnitude" attribute value.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center"
+                          paddingBottom="20"
+                          paddingTop="20"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.TimeExtent;
+            import com.esri.ags.events.QueryEvent;
+            import com.esri.ags.events.TimeExtentEvent;
+            import com.esri.ags.layers.supportClasses.TimeInfo;
+
+            import mx.controls.Alert;
+            import mx.events.FlexEvent;
+            import mx.formatters.DateFormatter;
+
+            private function timeSlider_initializeHandler(event:FlexEvent):void
+            {
+                var layerStartTime:Date = new Date(259200000); // January 3, 1970
+                var layerEndTime:Date = new Date(1243468800000); // May 27, 2009
+                var layerTimeExtent:TimeExtent = new TimeExtent(layerStartTime, layerEndTime);
+                timeSlider.createTimeStopsByTimeInterval(layerTimeExtent, 1, TimeInfo.UNIT_YEARS);
+            }
+
+            private function timeSlider_timeExtentChangeHandler(event:TimeExtentEvent):void
+            {
+                if (map.loaded)
+                {
+                    queryTask.execute(query);
+                }
+            }
+
+            private function queryTask_executeCompleteHandler(event:QueryEvent):void
+            {
+                for each (var graphic:Graphic in event.featureSet.features)
+                {
+                    graphic.toolTip = "Magnitude: " + graphic.attributes["Magnitude"];
+                }
+                graphicsLayer.graphicProvider = event.featureSet.features;
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:QueryTask id="queryTask"
+                        executeComplete="queryTask_executeCompleteHandler(event)"
+                        fault="Alert.show(event.fault.message)"
+                        url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Earthquakes/Since_1970/MapServer/0"/>
+        <esri:Query id="query"
+                    outFields="[Magnitude]"
+                    outSpatialReference="{map.spatialReference}"
+                    returnGeometry="true"
+                    timeExtent="{timeSlider.timeExtent}"/>
+        <mx:DateFormatter id="dateFormatter" formatString="YYYY"/>
+    </fx:Declarations>
+
+    <mx:Label fontSize="24" text="Earthquakes since 1970"/>
+
+    <esri:Map id="map" load="queryTask.execute(query)">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer">
+            <esri:renderer>
+                <esri:ClassBreaksRenderer field="Magnitude">
+                    <esri:defaultSymbol>
+                        <esri:SimpleMarkerSymbol color="0x00FF00"
+                                                 size="20"
+                                                 style="diamond"/>
+                    </esri:defaultSymbol>
+                    <esri:ClassBreakInfo maxValue="2" minValue="0">
+                        <esri:symbol>
+                            <esri:SimpleMarkerSymbol color="0xFF0000"
+                                                     size="5"
+                                                     style="circle">
+                                <esri:SimpleLineSymbol width="1"
+                                                       alpha="1.0"
+                                                       color="0x0"
+                                                       style="solid"/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:symbol>
+                    </esri:ClassBreakInfo>
+                    <esri:ClassBreakInfo maxValue="4" minValue="2">
+                        <esri:symbol>
+                            <esri:SimpleMarkerSymbol color="0xFF0000"
+                                                     size="10"
+                                                     style="circle">
+                                <esri:SimpleLineSymbol width="1"
+                                                       alpha="1.0"
+                                                       color="0x0"
+                                                       style="solid"/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:symbol>
+                    </esri:ClassBreakInfo>
+                    <esri:ClassBreakInfo maxValue="6" minValue="4">
+                        <esri:symbol>
+                            <esri:SimpleMarkerSymbol color="0xFF0000"
+                                                     size="15"
+                                                     style="circle">
+                                <esri:SimpleLineSymbol width="1"
+                                                       color="0x0"
+                                                       style="solid"/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:symbol>
+                    </esri:ClassBreakInfo>
+                    <esri:ClassBreakInfo maxValue="8" minValue="6">
+                        <esri:symbol>
+                            <esri:SimpleMarkerSymbol color="0xFF0000"
+                                                     size="20"
+                                                     style="circle">
+                                <esri:SimpleLineSymbol width="1" style="solid"/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:symbol>
+                    </esri:ClassBreakInfo>
+                    <esri:ClassBreakInfo maxValue="10" minValue="8">
+                        <esri:symbol>
+                            <esri:SimpleMarkerSymbol color="0xFF0000"
+                                                     size="25"
+                                                     style="circle">
+                                <esri:SimpleLineSymbol width="1"/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:symbol>
+                    </esri:ClassBreakInfo>
+                </esri:ClassBreaksRenderer>
+            </esri:renderer>
+        </esri:GraphicsLayer>
+    </esri:Map>
+
+    <esri:TimeSlider id="timeSlider"
+                     width="75%"
+                     initialize="timeSlider_initializeHandler(event)"
+                     skinClass="com.esri.ags.samples.skins.MyTimeSliderSkin"
+                     thumbCount="2"
+                     thumbIndexes="[15, 25]"
+                     timeExtentChange="timeSlider_timeExtentChangeHandler(event)"/>
+
+    <s:Label fontSize="14" text="Current Time Extent shown: {dateFormatter.format(timeSlider.timeExtent.startTime)} - {dateFormatter.format(timeSlider.timeExtent.endTime)}"/>
+    <s:Label width="100%"
+             color="0xBBBBBB"
+             text="{graphicsLayer.numGraphics} features"
+             textAlign="center"/>
+</s:Application>

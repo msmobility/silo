@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Petroleum Wells in Kansas 1889-2009">
+    <!--
+         This sample shows you how to use a time-aware dynamic service to your application.
+
+         ArcGIS Server 10 has built-in support for Time-Aware layers. On the server you
+         can specify a certain field as a special Time field. This time field can be used
+         to set time extent and only ask for data covering certain times. Using a
+         DynamicLayer we get full time extent metadata from the server.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center"
+                          paddingBottom="10"
+                          paddingTop="10"/>
+    </s:layout>
+
+    <fx:Style>
+        @namespace mx "library://ns.adobe.com/flex/mx";
+
+        mx|ToolTip {
+            font-size: 16;
+        }
+    </fx:Style>
+
+    <fx:Declarations>
+        <mx:DateFormatter id="myDateFormatter" formatString="MMMM D, YYYY"/>
+    </fx:Declarations>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            protected function myTimeLayer_loadHandler(event:LayerEvent):void
+            {
+                // myMap.extent = WebMercatorUtil.geographicToWebMercator(myTimeLayer.initialExtent) as Extent;
+                myFirstTimeSlider.createTimeStopsByCount(myTimeLayer.timeInfo.timeExtent); // defaults to 10 intervals
+            }
+        ]]>
+    </fx:Script>
+
+    <s:Label fontSize="20" text="Petroleum Wells in Kansas 1889-2009"/>
+    <s:Label fontSize="14" text="... up to {myDateFormatter.format(myFirstTimeSlider.timeExtent.endTime)}"/>
+
+    <!-- Step 1. Create the time slider                              -->
+    <!-- Step 2. Give the map a time slider (to make it time-aware). -->
+    <!-- Step 3. Set the time extent of the time slider              -->
+
+    <esri:Map id="myMap" timeSlider="{myFirstTimeSlider}">
+        <esri:extent>
+            <esri:Extent xmin="-10854962" ymin="4514317" xmax="-10779136" ymax="4572944">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:ArcGISDynamicMapServiceLayer id="myTimeLayer"
+                                           load="myTimeLayer_loadHandler(event)"
+                                           url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Petroleum/KSWells/MapServer">
+            <!-- this service has all layers turned off by default, so we turn some of them "on" -->
+            <esri:visibleLayers>
+                <mx:ArrayCollection>
+                    <fx:Number>0</fx:Number>
+                    <fx:Number>1</fx:Number>
+                </mx:ArrayCollection>
+            </esri:visibleLayers>
+        </esri:ArcGISDynamicMapServiceLayer>
+    </esri:Map>
+
+    <esri:TimeSlider id="myFirstTimeSlider"/>
+    <s:Label text="This map has one time-aware layer: a dynamic service showing wells."/>
+</s:Application>

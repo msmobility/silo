@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Surface Profile GP">
+    <!--
+         In this sample, the map activates the DrawTool on load.
+         The DrawTool has a drawStart and a drawEnd handler, as well as a symbol for the drawn line.
+
+         The drawEnd handler takes the drawn line and sends it to the geoprocessing model
+         in order to get back an image with the elevation profile.
+
+         The response contains the url to the image, so when the
+         the gp is completed gpExecuteCompleteHandler() is called which
+         then displays the image.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.tasks.supportClasses.ExecuteResult;
+            import com.esri.ags.tasks.supportClasses.ParameterValue;
+
+            import mx.controls.Alert;
+
+            private function drawStartHandler(event:DrawEvent):void
+            {
+                graphicsLayer.clear();
+                surfaceProfilePanel.visible = false;
+            }
+
+            private function drawEndHandler(event:DrawEvent):void
+            {
+                var featureSet:FeatureSet = new FeatureSet([ event.graphic ]);
+                var params:Object = {
+                        "Input_Polylines": featureSet,
+                        "Image_Width": 600,
+                        "Image_Height": 250,
+                        "Display_Segments": true
+                    };
+                gp.execute(params);
+            }
+
+            private function gpExecuteCompleteHandler(event:GeoprocessorEvent):void
+            {
+                try
+                {
+                    if (event.executeResult.results.length > 0)
+                    {
+                        var paramValue:ParameterValue = event.executeResult.results[0];
+                        var featureSet:FeatureSet = FeatureSet(paramValue.value);
+                        try
+                        {
+                            var profileURL:String = featureSet.attributes[0].profileURL;
+                            surfaceProfileImage.source = profileURL;
+                        }
+                        catch (error:Error)
+                        {
+                            Alert.show(event.executeResult.toString(), "Geoprocessor error - no features");
+                        }
+                    }
+                    else
+                    {
+                        Alert.show(event.executeResult.toString(), "Geoprocessor error - no results");
+                    }
+                }
+                catch (error:Error)
+                {
+                    Alert.show(error.toString(), "Oops");
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Geoprocessor id="gp"
+                           executeComplete="gpExecuteCompleteHandler(event)"
+                           fault="Alert.show(event.fault.message,'Oops')"
+                           url="http://sampleserver2.arcgisonline.com/ArcGIS/rest/services/Elevation/ESRI_Elevation_World/GPServer/ProfileService"
+                           useAMF="false"/>
+
+        <esri:DrawTool id="drawTool"
+                       drawEnd="drawEndHandler(event)"
+                       drawStart="drawStartHandler(event)"
+                       graphicsLayer="{graphicsLayer}"
+                       map="{map}">
+            <esri:lineSymbol>
+                <esri:SimpleLineSymbol width="4" color="0x0000FF"/>
+            </esri:lineSymbol>
+        </esri:DrawTool>
+    </fx:Declarations>
+
+    <esri:Map id="map" load="drawTool.activate(DrawTool.POLYLINE)">
+        <esri:extent>
+            <esri:Extent xmin="-13133000" ymin="3988000" xmax="-12957000" ymax="4028000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer"/>
+    </esri:Map>
+
+    <s:Panel bottom="10"
+             horizontalCenter="0"
+             title="Directions">
+        <s:Label width="250">
+            <s:text>Create a path by clicking on map. Double-click to complete the path and send request. An image will be returned displaying the surface profile of the path.</s:text>
+        </s:Label>
+    </s:Panel>
+
+    <s:Panel id="surfaceProfilePanel"
+             right="10" top="10"
+             title="Surface Profile"
+             visible="false">
+        <mx:Image id="surfaceProfileImage" complete="surfaceProfilePanel.visible = true"/>
+    </s:Panel>
+
+</s:Application>

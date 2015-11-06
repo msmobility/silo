@@ -1,0 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+Provides classes dealing with exceptions. In particular, the funcitonality is provided to wrap multiple exceptions into
+one, and to wrap checked exceptions in a standardized manner.
+</body>
+</html>

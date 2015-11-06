@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Example - Reading Map Parameters from the URL">
+    <!--
+         This sample looks for URL parameters "ll" (latlong) and "scale".
+         If any of those parameters are found, the map will be adjusted accordingly.
+
+         For example, http://example/ReadURL.html?ll=37.063,-95.677&scale=500000
+
+         Since the base map is in WebMercator projection, the "ll" parameter will be converted from latlong to WebMercator.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout paddingLeft="15"
+                          paddingRight="15"
+                          paddingTop="15"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            import mx.controls.Alert;
+
+            private function createPermalink():void
+            {
+                var currentCenter:MapPoint = WebMercatorUtil.webMercatorToGeographic(myMap.extent.center) as MapPoint;
+                navigateToURL(new URLRequest(
+                              "ReadURL.swf?ll="
+                              + myDegreeFormatter.format(currentCenter.y)
+                              + ","
+                              + myDegreeFormatter.format(currentCenter.x)
+                              + "&scale="
+                              + Math.round(myMap.scale)), "_blank");
+            }
+
+            private function getURLParameters():Object
+            {
+                var result:URLVariables = new URLVariables();
+
+                try
+                {
+                    if (ExternalInterface.available)
+                    {
+                        // Use JavaScript to get the search string from the current browser location.
+                        // Use substring() to remove leading '?'.
+                        // See http://livedocs.adobe.com/flex/3/langref/flash/external/ExternalInterface.html
+                        var search:String = ExternalInterface.call("location.search.substring", 1);
+                        if (search && search.length > 0)
+                        {
+                            result.decode(search);
+                        }
+                    }
+                }
+                catch (error:Error)
+                {
+                    Alert.show(error.toString());
+                }
+
+                return result;
+            }
+
+            private function setMapLocation():void
+            {
+                var params:Object = getURLParameters();
+                if (params["ll"])
+                {
+                    var latlong:Array = String(params.ll).split(",");
+                    if (latlong.length == 2)
+                    {
+                        myMap.centerAt(WebMercatorUtil.geographicToWebMercator(new MapPoint(latlong[1], latlong[0])) as MapPoint);
+                    }
+                }
+                if (params["scale"])
+                {
+                    myMap.scale = params.scale;
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <mx:NumberFormatter id="myDegreeFormatter"
+                            precision="6"
+                            useThousandsSeparator="true"/>
+    </fx:Declarations>
+
+    <s:BorderContainer width="100%" height="80"
+                       backgroundColor="0xFFBBBB"
+                       borderVisible="false">
+        <s:layout>
+            <s:VerticalLayout gap="4"
+                              horizontalAlign="center"
+                              paddingBottom="5"
+                              paddingLeft="10"
+                              paddingRight="10"
+                              paddingTop="5"/>
+        </s:layout>
+        <s:Label width="100%"
+                 fontSize="14"
+                 text="This sample shows how to pass arguments into your application.  Here we are passing along the current map center and scale, in essence creating a permalink you can share with others."/>
+        <s:Button click="createPermalink()"
+                  fontSize="14"
+                  fontWeight="bold"
+                  label="Create permalink"/>
+    </s:BorderContainer>
+
+    <esri:Map id="myMap" load="setMapLocation()">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+    </esri:Map>
+
+</s:Application>

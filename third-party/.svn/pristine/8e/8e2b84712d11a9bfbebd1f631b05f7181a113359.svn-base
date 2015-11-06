@@ -1,0 +1,558 @@
+//generally speaking, if your script is inheriting from this one, then you'll invoke from
+//  your build script's location as:
+//  gradle -b [your_build_script.gradle] release
+
+apply plugin: 'java'
+sourceCompatibility = '7' //defaults to java 7
+
+String getRelativeBaseDirectory(String current) {
+    f = new File(current)
+    if (new File(current,'core/build').exists() && new File(current,'core/build/base_build.gradle').exists())
+        return current
+    return getRelativeBaseDirectory(current + '../')
+}
+relativeBaseDirectory = getRelativeBaseDirectory('')
+
+//check for jre dependency
+jreProps = ['includeJre','jreVersion','jrePlatform','jreName']
+dependsOnProjects.each {
+    if (it.hasProperty('isJre') && it.isJre == true) {
+        jreProps.each { prop ->
+            project.setProperty(prop,it.getProperty(prop))
+        }
+    }
+}
+
+//defaults
+defaultProperties = [:]
+defaultProperties['projectNoTestDependencies'] = []
+defaultProperties['jarBaseName'] = project.name
+defaultProperties['version'] = null
+defaultProperties['specificationTitle'] = null
+defaultProperties['specificationVendor'] = null
+defaultProperties['implementationTitle'] = null
+defaultProperties['implementationVendor'] = null
+defaultProperties['baseTestClass'] = ''
+defaultProperties['baseDependencies'] = []
+defaultProperties['testDependencies'] = []
+defaultProperties['slimjimJar'] = project.hasProperty('entranceClasses')
+defaultProperties['slimjimJarFile'] = relativeBaseDirectory + 'third_party/slimjim/1.2/SlimJim-1.2.jar'
+defaultProperties['slimjimToolsZipDir'] = relativeBaseDirectory + 'third_party/java/1.6/windows_32bit/lib'
+defaultProperties['additionalSlimJimArgs'] = []
+defaultProperties['entranceClasses'] = []
+defaultProperties['includeJre'] = false
+defaultProperties['jreTools'] = false
+defaultProperties['jreApt'] = false
+defaultProperties['jreJavac'] = false
+defaultProperties['jreJConsole'] = false
+defaultProperties['skipProjectTests'] = false
+defaultProperties.each() { key,value -> 
+    if (!project.hasProperty(key)) {
+        project.setProperty(key,value)
+    }
+}
+
+test.enabled = false
+projectDependencies = []
+projectMatchName = project.name.split('\\$')[0]
+
+dependsOnProjects.each {
+    if (!it.hasProperty('isJre')) {
+        projectDependencies << it.getPath() + ':' + 'dependency'
+    }
+}
+
+task releaseClean << {
+    delete 'release'
+}
+
+void dependencyClean() {
+        delete 'target'
+        delete 'build'
+}
+
+task dependencyClean << {
+    if (!rootProject.name.equals(projectMatchName)) { //only if dependency
+        dependencyClean()
+    }
+}
+
+task testClean << {
+    delete 'test_out'
+}
+
+task preClean(dependsOn: [dependencyClean]) << {
+    preDef()
+}
+
+task cleanAfterDependencies(dependsOn: [testClean,releaseClean]) << {}
+
+task postClean << {
+    delete 'target'
+}
+
+task postCleanNested << {
+    delete 'target/classes'
+    delete 'target/test-classes'
+}
+
+if (!project.name.equals(projectMatchName) && //in a "$nested" project - turn off parent project's postClean and copyDependency tasks
+        project.gradle.startParameter.buildFile.name.equals(project.buildFile.name)) {
+    rootProject.project(projectMatchName).postClean.enabled = false //so we don't kill target dir too early
+    rootProject.project(projectMatchName).copyDependency.enabled = false //causes empty jars and whatnot
+}
+
+sourceSets {
+     main.classesDir = new File('target/classes')
+}
+
+sourceSets {
+     test.classesDir = new File('target/test-classes')
+}
+
+task buildNoticeFile << {
+    //step 1: parse notice files from dependent projects into map
+    //step 2: pull out licenses from base dependencies
+    //step 3: build notice file
+    //notice file is structured as such:
+    //*%* [name] *%*
+    //license
+    //*%***%*
+    Map<String,String> noticeMap = new HashMap<String,String>()
+    File bd = new File(projectDir,'target')
+    File pd = new File(rootProject.projectDir,'target')
+    parseNoticeFiles(bd,noticeMap)
+    if (!pd.equals(bd)) {
+        parseNoticeFiles(pd,noticeMap)
+    }
+    writeNoticeFile(noticeMap)
+}
+
+void parseNoticeFiles(File dir, Map<String,String> noticeMap) {
+    if (dir.exists()) {
+        dir.eachFile { 
+            if (it.isFile() && it.getName().startsWith('NOTICE.txt.')) {
+                noticeMap.putAll(parseNoticeFile(it))
+            }
+        }
+        for (d in baseDependencies) {
+            File f = new File(d)
+            String n = f.getName()
+            String p = f.getParent()
+            File lf = new File(p,'LICENSE.txt')
+            if (lf.exists()) {
+                noticeMap.put(n,lf.getText())
+            }
+        }
+    }
+}
+
+Map<String,String> parseNoticeFile(File noticeFile) {
+    String linesep = System.getProperty("line.separator")
+    Map<String,String> noticeMap = new HashMap<String,String>()
+    StringBuilder sb = null;
+    String currentKey = null;
+    noticeFile.eachLine{ line -> 
+        ls = line.trim()
+        boolean se = ls.startsWith("*%*") && ls.endsWith("*%*")
+        if (sb == null) {
+            if (se) {
+                sb = new StringBuilder()
+                currentKey = ls.replace("*%*","").trim()
+            }
+        } else {
+            if (se) {
+                noticeMap.put(currentKey,sb.toString())
+                currentKey = null
+                sb = null
+            } else {
+                sb.append(line + linesep)
+            }
+        }
+    }
+    noticeMap
+}
+
+void writeNoticeFile(Map<String,String> noticeMap) {
+    String linesep = System.getProperty("line.separator")
+    File f = new File(projectDir,'NOTICE.txt')
+    f.delete()
+    noticeMap.each() { key,value -> 
+        f.append('*%* ' + key + ' *%*' + linesep)
+        f.append(value)
+        f.append(linesep + '*%**%*' + linesep + linesep)
+    }
+    if (noticeMap.size() == 0) {
+        f.append("") //make an empty notice file
+    }
+}
+
+Attributes getNewAttributes(Map<String,?> atts) {
+    a = new org.gradle.api.java.archives.internal.DefaultAttributes()
+    for (String k : atts.keySet()) {
+        a.put(k,atts.get(k))
+    }
+    a
+}
+
+jar {
+    destinationDir = new File(projectDir,'target')
+    baseName = jarBaseName
+    version = version
+    manifestAtts = [:]
+    manifestAtts['Build-Date'] = new Date().toString()
+    manifestAtts['Build-Java-Version'] = System.getProperty('java.version')
+    if (specificationTitle != null) {
+        manifestAtts['Specification-Title'] = specificationTitle
+        manifestAtts['Specification-Version'] = version
+    }
+    if (specificationVendor != null) {
+        manifestAtts['Specification-Vendor'] = specificationVendor
+    }
+    if (implementationTitle != null) {
+        manifestAtts['Implementation-Title'] = implementationTitle
+        manifestAtts['Implementation-Version'] = version
+    }
+    if (implementationVendor != null) {
+        manifestAtts['Implementation-Vendor'] = implementationVendor
+    }
+    manifest {
+        attributes(manifestAtts)
+    }
+    metaInf = ['README.txt','LICENSE.txt','NOTICE.txt']
+}
+
+compileJava.options.compilerArgs = ['-Xlint:all,-rawtypes']
+
+javadoc {
+    destinationDir = new File(projectDir,'target/javadoc')
+    classpath = compileJava.classpath
+}
+
+task createJarRelease(type: Copy) {
+    destinationDir = new File('release/jar')
+    from ('target') {
+        include ('*.jar')
+    }
+    
+    from ('target') {
+        include 'javadoc/**/*'
+    }
+    from (['README.txt','LICENSE.txt','NOTICE.txt'])
+}
+
+task slimjim0(type: Copy,dependsOn: createJarRelease) {
+    from zipTree(new File(slimjimToolsZipDir,'tools.zip'))
+    into 'release/jar'
+}
+
+task slimjim1(type: JavaExec,dependsOn: [createJarRelease,slimjim0]) {
+    classpath(slimjimJarFile)
+    main = 'crf.slimjim.SlimJim'
+    args(['-ka','-i','com.pb.*','-a','release/jar/' + jar.archiveName,'-o','release/jar/temp.jar'] + additionalSlimJimArgs + entranceClasses)
+}
+
+slimjim1.doFirst {
+    new File('release/jar').eachFile{file -> 
+        if (file.isFile() && file.name.endsWith(".jar")) {
+            classpath('release/jar/' + file.name)
+        }
+    }
+}
+
+task slimjim2(type: Copy, dependsOn: [createJarRelease,slimjim0,slimjim1]) {
+    from ('release/jar/temp.jar')
+    into ('release/jar')
+    rename {
+        jar.archiveName
+    }
+}
+
+slimjim2.doFirst {
+    new File('release/jar',jar.archiveName).delete()
+}
+
+task slimjim3(type: JavaExec,dependsOn: [createJarRelease,slimjim0,slimjim1,slimjim2]) {
+    classpath(slimjimJarFile)
+    classpath('release/jar/' + jar.archiveName)
+    main = 'crf.slimjim.SlimJim'
+    args(['-d'] + entranceClasses)
+}
+
+slimjim3.doFirst {
+    new File('release/jar').eachFile{file -> 
+        if (file.isFile() && file.name.endsWith('.jar')) {
+            classpath('release/jar/' + file.name)
+        }
+    }
+    standardOutput = new FileOutputStream(new File('release','slimjim_out.txt'))
+    errorOutput = standardOutput
+}
+
+task slimjim(dependsOn: [createJarRelease,slimjim0,slimjim1,slimjim2,slimjim3] ) << {
+    slimjim3.standardOutput.close()
+    keeps = []
+    out = new File('release','slimjim_out.txt')
+    out.eachLine{line ->
+        if (!line.startsWith('*')) {
+            keeps << new File(line.trim()).name
+        }
+    }
+    out.delete()
+    new File('release/jar').eachFile{file -> 
+        if (file.isFile() && file.name.endsWith('.jar') && !keeps.contains(file.name)) {
+            file.delete()
+        }
+    }
+}
+
+void skipSlimJim() {
+    slimjim.enabled = false
+    slimjim0.enabled = false
+    slimjim1.enabled = false
+    slimjim2.enabled = false
+    slimjim3.enabled = false
+}
+
+if (!slimjimJar) {
+    skipSlimJim()
+}
+
+task zzCreateRelease(type: Zip,dependsOn: slimjim) {
+    baseName = jarBaseName
+    version = version
+    classifier = null
+    destinationDir = new File(projectDir,'release')
+    from ('release/jar') {
+        include '**/*'
+    }
+    if (includeJre) {
+        from ('release') {
+            include jreName + '.zip'
+        }
+    }
+}
+
+task zzCreateReleaseWithSource(type: Zip,dependsOn: slimjim) {
+    baseName = jarBaseName
+    version = version
+    classifier = 'src'
+    destinationDir = new File(projectDir,'release')
+    from ('release/jar') {
+        include '**/*'
+    }
+    from (sourceSets*.allSource) {
+        into 'src'
+    }
+    if (includeJre) {
+        from ('release') {
+            include jreName + '.zip'
+        }
+    }
+}
+
+task baseTest(type: JavaExec) {
+    classpath = compileTestJava.classpath
+    classpath('target/test-classes')
+    main = baseTestClass
+}
+
+baseTest.doFirst {
+    f = new File(projectDir,'test_out')
+    f.mkdir()
+    baseTest.standardOutput = new FileOutputStream(new File(f,'test_results.txt'))
+    baseTest.errorOutput = baseTest.standardOutput
+}
+
+task baseTestFinish << {
+    baseTest.standardOutput.close()
+    gotOne = false
+    new File(projectDir,'test_out/test_results.txt').eachLine{line ->
+        if (gotOne) {
+            println line
+            if (!line.contains('failures: 0'))
+                println '    Check test_out/test_results.txt for more information on failures.'
+            gotOne = false
+        } else {
+            if (line.startsWith('***Total Summary')) {
+                println line
+                gotOne = true
+            }
+        }
+    }
+}
+
+task copyDependencies(type: Copy) {
+    destinationDir = new File(projectDir,'target')
+    from files(baseDependencies)
+}
+
+task copyTestDependencies(type: Copy,dependsOn: copyDependencies) {
+    destinationDir = new File(projectDir,'target')
+    from files(testDependencies)
+}
+
+task copyDependency(type: Copy) {
+    destinationDir = new File(rootProject.projectDir,'target')
+    from ('target') {
+        include ('*.jar')
+    }
+    
+    //baseDependencies.each() { value -> 
+    //    print (new File(value).name)
+    //    from ('target') {
+    //        include (new File(value).name)
+    //    }
+    //}
+    
+    from ('NOTICE.txt')
+    rename { filename ->
+        filename.replace('NOTICE.txt','NOTICE.txt.' + project.name)
+    }
+}
+
+if (!includeJre) {
+    jreVersion = ''
+    jrePlatform = ''
+    jreName = ''
+}
+
+task expandJre(type: Copy) {
+    from zipTree(relativeBaseDirectory + 'third_party/java/' + jreVersion + '/' + jrePlatform + '/' + jreName + '.zip')
+    into 'target'
+}
+
+task expandToolsToJre(type: Copy) {
+    from zipTree(relativeBaseDirectory + 'third_party/java/' + jreVersion + '/' + jrePlatform + '/lib/tools.zip')
+    into 'target/' + jreName + '/lib'
+}
+
+task expandJConsoleToJre(type: Copy) {
+    from zipTree(relativeBaseDirectory + 'third_party/java/' + jreVersion + '/' + jrePlatform + '/lib/jconsole.zip')
+    into 'target/' + jreName + '/lib'
+}
+
+task expandAptToJre(type: Copy) {
+    from zipTree(relativeBaseDirectory + 'third_party/java/' + jreVersion + '/' + jrePlatform + '/bin/apt.zip')
+    into 'target/' + jreName + '/bin'
+}
+
+task expandJavacToJre(type: Copy) {
+    from zipTree(relativeBaseDirectory + 'third_party/java/' + jreVersion + '/' + jrePlatform + '/bin/javac.zip')
+    into 'target/' + jreName + '/bin'
+}
+
+task zipJre(type: Zip) {
+    baseName = jreName
+    version = null
+    classifier = null
+    destinationDir = new File(projectDir,'release')
+    from ('target') {
+        include jreName + '/**/*'
+    }
+}
+
+task cleanReleaseJre (type: Delete) {
+    delete 'release/' + jreName + '.zip'
+}
+
+expandJre.enabled = includeJre
+zipJre.enabled =  includeJre
+cleanReleaseJre.enabled = includeJre
+expandToolsToJre.enabled = includeJre && jreTools 
+expandAptToJre.enabled = includeJre && jreApt
+expandJavacToJre.enabled = includeJre && jreJavac
+expandJConsoleToJre.enabled = includeJre && jreJConsole
+
+dependencies {
+    compile  fileTree(dir: 'target', include: '*.jar')
+    testCompile fileTree(dir: 'target', include: '*.jar')
+    if (includeJre) {
+        compile  fileTree(dir: 'target/' + jreName + '/lib', include: '*.jar')
+        testCompile fileTree(dir: 'target/' + jreName + '/lib', include: '*.jar')
+    }
+}
+
+void skipTests() {
+    testClean.enabled = false
+    testClasses.enabled = false
+    baseTest.enabled = false
+    baseTestFinish.enabled = false
+}
+
+void preDef() {
+    if (!rootProject.name.equals(projectMatchName)) {
+        releaseClean.enabled = false
+        zzCreateRelease.enabled = false
+        zzCreateReleaseWithSource.enabled = false
+        createJarRelease.enabled = false
+        copyDependency.enabled = true
+        javadoc.enabled = false
+        
+        dependencyDir = new File(rootProject.projectDir,'target').getPath()
+        dependencies {
+            compile fileTree(dir: dependencyDir, include: '*.jar')
+            testCompile fileTree(dir: dependencyDir, include: '*.jar')
+            if (includeJre) {
+                compile  fileTree(dir: 'target/' + jreName + '/lib', include: '*.jar')
+                testCompile fileTree(dir: 'target/' + jreName + '/lib', include: '*.jar')
+            }
+        }
+        if ((projectNoTestDependencies + rootProject.childProjects.get(rootProject.name).projectNoTestDependencies).contains(':' + project.name)) {
+            skipTests()
+        } 
+        skipSlimJim()
+    }
+}
+
+task autoSkipTests << {
+    skipTests()
+}
+
+autoSkipTests.onlyIf {
+    baseTestClass.equals('')
+}
+
+if (skipProjectTests) {
+    skipTests()
+}
+
+task a_release(dependsOn: preClean) << {}
+task b_release(dependsOn: projectDependencies) << {}
+task c_release(dependsOn: cleanAfterDependencies) << {}
+task e_release(dependsOn: [expandJre,expandToolsToJre,expandAptToJre,expandJavacToJre,expandJConsoleToJre]) << {}
+task d_release(dependsOn: copyDependencies) << {}
+task f_release(dependsOn: javadoc) << {}
+task g_release(dependsOn: buildNoticeFile) << {}
+task h_release(dependsOn: build) << {}
+task i_release(dependsOn: slimjim) << {}
+task j_release(dependsOn: autoSkipTests) << {}
+task k_release(dependsOn: testClasses) << {}
+task l_release(dependsOn: copyTestDependencies) << {}
+task m_release(dependsOn: baseTest) << {}
+task n_release(dependsOn: baseTestFinish) << {}
+task o_release(dependsOn: copyDependency) << {}
+task p_release(dependsOn: [postClean,postCleanNested,clean,cleanReleaseJre]) << {}
+
+task release(dependsOn: [a_release,
+                         b_release,
+                         c_release,
+                         d_release,
+                         e_release,
+                         f_release,
+                         g_release,
+                         h_release,
+                         i_release,
+                         j_release,
+                         k_release,
+                         l_release,
+                         m_release,
+                         n_release,
+                         o_release,
+                         p_release
+                         ])  {}
+
+if (rootProject.name.equals(projectMatchName)) { //initial cleanup hack
+    dependencyClean()
+}
+task dependency(dependsOn: [release]) << {}

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Message in a bottle GP">
+    <!--
+         This sample uses a particle tracking model to show where a bottle would
+         go after a specified number of days if you dropped it in the ocean.
+         First, enter a number of days to track the bottle. Then click the button
+         and draw a point somewhere in the ocean to start the model. In a few
+         seconds you'll see a line appear depicting where the bottle would go.
+    -->
+
+    <fx:Style>
+        @namespace s "library://ns.adobe.com/flex/spark";
+
+        s|Panel {
+            cornerRadius: 20;
+            font-size: 13;
+            text-align: center;
+        }
+        s|TextInput {
+            color: #777777;
+            font-weight: bold;
+        }
+    </fx:Style>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.symbols.SimpleLineSymbol;
+            import com.esri.ags.symbols.SimpleMarkerSymbol;
+            import com.esri.ags.tasks.Geoprocessor;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            private function startGeoProcess(event:MapMouseEvent):void
+            {
+                var mapPoint:Geometry = event.mapPoint;
+                var myPointSymbol:SimpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, 0xFF0000, 0.5);
+                var startGraphic:Graphic = new Graphic(mapPoint, myPointSymbol);
+                startGraphic.toolTip = "Starting point";
+                graphicsLayer.add(startGraphic);
+
+                var featureSet:FeatureSet = new FeatureSet();
+                featureSet.features = [{ geometry: mapPoint }];
+
+                var parms:Object = new Object();
+                parms.Input_Point = featureSet;
+                parms.Days = Number(numberOfDays.text);
+
+                var geoprocessTask:Geoprocessor = new Geoprocessor();
+                geoprocessTask.outSpatialReference = myMap.spatialReference;
+                geoprocessTask.showBusyCursor = true;
+                geoprocessTask.url = "http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_Currents_World/GPServer/MessageInABottle";
+                geoprocessTask.useAMF = false;
+                geoprocessTask.execute(parms);
+                geoprocessTask.addEventListener(GeoprocessorEvent.EXECUTE_COMPLETE, executeCompleteHandler);
+                geoprocessTask.addEventListener(FaultEvent.FAULT, faultHandler);
+            }
+
+            private function executeCompleteHandler(event:GeoprocessorEvent):void
+            {
+                var myLineSymbol:SimpleLineSymbol = new SimpleLineSymbol();
+                myLineSymbol.color = 0xFFFF99;
+                myLineSymbol.width = 2;
+                myLineSymbol.alpha = 1.0;
+
+                for each (var graphic:Graphic in event.executeResult.results[0].value.features)
+                {
+                    graphic.symbol = myLineSymbol;
+                    graphicsLayer.add(graphic);
+                }
+            }
+
+            private function faultHandler(event:FaultEvent):void
+            {
+                if (event.type == "fault"
+                    && event.fault.name == 'Error'
+                    && event.fault.faultCode == '500'
+                    && event.fault.faultString == 'Error Executing Task')
+                {
+                    Alert.show("Oops - no results.  Try clicking in an ocean...");
+                }
+                else
+                {
+                    Alert.show("Unexpected fault:\n" + event.toString());
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map id="myMap"
+              level="2"
+              mapClick="startGeoProcess(event)">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer"/>
+    </esri:Map>
+
+    <s:Panel y="5" height="60"
+             horizontalCenter="0"
+             title="Where will the bottle end up?">
+        <s:HGroup width="100%"
+                  paddingBottom="2"
+                  paddingTop="2">
+            <s:Label styleName="myText" text="Click in the oceans to find out where a bottle would end up in"/>
+            <s:TextInput id="numberOfDays"
+                         width="40"
+                         paddingLeft="0"
+                         paddingRight="0"
+                         text="300"/>
+            <s:Label styleName="myText" text="days."/>
+        </s:HGroup>
+    </s:Panel>
+</s:Application>

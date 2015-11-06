@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the merge button of an Editor component.
+     @private
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             alpha.disabled="0.3"
+             minHeight="21"
+             minWidth="21">
+
+    <fx:Metadata>
+        [HostComponent("spark.components.Button")]
+    </fx:Metadata>
+
+    <fx:Script>
+        <![CDATA[
+            /* Define the skin elements that should not be colorized.
+             For button, the graphics are colorized but the label is not. */
+            static private const exclusions:Array = [ "img" ];
+
+            /**
+             * @copy spark.skins.SparkSkin#colorizeExclusions
+             */
+            override public function get colorizeExclusions():Array
+            {
+                return exclusions;
+            }
+
+            /**
+             *  @private
+             */
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                var cr:Number = getStyle("cornerRadius");
+
+                if (cornerRadius != cr)
+                {
+                    cornerRadius = cr;
+                }
+
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+
+            [Bindable]
+            public var cornerRadius:Number = 2;
+        ]]>
+    </fx:Script>
+
+    <s:states>
+        <s:State name="up"/>
+        <s:State name="over"/>
+        <s:State name="down"/>
+        <s:State name="disabled"/>
+    </s:states>
+
+    <!-- layer 1: fill -->
+    <s:Rect left="1" right="1" top="1" bottom="1"
+            radiusX="{cornerRadius}">
+        <s:fill>
+            <s:LinearGradient rotation="90">
+                <s:GradientEntry color="0xFFFFFF"
+                                 color.down="0xA8A8A8"
+                                 color.over="0xCACACA"/>
+                <s:GradientEntry color="0xDCDCDC"
+                                 color.down="0x6B6B6B"
+                                 color.over="0x8D8D8D"/>
+            </s:LinearGradient>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 2: One pixel stroke inside border (exclude in down) -->
+    <s:Rect left="1" right="1" top="1" bottom="1"
+            excludeFrom="down"
+            radiusX="{cornerRadius}">
+        <s:stroke>
+            <s:LinearGradientStroke rotation="90" weight="1">
+                <s:GradientEntry alpha.over="0.22" color="0xFEFEFE"/>
+                <s:GradientEntry alpha.over="0.22" color="0xEAEAEA"/>
+            </s:LinearGradientStroke>
+        </s:stroke>
+    </s:Rect>
+
+    <!-- layer 3: fill highlight  (exclude in down) -->
+    <s:Rect height="11"
+            left="1" right="1" top="1"
+            excludeFrom="down"
+            radiusX="{cornerRadius}">
+        <s:fill>
+            <s:SolidColor alpha="0.3"
+                          alpha.over="0.12"
+                          color="0xFFFFFF"/>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 4: downstate inset border  (include only in down) -->
+    <s:Rect height="1"
+            left="1" right="1" top="1"
+            includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.4" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect height="1"
+            left="1" right="1" top="2"
+            includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect width="1"
+            left="1" top="1" bottom="1"
+            includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+    <s:Rect width="1"
+            right="1" top="1" bottom="1"
+            includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0x000000"/>
+        </s:fill>
+    </s:Rect>
+
+    <!-- layer 5: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
+    <s:Rect width="38" height="24"
+            left="0" right="0" top="0" bottom="0"
+            radiusX="{cornerRadius}">
+        <s:stroke>
+            <s:SolidColorStroke color="0x131313"/>
+        </s:stroke>
+    </s:Rect>
+
+    <!-- layer 6: icon -->
+    <s:BitmapImage id="img"
+                   left="10" right="10" top="2" bottom="2"
+                   horizontalCenter="0"
+                   source="@Embed('../../../../assets/skins/EditingSplitPolygonTool16.png')"
+                   verticalCenter="0"/>
+
+</s:SparkSkin>

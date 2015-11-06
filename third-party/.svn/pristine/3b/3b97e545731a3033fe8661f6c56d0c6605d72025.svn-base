@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:samples="com.esri.ags.samples.*">
+    <!--
+         How to use the IGraphicRenderer interface with an info window.
+    -->
+    <fx:Declarations>
+        <samples:BalloonSymbol id="ballonSymbol"
+                               color="0xFF0000"
+                               size="10">
+            <samples:htmlText>
+                <![CDATA[
+                <b>$[head]</b><br/>
+                <i>$[lat]</i><br/>
+                <i>$[lon]</i><br/>
+            ]]>
+            </samples:htmlText>
+        </samples:BalloonSymbol>
+    </fx:Declarations>
+
+    <esri:Map id="map"
+              openHandCursorVisible="false"
+              scaleBarVisible="false">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer>
+            <esri:Graphic symbol="{ballonSymbol}">
+                <esri:geometry>
+                    <esri:MapPoint x="-5009000" y="-5621000"/>
+                </esri:geometry>
+                <esri:attributes>
+                    <fx:Object>
+                        <fx:head>Marker 1</fx:head>
+                        <fx:lat>S 45</fx:lat>
+                        <fx:lon>W 45</fx:lon>
+                    </fx:Object>
+                </esri:attributes>
+                <esri:infoWindowRenderer>
+                    <fx:Component>
+                        <samples:BalloonTextArea/>
+                    </fx:Component>
+                </esri:infoWindowRenderer>
+            </esri:Graphic>
+            <esri:Graphic symbol="{ballonSymbol}">
+                <esri:geometry>
+                    <esri:MapPoint x="5009000" y="5621000"/>
+                </esri:geometry>
+                <esri:attributes>
+                    <fx:Object>
+                        <fx:head>Marker 2</fx:head>
+                        <fx:lat>N 45</fx:lat>
+                        <fx:lon>E 45</fx:lon>
+                    </fx:Object>
+                </esri:attributes>
+                <esri:infoWindowRenderer>
+                    <fx:Component>
+                        <samples:BalloonTextArea/>
+                    </fx:Component>
+                </esri:infoWindowRenderer>
+            </esri:Graphic>
+        </esri:GraphicsLayer>
+    </esri:Map>
+</s:Application>

@@ -1,0 +1,168 @@
+JFreeChart 1.0.3:
+-----------------
+17 November 2006
+
+This release features several new IntervalXYDataset implementations, some 
+significant refactoring of the time period classes (to improve performance 
+and correctness), modifications to the PiePlot class to support reordering of
+dataset items, a new event mechanism to allow updating of markers, plus many
+other enhancements, bug fixes and documentation updates.
+
+A new DialPlot implementation has been added to the 'experimental' sources. 
+We are looking for people to test this code and provide feedback, so that we
+can stabilize the API and add this code to the main JFreeChart API.
+
+API adjustments:
+
+The following adjustments have been made to the API:
+
+- CategoryLabelEntity - new class;
+- CategoryPointerAnnotation - new class;
+- ChartPanel: added new public method doEditChartProperties();
+- ComparableObjectItem, ComparableObjectSeries - new classes;
+- CrosshairState: added several new accessor methods;
+- DefaultPieDataset: added sortByKeys() and sortByValues() methods;
+- Markers: a change event mechanism has been added to the Marker class and
+  its subclasses;
+- StackedAreaRenderer: added get/setRenderAsPercentages() methods;
+- XIntervalDataItem, XIntervalSeries and XIntervalSeriesCollection - new 
+    classes;
+- XYErrorRenderer: new class;
+- XYInterval, XYIntervalDataItem, XYIntervalSeries and 
+    XYIntervalSeriesCollection - new classes;
+- YInterval, YIntervalDataItem, YIntervalSeries, YIntervalSeriesCollection and
+    YWithXInterval - new classes.
+
+Bug Fixes:
+
+1578293 - Unused methods in JDBCXYDataset;
+1572478 - BoxAndWhiskerRenderer potential NullPointerException;
+1569094 - XYStepRenderer with horizontal orientation;
+1565168 - Crosshair position incorrect;
+1564977 - DateAxis missing initial tick label;
+1562759 - StatisticalLineAndShapeRenderer constructor ignores arguments;
+1557141 - Bad locale in ServletUtilities;
+1550045 - TimeSeries.removeAgedItems() method problems;
+1549218 - Chart not displaying when all data values are the same and large;
+1450447 - Marker.setAlpha() ignored;
+
+Also fixed URL generation for legend items, tick mark positioning on the 
+DateAxis, the equals() method in the AreaRenderer class, hardcoded outline 
+attributes in the XYBubbleRenderer, and potential NullPointerExceptions in the
+ChartPanel class.
+
+
+JFreeChart 1.0.2:
+-----------------
+Released on 25 August 2006.
+
+API adjustments:
+
+The following adjustments have been made to the API (there should be no 
+breakage of applications coded to the 1.0.0 or 1.0.1 API):
+
+- CategoryToPieDataset: added accessor methods for underlying dataset, extract
+    type and index (feature request 1477915);
+- DefaultXYDataset:  New dataset implementation that uses double[] arrays;
+- DefaultXYZDataset:  New dataset implementation that uses double[] arrays;
+- LegendItemBlockContainer: New container used in legends (enables 
+    legend item entities again);
+- MultiplePiePlot:  Added new fields aggregatedItemsKey and 
+    aggregatedItemsPaint, plus accessor methods - see bug 1190647;
+- SpiderWebPlot:  Added new fields toolTipGenerator and urlGenerator, plus 
+    accessor methods (see patch 1463455);
+- StackedBarRenderer3D:  Added new flag (renderAsPercentages), plus accessor
+    methods, that controls whether the data items are displayed as values or
+    percentages.  Two new constructors are also added (see patch 1459313);
+- XYPolygonAnnotation: Added new accessor methods.
+
+Patches:
+
+1459313 - Add renderAsPercentages option to StackedBarRenderer3D;
+1462727 - Modify SpiderWebPlot to support zero values;
+1463455 - Modify SpiderWebPlot to support mouse clicks, tool tips and URLs;
+
+Bug Fixes:
+
+1514904 - Background image alpha in Plot class;
+1499140 - ClusteredXYBarRenderer with margin not drawing correctly;
+1494936 - LineAndShapeRenderer generates entity for non-visible item;
+1493199 - NPE drawing SpiderWebPlot with null info;
+1480978 - AbstractPieItemLabelGenerator.clone() doesn't clone percentFormat;
+1472942 - DateAxis.equals() broken;
+1468794 - StatisticalLineAndShapeRenderer doesn't draw error bars correctly
+          when the plot has a horizontal orientation;
+        - AbstractCategoryItemRenderer doesn't check seriesVisibleInLegend
+          flag before creating new item;
+1440415 - Bad distribution of pie chart section labels;
+1440346 - Bad manifest entry for JCommon in JFreeChart jar file;
+1435461 - NumberAxis.equals() ignores rangeType field;
+1435160 - XYPointerAnnotation.equals() ignores x and y fields;
+1398672 - LegendItemEntities not working;
+1380480 - StandardXYItemRenderer problems with Double.NaN;
+1190647 - Legend and section color mismatch for MultiplePiePlot.
+
+Miscellaneous Changes:
+
+- Updated CandlestickRenderer, CyclicXYItemRenderer, HighLowRenderer, 
+  XYStepAreaRenderer and TimeSeriesURLGenerator to call dataset methods that 
+  return double primitive only;
+- Updated XYPolygonAnnotation, adding new accessor methods and fixing problems
+  in the equals()/hashCode() methods;
+- ChartFactory.createStackedXYAreaChart() now uses StackedXYAreaRenderer2, for
+  better handling of negative values;
+- Added crosshair support for XYBarRenderer.
+
+Experimental Code:
+
+In this release, some new (incomplete) classes have been included in the 
+org.jfree.experimental.* namespace.  These classes are not part of the 
+standard API, but are included for developers to experiment with and provide
+feedback on.  Hopefully in the future, refined versions of these classes will
+be incorporated into the main library.  PLEASE NOTE THAT THE API FOR THESE
+CLASSES IS SUBJECT TO CHANGE. 
+
+
+JFreeChart 1.0.1:
+----------------
+Released 27 January 2006.  This is primarily a bug fix release.  In addition,
+there are some API adjustments (there should be no breakage of applications 
+coded to the 1.0.0 API).
+
+API adjustments:
+- BarRenderer: added a new flag (includeBaseInRange), plus accessor 
+    methods, that controls whether or not the base value for the bar is 
+    included in the range calculated by the findRangeBounds() method;
+- BubbleXYItemLabelGenerator: new class;
+- Range: added a new method expandToInclude(Range, double), this is used by 
+    the BarRenderer class;
+- TaskSeriesCollection: added two new methods, getSeries(int) and 
+    getSeries(Comparable).
+- TimeSeriesCollection:  the domainIsPointsInTime flag has been deprecated.  
+    The flag serves no function now that renderers are used to calculate the 
+    domain bounds, so you can safely delete any calls to the
+    setDomainIsPointsInTime() method;
+- XYPlot: added a new getAnnotations() method;
+- XYSeries: the update(int, Number) method has been deprecated and a new method
+    updateByIndex(int, Number) has been added;
+
+Bug fixes:
+
+1243050 - XYBarRenderer doesn't show entire range of values for a 
+          TimeSeriesCollection;
+1373371 - XYBubbleRenderer doesn't support item labels;
+1374222 - BarRenderer contains JDK 1.4 specific code;
+1374328 - LegendItem serialization problem;
+1377239 - Bad argument checking in Quarter constructor;
+1379331 - Incorrect drawing of TextTitle at LEFT or RIGHT position;
+1386328 - RingPlot entity incorrect;
+1400442 - Inconsistent treatment of null and zero values in PiePlot;
+1401856 - Bad rendering for non-zero base values in BarRenderer;
+1403043 - NullPointerException in CategoryAxis;
+1408904 - NumberAxis3D assumes CategoryPlot;
+1415480 - XYTextAnnotation equals() method doesn't check (x, y);
+
+
+JFreeChart 1.0.0:
+----------------
+Released on 2 December 2005.

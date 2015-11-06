@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default item renderer for the Editor Drop Down List.
+     @private
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                name="EditorDropDownListItemRenderer"
+                focusEnabled="false">
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="hovered"/>
+        <s:State name="selected"/>
+        <s:State name="normalAndShowsCaret"/>
+        <s:State name="hoveredAndShowsCaret"/>
+        <s:State name="selectedAndShowsCaret"/>
+    </s:states>
+
+    <fx:Script>
+        <![CDATA[
+            override public function set data(value:Object):void
+            {
+                super.data = value;
+
+                if (value)
+                {
+                    image.source = value.icon;
+                }
+            }
+
+            override public function set label(value:String):void
+            {
+                super.label = value;
+
+                dropDownLabel.text = label;
+
+                const newSelectionLabel:String = resourceManager.getString("ESRIMessages", "editorNewSelectionLabel");
+                const addToSelectionLabel:String = resourceManager.getString("ESRIMessages", "editorAddSelectionLabel");
+                const subtractFromSelectionLabel:String = resourceManager.getString("ESRIMessages", "editorSubtractSelectionLabel");
+                switch (label)
+                {
+                    case newSelectionLabel:
+                    {
+                        dropDownLabel.toolTip = resourceManager.getString("ESRIMessages", "editorNewSelectionTooltip");
+                        break;
+                    }
+                    case addToSelectionLabel:
+                    {
+                        dropDownLabel.toolTip = resourceManager.getString("ESRIMessages", "editorAddSelectionTooltip");
+                        break;
+                    }
+                    case subtractFromSelectionLabel:
+                    {
+                        dropDownLabel.toolTip = resourceManager.getString("ESRIMessages", "editorSubtractSelectionTooltip");
+                        break;
+                    }
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <s:Rect left="0" right="0" top="0" bottom="0">
+        <s:stroke.normalAndShowsCaret>
+            <s:SolidColorStroke color="{getStyle('selectionColor')}" weight="1"/>
+        </s:stroke.normalAndShowsCaret>
+        <s:stroke.hoveredAndShowsCaret>
+            <s:SolidColorStroke color="{getStyle('selectionColor')}" weight="1"/>
+        </s:stroke.hoveredAndShowsCaret>
+        <s:stroke.selectedAndShowsCaret>
+            <s:SolidColorStroke color="{getStyle('selectionColor')}" weight="1"/>
+        </s:stroke.selectedAndShowsCaret>
+        <s:fill>
+            <s:SolidColor color.hovered="{getStyle('rollOverColor')}"
+                          color.hoveredAndShowsCaret="{getStyle('rollOverColor')}"
+                          color.normal="{getStyle('contentBackgroundColor')}"
+                          color.normalAndShowsCaret="{getStyle('contentBackgroundColor')}"
+                          color.selected="{getStyle('selectionColor')}"
+                          color.selectedAndShowsCaret="{getStyle('selectionColor')}"/>
+        </s:fill>
+    </s:Rect>
+
+    <s:BitmapImage id="image"
+                   left="3"
+                   verticalCenter="0"/>
+
+    <s:Label id="dropDownLabel"
+             left="23" right="3" top="6" bottom="4"
+             verticalCenter="0"/>
+
+</s:ItemRenderer>

@@ -1,0 +1,30 @@
+void setupProject(relativeBaseDirectory,relativeDir,projectName) {
+    include projectName
+    rootProject.children.each {project ->
+        if (projectName.equals(project.name)) {
+            String fileBaseName = project.name.split('\\$')[0]
+            String projectDirName = new File(new File(relativeBaseDirectory,relativeDir),"$fileBaseName").getPath()
+            project.projectDir = new File(settingsDir, projectDirName)
+            project.buildFileName = project.name + ".gradle"
+            assert project.projectDir.isDirectory()
+            assert project.buildFile.isFile()
+        }
+    }
+}
+
+void setupProjects(projectMap,relativeBaseDirectory) {
+    projectMap.each { dir,value ->
+        value.each { project ->
+            setupProject(relativeBaseDirectory,dir,project)
+        }
+    }
+}
+
+String getRelativeBaseDirectory(String current) {
+    f = new File(current)
+    if (new File(current,'core/build').exists() && new File(current,'core/build/base_settings.gradle').exists())
+        return current
+    return getRelativeBaseDirectory(current + '../')
+}
+
+setupProjects(projectMap,getRelativeBaseDirectory(''))

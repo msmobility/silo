@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Query raster catalog of an ImageService">
+    <!--
+         This sample shows how to query the raster catalog of an Image Service layer.
+
+         It also shows how to have an ImageServer as the baselayer below a tiled mapservice,
+         but still have the tiled service determine the map scales to use.
+    -->
+
+    <s:controlBarContent>
+        <s:Label width="100%" text="Drag a rectangle to query image tiles.  Tile footprints will be returned and displayed."/>
+    </s:controlBarContent>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.DrawEvent;
+            import com.esri.ags.events.MapEvent;
+            import com.esri.ags.events.QueryEvent;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            protected function map_loadHandler(event:MapEvent):void
+            {
+                // Start with tiledLayer as the base layer to set the map's units and lods,
+                // but we actually want the imageLayer on the bottom,
+                // so we re-order once map is loaded :)
+                map.reorderLayer(imageLayer.id, 0);
+
+                drawTool.activate(DrawTool.EXTENT);
+            }
+
+            protected function drawTool_drawEndHandler(event:DrawEvent):void
+            {
+                query.geometry = event.graphic.geometry;
+                queryTask.execute(query);
+            }
+
+            protected function queryTask_faultHandler(event:FaultEvent):void
+            {
+                Alert.show(event.fault.faultString);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:DrawTool id="drawTool"
+                       drawEnd="drawTool_drawEndHandler(event)"
+                       map="{map}">
+            <esri:fillSymbol>
+                <esri:SimpleFillSymbol alpha="0.5" color="0xFF0000">
+                    <esri:SimpleLineSymbol color="0xFF0000"/>
+                </esri:SimpleFillSymbol>
+            </esri:fillSymbol>
+        </esri:DrawTool>
+
+        <esri:Query id="query"
+                    outSpatialReference="{map.spatialReference}"
+                    returnGeometry="true"
+                    where="Category = 1"/>
+        <esri:QueryTask id="queryTask"
+                        fault="queryTask_faultHandler(event)"
+                        url="{imageLayer.url}"
+                        useAMF="false"/>
+    </fx:Declarations>
+
+    <esri:Map id="map" load="map_loadHandler(event)">
+        <esri:extent>
+            <esri:Extent xmin="-13670997" ymin="5697204" xmax="-13637149" ymax="5714270">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer id="tiledLayer" url="http://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer"/>
+        <esri:ArcGISImageServiceLayer id="imageLayer"
+                                      imageFormat="jpgpng"
+                                      url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Portland/Aerial/ImageServer"/>
+        <esri:GraphicsLayer id="graphicsLayer" graphicProvider="{queryTask.executeLastResult.features}">
+            <esri:symbol>
+                <esri:SimpleFillSymbol style="null">
+                    <esri:SimpleLineSymbol width="2" color="0xFFFFFF"/>
+                </esri:SimpleFillSymbol>
+            </esri:symbol>
+        </esri:GraphicsLayer>
+    </esri:Map>
+
+</s:Application>

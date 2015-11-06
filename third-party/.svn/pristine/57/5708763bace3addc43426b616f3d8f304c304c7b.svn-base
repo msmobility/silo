@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Incident Tracker">
+
+    <fx:Style>
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|InfoWindow
+        {
+            content-background-alpha : 0;
+            background-color : #CCCCCC;
+            border-thickness : 2;
+        }
+    </fx:Style>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.FeatureLayerEvent;
+            import com.esri.ags.geometry.MapPoint;
+
+            // variables
+            public var count:Number;
+            public var mapClickPoint:MapPoint;
+            public var selectedGraphic:Graphic;
+
+            private function myMap_mouseDownHandler(event:MouseEvent):void
+            {
+                event.currentTarget.addEventListener(MouseEvent.MOUSE_MOVE, myMap_mouseMoveHandler);
+                event.currentTarget.addEventListener(MouseEvent.MOUSE_UP, myMap_mouseUpHandler);
+            }
+
+            private function myMap_mouseMoveHandler(event:MouseEvent):void
+            {
+                event.currentTarget.removeEventListener(MouseEvent.MOUSE_MOVE, myMap_mouseMoveHandler);
+                event.currentTarget.removeEventListener(MouseEvent.MOUSE_UP, myMap_mouseUpHandler);
+            }
+
+            private function myMap_mouseUpHandler(event:MouseEvent):void
+            {
+                // reset the count
+                count = 0;
+
+                event.currentTarget.removeEventListener(MouseEvent.MOUSE_MOVE, myMap_mouseMoveHandler);
+                event.currentTarget.removeEventListener(MouseEvent.MOUSE_UP, myMap_mouseUpHandler);
+
+                mapClickPoint = myMap.toMapFromStage(event.stageX, event.stageY);
+                if (event.target.parent is Graphic) // for PictureMarkerSymbol target is not graphic(graphic contains a child object)
+                {
+                    selectedGraphic = event.target.parent as Graphic;
+
+                    relationShipQuery.outFields = [ "agree_with_incident" ];
+                    relationShipQuery.relationshipId = 1;
+                    relationShipQuery.objectIds = [ selectedGraphic.attributes.objectid ];
+                    incidentLayer.queryRelatedFeatures(relationShipQuery);
+                }
+                else
+                {
+                    myMap.infoWindow.hide();
+                }
+            }
+
+            private function incidentLayer_queryRelatedFeaturesCompleteHandler(event:FeatureLayerEvent):void
+            {
+                const featureSet:FeatureSet = event.relatedRecords[selectedGraphic.attributes.objectid];
+                if (featureSet && featureSet.features.length > 0)
+                {
+                    count = featureSet.features.length;
+                }
+                peopleCount.text = count + " people think this is important";
+
+                myMap.infoWindow.label = selectedGraphic.attributes.req_type;
+                myTextArea.htmlText = "<b>Date Reported: </b>" + selectedGraphic.attributes.req_date + "\n"
+                    + "<b>Address: </b>" + selectedGraphic.attributes.address + "\n"
+                    + "<b>District: </b>" + selectedGraphic.attributes.district;
+
+                myMap.infoWindow.show(mapClickPoint);
+            }
+
+            private function voteImage_clickHandler(event:MouseEvent):void
+            {
+                const voteRecordAttributes:Object = {
+                        sf_311_serviceoid: selectedGraphic.attributes.objectid,
+                        datetime: new Date().getTime(),
+                        agree_with_incident: 1
+                    };
+                const voteRecord:Graphic = new Graphic(null, null, voteRecordAttributes);
+
+                const incidentVoteTable:FeatureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/1");
+                incidentVoteTable.addEventListener(FeatureLayerEvent.EDITS_COMPLETE, incidentVoteTable_editsCompleteHandler);
+                incidentVoteTable.applyEdits([ voteRecord ], null, null);
+            }
+
+            private function incidentVoteTable_editsCompleteHandler(event:FeatureLayerEvent):void
+            {
+                count++;
+                peopleCount.text = count + " people think this is important";
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:RelationshipQuery id="relationShipQuery"/>
+    </fx:Declarations>
+
+    <esri:Map id="myMap"
+              mouseDown="myMap_mouseDownHandler(event)"
+              openHandCursorVisible="false">
+        <esri:infoWindowContent>
+            <mx:VBox width="250" height="180">
+                <mx:HRule width="100%"/>
+                <mx:TextArea id="myTextArea"
+                             width="100%" height="70"
+                             borderVisible="false"
+                             wordWrap="true"/>
+                <mx:HRule width="100%"/>
+                <mx:Text id="peopleCount"/>
+                <mx:Image id="voteImage"
+                          buttonMode="true"
+                          click="voteImage_clickHandler(event)"
+                          source="@Embed(source='assets/thumbsup.jpg')"
+                          useHandCursor="true"/>
+            </mx:VBox>
+        </esri:infoWindowContent>
+        <esri:extent>
+            <esri:Extent xmin="-13626000" ymin="4549000" xmax="-13625000" ymax="4551000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:FeatureLayer id="incidentLayer"
+                           disableClientCaching="true"
+                           mode="onDemand"
+                           outFields="*"
+                           queryRelatedFeaturesComplete="incidentLayer_queryRelatedFeaturesCompleteHandler(event)"
+                           url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/MapServer/0"/>
+    </esri:Map>
+
+</s:Application>

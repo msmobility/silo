@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:samples="com.esri.ags.samples.*"
+               pageTitle="Using FeatureCollection">
+    <!--
+         @@includeFiles com/esri/ags/samples/GPXFeed.as
+
+         This sample shows how to use a FeatureCollection to populate time-aware
+         data that is not setup with ArcGIS.  Instead this sample sets up the
+         FeatureLayer with a time-aware FeatureCollection using a GPX feed.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.LayerEvent;
+            import com.esri.ags.layers.supportClasses.FeatureCollection;
+            import com.esri.ags.layers.supportClasses.LayerDetails;
+            import com.esri.ags.layers.supportClasses.TimeInfo;
+
+            import mx.events.FlexEvent;
+
+            protected function fLyr_initializeHandler(event:FlexEvent):void
+            {
+                // init feature layer with an empty FeatureCollection and make time aware
+                var timeInfo:TimeInfo = new TimeInfo();
+                timeInfo.startTimeField = "time";
+                var layerDetails:LayerDetails = new LayerDetails();
+                layerDetails.timeInfo = timeInfo;
+                fLyr.featureCollection = new FeatureCollection(null, layerDetails);
+            }
+
+            protected function fLyr_loadHandler(event:LayerEvent):void
+            {
+                gpxFeed.fetch();
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <samples:GPXFeed id="gpxFeed"
+                         featureLayer="{fLyr}"
+                         map="{map}"
+                         timeSlider="{timeSlider}"
+                         url="assets/activity_9067441.gpx"/>
+    </fx:Declarations>
+
+    <esri:Map id="map"
+              openHandCursorVisible="false"
+              timeSlider="{timeSlider}">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:FeatureLayer id="fLyr"
+                           initialize="fLyr_initializeHandler(event)"
+                           load="fLyr_loadHandler(event)">
+            <esri:renderer>
+                <esri:TemporalRenderer>
+                    <esri:trackRenderer>
+                        <esri:SimpleRenderer>
+                            <esri:SimpleLineSymbol/>
+                        </esri:SimpleRenderer>
+                    </esri:trackRenderer>
+                    <esri:latestObservationRenderer>
+                        <esri:SimpleRenderer>
+                            <esri:PictureMarkerSymbol width="32" height="32"
+                                                      source="@Embed('assets/runner.png')"/>
+                        </esri:SimpleRenderer>
+                    </esri:latestObservationRenderer>
+                    <esri:observationRenderer>
+                        <esri:SimpleRenderer>
+                            <esri:SimpleMarkerSymbol color="0xFF0000">
+                                <esri:SimpleLineSymbol/>
+                            </esri:SimpleMarkerSymbol>
+                        </esri:SimpleRenderer>
+                    </esri:observationRenderer>
+                    <esri:observationAger>
+                        <esri:TimeRampAger>
+                            <esri:alphaRange>
+                                <esri:AlphaRange fromAlpha="0.25" toAlpha="1.0"/>
+                            </esri:alphaRange>
+                            <esri:sizeRange>
+                                <esri:SizeRange fromSize="5" toSize="15"/>
+                            </esri:sizeRange>
+                        </esri:TimeRampAger>
+                    </esri:observationAger>
+                </esri:TemporalRenderer>
+            </esri:renderer>
+        </esri:FeatureLayer>
+    </esri:Map>
+
+    <esri:TimeSlider id="timeSlider"
+                     bottom="10"
+                     horizontalCenter="0"/>
+
+</s:Application>

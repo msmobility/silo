@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Legend Component">
+
+    <!--
+        This sample shows how to use the Legend component to build a legend that displays some or all of the layers in the map.
+        To create a new legend component specify the map to be displayed.
+        Optionally you can provide a list of layers to display in the legend.
+        If no layers are specified then all the layers will display in the legend.
+
+        The respectCurrentMapScale property, if set to true (default) will force the legend component to only display layers that are visible in the current map scale.
+    -->
+
+    <s:layout>
+        <s:HorizontalLayout gap="0"/>
+    </s:layout>
+
+    <esri:Legend id="myLegend"
+                 width="250" height="100%"
+                 layers="{[ legendLayer ]}"
+                 map="{myMap}"
+                 respectCurrentMapScale="true"/>
+
+    <esri:Map id="myMap">
+        <esri:extent>
+            <esri:Extent xmin="-10753431" ymin="4624151" xmax="-10737799" ymax="4635884">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer id="baseLayer" url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"/>
+        <esri:ArcGISDynamicMapServiceLayer id="legendLayer" name="Kansas Hydrography"
+                                           url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Hydrography/Watershed173811/MapServer"/>
+    </esri:Map>
+
+</s:Application>

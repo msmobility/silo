@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2011 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     Alternative skin class for the navigation's horizontal slider component.
+     @private
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             xmlns:mx="library://ns.adobe.com/flex/mx"
+             alpha.disabled="0.5"
+             minHeight="11">
+
+    <fx:Metadata>
+        [HostComponent("spark.components.HSlider")]
+    </fx:Metadata>
+
+    <fx:Script>
+        /* Define the skin elements that should not be colorized.
+        For slider, the skin itself is colorized but the individual parts are not. */
+        static private const exclusions:Array = [ "track", "thumb" ];
+
+        /**
+         * @private
+         */
+        override public function get colorizeExclusions():Array
+        {
+            return exclusions;
+        }
+
+        /**
+         * @private
+         */
+        override protected function initializationComplete():void
+        {
+            useChromeColor = true;
+            super.initializationComplete();
+        }
+    </fx:Script>
+
+    <fx:Script>
+        <![CDATA[
+            override protected function measure():void
+            {
+                // Temporarily move the thumb to the left of the Slider so measurement
+                // doesn't factor in its x position. This allows resizing the
+                // HSlider to less than 100px in width. 
+                var thumbPos:Number = thumb.getLayoutBoundsX();
+                thumb.setLayoutBoundsPosition(0, thumb.getLayoutBoundsY());
+                super.measure();
+                thumb.setLayoutBoundsPosition(thumbPos, thumb.getLayoutBoundsY());
+            }
+
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+                drawTicks();
+            }
+
+            private function drawTicks():void
+            {
+                var tColor:Number = getStyle("symbolColor");
+                var tInterval:Number = 1;
+                var tLength:Number = 3;
+                var tOffset:Number = -3;
+                var tThickness:Number = 1;
+
+                var g:Graphics = ticks.graphics;
+                var xPos:Number;
+
+                var val:Number = hostComponent.minimum;
+
+                g.clear();
+
+                if (tInterval > 0)
+                {
+                    g.lineStyle(tThickness, tColor);
+
+                    do
+                    {
+                        xPos = Math.round(getXFromValue(val));
+                        g.moveTo(xPos, 0);
+                        g.lineTo(xPos, tLength);
+                        val = tInterval + val;
+                    } while (val < hostComponent.maximum)
+
+                    // draw the last tick
+                    xPos = Math.round(getMaxX());
+                    g.moveTo(xPos, 0);
+                    g.lineTo(xPos, tLength);
+
+                    ticks.height = tLength - tOffset;
+                }
+            }
+
+            private function getXFromValue(v:Number):Number
+            {
+                var maxX:Number = getMaxX();
+                var minX:Number = getMinX();
+
+                var val:Number;
+
+                if (v == hostComponent.minimum)
+                {
+                    val = minX;
+                }
+                else if (v == hostComponent.maximum)
+                {
+                    val = maxX;
+                }
+                else
+                {
+                    val = minX + (hostComponent.maximum - v) * (maxX - minX) / (hostComponent.maximum - hostComponent.minimum);
+                }
+
+                return val;
+            }
+
+            private function getMinX():Number
+            {
+                return thumb.width / 2;
+            }
+
+            private function getMaxX():Number
+            {
+                return width - thumb.width / 2;
+            }
+        ]]>
+    </fx:Script>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="disabled"/>
+    </s:states>
+
+    <fx:Declarations>
+        <!--- The tooltip used in the slider control. -->
+        <fx:Component id="dataTip">
+            <s:DataRenderer y="-34"
+                            minHeight="24"
+                            minWidth="40">
+                <s:Rect left="0" right="0" top="0" bottom="0">
+                    <s:fill>
+                        <s:SolidColor alpha=".9" color="0x000000"/>
+                    </s:fill>
+                    <s:filters>
+                        <s:DropShadowFilter angle="90"
+                                            color="0x999999"
+                                            distance="3"/>
+                    </s:filters>
+                </s:Rect>
+                <s:Label id="labelDisplay"
+                         left="5" right="5" top="5" bottom="5"
+                         color="white"
+                         fontSize="11"
+                         fontWeight="normal"
+                         horizontalCenter="0"
+                         text="{data}"
+                         textAlign="center"
+                         verticalAlign="middle"
+                         verticalCenter="1">
+                </s:Label>
+            </s:DataRenderer>
+        </fx:Component>
+    </fx:Declarations>
+
+    <mx:UIComponent id="ticks"
+                    left="0" right="0" top="0"/>
+
+    <s:Button id="track"
+              width="100"
+              left="0" right="0" top="{ticks.height}" bottom="0"
+              minWidth="33"
+              skinClass="spark.skins.spark.HSliderTrackSkin"/>
+
+    <s:Button id="thumb"
+              width="11" height="11"
+              top="{ticks.height}" bottom="0"
+              skinClass="spark.skins.spark.HSliderThumbSkin"/>
+</s:SparkSkin>

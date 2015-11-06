@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Customize NavigationClass to change zoom slider tooltips">
+    <!--
+         @@includeFiles com/esri/ags/samples/skins/MyNavigationSkin.mxml
+
+         This sample shows how to customize Navigation DataTip
+
+         This example shows how to modify the data tip of the navigation skin
+         to display "World", "Country", "Neighborhood" instead of the default
+         scale number.
+    -->
+
+    <fx:Style>
+        @namespace s "library://ns.adobe.com/flex/spark";
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|Navigation
+        {
+            skinClass: ClassReference("com.esri.ags.samples.skins.MyNavigationSkin");
+        }
+    </fx:Style>
+
+    <s:layout>
+        <s:VerticalLayout horizontalAlign="center" paddingTop="10"/>
+    </s:layout>
+
+    <s:Label fontWeight="bold" text="Change zoom slider using a custom Navigation skin."/>
+    <s:Label text="Note: Click and hold on the little circle in zoom slider to see customised data tip."/>
+
+    <esri:Map openHandCursorVisible="false">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+    </esri:Map>
+
+</s:Application>

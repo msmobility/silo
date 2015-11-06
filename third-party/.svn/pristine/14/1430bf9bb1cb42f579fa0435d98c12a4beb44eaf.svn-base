@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Using a WMS map service with the ArcGIS API for Flex">
+    <!--
+         This sample shows you how to add a WMS service to your application.
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Units;
+        ]]>
+    </fx:Script>
+    <esri:Map units="{Units.DECIMAL_DEGREES}">
+        <esri:WMSLayer url="http://sampleserver1.arcgisonline.com/arcgis/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer/WMSServer">
+            <esri:visibleLayers>
+                <!--Order matters-->
+                <s:ArrayList>
+                    <!--States-->
+                    <fx:String>0</fx:String>
+                    <!--Cities-->
+                    <fx:String>2</fx:String>
+                </s:ArrayList>
+            </esri:visibleLayers>
+        </esri:WMSLayer>
+    </esri:Map>
+</s:Application>

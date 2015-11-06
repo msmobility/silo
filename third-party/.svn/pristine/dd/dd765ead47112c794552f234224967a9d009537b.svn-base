@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Find features in Map Layers, then zoom in">
+
+    <s:layout>
+        <s:VerticalLayout paddingBottom="10"
+                          paddingLeft="10"
+                          paddingRight="10"
+                          paddingTop="10"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.FindEvent;
+            import com.esri.ags.geometry.Extent;
+            import com.esri.ags.tasks.supportClasses.FindResult;
+            import com.esri.ags.utils.GraphicUtil;
+
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+
+            private function doFind():void
+            {
+                findTask.execute(myFindParams);
+            }
+
+            private function executeCompleteHandler(event:FindEvent):void
+            {
+                myGraphicsLayer.clear();
+
+                resultSummary.text = "Found " + event.findResults.length + " results.";
+                myGraphicsLayer.symbol = sfsFind;
+
+                var resultCount:int = event.findResults.length;
+
+                if (resultCount == 0)
+                {
+                    Alert.show("No states found. Please change your search.");
+                }
+                else
+                {
+                    // add feature as graphic to graphics layer
+                    for (var i:int = 0; i < resultCount; i++)
+                    {
+                        var graphic:Graphic = FindResult(event.findResults[i]).feature;
+                        graphic.toolTip = event.findResults[i].foundFieldName + ": " + event.findResults[i].value;
+                        myGraphicsLayer.add(graphic);
+                    }
+
+                    // zoom to extent of all features
+                    var graphicProvider:ArrayCollection = myGraphicsLayer.graphicProvider as ArrayCollection;
+                    var graphicsExtent:Extent = GraphicUtil.getGraphicsExtent(graphicProvider.toArray());
+                    map.extent = graphicsExtent.expand(1.1); // zoom out a little
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <!-- Symbol for Find Result as Polygon -->
+        <esri:SimpleFillSymbol id="sfsFind" alpha="0.7"/>
+
+        <!-- Find Task -->
+        <esri:FindTask id="findTask"
+                       executeComplete="executeCompleteHandler(event)"
+                       url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer"/>
+
+        <esri:FindParameters id="myFindParams"
+                             contains="true"
+                             layerIds="[2]"
+                             outSpatialReference="{map.spatialReference}"
+                             returnGeometry="true"
+                             searchFields="[STATE_ABBR,STATE_NAME]"
+                             searchText="{fText.text}"/>
+    </fx:Declarations>
+
+    <s:BorderContainer width="100%" height="40"
+                       backgroundColor="0xDDDDFF"
+                       borderVisible="false">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center" verticalAlign="middle"/>
+        </s:layout>
+        <s:Label text="Search for names of States"/>
+        <s:TextInput id="fText"
+                     enter="doFind()"
+                     maxWidth="400"
+                     text="NEW"/>
+        <s:Button click="doFind()" label="Find"/>
+    </s:BorderContainer>
+
+    <s:Label id="resultSummary" height="15"/>
+
+    <mx:VDividedBox width="100%" height="100%">
+        <esri:Map id="map">
+            <esri:extent>
+                <esri:Extent xmin="-14000000" ymin="2800000" xmax="-7000000" ymax="6400000">
+                    <esri:SpatialReference wkid="102100"/>
+                </esri:Extent>
+            </esri:extent>
+            <esri:ArcGISDynamicMapServiceLayer url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer"/>
+            <esri:GraphicsLayer id="myGraphicsLayer"/>
+        </esri:Map>
+        <mx:DataGrid width="100%" height="40%"
+                     dataProvider="{findTask.executeLastResult}">
+            <mx:columns>
+                <mx:DataGridColumn width="70"
+                                   dataField="layerId"
+                                   headerText="Layer ID"/>
+                <mx:DataGridColumn dataField="layerName" headerText="Layer Name"/>
+                <mx:DataGridColumn dataField="foundFieldName" headerText="Found Field Name"/>
+                <mx:DataGridColumn dataField="value" headerText="Found Field Value"/>
+            </mx:columns>
+        </mx:DataGrid>
+    </mx:VDividedBox>
+
+</s:Application>

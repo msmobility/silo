@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Identify Features on the Map">
+    <!--
+         This sample shows how to identify features with a MapClick and the Identify task.
+
+         The IdentifyParameters designate which layers are being identified.
+         Identify operations can potentially return a lot of information
+         depending on the number of layers being identified and a given tolerance.
+         The tolerance is the number of pixels a feature is allowed to lie away
+         from the clicked point in order to be counted as a result.
+
+         In this sample, when user clicks the map, an "Identify" task is executed.
+
+         When the task finishes executing, the executeCompleteHandler function loops
+         through the features in the IdentifyResult and adds them to the map.
+    -->
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.Geometry;
+            import com.esri.ags.symbols.InfoSymbol;
+            import com.esri.ags.tasks.supportClasses.IdentifyParameters;
+            import com.esri.ags.tasks.supportClasses.IdentifyResult;
+
+            import mx.controls.Alert;
+            import mx.rpc.AsyncResponder;
+
+            [Bindable]
+            private var lastIdentifyResultGraphic:Graphic;
+
+            private function mapClickHandler(event:MapMouseEvent):void
+            {
+                clickGraphicsLayer.clear();
+
+                var identifyParams:IdentifyParameters = new IdentifyParameters();
+                identifyParams.returnGeometry = true;
+                identifyParams.tolerance = 3;
+                identifyParams.width = myMap.width;
+                identifyParams.height = myMap.height;
+                identifyParams.geometry = event.mapPoint;
+                identifyParams.mapExtent = myMap.extent;
+                identifyParams.spatialReference = myMap.spatialReference;
+
+                var clickGraphic:Graphic = new Graphic(event.mapPoint, clickPtSym);
+                clickGraphicsLayer.add(clickGraphic);
+
+                identifyTask.execute(identifyParams, new AsyncResponder(myResultFunction, myFaultFunction, clickGraphic));
+            }
+
+            private function myResultFunction(results:Array, clickGraphic:Graphic = null):void
+            {
+                if (results && results.length > 0)
+                {
+                    var result:IdentifyResult = results[0];
+                    var resultGraphic:Graphic = result.feature;
+                    switch (resultGraphic.geometry.type)
+                    {
+                        case Geometry.MAPPOINT:
+                        {
+                            resultGraphic.symbol = smsIdentify;
+                            break;
+                        }
+                        case Geometry.POLYLINE:
+                        {
+                            resultGraphic.symbol = slsIdentify;
+                            break;
+                        }
+                        case Geometry.POLYGON:
+                        {
+                            resultGraphic.symbol = sfsIdentify;
+                            break;
+                        }
+                    }
+                    lastIdentifyResultGraphic = resultGraphic;
+
+                    // update clickGraphic (from mouse click to returned feature)
+                    clickGraphic.symbol = new InfoSymbol(); // use default renderer
+                    clickGraphic.attributes = resultGraphic.attributes;
+                }
+            }
+
+            private function myFaultFunction(error:Object, clickGraphic:Graphic = null):void
+            {
+                Alert.show(String(error), "Identify Error");
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <!-- Symbol for where the user clicked -->
+        <esri:SimpleMarkerSymbol id="clickPtSym"
+                                 color="0xFF0000"
+                                 size="12"
+                                 style="x"/>
+
+        <!-- Symbol for Identify Result as Polyline -->
+        <esri:SimpleLineSymbol id="slsIdentify"
+                               width="2"
+                               alpha="1"
+                               color="0x00FF00"
+                               style="solid"/>
+
+        <!-- Symbol for Identify Result as Point -->
+        <esri:SimpleMarkerSymbol id="smsIdentify"
+                                 color="0x00FF00"
+                                 size="15"
+                                 style="diamond"/>
+
+        <!-- Symbol for Identify Result as Polygon -->
+        <esri:SimpleFillSymbol id="sfsIdentify"/>
+
+        <!-- Identify Task -->
+        <esri:IdentifyTask id="identifyTask"
+                           concurrency="last"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StatesCitiesRivers_USA/MapServer"/>
+    </fx:Declarations>
+
+    <esri:Map id="myMap"
+              mapClick="mapClickHandler(event)"
+              openHandCursorVisible="false">
+        <esri:extent>
+            <esri:WebMercatorExtent minlon="-120" minlat="30" maxlon="-100" maxlat="50"/>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer graphicProvider="{lastIdentifyResultGraphic}"/>
+        <esri:GraphicsLayer id="clickGraphicsLayer"/>
+    </esri:Map>
+
+</s:Application>

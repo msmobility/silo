@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+                            xmlns:s="library://ns.adobe.com/flex/spark"
+                            creationComplete="viewnavigatorapplication1_creationCompleteHandler(event)"
+                            firstView="views.LoadingWebmapsView">
+
+    <fx:Style source="defaults.css"/>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.utils.JSON;
+
+            import model.WebMapObject;
+
+            import mx.collections.ArrayList;
+            import mx.events.FlexEvent;
+            import mx.rpc.events.ResultEvent;
+            import mx.rpc.http.HTTPService;
+
+            import views.WebMapsView;
+
+            protected function viewnavigatorapplication1_creationCompleteHandler(event:FlexEvent):void
+            {
+                const params:URLVariables = new URLVariables();
+                params.q = 'title:"Esri Featured Content" AND owner:esri';
+                params.f = 'json';
+                const hs:HTTPService = new HTTPService();
+                hs.url = "http://www.arcgis.com/sharing/community/groups";
+                hs.useProxy = false;
+                hs.requestTimeout = 30;
+                hs.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
+                hs.addEventListener(ResultEvent.RESULT, getGroups_resultHandler);
+                hs.send(params);
+            }
+
+            private function getGroups_resultHandler(event:ResultEvent):void
+            {
+                const decodedObject:Object = com.esri.ags.utils.JSON.decode(event.result as String);
+                const results:Array = decodedObject.results;
+                if (results && results.length)
+                {
+                    const result:Object = results[0];
+                    const featuredItemsId:String = result.featuredItemsId;
+                    getRelatedItems(featuredItemsId);
+                }
+            }
+
+            private function getRelatedItems(featuredItemsId:String):void
+            {
+                const params:URLVariables = new URLVariables();
+                params.relationshipType = 'FeaturedItems2Item';
+                params.direction = 'forward';
+                params.f = 'json';
+                const hs:HTTPService = new HTTPService();
+                hs.url = 'http://www.arcgis.com/sharing/content/items/' + featuredItemsId + '/relatedItems';
+                hs.useProxy = false;
+                hs.requestTimeout = 30;
+                hs.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
+                hs.addEventListener(ResultEvent.RESULT, getRelatedItems_resultHandler);
+                hs.send(params);
+            }
+
+            private function getRelatedItems_resultHandler(event:ResultEvent):void
+            {
+                const source:ArrayList = new ArrayList;
+                const decodedObject:Object = com.esri.ags.utils.JSON.decode(event.result as String);
+                const relatedItems:Array = decodedObject.relatedItems;
+                for each (var relatedItem:Object in relatedItems)
+                {
+                    if (relatedItem.type === 'Web Map')
+                    {
+                        const webMapObject:WebMapObject = new WebMapObject();
+                        webMapObject.id = relatedItem.id;
+                        webMapObject.title = relatedItem.title;
+                        webMapObject.thumbnail = "http://www.arcgis.com/sharing/content/items/" + relatedItem.id + "/info/" + relatedItem.thumbnail;
+                        webMapObject.snippet = relatedItem.snippet;
+                        var extent:Array = relatedItem.extent;
+                        source.addItem(webMapObject);
+                    }
+                }
+                // remove any previous search(s) on start up
+                persistenceManager.setProperty("searchText", null);
+                persistenceManager.setProperty("searchResults", null);
+
+                persistenceManager.setProperty("webmaps", source);
+                navigator.pushView(WebMapsView, source);
+            }
+        ]]>
+    </fx:Script>
+</s:ViewNavigatorApplication>

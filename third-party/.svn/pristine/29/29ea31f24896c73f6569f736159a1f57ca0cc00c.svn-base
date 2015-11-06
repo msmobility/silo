@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Using the navigation tools">
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.tools.NavigationTool;
+
+            import mx.logging.LogEventLevel;
+
+            import spark.events.IndexChangeEvent;
+
+            private function tbb_changeHandler(event:IndexChangeEvent):void
+            {
+                switch (tbb.selectedItem)
+                {
+                    case "Zoom In":
+                    {
+                        navTool.activate(NavigationTool.ZOOM_IN);
+                        break;
+                    }
+                    case "Zoom Out":
+                    {
+                        navTool.activate(NavigationTool.ZOOM_OUT);
+                        break;
+                    }
+                    case "Pan":
+                    {
+                        navTool.activate(NavigationTool.PAN);
+                        break;
+                    }
+                    default:
+                    {
+                        navTool.deactivate();
+                        break;
+                    }
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:NavigationTool id="navTool" map="{myMap}"/>
+
+        <mx:TraceTarget includeCategory="true"
+                        includeLevel="true"
+                        includeTime="true"
+                        level="{LogEventLevel.DEBUG}"/>
+        <!-- The output from TraceTarget is available when debugging this sample in Flash Builder -->
+    </fx:Declarations>
+
+    <s:controlBarLayout>
+        <s:HorizontalLayout gap="10"
+                            horizontalAlign="center"
+                            paddingBottom="7"
+                            paddingLeft="10"
+                            paddingRight="10"
+                            paddingTop="7"/>
+    </s:controlBarLayout>
+    <s:controlBarContent>
+        <s:ButtonBar id="tbb" change="tbb_changeHandler(event)">
+            <s:ArrayList>
+                <fx:String>Zoom In</fx:String>
+                <fx:String>Zoom Out</fx:String>
+                <fx:String>Pan</fx:String>
+            </s:ArrayList>
+        </s:ButtonBar>
+        <s:HGroup gap="0">
+            <s:Button click="navTool.zoomToPrevExtent()"
+                      enabled="{!navTool.isFirstExtent}"
+                      label="Previous Extent"/>
+            <s:Button click="navTool.zoomToNextExtent()"
+                      enabled="{!navTool.isLastExtent}"
+                      label="Next Extent"/>
+        </s:HGroup>
+        <s:Button click="myMap.zoomToInitialExtent()" label="Initial Extent"/>
+    </s:controlBarContent>
+
+    <esri:Map id="myMap">
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+    </esri:Map>
+
+</s:Application>

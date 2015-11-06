@@ -1,0 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+Provides interfaces and classes which extend the base <code>Tensor</code> class. These decorators allow the size, contents,
+ids, and concurrency of a tensor to be specified.
+</body>
+</html>

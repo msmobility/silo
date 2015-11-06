@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Attribute Inspector (edit)">
+    <!--
+         This application is "ViewOnly" and connects to a non-editable layer.
+
+         This application allows user to click on a feature (parcels)
+         and view a few attributes of that feature.
+
+         This is done by clicking a point on the map to select feature(s)
+         from the FeatureLayer.
+
+         The AttributeInspector then displays the selection in the InfoWindow
+         popup which is shown where user clicked the map.
+
+         Note that this sample displays the FeatureLayer in "selection" mode and
+         that the parcels are actually displayed using a dynamic layer pointing to
+         the matching map service.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.FeatureLayerEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.MapPoint;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            protected function map_mapClickHandler(event:MapMouseEvent):void
+            {
+                // set the selection query based on the click
+                queryMapClick.geometry = event.mapPoint;
+                myFeatureLayer.selectFeatures(queryMapClick); // default selectionMethod is FeatureLayer.SELECTION_NEW
+                myMap.infoWindow.hide();
+            }
+
+            protected function attrInsp_faultHandler(event:FaultEvent):void
+            {
+                Alert.show(event.fault.message, "Fault");
+            }
+
+            protected function myFeatureLayer_selectionCompleteHandler(event:FeatureLayerEvent):void
+            {
+                // only show infoWindow if a feature was found
+                if (event.featureLayer.numGraphics > 0)
+                {
+                    myMap.infoWindow.label = "Parcel " + event.featureLayer.selectedFeatures[0].attributes.OBJECTID;
+                    myMap.infoWindow.show(queryMapClick.geometry as MapPoint);
+                }
+                else
+                {
+                    Alert.show("Sorry found nothing here...");
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Query id="queryMapClick"/>
+    </fx:Declarations>
+
+    <fx:Style>
+        @namespace s "library://ns.adobe.com/flex/spark";
+        @namespace esri "http://www.esri.com/2008/ags";
+
+        esri|InfoWindow
+        {
+            background-color: #BDB76B; /* dark khaki */
+            border-color: #000000;
+            border-thickness: 3;
+            lower-left-radius: 20;
+            lower-right-radius: 20;
+            upper-left-radius: 20;
+            upper-right-radius: 0;
+            padding-bottom: 7;
+            padding-left: 7;
+            padding-right: 7;
+            padding-top: 4;
+        }
+        esri|InfoWindowLabel
+        {
+            color: #FFFFFF;
+            font-size: 15;
+            padding-left: 120;
+        }
+        s|BorderContainer
+        {
+            background-color: #F0E68C; /* light khaki */
+            corner-radius: 15;
+            content-background-color: #BDB76B;
+            padding-bottom: 5;
+        }
+    </fx:Style>
+
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+
+    <esri:Map id="myMap"
+              load="attrInsp.featureLayers = [myFeatureLayer]"
+              mapClick="map_mapClickHandler(event)"
+              openHandCursorVisible="false">
+        <!-- Extent for BloomfieldHills -->
+        <esri:extent>
+            <esri:Extent xmin="-9271300" ymin="5248100" xmax="-9270300" ymax="5249200">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISDynamicMapServiceLayer url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/BloomfieldHillsMichigan/Parcels/MapServer"/>
+        <esri:FeatureLayer id="myFeatureLayer"
+                           mode="selection"
+                           outFields="[USEDSCRP,OWNERNME1,LASTUPDATE,CLASSDSCRP]"
+                           selectionColor="0x000000"
+                           selectionComplete="myFeatureLayer_selectionCompleteHandler(event)"
+                           url="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/BloomfieldHillsMichigan/Parcels/MapServer/2"/>
+        <esri:infoWindowContent>
+            <s:BorderContainer>
+                <esri:AttributeInspector id="attrInsp"/>
+            </s:BorderContainer>
+        </esri:infoWindowContent>
+    </esri:Map>
+
+    <s:Label text="The feature layer has {myFeatureLayer.selectedFeatures.length} selected feature(s)."/>
+
+</s:Application>

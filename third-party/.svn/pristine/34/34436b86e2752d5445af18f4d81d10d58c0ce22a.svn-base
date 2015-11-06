@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Query Task (with a map)">
+    <!--
+         This sample shows how to query the server and display the result on a map.
+
+         There are two alternative ways to do this.
+         Option #1: Use FeatureLayer - see FeatureLayer_Search sample.
+         Option #2: Use GraphicsLayer plus QueryTask (this sample).
+
+         This sample sets up a QueryTask (what layer on what server to query).
+         When user clicks the "Do Query" button, a Query is sent to the server
+         with the user-provided text to search for.
+         queryTask.execute(query, new AsyncResponder(onResult, onFault));
+         When the results comes back the specified function ("onResult") is called.
+
+         The results is automatically added to the map (using executeLastResult).
+         <esri:GraphicsLayer id="myGraphicsLayer" graphicProvider="{queryTask.executeLastResult.features}"/>
+
+         Note that the busy cursor is automatically shown while the query is executing because of
+         showBusyCursor="true"
+
+         Tip 1: To use a different symbol, set the symbol on the graphics layer.
+         Tip 2: To add a toolTip, loop through the graphics in the returned featureset,
+         in the onResult() and set the tooltip on each graphic.
+         The featureSet is an array of graphics.
+    -->
+
+    <s:layout>
+        <s:VerticalLayout gap="10"
+                          horizontalAlign="center"
+                          paddingBottom="20"
+                          paddingLeft="25"
+                          paddingRight="25"
+                          paddingTop="20"/>
+    </s:layout>
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.FeatureSet;
+            import mx.controls.Alert;
+            import mx.rpc.AsyncResponder;
+
+            private function doQuery():void
+            {
+                queryTask.execute(query, new AsyncResponder(onResult, onFault));
+                function onResult(featureSet:FeatureSet, token:Object = null):void
+                {
+                    // No code needed in this simple sample, since the
+                    // graphics layer is bound to the query result using
+                    // graphicProvider="{queryTask.executeLastResult.features}"
+                }
+                function onFault(info:Object, token:Object = null):void
+                {
+                    Alert.show(info.toString(), "Query Problem");
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <!-- Layer with US States -->
+        <esri:QueryTask id="queryTask"
+                        showBusyCursor="true"
+                        url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/5"
+                        useAMF="false"/>
+
+        <esri:Query id="query"
+                    outSpatialReference="{myMap.spatialReference}"
+                    returnGeometry="true"
+                    text="{qText.text}">
+            <esri:outFields>
+                <fx:String>MED_AGE</fx:String>
+                <fx:String>POP2007</fx:String>
+            </esri:outFields>
+        </esri:Query>
+    </fx:Declarations>
+
+    <s:Panel height="60"
+             backgroundColor="0xB2BFC6"
+             title="Query a layer (search for a state)">
+        <s:layout>
+            <s:HorizontalLayout/>
+        </s:layout>
+        <s:TextInput id="qText"
+                     width="100%"
+                     enter="doQuery()"
+                     text="California"/>
+        <s:Button click="doQuery()" label="Do Query"/>
+    </s:Panel>
+
+    <esri:Map id="myMap">
+        <esri:extent>
+            <esri:Extent xmin="-14298000" ymin="2748000" xmax="-6815000" ymax="7117000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer" graphicProvider="{queryTask.executeLastResult.features}"/>
+    </esri:Map>
+
+</s:Application>

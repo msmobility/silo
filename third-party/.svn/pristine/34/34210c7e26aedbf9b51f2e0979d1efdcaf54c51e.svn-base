@@ -1,0 +1,14 @@
+dependsOn(':util')
+dependsOn(':datatable')
+dependsOn(':model_builder')
+dependsOn(':calculator_datatable')
+
+jarBaseName = 'sawdust-census-data'
+version = '1.0'
+specificationTitle = 'Sawdust Census Data Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.model.data'
+implementationVendor = 'Parsons Brinckerhoff'
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+
+apply from: '../../core/build/base_build.gradle'

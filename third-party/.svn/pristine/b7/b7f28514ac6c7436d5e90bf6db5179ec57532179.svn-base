@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slimjim/1.2/SlimJim-1.2.iml" filepath="$MAIN_REPOSITORY$/third_party/slimjim/1.2/SlimJim-1.2.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/antlr/3.4/antlr-3.4.iml" filepath="$MAIN_REPOSITORY$/third_party/antlr/3.4/antlr-3.4.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/integration/blas/blas.iml" filepath="$MAIN_REPOSITORY$/integration/blas/blas.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/calculator_datatable/calculator_datatable.iml" filepath="$MAIN_REPOSITORY$/core/calculator_datatable/calculator_datatable.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/calculator_tensor/calculator_tensor.iml" filepath="$MAIN_REPOSITORY$/core/calculator_tensor/calculator_tensor.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/datatable/datatable.iml" filepath="$MAIN_REPOSITORY$/core/datatable/datatable.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/geography/geography.iml" filepath="$MAIN_REPOSITORY$/core/geography/geography.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/javadbf/0.4/javadbf-0.4.iml" filepath="$MAIN_REPOSITORY$/third_party/javadbf/0.4/javadbf-0.4.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jblas/1.2/jblas-1.2.iml" filepath="$MAIN_REPOSITORY$/third_party/jblas/1.2/jblas-1.2.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jcip-annotations/jcip-annotations.iml" filepath="$MAIN_REPOSITORY$/third_party/jcip-annotations/jcip-annotations.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slf4j/1.6/jcl-over-slf4j-1.6.iml" filepath="$MAIN_REPOSITORY$/third_party/slf4j/1.6/jcl-over-slf4j-1.6.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/jcuda/0.4.0/jcuda-0.4.0.iml" filepath="$MAIN_REPOSITORY$/third_party/jcuda/0.4.0/jcuda-0.4.0.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/junit/4.8/junit-4.8.iml" filepath="$MAIN_REPOSITORY$/third_party/junit/4.8/junit-4.8.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/slf4j/1.6/log4j-over-slf4j-1.6.iml" filepath="$MAIN_REPOSITORY$/third_party/slf4j/1.6/log4j-over-slf4j-1.6.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/meta/meta.iml" filepath="$MAIN_REPOSITORY$/core/meta/meta.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/modeling/model_builder/model_builder.iml" filepath="$MAIN_REPOSITORY$/modeling/model_builder/model_builder.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/modeling/models/models.iml" filepath="$MAIN_REPOSITORY$/modeling/models/models.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/third_party/poi/3.7/poi-3.7.iml" filepath="$MAIN_REPOSITORY$/third_party/poi/3.7/poi-3.7.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/property/property.iml" filepath="$MAIN_REPOSITORY$/core/property/property.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/tensor/tensor.iml" filepath="$MAIN_REPOSITORY$/core/tensor/tensor.iml" />
+      <module fileurl="file://$MAIN_REPOSITORY$/core/util/util.iml" filepath="$MAIN_REPOSITORY$/core/util/util.iml" />
+    </modules>
+  </component>
+</project>
+

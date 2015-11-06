@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Locator task">
+    <!--
+    In this sample, the addressToLocations() method on the Locator
+    is used to find the lcoation (aka geocoding) for a certain address.
+
+    The sample takes a user-provided address and sends it to the
+    server for geocoding.  When the response comes back, the OnResult()
+    function creates a graphic for the result and then sets the scale
+    appropriately based on if the match was a "street", "city" etc match.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.Graphic;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.tasks.supportClasses.AddressCandidate;
+            import com.esri.ags.utils.WebMercatorUtil;
+
+            import mx.controls.Alert;
+            import mx.rpc.AsyncResponder;
+
+            private function doFind():void
+            {
+                var myAddress:Object = { SingleLine: onelineaddress.text };
+
+                // Use outFields to get back extra information
+                // The exact fields available depends on the specific Locator used.
+                var myOutFields:Array = [ "Loc_name" ];
+                locateTask.outSpatialReference = myMap.spatialReference;
+                locateTask.addressToLocations(myAddress, myOutFields, new AsyncResponder(onResult, onFault));
+                function onResult(candidates:Array, token:Object = null):void
+                {
+                    if (candidates.length > 0)
+                    {
+                        var addressCandidate:AddressCandidate = candidates[0];
+                        var myGraphic:Graphic = new Graphic();
+
+                        // for 9.3 servers, or anything else returning latlong:  myGraphic.geometry = WebMercatorUtil.geographicToWebMercator(addressCandidate.location);
+
+                        myGraphic.geometry = addressCandidate.location;
+                        myGraphic.symbol = mySymbol;
+                        myGraphic.toolTip = addressCandidate.address.toString();
+                        myGraphic.id = "graphic";
+                        myGraphicsLayer.add(myGraphic);
+
+                        myMap.centerAt(myGraphic.geometry as MapPoint);
+
+                        // Zoom to an appropriate level
+                        // Note: your attribute and field value might differ depending on which Locator you are using...
+                        if (addressCandidate.attributes.Loc_name.search("RoofTop") > 0) // US_RoofTop
+                        {
+                            myMap.scale = 10000;
+                        }
+                        else if (addressCandidate.attributes.Loc_name.search("Address") > 0)
+                        {
+                            myMap.scale = 10000;
+                        }
+                        else if (addressCandidate.attributes.Loc_name.search("Street") > 0) // US_Streets, CAN_Streets, CAN_StreetName, EU_Street_Addr* or EU_Street_Name* 
+                        {
+                            myMap.scale = 15000;
+                        }
+                        else if (addressCandidate.attributes.Loc_name.search("ZIP4") > 0
+                            || addressCandidate.attributes.Loc_name.search("Postcode") > 0) // US_ZIP4, CAN_Postcode
+                        {
+                            myMap.scale = 20000;
+                        }
+                        else if (addressCandidate.attributes.Loc_name.search("Zipcode") > 0) // US_Zipcode
+                        {
+                            myMap.scale = 40000;
+                        }
+                        else if (addressCandidate.attributes.Loc_name.search("City") > 0) // US_CityState, CAN_CityProv
+                        {
+                            myMap.scale = 150000;
+                        }
+                        else
+                        {
+                            myMap.scale = 500000;
+                        }
+                        myInfo.htmlText = "<b>Found:</b><br/>" + addressCandidate.address.toString(); // formated address
+                    }
+                    else
+                    {
+                        myInfo.htmlText = "<b><font color='#FF0000'>Found nothing :(</b></font>";
+
+                        Alert.show("Sorry, couldn't find a location for this address"
+                                   + "\nAddress: " + onelineaddress.text);
+                    };
+
+                }
+                function onFault(info:Object, token:Object = null):void
+                {
+                    myInfo.htmlText = "<b>Failure</b>" + info.toString();
+                    Alert.show("Failure: \n" + info.toString());
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Locator id="locateTask" url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Locators/TA_Address_NA_10/GeocodeServer"/>
+
+        <esri:SimpleMarkerSymbol id="mySymbol"
+                                 alpha="0.5"
+                                 color="0xFF0000"
+                                 size="21"
+                                 style="circle">
+            <esri:SimpleLineSymbol width="2"/>
+        </esri:SimpleMarkerSymbol>
+    </fx:Declarations>
+
+    <esri:Map id="myMap">
+        <esri:extent>
+            <esri:Extent xmin="-13046000" ymin="4028000" xmax="-13024000" ymax="4041000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer"/>
+    </esri:Map>
+
+    <s:Panel width="300"
+             top="5"
+             horizontalCenter="0"
+             title="Find an address">
+        <s:layout>
+            <s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+        </s:layout>
+        <!-- Single line geocode -->
+        <s:TextInput id="onelineaddress"
+                     width="95%"
+                     enter="doFind()"
+                     text="380 New York St, Redlands"/>
+        <s:Button click="doFind()" label="Find Address"/>
+        <mx:Text id="myInfo"
+                 width="100%"
+                 color="0x00FF00"
+                 textAlign="center"/>
+    </s:Panel>
+</s:Application>

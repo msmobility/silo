@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Custom ScaleBar Skin">
+
+    <!--
+         @@includeFiles com/esri/ags/samples/skins/ScaleBarSkin.mxml
+
+         This sample shows you how to use a custom scale bar.
+    -->
+
+    <fx:Style>
+        @namespace esri "http://www.esri.com/2008/ags";
+        esri|ScaleBar
+        {
+            skinClass: ClassReference("com.esri.ags.samples.skins.ScaleBarSkin");
+        }
+    </fx:Style>
+    <esri:Map>
+        <esri:ArcGISDynamicMapServiceLayer url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Population_World/MapServer"/>
+    </esri:Map>
+</s:Application>

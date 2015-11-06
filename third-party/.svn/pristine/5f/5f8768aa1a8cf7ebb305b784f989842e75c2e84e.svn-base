@@ -1,0 +1,19 @@
+dependsOn(':util')
+dependsOn(':datatable')
+dependsOn(':geography')
+dependsOn(':tensor')
+dependsOn(':calculator_tensor')
+dependsOn(':census_data')
+
+
+jarBaseName = 'sawdust-pop-synth'
+version = '1.0'
+specificationTitle = 'Sawdust Population Synthesis Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.popsynth'
+implementationVendor = 'Parsons Brinckerhoff'
+//baseTestClass = ''
+baseDependencies = []
+//testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+
+apply from: '../../core/build/base_build.gradle'

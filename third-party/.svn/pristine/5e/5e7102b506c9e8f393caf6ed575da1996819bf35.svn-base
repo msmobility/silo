@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               initialize="application_initializeHandler(event)">
+    <!--
+         This sample shows you how to use a Web Map from www.arcgis.com to create the basemap and operational layers of your Flex map.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.events.WebMapEvent;
+
+            import mx.controls.Alert;
+            import mx.events.FlexEvent;
+
+            protected function application_initializeHandler(event:FlexEvent):void
+            {
+                webMapUtil.createMapById("f2c91ddb284a4edfbf7b6df176c67e1d");
+            }
+
+            protected function webMapUtil_createMapByIdCompleteHandler(event:WebMapEvent):void
+            {
+                addElementAt(event.map, 0);
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:WebMapUtil id="webMapUtil"
+                         createMapByIdComplete="webMapUtil_createMapByIdCompleteHandler(event)"
+                         fault="Alert.show(event.fault.faultString);"/>
+    </fx:Declarations>
+
+    <s:Label top="10"
+             fontSize="24"
+             horizontalCenter="0"
+             text="ArcGIS.com Web Map"/>
+
+</s:Application>

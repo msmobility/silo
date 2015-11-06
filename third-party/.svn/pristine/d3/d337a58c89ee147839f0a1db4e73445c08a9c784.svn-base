@@ -1,0 +1,6 @@
+rootProject.name = 'census_data'
+projectMap = ['core' : ['util','datatable','model_builder','calculator_datatable'],
+              'integration' : ['census_data']]
+
+apply from: '../../core/build/base_settings.gradle'
+

@@ -1,0 +1,44 @@
+** to set up a new repository, see "set up new repository" section at bottom of this document
+
+repository_shell.zip is the folder structure that the repository should take
+    core - the core sawdust programs
+    integration - sawdust programs that connect sawdust with other (usually third-party) programs
+    modeleing - sawdust programs that are more modeling specific than core
+    projects - a folder holding the various project repositories
+        within this folder there is a folder for each project, each holding its own repository
+    third_party - a folder holding the third party software used by other programs
+    repo - a folder holding various (meta) repository related files
+
+repo_shell.jar contains a program for updating the repository directory and repository_shell.zip
+    com.pb.sawdust.meta.RepoShell repository_dir pull
+     - this updates the current repository directory stucture from repository_shell.zip 
+       (this will not overwrite/replace/delete already existing directories)
+    com.pb.sawdust.meta.RepoShell repository_dir push
+     - this pushes the current directory structure into repository_shell.zip
+    com.pb.sawdust.meta.RepoShell repository_dir pull push
+     - this does both the push and pull operations; this is the command that should generally be
+       used unless a repository directory is being setup for the first time
+
+standard.zip is a standardized folder structure for a project or sub-project
+
+ide_projects is a folder holding various ide project structures
+    for Intellij IDEA projects, set a path variable (Settings -> Path Variables) named MAIN_REPOSITORY to 
+    the location of your repository
+
+
+***** set up new repository *****
+install an Oracle java 7 jre
+install git (and any other helper/integration programs, such as TortoiseGIT)
+setup github account with ssh key and confirm ssh access to github
+
+(1) create a new directory for the repository (it should be empty) - call this [repository_dir]
+(2) create a subdirectory in [repository_dir] called "repo"
+(3) into [repository_dir]/repo/ download the following files:
+    - RepoShell.jar
+    - repository_shell.zip
+(4) run the following command (using Oracale java 7 jre)
+    java -cp [repository_dir]/repo/repo_shell.jar com.pb.sawdust.meta.RepoShell [repository_dir] pull
+(5) clone the repositories with a call like this:
+    git clone git@github.com:frazierc/sawdust_integration.git .
+
+

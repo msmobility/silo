@@ -1,0 +1,5 @@
+rootProject.name = 'tensor'
+projectMap = ['core' : ['util','tensor']]
+
+apply from: '../../core/build/base_settings.gradle'
+

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Determine spatial relationships (new in 1.1)">
+    <!--
+         This sample shows the use of Geometry Service to determine spatial
+         relationships between two sets of geometries. While the Query task
+         can also calculate spatial relationships, the Geometry Service exposes
+         more relationship types and can be used with geometries that do not
+         come from ArcGIS Server.
+
+         This sample finds features (block points) within 2 minute drive time
+         of a point. The features are not part of a map service. They are just
+         graphics that are within the current map extent. The drive time polygon
+         is not part of a map service either. It is returned as the result of a
+         Geoprocessing service.
+
+         Both the block points and the drive time polygon are passed to the
+         GeometryService.relation() method. One of the parameters for this method
+         is the relationship type. This sample looks for block points within the
+         drive time polygon. In other words, those satisfying the relationship
+         type RelationParameters.SPATIAL_REL_WITHIN.
+
+         The symbols for all the features within the drive time are changed to
+         depict the result.
+
+         Note: the relation operation is only available with ArcGIS Server 9.3
+         Service Pack 1 or above.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GeometryServiceEvent;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.events.QueryEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.symbols.SimpleFillSymbol;
+            import com.esri.ags.symbols.SimpleLineSymbol;
+            import com.esri.ags.symbols.SimpleMarkerSymbol;
+            import com.esri.ags.tasks.supportClasses.ParameterValue;
+            import com.esri.ags.tasks.supportClasses.RelationParameters;
+
+            import mx.collections.ArrayCollection;
+            import mx.controls.Alert;
+
+            [Bindable]
+            public var grRelationArray1:Array = [];
+
+            [Bindable]
+            public var blockPointGeometries:Array = [];
+
+            private function onMapClick(event:MapMouseEvent):void
+            {
+                graphicsLayer.clear();
+                var mapPoint:MapPoint = event.mapPoint;
+                var graphic:Graphic = new Graphic(mapPoint);
+                graphic.symbol = new SimpleMarkerSymbol("cross", 10, 0, 1, 0, 0, 0, new SimpleLineSymbol("solid", 0, 1, 2));
+                graphicsLayer.add(graphic);
+
+                // getting the drive time polygon
+                getDriveTimePolygon(mapPoint);
+            }
+
+            private function getDriveTimePolygon(mapPoint:MapPoint):void
+            {
+                var graphic:Graphic = new Graphic(mapPoint);
+                var featureSet:FeatureSet = new FeatureSet();
+                featureSet.features = [ graphic ];
+                var params:Object =
+                    {
+                        "Input_Location": featureSet,
+                        "Drive_Times": 2
+                    };
+
+                // execute gp task to get the drive time polygon
+                gp.execute(params);
+            }
+
+            private function onGPExecuteComplete(event:GeoprocessorEvent):void
+            {
+                // Note: As of version 2.0, the executeResult property name changed from 'parameterValues' to 'results'
+                var parameterValue:ParameterValue = event.executeResult.results[0];
+                var fset:FeatureSet = FeatureSet(parameterValue.value);
+                var drivetimeGraphic:Graphic = fset.features[0];
+                var symbol:SimpleFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, 0xFF0000, 0.1);
+                symbol.outline = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, 0xFF0000, 1.0, 2);
+                drivetimeGraphic.symbol = symbol;
+                graphicsLayer.add(drivetimeGraphic);
+
+                // geometry to be used in finding spatial relationship
+                grRelationArray1.push(drivetimeGraphic.geometry);
+
+                // setting the extent of the map to the extent of returned drive time polygon
+                myMap.extent = drivetimeGraphic.geometry.extent;
+
+                // query the map extent
+                query.geometry = myMap.extent;
+                queryTask.execute(query);
+            }
+
+            private function onQueryExecuteComplete(event:QueryEvent):void
+            {
+                var symbol:SimpleMarkerSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_SQUARE, 8, 0xFFFF00, 0.5);
+                symbol.outline = new SimpleLineSymbol();
+
+                var blockpointsFeatureSet:FeatureSet = event.featureSet;
+                for (var i:Number = 0; i < blockpointsFeatureSet.features.length; i++)
+                {
+                    blockpointsFeatureSet.features[i].symbol = symbol;
+                    graphicsLayer.add(blockpointsFeatureSet.features[i]);
+                    // get the features(geometries) within the current map extent
+                    blockPointGeometries.push(blockpointsFeatureSet.features[i].geometry);
+                }
+
+                calculateSpatialRelationship();
+            }
+
+            private function calculateSpatialRelationship():void
+            {
+                // find which geometries are 'within' the  drive time polygon
+                var relationParameters:RelationParameters = new RelationParameters();
+                relationParameters.geometries1 = blockPointGeometries;
+                relationParameters.geometries2 = grRelationArray1;
+                relationParameters.spatialRelationship = RelationParameters.SPATIAL_REL_WITHIN;
+
+                // Note: As of version 2.0, relation() takes a RelationParameters object.
+                gs.relation(relationParameters);
+            }
+
+            private function relationCompleteHandler(event:GeometryServiceEvent):void
+            {
+                var result:Array = event.result as Array;
+                var graphics:ArrayCollection = ArrayCollection(graphicsLayer.graphicProvider);
+                // highlight the geometries within the polygon.
+                for each (var obj:Object in result)
+                {
+                    var resultMapPoint:MapPoint = MapPoint(obj.geometry1);
+                    for each (var graphic:Graphic in graphics)
+                    {
+                        if (graphic.geometry is MapPoint)
+                        {
+                            var graphicMapPoint:MapPoint = MapPoint(graphic.geometry);
+                            if (resultMapPoint.x == graphicMapPoint.x && resultMapPoint.y == graphicMapPoint.y)
+                            {
+                                graphic.symbol = blueSquareSMS;
+                                break;
+                            }
+                        }
+                    }
+                }
+                messages.htmlText = "<b>The total number of features within the drive time polygon are <i><u>" + (event.result as Array).length + "</u></i>.</b>";
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:Geoprocessor id="gp"
+                           concurrency="last"
+                           executeComplete="onGPExecuteComplete(event)"
+                           outSpatialReference="{myMap.spatialReference}"
+                           showBusyCursor="true"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Network/ESRI_DriveTime_US/GPServer/CreateDriveTimePolygons"
+                           useAMF="false"/>
+
+        <esri:QueryTask id="queryTask"
+                        concurrency="last"
+                        executeComplete="onQueryExecuteComplete(event)"
+                        showBusyCursor="true"
+                        url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/0"
+                        useAMF="false"/>
+
+        <esri:Query id="query"
+                    outSpatialReference="{myMap.spatialReference}"
+                    returnGeometry="true">
+            <esri:outFields>
+                <fx:String>POP2000</fx:String>
+            </esri:outFields>
+        </esri:Query>
+
+        <esri:GeometryService id="gs"
+                              fault="Alert.show(event.fault.faultString, 'GeometryService Error')"
+                              relationComplete="relationCompleteHandler(event)"
+                              showBusyCursor="true"
+                              url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+
+        <esri:SimpleMarkerSymbol id="blueSquareSMS"
+                                 alpha="1"
+                                 color="0x0000FF"
+                                 size="8"
+                                 style="square"/>
+    </fx:Declarations>
+
+    <s:controlBarLayout>
+        <s:VerticalLayout gap="4"/>
+    </s:controlBarLayout>
+    <s:controlBarContent>
+        <s:Label width="100%"
+                 fontSize="12"
+                 fontWeight="bold"
+                 text="Click the map to execute a 2 minute drive time and find features within it."/>
+        <mx:Text id="messages"
+                 width="100%"
+                 fontSize="12"
+                 fontWeight="bold"/>
+    </s:controlBarContent>
+
+    <esri:Map id="myMap"
+              mapClick="onMapClick(event)"
+              openHandCursorVisible="false">
+        <esri:extent>
+            <esri:Extent xmin="-10605000" ymin="4712000" xmax="-10601000" ymax="4718000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="graphicsLayer"/>
+    </esri:Map>
+</s:Application>

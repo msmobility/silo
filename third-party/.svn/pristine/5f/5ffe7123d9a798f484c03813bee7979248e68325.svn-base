@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) 2010 ESRI
+
+All rights reserved under the copyright laws of the United States
+and applicable international laws, treaties, and conventions.
+
+You may freely redistribute and use this sample code, with or
+without modification, provided you include the original copyright
+notice and use restrictions.
+
+See use restrictions in use_restrictions.txt.
+-->
+<!---
+The default item renderer for the TemplatePicker skin.
+@private
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:mx="library://ns.adobe.com/flex/mx"
+                name="LegendGroupItemRenderer"
+                width="230" height="35"
+                autoDrawBackground="false"
+                focusEnabled="false"
+                mouseChildren="false">
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.symbols.CompositeSymbol;
+            import com.esri.ags.symbols.Symbol;
+            
+            import flashx.textLayout.formats.TextAlign;
+            
+            import mx.core.IVisualElement;
+
+            override public function set data(value:Object):void
+            {
+                super.data = value;
+
+                //First remove everything from the contentGroup
+                contentGroup.removeAllElements();
+
+                // set style on the label
+                templateLabel.setStyle("textAlign", TextAlign.CENTER);
+
+                templateLabel.text = value.label;
+                if (value.symbol)
+                {   
+                    if (!(value.symbol is CompositeSymbol)) // do not show legend for composite symbols
+                    {
+                        contentGroup.addElement(IVisualElement(Symbol(value.symbol).createSwatch(contentGroup.width, contentGroup.height)));
+                    }
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <s:HGroup paddingLeft="10" verticalAlign="middle">
+        <s:Group id="contentGroup"
+                 width="30" height="30"/>
+        <s:Label id="templateLabel"/>
+    </s:HGroup>
+</s:ItemRenderer>

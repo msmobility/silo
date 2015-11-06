@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib-src/jppf-client-src.jar"/>
+	<classpathentry kind="lib" path="lib-src/jppf-common-node-src.jar"/>
+	<classpathentry kind="lib" path="lib-src/jppf-common-src.jar"/>
+	<classpathentry kind="lib" path="lib/jmxremote_optional.jar"/>
+	<classpathentry kind="lib" path="lib/jppf-client.jar"/>
+	<classpathentry kind="lib" path="lib/jppf-common-node.jar"/>
+	<classpathentry kind="lib" path="lib/jppf-common.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

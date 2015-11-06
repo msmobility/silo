@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (c) 2010 ESRI
+
+     All rights reserved under the copyright laws of the United States
+     and applicable international laws, treaties, and conventions.
+
+     You may freely redistribute and use this sample code, with or
+     without modification, provided you include the original copyright
+     notice and use restrictions.
+
+     See use restrictions in use_restrictions.txt.
+-->
+<!---
+     The default skin class for the delete button of a AttachmentInspector component.
+     @private
+-->
+<s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009"
+             xmlns:s="library://ns.adobe.com/flex/spark"
+             alpha.disabled="0.5">
+
+    <fx:Metadata>
+        [HostComponent("spark.components.Button")]
+    </fx:Metadata>
+
+    <fx:Script>
+        /* Define the skin elements that should not be colorized. */
+        static private const exclusions:Array = [ "nextSymbol" ];
+
+        override public function get colorizeExclusions():Array
+        {
+            return exclusions;
+        }
+    </fx:Script>
+
+    <s:states>
+        <s:State name="up"/>
+        <s:State name="over"/>
+        <s:State name="down"/>
+        <s:State name="disabled"/>
+    </s:states>
+
+    <!-- layer 1: fill -->
+
+    <s:Ellipse left="1" right="1" top="1" bottom="1">
+        <s:fill>
+            <s:SolidColor color="0x00000"/>
+        </s:fill>
+    </s:Ellipse>
+
+    <!-- layer 2: downstate inset border  (include only in down) -->
+    <s:Ellipse height="1"
+               left="1" right="1" top="1"
+               includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.4" color="0xFFFFFF"/>
+        </s:fill>
+    </s:Ellipse>
+    <s:Ellipse height="1"
+               left="1" right="1" top="2"
+               includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0xFFFFFF"/>
+        </s:fill>
+    </s:Ellipse>
+    <s:Ellipse width="1"
+               left="1" top="1" bottom="1"
+               includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0xFFFFFF"/>
+        </s:fill>
+    </s:Ellipse>
+    <s:Ellipse width="1"
+               right="1" top="1" bottom="1"
+               includeIn="down">
+        <s:fill>
+            <s:SolidColor alpha="0.12" color="0xFFFFFF"/>
+        </s:fill>
+    </s:Ellipse>
+
+    <!-- layer 3: border - put on top of the fill so it doesn't disappear when scale is less than 1 -->
+    <s:Ellipse width="16" height="16"
+               left="0" right="0" top="0" bottom="0">
+        <s:stroke>
+            <s:SolidColorStroke color="0xFFFFFF" weight="2"/>
+        </s:stroke>
+    </s:Ellipse>
+
+    <!-- layer 4: delete(cross) icon -->
+    <s:Group horizontalCenter="0" verticalCenter="0">
+        <!-- line 1 -->
+        <s:Line xFrom="1"
+                xTo="7"
+                yFrom="1"
+                yTo="7">
+            <s:stroke>
+                <s:SolidColorStroke color="0xFFFFFF" weight="3"/>
+            </s:stroke>
+        </s:Line>
+        <!-- line 2 -->
+        <s:Line xFrom="1"
+                xTo="7"
+                yFrom="7"
+                yTo="1">
+            <s:stroke>
+                <s:SolidColorStroke color="0xFFFFFF" weight="3"/>
+            </s:stroke>
+        </s:Line>
+    </s:Group>
+
+</s:SparkSkin>

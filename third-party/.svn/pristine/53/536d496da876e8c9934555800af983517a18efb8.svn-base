@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               pageTitle="Calculate Viewshed">
+    <!--
+         This sample demonstrates using the geoprocessor to calculate a viewshed.
+
+         Click anywhere on the map to see all areas that are visible within X miles
+         of that point. It may take a few seconds for the model to run and send back the results.
+
+         See also: http://support.esri.com/index.cfm?fa=knowledgebase.gisDictionary.search&searchTerm=viewshed
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.FeatureSet;
+            import com.esri.ags.Graphic;
+            import com.esri.ags.events.GeoprocessorEvent;
+            import com.esri.ags.events.MapMouseEvent;
+            import com.esri.ags.geometry.MapPoint;
+            import com.esri.ags.tasks.supportClasses.LinearUnit;
+
+            import mx.controls.Alert;
+            import mx.rpc.events.FaultEvent;
+
+            private var myViewshedDistance:LinearUnit = new LinearUnit();
+
+            private function doViewshedGP(event:MapMouseEvent):void
+            {
+                myGraphicsLayer.clear();
+                var myMapPoint:MapPoint = event.mapPoint;
+                var graphic:Graphic = new Graphic(myMapPoint, viewshedSimpleMarker);
+                myGraphicsLayer.add(graphic);
+
+                var myFeatureSet:FeatureSet = new FeatureSet([{ geometry: myMapPoint }]);
+                myViewshedDistance.distance = Number(viewshedDistance.text);
+                myViewshedDistance.units = "esriMiles";
+                var params:Object = {
+                        "Input_Observation_Point": myFeatureSet,
+                        "Viewshed_Distance": myViewshedDistance
+                    };
+                gp.execute(params);
+            }
+
+            private function executeCompleteHandler(event:GeoprocessorEvent):void
+            {
+                for each (var myGraphic:Graphic in event.executeResult.results[0].value.features)
+                {
+                    myGraphic.symbol = viewshedSimpleFill;
+                    myGraphicsLayer.add(myGraphic);
+                }
+            }
+
+            private function faultHandler(fe:FaultEvent, token:Object = null):void
+            {
+                if (fe.type == "fault" && fe.fault.name == "Error" && fe.fault.faultString == "Error Executing Task")
+                {
+                    Alert.show("Oops - no results.  Maybe try a smaller number.");
+                }
+                else
+                {
+                    Alert.show("Unexpected fault:\n" + fe.toString());
+                }
+            }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <esri:SimpleMarkerSymbol id="viewshedSimpleMarker"
+                                 alpha="0.5"
+                                 size="15"
+                                 style="circle">
+            <esri:SimpleLineSymbol width="2" color="0xFFFF00"/>
+        </esri:SimpleMarkerSymbol>
+        <esri:SimpleFillSymbol id="viewshedSimpleFill"
+                               alpha="0.5"
+                               color="0xFF0000">
+            <esri:SimpleLineSymbol width="1" color="0x000000"/>
+        </esri:SimpleFillSymbol>
+        <esri:Geoprocessor id="gp"
+                           executeComplete="executeCompleteHandler(event)"
+                           fault="faultHandler(event)"
+                           outSpatialReference="{map.spatialReference}"
+                           showBusyCursor="true"
+                           url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Elevation/ESRI_Elevation_World/GPServer/Viewshed"
+                           useAMF="false"/>
+    </fx:Declarations>
+
+    <esri:Map id="map" mapClick="doViewshedGP(event)">
+        <esri:extent>
+            <esri:Extent xmin="8499000" ymin="4252000" xmax="8532000" ymax="4293000">
+                <esri:SpatialReference wkid="102100"/>
+            </esri:Extent>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:GraphicsLayer id="myGraphicsLayer"/>
+    </esri:Map>
+    <s:Panel y="10" height="60"
+             horizontalCenter="0"
+             title="Calculate Viewshed">
+        <s:HGroup width="100%"
+                  paddingBottom="2"
+                  paddingTop="2">
+            <s:Label text="Click map to see the"/>
+            <s:TextInput id="viewshedDistance"
+                         width="20"
+                         paddingLeft="0"
+                         paddingRight="0"
+                         text="4"/>
+            <s:Label text=" mile viewshed."/>
+        </s:HGroup>
+    </s:Panel>
+</s:Application>

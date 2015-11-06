@@ -1,0 +1,146 @@
+package com.pb.tomcat;
+
+import org.apache.catalina.*;
+import org.apache.catalina.logger.SystemOutLogger;
+import org.apache.catalina.startup.Embedded;
+
+import java.net.URL;
+
+/** This class creates an embedded version of the Tomcat web server. It has
+ * been tested with Tomcat version 4.0.2.
+ *
+ * @author    Tim Heier
+ * @version   1.0, 7/18/2000
+ */
+public class EmbeddedTomcat {
+
+    private String defaultPath = null;
+    private Host host = null;
+    private Embedded embedded = null;
+
+
+    public EmbeddedTomcat() {
+
+    }
+
+    /** Basic Accessor setting the value of the context path
+      */
+    public void setDefaultPath(String defaultPath) {
+
+        this.defaultPath = defaultPath;
+        System.out.println("**Default path="+this.defaultPath);
+    }
+
+    /** Basic Accessor returning the value of the context path
+      */
+    public String getDefaultPath() {
+
+        return defaultPath;
+    }
+
+    /** This method Starts the Tomcat server.
+      */
+    public void startTomcat() throws Exception {
+
+        //Create an embedded server
+        embedded = new Embedded();
+
+        //Print all log statments to standard error
+        embedded.setDebug(0);
+        embedded.setLogger(new SystemOutLogger());
+
+        //Create an engine
+        Engine engine = embedded.createEngine();
+        engine.setDefaultHost("localhost");
+
+        //Create a default virtual host
+        host = embedded.createHost("localhost", getDefaultPath()+"/webapps");
+        engine.addChild(host);
+
+        //Create the ROOT context
+        String contextPath = getDefaultPath()+"/webapps/ROOT";
+        System.out.println("**Creating root context="+contextPath);
+        
+        Context context = embedded.createContext("", contextPath);
+        context.setReloadable(true);
+
+        host.addChild(context);
+
+        //Install the assembled container hierarchy
+        embedded.addEngine(engine);
+
+        //Assemble and install a default HTTP connector
+        Connector connector = embedded.createConnector(null, 8080, false);
+        //connector.setMinProcessors( 3 );
+        embedded.addConnector(connector);
+
+        // Start the embedded server
+        embedded.start();
+    }
+
+    /** This method Stops the Tomcat server.
+      */
+    public void stopTomcat() throws Exception {
+        embedded.stop();
+    }
+
+    /** Registers a WAR with the container.
+      */
+    public void registerWAR(String contextPath, URL warFile) throws Exception {
+
+        if ( contextPath == null ) {
+            throw new Exception("invalid path="+contextPath);
+        }
+        if ( contextPath.equals("/") ) {
+            contextPath = "";
+        }
+        if ( warFile == null ) {
+            throw new Exception("invalid WAR="+warFile);
+        }
+
+        Deployer deployer = (Deployer)host;
+        Context context = deployer.findDeployedApp(contextPath);
+
+        if (context != null) {
+            throw new Exception("context="+contextPath+", already Exists!");
+        }
+        System.out.println("**Deploying contextPath="+contextPath+", url="+warFile);
+        deployer.install(contextPath, warFile);
+    }
+
+    /** Unregisters a WAR from the web server.
+      */
+    public void unregisterWAR(String contextPath) throws Exception {
+
+        Context context = host.map(contextPath);
+        if ( context != null ) {
+            embedded.removeContext(context);
+        } 
+        else {
+            throw new Exception("context does not exist for named path="+contextPath);
+        }
+    }
+
+    public static void main(String args[]) {
+
+        //Set Tomcat properties
+        System.setProperty("catalina.home", "c:/java/tomcat-4.0.3");
+        //System.setProperty("catalina.base", "c:/development/tomcat");
+
+        try {
+            EmbeddedTomcat tomcat = new EmbeddedTomcat();
+            tomcat.setDefaultPath("c:/development/tomcat");
+            tomcat.startTomcat();
+
+            URL url = new URL("file:c:/development/tomcat/webapps/daf");
+            tomcat.registerWAR("/daf", url);
+
+            Thread.sleep(1000000);
+            tomcat.stopTomcat();
+            System.exit(0);
+        } 
+        catch ( Exception e ) {
+            e.printStackTrace();
+        }
+    }
+}

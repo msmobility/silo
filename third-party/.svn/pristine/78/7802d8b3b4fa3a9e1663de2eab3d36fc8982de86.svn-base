@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Showing off ArcGIS Online 2-D Services">
+    <!--
+         Sample application to display different map services from ArcGIS Online,
+         and to find out more about each service.
+    -->
+
+    <fx:Script>
+        <![CDATA[
+            import mx.controls.Alert;
+
+            protected function infoImage_clickHandler(event:MouseEvent):void
+            {
+                Alert.show("Cached map service from ArcGIS Online with data at " + tiled.tileInfo.lods.length
+                           + " different levels of " + tiled.tileInfo.height + " x " + tiled.tileInfo.width
+                           + " " + tiled.tileInfo.format + " tiles.\n\n" + tiled.description
+                           + "\n\nSpatial Reference is " + myMap.spatialReference.wkid + ".");
+            }
+        ]]>
+    </fx:Script>
+
+    <esri:Map id="myMap" wrapAround180="true">
+        <esri:ArcGISTiledMapServiceLayer id="tiled"
+                                         load="myMap.lods = tiled.tileInfo.lods"
+                                         url="http://server.arcgisonline.com/ArcGIS/rest/services/{servicePicker.selectedItem.toString()}/MapServer"/>
+    </esri:Map>
+    <s:Panel height="75"
+             top="15"
+             fontWeight="bold"
+             horizontalCenter="0"
+             title="Select an ArcGIS Online Service">
+        <s:layout>
+            <s:HorizontalLayout horizontalAlign="center"
+                                paddingLeft="5"
+                                verticalAlign="middle"/>
+        </s:layout>
+        <s:DropDownList id="servicePicker"
+                        width="225"
+                        cornerRadius="0"
+                        requireSelection="true"
+                        selectedIndex="1">
+            <s:ArrayList>
+                <fx:String>World_Imagery</fx:String>
+                <fx:String>World_Street_Map</fx:String>
+                <fx:String>USA_Topo_Maps</fx:String>
+                <fx:String>World_Physical_Map</fx:String>
+                <fx:String>World_Shaded_Relief</fx:String>
+                <fx:String>Specialty/World_Navigation_Charts</fx:String>
+            </s:ArrayList>
+        </s:DropDownList>
+        <mx:Image id="infoImage"
+                  click="infoImage_clickHandler(event)"
+                  source="@Embed(source='assets/info_bubble.png')"/>
+    </s:Panel>
+    <s:Label bottom="4"
+             backgroundColor="#DFDFDF"
+             click="navigateToURL(new URLRequest('http://resources.esri.com/arcgisonlineservices/index.cfm?fa=content'), 'AGOL')"
+             fontWeight="bold"
+             horizontalCenter="0"
+             paddingBottom="4"
+             paddingLeft="4"
+             paddingRight="4"
+             paddingTop="4"
+             text="{tiled.copyright}"
+             toolTip="Browse to ArcGIS Online Directory of Services"/>
+</s:Application>

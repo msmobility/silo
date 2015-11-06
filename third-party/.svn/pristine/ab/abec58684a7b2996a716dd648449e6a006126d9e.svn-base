@@ -1,0 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+Provides interfaces and classes which allow certain tensor types to be referred to by different (<i>i.e.</i> more common)
+names. For example, two-dimensional tensors are aliased as matrices.
+</body>
+</html>

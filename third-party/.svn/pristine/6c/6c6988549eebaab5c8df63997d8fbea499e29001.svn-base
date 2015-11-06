@@ -1,0 +1,79 @@
+/*
+   Copyright (c) 2011 ESRI
+
+   All rights reserved under the copyright laws of the United States
+   and applicable international laws, treaties, and conventions.
+
+   You may freely redistribute and use this sample code, with or
+   without modification, provided you include the original copyright
+   notice and use restrictions.
+
+   See use restrictions in use_restrictions.txt.
+ */
+package com.esri.ags.skins.supportClasses
+{
+
+import flash.events.Event;
+import flash.events.TimerEvent;
+import flash.utils.Timer;
+
+import mx.controls.Text;
+import mx.events.FlexEvent;
+
+/**
+ * Work around for:
+ * https://bugs.adobe.com/jira/browse/SDK-15444
+ *
+ * @private
+ */
+public class PopUpText extends Text
+{
+    private var _timer:Timer;
+
+    public function PopUpText()
+    {
+        super();
+
+        addEventListener(FlexEvent.CREATION_COMPLETE, creationCompleteHandler);
+        addEventListener(Event.REMOVED, removedHandler);
+    }
+
+    private function fixSize():void
+    {
+        if (this.height != this.transform.pixelBounds.height)
+        {
+            this.height = this.transform.pixelBounds.height + 2;
+        }
+        if (this.width != this.transform.pixelBounds.width)
+        {
+            this.width = this.transform.pixelBounds.width + 2;
+        }
+    }
+
+    private function creationCompleteHandler(event:FlexEvent):void
+    {
+        if (htmlText && htmlText.toLowerCase().indexOf("<img ") != -1)
+        {
+            callLater(fixSize); // don't wait for the first timer event
+            _timer = new Timer(250);
+            _timer.repeatCount = 2 * 60000 / _timer.delay; // don't run for longer than 2 minutes
+            _timer.addEventListener(TimerEvent.TIMER, timerHandler);
+            _timer.start();
+        }
+    }
+
+    private function removedHandler(event:Event):void
+    {
+        if (_timer && event.target === this)
+        {
+            _timer.stop();
+        }
+    }
+
+    private function timerHandler(event:TimerEvent):void
+    {
+        fixSize();
+    }
+}
+
+}

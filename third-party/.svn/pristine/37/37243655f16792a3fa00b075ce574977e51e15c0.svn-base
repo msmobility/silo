@@ -1,0 +1,10 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+</head>
+<body bgcolor="white">
+Provides utilities for working with arrays. It includes a blanket <code>ArrayUtil</code> class as well as a series of
+classes allowing parameterization of arrays and better type-safety with primitive and multi-dimensional arrays.
+</body>
+</html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+               xmlns:s="library://ns.adobe.com/flex/spark"
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:esri="http://www.esri.com/2008/ags"
+               pageTitle="Combining dynamic maps and projected map tiles">
+
+    <s:controlBarContent>
+        <s:Label width="100%"
+                 fontSize="14"
+                 text="This map combines a street map (tiles) with a dynamic service showing census block points (blue markers)."/>
+    </s:controlBarContent>
+
+    <esri:Map>
+        <esri:extent>
+            <esri:WebMercatorExtent id="lowerManhatten"
+                                    minlon="-74.03" minlat="40.70" maxlon="-73.99" maxlat="40.72"/>
+        </esri:extent>
+        <esri:ArcGISTiledMapServiceLayer url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+        <esri:ArcGISDynamicMapServiceLayer url="http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer">
+            <esri:visibleLayers>
+                <s:ArrayCollection>
+                    <fx:Number>0</fx:Number>
+                    <!-- Show census block points only -->
+                </s:ArrayCollection>
+            </esri:visibleLayers>
+        </esri:ArcGISDynamicMapServiceLayer>
+    </esri:Map>
+</s:Application>

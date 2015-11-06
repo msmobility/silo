@@ -1,0 +1,13 @@
+dependsOn(':util')
+
+jarBaseName = 'sawdust-tensor'
+version = '1.0'
+specificationTitle = 'Sawdust Tensor Classes'
+specificationVendor = 'Parsons Brinckerhoff'
+implementationTitle = 'com.pb.sawdust.util.tensor'
+implementationVendor = 'Parsons Brinckerhoff'
+baseTestClass = 'com.pb.sawdust.tensor.TensorPackageTests'
+baseDependencies = ['../../third_party/jsr166y/jsr166y.jar']
+testDependencies = ['../../third_party/junit/4.8/junit-4.8.2.jar']
+
+apply from: '../../core/build/base_build.gradle'
