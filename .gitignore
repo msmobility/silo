@@ -1,2 +1,5 @@
 .idea/workspace.xml
 out
+/.classpath
+/.project
+/bin/
