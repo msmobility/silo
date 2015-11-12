@@ -105,12 +105,13 @@ public class transportModel {
         String fileNameWrk = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 rb.getString(PROPERTIES_MSTM_HH_WRK_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing households by number of workers for MSTM to file " + fileNameWrk);
+        int[] mstmIncCategories = ResourceUtil.getIntegerArray(rb, PROPERTIES_MSTM_INCOME_BRACKETS);
 
         PrintWriter pwWrk = SiloUtil.openFileForSequentialWriting(fileNameWrk, false);
         if (pwWrk == null) return;
         int[][][] hhByWorkersAndInc = new int[geoData.getZones().length][4][5];
         for (Household hh : Household.getHouseholdArray()) {
-            int inc = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
+            int inc = HouseholdDataManager.getSpecifiedIncomeCategoryForIncome(mstmIncCategories, hh.getHhIncome());
             int wrk = Math.min(HouseholdDataManager.getNumberOfWorkersInHousehold(hh), 3);
             int zone = hh.getHomeZone();
             hhByWorkersAndInc[geoData.getZoneIndex(zone)][wrk][inc - 1]++;
@@ -137,7 +138,6 @@ public class transportModel {
         PrintWriter pwSize = SiloUtil.openFileForSequentialWriting(fileNameSize, false);
         if (pwSize == null) return;
         int[][][] hhBySizeAndInc = new int[geoData.getZones().length][5][5];
-        int[] mstmIncCategories = ResourceUtil.getIntegerArray(rb, PROPERTIES_MSTM_INCOME_BRACKETS);
         for (Household hh : Household.getHouseholdArray()) {
             int inc = HouseholdDataManager.getSpecifiedIncomeCategoryForIncome(mstmIncCategories, hh.getHhIncome());
             int size = Math.min(hh.getHhSize(), 5);
