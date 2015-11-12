@@ -1,6 +1,7 @@
 package edu.umd.ncsg.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.data.*;
 import org.apache.log4j.Logger;
@@ -20,9 +21,10 @@ public class transportModel {
     //    protected static final String PROPERTIES_MSTM_EXECUTABLE          = "transport.executable";
 //    protected static final String PROPERTIES_MSTM_SETTINGS            = "transport.settings";
     protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
-    protected static final String PROPERTIES_MSTM_SE_DATA_FILE = "mstm.socio.economic.data.file";
-    protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE = "mstm.households.by.workers.file";
+    protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
+    protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
     protected static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
+    protected static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 //    protected static final String PROPERTIES_MSTM_DIRECTORY           = "transport.directory";
 //    protected static final String PROPERTIES_MSTM_SCENARIO            = "transport.scenario";
 //    protected static final String PROPERTIES_AUTO_PEAK_SKIM           = "auto.peak.sov.skim.";
@@ -135,8 +137,9 @@ public class transportModel {
         PrintWriter pwSize = SiloUtil.openFileForSequentialWriting(fileNameSize, false);
         if (pwSize == null) return;
         int[][][] hhBySizeAndInc = new int[geoData.getZones().length][5][5];
+        int[] mstmIncCategories = ResourceUtil.getIntegerArray(rb, PROPERTIES_MSTM_INCOME_BRACKETS);
         for (Household hh : Household.getHouseholdArray()) {
-            int inc = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
+            int inc = HouseholdDataManager.getSpecifiedIncomeCategoryForIncome(mstmIncCategories, hh.getHhIncome());
             int size = Math.min(hh.getHhSize(), 5);
             int zone = hh.getHomeZone();
             hhBySizeAndInc[geoData.getZoneIndex(zone)][size - 1][inc - 1]++;

@@ -274,6 +274,16 @@ public class HouseholdDataManager {
     }
 
 
+    public static int getSpecifiedIncomeCategoryForIncome(int[] incCats, int hhInc) {
+        // return income category defined exogenously
+
+        for (int category = 1; category <= incCats.length; category++) {
+            if (hhInc <= incCats[category - 1]) return category;
+        }
+        return incCats.length + 1;  // if income is larger than highest category
+    }
+
+
     public static int getNumberOfWorkersInHousehold(Household hh) {
         // return number of workers in household hh
         int numberOfWorkers = 0;
