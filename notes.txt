@@ -1,0 +1,11 @@
+Various notes; it is Rolf's decision if they should make it into readme.md or elsewhere.
+
+Load into eclipse
+
+A possibility is
+
+(1) check out git as normal
+
+(2) "New -> Java Project -> _uncheck_ the default location button and browse to the git directory
+
+(3) There are two jxl libraries; they are in the wrong sequence and the sequence needs to be exchanged.
