@@ -93,6 +93,17 @@ public class transportModel {
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
         if (pw == null) return;
         pw.println(";SMZ_N,ACRES,HH" + year + ",ENR" + year + ",RE" + year + ",OFF" + year + ",OTH" + year + ",TOT" + year);
+        // I am guessing:
+        // SMZ_N: zone (int)
+        // ACRES: size of zone in acres
+        // HH: number of households in zone
+        // ENR: school enrollment in zone (unclear is this is origin or destination data)
+        // RE: number of retired? people in zone
+        // OFF: number of office workers in zone (unclear if this is origin or destination data)
+        // "ind": presumably would be industrial, but is not written out
+        // OTH: number of other? workers in zone (unclear if origin or destination data)
+        // TOT: total number of workers in zone (unclear if origin or destination data)
+        // kai, dec'15
         for (int zone : geoData.getZones()) {
             int zoneId = geoData.getZoneIndex(zone);
             int totalEmployment = ind[zoneId] + ret[zoneId] + off[zoneId] + oth[zoneId];
@@ -118,6 +129,11 @@ public class transportModel {
         }
         pwWrk.println("SMZ,WKR0_IQ1,WKR0_IQ2,WKR0_IQ3,WKR0_IQ4,WKR0_IQ5,WKR1_IQ1,WKR1_IQ2,WKR1_IQ3,WKR1_IQ4,WKR1_IQ5," +
                 "WKR2_IQ1,WKR2_IQ2,WKR2_IQ3,WKR2_IQ4,WKR2_IQ5,WKR3_IQ1,WKR3_IQ2,WKR3_IQ3,WKR3_IQ4,WKR3_IQ5,Total");
+        // I am guessing:
+        // SMZ: zone (int)
+        // WKR0_IQ1: number of households with zero workers in income quantile 1
+        // Etc.
+        // kai, dec'15
         for (int zone : geoData.getZones()) {
             pwWrk.print(zone);
             int total = 0;

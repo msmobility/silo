@@ -9,3 +9,4 @@ A possibility is
 (2) "New -> Java Project -> _uncheck_ the default location button and browse to the git directory
 
 (3) There are two jxl libraries; they are in the wrong sequence and the sequence needs to be exchanged.
+    (I think this has now been resolved and there is only one jxl library left.)
