@@ -8,5 +8,7 @@
 	<name>SILO-Third-Party</name>
 	<modules>
 		<module>common-base</module>
+		<module>transcad</module>
+		<module>voyagerFileAPI</module>
 	</modules>
 </project>
