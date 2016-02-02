@@ -576,10 +576,14 @@ public class SiloUtil {
             return mat;
         } else if (type.equals(OmxHdf5Datatype.OmxJavaType.DOUBLE)) {
             double[][] dArray = (double[][]) omxMatrix.getData();
+//            System.out.println("dArray = " + dArray.toString());
             Matrix mat = new Matrix(name, name, dimensions[0], dimensions[1]);
+//            System.out.println("matrix = " + mat.toString());
             for (int i = 0; i < dimensions[0]; i++)
-                for (int j = 0; j < dimensions[1]; j++)
+                for (int j = 0; j < dimensions[1]; j++) {
                     mat.setValueAt(i + 1, j + 1, (float) dArray[i][j]);
+//            		System.out.println("i = " + i + " ; j = " + j + " ; dArray[i][j] = " + dArray[i][j]);
+                }
             return mat;
         } else {
             logger.info("OMX Matrix type " + type.toString() + " not yet implemented. Program exits.");

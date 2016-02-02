@@ -21,6 +21,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ResourceBundle;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
@@ -30,11 +33,37 @@ import edu.umd.ncsg.jobmography.updateJobs;
 import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
+import edu.umd.ncsg.transportModel.SiloMatsimUtils;
+import edu.umd.ncsg.transportModel.MatsimPopulationCreator;
+import edu.umd.ncsg.transportModel.SiloMatsimController;
 import edu.umd.ncsg.transportModel.transportModel;
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.api.core.v01.population.PopulationWriter;
+import org.matsim.core.api.internal.MatsimWriter;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+import org.matsim.core.utils.gis.ShapeFileReader;
+import org.opengis.feature.simple.SimpleFeature;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.Matrix;
+
 import edu.umd.ncsg.demography.*;
 import edu.umd.ncsg.events.EventManager;
 import edu.umd.ncsg.events.EventTypes;
@@ -140,7 +169,7 @@ public class SiloModel {
         LeaveParentHhModel lph = new LeaveParentHhModel(rb);
         MarryDivorceModel mardiv = new MarryDivorceModel(rb);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rb, SiloUtil.getStartYear());
+        Accessibility acc = new Accessibility(rb, SiloUtil.getStartYear()); // dz: accessibility calculation
 //        summarizeData.summarizeAutoOwnershipByCounty();
 
         MovesModel move = new MovesModel(rb);
@@ -162,6 +191,7 @@ public class SiloModel {
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rb);
 
+        // dz: yearly loop
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             if (SiloUtil.containsElement(scalingYears, year))
                 summarizeData.scaleMicroDataToExogenousForecast(rb, year, householdData);
@@ -197,6 +227,7 @@ public class SiloModel {
             em.createListOfEvents(numberOfPlannedCouples);
             if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
+            // dz: accessibility calculation; "yearYears" in addition to start year and transp model run years
             if (SiloUtil.containsElement(skimYears, year)) {
                 if (year != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, year)) {
                     // skims are always read in start year and in every year the transportation model ran. Additional
@@ -205,6 +236,7 @@ public class SiloModel {
                     acc.calculateAccessibilities(year);
                 }
             }
+            
 
             if (trackTime) startTime = System.currentTimeMillis();
             ddOverwrite.addDwellings(year);
@@ -222,6 +254,7 @@ public class SiloModel {
             if (trackTime) startTime = System.currentTimeMillis();
             if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear()) summarizeMicroData(year, move, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
+            
 
             logger.info("  Simulating events");
             // walk through all events
@@ -292,7 +325,61 @@ public class SiloModel {
                     logger.warn("Unknown event type: " + event[0]);
                 }
             }
+            
+            
+            
+            
+            // #################### new matsim
+            Log.info("Converting silo persons into matsim persons."); 
+            
+            
+            // Parameters // TODO move somewhere else later; maybe ot ResourceBundle?
+            String shapeFile = "input_additional/MD_vicinity_revised.shp";
+//            String shapeFile = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
+//            		+ "mstm_run/input_additional/MD_vicinity_revised.shp";
+            String networkFile = "input_additional/network_04/network.xml";
+//            String networkFile = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
+//            		+ "mstm_run/input_additional/network_04/network.xml";
+            String outputCRS = "EPSG:26918";
+        	boolean writePopulation = true;
+        	int timeOfDay = 8*60*60;
+    		int numberOfCalcPoints = 1;
+    		String matrixName = "matrixName";
+    		
+    		
+    		// Objects
+    		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<Tuple<Integer, Integer>, Float>();
+    		Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, shapeFile, outputCRS, writePopulation);
+    		
+    		Collection<SimpleFeature> features = ShapeFileReader.getAllFeatures(shapeFile);
 
+    		Map<Integer,SimpleFeature> featureMap = new HashMap<Integer, SimpleFeature>();
+    		for (SimpleFeature feature: features) {
+    			int fipsPuma5 = Integer.parseInt(feature.getAttribute("FIPS_PUMA5").toString());
+    			featureMap.put(fipsPuma5,feature);
+    		}
+
+    		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(
+    				TransformationFactory.WGS84, outputCRS);
+    		
+    		
+    		// Get travel Times from MATSim
+    		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDay, numberOfCalcPoints, 
+    				featureMap, ct, networkFile, population);
+
+    		
+    		// Update accessibilities
+    		int dimensions = geoData.getZones().length;
+    		System.out.println("dimensions = " + dimensions + " ; should be 1892");
+
+            acc.readSkimBasedOnMatsim(year, matrixName, dimensions, travelTimesMap);
+            acc.calculateAccessibilities(year);
+            // ##################### end new matsim
+            
+            
+            
+
+            // dz: transport model called here; it starts "CUBE"
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                 TransportModel.runMstm(nextYearForTransportModel);
@@ -309,7 +396,7 @@ public class SiloModel {
                     " persons, " + householdData.getNumberOfHouseholds()+" households and "  +
                     Dwelling.getDwellingCount() + " dwellings.");
             if (modelStopper("check")) break;
-        }
+        } // dz: end of yearly loop
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
             summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData);
 
@@ -325,7 +412,7 @@ public class SiloModel {
     }
 
 
-    public void initialize() {
+	public void initialize() {
         // initial steps that only need to performed once to set up the model
 
         // define years to simulate
@@ -622,6 +709,7 @@ public class SiloModel {
         }
     }
 
+
     private void writeOutTimeTracker (long[][] timeCounter) {
         // write file summarizing run times
 
@@ -656,7 +744,6 @@ public class SiloModel {
         }
         pw.close();
     }
-
 
 //    private void summarizeRentAndIncome () {
 //        PrintWriter pw = SiloUtil.openFileForSequentialWriting("temp.csv", false);

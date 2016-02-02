@@ -29,14 +29,25 @@ public class transportModel {
 //    protected static final String PROPERTIES_MSTM_SCENARIO            = "transport.scenario";
 //    protected static final String PROPERTIES_AUTO_PEAK_SKIM           = "auto.peak.sov.skim.";
 //    protected static final String PROPERTIES_TRANSIT_PEAK_SKIM        = "transit.peak.time.";
+    
+    // new matsim
+    protected static final String PROPERTIES_TRANSPORT_MODEL = "transport.model.type";
+    // end new matsim
 
     private ResourceBundle rb;
 //    private String mstmDirectory;
 //    private String mstmScenario;
+    
+    // new matsim
+    private String transportModelType;
 
     public transportModel(ResourceBundle rb) {
         // constructor
         this.rb = rb;
+        
+        // new matsim
+        this.transportModelType = ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL);
+        // end new matsim
     }
 
     public void runMstm(int year) {

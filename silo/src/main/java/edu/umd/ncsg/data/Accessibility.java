@@ -4,10 +4,13 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SiloUtil;
+import edu.umd.ncsg.transportModel.SiloMatsimUtils;
 import omx.OmxFile;
 import omx.OmxMatrix;
 import org.apache.log4j.Logger;
+import org.matsim.core.utils.collections.Tuple;
 
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -50,7 +53,7 @@ public class Accessibility {
 
     public void readSkim(int year) {
         // Read hwySkim matrix for year
-        logger.info("  Reading skims for " + year);
+        logger.info("Reading skims for " + year);
 
         String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
         // Read highway hwySkim
@@ -84,7 +87,28 @@ public class Accessibility {
 //        }
 //        for (int zn: SiloUtil.getZones()) transitSkim.setValueAt(zn, zn, 0);  // intrazonal distance not specified in this CUBE skim, set to 0
     }
+    
+    
+    // new Matsim
+    public void readSkimBasedOnMatsim(int year, String name, int dimensions, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+        logger.info("Reading skims based on MATSim travel times for " + year);
+//        String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
+//        // Read highway hwySkim
+//        OmxFile hSkim = new OmxFile(hwyFileName);
+//        hSkim.openReadOnly();
+//        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix("HOVTime");
+//        hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
+        hwySkim = SiloMatsimUtils.convertTravelTimesToAccessibilityMatrix(name, dimensions, travelTimesMap);
 
+        // Read transit hwySkim ... unchanged... see above
+        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
+        OmxFile tSkim = new OmxFile(transitFileName);
+        tSkim.openReadOnly();
+        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
+        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
+    }
+    // end new Matsim
+    
 
     public static float getAutoTravelTime(int i, int j) {
         return hwySkim.getValueAt(i, j);
@@ -108,6 +132,8 @@ public class Accessibility {
         float betaTransit = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_TRANSIT_ACCESSIBILITY_BETA);
 
         int[] zones = geoData.getZones();
+        System.out.println("##### zones.length = " + zones.length);
+        System.out.println("zones.toString() = " + zones.toString());
         int[] pop = summarizeData.getPopulationByZone();
         autoAccessibility = new double[zones.length];
         transitAccessibility = new double[zones.length];
