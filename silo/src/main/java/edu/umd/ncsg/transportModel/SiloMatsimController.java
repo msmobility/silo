@@ -28,6 +28,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
@@ -69,6 +70,8 @@ public class SiloMatsimController {
 		config.controler().setMobsim("qsim");
 		config.controler().setWritePlansInterval(50);
 		config.controler().setWriteEventsInterval(50);
+		
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 				
 		// Strategy
 		StrategySettings strategySettings1 = new StrategySettings();
