@@ -69,7 +69,7 @@ public class MatsimPopulationCreator {
     		// probably not the best/correct way to create a 1% sample // TODO improve
     		// but using this here for the time being to speed things up...
     		counter++;
-    		if (counter % 200 == 0) {
+//    		if (counter % 200 == 0) { // use all for testing
     			// a bit non-linearly, this has to be already here as people working outside the study area
     			// should be ignored ("workplace == -2)
     			int siloWorkplaceId = siloPerson.getWorkplace();
@@ -117,7 +117,7 @@ public class MatsimPopulationCreator {
     				Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home",ct.transform(homeCoordinates));
     				matsimPlan.addActivity(activity3);
     			}
-    		}
+//    		}
     	}
     	
     	if (writePopulation == true) {

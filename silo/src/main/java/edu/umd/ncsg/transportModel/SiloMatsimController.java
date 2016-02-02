@@ -60,9 +60,10 @@ public class SiloMatsimController {
 		config.qsim().setRemoveStuckVehicles(false);
 
 		// Controller
-		String runId = "run_b";
-		String outputDirectory = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
-				+ "mstm_run/run_04/siloMatsim/" + runId + "/";
+		String runId = "run_a";
+//		String outputDirectory = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
+//				+ "mstm_run/siloMatsim/" + runId + "/";
+		String outputDirectory = "./siloMatsim/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);

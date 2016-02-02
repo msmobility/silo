@@ -90,7 +90,7 @@ public class Accessibility {
     
     
     // new Matsim
-    public void readSkimBasedOnMatsim(int year, String name, int dimensions, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+    public void readSkimBasedOnMatsim(int year, String name, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
         logger.info("Reading skims based on MATSim travel times for " + year);
 //        String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
 //        // Read highway hwySkim
@@ -98,7 +98,9 @@ public class Accessibility {
 //        hSkim.openReadOnly();
 //        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix("HOVTime");
 //        hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
-        hwySkim = SiloMatsimUtils.convertTravelTimesToAccessibilityMatrix(name, dimensions, travelTimesMap);
+        
+        
+        hwySkim = SiloMatsimUtils.convertTravelTimesToAccessibilityMatrix(name, geoData.getZones(), travelTimesMap);
 
         // Read transit hwySkim ... unchanged... see above
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
@@ -132,8 +134,6 @@ public class Accessibility {
         float betaTransit = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_TRANSIT_ACCESSIBILITY_BETA);
 
         int[] zones = geoData.getZones();
-        System.out.println("##### zones.length = " + zones.length);
-        System.out.println("zones.toString() = " + zones.toString());
         int[] pop = summarizeData.getPopulationByZone();
         autoAccessibility = new double[zones.length];
         transitAccessibility = new double[zones.length];

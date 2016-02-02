@@ -47,17 +47,17 @@ public class SiloMatsimUtils {
 	}
 	
 	
-	public static final Matrix convertTravelTimesToAccessibilityMatrix(String name, int dimensions, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
-		Matrix matrix = new Matrix(name, name, dimensions, dimensions);
-		for (int i = 0; i < dimensions; i++) {
+	public static final Matrix convertTravelTimesToAccessibilityMatrix(String name, int[] zones, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+		Matrix matrix = new Matrix(name, name, zones.length, zones.length);
+		for (int i = 1; i <= zones.length; i++) {
 			int originFipsPuma5 = geoData.getPUMAofZone(i);
 
-			for (int j = 0; j < dimensions; j++) {
+			for (int j = 1; j <= zones.length; j++) {
 				int destinationFipsPuma5 = geoData.getPUMAofZone(j);
 
 				Tuple<Integer, Integer> zone2Zone = new Tuple<Integer, Integer>(originFipsPuma5, destinationFipsPuma5);
-				matrix.setValueAt(i + 1, j + 1, travelTimesMap.get(zone2Zone));
-				System.out.println("Tuple = " + zone2Zone + " ; travel time = " + travelTimesMap.get(zone2Zone));
+				matrix.setValueAt(i, j, travelTimesMap.get(zone2Zone));
+				System.out.println("i = " + i + " ; j = " + j + " ; " + zone2Zone + " ; travel time = " + travelTimesMap.get(zone2Zone));
 			}
 		}
 		return matrix;

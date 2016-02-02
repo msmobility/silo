@@ -372,7 +372,7 @@ public class SiloModel {
     		int dimensions = geoData.getZones().length;
     		System.out.println("dimensions = " + dimensions + " ; should be 1892");
 
-            acc.readSkimBasedOnMatsim(year, matrixName, dimensions, travelTimesMap);
+            acc.readSkimBasedOnMatsim(year, matrixName, travelTimesMap);
             acc.calculateAccessibilities(year);
             // ##################### end new matsim
             
