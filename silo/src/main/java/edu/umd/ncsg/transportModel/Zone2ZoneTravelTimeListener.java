@@ -69,7 +69,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 					
 					float averageTravelTime = 0.f;
 					
-					if (originFipsPuma5 == 2400804) { // this is just here to spped up computation for testing // TODO remove later
+					if (originFipsPuma5 == 2400804) { // this is just here to speed up computation for testing // TODO remove later
 
 						
 						double sumTravelTime = 0.f;
@@ -94,7 +94,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 						averageTravelTime = (float) (sumTravelTime / numberOfCalcPoints / numberOfCalcPoints / 60.);
 						log.info("Travel time from FipsPuma5 " + originFipsPuma5 + " to FipsPuma5 " + destinationFipsPuma5 + " is " + averageTravelTime);
 					} else {
-						averageTravelTime = 60.f;
+						averageTravelTime = 60.f; // this is just here to speed up computation for testing // TODO remove later
 					}
 						
 					
