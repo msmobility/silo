@@ -47,19 +47,56 @@ public class SiloMatsimUtils {
 	}
 	
 	
-	public static final Matrix convertTravelTimesToAccessibilityMatrix(String name, int[] zones, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
-		Matrix matrix = new Matrix(name, name, zones.length, zones.length);
-		for (int i = 1; i <= zones.length; i++) {
-			int originFipsPuma5 = geoData.getPUMAofZone(i);
+	public static final Matrix convertTravelTimesToImpedanceMatrix(
+			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int year) {
+		log.info("Converting MATSim travel times to impedance matrix for " + year + ".");
+		String name = "travelTimeMatrix";
+		String description = name;
+		int[] zones = geoData.getZones();
+		
+		Matrix matrix = new Matrix(name, description, determineMax(zones), determineMax(zones));
+		
+//		CSVFileWriter matrixFileWriter = new CSVFileWriter("./info/matsimmatrix_" + year +".csv", "\t");
+//		
+//		matrixFileWriter.writeField("originZoneId");
+//		matrixFileWriter.writeField("destinationZoneId");
+//		matrixFileWriter.writeField("travelTime");
+//		matrixFileWriter.writeNewLine();
 
-			for (int j = 1; j <= zones.length; j++) {
-				int destinationFipsPuma5 = geoData.getPUMAofZone(j);
+		// Do not just increment by 1! Some values are missing. So, do not confuse the array index with the array entry!
+		for (int i = 0; i < zones.length; i++) {
+			int originFipsPuma5 = geoData.getPUMAofZone(zones[i]);
+
+			for (int j = 0; j < zones.length; j++) {
+				int destinationFipsPuma5 = geoData.getPUMAofZone(zones[j]);
 
 				Tuple<Integer, Integer> zone2Zone = new Tuple<Integer, Integer>(originFipsPuma5, destinationFipsPuma5);
-				matrix.setValueAt(i, j, travelTimesMap.get(zone2Zone));
-				System.out.println("i = " + i + " ; j = " + j + " ; " + zone2Zone + " ; travel time = " + travelTimesMap.get(zone2Zone));
+				matrix.setValueAt(zones[i], zones[j], travelTimesMap.get(zone2Zone));
+//				System.out.println("origin = " + zones[i] + " ; destination = " + zones[j] + " ; " + zone2Zone + " ; travel time = " + travelTimesMap.get(zone2Zone));
+			
+//				matrixFileWriter.writeField(zones[i]);
+//				matrixFileWriter.writeField(zones[j]);
+//				matrixFileWriter.writeField(travelTimesMap.get(zone2Zone));
+//				matrixFileWriter.writeNewLine();
 			}
 		}
+//		matrixFileWriter.close();
+		
 		return matrix;
+	}
+	
+	
+	/**
+	 * Not 100% sure that the values are always in ascending order. So, rather compute the zone array's
+	 * maximum like this instead of just taking the last value and assuming it is the maximum
+	 */
+	private static int determineMax(int[] array){
+		int max = Integer.MIN_VALUE;
+		for(int i = 0; i < array.length; i++){
+			if (array[i] > max){
+				max = array[i];
+			}
+		}
+		return max;
 	}
 }

@@ -1,25 +1,24 @@
-/**
- * 
- */
 package edu.umd.ncsg.transportModel;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.router.Dijkstra;
-import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.Vehicle;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -30,27 +29,25 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 	private final static Logger log = Logger.getLogger(Zone2ZoneTravelTimeListener.class);
 	
 	private Controler controler;
-//	private TravelTime travelTime;
 	private Network network;
 	private int finalIteration;
-	private Map<Integer,SimpleFeature> featureMap;
-	private int timeOfDay;
+	private Map<Integer,SimpleFeature> zoneFeatureMap;
+	private int departureTime;
 	private int numberOfCalcPoints;
-	private CoordinateTransformation ct;
+//	private CoordinateTransformation ct;
 	private Map<Tuple<Integer, Integer>, Float> travelTimesMap;
 
-	
 
-	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration, Map<Integer,SimpleFeature> featureMap,
-			int timeOfDay, int numberOfCalcPoints, CoordinateTransformation ct, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration, Map<Integer,SimpleFeature> zoneFeatureMap,
+			int timeOfDay, int numberOfCalcPoints, //CoordinateTransformation ct, 
+			Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
 		this.controler = controler;
-//		this.travelTime = travelTime;
 		this.network = network;
 		this.finalIteration = finalIteration;
-		this.featureMap = featureMap;
-		this.timeOfDay = timeOfDay;
+		this.zoneFeatureMap = zoneFeatureMap;
+		this.departureTime = timeOfDay;
 		this.numberOfCalcPoints = numberOfCalcPoints;
-		this.ct = ct;
+//		this.ct = ct;
 		this.travelTimesMap = travelTimesMap;
 	}
 	
@@ -59,48 +56,74 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 	public void notifyIterationEnds(IterationEndsEvent event) {
 		if (event.getIteration() == this.finalIteration) {
 			
+			log.info("Starting to calculate average zone-to-zone travel times based on MATSim.");
 			
-			Dijkstra dijkstra = new Dijkstra(network, new MyTravelTimeDisutility(controler.getLinkTravelTimes()), controler.getLinkTravelTimes());
+			TravelTime travelTime = controler.getLinkTravelTimes();
+			TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime, controler.getConfig().planCalcScore() ) ;
+//			TravelDisutility travelTimeAsTravelDisutility = new MyTravelTimeDisutility(controler.getLinkTravelTimes());
 			
-			for (int originFipsPuma5 : featureMap.keySet()) {
-				for (int destinationFipsPuma5 : featureMap.keySet()) {
-					SimpleFeature originFeature = featureMap.get(originFipsPuma5);
-					SimpleFeature destinationFeature = featureMap.get(destinationFipsPuma5);
+			LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
+//			Dijkstra dijkstra = new Dijkstra(network, travelTimeAsTravelDisutility, travelTime);
+			
+			Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
+			
+			for (int zoneId : zoneFeatureMap.keySet()) {
+				for (int i = 0; i < numberOfCalcPoints; i++) { // several points in a given origin zone
+					SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
+//					Coord originCoord = ct.transform(SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature));
+					Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
+					Link originLink = NetworkUtils.getNearestLink(network, originCoord);
+					Node originNode = originLink.getFromNode();
 					
-					float averageTravelTime = 0.f;
-					
-					if (originFipsPuma5 == 2400804) { // this is just here to speed up computation for testing // TODO remove later
-
-						
-						double sumTravelTime = 0.f;
-
-						for (int i = 0; i < numberOfCalcPoints; i++) {
-							Coord originCoord = ct.transform(SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature));
-							//						System.out.println("originCoord = " + originCoord);
-							Link originLink = NetworkUtils.getNearestLink(network, originCoord);
-							//						System.out.println("originLink = " + originLink);
-
-							for (int j = 0; j < numberOfCalcPoints; j++) {
-								Coord destinationCoord = ct.transform(SiloMatsimUtils.getRandomCoordinateInGeometry(destinationFeature));
-								//							System.out.println("destinationCoord = " + destinationCoord);
-								Link destinationlink = NetworkUtils.getNearestLink(network, destinationCoord);
-								//							System.out.println("destinationlink = " + destinationlink);
-
-								Path path = dijkstra.calcLeastCostPath(originLink.getFromNode(), destinationlink.getFromNode(), timeOfDay, null, null);
-								//							System.out.println("path.travelTime = " + path.travelTime);
-								sumTravelTime = sumTravelTime + path.travelTime;
-							}
-						}
-						averageTravelTime = (float) (sumTravelTime / numberOfCalcPoints / numberOfCalcPoints / 60.);
-						log.info("Travel time from FipsPuma5 " + originFipsPuma5 + " to FipsPuma5 " + destinationFipsPuma5 + " is " + averageTravelTime);
-					} else {
-						averageTravelTime = 60.f; // this is just here to speed up computation for testing // TODO remove later
+					if (!zoneCalculationNodesMap.containsKey(zoneId)) {
+						zoneCalculationNodesMap.put(zoneId, new LinkedList<Node>());
 					}
-						
-					
-					
-					travelTimesMap.put(new Tuple<Integer, Integer>(originFipsPuma5, destinationFipsPuma5), averageTravelTime);
+					zoneCalculationNodesMap.get(zoneId).add(originNode);
 				}
+			}			
+			
+			
+			for (int originZoneId : zoneFeatureMap.keySet()) { // going over all origin zones
+				
+				for (Node originNode : zoneCalculationNodesMap.get(originZoneId)) { // several points in a given origin zone
+					// Run Dijkstra for originNode
+					leastCoastPathTree.calculate(network, originNode, departureTime);
+					
+					for (int destinationZoneId : zoneFeatureMap.keySet()) { // going over all destination zones
+						
+						Tuple<Integer, Integer> originDestinationRelation = new Tuple<Integer, Integer>(originZoneId, destinationZoneId);
+						
+						if (!travelTimesMap.containsKey(originDestinationRelation)) {
+							travelTimesMap.put(originDestinationRelation, 0.f);
+						}
+
+						for (Node destinationNode : zoneCalculationNodesMap.get(destinationZoneId)) {// several points in a given destination zone
+							
+							double arrivalTime = leastCoastPathTree.getTree().get(destinationNode.getId()).getTime();
+							// congested car travel times in minutes
+							float congestedTravelTimeMin = (float) ((arrivalTime - departureTime) / 60.);
+//							System.out.println("congestedTravelTimeMin = " + congestedTravelTimeMin);
+							
+							// following lines form kai/thomas, see Zone2ZoneImpedancesControlerListener
+//							// we guess that any value less than 1.2 leads to errors on the UrbanSim side
+//							// since ln(0) is not defined or ln(1) = 0 causes trouble as a denominator ...
+//							if(congestedTravelTime_min < 1.2)
+//								congestedTravelTime_min = 1.2;
+//							Path path = dijkstra.calcLeastCostPath(originLink.getFromNode(), destinationNode, timeOfDay, null, null);
+							float previousSumTravelTimeMin = travelTimesMap.get(originDestinationRelation);
+							travelTimesMap.put(originDestinationRelation, previousSumTravelTimeMin + congestedTravelTimeMin);
+//							System.out.println("previousSumTravelTimeMin = " + previousSumTravelTimeMin);
+						}
+					}
+				}
+			}
+			
+			
+			for (Tuple<Integer, Integer> originDestinationRelation : travelTimesMap.keySet()) {
+				float sumTravelTimeMin = travelTimesMap.get(originDestinationRelation);
+				float averageTravelTimeMin = sumTravelTimeMin / numberOfCalcPoints / numberOfCalcPoints;
+				travelTimesMap.put(originDestinationRelation, averageTravelTimeMin);
+//				log.info(fipsPuma5Tuple + " -- travel time = " + averageTravelTimeMin);
 			}
 		}
 	}

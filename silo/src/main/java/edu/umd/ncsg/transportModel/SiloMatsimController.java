@@ -32,7 +32,6 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
@@ -41,12 +40,13 @@ import org.opengis.feature.simple.SimpleFeature;
 public class SiloMatsimController {
 	
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
-			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> featureMap, CoordinateTransformation ct, String inputNetworkFile,
-			Population population) {
+			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
+			String inputNetworkFile,
+			Population population, int year, String crs, int numberOfIterations) {
 		final Config config = ConfigUtils.createConfig();
 
 		// Global
-		config.global().setCoordinateSystem("EPSG:26918");
+		config.global().setCoordinateSystem(crs);
 		
 		// Network
 		config.network().setInputFile(inputNetworkFile);
@@ -60,17 +60,15 @@ public class SiloMatsimController {
 		config.qsim().setRemoveStuckVehicles(false);
 
 		// Controller
-		String runId = "run_a";
-//		String outputDirectory = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
-//				+ "mstm_run/siloMatsim/" + runId + "/";
+		String runId = "year_" + year;
 		String outputDirectory = "./siloMatsim/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
-		config.controler().setLastIteration(1);
+		config.controler().setLastIteration(numberOfIterations);
 		config.controler().setMobsim("qsim");
-		config.controler().setWritePlansInterval(50);
-		config.controler().setWriteEventsInterval(50);
+		config.controler().setWritePlansInterval(numberOfIterations);
+		config.controler().setWriteEventsInterval(numberOfIterations);
 		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 				
@@ -83,10 +81,10 @@ public class SiloMatsimController {
 		StrategySettings strategySettings2 = new StrategySettings();
 		strategySettings2.setStrategyName("ReRoute");
 		strategySettings2.setWeight(0.2);
-		strategySettings2.setDisableAfter(40);
+		strategySettings2.setDisableAfter((int) (numberOfIterations * 0.7));
 		config.strategy().addStrategySettings(strategySettings2);
 		
-		config.strategy().setMaxAgentPlanMemorySize(5);
+		config.strategy().setMaxAgentPlanMemorySize(4);
 		
 		// Plan Scoring (planCalcScore)
 		ActivityParams homeActivity = new ActivityParams("home");
@@ -107,7 +105,8 @@ public class SiloMatsimController {
 		// Add controller listener
 		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
 				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-				featureMap, timeOfDay, numberOfCalcPoints, ct, travelTimesMap);
+				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
+				travelTimesMap);
 		controler.addControlerListener(zone2zoneTravelTimeListener);
 		
 		// Run controller

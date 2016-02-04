@@ -20,53 +20,49 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.ResourceBundle;
 
-import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
-import edu.umd.ncsg.data.*;
-import edu.umd.ncsg.events.IssueCounter;
-import edu.umd.ncsg.jobmography.updateJobs;
-import edu.umd.ncsg.realEstate.*;
-import edu.umd.ncsg.relocation.InOutMigration;
-import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.SiloMatsimUtils;
-import edu.umd.ncsg.transportModel.MatsimPopulationCreator;
-import edu.umd.ncsg.transportModel.SiloMatsimController;
-import edu.umd.ncsg.transportModel.transportModel;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationFactory;
-import org.matsim.api.core.v01.population.PopulationWriter;
-import org.matsim.core.api.internal.MatsimWriter;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
-import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.core.utils.geometry.CoordinateTransformation;
-import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import com.pb.common.util.ResourceUtil;
 
-import edu.umd.ncsg.demography.*;
+import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
+import edu.umd.ncsg.data.Accessibility;
+import edu.umd.ncsg.data.Dwelling;
+import edu.umd.ncsg.data.HouseholdDataManager;
+import edu.umd.ncsg.data.JobDataManager;
+import edu.umd.ncsg.data.RealEstateDataManager;
+import edu.umd.ncsg.data.summarizeData;
+import edu.umd.ncsg.data.summarizeDataCblcm;
+import edu.umd.ncsg.demography.BirthModel;
+import edu.umd.ncsg.demography.ChangeEmploymentModel;
+import edu.umd.ncsg.demography.DeathModel;
+import edu.umd.ncsg.demography.LeaveParentHhModel;
+import edu.umd.ncsg.demography.MarryDivorceModel;
 import edu.umd.ncsg.events.EventManager;
 import edu.umd.ncsg.events.EventTypes;
+import edu.umd.ncsg.events.IssueCounter;
+import edu.umd.ncsg.jobmography.updateJobs;
+import edu.umd.ncsg.realEstate.ConstructionModel;
+import edu.umd.ncsg.realEstate.ConstructionOverwrite;
+import edu.umd.ncsg.realEstate.DemolitionModel;
+import edu.umd.ncsg.realEstate.PricingModel;
+import edu.umd.ncsg.realEstate.RenovationModel;
+import edu.umd.ncsg.relocation.InOutMigration;
+import edu.umd.ncsg.relocation.MovesModel;
+import edu.umd.ncsg.transportModel.MatsimPopulationCreator;
+import edu.umd.ncsg.transportModel.SiloMatsimController;
+import edu.umd.ncsg.transportModel.transportModel;
 
 /**
  * @author Greg Erhardt 
@@ -327,63 +323,69 @@ public class SiloModel {
             }
             
             
-            
-            
-            // #################### new matsim
-            Log.info("Converting silo persons into matsim persons."); 
-            
-            
-            // Parameters // TODO move somewhere else later; maybe ot ResourceBundle?
-            String shapeFile = "input_additional/MD_vicinity_revised.shp";
-//            String shapeFile = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
-//            		+ "mstm_run/input_additional/MD_vicinity_revised.shp";
-            String networkFile = "input_additional/network_04/network.xml";
-//            String networkFile = "../../../SVN/shared-svn/projects/tum-with-moeckel/data/"
-//            		+ "mstm_run/input_additional/network_04/network.xml";
-            String outputCRS = "EPSG:26918";
-        	boolean writePopulation = true;
-        	int timeOfDay = 8*60*60;
-    		int numberOfCalcPoints = 1;
-    		String matrixName = "matrixName";
-    		
-    		
-    		// Objects
-    		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<Tuple<Integer, Integer>, Float>();
-    		Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, shapeFile, outputCRS, writePopulation);
-    		
-    		Collection<SimpleFeature> features = ShapeFileReader.getAllFeatures(shapeFile);
-
-    		Map<Integer,SimpleFeature> featureMap = new HashMap<Integer, SimpleFeature>();
-    		for (SimpleFeature feature: features) {
-    			int fipsPuma5 = Integer.parseInt(feature.getAttribute("FIPS_PUMA5").toString());
-    			featureMap.put(fipsPuma5,feature);
-    		}
-
-    		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(
-    				TransformationFactory.WGS84, outputCRS);
-    		
-    		
-    		// Get travel Times from MATSim
-    		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDay, numberOfCalcPoints, 
-    				featureMap, ct, networkFile, population);
-
-    		
-    		// Update accessibilities
-    		int dimensions = geoData.getZones().length;
-    		System.out.println("dimensions = " + dimensions + " ; should be 1892");
-
-            acc.readSkimBasedOnMatsim(year, matrixName, travelTimesMap);
-            acc.calculateAccessibilities(year);
-            // ##################### end new matsim
-            
-            
-            
-
             // dz: transport model called here; it starts "CUBE"
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                 TransportModel.runMstm(nextYearForTransportModel);
             }
+            
+            
+            // new matsim
+            if (year == 2000 || year == 2007) {
+//            	int nextYearForTransportModel = year + 1;
+                Log.info("Running MATSim transport model for year " + nextYearForTransportModel + "."); 
+                
+                
+                // Parameters
+                // TODO move somewhere else later; maybe to ResourceBundle?
+//                String shapeFile = "input_additional/MD_vicinity_revised.shp";
+                String zoneShapeFile = "shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
+                String networkFile = "input_additional/network_04/network.xml";
+                String crs = "EPSG:26918";
+            	boolean writePopulation = false;
+            	int timeOfDayForImpedanceMatrix = 8*60*60;
+        		int numberOfCalcPoints = 3;
+//        		String matrixName = "matrixName";
+        		int numberOfIterations = 20;
+        		double populationScalingFactor = 0.01;
+        		double workerScalingFactor = .66; // accounting for part-time workers, holiday, sickness,
+        		// people working at non-peak times (only peak traffic is simulated), and people going by
+        		// a mode other than car in case a car is still available to them
+        		
+        		
+        		// Objects
+        		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<Tuple<Integer, Integer>, Float>();
+        		
+        		Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
+
+        		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<Integer, SimpleFeature>();
+        		for (SimpleFeature feature: zoneFeatures) {
+//        			int fipsPuma5 = Integer.parseInt(feature.getAttribute("FIPS_PUMA5").toString());
+        			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
+        			zoneFeatureMap.put(zoneId,feature);
+        		}
+        		
+        		Population population = MatsimPopulationCreator.createMatsimPopulation(
+        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
+        				writePopulation, populationScalingFactor * workerScalingFactor);	
+
+//        		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, crs);
+        		
+        		
+        		// Get travel Times from MATSim
+        		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
+        				numberOfCalcPoints, zoneFeatureMap, //ct, 
+        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
+
+        		
+        		// Update accessibilities
+        		acc.readSkimBasedOnMatsim(nextYearForTransportModel, travelTimesMap);
+                // TODO calculate accessibility directly from MATSim instead of from skims
+                // this is computationally very inefficient
+                acc.calculateAccessibilities(nextYearForTransportModel);
+            }
+            // end new matsim
+            
 
             if (trackTime) startTime = System.currentTimeMillis();
             prm.updatedRealEstatePrices(year, realEstateData);

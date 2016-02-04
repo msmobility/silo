@@ -1,17 +1,23 @@
 package edu.umd.ncsg.data;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SiloUtil;
-import edu.umd.ncsg.transportModel.SiloMatsimUtils;
-import omx.OmxFile;
-import omx.OmxMatrix;
+import java.io.File;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.collections.Tuple;
 
-import java.util.Map;
-import java.util.ResourceBundle;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixType;
+import com.pb.common.matrix.MatrixWriter;
+import com.pb.common.util.ResourceUtil;
+
+import edu.umd.ncsg.SiloUtil;
+import edu.umd.ncsg.transportModel.CSVFileWriter;
+import edu.umd.ncsg.transportModel.SiloMatsimUtils;
+import omx.OmxFile;
+import omx.OmxMatrix;
 
 /**
  * Calculates and stores accessibilities
@@ -70,6 +76,14 @@ public class Accessibility {
 //            if (orig > SiloUtil.getHighestZonalId() || dest > SiloUtil.getHighestZonalId()) continue;
 //            hwySkim.setValueAt(orig, dest, hwySkimTbl.getValueAt(row, "time"));
 //        }
+        
+        
+        // new
+        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
+        matrixWriter.writeMatrix(hwySkim);
+        // end new
+        
+        
         // Read transit hwySkim
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
         OmxFile tSkim = new OmxFile(transitFileName);
@@ -90,7 +104,7 @@ public class Accessibility {
     
     
     // new Matsim
-    public void readSkimBasedOnMatsim(int year, String name, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+    public void readSkimBasedOnMatsim(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
         logger.info("Reading skims based on MATSim travel times for " + year);
 //        String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
 //        // Read highway hwySkim
@@ -98,16 +112,22 @@ public class Accessibility {
 //        hSkim.openReadOnly();
 //        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix("HOVTime");
 //        hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
+        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, year);
+
+
+        // new
+        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
+        matrixWriter.writeMatrix(hwySkim);
+        // end new
         
-        
-        hwySkim = SiloMatsimUtils.convertTravelTimesToAccessibilityMatrix(name, geoData.getZones(), travelTimesMap);
 
         // Read transit hwySkim ... unchanged... see above
-        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
-        OmxFile tSkim = new OmxFile(transitFileName);
-        tSkim.openReadOnly();
-        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
-        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
+        // comment out ... as would also not be called in no-matsim version!!
+//        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
+//        OmxFile tSkim = new OmxFile(transitFileName);
+//        tSkim.openReadOnly();
+//        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
+//        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
     }
     // end new Matsim
     
@@ -153,10 +173,35 @@ public class Accessibility {
                 } else {
                     transitImpedance = Math.exp(betaTransit * getTransitTravelTime(orig, dest));
                 }
+                // dz: zone "orig" and its zoneIndex "geoData.getZoneIndex(orig)" are different!!
+                // "orig" is the ID of the zone and zoneIndex is its location in the array
+                // zoneIndex is "indexArray for array" zones
                 autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
                 transitAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaTransit) * transitImpedance;
             }
         }
+        
+        // new -- write output
+//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoData.getZoneIndex(orig)]);
+//      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig));
+      
+      CSVFileWriter accessibilityFileWriter = new CSVFileWriter("./info/accessibility_" + year +".csv", ",");
+		
+		accessibilityFileWriter.writeField("zoneId");
+		accessibilityFileWriter.writeField("autoAccessibility");
+		accessibilityFileWriter.writeNewLine();
+
+		for (int i = 0; i < zones.length; i++) {
+				accessibilityFileWriter.writeField(zones[i]);
+				accessibilityFileWriter.writeField(autoAccessibility[geoData.getZoneIndex(i)]);
+				accessibilityFileWriter.writeNewLine();    
+		}
+		
+		accessibilityFileWriter.close();
+		// end new
+		
+		
+		
         autoAccessibility = SiloUtil.scaleArray(autoAccessibility, 100);
         transitAccessibility = SiloUtil.scaleArray(transitAccessibility, 100);
 
