@@ -341,14 +341,17 @@ public class SiloModel {
 //                String shapeFile = "input_additional/MD_vicinity_revised.shp";
                 String zoneShapeFile = "shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
                 String networkFile = "input_additional/network_04/network.xml";
+                String populationFile = "run_06/siloMatsim/year_2001/year_2001.output_plans.xml.gz";
                 String crs = "EPSG:26918";
             	boolean writePopulation = false;
             	int timeOfDayForImpedanceMatrix = 8*60*60;
         		int numberOfCalcPoints = 3;
 //        		String matrixName = "matrixName";
-        		int numberOfIterations = 20;
-        		double populationScalingFactor = 0.01;
-        		double workerScalingFactor = .66; // accounting for part-time workers, holiday, sickness,
+        		int numberOfIterations = 1;
+        		double populationScalingFactor = 1.;
+        		double workerScalingFactor = 1.;
+//        		double populationScalingFactor = 0.01;
+//        		double workerScalingFactor = .66; // accounting for part-time workers, holiday, sickness,
         		// people working at non-peak times (only peak traffic is simulated), and people going by
         		// a mode other than car in case a car is still available to them
         		
@@ -366,9 +369,10 @@ public class SiloModel {
         			zoneFeatureMap.put(zoneId,feature);
         		}
         		
-        		Population population = MatsimPopulationCreator.createMatsimPopulation(
-        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
-        				writePopulation, populationScalingFactor * workerScalingFactor);	
+//        		Population population = MatsimPopulationCreator.createMatsimPopulation(
+//        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
+//        				writePopulation, populationScalingFactor * workerScalingFactor);
+
 
 //        		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, crs);
         		
@@ -376,7 +380,8 @@ public class SiloModel {
         		// Get travel Times from MATSim
         		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
         				numberOfCalcPoints, zoneFeatureMap, //ct, 
-        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
+//        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
+        				networkFile, populationFile, nextYearForTransportModel, crs, numberOfIterations);
 
         		
         		// Update accessibilities

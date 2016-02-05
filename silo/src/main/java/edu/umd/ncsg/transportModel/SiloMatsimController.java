@@ -29,6 +29,8 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.population.PopulationReader;
+import org.matsim.core.population.PopulationReaderMatsimV5;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
@@ -42,7 +44,8 @@ public class SiloMatsimController {
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
 			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
 			String inputNetworkFile,
-			Population population, int year, String crs, int numberOfIterations) {
+//			Population population, int year, String crs, int numberOfIterations) {
+			String populationFile, int year, String crs, int numberOfIterations) {
 		final Config config = ConfigUtils.createConfig();
 
 		// Global
@@ -99,7 +102,9 @@ public class SiloMatsimController {
 		
 		// Scenario
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-		scenario.setPopulation(population);
+		PopulationReader populationReader = new PopulationReaderMatsimV5(scenario);
+		populationReader.readFile(populationFile);
+//		scenario.setPopulation(population);
 		
 		// Initialize controller
 		final Controler controler = new Controler(scenario);

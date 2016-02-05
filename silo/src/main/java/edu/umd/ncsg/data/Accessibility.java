@@ -106,19 +106,15 @@ public class Accessibility {
     // new Matsim
     public void readSkimBasedOnMatsim(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
         logger.info("Reading skims based on MATSim travel times for " + year);
-//        String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
-//        // Read highway hwySkim
-//        OmxFile hSkim = new OmxFile(hwyFileName);
-//        hSkim.openReadOnly();
-//        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix("HOVTime");
-//        hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
-        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, year);
+        
+        // new matrix needs to have same dimension as previous matrix
+        int rowCount = hwySkim.getRowCount();
+        int columnCount = hwySkim.getColumnCount();
+        
+        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
 
-
-        // new
         MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
         matrixWriter.writeMatrix(hwySkim);
-        // end new
         
 
         // Read transit hwySkim ... unchanged... see above
