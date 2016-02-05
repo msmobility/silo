@@ -355,6 +355,7 @@ public class SiloModel {
         		
         		// Objects
         		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<Tuple<Integer, Integer>, Float>();
+        		// yy would be better/safer to generate that inside runMatsimToCreate rather to generate it here and pass it down. kai, feb'16
         		
         		Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
 

@@ -71,6 +71,8 @@ public class SiloMatsimController {
 		config.controler().setWriteEventsInterval(numberOfIterations);
 		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+		
+		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
 				
 		// Strategy
 		StrategySettings strategySettings1 = new StrategySettings();
