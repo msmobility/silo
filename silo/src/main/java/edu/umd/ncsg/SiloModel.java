@@ -348,10 +348,10 @@ public class SiloModel {
         		int numberOfCalcPoints = 3;
 //        		String matrixName = "matrixName";
         		int numberOfIterations = 1;
-        		double populationScalingFactor = 1.;
-        		double workerScalingFactor = 1.;
-//        		double populationScalingFactor = 0.01;
-//        		double workerScalingFactor = .66; // accounting for part-time workers, holiday, sickness,
+//        		double populationScalingFactor = 1.;
+//        		double workerScalingFactor = 1.;
+        		double populationScalingFactor = 0.01;
+        		double workerScalingFactor = .66; // accounting for part-time workers, holiday, sickness,
         		// people working at non-peak times (only peak traffic is simulated), and people going by
         		// a mode other than car in case a car is still available to them
         		
@@ -369,9 +369,9 @@ public class SiloModel {
         			zoneFeatureMap.put(zoneId,feature);
         		}
         		
-//        		Population population = MatsimPopulationCreator.createMatsimPopulation(
-//        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
-//        				writePopulation, populationScalingFactor * workerScalingFactor);
+        		Population population = MatsimPopulationCreator.createMatsimPopulation(
+        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
+        				writePopulation, populationScalingFactor * workerScalingFactor);
 
 
 //        		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, crs);
@@ -380,8 +380,8 @@ public class SiloModel {
         		// Get travel Times from MATSim
         		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
         				numberOfCalcPoints, zoneFeatureMap, //ct, 
-//        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
-        				networkFile, populationFile, nextYearForTransportModel, crs, numberOfIterations);
+        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
+//        				networkFile, populationFile, nextYearForTransportModel, crs, numberOfIterations);
 
         		
         		// Update accessibilities

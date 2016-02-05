@@ -45,8 +45,8 @@ public class SiloMatsimController {
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
 			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
 			String inputNetworkFile,
-//			Population population, int year, String crs, int numberOfIterations) {
-			String populationFile, int year, String crs, int numberOfIterations) {
+			Population population, int year, String crs, int numberOfIterations) {
+//			String populationFile, int year, String crs, int numberOfIterations) {
 		final Config config = ConfigUtils.createConfig();
 
 		// Global
@@ -105,9 +105,9 @@ public class SiloMatsimController {
 		
 		// Scenario
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-		PopulationReader populationReader = new PopulationReaderMatsimV5(scenario);
-		populationReader.readFile(populationFile);
-//		scenario.setPopulation(population);
+//		PopulationReader populationReader = new PopulationReaderMatsimV5(scenario);
+//		populationReader.readFile(populationFile);
+		scenario.setPopulation(population);
 		
 		// Initialize controller
 		final Controler controler = new Controler(scenario);
