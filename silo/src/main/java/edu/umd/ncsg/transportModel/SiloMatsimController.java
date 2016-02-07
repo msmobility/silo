@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
@@ -61,6 +62,8 @@ public class SiloMatsimController {
 		config.qsim().setFlowCapFactor(0.01);
 		config.qsim().setStorageCapFactor(0.018);
 		config.qsim().setRemoveStuckVehicles(false);
+		
+		config.qsim().setTrafficDynamics( TrafficDynamics.withHoles ); // this normally works better. kai, feb'16
 
 		// Controller
 		String runId = "year_" + year;
@@ -75,7 +78,7 @@ public class SiloMatsimController {
 		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		
-		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
+		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory.  kai, feb'16
 				
 		// Strategy
 		StrategySettings strategySettings1 = new StrategySettings();
