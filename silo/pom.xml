@@ -20,6 +20,23 @@
 		<connection>scm:git:git://github.com/moeckel/silo.git</connection>
 		<developerConnection>scm:git:git@github.com:moeckel/silo.git</developerConnection>
 	</scm>
+	<repositories>
+		<repository>
+			<!-- Geotools is not on Maven central -->
+			<id>osgeo</id>
+			<name>Geotools repository</name>
+			<url>http://download.osgeo.org/webdav/geotools</url>
+		</repository>
+		<repository>
+			<id>matsim</id>
+			<url>http://dl.bintray.com/matsim/matsim</url>
+		</repository>
+		<repository>
+			<id>ojo-snapshots</id>
+			<url>http://oss.jfrog.org/libs-snapshot</url>
+		</repository>
+	</repositories>
+	
 	<distributionManagement>
 		<snapshotRepository>
 			<id>oss-jfrog-artifactory</id>
@@ -154,18 +171,6 @@
 		</plugins>
 	</reporting>
 
-	<repositories>
-		<repository>
-            <!-- Geotools is not on Maven central -->
-	                <id>osgeo</id>
-			<name>Geotools repository</name>
-			<url>http://download.osgeo.org/webdav/geotools</url>
-		</repository>
-		<repository>
-		        <id>matsim</id>
-		        <url>http://dl.bintray.com/matsim/matsim</url>
-		</repository>
-	</repositories>
 
 	<profiles>
           <profile>
