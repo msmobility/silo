@@ -45,7 +45,7 @@ public class SiloMatsimController {
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
 			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
 			String inputNetworkFile,
-			Population population, int year, String crs, int numberOfIterations) {
+			Population population, int year, String crs, int numberOfIterations, String siloRunId) {
 //			String populationFile, int year, String crs, int numberOfIterations) {
 		final Config config = ConfigUtils.createConfig();
 
@@ -66,8 +66,9 @@ public class SiloMatsimController {
 		config.qsim().setTrafficDynamics( TrafficDynamics.withHoles ); // this normally works better. kai, feb'16
 
 		// Controller
-		String runId = "year_" + year;
-		String outputDirectory = "./siloMatsim/" + runId + "/";
+//		String siloRunId = "run_09";
+		String runId = siloRunId + "_" + year;
+		String outputDirectory = "../../../../../runs-svn/silo/maryland/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
@@ -77,8 +78,10 @@ public class SiloMatsimController {
 		config.controler().setWriteEventsInterval(numberOfIterations);
 		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-		
-		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory.  kai, feb'16
+
+		// QSim and other
+		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);
+		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
 				
 		// Strategy
 		StrategySettings strategySettings1 = new StrategySettings();

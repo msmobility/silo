@@ -339,15 +339,16 @@ public class SiloModel {
                 // Parameters
                 // TODO move somewhere else later; maybe to ResourceBundle?
 //                String shapeFile = "input_additional/MD_vicinity_revised.shp";
-                String zoneShapeFile = "shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
-                String networkFile = "input_additional/network_04/network.xml";
-                String populationFile = "run_06/siloMatsim/year_2001/year_2001.output_plans.xml.gz";
+                String siloRunId = "run_09";
+                String zoneShapeFile = "../other/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
+                String networkFile = "../other/network/04/network.xml";
+//                String populationFile = "run_06/siloMatsim/year_2001/year_2001.output_plans.xml.gz";
                 String crs = "EPSG:26918";
             	boolean writePopulation = false;
             	int timeOfDayForImpedanceMatrix = 8*60*60;
         		int numberOfCalcPoints = 3;
 //        		String matrixName = "matrixName";
-        		int numberOfIterations = 1;
+        		int numberOfIterations = 20;
 //        		double populationScalingFactor = 1.;
 //        		double workerScalingFactor = 1.;
         		double populationScalingFactor = 0.01;
@@ -380,7 +381,7 @@ public class SiloModel {
         		// Get travel Times from MATSim
         		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
         				numberOfCalcPoints, zoneFeatureMap, //ct, 
-        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations);
+        				networkFile, population, nextYearForTransportModel, crs, numberOfIterations, siloRunId);
 //        				networkFile, populationFile, nextYearForTransportModel, crs, numberOfIterations);
 
         		
