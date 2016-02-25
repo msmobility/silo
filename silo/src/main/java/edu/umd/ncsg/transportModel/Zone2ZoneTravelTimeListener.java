@@ -59,7 +59,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			log.info("Starting to calculate average zone-to-zone travel times based on MATSim.");
 			
 			TravelTime travelTime = controler.getLinkTravelTimes();
-			TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime ) ;
+			TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
 //			TravelDisutility travelTimeAsTravelDisutility = new MyTravelTimeDisutility(controler.getLinkTravelTimes());
 			
 			LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
