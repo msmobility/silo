@@ -79,8 +79,8 @@ public class Accessibility {
         
         
         // new
-//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
-//        matrixWriter.writeMatrix(hwySkim);
+        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
+        matrixWriter.writeMatrix(hwySkim);
         // end new
         
         
