@@ -339,9 +339,11 @@ public class SiloModel {
                 // Parameters
                 // TODO move somewhere else later; maybe to ResourceBundle?
 //                String shapeFile = "input_additional/MD_vicinity_revised.shp";
-                String siloRunId = "run_09";
-                String zoneShapeFile = "../other/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
-                String networkFile = "../other/network/04/network.xml";
+                String siloRunId = "run_12";
+//                String zoneShapeFile = "../other/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
+//                String networkFile = "../other/network/04/network.xml";
+                String zoneShapeFile = "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
+                String networkFile = "../../../maryland/siloMatsim/network/04/network.xml";
 //                String populationFile = "run_06/siloMatsim/year_2001/year_2001.output_plans.xml.gz";
                 String crs = "EPSG:26918";
             	boolean writePopulation = false;
