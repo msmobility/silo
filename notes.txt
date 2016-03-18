@@ -4,8 +4,16 @@ Load into eclipse
 
 A possibility is
 
-(1) check out git as normal
+(1) check out git as normal (e.g. on command line)
 
-(2) "New -> Java Project -> _uncheck_ the default location button and browse to the git directory
+(2) in eclipse: import --> Maven --> existing maven projects --> browse to location of local git repository --> import 
 
-(3) There are two jxl libraries; they are in the wrong sequence and the sequence needs to be exchanged.
+(3) missing hdf5 library: in eclipse: 
+    right click on "silo" 
+    --> Build Path 
+    --> Configure Build Path 
+    --> Source 
+    --> silo/src/main/java 
+    --> Native library location 
+    --> Edit ... 
+    --> add "silo/lib/macosx64" or whatever you need for your operating system
