@@ -13,6 +13,8 @@ public class SiloMatsimTest {
 	// * use the matsim EventsFileComparator to compare matsim output
 	// * also find some way to test the silo output before matsim is run (use CRCChecksum.getCRCFromFile(...) and apply to all the input files
 	//    files to matsim ... or test the objects passed to matsim) --- for this it may be necessary to refactor -->inline the "main" method below.
+	//
+	// * write similar test for SiloMstm on master branch
 
 	@SuppressWarnings("static-method")
 	@Test
