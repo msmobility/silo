@@ -91,9 +91,9 @@ public class SiloUtil {
 
     public static void createDirectoryIfNotExistingYet (String directory) {
         // create directory if is does not yet exist
-
         File file = new File (directory);
         if (!file.exists()) {
+            logger.error("Creating Directory: "+directory);
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
             if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory " + scenarioName);
         }

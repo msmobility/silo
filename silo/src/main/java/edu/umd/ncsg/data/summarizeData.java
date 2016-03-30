@@ -2,6 +2,7 @@ package edu.umd.ncsg.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.relocation.MovesModel;
 import org.apache.log4j.Logger;
@@ -38,6 +39,12 @@ public class summarizeData {
 
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
+
+    private static PrintWriter resultWriterFinal;
+    private static PrintWriter spatialResultWriterFinal;
+
+    public static Boolean resultWriterReplicate = false;
+
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
@@ -50,6 +57,7 @@ public class summarizeData {
         String resultFileName = rb.getString(PROPERTIES_RESULT_FILE_NAME);
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                 SiloUtil.gregorianIterator + ".csv", SiloUtil.getStartYear() != SiloUtil.getBaseYear());
+        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + SiloUtil.getEndYear() + ".csv", false);
     }
 
 
@@ -64,18 +72,27 @@ public class summarizeData {
 
     public static void resultFile(String action) {
         // handle summary file
+        resultFile(action, true);
+    }
+
+    public static void resultFile(String action, Boolean writeFinal) {
+        // handle summary file
         switch (action) {
             case "close":
                 resultWriter.close();
+                resultWriterFinal.close();
                 break;
             default:
                 resultWriter.println(action);
+                if(resultWriterReplicate && writeFinal)resultWriterFinal.println(action);
                 break;
         }
     }
 
-
     public static void resultFileSpatial(ResourceBundle rb, String action) {
+        resultFileSpatial(rb,action,true);
+    }
+        public static void resultFileSpatial(ResourceBundle rb, String action, Boolean writeFinal) {
         // handle summary file
         switch (action) {
             case "open":
@@ -84,12 +101,15 @@ public class summarizeData {
                 String resultFileName = rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME);
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                         SiloUtil.gregorianIterator + ".csv", SiloUtil.getStartYear() != SiloUtil.getBaseYear());
+                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +"_"+ SiloUtil.getEndYear() + ".csv", false);
                 break;
             case "close":
                 spatialResultWriter.close();
+                spatialResultWriterFinal.close();
                 break;
             default:
                 spatialResultWriter.println(action);
+                if(resultWriterReplicate && writeFinal )spatialResultWriterFinal.println(action);
                 break;
         }
     }
