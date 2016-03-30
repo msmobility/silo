@@ -2,3 +2,5 @@
 /.settings/
 /.classpath
 /.project
+/event-performance.log
+/event.log
