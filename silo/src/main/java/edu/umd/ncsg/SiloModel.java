@@ -31,6 +31,8 @@ import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
 import edu.umd.ncsg.transportModel.transportModel;
+import edu.umd.ncsg.utils.CblcmDiffGenerator;
+
 import org.apache.log4j.Logger;
 
 import com.pb.common.util.ResourceUtil;
@@ -56,7 +58,12 @@ public class SiloModel {
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
     public static final String PROPERTIES_TRACK_TIME                        = "track.time";
     public static final String PROPERTIES_TRACK_TIME_FILE                   = "track.time.file";
+    
     protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
+    protected static final String PROPERTIES_CBLCM_BASE_YEAR				= "cblcm.base.year";
+    protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
+    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     = "spatial.result.file.name";
+    
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
 
@@ -561,6 +568,24 @@ public class SiloModel {
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
         SiloUtil.finish(ddOverwrite);
         modelStopper("removeFile");
+        
+        if(ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false)){
+        	 String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
+             SiloUtil.createDirectoryIfNotExistingYet(directory);
+             String outputFile = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + "_" + SiloUtil.getEndYear() + "VS" + rb.getString(PROPERTIES_CBLCM_BASE_YEAR) + ".csv");
+             String[] inputFiles = new String[2];
+             inputFiles[0] = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + SiloUtil.gregorianIterator + ".csv");
+             inputFiles[1] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_BASE_FILE));
+             
+             try {
+				CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(rb.getString(PROPERTIES_CBLCM_BASE_YEAR)) , SiloUtil.getEndYear());
+			} catch (NumberFormatException e) {
+				logger.error(e);
+			} catch (IOException e) {
+				logger.error("Error while Writing CBLCM Diff File", e);
+			}
+        }
+        
         if (trackTime) writeOutTimeTracker(timeCounter);
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
