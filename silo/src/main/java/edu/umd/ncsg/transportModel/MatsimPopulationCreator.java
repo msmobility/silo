@@ -17,6 +17,7 @@ import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -53,7 +54,9 @@ public class MatsimPopulationCreator {
 //    	CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(
 //    			TransformationFactory.WGS84, crs);
     	
-    	Random random = new Random();
+//    	Random random = new Random();
+    	Random random = MatsimRandom.getLocalInstance() ;
+    	// make sure that stream of random variables is reproducible. kai, apr'16
     	
     	for (Person siloPerson : siloPersons) {
     		if (random.nextDouble() > scalingFactor) {
