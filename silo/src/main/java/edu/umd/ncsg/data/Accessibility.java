@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.core.utils.collections.Tuple;
 
 import com.pb.common.datafile.TableDataSet;
@@ -78,10 +79,28 @@ public class Accessibility {
 //        }
         
         
-        // new
-        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
+        // new -- write matrix as csv file for testing
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
+        new File(SiloUtil.baseDirectory + "testing").mkdirs();
+        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
         matrixWriter.writeMatrix(hwySkim);
+        Log.info("For testing: Written skim out as a csv file");
         // end new
+        
+        
+        // new -- read in matrix from csv
+//        public static Matrix convertCSVToMatrix (String fileName) {
+//        	
+//        for (int i = 0; i < dimensions[0]; i++)
+//            for (int j = 0; j < dimensions[1]; j++) {
+//                mat.setValueAt(i + 1, j + 1, (float) dArray[i][j]);
+////        		System.out.println("i = " + i + " ; j = " + j + " ; dArray[i][j] = " + dArray[i][j]);
+//            }
+//        return mat;
+//        }
+        // end new
+        
+        
         
         
         // Read transit hwySkim
@@ -111,10 +130,10 @@ public class Accessibility {
         int rowCount = hwySkim.getRowCount();
         int columnCount = hwySkim.getColumnCount();
         
-        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
-
-        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
-        matrixWriter.writeMatrix(hwySkim);
+//        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
+//
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
+//        matrixWriter.writeMatrix(hwySkim);
         
 
         // Read transit hwySkim ... unchanged... see above
@@ -177,11 +196,13 @@ public class Accessibility {
             }
         }
         
+        
         // new -- write output
 //      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoData.getZoneIndex(orig)]);
 //      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig));
-      
-      CSVFileWriter accessibilityFileWriter = new CSVFileWriter("./info/accessibility_" + year +".csv", ",");
+        
+        new File(SiloUtil.baseDirectory + "testing").mkdirs();
+        CSVFileWriter accessibilityFileWriter = new CSVFileWriter(SiloUtil.baseDirectory + "testing/accessibility_" + year +".csv", ",");
 		
 		accessibilityFileWriter.writeField("zoneId");
 		accessibilityFileWriter.writeField("autoAccessibility");
@@ -194,6 +215,7 @@ public class Accessibility {
 		}
 		
 		accessibilityFileWriter.close();
+		Log.info("For testing: Written accessibilities out as a csv file");
 		// end new
 		
 		

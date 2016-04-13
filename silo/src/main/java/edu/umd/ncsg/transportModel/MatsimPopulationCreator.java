@@ -90,13 +90,13 @@ public class MatsimPopulationCreator {
 
     		int siloHomeTazId = siloPerson.getHomeTaz();
 //    		int homePuma = geoData.getPUMAofZone(siloHomeTazId);
-    		System.out.println("siloPersonId = " + siloPersonId + "; siloHomeTazId = " + siloHomeTazId);
+//    		System.out.println("siloPersonId = " + siloPersonId + "; siloHomeTazId = " + siloHomeTazId);
 
     		Job job = Job.getJobFromId(siloWorkplaceId);
     		int workZoneId = job.getZone();
 //    		int workPuma = geoData.getPUMAofZone(workZoneId);   
-    		System.out.println("siloPersonId = " + siloPersonId + "; siloWorkplaceId = " + siloWorkplaceId);
-    		System.out.println("siloPersonId = " + siloPersonId + "; workZoneId = " + workZoneId);
+//    		System.out.println("siloPersonId = " + siloPersonId + "; siloWorkplaceId = " + siloWorkplaceId);
+//    		System.out.println("siloPersonId = " + siloPersonId + "; workZoneId = " + workZoneId);
 
     		// do not confuse the SILO Person class with the MATSim Person class here
     		org.matsim.api.core.v01.population.Person matsimPerson = 
@@ -132,7 +132,7 @@ public class MatsimPopulationCreator {
     	
     	if (writePopulation == true) {
     		MatsimWriter popWriter = new PopulationWriter(matsimPopulation, matsimNetwork);
-    		popWriter.write("./siloMatsim/population_" + year + ".xml");
+    		popWriter.write("./additional_input/population_" + year + ".xml");
     	}
     	
     	return matsimPopulation;

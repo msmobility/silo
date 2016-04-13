@@ -160,6 +160,7 @@ public class JobDataManager {
     public void updateEmploymentForecast() {
         // create yearly employment forecast files
 
+    	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
         String[] yearsGiven = {"00", "07", "10", "30", "40"};  // Warning: if years are changed, also change interpolation loop below under "// interpolate employment data"
         int highestYear = SiloUtil.getHighestVal(yearsGiven);
         int smallestYear = SiloUtil.getSmallestVal(yearsGiven);

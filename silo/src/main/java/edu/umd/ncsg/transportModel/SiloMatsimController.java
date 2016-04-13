@@ -43,7 +43,9 @@ public class SiloMatsimController {
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
 			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
 			String inputNetworkFile,
-			Population population, int year, String crs, int numberOfIterations, String siloRunId) {
+			Population population, int year, 
+			String crs, int numberOfIterations, String siloRunId, String outputDirectoryRoot,
+			double flowCapacityFactor, double storageCapacityFactor) {
 //			String populationFile, int year, String crs, int numberOfIterations) {
 		final Config config = ConfigUtils.createConfig();
 
@@ -57,8 +59,10 @@ public class SiloMatsimController {
 //		config.plans().setInputFile(inputPlansFile);
 		
 		// Simulation
-		config.qsim().setFlowCapFactor(0.01);
-		config.qsim().setStorageCapFactor(0.018);
+//		config.qsim().setFlowCapFactor(0.01);
+		config.qsim().setFlowCapFactor(flowCapacityFactor);
+//		config.qsim().setStorageCapFactor(0.018);
+		config.qsim().setStorageCapFactor(storageCapacityFactor);
 		config.qsim().setRemoveStuckVehicles(false);
 		
 		config.qsim().setTrafficDynamics( TrafficDynamics.withHoles ); // this normally works better. kai, feb'16
@@ -66,7 +70,7 @@ public class SiloMatsimController {
 		// Controller
 //		String siloRunId = "run_09";
 		String runId = siloRunId + "_" + year;
-		String outputDirectory = "../../../../../runs-svn/silo/maryland/" + runId + "/";
+		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
@@ -114,11 +118,11 @@ public class SiloMatsimController {
 		final Controler controler = new Controler(scenario);
 
 		// Add controller listener
-		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
-				travelTimesMap);
-		controler.addControlerListener(zone2zoneTravelTimeListener);
+//		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
+//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
+//				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
+//				travelTimesMap);
+//		controler.addControlerListener(zone2zoneTravelTimeListener);
 		
 		// Run controller
 		controler.run();

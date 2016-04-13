@@ -93,7 +93,7 @@ public class SiloUtil {
         // create directory if is does not yet exist
         File file = new File (directory);
         if (!file.exists()) {
-            logger.error("Creating Directory: "+directory);
+            logger.error("Creating Directory: "+directory); // TODO I would not log an error here; at most a warning or an info, dz, apr/16
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
             if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory " + scenarioName);
         }

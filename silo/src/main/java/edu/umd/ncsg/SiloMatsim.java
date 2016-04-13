@@ -4,6 +4,7 @@ import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
+import org.junit.Rule;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -19,7 +20,7 @@ import java.util.ResourceBundle;
  */
 
 public class SiloMatsim {
-    // main class
+	// main class
     static Logger logger = Logger.getLogger(SiloMatsim.class);
 
 
