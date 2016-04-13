@@ -51,8 +51,13 @@ public class SiloMatsimTest {
 //		long checksum_run = CRCChecksum.getCRCFromFile("./additional_inout/population_2001.xml");
 //		assertEquals(checksum_ref, checksum_run);
 		
-		assertEquals("different event files.", EventsFileComparator.compare("./compare/run_14_2001.0.events.xml.gz", 
-				"./matsim/run_14_2001/ITERS/it.0/run_14_2001.0.events.xml.gz"), 0);
+		final String eventsFilenameReference = "./compare/run_14_2001.0.events.xml.gz";
+
+		final String eventsFilenameNew = "../../../../../runs-svn/silo/maryland/run_14_2001//ITERS/it.0/run_14_2001.0.events.xml.gz";
+		// yy this is simply what I found in the above "./javaFiles/siloMstm_annapolis.properties"; should probably be changed
+		// to something more sensible.  kai, apr'16
+
+		assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 	}
 
 	
