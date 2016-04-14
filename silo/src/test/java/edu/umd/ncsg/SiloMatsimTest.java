@@ -1,16 +1,16 @@
 package edu.umd.ncsg;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 public class SiloMatsimTest {
@@ -39,10 +39,14 @@ public class SiloMatsimTest {
 //		
 //		System.out.println(utils.getInputDirectory());
 		
+		String[] args = {"./javaFiles/siloMstm_annapolis.properties"};
+		SiloMatsim siloMatsim = new SiloMatsim( args ) ;
+		ResourceBundle rb = siloMatsim.getRb() ;
+		String outputDir =  rb.getString("matsim.output.directory.root") ;
+		outputDir +=  "/" + rb.getString("matsim.run.id") + "_2001/" ;
+
 		try {
-//			String[] args = {"test/input/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"};
-			String[] args = {"./javaFiles/siloMstm_annapolis.properties"};
-			SiloMatsim.main(args);
+			siloMatsim.run();
 		} catch ( Exception ee ) {
 			Assert.fail( "something did not work" ) ;
 		}
@@ -53,7 +57,7 @@ public class SiloMatsimTest {
 		
 		final String eventsFilenameReference = "./compare/run_14_2001.0.events.xml.gz";
 
-		final String eventsFilenameNew = "../../../../../runs-svn/silo/maryland/run_14_2001//ITERS/it.0/run_14_2001.0.events.xml.gz";
+		final String eventsFilenameNew = outputDir + "/ITERS/it.0/run_14_2001.0.events.xml.gz";
 		// yy this is simply what I found in the above "./javaFiles/siloMstm_annapolis.properties"; should probably be changed
 		// to something more sensible.  kai, apr'16
 
