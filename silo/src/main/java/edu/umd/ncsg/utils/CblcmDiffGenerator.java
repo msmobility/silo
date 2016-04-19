@@ -38,18 +38,22 @@ public class CblcmDiffGenerator {
     
   
   public static Pattern pattern;
-  public String header;
+  public static String header;
+  public static boolean replaceNegativeValues = true;
   
+  /*
   public static void main(String[] args) throws IOException{
-	  String[] inputFiles = {"D:\\Work\\git\\resultFileSpatial1base.csv","D:\\Work\\git\\SpatialResult2010.csv"};
+	  String[] inputFiles = {"D:\\Work\\git\\resultFileSpatial1.csv","D:\\Work\\git\\SpatialData2010.csv"};
 	  String outputFile = "D:\\Work\\git\\resultFileSpatialDiff.csv";
 	  int baseYear = 2010;
-	  int finalYear = 2016;
+	  int finalYear = 2040;
+	  
+	 
 	  CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear);
 	  
   }
-
-
+  */
+   
   /**
    * @param args
    * @throws IOException 
@@ -65,22 +69,19 @@ public class CblcmDiffGenerator {
 	logger.info("OutputFile: " + outputFile);
 	logger.info("********************************************************");
 	Path outputFilePath = Paths.get(outputFile);
-	CblcmDiffGenerator.pattern = Pattern.compile("Year (?<year>\\d{4,})");
+	pattern = Pattern.compile("Year (?<year>\\d{4,})");
 	
 	Map<String,double[]> baseYearValue = null, finalYearValue = null;
 	
-	CblcmDiffGenerator cblcmDiffGenerator = null;
 	for (String inputFilePath: inputFiles){
 		Path path = Paths.get(inputFilePath);
-		CblcmDiffGenerator tempCblcmDiffGenerator = new CblcmDiffGenerator();
-	    //map containing the year, filename and file offsets for the data
-	    Map <Integer, int[]> map = tempCblcmDiffGenerator.generateMetaInfo(path);
+		//map containing the year, filename and file offsets for the data
+	    Map <Integer, int[]> map = generateMetaInfo(path, finalYear);
 	    if(map.containsKey(baseYear)){
-	    	baseYearValue = tempCblcmDiffGenerator.readYear(map.get(baseYear)[0], map.get(baseYear)[1], path) ;
+	    	baseYearValue = readYear(map.get(baseYear)[0], map.get(baseYear)[1], path) ;
 	    };
 	    if(map.containsKey(finalYear)){
-	    	finalYearValue = tempCblcmDiffGenerator.readYear(map.get(finalYear)[0], map.get(finalYear)[1], path) ;
-	    	cblcmDiffGenerator = tempCblcmDiffGenerator;
+	    	finalYearValue = readYear(map.get(finalYear)[0], map.get(finalYear)[1], path) ;
 	    };
 	}
     
@@ -98,13 +99,13 @@ public class CblcmDiffGenerator {
 	//TODO Excepetion Handling for year search in files and header mismatches between the files
 	Map<String,double[]> t = null;
 	try{
-	t = cblcmDiffGenerator.computeDiff(baseYearValue, finalYearValue, null);
+	t = computeDiff(baseYearValue, finalYearValue, null);
 	}catch(Exception e){
 		logger.error("Error while calculating SpatialDiff", e);
 		throw e;
 	}
     Writer writer = new FileWriter(outputFilePath.toFile());
-    writer.write(cblcmDiffGenerator.header+"\n");
+    writer.write(header+"\n");
     for(String k:t.keySet()){
       StringBuilder builder = new StringBuilder();
       builder.append(k);
@@ -118,7 +119,7 @@ public class CblcmDiffGenerator {
     return true;
   }
   
-  public Map<Integer, int[]> generateMetaInfo(Path path) throws IOException{
+  private static Map<Integer, int[]> generateMetaInfo(Path path, int finalYear) throws IOException{
       BufferedReader reader = new BufferedReader( new FileReader(path.toFile()) );
       
       Map<Integer, int[]> map =  new HashMap<>();
@@ -129,8 +130,8 @@ public class CblcmDiffGenerator {
       
       Matcher m;
       
+      boolean headerFlg = false;
       String line = reader.readLine();
-      boolean matched = false;
       while(line!=null){
         m = pattern.matcher(line);
         if (m.matches()){
@@ -141,12 +142,16 @@ public class CblcmDiffGenerator {
           }
           startLine = lineNumber+1;
           year = Integer.parseInt(m.group("year"));
-          matched = true;
+          if(header==null && year==finalYear )
+              headerFlg = true;
         }
-        line = reader.readLine();
         
-        if(this.header==null && matched)
-          this.header = line;
+        line = reader.readLine();
+        if(headerFlg){
+        	header = line;
+        	headerFlg = false;
+        }
+        
         lineNumber++;
         
       }
@@ -157,7 +162,7 @@ public class CblcmDiffGenerator {
       return map;
   }
 
-public Map<String,double[]> readYear(int startLine, int endLine, Path path) throws IOException {
+private static Map<String,double[]> readYear(int startLine, int endLine, Path path) throws IOException {
     Map<String, double[]> map = new HashMap<>();
     BufferedReader reader = new BufferedReader( new FileReader(path.toFile()) );
     int lineNumber=0;
@@ -180,18 +185,39 @@ public Map<String,double[]> readYear(int startLine, int endLine, Path path) thro
     return map;
   }
 
-public  Map<String,double[]> computeDiff( Map<String,double[]> baseYear, Map<String,double[]> finalYear, Set<Integer> diffColumns) {
+private static  Map<String,double[]> computeDiff( Map<String,double[]> baseYear, Map<String,double[]> finalYear, Set<Integer> diffColumns) {
 	Map<String,double[]> result = new HashMap<>();
-    for(String k:finalYear.keySet()){
-      double[] r = new double[finalYear.get(k).length];
+	
+	if(baseYear==null) baseYear = new HashMap<>();
+	
+	Set<String> join_keys = new HashSet<>();
+    join_keys.addAll(finalYear.keySet());
+    join_keys.addAll(baseYear.keySet());
+	
+    for(String k: join_keys ){
+      
+    	
+      double[] r = new double[finalYear.get(k)!=null? finalYear.get(k).length : baseYear.get(k).length];
       if (diffColumns==null)
     	  diffColumns = ContiguousSet.create(Range.closed(0, r.length), DiscreteDomain.integers());
       for(int i = 0; i<r.length;i++){
-        if(diffColumns.contains(i) && baseYear.containsKey(k)){
-       		r[i] = finalYear.get(k)[i] - baseYear.get(k)[i];
-        }
-        else
-          r[i] = finalYear.get(k)[i];
+    	  if(diffColumns.contains(i)){
+    		if ( finalYear.containsKey(k) && baseYear.containsKey(k))
+    			r[i] = finalYear.get(k)[i] - baseYear.get(k)[i];
+    		else{
+    			if( finalYear.containsKey(k) ) r[i] = finalYear.get(k)[i];
+    				else if( baseYear.containsKey(k)  ) r[i] = 0 - baseYear.get(k)[i];
+    					 	else r[i] = 0;
+    	   }
+            if ( r[i]<0 && replaceNegativeValues ) r[i] = 0;
+    	  }
+    	  
+    	  else{
+    		  if( finalYear.containsKey(k) ) r[i] = finalYear.get(k)[i];
+  				else if( baseYear.containsKey(k)  ) r[i] = baseYear.get(k)[i];
+  					else r[i] = 0;
+    	  }
+        
       }
       result.put(k, r);
     }
