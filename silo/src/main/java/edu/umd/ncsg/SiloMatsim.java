@@ -5,6 +5,8 @@ import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
 import org.junit.Rule;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -29,10 +31,14 @@ public class SiloMatsim {
 	}
 
 	private ResourceBundle rb;
+	// new matsim
+	private Config matsimConfig;
+	// end matsim
 
 	SiloMatsim(String[] args) {
 		SiloUtil.setBaseYear(2000);
 		rb = SiloUtil.siloInitialization(args[0]);
+		matsimConfig = ConfigUtils.loadConfig(args[1]);
 	}	    
 
 	void run() {
@@ -44,6 +50,9 @@ public class SiloMatsim {
 			syntheticPop sp = new syntheticPop(rb);
 			sp.runSP();
 			SiloModel model = new SiloModel(rb);
+			//
+			model.setMatsimConfig(matsimConfig);
+			//
 			model.runModel();
 			logger.info("Finished SILO.");
 		} catch (Exception e) {

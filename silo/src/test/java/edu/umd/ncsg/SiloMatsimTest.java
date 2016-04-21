@@ -37,17 +37,22 @@ public class SiloMatsimTest {
 		
 //		utils.getInputDirectory();
 //		
-//		System.out.println(utils.getInputDirectory());
+		System.out.println(utils.getInputDirectory());
 		
-		String[] args = {"./javaFiles/siloMstm_annapolis.properties"};
-		SiloMatsim siloMatsim = new SiloMatsim( args ) ;
-		ResourceBundle rb = siloMatsim.getRb() ;
-		String outputDir =  rb.getString("matsim.output.directory.root") ;
-		outputDir +=  "/" + rb.getString("matsim.run.id") + "_2001/" ;
+		String[] args = {"./javaFiles/siloMstm_annapolis.properties", "./config/config.xml"};
+//		String[] args = {utils.getInputDirectory() + "javaFiles/siloMstm_annapolis.properties"};
+		SiloMatsim siloMatsim = new SiloMatsim(args);		
+//		ResourceBundle rb = siloMatsim.getRb() ;
+//		String outputDir =  rb.getString("matsim.output.directory.root") ;
+//		String outputDir = utils.getOutputDirectory();
+//		outputDir +=  "/" + rb.getString("matsim.run.id") + "_2001/" ;
+//		outputDir +=  "/regression_test/" ;
+		
 
 		try {
 			siloMatsim.run();
 		} catch ( Exception ee ) {
+			ee.printStackTrace();
 			Assert.fail( "something did not work" ) ;
 		}
 		
@@ -55,9 +60,10 @@ public class SiloMatsimTest {
 //		long checksum_run = CRCChecksum.getCRCFromFile("./additional_inout/population_2001.xml");
 //		assertEquals(checksum_ref, checksum_run);
 		
-		final String eventsFilenameReference = "./compare/run_14_2001.0.events.xml.gz";
+		final String eventsFilenameReference = "./reference/regression_test_2001.0.events.xml.gz";
 
-		final String eventsFilenameNew = outputDir + "/ITERS/it.0/run_14_2001.0.events.xml.gz";
+//		final String eventsFilenameNew = outputDir + "/ITERS/it.0/run_14_2001.0.events.xml.gz";
+		final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
 		// yy this is simply what I found in the above "./javaFiles/siloMstm_annapolis.properties"; should probably be changed
 		// to something more sensible.  kai, apr'16
 

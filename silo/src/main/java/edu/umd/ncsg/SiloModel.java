@@ -29,6 +29,8 @@ import java.util.ResourceBundle;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
@@ -101,6 +103,8 @@ public class SiloModel {
     protected static final String PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT	= "matsim.output.directory.root";
     protected static final String PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR	= "matsim.flow.capacity.factor";
     protected static final String PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR	= "matsim.storage.capacity.factor";
+    
+    private Config matsimConfig = null;
     // end new matsim
 
     private int[] scalingYears;
@@ -353,31 +357,44 @@ public class SiloModel {
 //            	int nextYearForTransportModel = year + 1;
                 Log.info("Running MATSim transport model for year " + nextYearForTransportModel + "."); 
                 
+//                Config config = ConfigUtils.createConfig();                
                 
                 // Parameters
                 // TODO move somewhere else later; maybe to ResourceBundle?
 //                String shapeFile = "input_additional/MD_vicinity_revised.shp";
 //                String siloRunId = "run_14";
-                String runId = rb.getString(PROPERTIES_MATSIM_RUN_ID);
+//                String runId = rb.getString(PROPERTIES_MATSIM_RUN_ID);
+                String runId = matsimConfig.controler().getRunId();
+                
 //                String zoneShapeFile = "../other/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
 //                String networkFile = "../other/network/04/network.xml";
 //                String zoneShapeFile = "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
                 String zoneShapeFile = rb.getString(PROPERTIES_ZONES_SHAPEFILE);
+                
 //                String networkFile = "../../../maryland/siloMatsim/network/04/network.xml";
-                String networkFile = rb.getString(PROPERTIES_MATSIM_NETWORK_FILE);
+//                String networkFile = rb.getString(PROPERTIES_MATSIM_NETWORK_FILE);
+                String networkFile = matsimConfig.network().getInputFile();                
+                
 //                String populationFile = "run_06/siloMatsim/year_2001/year_2001.output_plans.xml.gz";
 //                String crs = "EPSG:26918";
                 String crs = rb.getString(PROPERTIES_ZONES_CRS);
          
-                boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
-//            	boolean writePopulation = false;
-                int timeOfDayForImpedanceMatrix = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_TIME_OF_DAY_FOR_IMPEDANCE_MATRIX);
-//            	int timeOfDayForImpedanceMatrix = 8*60*60;
-//        		int numberOfCalcPoints = 1; // usual value is 3
-        		int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
+//                boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
+            	boolean writePopulation = false; // TODO remove hardcoded
+                
+//                int timeOfDayForImpedanceMatrix = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_TIME_OF_DAY_FOR_IMPEDANCE_MATRIX);
+            	int timeOfDayForImpedanceMatrix = 8*60*60; // TODO remove hardcoded
+                
+        		int numberOfCalcPoints = 1; // usual value is 3 // TODO remove hardcoded
+//        		int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
+        		
 //        		String matrixName = "matrixName";
+        		
 //        		int numberOfIterations = 1; // usual value, e.g. in paper is 20
-        		int numberOfIterations = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_ITERATIONS);
+//        		int numberOfIterations = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_ITERATIONS);
+        		int numberOfIterations = matsimConfig.controler().getLastIteration();
+        		
+        		
 //        		double populationScalingFactor = 1.;
 //        		double workerScalingFactor = 1.;
         		double populationScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
@@ -386,8 +403,17 @@ public class SiloModel {
         		// people working at non-peak times (only peak traffic is simulated), and people going by
         		// a mode other than car in case a car is still available to them
         		double workerScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_WORKER_SCALING_FACTOR);
-        		double flowCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR);
-        		double storageCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR);
+//        		double flowCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR);
+        		
+        		// set it equal to population scaling factor
+//        		double flowCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
+        		double flowCapacityFactor = matsimConfig.qsim().getFlowCapFactor();
+        		
+        		/* According to "Nicolai and Nagel 2013 High Resolution Accessibility ... citing Reiser ... p.9
+        		 * Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4)) */
+//        		double storageCapacityFactor = flowCapacityFactor / (Math.pow(flowCapacityFactor, (1/4)));
+//        		double storageCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR);
+        		double storageCapacityFactor = matsimConfig.qsim().getStorageCapFactor();
         		
         		
         		// Objects
@@ -411,7 +437,8 @@ public class SiloModel {
 //        		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, crs);
         		
 //        		String outputDirectoryRoot = "../../../../../runs-svn/silo/maryland/";
-        		String outputDirectoryRoot = rb.getString(PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT);
+//        		String outputDirectoryRoot = rb.getString(PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT);
+        		String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
         		
         		// Get travel Times from MATSim
         		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
@@ -807,5 +834,8 @@ public class SiloModel {
 //        }
 //        pw.close();
 //    }
+    
+    public void setMatsimConfig (Config matsimConfig) {
+    	this.matsimConfig = matsimConfig;
+    }
 }
-
