@@ -22,10 +22,10 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Range;
+//import com.google.common.collect.ContiguousSet;
+//import com.google.common.collect.DiscreteDomain;
+//import com.google.common.collect.ImmutableSortedSet;
+//import com.google.common.collect.Range;
 
 import edu.umd.ncsg.SiloCSDMS;
 
@@ -55,7 +55,7 @@ public class CblcmDiffGenerator {
   */
    
   /**
-   * @param args
+//   * @param args
    * @throws IOException 
    */
   public static boolean generateCblcmDiff(String[] inputFiles, String outputFile,int baseYear,int finalYear) throws IOException {
@@ -198,8 +198,8 @@ private static  Map<String,double[]> computeDiff( Map<String,double[]> baseYear,
       
     	
       double[] r = new double[finalYear.get(k)!=null? finalYear.get(k).length : baseYear.get(k).length];
-      if (diffColumns==null)
-    	  diffColumns = ContiguousSet.create(Range.closed(0, r.length), DiscreteDomain.integers());
+//      if (diffColumns==null)
+//    	  diffColumns = ContiguousSet.create(Range.closed(0, r.length), DiscreteDomain.integers());
       for(int i = 0; i<r.length;i++){
     	  if(diffColumns.contains(i)){
     		if ( finalYear.containsKey(k) && baseYear.containsKey(k))
