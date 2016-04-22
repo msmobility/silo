@@ -167,7 +167,13 @@ public class JobDataManager {
 
         logger.info("  Interpolating employment forecast for all years from " + (2000 + smallestYear) + " to " +
                 (2000 + highestYear));
-        TableDataSet jobs = SiloUtil.readCSVfile(ResourceUtil.getProperty(rb, PROPERTIES_JOB_CONTROL_TOTAL));
+        TableDataSet jobs ;
+        try {
+      	  final String filename = SiloUtil.baseDirectory + "/" + ResourceUtil.getProperty(rb, PROPERTIES_JOB_CONTROL_TOTAL);
+		jobs = SiloUtil.readCSVfile(filename);
+        } catch (Exception ee) {
+      	  throw new RuntimeException( ee ) ;
+        }
         new JobType(rb);
 
         // jobInventory by [industry][year][taz]

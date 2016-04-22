@@ -75,7 +75,8 @@ public class SiloUtil {
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
         // copy properties file into scenario directory
         String[] prop = resourceBundleName.split("/");
-        copyFile(baseDirectory + resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+//        copyFile(baseDirectory + resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        copyFile(resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber();
         trackingFile("open");
@@ -152,7 +153,9 @@ public class SiloUtil {
         boolean exists = dataFile.exists();
         if (!exists) {
             logger.error("File not found: " + fileName);
-            System.exit(1);
+            throw new RuntimeException("file not found");
+//            System.exit(1);
+            // If code terminates with System.exit(...), from the perspective of a junit test the test has passed! kai, apr'16 
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);

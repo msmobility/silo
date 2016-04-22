@@ -27,7 +27,7 @@
 <!-- ====================================================================== -->
 
 	<module name="network" >
-		<param name="inputNetworkFile" value="./additional_input/network/04/network.xml" />
+		<param name="inputNetworkFile" value="./test/scenarios/mstm_annapolis/additional_input/network/04/network.xml" />
 	</module>
 
 <!-- ====================================================================== -->

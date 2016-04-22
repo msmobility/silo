@@ -369,7 +369,7 @@ public class SiloModel {
 //                String zoneShapeFile = "../other/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
 //                String networkFile = "../other/network/04/network.xml";
 //                String zoneShapeFile = "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp"; // has to be in correct projection/crs!!!
-                String zoneShapeFile = rb.getString(PROPERTIES_ZONES_SHAPEFILE);
+                String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
                 
 //                String networkFile = "../../../maryland/siloMatsim/network/04/network.xml";
 //                String networkFile = rb.getString(PROPERTIES_MATSIM_NETWORK_FILE);

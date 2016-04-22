@@ -39,8 +39,8 @@ public class SiloMatsimTest {
 //		
 		System.out.println(utils.getInputDirectory());
 		
-		String[] args = {"./test/input/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties", 
-				"./test/input/scenarios/mstm_annapolis/config/config.xml"};
+		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties", 
+				"./test/scenarios/mstm_annapolis/config/config.xml"};
 //		String[] args = {utils.getInputDirectory() + "javaFiles/siloMstm_annapolis.properties"};
 		SiloMatsim siloMatsim = new SiloMatsim(args);		
 //		ResourceBundle rb = siloMatsim.getRb() ;
@@ -61,7 +61,7 @@ public class SiloMatsimTest {
 //		long checksum_run = CRCChecksum.getCRCFromFile("./additional_inout/population_2001.xml");
 //		assertEquals(checksum_ref, checksum_run);
 		
-		final String eventsFilenameReference = "./reference/regression_test_2001.0.events.xml.gz";
+		final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
 
 //		final String eventsFilenameNew = outputDir + "/ITERS/it.0/run_14_2001.0.events.xml.gz";
 		final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
