@@ -4,7 +4,6 @@ import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
-import org.junit.Rule;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 

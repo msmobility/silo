@@ -17,6 +17,10 @@ public class SiloMatsimTest {
 	// TODO
 	// * write similar test for SiloMstm on master branch
 
+	/**
+	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
+	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
+	 */
 	@Test
 	public final void testMain() throws IOException {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties", 
