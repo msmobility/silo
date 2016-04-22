@@ -39,7 +39,8 @@ public class SiloMatsimTest {
 //		
 		System.out.println(utils.getInputDirectory());
 		
-		String[] args = {"./javaFiles/siloMstm_annapolis.properties", "./config/config.xml"};
+		String[] args = {"./test/input/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties", 
+				"./test/input/scenarios/mstm_annapolis/config/config.xml"};
 //		String[] args = {utils.getInputDirectory() + "javaFiles/siloMstm_annapolis.properties"};
 		SiloMatsim siloMatsim = new SiloMatsim(args);		
 //		ResourceBundle rb = siloMatsim.getRb() ;
