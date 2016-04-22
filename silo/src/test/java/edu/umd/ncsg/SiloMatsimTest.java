@@ -30,9 +30,16 @@ public class SiloMatsimTest {
 			Assert.fail( "something did not work" ) ;
 		}
 		
-		long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
-		long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
-		assertEquals("plans files are different",  checksum_ref, checksum_run);
+		{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./scenarios/mstm_annapolis/microData_annapolis/dd_2001.csv");
+			assertEquals("plans files are different",  checksum_ref, checksum_run);
+		}
+		{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
+			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+			assertEquals("plans files are different",  checksum_ref, checksum_run);
+		}
 		
 		final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
 		final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
