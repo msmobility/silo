@@ -1,3 +1,7 @@
+addons:
+  apt:
+    packages:
+      - libsis-jhdf5-java
 language: java
 jdk:
   - oraclejdk8
