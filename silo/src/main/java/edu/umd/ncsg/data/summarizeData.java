@@ -179,6 +179,51 @@ public class summarizeData {
     }
 
 
+    public static int[] getHouseholdsByZone () {
+        // summarize households by zone
+
+        int[] householdsByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Household hh: Household.getHouseholdArray()) {
+            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
+            householdsByZone[zone]++;
+        }
+        return householdsByZone;
+    }
+
+
+    public static int[] getRetailEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] retailEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return retailEmplByZone;
+    }
+
+
+    public static int[] getOtherEmploymentByZone() {
+        // summarize other employment by zone
+
+        int[] otherEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return otherEmplByZone;
+    }
+
+
+    public static int[] getTotalEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] totalEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return totalEmplByZone;
+    }
+
+
     public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData) {
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 

@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import static java.nio.file.StandardCopyOption.*;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -287,6 +288,71 @@ public class SiloUtil {
     }
 
 
+    public static Integer getSum (Integer[] array) {
+        Integer sm = 0;
+        for (Integer value: array) sm += value;
+        return sm;
+    }
+
+
+    public static float getSum(float[][][] array) {
+        // return array of three-dimensional double array
+        float sm = 0;
+        for (float[][] anArray : array) {
+            for (int i = 0; i < array[0][0].length; i++) {
+                for (int j = 0; j < array[0].length; j++) sm += anArray[i][j];
+            }
+        }
+        return sm;
+    }
+
+
+    public static float getMean (int[] values) {
+        // calculate mean (average) value
+
+        float sm = 0;
+        for (int i: values) sm += i;
+        return (sm / values.length);
+    }
+
+
+    public static float getVariance (int[] values) {
+        // calculate sample variance of array values[]
+
+        if (values.length <= 1) {
+            logger.error("Cannot calculate variance for array with length " + values.length);
+            return 0;
+        }
+        double sm = 0;
+        float mean = getMean(values);
+        for (int i: values) {
+            sm += Math.pow((i - mean), 2);
+        }
+        return (float) (sm / (values.length-1));
+    }
+
+
+    public static String[] convertArrayListToStringArray (ArrayList<String> al) {
+        String[] list = new String[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+
+    public static int[] convertArrayListToIntArray (ArrayList<Integer> al) {
+        int[] list = new int[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+
+    public static int[] convertIntegerToInt (Integer[] values) {
+        int[] intValues = new int[values.length];
+        for (int i = 0; i < values.length; i++) intValues[i] = values[i];
+        return intValues;
+    }
+
+
     public static float getMedian (int[] array) {
         // return median value
 
@@ -464,6 +530,24 @@ public class SiloUtil {
     }
 
 
+    public static float getHighestVal(float[] array) {
+        // return highest number in float array
+        float high = Float.MIN_VALUE;
+        for (float num: array) high = Math.max(high, num);
+        return high;
+    }
+
+
+    public static float getWeightedMean (float[] values, int[] weights) {
+        // calculate mean (average) value
+
+        if (values.length != weights.length) logger.error("values[] and weights[] have unequal length in getWeightedMean()");
+        float sm = 0;
+        for (int i = 0; i < values.length; i++) sm += values[i] * weights[i];
+        return (sm / getSum(weights));
+    }
+
+
     public static int getHighestVal(String[] array) {
         // return highest number in String array
         int high = Integer.MIN_VALUE;
@@ -475,7 +559,15 @@ public class SiloUtil {
     public static int getSmallestVal(String[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
-        for (String num : array) low = Math.min(low, Integer.parseInt(num));
+        for (String num: array) low = Math.min(low, Integer.parseInt(num));
+        return low;
+    }
+
+
+    public static int getSmallestVal(int[] array) {
+        // return highest number in String array
+        int low = Integer.MAX_VALUE;
+        for (int num: array) low = Math.min(low, num);
         return low;
     }
 
@@ -633,4 +725,16 @@ public class SiloUtil {
     public static int getEndYear() {
         return endYear;
     }
+
+
+    static public String customFormat(String pattern, double value ) {
+        // function copied from: http://docs.oracle.com/javase/tutorial/java/data/numberformat.html
+        // 123456.789 ###,###.###  123,456.789 The pound sign (#) denotes a digit, the comma is a placeholder for the grouping separator, and the period is a placeholder for the decimal separator.
+        // 123456.789 ###.##       123456.79   The value has three digits to the right of the decimal point, but the pattern has only two. The format method handles this by rounding up.
+        // 123.78     000000.000   000123.780  The pattern specifies leading and trailing zeros, because the 0 character is used instead of the pound sign (#).
+        // 12345.67   $###,###.### $12,345.67  The first character in the pattern is the dollar sign ($). Note that it immediately precedes the leftmost digit in the formatted output.
+        DecimalFormat myFormatter = new DecimalFormat(pattern);
+        return myFormatter.format(value);
+    }
+
 }
