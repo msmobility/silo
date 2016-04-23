@@ -111,8 +111,8 @@
 											</excludes>
 					<forkMode>once</forkMode>
 					<!-- avoid out of memory errors: -->
-					<argLine>-Xmx700m -Djava.awt.headless=true
-						-Dmatsim.preferLocalDtds=true</argLine>
+					<argLine>-Xmx2000m -Djava.awt.headless=true
+						-Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
 				</configuration>
 			</plugin>
 			<plugin>

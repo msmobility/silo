@@ -1,9 +1,5 @@
-addons:
-  apt:
-    packages:
-      - libsis-jhdf5-java
 language: java
 jdk:
   - oraclejdk8
 install: mvn clean install
-script: mvn test
+script: mvn test -Dhdf5lib-absolute-path=`pwd`/silo/lib/linux64/libjhdf5.so
