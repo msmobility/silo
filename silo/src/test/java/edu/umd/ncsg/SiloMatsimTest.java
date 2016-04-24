@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
@@ -23,9 +25,16 @@ public class SiloMatsimTest {
 	 */
 	@Test
 	public final void testMain() throws IOException {
-		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties", 
-				"./test/scenarios/mstm_annapolis/config/config.xml"};
-		SiloMatsim siloMatsim = new SiloMatsim(args);		
+		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
+
+		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config.xml" ) ;
+		
+		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
+		config.global().setNumberOfThreads(1);
+		config.parallelEventHandling().setNumberOfThreads(1);
+		config.qsim().setNumberOfThreads(1);
+
+		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
 
 		try {
 			siloMatsim.run();

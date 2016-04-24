@@ -35,9 +35,16 @@ public class SiloMatsim {
 	// end matsim
 
 	SiloMatsim(String[] args) {
+		this( args, ConfigUtils.loadConfig(args[1]) ) ;
+	}	    
+
+	/**
+	 * Option to set the matsim config directly, at this point meant for tests.
+	 */
+	SiloMatsim(String[] args, Config config) {
 		SiloUtil.setBaseYear(2000);
 		rb = SiloUtil.siloInitialization(args[0]);
-		matsimConfig = ConfigUtils.loadConfig(args[1]);
+		matsimConfig = config ;
 	}	    
 
 	void run() {
