@@ -45,7 +45,7 @@ public class SiloMatsimTest {
 		
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
-			long checksum_run = CRCChecksum.getCRCFromFile("./scenarios/mstm_annapolis/microData_annapolis/dd_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/dd_2001.csv");
 			assertEquals("plans files are different",  checksum_ref, checksum_run);
 		}
 		{
