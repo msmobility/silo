@@ -4,4 +4,4 @@ jdk:
 script: mvn test -Dhdf5lib-absolute-path=`pwd`/silo/lib/linux64/libjhdf5.so
 env:
   global:
-    - export MAVEN_OPTS="-Xmx4g"
+    - export MAVEN_OPTS="-Xmx2500m"
