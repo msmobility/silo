@@ -108,6 +108,13 @@ public class SiloMatsimController {
 		workActivity.setTypicalDuration(8*60*60);
 		config.planCalcScore().addActivityParams(workActivity);
 		
+		config.qsim().setNumberOfThreads(1);
+		config.global().setNumberOfThreads(1);
+		config.parallelEventHandling().setNumberOfThreads(1);
+		
+		config.qsim().setUsingThreadpool(false);
+		
+		// ===
 		// Scenario
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 //		PopulationReader populationReader = new PopulationReaderMatsimV5(scenario);

@@ -802,6 +802,8 @@ public class SiloModel {
 //        pw.close();
 //    }
     
+    @Deprecated // having a config at this level and then NOT passing it down is confusing the user (at least it was confusing me).
+    // Need to find a different solution. kai, apr'16
     public void setMatsimConfig (Config matsimConfig) {
     	this.matsimConfig = matsimConfig;
     }

@@ -28,11 +28,13 @@ public class SiloMatsimTest {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config.xml" ) ;
+		// yyyyyy this will all not be passed through.
 		
 		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
-		config.global().setNumberOfThreads(1);
-		config.parallelEventHandling().setNumberOfThreads(1);
-		config.qsim().setNumberOfThreads(1);
+//		config.global().setNumberOfThreads(1);
+//		config.parallelEventHandling().setNumberOfThreads(1);
+//		config.qsim().setNumberOfThreads(1);
+		// yyyyyy this will all not be passed through.
 
 		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
 
