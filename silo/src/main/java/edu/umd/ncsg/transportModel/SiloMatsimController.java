@@ -65,8 +65,6 @@ public class SiloMatsimController {
 		config.qsim().setStorageCapFactor(storageCapacityFactor);
 		config.qsim().setRemoveStuckVehicles(false);
 		
-		config.qsim().setTrafficDynamics( TrafficDynamics.withHoles ); // this normally works better. kai, feb'16
-
 		// Controller
 //		String siloRunId = "run_09";
 		String runId = siloRunId + "_" + year;
@@ -130,6 +128,7 @@ public class SiloMatsimController {
 //				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
 //				travelTimesMap);
 //		controler.addControlerListener(zone2zoneTravelTimeListener);
+		// yyyyyy feedback will not work without the above, will it?  kai, apr'16
 		
 		// Run controller
 		controler.run();
