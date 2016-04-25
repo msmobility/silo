@@ -4,4 +4,4 @@ jdk:
 script: mvn test -Dhdf5lib-absolute-path=`pwd`/silo/lib/linux64/libjhdf5.so
 env:
   global:
-    - MAVEN_OPTS="-XX:MaxPermSize=1g -Xmx4g"
+    - MAVEN_OPTS="-XX:MaxPermSize=1g -Xmx4g -Xms4g"
