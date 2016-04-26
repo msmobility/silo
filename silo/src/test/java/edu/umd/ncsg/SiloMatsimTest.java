@@ -51,6 +51,21 @@ public class SiloMatsimTest {
 			assertEquals("plans files are different",  checksum_ref, checksum_run);
 		}
 		{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/hh_2001.csv");
+			assertEquals("plans files are different",  checksum_ref, checksum_run);
+		}
+		{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/jj_2001.csv");
+			assertEquals("plans files are different",  checksum_ref, checksum_run);
+		}
+		{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/pp_2001.csv");
+			assertEquals("plans files are different",  checksum_ref, checksum_run);
+		}
+		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
 			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
 			assertEquals("plans files are different",  checksum_ref, checksum_run);
