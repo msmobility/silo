@@ -566,7 +566,10 @@ public class SiloModel {
 
         householdData.summarizeHouseholdsNearMetroStations();
 
-        if (SiloUtil.getEndYear() != 2040) summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
+        if (SiloUtil.getEndYear() != 2040) {
+            summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
+            summarizeData.writeOutDevelopmentCapacityFile(rb, realEstateData);
+        }
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
         SiloUtil.finish(ddOverwrite);

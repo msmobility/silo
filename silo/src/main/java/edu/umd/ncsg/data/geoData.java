@@ -47,7 +47,7 @@ public class geoData {
 
     private static void readZones(ResourceBundle rb) {
         // read zonal data
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ZONAL_DATA_FILE);
+        String fileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_ZONAL_DATA_FILE);
         SiloUtil.zonalData = SiloUtil.readCSVfile(fileName);
         highestZonalId = SiloUtil.getHighestVal(SiloUtil.zonalData.getColumnAsInt("ZoneId"));
         SiloUtil.zonalData.buildIndex(SiloUtil.zonalData.getColumnPosition("ZoneId"));
@@ -56,7 +56,7 @@ public class geoData {
         zoneIndex = SiloUtil.createIndexArray(zones);
 
         // read region definition
-        String regFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_REGION_DEF_FILE);
+        String regFileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_REGION_DEF_FILE);
         regDef = SiloUtil.readCSVfile(regFileName);
         regionDefinition = new HashMap<>();
         for (int row = 1; row <= regDef.getRowCount(); row++) {
