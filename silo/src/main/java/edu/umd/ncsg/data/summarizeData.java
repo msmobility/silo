@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_CAPACITY_FILE;
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_LAND_USE_AREA;
+
 /**
  * Methods to summarize model results
  * Author: Rolf Moeckel, PB Albuquerque
@@ -405,11 +408,12 @@ public class summarizeData {
     }
 
 
-    public static void writeOutSyntheticPopulation (ResourceBundle rb, int year) {
+    public static void writeOutSyntheticPopulation (ResourceBundle rb) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" + year + ".csv";
+        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
+                SiloUtil.getEndYear() + ".csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         Household[] hhs = Household.getHouseholdArray();
@@ -431,7 +435,8 @@ public class summarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" + year + ".csv";
+        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
+                SiloUtil.getEndYear() + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         Person[] pps = Person.getPersonArray();
@@ -461,7 +466,8 @@ public class summarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" + year + ".csv";
+        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" +
+                SiloUtil.getEndYear() + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         Dwelling[] dds = Dwelling.getDwellingArray();
@@ -491,7 +497,8 @@ public class summarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" + year + ".csv";
+        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
+                SiloUtil.getEndYear() + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
@@ -599,5 +606,23 @@ public class summarizeData {
             }
             pw.println("," + rents[i] / countThisIncome);
         }
+    }
+
+
+    public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
+        // write out development capacity file to allow model run to be continued from this point later
+
+        String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+                ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
+        PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+        pwc.println("Zone,DevCapacity");
+        for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
+        pwc.close();
+        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+                ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
+        PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
+        pwl.println("Zone,lu41");
+        for (int zone: geoData.getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
+        pwl.close();
     }
 }
