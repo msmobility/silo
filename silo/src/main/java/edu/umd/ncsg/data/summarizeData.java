@@ -408,12 +408,12 @@ public class summarizeData {
     }
 
 
-    public static void writeOutSyntheticPopulation (ResourceBundle rb) {
+    public static void writeOutSyntheticPopulation (ResourceBundle rb, int year) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
         String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
-                SiloUtil.getEndYear() + ".csv";
+                year + ".csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         Household[] hhs = Household.getHouseholdArray();
@@ -436,7 +436,7 @@ public class summarizeData {
 
         logger.info("  Writing person file");
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
-                SiloUtil.getEndYear() + ".csv";
+                year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         Person[] pps = Person.getPersonArray();
@@ -467,7 +467,7 @@ public class summarizeData {
 
         logger.info("  Writing dwelling file");
         String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" +
-                SiloUtil.getEndYear() + ".csv";
+                year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         Dwelling[] dds = Dwelling.getDwellingArray();
@@ -498,7 +498,7 @@ public class summarizeData {
 
         logger.info("  Writing job file");
         String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
-                SiloUtil.getEndYear() + ".csv";
+                year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
