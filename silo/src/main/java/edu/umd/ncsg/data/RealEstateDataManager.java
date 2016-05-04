@@ -190,7 +190,7 @@ public class RealEstateDataManager {
         if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
             fileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + ".csv";
         } else {                                             // start in different year (continue previous run)
-            fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+            fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                     ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.startYear + ".csv";
         }
         landUse = SiloUtil.readCSVfile(fileName);
@@ -224,7 +224,7 @@ public class RealEstateDataManager {
             if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
                 capacityFileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + ".csv";
             } else {                                             // start in different year (continue previous run)
-                capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+                capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                         ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.startYear + ".csv";
             }
             developmentCapacity = SiloUtil.readCSVfile(capacityFileName);

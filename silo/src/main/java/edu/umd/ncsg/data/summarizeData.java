@@ -612,13 +612,13 @@ public class summarizeData {
     public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
         // write out development capacity file to allow model run to be continued from this point later
 
-        String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+        String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
         pwc.println("Zone,DevCapacity");
         for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
         pwc.close();
-        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName +
+        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
         pwl.println("Zone,lu41");
