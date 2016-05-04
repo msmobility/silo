@@ -48,27 +48,27 @@ public class SiloMatsimTest {
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/dd_2001.csv");
-			assertEquals("plans files are different",  checksum_ref, checksum_run);
+			assertEquals("Dwelling files are different",  checksum_ref, checksum_run);
 		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/hh_2001.csv");
-			assertEquals("plans files are different",  checksum_ref, checksum_run);
+			assertEquals("Household files are different",  checksum_ref, checksum_run);
 		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/jj_2001.csv");
-			assertEquals("plans files are different",  checksum_ref, checksum_run);
+			assertEquals("Job files are different",  checksum_ref, checksum_run);
 		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/pp_2001.csv");
-			assertEquals("plans files are different",  checksum_ref, checksum_run);
+			assertEquals("Population files are different",  checksum_ref, checksum_run);
 		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
 			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
-			assertEquals("plans files are different",  checksum_ref, checksum_run);
+			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}
 		
 		final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
