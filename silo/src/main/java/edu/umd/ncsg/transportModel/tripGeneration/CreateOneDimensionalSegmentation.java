@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
  */
 
 public class CreateOneDimensionalSegmentation {
-    private static Logger logger = Logger.getLogger(HouseholdTypeExploration.class);
+    private static Logger logger = Logger.getLogger(CreateOneDimensionalSegmentation.class);
 
 
     public static void createSegmentations(ResourceBundle rb) {

@@ -40,23 +40,17 @@ public class TripGeneration {
         // Run trip generation model
 
         tgData = new TripGenerationData(rb);
-        if (ResourceUtil.getBooleanProperty(rb, "trip.gen.exploration.mode")) {
-            // Explore new household type definition
-            HouseholdTypeExploration hte = new HouseholdTypeExploration(rb, tgData);
-            hte.run();
-        } else {
-            // apply existing trip rates
-            logger.info("  Started microscopic trip generation model for " + year + ".");
-            tgData.readHouseholdTravelSurvey("all");
-            microgenerateTrips(year);
-            removeNonMotorizedTrips(year);
-            dampenTripGenAtStudyAreaBorder();
-            calculateTripAttractions(year);
-            balanceTripGeneration();
-            scaleTripGeneration();
-            writeTrips();
-            logger.info("  Completed microscopic trip generation model.");
-        }
+        logger.info("  Started microscopic trip generation model for " + year + ".");
+        tgData.readHouseholdTravelSurvey("all");
+        microgenerateTrips(year);
+        removeNonMotorizedTrips(year);
+        dampenTripGenAtStudyAreaBorder();
+        calculateTripAttractions(year);
+        balanceTripGeneration();
+        scaleTripGeneration();
+        writeTrips();
+        logger.info("  Completed microscopic trip generation model.");
+
     }
 
 
