@@ -1,10 +1,8 @@
 package edu.umd.ncsg;
 
-import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
+import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.util.ResourceBundle;
 
 /**
@@ -25,7 +23,7 @@ public class SiloCSDMS {
     public static void main (String[] args) {
         // main run method
 
-//        syntheticPop sp = new syntheticPop(rb);
+//        SyntheticPopUs sp = new SyntheticPopUs(rb);
 //        sp.runSP();
         initialize(args);
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
@@ -44,7 +42,7 @@ public class SiloCSDMS {
         try {
             logger.info("Starting SILO program for MSTM with CSDMS Integration");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            syntheticPop sp = new syntheticPop(rb);
+            SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             model = new SiloModel(rb);
             model.runModel();

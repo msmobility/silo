@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -25,7 +24,7 @@ import com.pb.common.util.ResourceUtil;
  *
  */
 
-public class syntheticPop {
+public class SyntheticPopUs {
 
     protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
     protected static final String PROPERTIES_PUMS_FILES              = "pums.records";
@@ -39,7 +38,7 @@ public class syntheticPop {
     //    protected static final String PROPERTIES_FILENAME_HH_VALIDATION  = "file.name.hh.validation";
     //    protected static final String PROPERTIES_FILENAME_DD_VALIDATION  = "file.name.dd.validation";
 
-    protected transient Logger logger = Logger.getLogger(syntheticPop.class);
+    protected transient Logger logger = Logger.getLogger(SyntheticPopUs.class);
     protected int[] pumas;
     protected int[] simplifiedPumas;
     protected HashMap<Integer, int[]> tazByPuma;
@@ -54,7 +53,7 @@ public class syntheticPop {
     private ResourceBundle rb;
 
 
-    public syntheticPop (ResourceBundle rb) {
+    public SyntheticPopUs(ResourceBundle rb) {
         // constructor
         this.rb = rb;
     }
@@ -511,7 +510,7 @@ public class syntheticPop {
         float[] weights = new float[zones.length];
         for (int i = 0; i < zones.length; i++) weights[i] = hhDistribution.getIndexedValueAt(zones[i], "HH00");
         if (SiloUtil.getSum(weights) == 0) logger.error("No weights found to allocate dwelling. Check method " +
-                "<locateDwelling> in <syntheticPop.java>");
+                "<locateDwelling> in <SyntheticPopUs.java>");
         int select = SiloUtil.select(weights);
         return zones[select];
     }
