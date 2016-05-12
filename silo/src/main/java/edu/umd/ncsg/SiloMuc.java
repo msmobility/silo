@@ -34,7 +34,7 @@ public class SiloMuc {
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
-            //SiloModel model = new SiloModel(rb);
+            SiloModel model = new SiloModel(rb);
             //model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
