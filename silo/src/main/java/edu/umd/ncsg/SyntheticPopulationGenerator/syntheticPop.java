@@ -775,8 +775,8 @@ public class syntheticPop {
         // compare number of generated households and dwellings with target data
         String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/validation/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
-//        String hhFile = dir + rb.getString(PROPERTIES_FILENAME_HH_VALIDATION);
-//        String ddFile = dir + rb.getString(PROPERTIES_FILENAME_DD_VALIDATION);
+//        String hhFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_HH_VALIDATION);
+//        String ddFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_DD_VALIDATION);
 
 
         // todo: Continue here!!!

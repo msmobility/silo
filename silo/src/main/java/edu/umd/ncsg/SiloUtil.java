@@ -51,6 +51,7 @@ public class SiloUtil {
     public static int numberOfQualityLevels;
     private static ResourceBundle rb;
     private static HashMap rbHashMap;
+    private static String siloTravelPropertiesFile;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
     private static int baseYear;
@@ -62,12 +63,13 @@ public class SiloUtil {
     }
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleName) {
+    public static ResourceBundle siloInitialization(String[] resourceBundleNames) {
         // initializes Silo
 
-        File propFile = new File(resourceBundleName);
+        File propFile = new File(resourceBundleNames[0]);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        siloTravelPropertiesFile = resourceBundleNames[1];
 
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
@@ -75,8 +77,8 @@ public class SiloUtil {
         // create scenario output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
         // copy properties file into scenario directory
-        String[] prop = resourceBundleName.split("/");
-        copyFile(baseDirectory + resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        String[] prop = resourceBundleNames[0].split("/");
+        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber();
         trackingFile("open");
@@ -87,6 +89,11 @@ public class SiloUtil {
 
     public static HashMap getRbHashMap() {
         return rbHashMap;
+    }
+
+
+    public static String getSiloTravelPropertiesFile() {
+        return siloTravelPropertiesFile;
     }
 
 

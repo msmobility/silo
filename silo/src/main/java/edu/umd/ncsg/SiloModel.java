@@ -30,7 +30,7 @@ import edu.umd.ncsg.jobmography.updateJobs;
 import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.transportModel;
+import edu.umd.ncsg.transportModel.TravelDemandModel;
 import edu.umd.ncsg.utils.CblcmDiffGenerator;
 
 import org.apache.log4j.Logger;
@@ -49,10 +49,11 @@ import edu.umd.ncsg.events.EventTypes;
 public class SiloModel {
     static Logger logger = Logger.getLogger(SiloModel.class);
 
-    public ResourceBundle rb;
+    private ResourceBundle rbLandUse;
     public static Random rand;
 
     protected static final String PROPERTIES_RUN_SILO                       = "run.silo.model";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
@@ -64,9 +65,9 @@ public class SiloModel {
     protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
     protected static final String PROPERTIES_CBLCM_MULTIPLIER_PREFIX				= "cblcm.multiplier";
     protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
-    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     	= "spatial.result.file.name";
-    
-    
+    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME       = "spatial.result.file.name";
+    protected static final String PROPERTIES_CREATE_MSTM_OUTPUT_FILES       = "create.mstm.socio.econ.files";
+
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
 
@@ -89,7 +90,7 @@ public class SiloModel {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private transportModel TransportModel;
+    private TravelDemandModel TransportModel;
     private updateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
@@ -98,12 +99,12 @@ public class SiloModel {
 
     /**
      * Constructor to set up a SILO model
-     * @param rb ResourceBundle
+     * @param rbLandUse ResourceBundle
      */
-    public SiloModel(ResourceBundle rb) {
-        this.rb = rb;
-        summarizeData.openResultFile(rb);
-        summarizeData.resultFileSpatial(rb, "open");
+    public SiloModel(ResourceBundle rbLandUse) {
+        this.rbLandUse = rbLandUse;
+        summarizeData.openResultFile(rbLandUse);
+        summarizeData.resultFileSpatial(rbLandUse, "open");
         IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
         modelStopper("initialize");
     }
@@ -112,21 +113,21 @@ public class SiloModel {
     public void runModel() {
         //Main method to run a SILO model
 
-        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SILO)) return;
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO)) return;
 
         logger.info("Start SILO Model");
 
         // define years to simulate
-        int[] scalingYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCALING_YEARS);
-        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rb);
-        int[] tdmYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_MODEL_YEARS);
-        int[] skimYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_SKIM_YEARS);
+        int[] scalingYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_SCALING_YEARS);
+        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
+        int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
+        int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
         // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rb);
-        HouseholdDataManager householdData = new HouseholdDataManager(rb);
-        JobDataManager jobData = new JobDataManager(rb);
-        if (!ResourceUtil.getBooleanProperty(rb, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
+        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse);
+        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
+        JobDataManager jobData = new JobDataManager(rbLandUse);
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
             householdData.readPopulation();
             realEstateData.readDwellings();
             jobData.readJobs();
@@ -145,40 +146,40 @@ public class SiloModel {
         householdData.calculateInitialSettings();
 
         logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(rb);
-        BirthModel birth = new BirthModel(rb);
-        LeaveParentHhModel lph = new LeaveParentHhModel(rb);
-        MarryDivorceModel mardiv = new MarryDivorceModel(rb);
+        DeathModel death = new DeathModel(rbLandUse);
+        BirthModel birth = new BirthModel(rbLandUse);
+        LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
+        MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rb, SiloUtil.getStartYear());
+        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
 //        summarizeData.summarizeAutoOwnershipByCounty();
 
-        MovesModel move = new MovesModel(rb);
-        InOutMigration iomig = new InOutMigration(rb);
-        ConstructionModel cons = new ConstructionModel(rb);
-        RenovationModel renov = new RenovationModel(rb);
-        DemolitionModel demol = new DemolitionModel(rb);
-        PricingModel prm = new PricingModel(rb);
-        updateJobs updateJobs = new updateJobs(rb);
-        AutoOwnershipModel aoModel = new AutoOwnershipModel(rb);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rb);
+        MovesModel move = new MovesModel(rbLandUse);
+        InOutMigration iomig = new InOutMigration(rbLandUse);
+        ConstructionModel cons = new ConstructionModel(rbLandUse);
+        RenovationModel renov = new RenovationModel(rbLandUse);
+        DemolitionModel demol = new DemolitionModel(rbLandUse);
+        PricingModel prm = new PricingModel(rbLandUse);
+        updateJobs updateJobs = new updateJobs(rbLandUse);
+        AutoOwnershipModel aoModel = new AutoOwnershipModel(rbLandUse);
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
 
-        boolean trackTime = ResourceUtil.getBooleanProperty(rb, PROPERTIES_TRACK_TIME, false);
+        boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        transportModel TransportModel = new transportModel(rb);
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rb);
+        TravelDemandModel TransportModel = new TravelDemandModel(rbLandUse);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
+            summarizeData.preparePrestoSummary(rbLandUse);
 
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             if (SiloUtil.containsElement(scalingYears, year))
-                summarizeData.scaleMicroDataToExogenousForecast(rb, year, householdData);
+                summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, year, householdData);
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-            EventManager em = new EventManager(rb, householdData, realEstateData);
+            EventManager em = new EventManager(rbLandUse, householdData, realEstateData);
 
             if (trackTime) startTime = System.currentTimeMillis();
             iomig.setupInOutMigration(year);
@@ -305,7 +306,10 @@ public class SiloModel {
 
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-                TransportModel.runMstm(nextYearForTransportModel);
+                if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false))
+                    TransportModel.runTransportModel(nextYearForTransportModel);
+                if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
+                    TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
@@ -321,13 +325,13 @@ public class SiloModel {
             if (modelStopper("check")) break;
         }
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
         if (SiloUtil.getEndYear() != 2040) {
-            summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
-            summarizeData.writeOutDevelopmentCapacityFile(rb, realEstateData);
+            summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
+            summarizeData.writeOutDevelopmentCapacityFile(rbLandUse, realEstateData);
         }
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
@@ -342,17 +346,17 @@ public class SiloModel {
         // initial steps that only need to performed once to set up the model
 
         // define years to simulate
-        scalingYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCALING_YEARS);
-        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rb);
+        scalingYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_SCALING_YEARS);
+        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
         currentYear = SiloUtil.getStartYear();
-        tdmYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_MODEL_YEARS);
-        skimYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_SKIM_YEARS);
+        tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
+        skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
         // read micro data
-        realEstateData = new RealEstateDataManager(rb);
-        householdData = new HouseholdDataManager(rb);
-        jobData = new JobDataManager(rb);
-        if (!ResourceUtil.getBooleanProperty(rb, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
+        realEstateData = new RealEstateDataManager(rbLandUse);
+        householdData = new HouseholdDataManager(rbLandUse);
+        jobData = new JobDataManager(rbLandUse);
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
             householdData.readPopulation();
             realEstateData.readDwellings();
             jobData.readJobs();
@@ -371,31 +375,31 @@ public class SiloModel {
         householdData.calculateInitialSettings();
 
         logger.info("Creating UEC Models");
-        death = new DeathModel(rb);
-        birth = new BirthModel(rb);
-        lph = new LeaveParentHhModel(rb);
-        mardiv = new MarryDivorceModel(rb);
+        death = new DeathModel(rbLandUse);
+        birth = new BirthModel(rbLandUse);
+        lph = new LeaveParentHhModel(rbLandUse);
+        mardiv = new MarryDivorceModel(rbLandUse);
         changeEmployment = new ChangeEmploymentModel();
-        acc = new Accessibility(rb, SiloUtil.getStartYear());
+        acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
 //        summarizeData.summarizeAutoOwnershipByCounty();
 
-        move = new MovesModel(rb);
-        iomig = new InOutMigration(rb);
-        cons = new ConstructionModel(rb);
-        renov = new RenovationModel(rb);
-        demol = new DemolitionModel(rb);
-        prm = new PricingModel(rb);
-        updateJobs = new updateJobs(rb);
-        aoModel = new AutoOwnershipModel(rb);
-        ddOverwrite = new ConstructionOverwrite(rb);
+        move = new MovesModel(rbLandUse);
+        iomig = new InOutMigration(rbLandUse);
+        cons = new ConstructionModel(rbLandUse);
+        renov = new RenovationModel(rbLandUse);
+        demol = new DemolitionModel(rbLandUse);
+        prm = new PricingModel(rbLandUse);
+        updateJobs = new updateJobs(rbLandUse);
+        aoModel = new AutoOwnershipModel(rbLandUse);
+        ddOverwrite = new ConstructionOverwrite(rbLandUse);
 
-        trackTime = ResourceUtil.getBooleanProperty(rb, PROPERTIES_TRACK_TIME, false);
+        trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new transportModel(rb);
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rb);
+        TransportModel = new TravelDemandModel(rbLandUse);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
+            summarizeData.preparePrestoSummary(rbLandUse);
 
     }
 
@@ -408,11 +412,11 @@ public class SiloModel {
             System.exit(1);
         }
         if (SiloUtil.containsElement(scalingYears, currentYear))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, currentYear, householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, currentYear, householdData);
         logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
         IssueCounter.setUpCounter();    // setup issue counter for this simulation period
         SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-        EventManager em = new EventManager(rb, householdData, realEstateData);
+        EventManager em = new EventManager(rbLandUse, householdData, realEstateData);
         long startTime = 0;
         if (trackTime) startTime = System.currentTimeMillis();
         iomig.setupInOutMigration(currentYear);
@@ -540,7 +544,10 @@ public class SiloModel {
 
         int nextYearForTransportModel = currentYear + 1;
         if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-            TransportModel.runMstm(nextYearForTransportModel);
+            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false))
+                TransportModel.runTransportModel(nextYearForTransportModel);
+            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
+                TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
         }
 
         if (trackTime) startTime = System.currentTimeMillis();
@@ -565,30 +572,29 @@ public class SiloModel {
         summarizeData.resultWriterReplicate = true;
 
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
         if (SiloUtil.getEndYear() != 2040) {
-            summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
-            summarizeData.writeOutDevelopmentCapacityFile(rb, realEstateData);
+            summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
+            summarizeData.writeOutDevelopmentCapacityFile(rbLandUse, realEstateData);
         }
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
         SiloUtil.finish(ddOverwrite);
         modelStopper("removeFile");
         
-        if(ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false)){
+        if(ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_CBLCM_FILES, false)){
         	 String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
              SiloUtil.createDirectoryIfNotExistingYet(directory);
-             String outputFile = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + "_" + SiloUtil.getEndYear() + "VS" + rb.getString(PROPERTIES_CBLCM_BASE_YEAR) + ".csv");
+             String outputFile = (directory + "/" + rbLandUse.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + "_" + SiloUtil.getEndYear() + "VS" + rbLandUse.getString(PROPERTIES_CBLCM_BASE_YEAR) + ".csv");
              String[] inputFiles = new String[2];
-             inputFiles[0] = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + SiloUtil.gregorianIterator + ".csv");
-             inputFiles[1] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_BASE_FILE));
-             if(rb.containsKey(PROPERTIES_CBLCM_MAND_ZONES_FILE))
-            	 inputFiles[3] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_MAND_ZONES_FILE));
-              try {
-				CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(rb.getString(PROPERTIES_CBLCM_BASE_YEAR)), SiloUtil.getEndYear(), rb, PROPERTIES_CBLCM_MULTIPLIER_PREFIX);
+             inputFiles[0] = (directory + "/" + rbLandUse.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + SiloUtil.gregorianIterator + ".csv");
+             inputFiles[1] = (SiloUtil.baseDirectory+ rbLandUse.getString(PROPERTIES_CBLCM_BASE_FILE));
+
+             try {
+				CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(rbLandUse.getString(PROPERTIES_CBLCM_BASE_YEAR)) , SiloUtil.getEndYear(), rbLandUse, PROPERTIES_CBLCM_MULTIPLIER_PREFIX);
 			} catch (NumberFormatException e) {
 				logger.error(e);
 			} catch (IOException e) {
@@ -605,13 +611,13 @@ public class SiloModel {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         SiloUtil.trackingFile("close");
         summarizeData.resultFile("close");
-        summarizeData.resultFileSpatial(rb, "close");
+        summarizeData.resultFileSpatial(rbLandUse, "close");
         float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        if (ResourceUtil.getBooleanProperty(rb, SiloModel.PROPERTIES_TRACK_TIME, false)) {
-            String fileName = rb.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_TRACK_TIME, false)) {
+            String fileName = rbLandUse.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
             try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                 out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                 out.close();
@@ -653,14 +659,14 @@ public class SiloModel {
         RealEstateDataManager.summarizeDwellings(realEstateData);
         JobDataManager.summarizeJobs();
 
-        summarizeData.resultFileSpatial(rb, "Year " + year, false);
+        summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
         summarizeData.summarizeSpatially(year, move, realEstateData);
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false))
-            summarizeDataCblcm.createCblcmSummaries(rb, year);
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
-            summarizeData.summarizeHousing(rb, year);
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
-            summarizeData.summarizePrestoRegion(rb, year);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_CBLCM_FILES, false))
+            summarizeDataCblcm.createCblcmSummaries(rbLandUse, year);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
+            summarizeData.summarizeHousing(rbLandUse, year);
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
+            summarizeData.summarizePrestoRegion(rbLandUse, year);
         }
 
     }
@@ -669,7 +675,7 @@ public class SiloModel {
         // write file summarizing run times
 
         int startYear = SiloUtil.getStartYear();
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(rb.getString(PROPERTIES_TRACK_TIME_FILE), startYear != SiloUtil.getBaseYear());
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting(rbLandUse.getString(PROPERTIES_TRACK_TIME_FILE), startYear != SiloUtil.getBaseYear());
         if (startYear == SiloUtil.getBaseYear()) {
             pw.print("Year");
             for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());

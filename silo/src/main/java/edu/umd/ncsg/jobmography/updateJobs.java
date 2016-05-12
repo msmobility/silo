@@ -47,7 +47,7 @@ public class updateJobs {
 //        }
 //
 //        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/employmentForecast/";
-//        String forecastFileName = dir + rb.getString(PROPERTIES_EMPLOYMENT_FORECAST) + year + ".csv";
+//        String forecastFileName = dir + rbLandUse.getString(PROPERTIES_EMPLOYMENT_FORECAST) + year + ".csv";
 //        TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 //        for (int row = 1; row <= forecast.getRowCount(); row++) {
 //            int zone = (int) forecast.getValueAt(row, "zone");
