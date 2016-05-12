@@ -32,7 +32,7 @@ public class SyntheticPopDe {
     public void runSP(){
         //method to create the synthetic population
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
-        logger.info("Starting to create the synthetic population");
+        logger.info("Starting to create the synthetic population.");
 
         readDataSynPop();
 
