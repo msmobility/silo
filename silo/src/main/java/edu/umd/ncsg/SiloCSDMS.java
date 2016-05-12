@@ -3,6 +3,7 @@ package edu.umd.ncsg;
 import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.util.ResourceBundle;
 
 /**
@@ -25,7 +26,7 @@ public class SiloCSDMS {
 
 //        SyntheticPopUs sp = new SyntheticPopUs(rb);
 //        sp.runSP();
-        initialize(args);
+        initialize(args[0]);
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             update(1d);
         }
@@ -37,7 +38,7 @@ public class SiloCSDMS {
         // main run method
 
         SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM with CSDMS Integration");
@@ -56,7 +57,7 @@ public class SiloCSDMS {
     }
 
 
-    public static void initialize (String[] configFile) {
+    public static void initialize (String configFile) {
         // initialization step for CSDMS
 
         logger.info("Starting SILO Initialization for MSTM with CSDMS Integration");
