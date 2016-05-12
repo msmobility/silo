@@ -36,7 +36,7 @@ public class SyntheticPopDe {
 
         readDataSynPop();
 
-        logger.info("Finished creating the synthetic population");
+        logger.info("Finished creating the synthetic population.");
     }
 
 
