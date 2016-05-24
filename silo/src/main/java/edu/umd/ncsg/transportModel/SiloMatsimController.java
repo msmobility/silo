@@ -28,6 +28,7 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
+import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheckingLevel;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.scenario.MutableScenario;
@@ -109,8 +110,9 @@ public class SiloMatsimController {
 		config.qsim().setNumberOfThreads(1);
 		config.global().setNumberOfThreads(1);
 		config.parallelEventHandling().setNumberOfThreads(1);
-		
 		config.qsim().setUsingThreadpool(false);
+		
+		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
 		
 		// ===
 		// Scenario
