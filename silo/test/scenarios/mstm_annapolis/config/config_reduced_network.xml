@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+	<module name="controler" >
+		<!-- Default=0;  -->
+		<param name="firstIteration" value="0" />
+
+		<!-- Default=1000;  -->
+		<param name="lastIteration" value="1" />
+
+		<param name="outputDirectory" value="./matsimOutput" />
+
+		<!-- Possible values: failIfDirectoryExists, overwriteExistingFiles, deleteDirectoryIfExists -->
+		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
+
+		<!-- An identifier for the current run which is used as prefix for output files and mentioned in output xml files etc. -->
+		<param name="runId" value="regression_test" />
+	</module>
+
+<!-- ====================================================================== -->
+
+	<module name="global" >
+		<!-- <param name="coordinateSystem" value="Atlantis" />
+		<param name="randomSeed" value="4711" /> -->
+	</module>
+
+<!-- ====================================================================== -->
+
+	<module name="network" >
+		<param name="inputNetworkFile" value="./test/scenarios/mstm_annapolis/additional_input/network/network-reduced.xml.gz" />
+	</module>
+
+<!-- ====================================================================== -->
+
+	<module name="qsim" >
+		<param name="flowCapacityFactor" value="0.01" />
+
+		<!-- default: FIFO; options: FIFO PassingQ SeepageQ -->
+		<param name="linkDynamics" value="FIFO" />
+
+		<param name="storageCapacityFactor" value="0.03" />
+	</module>
+
+<!-- ====================================================================== -->
+
+	<module name="strategy" >
+		<!-- maximum number of plans per agent.  ``0'' means ``infinity''.  Currently (2010), ``5'' is a good number -->
+		<param name="maxAgentPlanMemorySize" value="5" />
+	</module>
+
+<!-- ====================================================================== -->
+
+</config>
