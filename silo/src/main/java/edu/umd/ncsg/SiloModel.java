@@ -62,7 +62,8 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
     protected static final String PROPERTIES_CBLCM_BASE_YEAR				= "cblcm.base.year";
     protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
-    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     = "spatial.result.file.name";
+    protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
+    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     	= "spatial.result.file.name";
     
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
@@ -582,8 +583,9 @@ public class SiloModel {
              String[] inputFiles = new String[2];
              inputFiles[0] = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + SiloUtil.gregorianIterator + ".csv");
              inputFiles[1] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_BASE_FILE));
-             
-             try {
+             if(rb.containsKey(PROPERTIES_CBLCM_MAND_ZONES_FILE))
+            	 inputFiles[3] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_MAND_ZONES_FILE));
+              try {
 				CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(rb.getString(PROPERTIES_CBLCM_BASE_YEAR)) , SiloUtil.getEndYear());
 			} catch (NumberFormatException e) {
 				logger.error(e);
