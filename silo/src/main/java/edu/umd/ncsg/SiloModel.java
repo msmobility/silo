@@ -31,6 +31,8 @@ import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
 import edu.umd.ncsg.transportModel.transportModel;
+import edu.umd.ncsg.utils.CblcmDiffGenerator;
+
 import org.apache.log4j.Logger;
 
 import com.pb.common.util.ResourceUtil;
@@ -56,7 +58,13 @@ public class SiloModel {
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
     public static final String PROPERTIES_TRACK_TIME                        = "track.time";
     public static final String PROPERTIES_TRACK_TIME_FILE                   = "track.time.file";
+    
     protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
+    protected static final String PROPERTIES_CBLCM_BASE_YEAR				= "cblcm.base.year";
+    protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
+    protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
+    protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     	= "spatial.result.file.name";
+    
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
 
@@ -315,7 +323,10 @@ public class SiloModel {
 
         householdData.summarizeHouseholdsNearMetroStations();
 
-        if (SiloUtil.getEndYear() != 2040) summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
+        if (SiloUtil.getEndYear() != 2040) {
+            summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
+            summarizeData.writeOutDevelopmentCapacityFile(rb, realEstateData);
+        }
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
         SiloUtil.finish(ddOverwrite);
@@ -347,6 +358,7 @@ public class SiloModel {
             householdData.setTypeOfAllHouseholds();
         }
 
+        jobData.updateEmploymentForecast();
         jobData.identifyVacantJobs();
         jobData.calculateJobDensityByZone();
         realEstateData.fillQualityDistribution();
@@ -450,7 +462,8 @@ public class SiloModel {
         if (trackTime) timeCounter[EventTypes.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
-        if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear()) summarizeMicroData(currentYear, move, realEstateData);
+        if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear())
+            summarizeMicroData(currentYear, move, realEstateData);
         if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
         logger.info("  Simulating events");
@@ -546,16 +559,41 @@ public class SiloModel {
     public void finishModel () {
         // close model run
 
+        //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data
+        summarizeData.resultWriterReplicate = true;
+
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
             summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
-        if (SiloUtil.getEndYear() != 2040) summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
+        if (SiloUtil.getEndYear() != 2040) {
+            summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.endYear);
+            summarizeData.writeOutDevelopmentCapacityFile(rb, realEstateData);
+        }
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
         SiloUtil.finish(ddOverwrite);
         modelStopper("removeFile");
+        
+        if(ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false)){
+        	 String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
+             SiloUtil.createDirectoryIfNotExistingYet(directory);
+             String outputFile = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + "_" + SiloUtil.getEndYear() + "VS" + rb.getString(PROPERTIES_CBLCM_BASE_YEAR) + ".csv");
+             String[] inputFiles = new String[2];
+             inputFiles[0] = (directory + "/" + rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME) + SiloUtil.gregorianIterator + ".csv");
+             inputFiles[1] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_BASE_FILE));
+             if(rb.containsKey(PROPERTIES_CBLCM_MAND_ZONES_FILE))
+            	 inputFiles[3] = (SiloUtil.baseDirectory+rb.getString(PROPERTIES_CBLCM_MAND_ZONES_FILE));
+              try {
+				CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(rb.getString(PROPERTIES_CBLCM_BASE_YEAR)) , SiloUtil.getEndYear());
+			} catch (NumberFormatException e) {
+				logger.error(e);
+			} catch (IOException e) {
+				logger.error("Error while Writing CBLCM Diff File", e);
+			}
+        }
+        
         if (trackTime) writeOutTimeTracker(timeCounter);
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
@@ -606,12 +644,14 @@ public class SiloModel {
         if (SiloUtil.trackHh != -1 || SiloUtil.trackPp != -1 || SiloUtil.trackDd != -1)
             SiloUtil.trackWriter.println("Started simulation for year " + year);
         logger.info("  Summarizing micro data for year " + year);
-        summarizeData.resultFile("Year " + year);
+
+
+        summarizeData.resultFile("Year " + year, false);
         HouseholdDataManager.summarizePopulation();
         RealEstateDataManager.summarizeDwellings(realEstateData);
         JobDataManager.summarizeJobs();
 
-        summarizeData.resultFileSpatial(rb, "Year " + year);
+        summarizeData.resultFileSpatial(rb, "Year " + year, false);
         summarizeData.summarizeSpatially(year, move, realEstateData);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false))
             summarizeDataCblcm.createCblcmSummaries(rb, year);
@@ -620,6 +660,7 @@ public class SiloModel {
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
             summarizeData.summarizePrestoRegion(rb, year);
         }
+
     }
 
     private void writeOutTimeTracker (long[][] timeCounter) {

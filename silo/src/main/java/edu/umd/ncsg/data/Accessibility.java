@@ -99,7 +99,7 @@ public class Accessibility {
     }
 
     public void calculateAccessibilities (int year) {
-        // Calculate Hansen Accessibility (recalculated every year)
+        // Calculate Hansen TripGenAccessibility (recalculated every year)
 
         logger.info("  Calculating accessibilities for " + year);
         float alphaAuto = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_AUTO_ACCESSIBILITY_ALPHA);

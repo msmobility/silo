@@ -2,12 +2,16 @@ package edu.umd.ncsg.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.relocation.MovesModel;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_CAPACITY_FILE;
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_LAND_USE_AREA;
 
 /**
  * Methods to summarize model results
@@ -35,9 +39,17 @@ public class summarizeData {
     protected static final String PROPERTIES_WRITE_BIN_JJ_FILE            = "write.binary.jj.file";
     protected static final String PROPERTIES_PRESTO_REGION_DEFINITION     = "presto.regions";
     protected static final String PROPERTIES_PRESTO_SUMMARY_FILE          = "presto.summary.file";
-
+    protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
+    
+    
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
+
+    private static PrintWriter resultWriterFinal;
+    private static PrintWriter spatialResultWriterFinal;
+
+    public static Boolean resultWriterReplicate = false;
+
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
@@ -50,6 +62,7 @@ public class summarizeData {
         String resultFileName = rb.getString(PROPERTIES_RESULT_FILE_NAME);
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                 SiloUtil.gregorianIterator + ".csv", SiloUtil.getStartYear() != SiloUtil.getBaseYear());
+        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + SiloUtil.getEndYear() + ".csv", false);
     }
 
 
@@ -64,18 +77,27 @@ public class summarizeData {
 
     public static void resultFile(String action) {
         // handle summary file
+        resultFile(action, true);
+    }
+
+    public static void resultFile(String action, Boolean writeFinal) {
+        // handle summary file
         switch (action) {
             case "close":
                 resultWriter.close();
+                resultWriterFinal.close();
                 break;
             default:
                 resultWriter.println(action);
+                if(resultWriterReplicate && writeFinal)resultWriterFinal.println(action);
                 break;
         }
     }
 
-
     public static void resultFileSpatial(ResourceBundle rb, String action) {
+        resultFileSpatial(rb,action,true);
+    }
+        public static void resultFileSpatial(ResourceBundle rb, String action, Boolean writeFinal) {
         // handle summary file
         switch (action) {
             case "open":
@@ -84,12 +106,15 @@ public class summarizeData {
                 String resultFileName = rb.getString(PROPERTIES_SPATIAL_RESULT_FILE_NAME);
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                         SiloUtil.gregorianIterator + ".csv", SiloUtil.getStartYear() != SiloUtil.getBaseYear());
+                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +"_"+ SiloUtil.getEndYear() + ".csv", false);
                 break;
             case "close":
                 spatialResultWriter.close();
+                spatialResultWriterFinal.close();
                 break;
             default:
                 spatialResultWriter.println(action);
+                if(resultWriterReplicate && writeFinal )spatialResultWriterFinal.println(action);
                 break;
         }
     }
@@ -156,6 +181,51 @@ public class summarizeData {
             pp[zone] += hh.getHhSize();
         }
         return pp;
+    }
+
+
+    public static int[] getHouseholdsByZone () {
+        // summarize households by zone
+
+        int[] householdsByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Household hh: Household.getHouseholdArray()) {
+            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
+            householdsByZone[zone]++;
+        }
+        return householdsByZone;
+    }
+
+
+    public static int[] getRetailEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] retailEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return retailEmplByZone;
+    }
+
+
+    public static int[] getOtherEmploymentByZone() {
+        // summarize other employment by zone
+
+        int[] otherEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return otherEmplByZone;
+    }
+
+
+    public static int[] getTotalEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] totalEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return totalEmplByZone;
     }
 
 
@@ -344,7 +414,8 @@ public class summarizeData {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" + year + ".csv";
+        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         Household[] hhs = Household.getHouseholdArray();
@@ -366,7 +437,8 @@ public class summarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" + year + ".csv";
+        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         Person[] pps = Person.getPersonArray();
@@ -396,7 +468,8 @@ public class summarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" + year + ".csv";
+        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         Dwelling[] dds = Dwelling.getDwellingArray();
@@ -426,7 +499,8 @@ public class summarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" + year + ".csv";
+        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
@@ -505,7 +579,7 @@ public class summarizeData {
 
     public static void summarizePrestoRegion (ResourceBundle rb, int year) {
         // summarize housing costs by income group in SILO region
-
+    	
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 rb.getString(PROPERTIES_PRESTO_SUMMARY_FILE) + SiloUtil.gregorianIterator + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != SiloUtil.getBaseYear());
@@ -534,5 +608,27 @@ public class summarizeData {
             }
             pw.println("," + rents[i] / countThisIncome);
         }
+    }
+
+
+    public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
+        // write out development capacity file to allow model run to be continued from this point later
+    	
+    	boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
+        if(useCapacityAsNumberOfDwellings)	{
+        	String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                    ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
+            PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+            pwc.println("Zone,DevCapacity");
+            for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
+            pwc.close();
+        }
+
+        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
+        PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
+        pwl.println("Zone,lu41");
+        for (int zone: geoData.getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
+        pwl.close();
     }
 }

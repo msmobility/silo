@@ -186,7 +186,13 @@ public class RealEstateDataManager {
     public void readLandUse() {
         // read land use data
         logger.info("Reading land use data");
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA);
+        String fileName;
+        if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
+            fileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + ".csv";
+        } else {                                             // start in different year (continue previous run)
+            fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                    ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.startYear + ".csv";
+        }
         landUse = SiloUtil.readCSVfile(fileName);
         landUse.buildIndex(landUse.getColumnPosition("Zone"));
 
@@ -214,9 +220,16 @@ public class RealEstateDataManager {
 
         useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
         if (useCapacityAsNumberOfDwellings) {
-            String capacityFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE);
+            String capacityFileName;
+            if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
+                capacityFileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + ".csv";
+            } else {                                             // start in different year (continue previous run)
+                capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                        ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.startYear + ".csv";
+            }
             developmentCapacity = SiloUtil.readCSVfile(capacityFileName);
             developmentCapacity.buildIndex(developmentCapacity.getColumnPosition("Zone"));
+
         }
     }
 
@@ -555,7 +568,7 @@ public class RealEstateDataManager {
         if (useDwellingCapacityForThisZone(zone)) {         // use absolute number of dwellings as capacity constraint
             sm = SiloUtil.rounder(developmentCapacity.getIndexedValueAt(zone, "DevCapacity"),0);  // some capacity values are not integer numbers, not sure why
         } else {
-            sm = getLand(zone);                            // use land use data
+            sm = getDevelopableLand(zone);                            // use land use data
         }
         return sm;
     }
@@ -574,7 +587,7 @@ public class RealEstateDataManager {
     }
 
 
-    private double getLand (int zone) {
+    public double getDevelopableLand(int zone) {
         // return number of acres of available land for development
 
         double sm = 0;
@@ -628,4 +641,10 @@ public class RealEstateDataManager {
         }
         logger.error("In zone " + zone + " new construction occurred even though not enough land was available.");
     }
+
+
+    public float getDevelopmentCapacity (int zone) {
+        return developmentCapacity.getIndexedValueAt(zone, "DevCapacity");
+    }
+
 }
