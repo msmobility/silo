@@ -26,7 +26,7 @@ public class SiloMatsimTest {
 	 */
 	@Test
 	@Ignore
-	public final void testMain() throws IOException {
+	public final void testMain() {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config.xml" ) ;
@@ -83,7 +83,7 @@ public class SiloMatsimTest {
 	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
 	 */
 	@Test
-	public final void testMainReducedNetwork() throws IOException {
+	public final void testMainReducedNetwork() {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config_reduced_network.xml" ) ;
@@ -129,10 +129,11 @@ public class SiloMatsimTest {
 			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}
-		
-		final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
-		final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
-		assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+		{
+			final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
+			final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
+			assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+		}
 	}
 
 }
