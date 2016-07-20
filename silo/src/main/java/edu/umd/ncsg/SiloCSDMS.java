@@ -85,8 +85,13 @@ public class SiloCSDMS {
 
     public static void finalizeIt () {
         // close model
-
-        model.finishModel();
+    	try {
+    		model.finishModel();
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
+			throw e;
+		}
         model.closeAllFiles(startTime);
         logger.info("Finished SILO.");
     }

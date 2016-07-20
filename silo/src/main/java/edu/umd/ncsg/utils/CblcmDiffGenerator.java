@@ -13,12 +13,16 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.hsqldb.lib.tar.RB;
+
+import com.pb.common.util.ResourceUtil;
 
 /**
  * @author Darshan Pandit
@@ -32,13 +36,13 @@ public class CblcmDiffGenerator {
 	public static boolean replaceNegativeValues = true;
 
 	public static void main(String[] args) throws IOException {
-		String base_path = "D:\\Work\\git\\base_missing_zones\\";
-		String[] inputFiles = { (base_path + "resultFileSpatial1.csv"), (base_path + "resultFileSpatial_2030.csv") };
+		String base_path = "D:\\Work\\git\\";
+		String[] inputFiles = { (base_path + "resultFileSpatial1.csv"), (base_path + "SpatialResult2010.csv") };
 		String outputFile = (base_path + "resultFileSpatial2040Diff.csv");
-		int baseYear = 2030;
-		int finalYear = 2020;
+		int baseYear = 2010;
+		int finalYear = 2030;
 
-		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear);
+		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear,null,null);
 
 	}
 
@@ -47,7 +51,7 @@ public class CblcmDiffGenerator {
 	 * 
 	 * @throws IOException
 	 */
-	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear)
+	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear,ResourceBundle rb, String PROPERTIES_CBLCM_MULTIPLIER_PREFIX)
 			throws IOException {
 		logger.info("Calculating Spatial Diff for Cblcm Compatible output");
 		logger.info("baseYear : " + baseYear);
@@ -62,11 +66,30 @@ public class CblcmDiffGenerator {
 		Map<String, double[]> baseYearValue = null, finalYearValue = null, templateBaseYearValue = new HashMap<>();
 
 		int templateBaseYear = 2010;
-
+		Map<Integer,Double> multipliers = new HashMap<>();
 		for (String inputFilePath : inputFiles) {
 			Path path = Paths.get(inputFilePath);
 			// map containing the year, filename and file offsets for the data
 			Map<Integer, int[]> map = generateMetaInfo(path, finalYear);
+			
+			//Header has been setup from the method generateMetaInfo
+			
+			//To handle multipliers
+			
+			String[] columns = header.split(",");
+			double temp;
+			int columnNumber = 0;
+			for(String column:columns){
+				if(rb!=null)
+					temp = ResourceUtil.getDoubleProperty(rb, (PROPERTIES_CBLCM_MULTIPLIER_PREFIX+"."+column));
+				else
+					temp = 1;
+				if(temp!=0)
+					multipliers.put(columnNumber, temp);
+				columnNumber++;
+				
+			}
+			
 
 			if (inputFiles.length == 3 && map.containsKey(templateBaseYear)) {
 				templateBaseYearValue = readYear(map.get(templateBaseYear)[0], map.get(templateBaseYear)[1], path);
@@ -94,12 +117,12 @@ public class CblcmDiffGenerator {
 		// mismatches between the files
 		Map<String, double[]> t = null;
 		try {
-			t = computeDiff(baseYearValue, finalYearValue, templateBaseYearValue.keySet(), null);
+			t = computeDiff(baseYearValue, finalYearValue, templateBaseYearValue.keySet(), null, multipliers);
 		} catch (Exception e) {
 			logger.error("Error while calculating SpatialDiff", e);
 			throw e;
 		}
-		Writer writer = new FileWriter(outputFilePath.toFile());
+		Writer writer = new FileWriter(outputFilePath.toString());
 		writer.write(header + "\n");
 
 		for (String k : t.keySet()) {
@@ -159,7 +182,7 @@ public class CblcmDiffGenerator {
 	}
 
 	private static Map<String, double[]> readYear(int startLine, int endLine, Path path) throws IOException {
-		Map<String, double[]> map = new HashMap<>();
+		Map<String, double[]> map = new HashMap<>(); 
 		BufferedReader reader = new BufferedReader(new FileReader(path.toFile()));
 		int lineNumber = 0;
 
@@ -182,7 +205,11 @@ public class CblcmDiffGenerator {
 	}
 
 	private static Map<String, double[]> computeDiff(Map<String, double[]> baseYear, Map<String, double[]> finalYear,
-			Set<String> zoneKeys, Set<Integer> diffColumns) {
+			Set<String> zoneKeys, Set<Integer> diffColumns, Map<Integer,Double> multipliers) {
+		
+		if (multipliers==null)
+				multipliers = new HashMap<>();
+		
 		Map<String, double[]> result = new TreeMap();
 
 		if (baseYear == null)
@@ -192,13 +219,6 @@ public class CblcmDiffGenerator {
 		join_keys.addAll(finalYear.keySet());
 		join_keys.addAll(baseYear.keySet());
 
-		Set t = finalYear.keySet();
-		t.removeAll(baseYear.keySet());
-		//System.out.println(t.toString());
-		
-		t = baseYear.keySet();
-		t.removeAll(finalYear.keySet());
-		//System.out.println(t.toString());
 		
 		if (zoneKeys != null)
 			join_keys.addAll(zoneKeys);
@@ -214,8 +234,13 @@ public class CblcmDiffGenerator {
 			}
 			for (int i = 0; i < r.length; i++) {
 				if (diffColumns.contains(i)) {
-					if (finalYear.containsKey(k) && baseYear.containsKey(k))
+					if (finalYear.containsKey(k) && baseYear.containsKey(k)){
+						double[] temp = (finalYear.get(k));
+						double[] temp1 = (baseYear.get(k));
 						r[i] = finalYear.get(k)[i] - baseYear.get(k)[i];
+					}
+					
+						
 					else {
 						if (finalYear.containsKey(k))
 							r[i] = finalYear.get(k)[i];
@@ -236,7 +261,9 @@ public class CblcmDiffGenerator {
 					else
 						r[i] = 0;
 				}
-
+				
+				if(multipliers.containsKey(i))
+					r[i] = r[i] * multipliers.get(i);
 			}
 			result.put(k, r);
 		}
@@ -245,8 +272,8 @@ public class CblcmDiffGenerator {
 	}
 
 	private static Map<String, double[]> computeDiff(Map<String, double[]> baseYear, Map<String, double[]> finalYear,
-			Set<Integer> diffColumns) {
-		return computeDiff(baseYear, finalYear, null, diffColumns);
+			Set<Integer> diffColumns, Map<Integer,Double> multipliers) {
+		return computeDiff(baseYear, finalYear, null, diffColumns,multipliers);
 	}
 
 }

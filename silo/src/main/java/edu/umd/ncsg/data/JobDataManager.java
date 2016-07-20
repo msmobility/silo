@@ -239,7 +239,8 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobArray()) {
-            if (jj == null) continue;   // should not happen, but model crashes without this statement.
+            //TODO THE METHOD RETURNS VALUE ARRAY FROM A MAP -> NULL VALUES MAPPED FOR A FEW KEYS???
+        	if (jj == null) continue;   // should not happen, but model crashes without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
                 int region = geoData.getRegionOfZone(jj.getZone());

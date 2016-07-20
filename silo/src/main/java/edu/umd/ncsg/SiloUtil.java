@@ -228,7 +228,7 @@ public class SiloUtil {
         }
     }
 
-
+    //TODO REFACTOR SELECT METHODS TO USE GENERICS
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
         double selPos = getSum(probabilities) * SiloModel.rand.nextDouble();
