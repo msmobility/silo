@@ -90,7 +90,7 @@ public class SiloCSDMS {
 		} catch (Exception e) {
 			logger.error(e);
 			e.printStackTrace();
-			throw e;
+			//throw e;
 		}
         model.closeAllFiles(startTime);
         logger.info("Finished SILO.");

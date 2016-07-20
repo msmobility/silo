@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.hsqldb.lib.tar.RB;
 
 import com.pb.common.util.ResourceUtil;
 
@@ -36,6 +35,7 @@ public class CblcmDiffGenerator {
 	public static boolean replaceNegativeValues = true;
 
 	public static void main(String[] args) throws IOException {
+		//Method used strictly for debugging.
 		String base_path = "D:\\Work\\git\\";
 		String[] inputFiles = { (base_path + "resultFileSpatial1.csv"), (base_path + "SpatialResult2010.csv") };
 		String outputFile = (base_path + "resultFileSpatial2040Diff.csv");
@@ -235,8 +235,6 @@ public class CblcmDiffGenerator {
 			for (int i = 0; i < r.length; i++) {
 				if (diffColumns.contains(i)) {
 					if (finalYear.containsKey(k) && baseYear.containsKey(k)){
-						double[] temp = (finalYear.get(k));
-						double[] temp1 = (baseYear.get(k));
 						r[i] = finalYear.get(k)[i] - baseYear.get(k)[i];
 					}
 					
