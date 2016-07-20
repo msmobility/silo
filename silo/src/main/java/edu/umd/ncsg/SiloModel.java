@@ -89,23 +89,27 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
     
-    // new matsim
-    protected static final String PROPERTIES_MATSIM_NETWORK_FILE      		= "matsim.network";
-    protected static final String PROPERTIES_ZONES_SHAPEFILE				= "zones.shapefile";
-//    protected static final String ZONES_SHAPEFILE							= "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
-//    protected static final String PROPERTIES_ZONES_SHAPEFILE			= "additional_input/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
-    protected static final String PROPERTIES_ZONES_CRS 						= "zones.crs";
-    protected static final String PROPERTIES_MATSIM_RUN_ID 					= "matsim.run.id";
-    protected static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
-    protected static final String PROPERTIES_MATSIM_TIME_OF_DAY_FOR_IMPEDANCE_MATRIX = "matsim.time.of.day.for.impedance.matrix";
-    protected static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
-    protected static final String PROPERTIES_MATSIM_NUMBER_OF_ITERATIONS 	= "matsim.number.of.iterations";
-    protected static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
-    protected static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
-    protected static final String PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT	= "matsim.output.directory.root";
-    protected static final String PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR	= "matsim.flow.capacity.factor";
-    protected static final String PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR	= "matsim.storage.capacity.factor";
+    //
+    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model.type";
+    //
     
+    // new matsim
+//    protected static final String PROPERTIES_MATSIM_NETWORK_FILE      		= "matsim.network";
+//    protected static final String PROPERTIES_ZONES_SHAPEFILE				= "zones.shapefile";
+////    protected static final String ZONES_SHAPEFILE							= "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
+////    protected static final String PROPERTIES_ZONES_SHAPEFILE			= "additional_input/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
+//    protected static final String PROPERTIES_ZONES_CRS 						= "zones.crs";
+//    protected static final String PROPERTIES_MATSIM_RUN_ID 					= "matsim.run.id";
+//    protected static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
+//    protected static final String PROPERTIES_MATSIM_TIME_OF_DAY_FOR_IMPEDANCE_MATRIX = "matsim.time.of.day.for.impedance.matrix";
+//    protected static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
+//    protected static final String PROPERTIES_MATSIM_NUMBER_OF_ITERATIONS 	= "matsim.number.of.iterations";
+//    protected static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
+//    protected static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
+//    protected static final String PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT	= "matsim.output.directory.root";
+//    protected static final String PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR	= "matsim.flow.capacity.factor";
+//    protected static final String PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR	= "matsim.storage.capacity.factor";
+//    
     private Config matsimConfig = null;
     // end new matsim
 
@@ -173,7 +177,7 @@ public class SiloModel {
             householdData.setTypeOfAllHouseholds();
         }
 
-        jobData.updateEmploymentForecast(); // dz: employment forecast; preprocess
+        jobData.updateEmploymentForecast();
         jobData.identifyVacantJobs();
         jobData.calculateJobDensityByZone();
         realEstateData.fillQualityDistribution();
@@ -189,7 +193,7 @@ public class SiloModel {
         LeaveParentHhModel lph = new LeaveParentHhModel(rb);
         MarryDivorceModel mardiv = new MarryDivorceModel(rb);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rb, SiloUtil.getStartYear()); // dz: accessibility calculation
+        Accessibility acc = new Accessibility(rb, SiloUtil.getStartYear());
 //        summarizeData.summarizeAutoOwnershipByCounty();
 
         MovesModel move = new MovesModel(rb);
@@ -207,11 +211,10 @@ public class SiloModel {
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModelI TransportModel = new transportModel(rb);
+        TransportModelI TransportModel;
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rb);
 
-        // dz: yearly loop
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             if (SiloUtil.containsElement(scalingYears, year))
                 summarizeData.scaleMicroDataToExogenousForecast(rb, year, householdData);
@@ -247,7 +250,6 @@ public class SiloModel {
             em.createListOfEvents(numberOfPlannedCouples);
             if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
-            // dz: accessibility calculation; "yearYears" in addition to start year and transp model run years
             if (SiloUtil.containsElement(skimYears, year)) {
                 if (year != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, year)) {
                     // skims are always read in start year and in every year the transportation model ran. Additional
@@ -256,7 +258,6 @@ public class SiloModel {
                     acc.calculateAccessibilities(year);
                 }
             }
-            
 
             if (trackTime) startTime = System.currentTimeMillis();
             ddOverwrite.addDwellings(year);
@@ -274,7 +275,6 @@ public class SiloModel {
             if (trackTime) startTime = System.currentTimeMillis();
             if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear()) summarizeMicroData(year, move, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
-            
 
             logger.info("  Simulating events");
             // walk through all events
@@ -346,16 +346,19 @@ public class SiloModel {
                 }
             }
             
-            if ( true ) {
-            	TransportModel = new MatsimTransportModel(householdData,acc) ;
+            if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MATSim") {
+            	TransportModel = new MatsimTransportModel(householdData, acc, rb, matsimConfig);
+            } else if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MSTM") {
+            	TransportModel = new transportModel(rb);
+            } else {
+            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
             }
             
-            // dz: transport model called here; it starts "CUBE"
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                 TransportModel.runMstm(nextYearForTransportModel);
             }
-            
+
             if (trackTime) startTime = System.currentTimeMillis();
             prm.updatedRealEstatePrices(year, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 8][year] += System.currentTimeMillis() - startTime;
@@ -367,7 +370,7 @@ public class SiloModel {
                     " persons, " + householdData.getNumberOfHouseholds()+" households and "  +
                     Dwelling.getDwellingCount() + " dwellings.");
             if (modelStopper("check")) break;
-        } // dz: end of yearly loop
+        }
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
             summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData);
 
@@ -383,9 +386,7 @@ public class SiloModel {
     }
 
 
-
-
-	public void initialize() {
+    public void initialize() {
         // initial steps that only need to performed once to set up the model
 
         // define years to simulate

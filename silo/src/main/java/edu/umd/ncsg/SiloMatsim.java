@@ -14,25 +14,18 @@ import java.io.PrintWriter;
 import java.util.ResourceBundle;
 
 /**
- * Implements SILO for the Maryland Statewide Transportation Model
- * @author Rolf Moeckel
- * Created on Nov 22, 2013 in Wheaton, MD
- *
+ * @author dziemke
  */
 
 public class SiloMatsim {
-	// main class
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
-
 
 	public static void main(String[] args) {
 		new SiloMatsim(args).run();
 	}
 
 	private ResourceBundle rb;
-	// new matsim
-	private Config matsimConfig;
-	// end matsim
+	private Config matsimConfig; // SILO-MATSim integration-specific
 
 	SiloMatsim(String[] args) {
 		this( args, ConfigUtils.loadConfig(args[1]) ) ;
@@ -56,9 +49,7 @@ public class SiloMatsim {
 			syntheticPop sp = new syntheticPop(rb);
 			sp.runSP();
 			SiloModel model = new SiloModel(rb);
-			//
-			model.setMatsimConfig(matsimConfig);
-			//
+			model.setMatsimConfig(matsimConfig); // SILO-MATSim integration-specific
 			model.runModel();
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
