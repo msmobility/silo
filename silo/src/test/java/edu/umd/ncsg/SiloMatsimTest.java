@@ -16,7 +16,11 @@ public class SiloMatsimTest {
 	public MatsimTestUtils utils = new MatsimTestUtils();
 	
 	// TODO
-	// * write similar test for SiloMstm on master branch
+	// * fix compilcation problems; make sure that current test is still ok
+	// * define smaller test case
+	// * write similar test (for smaller scenario) for SiloMstm on master branch
+	// * make matsim vs. mstm configurable vs. resource bundle
+	// * merge master branch in siloMatsim and fix possible errors
 
 	/**
 	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
