@@ -124,7 +124,8 @@ public class SiloMatsimTest {
 		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
-			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+//			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/siloRunId_2001/ITERS/it.0/siloRunId_2001.0.plans.xml.gz");
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}
 		{

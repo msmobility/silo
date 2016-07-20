@@ -43,15 +43,10 @@ public class SiloMatsimController {
 	
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(int timeOfDay,
 			int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, Population population, //CoordinateTransformation ct, 
-			int year,
-			String siloRunId, Config config, String outputDirectoryRoot) {
+			String runId, Config config, String outputDirectoryRoot) {
 		
   		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
 		
-		
-		// Controller
-//		String siloRunId = "run_09";
-		String runId = siloRunId + "_" + year;
 		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
@@ -59,29 +54,26 @@ public class SiloMatsimController {
 		config.controler().setMobsim("qsim");
 		config.controler().setWritePlansInterval(config.controler().getLastIteration());
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration());
-		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 
-		// QSim and other
 		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);
 		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
-				
-		// Strategy
-		StrategySettings strategySettings1 = new StrategySettings();
-		strategySettings1.setStrategyName("ChangeExpBeta");
-		strategySettings1.setWeight(0.8);
-		config.strategy().addStrategySettings(strategySettings1);
 		
-		StrategySettings strategySettings2 = new StrategySettings();
-		strategySettings2.setStrategyName("ReRoute");
-		strategySettings2.setWeight(0.2);
-		config.strategy().addStrategySettings(strategySettings2);
+		{				
+			StrategySettings strategySettings = new StrategySettings();
+			strategySettings.setStrategyName("ChangeExpBeta");
+			strategySettings.setWeight(0.8);
+			config.strategy().addStrategySettings(strategySettings);
+		}{
+			StrategySettings strategySettings = new StrategySettings();
+			strategySettings.setStrategyName("ReRoute");
+			strategySettings.setWeight(0.2);
+			config.strategy().addStrategySettings(strategySettings);
+		}
 		
 		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
-		
 		config.strategy().setMaxAgentPlanMemorySize(4);
 		
-		// Plan Scoring (planCalcScore)
 		ActivityParams homeActivity = new ActivityParams("home");
 		homeActivity.setTypicalDuration(12*60*60);
 		config.planCalcScore().addActivityParams(homeActivity);
@@ -96,9 +88,7 @@ public class SiloMatsimController {
 		config.qsim().setUsingThreadpool(false);
 		
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
-		
-		// ===
-		// Scenario
+
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
 		

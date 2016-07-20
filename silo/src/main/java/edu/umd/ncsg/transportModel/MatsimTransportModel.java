@@ -44,6 +44,7 @@ public class MatsimTransportModel implements TransportModelI {
 	private Accessibility acc;
 	private ResourceBundle rb;
 	private Config matsimConfig;
+	private String runId;
 	
 //  protected static final String PROPERTIES_MATSIM_NETWORK_FILE      		= "matsim.network";
   protected static final String PROPERTIES_ZONES_SHAPEFILE				= "zones.shapefile";
@@ -60,11 +61,13 @@ public class MatsimTransportModel implements TransportModelI {
 //  protected static final String PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT	= "matsim.output.directory.root";
 //  protected static final String PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR	= "matsim.flow.capacity.factor";
 //  protected static final String PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR	= "matsim.storage.capacity.factor";
+
+  protected static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
   
 //  private Config matsimConfig = null;
 	
 	
-	public MatsimTransportModel( HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
+	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
 		this.householdData = householdData;
 		this.acc = acc;
 		this.rb = rb;
@@ -72,11 +75,13 @@ public class MatsimTransportModel implements TransportModelI {
 	}
 	
 	@Override
-	public void runMstm(int year ) {
+	public void runMstm(int year) {
 			Log.info("Running MATSim transport model for year " + year + ".");
 
 			String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
 			String crs = rb.getString(PROPERTIES_ZONES_CRS);
+			
+			String scenarioName = rb.getString(PROPERTIES_SCENARIO_NAME);
 
 			boolean writePopulation = false; // TODO remove hardcoded
 			int timeOfDayForImpedanceMatrix = 8*60*60; // TODO remove hardcoded
@@ -112,12 +117,10 @@ public class MatsimTransportModel implements TransportModelI {
 
 			matsimConfig.global().setCoordinateSystem(crs);
 
-			String siloRunId = "siloRunId" ;
-
 			// Get travel Times from MATSim
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap = 
 					SiloMatsimController.runMatsimToCreateTravelTimes(timeOfDayForImpedanceMatrix, numberOfCalcPoints,
-							zoneFeatureMap, population, year, siloRunId, matsimConfig, outputDirectoryRoot);
+							zoneFeatureMap, population, scenarioName, matsimConfig, outputDirectoryRoot);
 
 			// update skims in silo from matsim output:
 			acc.readSkimBasedOnMatsim(year, travelTimesMap);

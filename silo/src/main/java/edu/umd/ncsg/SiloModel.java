@@ -90,7 +90,7 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
     
     //
-    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model.type";
+    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model";
     //
     
     // new matsim
@@ -346,13 +346,16 @@ public class SiloModel {
                 }
             }
             
-            if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MATSim") {
+            if (true) {
             	TransportModel = new MatsimTransportModel(householdData, acc, rb, matsimConfig);
-            } else if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MSTM") {
-            	TransportModel = new transportModel(rb);
-            } else {
-            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
             }
+//            if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MATSim") {
+//            	TransportModel = new MatsimTransportModel(householdData, acc, rb, matsimConfig);
+//            } else if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MSTM") {
+//            	TransportModel = new transportModel(rb);
+//            } else {
+//            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
+//            }
             
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
