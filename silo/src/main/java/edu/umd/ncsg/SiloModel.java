@@ -63,7 +63,9 @@ import edu.umd.ncsg.realEstate.RenovationModel;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
 import edu.umd.ncsg.transportModel.MatsimPopulationCreator;
+import edu.umd.ncsg.transportModel.MatsimTransportModel;
 import edu.umd.ncsg.transportModel.SiloMatsimController;
+import edu.umd.ncsg.transportModel.TransportModelI;
 import edu.umd.ncsg.transportModel.transportModel;
 
 /**
@@ -205,7 +207,7 @@ public class SiloModel {
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        transportModel TransportModel = new transportModel(rb);
+        TransportModelI TransportModel = new transportModel(rb);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rb);
 
@@ -344,6 +346,9 @@ public class SiloModel {
                 }
             }
             
+            if ( true ) {
+            	TransportModel = new MatsimTransportModel(householdData,acc) ;
+            }
             
             // dz: transport model called here; it starts "CUBE"
             int nextYearForTransportModel = year + 1;
@@ -351,80 +356,6 @@ public class SiloModel {
                 TransportModel.runMstm(nextYearForTransportModel);
             }
             
-            
-            // new matsim
-            if (year == 2000 || year == 2007) {
-                Log.info("Running MATSim transport model for year " + nextYearForTransportModel + "."); 
-                
-                String runId = matsimConfig.controler().getRunId();
-                
-                String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
-                
-                String networkFile = matsimConfig.network().getInputFile();                
-                
-                String crs = rb.getString(PROPERTIES_ZONES_CRS);
-         
-            	boolean writePopulation = false; // TODO remove hardcoded
-                
-            	int timeOfDayForImpedanceMatrix = 8*60*60; // TODO remove hardcoded
-                
-        		int numberOfCalcPoints = 1; // usual value is 3 // TODO remove hardcoded
-        		
-        		int numberOfIterations = matsimConfig.controler().getLastIteration();
-        		
-        		
-        		double populationScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
-        		// people working at non-peak times (only peak traffic is simulated), and people going by
-        		// a mode other than car in case a car is still available to them
-        		double workerScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_WORKER_SCALING_FACTOR);
-        		
-        		// set it equal to population scaling factor ???
-//        		double flowCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
-        		double flowCapacityFactor = matsimConfig.qsim().getFlowCapFactor();
-        		
-        		/* According to "Nicolai and Nagel 2013 High Resolution Accessibility ... citing Rieser ... p.9
-        		 * Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4)) */
-//        		double storageCapacityFactor = flowCapacityFactor / (Math.pow(flowCapacityFactor, (1/4)));
-//        		double storageCapacityFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR);
-        		double storageCapacityFactor = matsimConfig.qsim().getStorageCapFactor();
-        		
-        		
-        		// Objects
-        		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<Tuple<Integer, Integer>, Float>();
-        		// yy would be better/safer to generate that inside runMatsimToCreate rather to generate it here and pass it down. kai, feb'16
-        		
-        		Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
-
-        		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<Integer, SimpleFeature>();
-        		for (SimpleFeature feature: zoneFeatures) {
-        			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-        			zoneFeatureMap.put(zoneId,feature);
-        		}
-        		
-        		Population population = MatsimPopulationCreator.createMatsimPopulation(
-        				householdData, nextYearForTransportModel, zoneFeatureMap, crs,
-        				writePopulation, populationScalingFactor * workerScalingFactor);
-
-        		String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
-        		
-        		// Get travel Times from MATSim
-        		travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(travelTimesMap, timeOfDayForImpedanceMatrix,
-        				numberOfCalcPoints, zoneFeatureMap,  
-        				networkFile, population, nextYearForTransportModel, 
-        				crs, numberOfIterations, runId, outputDirectoryRoot,
-        				flowCapacityFactor, storageCapacityFactor);
-
-        		// update skims in silo from matsim output:
-        		acc.readSkimBasedOnMatsim(nextYearForTransportModel, travelTimesMap);
-
-        		// update accessibilities in silo from matsim output:
-        		acc.calculateAccessibilities(nextYearForTransportModel);
-        		// TODO calculate accessibility directly from MATSim instead of from skims
-        		// this is computationally very inefficient
-            }
-            // end new matsim
-            
-
             if (trackTime) startTime = System.currentTimeMillis();
             prm.updatedRealEstatePrices(year, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 8][year] += System.currentTimeMillis() - startTime;
@@ -450,6 +381,8 @@ public class SiloModel {
         if (trackTime) writeOutTimeTracker(timeCounter);
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
+
+
 
 
 	public void initialize() {
@@ -802,9 +735,7 @@ public class SiloModel {
 //        pw.close();
 //    }
     
-    @Deprecated // having a config at this level and then NOT passing it down is confusing the user (at least it was confusing me).
-    // Need to find a different solution. kai, apr'16
     public void setMatsimConfig (Config matsimConfig) {
-    	this.matsimConfig = matsimConfig;
+	    this.matsimConfig = matsimConfig;
     }
 }

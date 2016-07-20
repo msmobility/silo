@@ -20,11 +20,11 @@
 
 package edu.umd.ncsg.transportModel;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
@@ -41,30 +41,13 @@ import org.opengis.feature.simple.SimpleFeature;
  */
 public class SiloMatsimController {
 	
-	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(Map<Tuple<Integer, Integer>, Float> travelTimesMap,
-			int timeOfDay, int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, //CoordinateTransformation ct, 
-			String inputNetworkFile,
-			Population population, int year, 
-			String crs, int numberOfIterations, String siloRunId, String outputDirectoryRoot,
-			double flowCapacityFactor, double storageCapacityFactor) {
-//			String populationFile, int year, String crs, int numberOfIterations) {
-		final Config config = ConfigUtils.createConfig();
-
-		// Global
-		config.global().setCoordinateSystem(crs);
+	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(int timeOfDay,
+			int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, Population population, //CoordinateTransformation ct, 
+			int year,
+			String siloRunId, Config config, String outputDirectoryRoot) {
 		
-		// Network
-		config.network().setInputFile(inputNetworkFile);
+  		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
 		
-		// Plans
-//		config.plans().setInputFile(inputPlansFile);
-		
-		// Simulation
-//		config.qsim().setFlowCapFactor(0.01);
-		config.qsim().setFlowCapFactor(flowCapacityFactor);
-//		config.qsim().setStorageCapFactor(0.018);
-		config.qsim().setStorageCapFactor(storageCapacityFactor);
-		config.qsim().setRemoveStuckVehicles(false);
 		
 		// Controller
 //		String siloRunId = "run_09";
@@ -73,10 +56,9 @@ public class SiloMatsimController {
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
-		config.controler().setLastIteration(numberOfIterations);
 		config.controler().setMobsim("qsim");
-		config.controler().setWritePlansInterval(numberOfIterations);
-		config.controler().setWriteEventsInterval(numberOfIterations);
+		config.controler().setWritePlansInterval(config.controler().getLastIteration());
+		config.controler().setWriteEventsInterval(config.controler().getLastIteration());
 		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 
@@ -93,8 +75,9 @@ public class SiloMatsimController {
 		StrategySettings strategySettings2 = new StrategySettings();
 		strategySettings2.setStrategyName("ReRoute");
 		strategySettings2.setWeight(0.2);
-		strategySettings2.setDisableAfter((int) (numberOfIterations * 0.7));
 		config.strategy().addStrategySettings(strategySettings2);
+		
+		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
 		
 		config.strategy().setMaxAgentPlanMemorySize(4);
 		
@@ -117,8 +100,6 @@ public class SiloMatsimController {
 		// ===
 		// Scenario
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-//		PopulationReader populationReader = new PopulationReaderMatsimV5(scenario);
-//		populationReader.readFile(populationFile);
 		scenario.setPopulation(population);
 		
 		// Initialize controller
@@ -130,7 +111,7 @@ public class SiloMatsimController {
 //				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
 //				travelTimesMap);
 //		controler.addControlerListener(zone2zoneTravelTimeListener);
-		// yyyyyy feedback will not work without the above, will it?  kai, apr'16
+		// feedback will not work without the above. kai, apr'16
 		
 		// Run controller
 		controler.run();

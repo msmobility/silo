@@ -91,7 +91,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 					
 					for (int destinationZoneId : zoneFeatureMap.keySet()) { // going over all destination zones
 						
-						Tuple<Integer, Integer> originDestinationRelation = new Tuple<Integer, Integer>(originZoneId, destinationZoneId);
+						Tuple<Integer, Integer> originDestinationRelation = new Tuple<>(originZoneId, destinationZoneId);
 						
 						if (!travelTimesMap.containsKey(originDestinationRelation)) {
 							travelTimesMap.put(originDestinationRelation, 0.f);

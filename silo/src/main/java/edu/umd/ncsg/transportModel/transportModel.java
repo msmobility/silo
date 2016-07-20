@@ -15,7 +15,7 @@ import java.util.ResourceBundle;
  * Created on 19 September 2014 in Wheaton, MD
  **/
 
-public class transportModel {
+public class transportModel implements TransportModelI {
 
     static Logger logger = Logger.getLogger(transportModel.class);
     //    protected static final String PROPERTIES_MSTM_EXECUTABLE          = "transport.executable";
@@ -50,6 +50,7 @@ public class transportModel {
         // end new matsim
     }
 
+    @Override
     public void runMstm(int year) {
         // run transportation model MSTM in CUBE
 
@@ -76,7 +77,7 @@ public class transportModel {
     }
 
 
-    public void writeSocioEconomicDataFilesForMstm(int year) {
+    private void writeSocioEconomicDataFilesForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
