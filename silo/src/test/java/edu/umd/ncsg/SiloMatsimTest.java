@@ -28,10 +28,10 @@ public class SiloMatsimTest {
 	 */
 	@Test
 	@Ignore
-	public final void testMain() {
+	public final void testMainAnnapolis() {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
 
-		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config.xml" ) ;
+		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/matsim/config.xml" ) ;
 		
 		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
 		config.global().setNumberOfThreads(1);
@@ -72,15 +72,16 @@ public class SiloMatsimTest {
 		assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 	}
 
+	
 	/**
 	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
 	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
 	 */
 	@Test
-	public final void testMainReducedNetwork() {
+	public final void testMainAnnapolisReducedNetwork() {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
 
-		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/config/config_reduced_network.xml" ) ;
+		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_annapolis/matsim/config_reduced_network.xml" ) ;
 		
 		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
 		config.global().setNumberOfThreads(1);
@@ -109,6 +110,59 @@ public class SiloMatsimTest {
 		}{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_annapolis/microData_annapolis/pp_2001.csv");
+			assertEquals("Population files are different",  checksum_ref, checksum_run);
+		}{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
+			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
+		}{
+			final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
+			final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
+			assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+		}
+		
+		// TODO Consider checking accessibilites (currently stored in "testing" directory)
+	}
+	
+	
+	/**
+	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
+	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
+	 */
+	@Ignore
+	@Test
+	public final void testMainReduced() {
+		String[] args = {"./test/scenarios/mstm_reduced/javaFiles/siloMstm_annapolis.properties"}; 
+
+		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_reduced/matsim/config.xml" ) ;
+		
+		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
+		config.global().setNumberOfThreads(1);
+		config.parallelEventHandling().setNumberOfThreads(1);
+		config.qsim().setNumberOfThreads(1);
+
+		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
+
+		try {
+			siloMatsim.run();
+		} catch ( Exception ee ) {
+			ee.printStackTrace();
+			Assert.fail( "something did not work" ) ;
+		}{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_reduced/microData_reduced/dd_2001.csv");
+			assertEquals("Dwelling files are different",  checksum_ref, checksum_run);
+		}{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_reduced/microData_reduced/hh_2001.csv");
+			assertEquals("Household files are different",  checksum_ref, checksum_run);
+		}{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_reduced/microData_reduced/jj_2001.csv");
+			assertEquals("Job files are different",  checksum_ref, checksum_run);
+		}{
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_reduced/microData_reduced/pp_2001.csv");
 			assertEquals("Population files are different",  checksum_ref, checksum_run);
 		}{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
