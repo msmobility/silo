@@ -26,7 +26,7 @@ public class SiloMatsim {
 	}
 
 	private ResourceBundle rb;
-	private Config matsimConfig = ConfigUtils.createConfig(new AccessibilityConfigGroup()); // SILO-MATSim integration-specific
+	private Config matsimConfig = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
 
 	SiloMatsim(String[] args) {
 		this( args, ConfigUtils.loadConfig(args[1]) ) ;

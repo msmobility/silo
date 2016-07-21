@@ -20,20 +20,11 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
-import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.utils.collections.Tuple;
-import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
@@ -62,9 +53,7 @@ import edu.umd.ncsg.realEstate.PricingModel;
 import edu.umd.ncsg.realEstate.RenovationModel;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.MatsimPopulationCreator;
 import edu.umd.ncsg.transportModel.MatsimTransportModel;
-import edu.umd.ncsg.transportModel.SiloMatsimController;
 import edu.umd.ncsg.transportModel.TransportModelI;
 import edu.umd.ncsg.transportModel.transportModel;
 
@@ -88,31 +77,11 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
-    
-    //
-    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model";
-    //
-    
-    // new matsim
-//    protected static final String PROPERTIES_MATSIM_NETWORK_FILE      		= "matsim.network";
-//    protected static final String PROPERTIES_ZONES_SHAPEFILE				= "zones.shapefile";
-////    protected static final String ZONES_SHAPEFILE							= "../../../maryland/siloMatsim/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
-////    protected static final String PROPERTIES_ZONES_SHAPEFILE			= "additional_input/shp/SMZ_RMZ_02152011inMSTM_EPSG26918.shp";
-//    protected static final String PROPERTIES_ZONES_CRS 						= "zones.crs";
-//    protected static final String PROPERTIES_MATSIM_RUN_ID 					= "matsim.run.id";
-//    protected static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
-//    protected static final String PROPERTIES_MATSIM_TIME_OF_DAY_FOR_IMPEDANCE_MATRIX = "matsim.time.of.day.for.impedance.matrix";
-//    protected static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
-//    protected static final String PROPERTIES_MATSIM_NUMBER_OF_ITERATIONS 	= "matsim.number.of.iterations";
-//    protected static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
-//    protected static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
-//    protected static final String PROPERTIES_MATSIM_OUTPUT_DIRETORY_ROOT	= "matsim.output.directory.root";
-//    protected static final String PROPERTIES_MATSIM_FLOW_CAPACITIY_FACTOR	= "matsim.flow.capacity.factor";
-//    protected static final String PROPERTIES_MATSIM_STORAGE_CAPACITIY_FACTOR	= "matsim.storage.capacity.factor";
-//    
-    private Config matsimConfig = null;
-    // end new matsim
 
+    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model";
+    
+    private Config matsimConfig = null;
+    
     private int[] scalingYears;
     private int currentYear;
     private HouseholdDataManager householdData;

@@ -100,10 +100,10 @@ public class SiloMatsimController {
 		final Controler controler = new Controler(scenario);
 
 		// Add controller listener
-		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-				zoneFeatureMap, timeOfDay, numberOfCalcPoints, travelTimesMap);
-		controler.addControlerListener(zone2zoneTravelTimeListener);
+//		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
+//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
+//				zoneFeatureMap, timeOfDay, numberOfCalcPoints, travelTimesMap);
+//		controler.addControlerListener(zone2zoneTravelTimeListener);
 		// feedback will not work without the above. kai, apr'16
 		
 		// Run controller
