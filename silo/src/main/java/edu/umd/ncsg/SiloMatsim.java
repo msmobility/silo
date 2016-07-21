@@ -4,6 +4,7 @@ import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
+import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
@@ -25,7 +26,7 @@ public class SiloMatsim {
 	}
 
 	private ResourceBundle rb;
-	private Config matsimConfig; // SILO-MATSim integration-specific
+	private Config matsimConfig = ConfigUtils.createConfig(new AccessibilityConfigGroup()); // SILO-MATSim integration-specific
 
 	SiloMatsim(String[] args) {
 		this( args, ConfigUtils.loadConfig(args[1]) ) ;

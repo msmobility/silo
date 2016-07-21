@@ -32,22 +32,19 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 	private Network network;
 	private int finalIteration;
 	private Map<Integer,SimpleFeature> zoneFeatureMap;
-	private int departureTime;
+	private double timeOfDay;
 	private int numberOfCalcPoints;
-//	private CoordinateTransformation ct;
 	private Map<Tuple<Integer, Integer>, Float> travelTimesMap;
 
-
+	
 	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration, Map<Integer,SimpleFeature> zoneFeatureMap,
-			int timeOfDay, int numberOfCalcPoints, //CoordinateTransformation ct, 
-			Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+			double timeOfDay, int numberOfCalcPoints, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
 		this.controler = controler;
 		this.network = network;
 		this.finalIteration = finalIteration;
 		this.zoneFeatureMap = zoneFeatureMap;
-		this.departureTime = timeOfDay;
+		this.timeOfDay = timeOfDay;
 		this.numberOfCalcPoints = numberOfCalcPoints;
-//		this.ct = ct;
 		this.travelTimesMap = travelTimesMap;
 	}
 	
@@ -60,17 +57,14 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			
 			TravelTime travelTime = controler.getLinkTravelTimes();
 			TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-//			TravelDisutility travelTimeAsTravelDisutility = new MyTravelTimeDisutility(controler.getLinkTravelTimes());
 			
 			LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
-//			Dijkstra dijkstra = new Dijkstra(network, travelTimeAsTravelDisutility, travelTime);
 			
 			Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 			
 			for (int zoneId : zoneFeatureMap.keySet()) {
-				for (int i = 0; i < numberOfCalcPoints; i++) { // several points in a given origin zone
+				for (int i = 0; i < numberOfCalcPoints; i++) { // Several points in a given origin zone
 					SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
-//					Coord originCoord = ct.transform(SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature));
 					Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
 					Link originLink = NetworkUtils.getNearestLink(network, originCoord);
 					Node originNode = originLink.getFromNode();
@@ -83,13 +77,12 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			}			
 			
 			
-			for (int originZoneId : zoneFeatureMap.keySet()) { // going over all origin zones
+			for (int originZoneId : zoneFeatureMap.keySet()) { // Going over all origin zones
 				
-				for (Node originNode : zoneCalculationNodesMap.get(originZoneId)) { // several points in a given origin zone
-					// Run Dijkstra for originNode
-					leastCoastPathTree.calculate(network, originNode, departureTime);
+				for (Node originNode : zoneCalculationNodesMap.get(originZoneId)) { // Several points in a given origin zone
+					leastCoastPathTree.calculate(network, originNode, timeOfDay);
 					
-					for (int destinationZoneId : zoneFeatureMap.keySet()) { // going over all destination zones
+					for (int destinationZoneId : zoneFeatureMap.keySet()) { // Going over all destination zones
 						
 						Tuple<Integer, Integer> originDestinationRelation = new Tuple<>(originZoneId, destinationZoneId);
 						
@@ -101,7 +94,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 							
 							double arrivalTime = leastCoastPathTree.getTree().get(destinationNode.getId()).getTime();
 							// congested car travel times in minutes
-							float congestedTravelTimeMin = (float) ((arrivalTime - departureTime) / 60.);
+							float congestedTravelTimeMin = (float) ((arrivalTime - timeOfDay) / 60.);
 //							System.out.println("congestedTravelTimeMin = " + congestedTravelTimeMin);
 							
 							// following lines form kai/thomas, see Zone2ZoneImpedancesControlerListener
@@ -118,33 +111,28 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 				}
 			}
 			
-			
 			for (Tuple<Integer, Integer> originDestinationRelation : travelTimesMap.keySet()) {
 				float sumTravelTimeMin = travelTimesMap.get(originDestinationRelation);
 				float averageTravelTimeMin = sumTravelTimeMin / numberOfCalcPoints / numberOfCalcPoints;
 				travelTimesMap.put(originDestinationRelation, averageTravelTimeMin);
-//				log.info(fipsPuma5Tuple + " -- travel time = " + averageTravelTimeMin);
 			}
 		}
 	}
 	
 	
-	// inner class to use travel time as travel disutility
+	// Inner class to use travel time as travel disutility
 	class MyTravelTimeDisutility implements TravelDisutility{
 		TravelTime travelTime;
-		
 		
 		public MyTravelTimeDisutility(TravelTime travelTime) {
 			this.travelTime = travelTime;
 		}
-		
 		
 		@Override
 		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
 			return travelTime.getLinkTravelTime(link, time, person, vehicle);
 		}
 
-		
 		@Override
 		public double getLinkMinimumTravelDisutility(Link link) {
 			return link.getLength() / link.getFreespeed(); // minimum travel time

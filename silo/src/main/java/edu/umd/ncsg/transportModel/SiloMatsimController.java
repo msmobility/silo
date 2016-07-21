@@ -24,7 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matsim.api.core.v01.population.Population;
+import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
@@ -41,9 +43,8 @@ import org.opengis.feature.simple.SimpleFeature;
  */
 public class SiloMatsimController {
 	
-	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(int timeOfDay,
-			int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap, Population population, //CoordinateTransformation ct, 
-			String runId, Config config, String outputDirectoryRoot) {
+	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap,
+			Population population, String runId, Config config, String outputDirectoryRoot) {
 		
   		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
 		
@@ -87,6 +88,9 @@ public class SiloMatsimController {
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setUsingThreadpool(false);
 		
+		AccessibilityConfigGroup accessibilityConfigGroup = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.GROUP_NAME, AccessibilityConfigGroup.class);
+		double timeOfDay = accessibilityConfigGroup.getTimeOfDay();
+		
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
@@ -96,11 +100,10 @@ public class SiloMatsimController {
 		final Controler controler = new Controler(scenario);
 
 		// Add controller listener
-//		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-//				zoneFeatureMap, timeOfDay, numberOfCalcPoints, //ct, 
-//				travelTimesMap);
-//		controler.addControlerListener(zone2zoneTravelTimeListener);
+		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
+				controler, scenario.getNetwork(), config.controler().getLastIteration(),
+				zoneFeatureMap, timeOfDay, numberOfCalcPoints, travelTimesMap);
+		controler.addControlerListener(zone2zoneTravelTimeListener);
 		// feedback will not work without the above. kai, apr'16
 		
 		// Run controller
