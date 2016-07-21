@@ -4,7 +4,7 @@
 	<module name="controler" >
 		<param name="firstIteration" value="0" />
 		<param name="lastIteration" value="1" />
-		<param name="outputDirectory" value="./matsimOutput_small" />
+		<param name="outputDirectory" value="./matsimOutput" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<param name="runId" value="regression_test" />
 	</module>

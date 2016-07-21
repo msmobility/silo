@@ -77,6 +77,7 @@ public class SiloMatsimTest {
 	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
 	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
 	 */
+	@Ignore
 	@Test
 	public final void testMainAnnapolisReducedNetwork() {
 		String[] args = {"./test/scenarios/mstm_annapolis/javaFiles/siloMstm_annapolis.properties"}; 
@@ -129,10 +130,10 @@ public class SiloMatsimTest {
 	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
 	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
 	 */
-	@Ignore
+//	@Ignore
 	@Test
 	public final void testMainReduced() {
-		String[] args = {"./test/scenarios/mstm_reduced/javaFiles/siloMstm_annapolis.properties"}; 
+		String[] args = {"./test/scenarios/mstm_reduced/javaFiles/siloMstm_reduced.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/mstm_reduced/matsim/config.xml" ) ;
 		
@@ -165,12 +166,12 @@ public class SiloMatsimTest {
 			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/mstm_reduced/microData_reduced/pp_2001.csv");
 			assertEquals("Population files are different",  checksum_ref, checksum_run);
 		}{
-			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
-			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./test_reduced_2001.0.plans.xml.gz");
+			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/test_reduced_2001/ITERS/it.0/test_reduced_2001.0.plans.xml.gz");
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}{
-			final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
-			final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
+			final String eventsFilenameReference = utils.getInputDirectory() + "./test_reduced_2001.0.events.xml.gz";
+			final String eventsFilenameNew = "./matsimOutput/test_reduced_2001/ITERS/it.0/test_reduced_2001.0.events.xml.gz";
 			assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 		}
 		
