@@ -1961,7 +1961,40 @@ public class TableDataSet implements DataTypes, Serializable {
         columnData.remove(colNumber-1);
         columnData.add(colNumber-1, newData);
     }
-    
+
+    /**
+     * Return the row number from a specified column and
+     * a specified value in the column using the indexed column.
+     *
+     * Must call: public void buildIndex(int columnNumber)  beforehand
+     */
+    public String getIndexedStringValueAt(int value, int col) {
+        if (columnIndex == null) {
+            throw new RuntimeException("No index defined for column: " + col);
+        }
+
+        value = columnIndex[value];
+        col = col - 1; //zero-based
+
+        String[] column = (String[]) columnData.get(col);
+
+        return column[value];
+    }
+
+
+    public String getIndexedStringValueAt(int value, String columnName) {
+        int columnNumber = getColumnPosition(columnName);
+
+        if (columnNumber <= 0) {
+            logger.error("no column named " + columnName + " in TableDataSet");
+            throw new RuntimeException("no column named " + columnName +
+                    " in TableDataSet");
+        }
+
+        return getIndexedStringValueAt(value, columnNumber);
+    }
+
+
 }
 
 
