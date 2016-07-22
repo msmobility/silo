@@ -26,14 +26,11 @@ import java.util.*;
 public class SyntheticPopDe {
     private ResourceBundle rb;
     protected static final String PROPERTIES_MICRO_DATA_ALL               = "micro.data.bayern";
-    protected static final String PROPERTIES_MICRO_DATA_HOUSEHOLD         = "micro.data.households";
-    protected static final String PROPERTIES_MICRO_DATA_PERSON            = "micro.data.persons";
     protected static final String PROPERTIES_MICRO_DATA_AGES              = "age.brackets";
     protected static final String PROPERTIES_REGION_ATTRIBUTES_ON         = "activate.region.attributes";
 
-    protected static final String PROPERTIES_MAX_RECORDS_MICRO_DATA       = "micro.data.max.records";
     protected static final String PROPERTIES_RUN_SYNTHETIC_POPULATION     = "run.synth.pop.generator";
-    protected static final String PROPERTIES_FREQUENCY_MATRIX             = "frequency.matrix.households";
+
     protected static final String PROPERTIES_MARGINALS_REGIONAL_MATRIX    = "marginals.region.matrix";
     protected static final String PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX   = "marginals.household.matrix";
     protected static final String PROPERTIES_MAX_ITERATIONS               = "max.iterations.ipu";
@@ -43,13 +40,12 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_IMPROVEMENT_ITERATIONS       = "iterations.improvement.ipu";
     protected static final String PROPERTIES_REGION_ATTRIBUTES            = "attributes.region";
     protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
-
+    protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
 
     protected static final String PROPERTIES_MICRO_DATA_DWELLINGS         = "micro.data.dwellings";
 
     protected static final String PROPERTIES_CONTROL_ATTRIBUTES_MC        = "control.attributes.MC";
 
-    protected TableDataSet microDataAll;
     protected TableDataSet microDataHousehold;
     protected TableDataSet microDataPerson;
     protected TableDataSet frequencyMatrix;
@@ -57,15 +53,16 @@ public class SyntheticPopDe {
     protected TableDataSet marginalsHouseholdMatrix;
     protected TableDataSet microDataDwelling;
 
-
-
     String[] cityIDs;
 
     protected String[] attributesRegion;
     protected String[] attributesHousehold;
     protected int[] ageBracketsPerson;
+    protected String[] listMunicipalities;
+    protected int[] listMunicipality;
 
     protected TableDataSet weight;
+    protected TableDataSet weightsTable;
     protected TableDataSet nonZeroFrequency;
     protected TableDataSet nonZeroNumber;
     protected TableDataSet weightedSumHousehold;
@@ -85,6 +82,7 @@ public class SyntheticPopDe {
     protected String maxErrorAttribute;
     protected int activateRegion;
     protected float maxErrorIteration;
+    protected int numberMunicipalities;
 
     protected String[] controlAttributes;
 
@@ -103,14 +101,17 @@ public class SyntheticPopDe {
         logger.info("   Starting to create the synthetic population.");
         long startTime = System.nanoTime();
         readDataSynPop(); //Read the micro data and marginals
-        runIPUIndependent();
-        //runIPUAreaDependent();
-        //prepareFrequencyMatrix();//Obtain the n-dimensional frequency matrix according to the defined types
-        //performIPU(); //IPU fitting to obtain the expansion factor for each entry of the micro data
-        //selectHouseholds(); //Monte Carlo selection process to generate the synthetic population
+        runIPUAreaDependent(); //IPU fitting with two geographical resolutions
+        //runIPUIndependent(); //IPU fitting with one geographical resolution. Each municipality is independent of others
+            /*
+            //previous code
+            prepareFrequencyMatrix();//Obtain the n-dimensional frequency matrix according to the defined types
+            performIPU(); //IPU fitting to obtain the expansion factor for each entry of the micro data
+            */
+        selectHouseholds(); //Monte Carlo selection process to generate the synthetic population
         //readDwellings();
         //selectDwelling();
-        //summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());
+        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -167,6 +168,7 @@ public class SyntheticPopDe {
         int occupation[] = new int[personCountTotal];
         int personId[] = new int[personCountTotal];
         int personHH[] = new int[personCountTotal];
+        int personIncome [] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
         int hhCount = -1;
@@ -180,9 +182,18 @@ public class SyntheticPopDe {
         int hhMaleAge[][] = new int[hhCountTotal][ageBracketsPerson.length];
         int hhFemaleAge[][] = new int[hhCountTotal][ageBracketsPerson.length];
         int hhSize[] = new int[hhCountTotal];
+        int hhSize1[] = new int[hhCountTotal];
+        int hhSize2[] = new int[hhCountTotal];
+        int hhSize3[] = new int[hhCountTotal];
+        int hhSize4[] = new int[hhCountTotal];
+        int hhSize5[] = new int[hhCountTotal];
+        int hhSize6[] = new int[hhCountTotal];
         int hhSizeCount[] = new int[hhCountTotal];
-        int hhIncome [] = new int[hhCountTotal];
         int hhId [] = new int[hhCountTotal];
+        int hhIncome[] = new int[hhCountTotal];
+        int personCounts[] = new int[hhCountTotal];
+        int incomeCounter = 0;
+        String personalIncome;
 
 
         try {
@@ -201,16 +212,30 @@ public class SyntheticPopDe {
                                 hhTotal[hhCount] = 1;
                                 if (hhSize[hhCount] == 1) {
                                     hhSingle[hhCount] = 1;
+                                    hhSize1[hhCount] = 1;
+                                } else if (hhSize[hhCount] == 2){
+                                    hhSize2[hhCount] = 1;
+                                }else if (hhSize[hhCount] == 3){
+                                    hhSize3[hhCount] = 1;
+                                }else if (hhSize[hhCount] == 4){
+                                    hhSize4[hhCount] = 1;
+                                }else if (hhSize[hhCount] == 5){
+                                    hhSize5[hhCount] = 1;
+                                }else {
+                                    hhSize6[hhCount] = 1;
                                 }
-                                hhIncome[hhCount] = convertToInteger(recString.substring(297, 299));
+                                hhIncome[hhCount] = incomeCounter;
                                 hhId[hhCount] = convertToInteger(recString.substring(2, 9));
                                 previousHouseholdNumber = householdNumber; // Update the household number
                                 if (hhCount > 1) {
                                     hhSizeCount[hhCount - 1] = personHHCount;
+                                    personCounts[hhCount - 1] = personCounts[hhCount - 1] + hhSize[hhCount];
                                 } else {
                                     hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = 1;
                                 }
                                 personHHCount = 0;
+                                incomeCounter = 0;
                             }
                             age[personCount] = convertToInteger(recString.substring(25, 27));
                             gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
@@ -218,6 +243,57 @@ public class SyntheticPopDe {
                             occupation[personCount] = convertToInteger(recString.substring(74, 75)); // 1: employed, 8: unemployed, empty: NA
                             personId[personCount] = convertToInteger(recString.substring(2, 11));
                             personHH[personCount] = convertToInteger(recString.substring(2, 9));
+                            personIncome[personCount] = convertToInteger(recString.substring(297, 299));
+                            personalIncome = Integer.toString(personIncome[personCount]);
+                            if (personalIncome == "01") {
+                                incomeCounter = incomeCounter + 150;
+                            } else if (personalIncome == "02"){
+                                incomeCounter = incomeCounter + 450;
+                            } else if (personalIncome == "03"){
+                                incomeCounter = incomeCounter + 800;
+                            } else if (personalIncome == "04"){
+                                incomeCounter = incomeCounter + 1200;
+                            } else if (personalIncome == "05"){
+                                incomeCounter = incomeCounter + 1600;
+                            } else if (personalIncome == "06"){
+                                incomeCounter = incomeCounter + 2000;
+                            } else if (personalIncome == "07"){
+                                incomeCounter = incomeCounter + 2350;
+                            } else if (personalIncome == "08"){
+                                incomeCounter = incomeCounter + 2750;
+                            } else if (personalIncome == "09"){
+                                incomeCounter = incomeCounter + 3250;
+                            } else if (personalIncome == "10"){
+                                incomeCounter = incomeCounter + 3750;
+                            } else if (personalIncome == "11"){
+                                incomeCounter = incomeCounter + 4250;
+                            } else if (personalIncome == "12"){
+                                incomeCounter = incomeCounter + 4750;
+                            } else if (personalIncome == "13"){
+                                incomeCounter = incomeCounter + 5250;
+                            } else if (personalIncome == "14"){
+                                incomeCounter = incomeCounter + 5750;
+                            } else if (personalIncome == "15"){
+                                incomeCounter = incomeCounter + 6250;
+                            } else if (personalIncome == "16"){
+                                incomeCounter = incomeCounter + 6750;
+                            } else if (personalIncome == "17"){
+                                incomeCounter = incomeCounter + 7250;
+                            } else if (personalIncome == "18"){
+                                incomeCounter = incomeCounter + 7750;
+                            } else if (personalIncome == "19"){
+                                incomeCounter = incomeCounter + 9000;
+                            } else if (personalIncome == "20"){
+                                incomeCounter = incomeCounter + 11000;
+                            } else if (personalIncome == "21"){
+                                incomeCounter = incomeCounter + 13750;
+                            } else if (personalIncome == "22"){
+                                incomeCounter = incomeCounter + 17500;
+                            } else if (personalIncome == "23"){
+                                incomeCounter = incomeCounter + 27500;
+                            } else if (personalIncome == "24"){
+                                incomeCounter = incomeCounter + 35000;
+                            }
                             int row = 0;
                             while (age[personCount] > ageBracketsPerson[row]) {
                                 row++;
@@ -255,6 +331,7 @@ public class SyntheticPopDe {
         microPersons.appendColumn(gender,"gender");
         microPersons.appendColumn(occupation,"occupation");
         microPersons.appendColumn(personId,"personID");
+        microPersons.appendColumn(personIncome,"income");
         microDataPerson = microPersons;
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("personID"));
 
@@ -276,6 +353,7 @@ public class SyntheticPopDe {
         microRecords.appendColumn(hhIncome,"hhIncome");
         microRecords.appendColumn(hhSize,"hhSizeDeclared");
         microRecords.appendColumn(hhSizeCount,"hhSize");
+        microRecords.appendColumn(personCounts,"personCount");
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
 
@@ -283,7 +361,7 @@ public class SyntheticPopDe {
         //Copy attributes to the frequency matrix (IPU)
         TableDataSet microRecords1 = new TableDataSet();
         microRecords1.appendColumn(hhId,"ID");
-        microRecords1.appendColumn(hhWorkers,"workers");
+        //microRecords1.appendColumn(hhWorkers,"workers");
         microRecords1.appendColumn(hhMaleWorkers,"maleWorkers");
         microRecords1.appendColumn(hhFemaleWorkers,"femaleWorkers");
         for (int row = 0; row < ageBracketsPerson.length; row++){
@@ -296,12 +374,20 @@ public class SyntheticPopDe {
         }
         microRecords1.appendColumn(hhTotal,"hhTotal");
         microRecords1.appendColumn(hhSingle,"hhSingle");
+        microRecords1.appendColumn(hhSize1,"hhSize1");
+        microRecords1.appendColumn(hhSize2,"hhSize2");
+        microRecords1.appendColumn(hhSize3,"hhSize3");
+        microRecords1.appendColumn(hhSize4,"hhSize4");
+        microRecords1.appendColumn(hhSize5,"hhSize5");
+        microRecords1.appendColumn(hhSize6,"hhSize6");
         frequencyMatrix = microRecords1;
 
+        /*
         String hhFileName = ("input/syntheticPopulation/DataPrepMicroHouseholds.csv");
         SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
         String popFileName = ("input/syntheticPopulation/DataPrepMicroPersons.csv");
         SiloUtil.writeTableDataSet(microDataPerson, popFileName);
+        */
         String freqFileName = ("input/syntheticPopulation/frequencyMatrix.csv");
         SiloUtil.writeTableDataSet(frequencyMatrix, freqFileName);
 
@@ -347,20 +433,21 @@ public class SyntheticPopDe {
 
 
         //Create the weights table (for all the municipalities)
-        TableDataSet weightsTable = new TableDataSet();
+        //TableDataSet weightsTable = new TableDataSet();
         weightsTable.appendColumn(microDataIds,"ID");
 
 
         //Stopping criteria (common for all municipalities)
         maxIterations= ResourceUtil.getIntegerProperty(rb, PROPERTIES_MAX_ITERATIONS,1000);
         maxError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MAX_ERROR, 0.0001);
-        initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
         improvementError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_IMPROVEMENT_ERROR, 0.001);
         iterationError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_IMPROVEMENT_ITERATIONS,2);
 
 
         //For each municipality, we perform IPU
         for(int area = 0; area < cityID.length; area++){
+
+            initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
 
             //-----------***** Data preparation *****-------------------------------------------------------------------
             //weights: TableDataSet with two columns, the ID of the household from microData and the weights for that municipality
@@ -503,6 +590,15 @@ public class SyntheticPopDe {
 
 
         //Read the attributes at the region(Landkreis) and municipality level
+        //Municipality level
+        attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
+        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
+        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
+        frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
+        int[] municipalitiesID = marginalsHouseholdMatrix.getColumnAsInt("ID_city");
+        cityIDs = new String[municipalitiesID.length];
+        for (int row = 0; row < municipalitiesID.length; row++){cityIDs[row] = Integer.toString(municipalitiesID[row]);}
+        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
         //County level
         attributesRegion = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES);
         marginalsRegionMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_REGIONAL_MATRIX));
@@ -510,16 +606,6 @@ public class SyntheticPopDe {
         String[] areaIDs = new String[areaID.length];
         for (int row = 0; row < areaID.length; row++){areaIDs[row] = Integer.toString(areaID[row]);}
         marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_county"));
-
-        //Municipality level
-        attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
-        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
-        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
-        frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
-        int[] cityID = marginalsHouseholdMatrix.getColumnAsInt("ID_city");
-        cityIDs = new String[cityID.length];
-        for (int row = 0; row < cityID.length; row++){cityIDs[row] = Integer.toString(cityID[row]);}
-        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
 
 
         //Create the collapsed matrix (common for all)
@@ -557,8 +643,8 @@ public class SyntheticPopDe {
 
 
         //Create the weights table (for all the municipalities)
-        TableDataSet weightsTable = new TableDataSet();
-        weightsTable.appendColumn(microDataIds,"ID");
+        TableDataSet weightsMatrix = new TableDataSet();
+        weightsMatrix.appendColumn(microDataIds,"ID");
 
 
         //Stopping criteria (common for all municipalities)
@@ -569,17 +655,15 @@ public class SyntheticPopDe {
         iterationError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_IMPROVEMENT_ITERATIONS,2);
 
 
-        //--------------------------------------------------------------------------
-        //THINK IF THIS IS NEEDED NOW OR IF IT IS BETTER TO DO IT FOR EACH COUNTY SEPARATELY.
-        //--------------------------------------------------------------------------
+        //Count the number of counties and municipalities at each county
         int countyCount = -1;
         int[] countyID = new int[microDataIds.length];
         int previousCounty = 9;
         int[] countyNumbers = new int[microDataIds.length];
         int municipalityCounter = 0;
         int maxMunicipality = 0;
-        for (int area = 0; area < cityID.length; area++){
-            int county = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[area],"ID_county");
+        for (int area = 0; area < municipalitiesID.length; area++){
+            int county = (int) marginalsHouseholdMatrix.getIndexedValueAt(municipalitiesID[area],"ID_county");
             //String county = marginalsHouseholdMatrix.getStringIndexedStringValueAt(cityIDs[area],"ID_county");
             if (previousCounty != county){
                 countyCount++;
@@ -597,65 +681,348 @@ public class SyntheticPopDe {
             }
             municipalityCounter++;
         }
-        countyNumbers[countyCount] = municipalityCounter;
+        countyNumbers[countyCount] = municipalityCounter; //for the last county
         if (municipalityCounter > maxMunicipality){
             maxMunicipality = municipalityCounter;
         }
         countyCount++;
 
 
+        //Create table with the number of municipalities per county and the name of each municipality
         TableDataSet counties = new TableDataSet();
         TableDataSet countiesCount = new TableDataSet();
         int[] dummy = SiloUtil.createArrayWithValue(maxMunicipality,1);
         int[] dummy10 = {0,0};
         String[] countyIDs = new String[countyCount];
         for (int row = 0; row < countyCount; row++){countyIDs[row] = Integer.toString(countyID[row]);}
-        //counties.appendColumn(dummy,"AA");
-        //countiesCount.appendColumn(dummy10,"AA");
-        int area = 0;
+        int municipCounter = 0;
         for (int county = 0; county < countyIDs.length; county++){
             int[] realCounty = new int[maxMunicipality];
             int[] sumCounty = {0,0};
             for (int row = 0; row < countyNumbers[county]; row++){
-                realCounty[sumCounty[0]] = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[area],"ID_city");
+                realCounty[sumCounty[0]] = (int) marginalsHouseholdMatrix.getIndexedValueAt(municipalitiesID[municipCounter],"ID_city");
                 sumCounty[0] = sumCounty[0] + 1;
-                area++;
+                municipCounter++;
             }
             counties.appendColumn(realCounty,countyIDs[county]);
             countiesCount.appendColumn(sumCounty,countyIDs[county]);
         }
 
-        /*
-        for (int county = 0; county < countyCount; county++) {
-            for (int row = 0; row < countiesCount.getValueAt(1,countiesCount.getColumnPosition(countyIDs[county])); row++){
-                logger.info("The municipality " + counties.getValueAt(row+1,countiesCount.getColumnPosition(countyIDs[county]))+ " is located on county " + countyID[county]);
+        /*for (int county = 0; county < countyCount; county++) {
+            logger.info("County " + countyIDs[county] + " has " + countiesCount.getValueAt(1,countyIDs[county]) + " municipalities.");
+            for (int row = 0; row < countiesCount.getValueAt(1,countyIDs[county]); row++){
+                logger.info("Municipality " + counties.getValueAt(row+1,countyIDs[county]) + " is located at county " + countyIDs[county]);
             }
-        }
-        logger.info("Maximum number of municipalities in one county: " + maxMunicipality);
-        logger.info("Number of counties: " + countyCount);
-        for (int county = 0; county < countyCount; county++){
-            logger.info("Number of municipalities in " + countyID[county] + " county is " + countyNumbers[county]);
-        }
-        */
+        }*/
 
 
         //For each county, we perform IPU (Landkreise)
         for (int county = 0; county < countyCount; county++){
 
 
-            //MAYBE IT IS BETTER TO CREATE THE MATRIX FOR EACH COUNTY INDIVIDUALLY AND THEN ADD TO THE TOTAL, WITHOUT DOING IT BEFORE THE IPU.
-
-            //Each county will have their own "cityIDs" for the municipalities within it. Then, everything can be the same as on the first IPU
-
             //-----------***** Data preparation *****-------------------------------------------------------------------
-            //weights: TableDataSet with two columns, the ID of the household from microData and the weights for that municipality
+            //municipalities ID
+            municipalitiesID = new int[(int) countiesCount.getValueAt(1, countyIDs[county])];
+            for (int municipality = 0; municipality < municipalitiesID.length; municipality++){
+                municipalitiesID[municipality] = (int) counties.getValueAt(municipality+1,countyIDs[county]);
+            }
+            String[] municipalitiesIDs = new String[municipalitiesID.length];
+            for (int row = 0; row < municipalitiesID.length; row++){municipalitiesIDs[row] = Integer.toString(municipalitiesID[row]);}
 
 
+            //weights: TableDataSet with (one + number of municipalities) columns, the ID of the household from microData and the weights for the municipalities of the county
+            TableDataSet weights = new TableDataSet();
+            weights.appendColumn(microDataIds,"ID");
+            for (int municipality = 0; municipality < municipalitiesID.length; municipality++){
+                float[] dummy20 = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1f);
+                weights.appendColumn(dummy20, municipalitiesIDs[municipality]); //the column label is the municipality cityID
+            }
+            weights.buildIndex(weights.getColumnPosition("ID"));
+
+
+            //marginalsRegion: TableDataSet that contains in each column the marginal of a region attribute at the county level. Only one "real"" row
+            TableDataSet marginalsRegion = new TableDataSet();
+            int[] dummyw10 = {countyID[county],0};
+            marginalsRegion.appendColumn(dummyw10,"ID_county");
+            for(int attribute = 0; attribute < attributesRegion.length; attribute++){
+                float[] dummyw11 = {marginalsRegionMatrix.getValueAt(marginalsRegionMatrix.getIndexedRowNumber(countyID[county]),attributesRegion[attribute]),0};
+                marginalsRegion.appendColumn(dummyw11,attributesRegion[attribute]);
+            }
+            marginalsRegion.buildIndex(marginalsRegion.getColumnPosition("ID_county"));
+            /*for (int attribute = 0; attribute < attributesRegion.length; attribute++){
+               logger.info("County "  + countyID[county] + ". The marginal of attribute " + attributesRegion[attribute] + " is " + marginalsRegion.getValueAt(1,attributesRegion[attribute]));
+            }*/
+
+
+            //weighted sum and errors Region: TableDataSet that contains in each column the weighted sum (or error) of a region attribute at the county (landkreise) level
+            TableDataSet weightedSumsRegion = new TableDataSet();
+            TableDataSet errorsRegion = new TableDataSet();
+            int[] dummy00 = {countyID[county],0};
+            int[] dummy01 = {countyID[county],0};
+            weightedSumsRegion.appendColumn(dummy00,"ID_county");
+            errorsRegion.appendColumn(dummy01,"ID_county");
+            for (int attribute = 0; attribute < attributesRegion.length; attribute++){
+                float[] dummyQ1 = {0,0};
+                float[] dummyQ2 = {0,0};
+                weightedSumsRegion.appendColumn(dummyQ1,attributesRegion[attribute]);
+                errorsRegion.appendColumn(dummyQ2,attributesRegion[attribute]);
+            }
+            weightedSumsRegion.buildIndex(weightedSumsRegion.getColumnPosition("ID_county"));
+            errorsRegion.buildIndex(errorsRegion.getColumnPosition("ID_county"));
+
+
+            //Calculate the first set of weighted sums and errors, using initial weights equal to 1
+            for (int attribute = 0; attribute < attributesRegion.length; attribute++){
+                float weighted_sum = 0f;
+                for (int municipality = 0; municipality < municipalitiesID.length;municipality++) {
+                    int positions = (int) nonZeroSize.getValueAt(1, attributesRegion[attribute]);
+                    weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                            frequencyMatrix.getColumnAsFloat(attributesRegion[attribute]),
+                            nonZero.getColumnAsInt(attributesRegion[attribute]), positions);
+                }
+                weightedSumsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], weighted_sum);
+                float error = Math.abs((weighted_sum -
+                        marginalsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute])) /
+                        marginalsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]));
+                errorsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], error);
+
+            }
+
+
+            //marginalsHousehold: TableDataSet that contains in each column the marginal of a household attribute at the municipality level. As many rows as municipalities on the county
+            TableDataSet marginalsHousehold = new TableDataSet();
+            marginalsHousehold.appendColumn(municipalitiesID,"ID_city");
+            for (int attribute = 0; attribute < attributesHousehold.length; attribute++){
+                float[] dummyw12 = new float[municipalitiesID.length];
+                for (int municipality = 0; municipality < municipalitiesID.length; municipality++){
+                    dummyw12[municipality] = marginalsHouseholdMatrix.getValueAt(marginalsHouseholdMatrix.getIndexedRowNumber(municipalitiesID[municipality]),attributesHousehold[attribute]);
+                }
+                marginalsHousehold.appendColumn(dummyw12,attributesHousehold[attribute]);
+            }
+            marginalsHousehold.buildIndex(marginalsHousehold.getColumnPosition("ID_city"));
+            /*for (int attribute = 0; attribute < attributesHousehold.length; attribute++){
+                for (int row = 0; row < municipalitiesID.length; row++) {
+                    logger.info("Municipality " + municipalitiesID[row] + ". The marginal of attribute " + attributesHousehold[attribute] + " is " + marginalsHousehold.getIndexedValueAt(municipalitiesID[row], attributesHousehold[attribute]));
+                }
+            }*/
+
+
+            //weighted sum and errors Household: TableDataSet that contains in each column the weighted sum (or error) of a household attribute at the municipality level. As many rows as municipalities on the county
+            TableDataSet weightedSumsHousehold = new TableDataSet();
+            TableDataSet errorsHousehold = new TableDataSet();
+            weightedSumsHousehold.appendColumn(municipalitiesID,"ID_city");
+            errorsHousehold.appendColumn(municipalitiesID,"ID_city");
+            for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
+                float[] dummyA2 = SiloUtil.createArrayWithValue(marginalsHousehold.getRowCount(),0f);
+                float[] dummyB2 = SiloUtil.createArrayWithValue(marginalsHousehold.getRowCount(),0f);
+                weightedSumsHousehold.appendColumn(dummyA2,attributesHousehold[attribute]);
+                errorsHousehold.appendColumn(dummyB2,attributesHousehold[attribute]);
+            }
+            weightedSumsHousehold.buildIndex(weightedSumsHousehold.getColumnPosition("ID_city"));
+            errorsHousehold.buildIndex(errorsHousehold.getColumnPosition("ID_city"));
+
+
+            //Calculate the first set of weighted sums and errors, using initial weights equal to 1
+            for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+                for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                    int positions = (int) nonZeroSize.getValueAt(1, attributesHousehold[attribute]);
+                    float weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                            frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
+                            nonZero.getColumnAsInt(attributesHousehold[attribute]),positions);
+                    weightedSumsHousehold.setIndexedValueAt(municipalitiesID[municipality],attributesHousehold[attribute],weighted_sum);
+                    float error = Math.abs((weighted_sum -
+                            marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute])) /
+                            marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]));
+                    errorsHousehold.setIndexedValueAt(municipalitiesID[municipality],attributesHousehold[attribute],error);
+                }
+            }
+
+
+            //---------***** IPU procedure *****-----------------------------------------------------------------------
+            int iteration = 0;
+            int finish = 0;
+            float factor = 0f;
+            int position = 0;
+            float previousWeight = 1f;
+            float weightedSum = 0f;
+            float error = 0f;
+
+            initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
+            while(iteration <= maxIterations && finish == 0) {
+
+                float maxErrorIteration = 0f;
+                String maxErrorAttributes = "";
+
+
+
+                //For each attribute at the region level (landkreise)
+                for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
+                    //logger.info("Iteration: " + iteration + ". Starting to calculate attribute " + attributesRegion[attribute] + " at county " + countyIDs[county]);
+                    factor = marginalsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]) /
+                            weightedSumsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]);
+                    float weighted_sum = 0f;
+                    for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                        for (int row = 0; row < nonZeroSize.getValueAt(1, attributesRegion[attribute]); row++) {
+                            position = (int) nonZero.getIndexedValueAt(microDataIds[row], attributesRegion[attribute]);
+                            //logger.info(position + " area " + cityIDs[area]);
+                            //logger.info(weight.getValueAt(position,cityIDs[area]));
+                            float previous_weight = weights.getValueAt(position, municipalitiesIDs[municipality]);
+                            weights.setValueAt(position, municipalitiesIDs[municipality], factor * previous_weight);
+                        }
+                        weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                                frequencyMatrix.getColumnAsFloat(attributesRegion[attribute]),
+                                nonZero.getColumnAsInt(attributesRegion[attribute]),
+                                (int) nonZero.getValueAt(1, attributesRegion[attribute]));
+                    }
+                    weightedSumsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], weighted_sum);
+                    float error1 = Math.abs((weighted_sum -
+                            marginalsRegion.getValueAt(1, attributesRegion[attribute])) /
+                            marginalsRegion.getValueAt(1, attributesRegion[attribute]));
+                    errorsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], error1);
+                }
+
+
+                //Update weighted sums and errors for household attributes, given the new weights for region level
+                for (int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+                    //logger.info("Iteration: " + iteration + ". Updating weighted sums of " + attribute + " at the household level");
+                    for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                        int positions = (int) nonZeroSize.getValueAt(1, attributesHousehold[attribute]);
+                        float weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                                frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
+                                nonZero.getColumnAsInt(attributesHousehold[attribute]), positions);
+                        weightedSumsHousehold.setIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute], weighted_sum);
+                        error = Math.abs((weighted_sum -
+                                marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute])) /
+                                marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]));
+                        ;
+                        errorsHousehold.setIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute], error);
+                    }
+                }
+
+
+                //For each attribute at the municipality level
+                for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+                    //logger.info("       Iteration: "+ iteration + ". Starting to calculate weight of the attribute " + attribute + " at the household level.");
+                    //update the weights according to the weighted sum and constraint of the household attribute
+                    for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                        factor = marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]) /
+                                weightedSumsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]);
+                        for (int row = 0; row < nonZeroSize.getValueAt(1, attributesHousehold[attribute]); row++) {
+                            position = (int) nonZero.getIndexedValueAt(microDataIds[row], attributesHousehold[attribute]);
+                            float previous_weight = weights.getValueAt(position, municipalitiesIDs[municipality]);
+                            weights.setValueAt(position, municipalitiesIDs[municipality], factor * previous_weight);
+                        }
+                    }
+
+
+                    //update the weighted sums and errors of the region attributes, given the new weights
+                    for (int attributes = 0; attributes < attributesRegion.length; attributes++) {
+
+                        float weighted_sum = 0f;
+                        for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                            weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                                    frequencyMatrix.getColumnAsFloat(attributesRegion[attributes]),
+                                    nonZero.getColumnAsInt(attributesRegion[attributes]),
+                                    (int) nonZeroSize.getValueAt(1, attributesRegion[attributes]));
+                        }
+                        weightedSumsRegion.setIndexedValueAt(countyID[county], attributesRegion[attributes], weighted_sum);
+                        error = Math.abs((weighted_sum -
+                                marginalsRegion.getValueAt(1, attributesRegion[attributes])) /
+                                marginalsRegion.getValueAt(1, attributesRegion[attributes]));
+                        errorsRegion.setIndexedValueAt(countyID[county], attributesRegion[attributes], error);
+                    }
+
+
+                    //update the weighted sums and errors of the household attributes, given the new weights
+                    for (int attributes = 0; attributes < attributesHousehold.length; attributes++) {
+                        //logger.info("   Iteration: "+ iteration + ". Updating weighted sums of " + attributes + " at the household level");
+                        for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                            float weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(municipalitiesIDs[municipality]),
+                                    frequencyMatrix.getColumnAsFloat(attributesHousehold[attributes]),
+                                    nonZero.getColumnAsInt(attributesHousehold[attributes]),
+                                    (int) nonZeroSize.getValueAt(1, attributesHousehold[attributes]));
+                            weightedSumsHousehold.setIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attributes], weighted_sum);
+                            error = Math.abs((weighted_sum -
+                                    marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attributes])) /
+                                    marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attributes]));
+                            errorsHousehold.setIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attributes], error);
+                        }
+                    }
+                }
+
+
+                //Calculate the maximum error among all the attributes (area and municipalities level). This will serve as one stopping criteria
+                maxErrorIteration = errorsRegion.getIndexedValueAt(countyID[county], attributesRegion[0]);
+                for (int attribute = 1; attribute < attributesRegion.length; attribute++) {
+                    if (errorsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]) > maxErrorIteration) {
+                        maxErrorIteration = errorsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]);
+                        maxErrorAttribute = "region_" + attributesRegion[attribute];
+                    }
+                }
+                for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
+                    maxErrorIteration = errorsHousehold.getIndexedValueAt(municipalitiesID[0], attributesHousehold[0]);
+                    for(int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                        if (errorsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]) > maxErrorIteration) {
+                            maxErrorIteration = errorsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHousehold[attribute]);
+                            maxErrorAttribute = "municipality_" + Integer.toString(municipalitiesID[municipality])+ "_household_" + attributesHousehold[attribute];
+                        }
+                    }
+                }
+                logger.info("   Iteration " + iteration + " completed. The maximum error is " + maxErrorIteration + " on the attribute: " + maxErrorAttribute);
+
+                String freqFileName = ("input/syntheticPopulation/weigthsMatrix1.csv");
+                SiloUtil.writeTableDataSet(weights, freqFileName);
+
+
+                //Stopping criteria: exceeds the maximum number of iterations or the maximum error is lower than the threshold
+                if (maxErrorIteration < maxError){
+                    finish = 1;
+                    //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
+                    logger.info("   IPU finished after :" + iteration + " iterations with a maximum error of " + maxErrorIteration);
+                    iteration = maxIterations + 1;
+                }
+                else if ((iteration/iterationError) % 1 == 0){
+                    if (Math.abs((initialError-maxErrorIteration)/initialError) < improvementError) {
+                        finish = 1;
+                        //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
+                        logger.info("   IPU finished after :" + iteration + " iterations because the error does not improve. The maximum error is: " + maxErrorIteration);
+                    }
+                    else {
+                        if (initialError - maxErrorIteration < - 0.02){
+                           finish = 1;
+                        } else {
+                            initialError = maxErrorIteration;
+                            iteration = iteration + 1;
+                        }
+                    }
+                }
+                else if (iteration == maxIterations) {
+                    finish = 1;
+                    //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
+                    logger.info("   IPU finished after the total number of iterations. The maximum error is: " + maxErrorIteration);
+                }
+                else{
+                    iteration = iteration + 1;
+                }
+            } //for the WHILE loop
+
+
+            //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
+            for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                weightsMatrix.appendColumn(weights.getColumnAsFloat(municipalitiesIDs[municipality]), municipalitiesIDs[municipality]);
+            }
+            String freqFileName = ("input/syntheticPopulation/weigthsNewTable.csv");
+            SiloUtil.writeTableDataSet(weightsMatrix, freqFileName);
+
+
+
+            logger.info("   IPU finished");
         }
 
+        //Write the weights final table
+        weightsTable = weightsMatrix;
 
     }
-
 
 
     private void prepareFrequencyMatrix(){
@@ -824,159 +1191,6 @@ public class SyntheticPopDe {
         logger.info("   Finished preparing the data for IPU");
     }
 
-
-
-    private void prepareWeigthsArea(){
-        //obtain the weights, sum weights and errors considering dependent municipalities and region attributes
-        //the previous version
-
-        //Build indexes for the TableDataSet
-        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
-        frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
-        int[] cityID = marginalsHouseholdMatrix.getColumnAsInt("ID_city");
-        cityIDs = new String[cityID.length];
-        for (int row = 0; row < cityID.length; row++){cityIDs[row] = Integer.toString(cityID[row]);}
-        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
-        int[] areaID = marginalsRegionMatrix.getColumnAsInt("ID_area");
-        String[] areaIDs = new String[areaID.length];
-        for (int row = 0; row < areaID.length; row++){areaIDs[row] = Integer.toString(areaID[row]);}
-        marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_area"));
-
-
-        //create the weights table automatically and fill it with ones
-        //weights: TableDataSet that contains in each column the weights for that area (column label is the municipality ID). The number of rows is equal to the number of microData records
-        TableDataSet weights = new TableDataSet();
-        weights.appendColumn(microDataIds,"ID");
-        for(int area = 0; area < cityID.length; area++){
-            float[] dummy = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1f);
-            weights.appendColumn(dummy, cityIDs[area]);
-        }
-        weights.buildIndex(weights.getColumnPosition("ID"));
-
-
-        //create the weighted sums and errors tables automatically, for area level
-        //weightedSumRegion: TableDataSet that contains in each column the weighted sum at the areas level (column label is the region attribute name). The number of rows is equal to the number of rows of the marginals Region
-        //errorsRegion: TableDataSet that contains in each column the error between the weighted sum and constrain (marginal) at the areas level (column label is the region attribute name).
-        TableDataSet weightedSumsRegion = new TableDataSet();
-        TableDataSet errorsRegion = new TableDataSet();
-
-        weightedSumsRegion.appendColumn(areaID, "ID_area");
-        errorsRegion.appendColumn(areaID, "ID_area");
-        for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
-            float[] dummyA1 = SiloUtil.createArrayWithValue(marginalsRegionMatrix.getRowCount(), 0f);
-            float[] dummyB1 = SiloUtil.createArrayWithValue(marginalsRegionMatrix.getRowCount(), 0f);
-            weightedSumsRegion.appendColumn(dummyA1, attributesRegion[attribute]);
-            errorsRegion.appendColumn(dummyB1, attributesRegion[attribute]);
-        }
-        weightedSumsRegion.buildIndex(weightedSumsRegion.getColumnPosition("ID_area"));
-        errorsRegion.buildIndex(errorsRegion.getColumnPosition("ID_area"));
-
-        //Calculate the first set of weighted sums and errors, using initial weights equal to 1
-        for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
-            float weighted_sum = 0f;
-            for (int area = 0; area < marginalsHouseholdMatrix.getRowCount(); area++) {
-                int positions = (int) nonZeroNumber.getValueAt(1, attributesRegion[attribute]);
-                weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsFloat(cityIDs[area]),
-                        frequencyMatrix.getColumnAsFloat(attributesRegion[attribute]),
-                        nonZeroFrequency.getColumnAsInt(attributesRegion[attribute]), positions);
-            }
-            weightedSumsRegion.setIndexedValueAt(1, attributesRegion[attribute], weighted_sum);
-            float error = Math.abs((weightedSumsRegion.getValueAt(1, attributesRegion[attribute]) -
-                    marginalsRegionMatrix.getValueAt(1, attributesRegion[attribute])) /
-                    marginalsRegionMatrix.getValueAt(1, attributesRegion[attribute]));
-            errorsRegion.setIndexedValueAt(1, attributesRegion[attribute], error);
-        }
-
-
-        //create the weighted sums and errors tables automatically, for household level
-        //weightedSumHousehold: TableDataSet that contains in each column the weighted sum at each municipality (column label is the household-person attribute name). The number of rows is equal to the number of rows of the marginals Household (# municipalities)
-        //errorsHousehold: TableDataSet that contains in each column the error between the weighted sum and constrain (marginal) at each municipality (column label is the household-person attribute name).
-        TableDataSet weightedSumsHousehold = new TableDataSet();
-        TableDataSet errorsHousehold = new TableDataSet();
-        weightedSumsHousehold.appendColumn(cityID,"ID_city");
-        errorsHousehold.appendColumn(cityID,"ID_city");
-        for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
-            float[] dummyA2 = SiloUtil.createArrayWithValue(marginalsHouseholdMatrix.getRowCount(),0f);
-            float[] dummyB2 = SiloUtil.createArrayWithValue(marginalsHouseholdMatrix.getRowCount(),0f);
-            weightedSumsHousehold.appendColumn(dummyA2,attributesHousehold[attribute]);
-            errorsHousehold.appendColumn(dummyB2,attributesHousehold[attribute]);
-        }
-        weightedSumsHousehold.buildIndex(weightedSumsHousehold.getColumnPosition("ID_city"));
-        errorsHousehold.buildIndex(errorsHousehold.getColumnPosition("ID_city"));
-        //Calculate the first set of weighted sums and errors, using initial weights equal to 1
-        for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
-            for (int area = 0; area < marginalsHouseholdMatrix.getRowCount(); area++) {
-                int positions = (int) nonZeroNumber.getValueAt(1, attributesHousehold[attribute]);
-                float weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(cityIDs[area]),
-                        frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
-                        nonZeroFrequency.getColumnAsInt(attributesHousehold[attribute]),positions);
-                weightedSumsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attribute],weighted_sum);
-                float error = Math.abs((weighted_sum -
-                        marginalsHouseholdMatrix.getIndexedValueAt(cityID[area], attributesHousehold[attribute])) /
-                        marginalsHouseholdMatrix.getIndexedValueAt(cityID[area], attributesHousehold[attribute]));
-                errorsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attribute],error);
-            }
-        }
-
-    }
-
-    private void prepareWeigthsIndependent(){
-        //obtain the weights, sum weights and errors considering independent municipalities
-        //obtain the weights, sum weights and errors considering dependent municipalities and region attributes
-        //the new version
-
-        //Build indexes for the TableDataSet
-        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
-        frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
-        int[] cityID = marginalsHouseholdMatrix.getColumnAsInt("ID_city");
-        cityIDs = new String[cityID.length];
-        for (int row = 0; row < cityID.length; row++){cityIDs[row] = Integer.toString(cityID[row]);}
-        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
-
-
-        //create the weights table automatically and fill it with ones
-        //weights: TableDataSet that contains in each column the weights for that area (column label is the municipality ID). The number of rows is equal to the number of microData records
-        TableDataSet weights = new TableDataSet();
-        weights.appendColumn(microDataIds,"ID");
-        for(int area = 0; area < cityID.length; area++){
-            float[] dummy = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1f);
-            weights.appendColumn(dummy, cityIDs[area]);
-        }
-        weights.buildIndex(weights.getColumnPosition("ID"));
-
-
-        //create the weighted sums and errors tables automatically, for household level
-        //weightedSumHousehold: TableDataSet that contains in each column the weighted sum at each municipality (column label is the household-person attribute name). The number of rows is equal to the number of rows of the marginals Household (# municipalities)
-        //errorsHousehold: TableDataSet that contains in each column the error between the weighted sum and constrain (marginal) at each municipality (column label is the household-person attribute name).
-        TableDataSet weightedSumsHousehold = new TableDataSet();
-        TableDataSet errorsHousehold = new TableDataSet();
-        weightedSumsHousehold.appendColumn(cityID,"ID_city");
-        errorsHousehold.appendColumn(cityID,"ID_city");
-        for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
-            float[] dummyA2 = SiloUtil.createArrayWithValue(marginalsHouseholdMatrix.getRowCount(),0f);
-            float[] dummyB2 = SiloUtil.createArrayWithValue(marginalsHouseholdMatrix.getRowCount(),0f);
-            weightedSumsHousehold.appendColumn(dummyA2,attributesHousehold[attribute]);
-            errorsHousehold.appendColumn(dummyB2,attributesHousehold[attribute]);
-        }
-        weightedSumsHousehold.buildIndex(weightedSumsHousehold.getColumnPosition("ID_city"));
-        errorsHousehold.buildIndex(errorsHousehold.getColumnPosition("ID_city"));
-        //Calculate the first set of weighted sums and errors, using initial weights equal to 1
-        for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
-            for (int area = 0; area < marginalsHouseholdMatrix.getRowCount(); area++) {
-                int positions = (int) nonZeroNumber.getValueAt(1, attributesHousehold[attribute]);
-                float weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsFloat(cityIDs[area]),
-                        frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
-                        nonZeroFrequency.getColumnAsInt(attributesHousehold[attribute]),positions);
-                weightedSumsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attribute],weighted_sum);
-                float error = Math.abs((weighted_sum -
-                        marginalsHouseholdMatrix.getIndexedValueAt(cityID[area], attributesHousehold[attribute])) /
-                        marginalsHouseholdMatrix.getIndexedValueAt(cityID[area], attributesHousehold[attribute]));
-                errorsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attribute],error);
-            }
-        }
-
-
-    }
 
     private void performIPU(){
         //obtain the expansion factor (weight) of each entry of the micro data, using the marginal sums as constraints
@@ -1186,79 +1400,8 @@ public class SyntheticPopDe {
         String freqFileName = ("input/syntheticPopulation/weigthsMatrix.csv");
         SiloUtil.writeTableDataSet(weight, freqFileName);
 
-
-
         logger.info("   IPU finished");
     }
-
-
-    public static TableDataSet weigthsIPU (int MaxIterations, TableDataSet frequencyMatrix,
-                                           String[] attributesHousehold, TableDataSet marginalsHousehold,
-                                           TableDataSet weightedSumHousehold, TableDataSet weight,
-                                           TableDataSet errorHousehold, double maxErrorThreshold,
-                                           double iterationError, double improvementError,
-                                           TableDataSet nonZeroNumber, TableDataSet nonZeroFrequency) {
-
-        int iteration = 0;
-        int finish = 0;
-        float factor = 0f;
-        int position = 1;
-        float previousWeight = 0f;
-        float weightedSum = 0f;
-        float error = 0f;
-        float maxError = 0f;
-        String maxErrorAttribute = "";
-        float initialError = 10000;
-
-        while(iteration <= MaxIterations && finish == 0){
-
-            for (int attribute = 0; attribute < attributesHousehold.length; attribute++){
-                factor = marginalsHousehold.getValueAt(1,attributesHousehold[attribute]) /
-                        weightedSumHousehold.getValueAt(1,attributesHousehold[attribute]);
-                for (int row = 0; row < nonZeroNumber.getValueAt(1,attributesHousehold[attribute]);row++){
-                    position = (int) nonZeroFrequency.getValueAt(1,attributesHousehold[attribute]);
-                    previousWeight = weight.getValueAt(position,1);
-                    weight.setValueAt(position,1,factor * previousWeight);
-                }
-            }
-
-            for (int attribute = 0; attribute < attributesHousehold.length; attribute++){
-                weightedSumHousehold.setValueAt(1,attributesHousehold[attribute],SiloUtil.getWeightedSum(weight.getColumnAsFloat(1),
-                        frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
-                        nonZeroFrequency.getColumnAsInt(attributesHousehold[attribute]),
-                        (int) nonZeroNumber.getValueAt(1,attributesHousehold[attribute])));
-                error = Math.abs(weightedSum -
-                    marginalsHousehold.getValueAt(1,attributesHousehold[attribute])/
-                    marginalsHousehold.getValueAt(1,attributesHousehold[attribute]));
-                errorHousehold.setValueAt(1,attributesHousehold[attribute],error);
-                if (error > maxError){
-                    maxError = error;
-                    maxErrorAttribute = attributesHousehold[attribute];
-                }
-            }
-
-            logger.info("   Iteration " + iteration + " completed. The maximum error is " + maxError + " on the attribute: " + maxErrorAttribute);
-
-            if(maxError < maxErrorThreshold){
-                finish =1;
-                logger.info("   IPU finished after " + iteration + " iterations with a maximum error of " + maxError);
-            }
-            else if ((iteration/iterationError) % 1 == 0) {
-                if (Math.abs((initialError - maxError)/initialError) < improvementError) {
-                    finish = 1;
-                    logger.info(" IPU finished after " + iteration + " iterations because the error does not improve. The maximum error is: " + maxError);
-                }
-                else{
-                    initialError = maxError;
-                    iteration++;
-                }
-            }
-        }
-
-        return weight;
-
-    }
-
 
 
     private void selectHouseholds(){
@@ -1267,45 +1410,73 @@ public class SyntheticPopDe {
         logger.info("   Starting to generate households and persons.");
 
 
-        int[] microDataIds = microDataHousehold.getColumnAsInt("ID");
+        //weightsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
+        weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
+
+        logger.info("   Finished reading weights.");
+        //int[] listMunicipality = {9163,	9173118	,9173120,9173123,9173126,9173130,9173134,9173137,9173147,9279112,9279124,9279130};
+        //String[] listMunicipalities = {"9163","9173118","9173120","9173123","9173126","9173130","9173134","9173137","9173147","9279112","9279124","9279130"};
+        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
+        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
+        frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
         int[] cityID = marginalsHouseholdMatrix.getColumnAsInt("ID_city");
-        int[] personCount = new int[microDataIds.length];
-        personCount[0] = 1;
-        for(int count = 1; count < microDataIds.length;count++){
-            personCount[count] = personCount[count-1] + (int)microDataHousehold.getIndexedValueAt(microDataIds[count-1],"hhSize");
-        }
-        microDataHousehold.appendColumn(personCount,"personCount");
-        String freqFileName = ("input/syntheticPopulation/newHouseholdFile.csv");
-        SiloUtil.writeTableDataSet(microDataHousehold, freqFileName);
+        cityIDs = new String[cityID.length];
+        for (int row = 0; row < cityID.length; row++){cityIDs[row] = Integer.toString(cityID[row]);}
+        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
 
 
-        float[] probability = {0.2f, 0.05f, 0.5f, 0.1f, 0.15f}; //this is the individual probability of each category of income (NOT CUMULATIVE)
-
-
-        //scroll through the table with the micro data
-        for (int count = 0; count < microDataIds.length; count++){
-            for (int area = 0; area < marginalsHouseholdMatrix.getRowCount(); area++) {
-                //multiply the number of households entry
-                int expansionFactor = Math.round(weight.getIndexedValueAt(microDataIds[count],cityIDs[area]));
-                int householdSize = (int)microDataHousehold.getIndexedValueAt(microDataIds[count],"hhSize");
-                int householdType = (int)microDataHousehold.getIndexedValueAt(microDataIds[count],"hhIncome");
-                int householdID = (int)microDataHousehold.getIndexedValueAt(microDataIds[count],"ID");
-                if (expansionFactor > 0){
-                    for(int row = 0; row < expansionFactor; row++){
-                        int id = HouseholdDataManager.getNextHouseholdId();
-                        new Household(id,householdID,cityID[area],householdSize,householdType); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
-                        for(int rowPerson = 0; rowPerson < householdSize; rowPerson++){
-                            int idPerson = HouseholdDataManager.getNextPersonId();
-                            int personCounter = (int) microDataHousehold.getIndexedValueAt(microDataIds[count],"personCount")+rowPerson;
-                            int age = (int) microDataPerson.getValueAt(personCounter,"age");
-                            int gender = (int) microDataPerson.getValueAt(personCounter,"gender");
-                            int occupation = (int) microDataPerson.getValueAt(personCounter,"occupation");
-                            int income = SiloUtil.select(probability); //income is selected according to the probabilities that are input
-                            new Person(idPerson,id,age,gender,Race.white,occupation,cityID[area],income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                        }
-                    }
+        //for (int municipality = 0; municipality < listMunicipality.length; municipality++){
+        for (int municipality = 0; municipality < listMunicipality.length; municipality++){
+            //logger.info("   Municipality " + municipality + " started.");
+            int finish = 0;
+            int personCounters = 0;
+            int totalPopulation = (int) marginalsHouseholdMatrix.getIndexedValueAt(listMunicipality[municipality],"Population");
+            double[] probability = weightsTable.getColumnAsDouble(listMunicipalities[municipality]);
+            probability = SiloUtil.convertProbability(probability);
+            while (finish == 0) {
+                int record = SiloUtil.select(probability, microDataIds);
+                int householdSize = (int) microDataHousehold.getIndexedValueAt(record, "hhSize");
+                int householdType = (int) microDataHousehold.getIndexedValueAt(record, "femaleWorkers");
+                int householdID = (int) microDataHousehold.getIndexedValueAt(record, "maleWorkers");
+                int id = HouseholdDataManager.getNextHouseholdId();
+                new Household(id, householdID, listMunicipality[municipality], householdSize, householdType); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
+                    int idPerson = HouseholdDataManager.getNextPersonId();
+                    int personCounter = (int) microDataHousehold.getIndexedValueAt(record, "personCount") + rowPerson;
+                    int age = (int) microDataPerson.getValueAt(personCounter, "age");
+                    int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
+                    int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
+                    int income = (int) microDataPerson.getValueAt(personCounter, "income");
+                    new Person(idPerson, id, age, gender, Race.white, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    personCounters++;
                 }
+                if (personCounters > totalPopulation){
+                    finish = 1;
+                }
+
             }
+            /*
+                for (int row = 0; row < marginalsHouseholdMatrix.getIndexedValueAt(listMunicipality[municipality],"hhTotal"); row++){
+                int record = SiloUtil.select(weightsTable.getColumnAsDouble(listMunicipalities[municipality]),microDataIds);
+                int householdSize = (int) microDataHousehold.getIndexedValueAt(record,"hhSize");
+                int householdType = (int)microDataHousehold.getIndexedValueAt(record,"maleWorkers");
+                int householdID = (int)microDataHousehold.getIndexedValueAt(record,"femaleWorkers");
+                int id = HouseholdDataManager.getNextHouseholdId();
+                new Household(id,householdID,listMunicipality[municipality],householdSize,householdType); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                for(int rowPerson = 0; rowPerson < householdSize; rowPerson++){
+                    int idPerson = HouseholdDataManager.getNextPersonId();
+                    int personCounter = (int) microDataHousehold.getIndexedValueAt(record,"personCount")+rowPerson;
+                    int age = (int) microDataPerson.getValueAt(personCounter,"age");
+                    int gender = (int) microDataPerson.getValueAt(personCounter,"gender");
+                    int occupation = (int) microDataPerson.getValueAt(personCounter,"occupation");
+                    int income = (int) microDataPerson.getValueAt(personCounter,"income");
+                    new Person(idPerson,id,age,gender,Race.white,occupation,listMunicipality[municipality],income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                }
+
+            }*/
+            int households = HouseholdDataManager.getHighestHouseholdIdInUse();
+            int persons = HouseholdDataManager.getHighestPersonIdInUse();
+            logger.info("   Municipality " + listMunicipality[municipality]+ ". A population of " + persons + " persons in " + households + " households was generated.");
         }
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
