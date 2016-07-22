@@ -263,6 +263,30 @@ public class SiloUtil {
         return probabilities.length - 1;
     }
 
+    public static int select (double[] probabilities, int[] id) {
+        // select item based on probabilities (for zero-based float array)
+        double selPos = getSum(probabilities) * SiloModel.rand.nextFloat();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                //return i;
+                return id[i];
+            }
+        }
+        return id[probabilities.length - 1];
+    }
+
+    public static double[] convertProbability (double[] probabilities){
+        double sum = 0;
+        for (int row = 0; row < probabilities.length; row++){
+            sum++;
+        }
+        for (int row = 0; row < probabilities.length; row++) {
+            probabilities[row] = probabilities[row]/sum*1000;
+        }
+        return probabilities;
+    }
 
     public static int select (int upperRange) {
         // select item based on equal probabilities between 0 and upperRange
@@ -320,6 +344,40 @@ public class SiloUtil {
         float sm = 0;
         for (int i: values) sm += i;
         return (sm / values.length);
+    }
+
+
+    public static float getWeightedSum(float[] weights, float[] values){
+        // calculate weighted sum given two sets of arrays.
+        float ws = 0;
+        for (int i = 0; i < weights.length; i++) {
+            ws += weights[i]*values[i];
+        }
+        return ws;
+    }
+
+
+    public static float getWeightedSum(float[] weights, float[] values, int[] positions){
+        // optimization to calculate weighted sum given two sets of arrays
+        // The two sets of arrays are complete, but only some cells are different than zero.
+        // The third array indicates the location of the cells different than zero.
+        float ws = 0;
+        for (int i = 0; i < positions.length; i++) {
+            ws += weights[positions[i]-1]*values[positions[i]-1];
+        }
+        return ws;
+    }
+
+
+    public static float getWeightedSum(float[] weights, float[] values, int[] positions, int total_positions){
+        // optimization to calculate weighted sum given two sets of arrays
+        // The two sets of arrays are complete, but only some cells are different than zero.
+        // The third array indicates the location of the cells different than zero.
+        float ws = 0;
+        for (int i = 0; i < total_positions; i++) {
+            ws += weights[positions[i]-1]*values[positions[i]-1];
+        }
+        return ws;
     }
 
 
@@ -743,5 +801,15 @@ public class SiloUtil {
         DecimalFormat myFormatter = new DecimalFormat(pattern);
         return myFormatter.format(value);
     }
+
+    public static int[] obtainColumnFromArray(int[][] array, int rows, int index){
+        int[] column = new int[rows];
+        for(int i = 0; i < column.length; i++){
+            column[i] = array[i][index];
+        }
+        return column;
+    }
+
+
 
 }

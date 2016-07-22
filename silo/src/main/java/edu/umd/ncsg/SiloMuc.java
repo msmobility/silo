@@ -29,7 +29,7 @@ public class SiloMuc {
         SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args);
         long startTime = System.currentTimeMillis();
-        try {
+     //   try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopDe sp = new SyntheticPopDe(rb);
@@ -37,10 +37,10 @@ public class SiloMuc {
             SiloModel model = new SiloModel(rb);
             //model.runModel();
             logger.info("Finished SILO.");
-        } catch (Exception e) {
-            logger.error("Error running SILO.");
-            throw new RuntimeException(e);
-        } finally {
+     //   } catch (Exception e) {
+     //       logger.error("Error running SILO.");
+     //       throw new RuntimeException(e);
+     //   } finally {
             SiloUtil.trackingFile("close");
             summarizeData.resultFile("close");
             summarizeData.resultFileSpatial(rb, "close");
@@ -56,7 +56,7 @@ public class SiloMuc {
                 } catch (IOException e) {
                     logger.warn("Could not add run-time statement to time-tracking file.");
                 }
-            }
+       //     }
         }
     }
 }
