@@ -61,7 +61,7 @@ public class InOutMigration {
 
     public void setupInOutMigration(int year) {
         // prepare data for inmigration and outmigration
-
+    	//TODO METHOD ONLY HANDLES INMIGRATION. SHOULD IT ALSO HANDLE OUTMIGRATION
         if (!EventRules.ruleInmigrate() && !EventRules.ruleOutmigrate()) return;
         logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
 
@@ -100,6 +100,7 @@ public class InOutMigration {
         int createdInmigrants = 0;
         inmigratingHhData = new HashMap<>();
         ArrayList<Integer> inHhIdArray = new ArrayList<>();
+      //TODO Refactoring the DO-WHILE needed??        
         if (inmigrants > 0) do {
             int[] inData = new int[31];
             // 0: hhSize, for p1 through p10 (1: age p1, 2: gender p1, 3: race p1, 4: occupation p1, 5: income p1, 6: workplace)

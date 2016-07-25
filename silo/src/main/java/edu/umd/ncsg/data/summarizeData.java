@@ -230,6 +230,7 @@ public class summarizeData {
 
 
     public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData) {
+    	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
         if (!scalingControlTotals.containsColumn(("HH" + year))) {
