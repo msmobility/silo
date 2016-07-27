@@ -1016,7 +1016,7 @@ public class SyntheticPopDe {
                 //maxErrorsMatrix.appendColumn(ma);
 
             }
-            String freqFileName = ("input/syntheticPopulation/weigthsNewTable.csv");
+            String freqFileName = ("input/syntheticPopulation/weigthsMatrix.csv");
             SiloUtil.writeTableDataSet(weightsMatrix, freqFileName);
 
 
@@ -1411,6 +1411,7 @@ public class SyntheticPopDe {
 
     private void readIPU(){
         //Read entry data for household selection
+        logger.info("   Reading the weights matrix");
         weightsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
         weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
 
@@ -1418,6 +1419,7 @@ public class SyntheticPopDe {
         attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
         marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
         marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
+        logger.info("   Finishing reading the results from the IPU");
     }
 
     private void selectHouseholds(){
@@ -1478,7 +1480,7 @@ public class SyntheticPopDe {
             float[] weightCells = new float[maxRaster];
             for (int row = 0; row < rasterNumbers[municipality];row++){
                 realCells[sumCells[0]] = (int) cellsMatrix.getValueAt(rasterRow,"ID_cell");
-                weightCells[sumCells[0]] = cellsMatrix.getValueAt(rasterRow,"PopulationDensity");
+                weightCells[sumCells[0]] = cellsMatrix.getValueAt(rasterRow,"Population");
                 sumCells[0] = sumCells [0] + 1;
                 rasterRow++;
             }
@@ -1523,9 +1525,9 @@ public class SyntheticPopDe {
             }
             int households = HouseholdDataManager.getHighestHouseholdIdInUse()-previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse()-previousPersons;
-            logger.info("   Municipality " + listMunicipality[municipality]+ ". A population of " + persons + " persons in " + households + " households was generated.");
-            previousHouseholds = households;
-            previousPersons = persons;
+            logger.info("   Municipality " + listMunicipality[municipality]+ ". Generated " + persons + " persons in " + households + " households.");
+            previousHouseholds = HouseholdDataManager.getHighestHouseholdIdInUse();
+            previousPersons = HouseholdDataManager.getHighestPersonIdInUse();
         }
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
