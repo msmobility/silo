@@ -173,6 +173,11 @@ public class SyntheticPopDe {
         int personId[] = new int[personCountTotal];
         int personHH[] = new int[personCountTotal];
         int personIncome [] = new int[personCountTotal];
+        int personNationality[] = new int[personCountTotal];
+        int personWorkplace[] = new int[personCountTotal];
+        int personCommuteTime[] = new int[personCountTotal];
+        int personTransportationMode[] = new int[personCountTotal];
+        int personJobType[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
         int hhCount = -1;
@@ -196,6 +201,7 @@ public class SyntheticPopDe {
         int hhId [] = new int[hhCountTotal];
         int hhIncome[] = new int[hhCountTotal];
         int personCounts[] = new int[hhCountTotal];
+        int hhDwellingType[] = new int[hhCountTotal];
         int incomeCounter = 0;
         String personalIncome;
 
@@ -213,6 +219,7 @@ public class SyntheticPopDe {
                             if (householdNumber != previousHouseholdNumber) {
                                 hhCount++;
                                 hhSize[hhCount] = convertToInteger(recString.substring(323, 324));
+                                hhDwellingType[hhCount] = convertToInteger(recString.substring(476, 477)); // 1: 1-4 apartments, 2: 5-10 apartments, 3: 11 or more, 4: gemainschafts, 6: neubauten
                                 hhTotal[hhCount] = 1;
                                 if (hhSize[hhCount] == 1) {
                                     hhSingle[hhCount] = 1;
@@ -249,6 +256,11 @@ public class SyntheticPopDe {
                             personHH[personCount] = convertToInteger(recString.substring(2, 9));
                             personIncome[personCount] = convertToInteger(recString.substring(297, 299));
                             personalIncome = Integer.toString(personIncome[personCount]);
+                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner;
+                            personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
+                            personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
+                            personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
+                            personJobType[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
                             if (personalIncome == "01") {
                                 incomeCounter = incomeCounter + 150;
                             } else if (personalIncome == "02"){
@@ -336,6 +348,11 @@ public class SyntheticPopDe {
         microPersons.appendColumn(occupation,"occupation");
         microPersons.appendColumn(personId,"personID");
         microPersons.appendColumn(personIncome,"income");
+        microPersons.appendColumn(personNationality,"nationality");
+        microPersons.appendColumn(personWorkplace,"workplace");
+        microPersons.appendColumn(personCommuteTime,"commuteTime");
+        microPersons.appendColumn(personTransportationMode,"commuteMode");
+        microPersons.appendColumn(personJobType,"jobType");
         microDataPerson = microPersons;
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("personID"));
 
@@ -358,6 +375,7 @@ public class SyntheticPopDe {
         microRecords.appendColumn(hhSize,"hhSizeDeclared");
         microRecords.appendColumn(hhSizeCount,"hhSize");
         microRecords.appendColumn(personCounts,"personCount");
+        microRecords.appendColumn(hhDwellingType,"hhDwellingType");
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
 
@@ -1520,7 +1538,11 @@ public class SyntheticPopDe {
                     int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
                     int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
                     int income = (int) microDataPerson.getValueAt(personCounter, "income");
-                    new Person(idPerson, id, age, gender, Race.white, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    if (microDataPerson.getValueAt(personCounter,"nationality") == 8) { //race is equal to other if the person is foreigner.
+                        new Person(idPerson, id, age, gender, Race.other, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    } else {
+                        new Person(idPerson, id, age, gender, Race.white, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    }
                 }
             }
             int households = HouseholdDataManager.getHighestHouseholdIdInUse()-previousHouseholds;
