@@ -3,6 +3,7 @@ package edu.umd.ncsg;
 import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.util.ResourceBundle;
 
 /**

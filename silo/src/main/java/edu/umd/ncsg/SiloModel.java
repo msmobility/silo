@@ -52,7 +52,6 @@ public class SiloModel {
     private ResourceBundle rbLandUse;
     public static Random rand;
 
-    protected static final String PROPERTIES_RUN_SILO                       = "run.silo.model";
     protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
@@ -112,8 +111,6 @@ public class SiloModel {
 
     public void runModel() {
         //Main method to run a SILO model
-
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO)) return;
 
         logger.info("Start SILO Model");
 

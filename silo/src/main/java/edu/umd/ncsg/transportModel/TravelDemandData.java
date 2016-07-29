@@ -1,7 +1,5 @@
 package edu.umd.ncsg.transportModel;
 
-import com.pb.common.datafile.TableDataSet;
-import edu.umd.ncsg.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -28,8 +26,6 @@ public class TravelDemandData {
     public void readData () {
         // read in general data for travel demand model
 
-        TableDataSet regionDefinition = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HH_TRAVEL_SURVEY_REG));
-        regionDefinition.buildIndex(regionDefinition.getColumnPosition("SMZRMZ"));
 
     }
 }
