@@ -30,7 +30,7 @@ import edu.umd.ncsg.jobmography.updateJobs;
 import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.TravelDemandModel;
+import edu.umd.ncsg.transportModel.TavelDemandModel;
 import edu.umd.ncsg.utils.CblcmDiffGenerator;
 
 import org.apache.log4j.Logger;
@@ -52,7 +52,6 @@ public class SiloModel {
     private ResourceBundle rbLandUse;
     public static Random rand;
 
-    protected static final String PROPERTIES_RUN_SILO                       = "run.silo.model";
     protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
@@ -90,7 +89,7 @@ public class SiloModel {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private TravelDemandModel TransportModel;
+    private TavelDemandModel TransportModel;
     private updateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
@@ -112,8 +111,6 @@ public class SiloModel {
 
     public void runModel() {
         //Main method to run a SILO model
-
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO)) return;
 
         logger.info("Start SILO Model");
 
@@ -169,7 +166,7 @@ public class SiloModel {
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TravelDemandModel TransportModel = new TravelDemandModel(rbLandUse);
+        TavelDemandModel TransportModel = new TavelDemandModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
 
@@ -397,7 +394,7 @@ public class SiloModel {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new TravelDemandModel(rbLandUse);
+        TransportModel = new TavelDemandModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
 
