@@ -2,6 +2,7 @@ package edu.umd.ncsg.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import edu.umd.ncsg.SiloMuc;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.data.*;
 import edu.umd.ncsg.transportModel.tripGeneration.TripGeneration;
@@ -20,9 +21,10 @@ import java.util.ResourceBundle;
  * Revised on 6 May 2016 in Munich, Germany
  **/
 
-public class TravelDemandModel {
+public class TavelDemandModel {
 
-    static Logger logger = Logger.getLogger(TravelDemandModel.class);
+    static Logger logger = Logger.getLogger(TavelDemandModel.class);
+    protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
     protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
     protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
     protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
@@ -33,7 +35,7 @@ public class TravelDemandModel {
     private ResourceBundle rbTravel;
 
 
-    public TravelDemandModel(ResourceBundle rbLandUse) {
+    public TavelDemandModel(ResourceBundle rbLandUse) {
         // constructor
         this.rbLandUse = rbLandUse;
         File propFile = new File(SiloUtil.getSiloTravelPropertiesFile());
@@ -43,8 +45,15 @@ public class TravelDemandModel {
 
     public void runTransportModel (int year) {
         // run travel demand model
+
+        // if transport model is run by itself, year is not specified by SILO; then, needs to read the first year from properties file
+        if (year == -1) {
+            geoData.setInitialData(rbLandUse);
+            year = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS)[0];
+        }
         logger.info("Running travel demand model for the year " + year);
         tripGeneration();
+        logger.info("Completed travel demand model for the year " + year);
     }
 
 
@@ -55,11 +64,19 @@ public class TravelDemandModel {
         tgData.readHouseholdTravelSurvey("all");
         TripGeneration tg = new TripGeneration(rbTravel);
 
-        TravelDemandData tdd = new TravelDemandData(rbLandUse);
+        TavelDemandData tdd = new TavelDemandData(rbTravel);
         tdd.readData();
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
+                !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
+            HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
+            householdData.readPopulation();
+            householdData.connectPersonsToHouseholds();
+            householdData.setTypeOfAllHouseholds();
+
+        }
 
         // generate trips for every household
-        for (Household hh: Household.getHouseholdArray()) {
+//        for (Household hh: Household.getHouseholdArray()) {
 
             for (int purp = 0; purp < tripPurposes.values().length; purp++) {
                 String strPurp = tripPurposes.values()[purp].toString();
@@ -87,7 +104,7 @@ public class TravelDemandModel {
         }
 //
 //        ###
-        }
+//        }
     }
 
 
