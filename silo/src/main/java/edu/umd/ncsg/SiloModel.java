@@ -30,7 +30,7 @@ import edu.umd.ncsg.jobmography.updateJobs;
 import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.TavelDemandModel;
+import edu.umd.ncsg.transportModel.TravelDemandModel;
 import edu.umd.ncsg.utils.CblcmDiffGenerator;
 
 import org.apache.log4j.Logger;
@@ -89,7 +89,7 @@ public class SiloModel {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private TavelDemandModel TransportModel;
+    private TravelDemandModel TransportModel;
     private updateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
@@ -166,7 +166,7 @@ public class SiloModel {
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TavelDemandModel TransportModel = new TavelDemandModel(rbLandUse);
+        TravelDemandModel TransportModel = new TravelDemandModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
 
@@ -394,7 +394,7 @@ public class SiloModel {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new TavelDemandModel(rbLandUse);
+        TransportModel = new TravelDemandModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
 

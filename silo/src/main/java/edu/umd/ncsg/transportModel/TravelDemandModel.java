@@ -21,9 +21,9 @@ import java.util.ResourceBundle;
  * Revised on 6 May 2016 in Munich, Germany
  **/
 
-public class TavelDemandModel {
+public class TravelDemandModel {
 
-    static Logger logger = Logger.getLogger(TavelDemandModel.class);
+    static Logger logger = Logger.getLogger(TravelDemandModel.class);
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
     protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
     protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
@@ -35,7 +35,7 @@ public class TavelDemandModel {
     private ResourceBundle rbTravel;
 
 
-    public TavelDemandModel(ResourceBundle rbLandUse) {
+    public TravelDemandModel(ResourceBundle rbLandUse) {
         // constructor
         this.rbLandUse = rbLandUse;
         File propFile = new File(SiloUtil.getSiloTravelPropertiesFile());
@@ -64,7 +64,7 @@ public class TavelDemandModel {
         tgData.readHouseholdTravelSurvey("all");
         TripGeneration tg = new TripGeneration(rbTravel);
 
-        TavelDemandData tdd = new TavelDemandData(rbTravel);
+        TravelDemandData tdd = new TravelDemandData(rbTravel);
         tdd.readData();
         if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {

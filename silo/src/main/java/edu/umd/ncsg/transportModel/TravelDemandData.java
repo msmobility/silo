@@ -10,15 +10,15 @@ import java.util.ResourceBundle;
  * Created on 6 May 2016 in Munich, Germany
  **/
 
-public class TavelDemandData {
+public class TravelDemandData {
 
-    static Logger logger = Logger.getLogger(TavelDemandModel.class);
+    static Logger logger = Logger.getLogger(TravelDemandModel.class);
     protected static final String PROPERTIES_HH_TRAVEL_SURVEY_REG   = "household.travel.survey.reg";
 
     private ResourceBundle rb;
 
 
-    public TavelDemandData(ResourceBundle rb) {
+    public TravelDemandData(ResourceBundle rb) {
         this.rb = rb;
     }
 

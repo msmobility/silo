@@ -3,7 +3,7 @@ package edu.umd.ncsg;
 import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopDe;
 import edu.umd.ncsg.data.summarizeData;
-import edu.umd.ncsg.transportModel.TavelDemandModel;
+import edu.umd.ncsg.transportModel.TravelDemandModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -55,7 +55,7 @@ public class SiloMuc {
         }
         // if land use model was not selected to run, check if travel demand model shall run only
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false)) {
-            TavelDemandModel tdm = new TavelDemandModel(rb);
+            TravelDemandModel tdm = new TravelDemandModel(rb);
             tdm.runTransportModel(-1);  // -1 tells transport model to look up first transport year from properties file
         }
         float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
