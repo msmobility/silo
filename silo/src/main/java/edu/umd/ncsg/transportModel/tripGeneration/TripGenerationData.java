@@ -26,14 +26,11 @@ public class TripGenerationData {
     private TableDataSet htsHH;
     private TableDataSet htsTR;
     private static String autoMode;
-    private int minNumberOfRecords;
 
 
     public TripGenerationData(ResourceBundle rb) {
         // Constructor
         this.rb = rb;
-        autoMode = rb.getString("anal.autos.or.autosufficiency");
-        minNumberOfRecords = ResourceUtil.getIntegerProperty(rb, "min.no.of.records.by.hh.type");
     }
 
 
@@ -80,14 +77,6 @@ public class TripGenerationData {
     }
 
 
-//    public TableDataSet getHtsHH () {
-//        return htsHH;
-//    }
-
-
-//    public TableDataSet getHtsTR() {
-//        return htsTR;
-//    }
 
 
     public TableDataSet createHouseholdTypeTableDataSet (int numCategories, String[] sizePortions, String[] workerPortions,
@@ -174,7 +163,7 @@ public class TripGenerationData {
         }
         // analyze if every household type has a sufficient number of records
         for (int hht = 1; hht < hhTypeCounter.length; hht++) {
-            if (hhTypeCounter[hht] < minNumberOfRecords) hhTypeArray[0] = -1;  // marker that this hhTypeDef is not worth analyzing
+            if (hhTypeCounter[hht] < 30) hhTypeArray[0] = -1;  // marker that this hhTypeDef is not worth analyzing
         }
         return hhTypeArray;
     }
@@ -281,7 +270,7 @@ public class TripGenerationData {
 
 
     public int getMinNumberOfRecords () {
-        return minNumberOfRecords;
+        return 30;
     }
 
 

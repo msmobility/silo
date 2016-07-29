@@ -1,7 +1,7 @@
 package edu.umd.ncsg;
 
 import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
+import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopDe;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
 
@@ -12,15 +12,15 @@ import java.io.PrintWriter;
 import java.util.ResourceBundle;
 
 /**
- * Implements SILO for the Maryland Statewide Transportation Model
- * @author Rolf Moeckel
- * Created on Nov 22, 2013 in Wheaton, MD
+ * Implements SILO for the Munich Metropolitan Area
+ * @author Rolf Moeckel and Ana Moreno
+ * Created on May 12, 2016 in Munich, Germany
  *
  */
+public class SiloMuc {
 
-public class SiloMstm {
     // main class
-    static Logger logger = Logger.getLogger(SiloMstm.class);
+    static Logger logger = Logger.getLogger(SiloMuc.class);
 
 
     public static void main(String[] args) {
@@ -32,10 +32,10 @@ public class SiloMstm {
         try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            SyntheticPopUs sp = new SyntheticPopUs(rb);
+            SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
             SiloModel model = new SiloModel(rb);
-            model.runModel();
+            //model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
@@ -59,5 +59,4 @@ public class SiloMstm {
             }
         }
     }
-
 }
