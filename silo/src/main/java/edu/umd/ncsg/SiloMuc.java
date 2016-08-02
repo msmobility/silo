@@ -21,10 +21,10 @@ import java.util.ResourceBundle;
 public class SiloMuc {
 
     // main class
-    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
-    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL  = "run.travel.demand.model";
-    static Logger logger = Logger.getLogger(SiloMuc.class);
+    public static final String PROPERTIES_RUN_SILO                  = "run.silo.model";
+    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION  = "run.synth.pop.generator";
+    private static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL  = "run.travel.demand.model";
+    private static Logger logger = Logger.getLogger(SiloMuc.class);
 
 
     public static void main(String[] args) {
