@@ -1,18 +1,19 @@
 package edu.umd.ncsg;
 
-import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
-import edu.umd.ncsg.data.summarizeData;
-import org.apache.log4j.Logger;
-import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+
+import com.pb.common.util.ResourceUtil;
+
+import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
+import edu.umd.ncsg.data.summarizeData;
 
 /**
  * @author dziemke
@@ -21,23 +22,26 @@ import java.util.ResourceBundle;
 public class SiloMatsim {
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
 
-	public static void main(String[] args) {
-		new SiloMatsim(args).run();
-	}
+//	public static void main(String[] args) {
+//		new SiloMatsim(args).run();
+//	}
+	// @dominik: see comment below.  kai, aug'16
 
 	private ResourceBundle rb;
 	private Config matsimConfig = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
 
-	SiloMatsim(String[] args) {
-		this( args, ConfigUtils.loadConfig(args[1]) ) ;
-	}	    
+//	SiloMatsim(String[] args) {
+//		this( args, ConfigUtils.loadConfig(args[1]) ) ;
+//	}	    
+	// @dominik: the above constructor does not work any more after recent refactorings ... SILO now uses the second argument for itself.
+	// kai, aug'16
 
 	/**
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
 	SiloMatsim(String[] args, Config config) {
 		SiloUtil.setBaseYear(2000);
-		rb = SiloUtil.siloInitialization(args[0]);
+		rb = SiloUtil.siloInitialization(args);
 		matsimConfig = config ;
 	}	    
 
@@ -47,7 +51,7 @@ public class SiloMatsim {
 		try {
 			logger.info("Starting SILO program for MATSim");
 			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-			syntheticPop sp = new syntheticPop(rb);
+			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
 			SiloModel model = new SiloModel(rb);
 			model.setMatsimConfig(matsimConfig); // SILO-MATSim integration-specific

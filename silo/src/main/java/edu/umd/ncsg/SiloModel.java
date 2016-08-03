@@ -34,6 +34,7 @@ import edu.umd.ncsg.transportModel.TravelDemandModel;
 import edu.umd.ncsg.utils.CblcmDiffGenerator;
 
 import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
 
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
@@ -96,6 +97,8 @@ public class SiloModel {
     private boolean trackTime;
     private long[][] timeCounter;
     private SiloModelContainer modelContainer;
+
+private Config setMatsimConfig;
 
     /**
      * Constructor to set up a SILO model
@@ -655,6 +658,11 @@ public class SiloModel {
         }
         pw.close();
     }
+
+
+public void setMatsimConfig(Config matsimConfig) {
+	this.setMatsimConfig=matsimConfig ;
+}
 
 
 //    private void summarizeRentAndIncome () {
