@@ -23,10 +23,8 @@ public class SiloMstmTest {
 		
 		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMstm_reduced.properties"}; 
 
-		SiloMatsim siloMatsim = new SiloMatsim(args);		
-
 		try {
-			siloMatsim.run();
+			SiloMstm.main(args);
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 			Assert.fail( "something did not work" ) ;
