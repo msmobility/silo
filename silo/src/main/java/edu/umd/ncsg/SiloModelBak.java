@@ -45,6 +45,7 @@ import edu.umd.ncsg.demography.MarryDivorceModel;
 import edu.umd.ncsg.events.EventManager;
 import edu.umd.ncsg.events.EventTypes;
 import edu.umd.ncsg.events.IssueCounter;
+import edu.umd.ncsg.jobmography.UpdateJobs;
 import edu.umd.ncsg.realEstate.ConstructionModel;
 import edu.umd.ncsg.realEstate.ConstructionOverwrite;
 import edu.umd.ncsg.realEstate.DemolitionModel;
@@ -54,6 +55,7 @@ import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
 import edu.umd.ncsg.transportModel.MatsimTransportModel;
 import edu.umd.ncsg.transportModel.TransportModelI;
+import edu.umd.ncsg.transportModel.TravelDemandModel;
 
 /**
  * @author Greg Erhardt 
@@ -99,8 +101,8 @@ public class SiloModelBak {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private transportModel TransportModel;
-    private updateJobs updateJobs;
+    private TravelDemandModel TransportModel;
+    private UpdateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
     private boolean trackTime;
@@ -110,7 +112,7 @@ public class SiloModelBak {
      * Constructor to set up a SILO model
      * @param rb ResourceBundle
      */
-    public SiloModel(ResourceBundle rb) {
+    public SiloModelBak(ResourceBundle rb) {
         this.rb = rb;
         summarizeData.openResultFile(rb);
         summarizeData.resultFileSpatial(rb, "open");
@@ -169,7 +171,7 @@ public class SiloModelBak {
         RenovationModel renov = new RenovationModel(rb);
         DemolitionModel demol = new DemolitionModel(rb);
         PricingModel prm = new PricingModel(rb);
-        updateJobs updateJobs = new updateJobs(rb);
+        UpdateJobs updateJobs = new UpdateJobs(rb);
         AutoOwnershipModel aoModel = new AutoOwnershipModel(rb);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rb);
 
@@ -326,7 +328,7 @@ public class SiloModelBak {
             
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-                TransportModel.runMstm(nextYearForTransportModel);
+                TransportModel.runTransportModel(nextYearForTransportModel);
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
@@ -403,7 +405,7 @@ public class SiloModelBak {
         renov = new RenovationModel(rb);
         demol = new DemolitionModel(rb);
         prm = new PricingModel(rb);
-        updateJobs = new updateJobs(rb);
+        updateJobs = new UpdateJobs(rb);
         aoModel = new AutoOwnershipModel(rb);
         ddOverwrite = new ConstructionOverwrite(rb);
 
@@ -411,7 +413,7 @@ public class SiloModelBak {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new transportModel(rb);
+        TransportModel = new TravelDemandModel(rb);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rb);
 
@@ -558,7 +560,7 @@ public class SiloModelBak {
 
         int nextYearForTransportModel = currentYear + 1;
         if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-            TransportModel.runMstm(nextYearForTransportModel);
+            TransportModel.runTransportModel(nextYearForTransportModel);
         }
 
         if (trackTime) startTime = System.currentTimeMillis();

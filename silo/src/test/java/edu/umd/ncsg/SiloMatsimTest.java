@@ -130,7 +130,7 @@ public class SiloMatsimTest {
 	 * This test does only test the downstream coupling: silo data is given to matsim and then iterated.  Possible feedback from matsim
 	 * to silo is NOT included in this test (as it was also not included in the ABMTRANS'16 paper).
 	 */
-//	@Ignore
+	@Ignore
 	@Test
 	public final void testMainReduced() {
 		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties"}; 
