@@ -24,6 +24,8 @@ package edu.umd.ncsg.transportModel;
  */
 public interface TransportModelI {
 
-	void runMstm(int year);
+	void runTransportModel(int year);
+	
+	public void writeOutSocioEconomicDataForMstm(int year) ;
 
 }

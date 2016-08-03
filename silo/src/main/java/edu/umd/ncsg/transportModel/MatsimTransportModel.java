@@ -62,7 +62,7 @@ public class MatsimTransportModel implements TransportModelI {
 	}
 	
 	@Override
-	public void runMstm(int year) {
+	public void runTransportModel(int year) {
 			Log.info("Running MATSim transport model for year " + year + ".");
 
 			String scenarioName = rb.getString(PROPERTIES_SCENARIO_NAME);
@@ -110,5 +110,10 @@ public class MatsimTransportModel implements TransportModelI {
 			// Update accessibilities in silo from matsim output:
 			acc.calculateAccessibilities(year);
 			// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
+	}
+
+	@Override
+	public void writeOutSocioEconomicDataForMstm(int year) {
+		// not doing anything. 
 	}
 }
