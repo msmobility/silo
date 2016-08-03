@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>common-base</groupId>
 	<artifactId>common-base</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>common-base</name>
 	<description>common-base</description>
 	<build>

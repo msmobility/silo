@@ -143,7 +143,7 @@ public class BirthModel {
         return (birthProbability[pt.ordinal()] > 0);
     }
 
-
+    //TODO AGE UPDATION IS INT. FOR SIMULATIONS LESS THAN 1 YEAR, AGE CAN BE NON-INT VALUE
     public void celebrateBirthday (int personId) {
         // increase age of this person by number of years in simulation period
         Person per = Person.getPersonFromId(personId);

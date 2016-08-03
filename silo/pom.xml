@@ -17,8 +17,8 @@
 	</licenses>
 	<scm>
 		<url>https://github.com/moeckel/silo</url>
-		<connection>scm:git:git://github.com/moeckel/silo.git</connection>
-		<developerConnection>scm:git:git@github.com:moeckel/silo.git</developerConnection>
+		<connection>scm:git:git://github.com/msmobility/silo.git</connection>
+		<developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
 	</scm>
 	<repositories>
 		<repository>
@@ -277,7 +277,7 @@
 		<dependency>
 			<groupId>common-base</groupId>
 			<artifactId>common-base</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
   		<dependency>
   			<groupId>sawdust</groupId>

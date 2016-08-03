@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import static java.nio.file.StandardCopyOption.*;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -50,6 +51,7 @@ public class SiloUtil {
     public static int numberOfQualityLevels;
     private static ResourceBundle rb;
     private static HashMap rbHashMap;
+    private static String siloTravelPropertiesFile;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
     private static int baseYear;
@@ -61,12 +63,13 @@ public class SiloUtil {
     }
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleName) {
+    public static ResourceBundle siloInitialization(String[] resourceBundleNames) {
         // initializes Silo
 
-        File propFile = new File(resourceBundleName);
+        File propFile = new File(resourceBundleNames[0]);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        if (resourceBundleNames.length > 1) siloTravelPropertiesFile = resourceBundleNames[1];
 
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
@@ -74,9 +77,8 @@ public class SiloUtil {
         // create scenario output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
         // copy properties file into scenario directory
-        String[] prop = resourceBundleName.split("/");
-//        copyFile(baseDirectory + resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
-        copyFile(resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        String[] prop = resourceBundleNames[0].split("/");
+        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber();
         trackingFile("open");
@@ -90,11 +92,16 @@ public class SiloUtil {
     }
 
 
+    public static String getSiloTravelPropertiesFile() {
+        return siloTravelPropertiesFile;
+    }
+
+
     public static void createDirectoryIfNotExistingYet (String directory) {
         // create directory if is does not yet exist
         File file = new File (directory);
         if (!file.exists()) {
-            logger.error("Creating Directory: "+directory); // TODO I would not log an error here; at most a warning or an info, dz, apr/16
+            logger.error("Creating Directory: "+directory);
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
             if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory " + scenarioName);
         }
@@ -153,9 +160,7 @@ public class SiloUtil {
         boolean exists = dataFile.exists();
         if (!exists) {
             logger.error("File not found: " + fileName);
-            throw new RuntimeException("file not found");
-//            System.exit(1);
-            // If code terminates with System.exit(...), from the perspective of a junit test the test has passed! kai, apr'16 
+            System.exit(1);
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
@@ -230,7 +235,7 @@ public class SiloUtil {
         }
     }
 
-
+    //TODO REFACTOR SELECT METHODS TO USE GENERICS
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
         double selPos = getSum(probabilities) * SiloModel.rand.nextDouble();
@@ -287,6 +292,71 @@ public class SiloUtil {
         double sum = 0;
         for (double val: array) sum += val;
         return sum;
+    }
+
+
+    public static Integer getSum (Integer[] array) {
+        Integer sm = 0;
+        for (Integer value: array) sm += value;
+        return sm;
+    }
+
+
+    public static float getSum(float[][][] array) {
+        // return array of three-dimensional double array
+        float sm = 0;
+        for (float[][] anArray : array) {
+            for (int i = 0; i < array[0][0].length; i++) {
+                for (int j = 0; j < array[0].length; j++) sm += anArray[i][j];
+            }
+        }
+        return sm;
+    }
+
+
+    public static float getMean (int[] values) {
+        // calculate mean (average) value
+
+        float sm = 0;
+        for (int i: values) sm += i;
+        return (sm / values.length);
+    }
+
+
+    public static float getVariance (int[] values) {
+        // calculate sample variance of array values[]
+
+        if (values.length <= 1) {
+            logger.error("Cannot calculate variance for array with length " + values.length);
+            return 0;
+        }
+        double sm = 0;
+        float mean = getMean(values);
+        for (int i: values) {
+            sm += Math.pow((i - mean), 2);
+        }
+        return (float) (sm / (values.length-1));
+    }
+
+
+    public static String[] convertArrayListToStringArray (ArrayList<String> al) {
+        String[] list = new String[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+
+    public static int[] convertArrayListToIntArray (ArrayList<Integer> al) {
+        int[] list = new int[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+
+    public static int[] convertIntegerToInt (Integer[] values) {
+        int[] intValues = new int[values.length];
+        for (int i = 0; i < values.length; i++) intValues[i] = values[i];
+        return intValues;
     }
 
 
@@ -467,6 +537,24 @@ public class SiloUtil {
     }
 
 
+    public static float getHighestVal(float[] array) {
+        // return highest number in float array
+        float high = Float.MIN_VALUE;
+        for (float num: array) high = Math.max(high, num);
+        return high;
+    }
+
+
+    public static float getWeightedMean (float[] values, int[] weights) {
+        // calculate mean (average) value
+
+        if (values.length != weights.length) logger.error("values[] and weights[] have unequal length in getWeightedMean()");
+        float sm = 0;
+        for (int i = 0; i < values.length; i++) sm += values[i] * weights[i];
+        return (sm / getSum(weights));
+    }
+
+
     public static int getHighestVal(String[] array) {
         // return highest number in String array
         int high = Integer.MIN_VALUE;
@@ -478,7 +566,15 @@ public class SiloUtil {
     public static int getSmallestVal(String[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
-        for (String num : array) low = Math.min(low, Integer.parseInt(num));
+        for (String num: array) low = Math.min(low, Integer.parseInt(num));
+        return low;
+    }
+
+
+    public static int getSmallestVal(int[] array) {
+        // return highest number in String array
+        int low = Integer.MAX_VALUE;
+        for (int num: array) low = Math.min(low, num);
         return low;
     }
 
@@ -579,14 +675,10 @@ public class SiloUtil {
             return mat;
         } else if (type.equals(OmxHdf5Datatype.OmxJavaType.DOUBLE)) {
             double[][] dArray = (double[][]) omxMatrix.getData();
-//            System.out.println("dArray = " + dArray.toString());
             Matrix mat = new Matrix(name, name, dimensions[0], dimensions[1]);
-//            System.out.println("matrix = " + mat.toString());
             for (int i = 0; i < dimensions[0]; i++)
-                for (int j = 0; j < dimensions[1]; j++) {
+                for (int j = 0; j < dimensions[1]; j++)
                     mat.setValueAt(i + 1, j + 1, (float) dArray[i][j]);
-//            		System.out.println("i = " + i + " ; j = " + j + " ; dArray[i][j] = " + dArray[i][j]);
-                }
             return mat;
         } else {
             logger.info("OMX Matrix type " + type.toString() + " not yet implemented. Program exits.");
@@ -640,4 +732,16 @@ public class SiloUtil {
     public static int getEndYear() {
         return endYear;
     }
+
+
+    static public String customFormat(String pattern, double value ) {
+        // function copied from: http://docs.oracle.com/javase/tutorial/java/data/numberformat.html
+        // 123456.789 ###,###.###  123,456.789 The pound sign (#) denotes a digit, the comma is a placeholder for the grouping separator, and the period is a placeholder for the decimal separator.
+        // 123456.789 ###.##       123456.79   The value has three digits to the right of the decimal point, but the pattern has only two. The format method handles this by rounding up.
+        // 123.78     000000.000   000123.780  The pattern specifies leading and trailing zeros, because the 0 character is used instead of the pound sign (#).
+        // 12345.67   $###,###.### $12,345.67  The first character in the pattern is the dollar sign ($). Note that it immediately precedes the leftmost digit in the formatted output.
+        DecimalFormat myFormatter = new DecimalFormat(pattern);
+        return myFormatter.format(value);
+    }
+
 }

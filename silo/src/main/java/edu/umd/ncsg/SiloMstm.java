@@ -1,7 +1,7 @@
 package edu.umd.ncsg;
 
 import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SyntheticPopulationGenerator.syntheticPop;
+import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
 import edu.umd.ncsg.data.summarizeData;
 import org.apache.log4j.Logger;
 
@@ -27,12 +27,12 @@ public class SiloMstm {
         // main run method
 
         SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
+        ResourceBundle rb = SiloUtil.siloInitialization(args);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            syntheticPop sp = new syntheticPop(rb);
+            SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             SiloModel model = new SiloModel(rb);
             model.runModel();

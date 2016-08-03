@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_CAPACITY_FILE;
+import static edu.umd.ncsg.data.RealEstateDataManager.PROPERTIES_LAND_USE_AREA;
+
 /**
  * Methods to summarize model results
  * Author: Rolf Moeckel, PB Albuquerque
@@ -36,7 +39,9 @@ public class summarizeData {
     protected static final String PROPERTIES_WRITE_BIN_JJ_FILE            = "write.binary.jj.file";
     protected static final String PROPERTIES_PRESTO_REGION_DEFINITION     = "presto.regions";
     protected static final String PROPERTIES_PRESTO_SUMMARY_FILE          = "presto.summary.file";
-
+    protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
+    
+    
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
 
@@ -179,7 +184,53 @@ public class summarizeData {
     }
 
 
+    public static int[] getHouseholdsByZone () {
+        // summarize households by zone
+
+        int[] householdsByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Household hh: Household.getHouseholdArray()) {
+            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
+            householdsByZone[zone]++;
+        }
+        return householdsByZone;
+    }
+
+
+    public static int[] getRetailEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] retailEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return retailEmplByZone;
+    }
+
+
+    public static int[] getOtherEmploymentByZone() {
+        // summarize other employment by zone
+
+        int[] otherEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return otherEmplByZone;
+    }
+
+
+    public static int[] getTotalEmploymentByZone() {
+        // summarize retail employment by zone
+
+        int[] totalEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        for (Job jj: Job.getJobArray()) {
+            totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return totalEmplByZone;
+    }
+
+
     public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData) {
+    	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
         if (!scalingControlTotals.containsColumn(("HH" + year))) {
@@ -364,7 +415,8 @@ public class summarizeData {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" + year + ".csv";
+        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         Household[] hhs = Household.getHouseholdArray();
@@ -386,7 +438,8 @@ public class summarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" + year + ".csv";
+        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         Person[] pps = Person.getPersonArray();
@@ -416,7 +469,8 @@ public class summarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" + year + ".csv";
+        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         Dwelling[] dds = Dwelling.getDwellingArray();
@@ -446,7 +500,8 @@ public class summarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" + year + ".csv";
+        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
+                year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
@@ -525,7 +580,7 @@ public class summarizeData {
 
     public static void summarizePrestoRegion (ResourceBundle rb, int year) {
         // summarize housing costs by income group in SILO region
-
+    	
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 rb.getString(PROPERTIES_PRESTO_SUMMARY_FILE) + SiloUtil.gregorianIterator + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != SiloUtil.getBaseYear());
@@ -554,5 +609,27 @@ public class summarizeData {
             }
             pw.println("," + rents[i] / countThisIncome);
         }
+    }
+
+
+    public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
+        // write out development capacity file to allow model run to be continued from this point later
+    	
+    	boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
+        if(useCapacityAsNumberOfDwellings)	{
+        	String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                    ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
+            PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+            pwc.println("Zone,DevCapacity");
+            for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
+            pwc.close();
+        }
+
+        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
+        PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
+        pwl.println("Zone,lu41");
+        for (int zone: geoData.getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
+        pwl.close();
     }
 }

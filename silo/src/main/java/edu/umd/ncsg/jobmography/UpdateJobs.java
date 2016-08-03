@@ -23,14 +23,14 @@ import com.pb.sawdust.util.concurrent.IteratorAction;
  * Revised on 11 March 2014 in College Park, MD
  **/
 
-public class updateJobs {
+public class UpdateJobs {
 
-    protected transient Logger logger = Logger.getLogger(updateJobs.class);
+    protected transient Logger logger = Logger.getLogger(UpdateJobs.class);
     protected static final String PROPERTIES_EMPLOYMENT_FORECAST     = "interpol.empl.forecast";
     private ResourceBundle rb;
     private HashMap<String, int[]> jobsAvailableForRemoval;
 
-    public updateJobs(ResourceBundle rb) {
+    public UpdateJobs(ResourceBundle rb) {
         this.rb = rb;
     }
 
@@ -47,7 +47,7 @@ public class updateJobs {
 //        }
 //
 //        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/employmentForecast/";
-//        String forecastFileName = dir + rb.getString(PROPERTIES_EMPLOYMENT_FORECAST) + year + ".csv";
+//        String forecastFileName = dir + rbLandUse.getString(PROPERTIES_EMPLOYMENT_FORECAST) + year + ".csv";
 //        TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 //        for (int row = 1; row <= forecast.getRowCount(); row++) {
 //            int zone = (int) forecast.getValueAt(row, "zone");
