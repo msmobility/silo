@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.core.config.Config;
 
 import com.pb.common.datafile.TableDataSet;
@@ -315,16 +316,16 @@ public class SiloModel {
                 }
             }
             
-            if (true) {
+            
+            final String property = ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL);
+            logger.warn("transport model=" + property );
+		if (property.equals("MATSim") ) {
             	TransportModel = new MatsimTransportModel(householdData, acc, rb, matsimConfig);
+            } else if (property.equals("MSTM") ) {
+            	TransportModel = new transportModel(rb);
+            } else {
+            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
             }
-//            if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MATSim") {
-//            	TransportModel = new MatsimTransportModel(householdData, acc, rb, matsimConfig);
-//            } else if (ResourceUtil.getProperty(rb, PROPERTIES_TRANSPORT_MODEL) == "MSTM") {
-//            	TransportModel = new transportModel(rb);
-//            } else {
-//            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
-//            }
             
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
