@@ -69,7 +69,7 @@ public class SiloUtil {
         File propFile = new File(resourceBundleNames[0]);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        siloTravelPropertiesFile = resourceBundleNames[1];
+        if (resourceBundleNames.length > 1) siloTravelPropertiesFile = resourceBundleNames[1];
 
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
