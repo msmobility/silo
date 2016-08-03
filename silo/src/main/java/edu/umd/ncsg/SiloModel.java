@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.core.config.Config;
 
 import com.pb.common.datafile.TableDataSet;
@@ -289,9 +290,15 @@ private Config matsimConfig;
             TransportModelI TransportModel ;
             // this shadows a global definition, not sure if that is intended ... kai, aug'16
 
-            if (ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL).equals("MATSim") ) {
+            
+            final String tmProperty = ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL);
+            Log.info("transport model=" + tmProperty );
+            if ( tmProperty==null ) {
+            	// this should be the backwards compatibility case, but I can't test it since it is not working up to here. kai, aug'16
+            	TransportModel = new TravelDemandModel(rbLandUse);
+            } else if ("MATSim".equals(tmProperty) ) {
             	TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
-            } else if (ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL).equals("MSTM") ) {
+            } else if ("MSTM".equals(tmProperty) ) {
             	TransportModel = new TravelDemandModel(rbLandUse);
             } else {
             	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
