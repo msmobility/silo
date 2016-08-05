@@ -11,10 +11,22 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
-        <configuration>
-          <source/>
-          <target/>
-        </configuration>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<showWarnings>false</showWarnings>
+					<showDeprecation>false</showDeprecation>
+					<encoding>UTF-8</encoding>
+					<!-- configure initial and maximal memory for compiling -->
+					<fork>true</fork>
+					<meminitial>128m</meminitial>
+					<maxmem>512m</maxmem>
+					<compilerArguments>
+						<Xmaxwarns>4000</Xmaxwarns>
+						<Xmaxerrs>100</Xmaxerrs>
+					</compilerArguments>
+				</configuration>
+
       </plugin>
     </plugins>
   </build>

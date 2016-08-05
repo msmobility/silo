@@ -181,7 +181,9 @@ public class SiloMatsimTest {
 		{
 			log.info("checking MATSim plans file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./test_reduced_2001.0.plans.xml.gz");
+			log.info("checksum_ref=" + checksum_ref ) ;
 			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/test_reduced_2001/ITERS/it.0/test_reduced_2001.0.plans.xml.gz");
+			log.info("checksum_ref=" + checksum_run ) ;
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}{
 			log.info("checking MATSim events file ...");
