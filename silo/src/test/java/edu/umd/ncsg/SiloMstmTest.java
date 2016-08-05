@@ -10,6 +10,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.core.utils.io.IOUtils;
 
+import com.igormaznitsa.jute.annotations.JUteTest;
+
 public class SiloMstmTest {
 	@Rule
 	public MatsimTestUtils utils = new MatsimTestUtils();
@@ -40,6 +42,7 @@ public class SiloMstmTest {
 	 * This test does NOT test MSTM, despite the name: transport.model.years is set to -1, effectively ignoring the transport model.
 	 */
 	@Test
+	@JUteTest
 	public final void testMainReduced() {
 		// yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
 		

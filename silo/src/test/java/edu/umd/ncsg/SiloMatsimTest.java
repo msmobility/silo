@@ -13,6 +13,8 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
+import com.igormaznitsa.jute.annotations.JUteTest;
+
 import jxl.common.Logger;
 
 public class SiloMatsimTest {
@@ -143,6 +145,7 @@ public class SiloMatsimTest {
 	 */
 //	@Ignore
 	@Test
+	@JUteTest
 	public final void testMainReduced() {
 		SiloMstmTest.cleanUp();
 
