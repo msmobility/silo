@@ -4,11 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class SiloMstmTest {
+	private static final Logger log = Logger.getLogger(SiloMstmTest.class) ;
+	
 	@Rule
 	public MatsimTestUtils utils = new MatsimTestUtils();
 	
@@ -23,6 +26,7 @@ public class SiloMstmTest {
 
 
 	public static void cleanUp() {
+		log.info("cleaning up ...");
 		new File(filename_dd).delete() ;
 		new File(filename_hh).delete() ;
 		new File(filename_jj).delete() ;
@@ -31,6 +35,8 @@ public class SiloMstmTest {
 		new File(filename_a1).delete() ;
 		new File(filename_gi).delete() ;
 		new File(filename_st).delete() ;
+		new File("timeTracker.csv").delete();
+		new File("priceUpdate2000.csv").delete();
 	}
 
 	

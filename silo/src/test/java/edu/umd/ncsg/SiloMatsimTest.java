@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -12,8 +13,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
-
-import jxl.common.Logger;
 
 public class SiloMatsimTest {
 	private static final Logger log = Logger.getLogger(SiloMatsimTest.class);
@@ -157,9 +156,9 @@ public class SiloMatsimTest {
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
 
-		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
 
 		try {
+			SiloMatsim siloMatsim = new SiloMatsim(args, config );		
 			siloMatsim.run();
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
