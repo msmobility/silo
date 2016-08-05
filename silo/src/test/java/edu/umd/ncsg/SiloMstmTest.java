@@ -1,16 +1,12 @@
 package edu.umd.ncsg;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.matsim.core.utils.io.IOUtils;
-
-import com.igormaznitsa.jute.annotations.JUteTest;
 
 public class SiloMstmTest {
 	@Rule
@@ -42,7 +38,6 @@ public class SiloMstmTest {
 	 * This test does NOT test MSTM, despite the name: transport.model.years is set to -1, effectively ignoring the transport model.
 	 */
 	@Test
-	@JUteTest
 	public final void testMainReduced() {
 		// yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
 		
