@@ -2,12 +2,15 @@ package edu.umd.ncsg;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.utils.io.IOUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import jxl.common.Logger;
@@ -31,6 +34,8 @@ public class SiloMatsimTest {
 	@Test
 	@Ignore
 	public final void testMainAnnapolis() {
+		SiloMstmTest.cleanUp();
+		
 		String[] args = {"./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis/matsim/config.xml" ) ;
@@ -139,6 +144,8 @@ public class SiloMatsimTest {
 //	@Ignore
 	@Test
 	public final void testMainReduced() {
+		SiloMstmTest.cleanUp();
+
 		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis_reduced/matsim/config.xml" ) ;
@@ -161,23 +168,35 @@ public class SiloMatsimTest {
 		{
 			log.info("checking dwellings file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
-			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv");
+			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Dwelling files are different",  checksum_ref, checksum_run);
+			// clean up: 
+			new File( filename ).delete() ;
 		}{
 			log.info("checking households file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
-			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv");
+			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Household files are different",  checksum_ref, checksum_run);
+			// clean up: 
+			new File( filename ).delete() ;
 		}{
 			log.info("checking jobs file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
-			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv");
+			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Job files are different",  checksum_ref, checksum_run);
+			// clean up: 
+			new File( filename ).delete() ;
 		}{
 			log.info("checking SILO population file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
-			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv");
+			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Population files are different",  checksum_ref, checksum_run);
+			// clean up: 
+			new File( filename ).delete() ;
 		}
 		{
 			log.info("checking MATSim plans file ...");
@@ -192,5 +211,11 @@ public class SiloMatsimTest {
 		}
 		
 		// TODO Consider checking accessibilites (currently stored in "testing" directory)
+		
+		// clean up after yourself: 
+		File dir = new File( utils.getOutputDirectory() ) ;
+		IOUtils.deleteDirectory(dir);
+		
+		SiloMstmTest.cleanUp(); 
 	}
 }
