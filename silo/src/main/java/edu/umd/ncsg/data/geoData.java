@@ -73,8 +73,46 @@ public class geoData {
         regionList = SiloUtil.idendifyUniqueValues(regDef.getColumnAsInt("Region"));
         regionIndex = SiloUtil.createIndexArray(regionList);
         regDef.buildIndex(regDef.getColumnPosition("ZoneId"));
-    }
 
+        // read school quality
+        String sqFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ZONAL_SCHOOL_QUALITY_INDEX);
+        TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
+        zonalSchoolQuality = new float[zones.length];
+        for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
+            int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
+            zonalSchoolQuality[zoneIndex[taz]] = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
+        }
+        regionalSchoolQuality = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            regionalSchoolQuality[reg] += getZonalSchoolQuality(zone);
+        }
+        for (int region: regionList)
+            regionalSchoolQuality[region] = regionalSchoolQuality[region] / regionDefinition.get(region).length;
+
+        // create list of county FIPS codes
+        counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("COUNTYFIPS"));
+        countyIndex = SiloUtil.createIndexArray(counties);
+
+        // read county-level crime data
+        countyCrimeRate = new float[counties.length];
+        String crimeFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_COUNTY_CRIME_INDEX);
+        TableDataSet tblCrimeIndex = SiloUtil.readCSVfile(crimeFileName);
+        for (int row = 1; row <= tblCrimeIndex.getRowCount(); row++) {
+            int county = (int) tblCrimeIndex.getValueAt(row, "FIPS");
+            countyCrimeRate[countyIndex[county]] = tblCrimeIndex.getValueAt(row, "CrimeIndicator");
+        }
+        regionalCrimeRate = new float[SiloUtil.getHighestVal(regionList) + 1];
+        float[] regionalArea = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            int fips = getCountyOfZone(zone);
+            regionalCrimeRate[reg] += countyCrimeRate[countyIndex[fips]] * getSizeOfZoneInAcres(zone);  // weight by bedrooms
+            regionalArea[reg] += getSizeOfZoneInAcres(zone);
+        }
+        for (int region: regionList)
+            regionalCrimeRate[region] = regionalCrimeRate[region] / regionalArea[region];
+    }
 
     public static int getHighestZonalId () {
         // return highest zone ID
