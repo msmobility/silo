@@ -36,6 +36,7 @@ public class SiloMatsimTest {
 		String[] args = {"./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis/matsim/config.xml" ) ;
+		config.controler().setOutputDirectory( utils.getOutputDirectory() ) ;
 		
 		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
 		config.global().setNumberOfThreads(1);
@@ -70,12 +71,12 @@ public class SiloMatsimTest {
 //		}
 		{
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./regression_test_2001.0.plans.xml.gz");
-			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
+			long checksum_run = CRCChecksum.getCRCFromFile( utils.getOutputDirectory() + "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.plans.xml.gz");
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}
 		
 		final String eventsFilenameReference = utils.getInputDirectory() + "./regression_test_2001.0.events.xml.gz";
-		final String eventsFilenameNew = "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
+		final String eventsFilenameNew = utils.getOutputDirectory() + "./matsimOutput/regression_test_2001/ITERS/it.0/regression_test_2001.0.events.xml.gz";
 		assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 	}
 
