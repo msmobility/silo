@@ -1,12 +1,9 @@
 package edu.umd.ncsg;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.matsim.core.utils.misc.CRCChecksum;
 
 public class SiloMstmTest {
 	@Rule

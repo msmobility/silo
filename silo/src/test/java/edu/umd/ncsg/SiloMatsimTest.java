@@ -2,14 +2,12 @@ package edu.umd.ncsg;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jfree.util.Log;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import jxl.common.Logger;
