@@ -142,6 +142,8 @@ public class SiloMatsimTest {
 		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties"}; 
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis_reduced/matsim/config.xml" ) ;
+
+		config.controler().setOutputDirectory(utils.getOutputDirectory() );
 		
 		// reduce number of threads to be on safe side in test (at least until it does not fail any more):
 		config.global().setNumberOfThreads(1);
@@ -156,38 +158,36 @@ public class SiloMatsimTest {
 			ee.printStackTrace();
 			Assert.fail( "something did not work" ) ;
 		}
-//		{
-//			log.info("checking dwellings file ...");
-//			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
-//			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv");
-//			assertEquals("Dwelling files are different",  checksum_ref, checksum_run);
-//		}{
-//			log.info("checking households file ...");
-//			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
-//			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv");
-//			assertEquals("Household files are different",  checksum_ref, checksum_run);
-//		}{
-//			log.info("checking jobs file ...");
-//			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
-//			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv");
-//			assertEquals("Job files are different",  checksum_ref, checksum_run);
-//		}{
-//			log.info("checking SILO population file ...");
-//			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
-//			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv");
-//			assertEquals("Population files are different",  checksum_ref, checksum_run);
-//		}
+		{
+			log.info("checking dwellings file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./dd_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv");
+			assertEquals("Dwelling files are different",  checksum_ref, checksum_run);
+		}{
+			log.info("checking households file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./hh_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv");
+			assertEquals("Household files are different",  checksum_ref, checksum_run);
+		}{
+			log.info("checking jobs file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./jj_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv");
+			assertEquals("Job files are different",  checksum_ref, checksum_run);
+		}{
+			log.info("checking SILO population file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./pp_2001.csv");
+			long checksum_run = CRCChecksum.getCRCFromFile("./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv");
+			assertEquals("Population files are different",  checksum_ref, checksum_run);
+		}
 		{
 			log.info("checking MATSim plans file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./test_reduced_2001.0.plans.xml.gz");
-			log.info("checksum_ref=" + checksum_ref ) ;
-			long checksum_run = CRCChecksum.getCRCFromFile("./matsimOutput/test_reduced_2001/ITERS/it.0/test_reduced_2001.0.plans.xml.gz");
-			log.info("checksum_ref=" + checksum_run ) ;
+			long checksum_run = CRCChecksum.getCRCFromFile(utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.plans.xml.gz");
 			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}{
 			log.info("checking MATSim events file ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "./test_reduced_2001.0.events.xml.gz";
-			final String eventsFilenameNew = "./matsimOutput/test_reduced_2001/ITERS/it.0/test_reduced_2001.0.events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.events.xml.gz";
 			assertEquals("different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 		}
 		
