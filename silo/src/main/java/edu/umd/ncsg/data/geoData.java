@@ -175,9 +175,7 @@ public class geoData {
     }
 
     public static float getRegionalSchoolQuality (int region) {
-	    logger.fatal("I have no idea how this is ever supposed to work since that array is never initialized.  Returning 0 for the time being to be able to continue.  kai, aug'16");
-//	    return regionalSchoolQuality[region];
-	    return 0.f ;
+	    return regionalSchoolQuality[region];
     }
 
     public static float getCountyCrimeRate (int fips) {

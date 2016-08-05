@@ -294,11 +294,11 @@ private Config matsimConfig;
             final String tmProperty = ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL);
             Log.info("transport model=" + tmProperty );
             if ( tmProperty==null ) {
-            	// this should be the backwards compatibility case, but I can't test it since it is not working up to here. kai, aug'16
-            	TransportModel = new TravelDemandModel(rbLandUse);
+            	// if no transport input files, then don't create a model at all
+            	TransportModel = null;
             } else if ("MATSim".equals(tmProperty) ) {
             	TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
-            } else if ("MSTM".equals(tmProperty) ) {
+            } else if ("Munich".equals(tmProperty) ) {
             	TransportModel = new TravelDemandModel(rbLandUse);
             } else {
             	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
@@ -312,7 +312,7 @@ private Config matsimConfig;
                 if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
                     TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
                 	// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
-                // _AFTER_ the transport model?  kai, aug'16
+                // _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
             }
 
             if (trackTime) startTime = System.currentTimeMillis();

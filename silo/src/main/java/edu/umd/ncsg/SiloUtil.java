@@ -37,6 +37,7 @@ public class SiloUtil {
     public static final String PROPERTIES_GREGORIAN_ITERATOR                = "this.gregorian.iterator";
     public static final String PROPERTIES_INCOME_BRACKETS                   = "income.brackets.hh.types";
     public static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
+    public static final String RUN_TRANSPORT_DEMAND_MODEL = "run.travel.demand.model";
 
     public static String baseDirectory;
     public static String scenarioName;
@@ -69,7 +70,7 @@ public class SiloUtil {
         File propFile = new File(resourceBundleNames[0]);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        if (resourceBundleNames.length > 1) siloTravelPropertiesFile = resourceBundleNames[1];
+        if (ResourceUtil.getBooleanProperty(rb, RUN_TRANSPORT_DEMAND_MODEL, false)) siloTravelPropertiesFile = resourceBundleNames[1];
 
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
