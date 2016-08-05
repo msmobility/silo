@@ -26,7 +26,7 @@ import java.util.Random;
 import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
 import edu.umd.ncsg.data.*;
 import edu.umd.ncsg.events.IssueCounter;
-import edu.umd.ncsg.jobmography.updateJobs;
+import edu.umd.ncsg.jobmography.UpdateJobs;
 import edu.umd.ncsg.realEstate.*;
 import edu.umd.ncsg.relocation.InOutMigration;
 import edu.umd.ncsg.relocation.MovesModel;
@@ -90,11 +90,12 @@ public class SiloModel {
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
     private TravelDemandModel TransportModel;
-    private updateJobs updateJobs;
+    private UpdateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
     private boolean trackTime;
     private long[][] timeCounter;
+    private SiloModelContainer modelContainer;
 
     /**
      * Constructor to set up a SILO model
@@ -120,46 +121,10 @@ public class SiloModel {
         int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
-        // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse);
-        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
-        JobDataManager jobData = new JobDataManager(rbLandUse);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
-            householdData.connectPersonsToHouseholds();
-            householdData.setTypeOfAllHouseholds();
-        }
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        setOldLocalModelVariables();
 
-        jobData.updateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.readLandUse();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
 
-        logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(rbLandUse);
-        BirthModel birth = new BirthModel(rbLandUse);
-        LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
-        MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
-//        summarizeData.summarizeAutoOwnershipByCounty();
-
-        MovesModel move = new MovesModel(rbLandUse);
-        InOutMigration iomig = new InOutMigration(rbLandUse);
-        ConstructionModel cons = new ConstructionModel(rbLandUse);
-        RenovationModel renov = new RenovationModel(rbLandUse);
-        DemolitionModel demol = new DemolitionModel(rbLandUse);
-        PricingModel prm = new PricingModel(rbLandUse);
-        updateJobs updateJobs = new updateJobs(rbLandUse);
-        AutoOwnershipModel aoModel = new AutoOwnershipModel(rbLandUse);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -338,6 +303,31 @@ public class SiloModel {
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
 
+    private void setOldLocalModelVariables() {
+        // read micro data
+        realEstateData = modelContainer.getRealEstateData();
+        householdData = modelContainer.getHouseholdData();
+        jobData = modelContainer.getJobData();
+
+        death = modelContainer.getDeath();
+        birth = modelContainer.getBirth();
+        lph = modelContainer.getLph();
+        mardiv = modelContainer.getMardiv();
+        changeEmployment = modelContainer.getChangeEmployment();
+        acc = modelContainer.getAcc();
+//        summarizeData.summarizeAutoOwnershipByCounty();
+
+        move = modelContainer.getMove();
+        iomig = modelContainer.getIomig();
+        cons = modelContainer.getCons();
+        renov = modelContainer.getRenov();
+        demol = modelContainer.getDemol();
+        prm = modelContainer.getPrm();
+        updateJobs = modelContainer.getUpdateJobs();
+        aoModel = modelContainer.getAoModel();
+        ddOverwrite = modelContainer.getDdOverwrite();
+    }
+
 
     public void initialize() {
         // initial steps that only need to performed once to set up the model
@@ -350,45 +340,8 @@ public class SiloModel {
         skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
         // read micro data
-        realEstateData = new RealEstateDataManager(rbLandUse);
-        householdData = new HouseholdDataManager(rbLandUse);
-        jobData = new JobDataManager(rbLandUse);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
-            householdData.connectPersonsToHouseholds();
-            householdData.setTypeOfAllHouseholds();
-        }
-
-        jobData.updateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.readLandUse();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
-
-        logger.info("Creating UEC Models");
-        death = new DeathModel(rbLandUse);
-        birth = new BirthModel(rbLandUse);
-        lph = new LeaveParentHhModel(rbLandUse);
-        mardiv = new MarryDivorceModel(rbLandUse);
-        changeEmployment = new ChangeEmploymentModel();
-        acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
-//        summarizeData.summarizeAutoOwnershipByCounty();
-
-        move = new MovesModel(rbLandUse);
-        iomig = new InOutMigration(rbLandUse);
-        cons = new ConstructionModel(rbLandUse);
-        renov = new RenovationModel(rbLandUse);
-        demol = new DemolitionModel(rbLandUse);
-        prm = new PricingModel(rbLandUse);
-        updateJobs = new updateJobs(rbLandUse);
-        aoModel = new AutoOwnershipModel(rbLandUse);
-        ddOverwrite = new ConstructionOverwrite(rbLandUse);
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        setOldLocalModelVariables();
 
         trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];

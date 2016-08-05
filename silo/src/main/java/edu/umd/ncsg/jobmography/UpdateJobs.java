@@ -23,14 +23,14 @@ import com.pb.sawdust.util.concurrent.IteratorAction;
  * Revised on 11 March 2014 in College Park, MD
  **/
 
-public class updateJobs {
+public class UpdateJobs {
 
-    protected transient Logger logger = Logger.getLogger(updateJobs.class);
+    protected transient Logger logger = Logger.getLogger(UpdateJobs.class);
     protected static final String PROPERTIES_EMPLOYMENT_FORECAST     = "interpol.empl.forecast";
     private ResourceBundle rb;
     private HashMap<String, int[]> jobsAvailableForRemoval;
 
-    public updateJobs(ResourceBundle rb) {
+    public UpdateJobs(ResourceBundle rb) {
         this.rb = rb;
     }
 
