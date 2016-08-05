@@ -1,3 +1,9 @@
 language: java
-install: mvn clean install
-script: mvn test
+jdk:
+  - oraclejdk8
+script: mvn test -Dhdf5lib-absolute-path=`pwd`/silo/lib/linux64/libjhdf5.so --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
+env:
+  global:
+    - export MAVEN_OPTS="-Xmx2500m"
+
+#-Dmaven.test.redirectTestOutputToFile 

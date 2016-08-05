@@ -17,3 +17,8 @@ A possibility is
     --> Native library location 
     --> Edit ... 
     --> add "silo/lib/macosx64" or whatever you need for your operating system
+    
+-----
+
+For a full step-by-step guide of the overall setup, pelase see "SILO-MATSim_Installation.docx" in this directory
+
