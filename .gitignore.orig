@@ -1,0 +1,15 @@
+.idea/workspace.xml
+out
+/.classpath
+/.project
+/bin/
+/.settings/
+/target/
+<<<<<<< HEAD
+.idea/
+*.iml
+lib/
+||||||| merged common ancestors
+=======
+/Makefile
+>>>>>>> siloMatsim
