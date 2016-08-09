@@ -24,7 +24,6 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
 import org.matsim.core.config.Config;
 
 import com.pb.common.datafile.TableDataSet;
@@ -70,10 +69,14 @@ public class SiloModel {
     private ResourceBundle rbLandUse;
     public static Random rand;
 
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
+
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
+    public static final String PROPERTIES_RUN_TRANSPORT_DEMAND_MODEL = "run.travel.demand.model";
+    public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM = "matsim.run.travel.model";
+
     public static final String PROPERTIES_TRACK_TIME                        = "track.time";
     public static final String PROPERTIES_TRACK_TIME_FILE                   = "track.time.file";
     
@@ -87,8 +90,6 @@ public class SiloModel {
 
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
-
-    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model";
 
     private int[] scalingYears;
     private int currentYear;
@@ -287,32 +288,38 @@ private Config matsimConfig;
                 }
             }
 
-            TransportModelI TransportModel ;
-            // this shadows a global definition, not sure if that is intended ... kai, aug'16
+            {
+                  TransportModelI TransportModel ;
+                  // this shadows a global definition, not sure if that is intended ... kai, aug'16
 
-            
-            final String tmProperty = ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL);
-            Log.info("transport model=" + tmProperty );
-            if ( tmProperty==null ) {
-            	// if no transport input files, then don't create a model at all
-            	TransportModel = null;
-            } else if ("MATSim".equals(tmProperty) ) {
-            	TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
-            } else if ("Munich".equals(tmProperty) ) {
-            	TransportModel = new TravelDemandModel(rbLandUse);
-            } else {
-            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
-            }
+            	final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse,  PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
+            	final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
+            	final boolean createMstmOutputFiles = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true);
+            	
+            	if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
+            		throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent" ) ;
+            	}
 
-            
-            int nextYearForTransportModel = year + 1;
-            if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-                if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false))
-                    TransportModel.runTransportModel(nextYearForTransportModel);
-                if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
-                    TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
-                	// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
-                // _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
+            	if ( runMatsim ) {
+            		logger.info("using MATSim as transport model") ;
+            		TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
+            		int nextYearForTransportModel = year + 1;
+            		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+            			TransportModel.runTransportModel(nextYearForTransportModel);
+            		}
+            	} else if ( runTravelDemandModel || createMstmOutputFiles ) {
+            		TransportModel = new TravelDemandModel(rbLandUse);
+            		int nextYearForTransportModel = year + 1;
+            		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+            			if (runTravelDemandModel)
+            				TransportModel.runTransportModel(nextYearForTransportModel);
+            			if (createMstmOutputFiles)
+            				TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
+            			// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
+            			// _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
+            		}
+            	} 
+
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
