@@ -1,0 +1,7 @@
+based on
+"osm/md_and_surroundings.osm.bz2"
+
+01	osm-based matsim xml network with default
+02	secondary/tertiary link with same settings as secondary/tertiary
+03	thinner network; only down to tertiary
+04	like 03, but with secondary/tertiary links included

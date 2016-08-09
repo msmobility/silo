@@ -3,9 +3,12 @@ package edu.umd.ncsg.data;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SiloUtil;
+import jxl.common.Logger;
 
 import java.util.HashMap;
 import java.util.ResourceBundle;
+
+import org.matsim.core.gbl.Gbl;
 
 /**
  * Zonal, county and regional data used by the SILO Model
@@ -14,6 +17,7 @@ import java.util.ResourceBundle;
  **/
 
 public class geoData {
+	private static final Logger logger = Logger.getLogger(geoData.class);
 
     protected static final String PROPERTIES_ZONAL_DATA_FILE                   = "zonal.data.file";
     protected static final String PROPERTIES_ZONAL_SCHOOL_QUALITY_INDEX        = "school.quality.index";
@@ -73,8 +77,46 @@ public class geoData {
         regionList = SiloUtil.idendifyUniqueValues(regDef.getColumnAsInt("Region"));
         regionIndex = SiloUtil.createIndexArray(regionList);
         regDef.buildIndex(regDef.getColumnPosition("ZoneId"));
-    }
 
+        // read school quality
+        String sqFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ZONAL_SCHOOL_QUALITY_INDEX);
+        TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
+        zonalSchoolQuality = new float[zones.length];
+        for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
+            int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
+            zonalSchoolQuality[zoneIndex[taz]] = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
+        }
+        regionalSchoolQuality = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            regionalSchoolQuality[reg] += getZonalSchoolQuality(zone);
+        }
+        for (int region: regionList)
+            regionalSchoolQuality[region] = regionalSchoolQuality[region] / regionDefinition.get(region).length;
+
+        // create list of county FIPS codes
+        counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("COUNTYFIPS"));
+        countyIndex = SiloUtil.createIndexArray(counties);
+
+        // read county-level crime data
+        countyCrimeRate = new float[counties.length];
+        String crimeFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_COUNTY_CRIME_INDEX);
+        TableDataSet tblCrimeIndex = SiloUtil.readCSVfile(crimeFileName);
+        for (int row = 1; row <= tblCrimeIndex.getRowCount(); row++) {
+            int county = (int) tblCrimeIndex.getValueAt(row, "FIPS");
+            countyCrimeRate[countyIndex[county]] = tblCrimeIndex.getValueAt(row, "CrimeIndicator");
+        }
+        regionalCrimeRate = new float[SiloUtil.getHighestVal(regionList) + 1];
+        float[] regionalArea = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            int fips = getCountyOfZone(zone);
+            regionalCrimeRate[reg] += countyCrimeRate[countyIndex[fips]] * getSizeOfZoneInAcres(zone);  // weight by bedrooms
+            regionalArea[reg] += getSizeOfZoneInAcres(zone);
+        }
+        for (int region: regionList)
+            regionalCrimeRate[region] = regionalCrimeRate[region] / regionalArea[region];
+    }
 
     public static int getHighestZonalId () {
         // return highest zone ID
@@ -133,7 +175,7 @@ public class geoData {
     }
 
     public static float getRegionalSchoolQuality (int region) {
-        return regionalSchoolQuality[region];
+	    return regionalSchoolQuality[region];
     }
 
     public static float getCountyCrimeRate (int fips) {

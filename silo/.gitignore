@@ -2,3 +2,8 @@
 /.settings/
 /.classpath
 /.project
+/event-performance.log
+/event.log
+/priceUpdate2000.csv
+/timeTracker.csv
+/matsimOutput/

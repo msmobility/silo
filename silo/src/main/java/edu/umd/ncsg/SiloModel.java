@@ -20,26 +20,44 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 import java.util.Random;
-
-import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
-import edu.umd.ncsg.data.*;
-import edu.umd.ncsg.events.IssueCounter;
-import edu.umd.ncsg.jobmography.updateJobs;
-import edu.umd.ncsg.realEstate.*;
-import edu.umd.ncsg.relocation.InOutMigration;
-import edu.umd.ncsg.relocation.MovesModel;
-import edu.umd.ncsg.transportModel.TravelDemandModel;
-import edu.umd.ncsg.utils.CblcmDiffGenerator;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.matsim.core.config.Config;
 
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
-import edu.umd.ncsg.demography.*;
+import com.pb.common.util.ResourceUtil;
+
+import edu.umd.ncsg.autoOwnership.AutoOwnershipModel;
+import edu.umd.ncsg.data.Accessibility;
+import edu.umd.ncsg.data.Dwelling;
+import edu.umd.ncsg.data.HouseholdDataManager;
+import edu.umd.ncsg.data.JobDataManager;
+import edu.umd.ncsg.data.RealEstateDataManager;
+import edu.umd.ncsg.data.summarizeData;
+import edu.umd.ncsg.data.summarizeDataCblcm;
+import edu.umd.ncsg.demography.BirthModel;
+import edu.umd.ncsg.demography.ChangeEmploymentModel;
+import edu.umd.ncsg.demography.DeathModel;
+import edu.umd.ncsg.demography.LeaveParentHhModel;
+import edu.umd.ncsg.demography.MarryDivorceModel;
 import edu.umd.ncsg.events.EventManager;
 import edu.umd.ncsg.events.EventTypes;
+import edu.umd.ncsg.events.IssueCounter;
+import edu.umd.ncsg.jobmography.UpdateJobs;
+import edu.umd.ncsg.realEstate.ConstructionModel;
+import edu.umd.ncsg.realEstate.ConstructionOverwrite;
+import edu.umd.ncsg.realEstate.DemolitionModel;
+import edu.umd.ncsg.realEstate.PricingModel;
+import edu.umd.ncsg.realEstate.RenovationModel;
+import edu.umd.ncsg.relocation.InOutMigration;
+import edu.umd.ncsg.relocation.MovesModel;
+import edu.umd.ncsg.transportModel.MatsimTransportModel;
+import edu.umd.ncsg.transportModel.TransportModelI;
+import edu.umd.ncsg.transportModel.TravelDemandModel;
+import edu.umd.ncsg.utils.CblcmDiffGenerator;
 
 /**
  * @author Greg Erhardt 
@@ -70,6 +88,8 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
 
+    protected static final String PROPERTIES_TRANSPORT_MODEL	           = "transport.model";
+
     private int[] scalingYears;
     private int currentYear;
     private HouseholdDataManager householdData;
@@ -90,11 +110,14 @@ public class SiloModel {
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
     private TravelDemandModel TransportModel;
-    private updateJobs updateJobs;
+    private UpdateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
     private boolean trackTime;
     private long[][] timeCounter;
+    private SiloModelContainer modelContainer;
+
+private Config matsimConfig;
 
     /**
      * Constructor to set up a SILO model
@@ -120,53 +143,16 @@ public class SiloModel {
         int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
-        // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse);
-        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
-        JobDataManager jobData = new JobDataManager(rbLandUse);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
-            householdData.connectPersonsToHouseholds();
-            householdData.setTypeOfAllHouseholds();
-        }
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        setOldLocalModelVariables();
 
-        jobData.updateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.readLandUse();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
 
-        logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(rbLandUse);
-        BirthModel birth = new BirthModel(rbLandUse);
-        LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
-        MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
-//        summarizeData.summarizeAutoOwnershipByCounty();
-
-        MovesModel move = new MovesModel(rbLandUse);
-        InOutMigration iomig = new InOutMigration(rbLandUse);
-        ConstructionModel cons = new ConstructionModel(rbLandUse);
-        RenovationModel renov = new RenovationModel(rbLandUse);
-        DemolitionModel demol = new DemolitionModel(rbLandUse);
-        PricingModel prm = new PricingModel(rbLandUse);
-        updateJobs updateJobs = new updateJobs(rbLandUse);
-        AutoOwnershipModel aoModel = new AutoOwnershipModel(rbLandUse);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         long startTime = 0;
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TravelDemandModel TransportModel = new TravelDemandModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
 
@@ -301,12 +287,32 @@ public class SiloModel {
                 }
             }
 
+            TransportModelI TransportModel ;
+            // this shadows a global definition, not sure if that is intended ... kai, aug'16
+
+            
+            final String tmProperty = ResourceUtil.getProperty(rbLandUse, PROPERTIES_TRANSPORT_MODEL);
+            Log.info("transport model=" + tmProperty );
+            if ( tmProperty==null ) {
+            	// if no transport input files, then don't create a model at all
+            	TransportModel = null;
+            } else if ("MATSim".equals(tmProperty) ) {
+            	TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
+            } else if ("Munich".equals(tmProperty) ) {
+            	TransportModel = new TravelDemandModel(rbLandUse);
+            } else {
+            	throw new IllegalArgumentException("Not implemented for transport models other than MSTM or MATSim.");
+            }
+
+            
             int nextYearForTransportModel = year + 1;
             if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                 if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false))
                     TransportModel.runTransportModel(nextYearForTransportModel);
                 if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
                     TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
+                	// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
+                // _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
@@ -338,6 +344,31 @@ public class SiloModel {
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
 
+    private void setOldLocalModelVariables() {
+        // read micro data
+        realEstateData = modelContainer.getRealEstateData();
+        householdData = modelContainer.getHouseholdData();
+        jobData = modelContainer.getJobData();
+
+        death = modelContainer.getDeath();
+        birth = modelContainer.getBirth();
+        lph = modelContainer.getLph();
+        mardiv = modelContainer.getMardiv();
+        changeEmployment = modelContainer.getChangeEmployment();
+        acc = modelContainer.getAcc();
+//        summarizeData.summarizeAutoOwnershipByCounty();
+
+        move = modelContainer.getMove();
+        iomig = modelContainer.getIomig();
+        cons = modelContainer.getCons();
+        renov = modelContainer.getRenov();
+        demol = modelContainer.getDemol();
+        prm = modelContainer.getPrm();
+        updateJobs = modelContainer.getUpdateJobs();
+        aoModel = modelContainer.getAoModel();
+        ddOverwrite = modelContainer.getDdOverwrite();
+    }
+
 
     public void initialize() {
         // initial steps that only need to performed once to set up the model
@@ -350,45 +381,8 @@ public class SiloModel {
         skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
         // read micro data
-        realEstateData = new RealEstateDataManager(rbLandUse);
-        householdData = new HouseholdDataManager(rbLandUse);
-        jobData = new JobDataManager(rbLandUse);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
-            householdData.connectPersonsToHouseholds();
-            householdData.setTypeOfAllHouseholds();
-        }
-
-        jobData.updateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.readLandUse();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
-
-        logger.info("Creating UEC Models");
-        death = new DeathModel(rbLandUse);
-        birth = new BirthModel(rbLandUse);
-        lph = new LeaveParentHhModel(rbLandUse);
-        mardiv = new MarryDivorceModel(rbLandUse);
-        changeEmployment = new ChangeEmploymentModel();
-        acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
-//        summarizeData.summarizeAutoOwnershipByCounty();
-
-        move = new MovesModel(rbLandUse);
-        iomig = new InOutMigration(rbLandUse);
-        cons = new ConstructionModel(rbLandUse);
-        renov = new RenovationModel(rbLandUse);
-        demol = new DemolitionModel(rbLandUse);
-        prm = new PricingModel(rbLandUse);
-        updateJobs = new updateJobs(rbLandUse);
-        aoModel = new AutoOwnershipModel(rbLandUse);
-        ddOverwrite = new ConstructionOverwrite(rbLandUse);
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        setOldLocalModelVariables();
 
         trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -702,6 +696,11 @@ public class SiloModel {
         }
         pw.close();
     }
+
+
+public void setMatsimConfig(Config matsimConfig) {
+	this.matsimConfig=matsimConfig ;
+}
 
 
 //    private void summarizeRentAndIncome () {

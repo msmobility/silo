@@ -399,7 +399,10 @@ public class RealEstateDataManager {
                 line = line.concat("," + rentByIncome[i][r]);
                 countThisIncome += rentByIncome[i][r];
             }
-            line = line.concat("," + rents[i] / countThisIncome);
+            if (countThisIncome != 0) { // new dz, avoid dividing by zero
+            	// TODO check what happens by leaving this out... the error is avoided
+            	line = line.concat("," + rents[i] / countThisIncome);
+            }
             summarizeData.resultFile(line);
         }
     }

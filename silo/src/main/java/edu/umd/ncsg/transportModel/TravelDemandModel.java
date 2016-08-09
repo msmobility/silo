@@ -21,7 +21,7 @@ import java.util.ResourceBundle;
  * Revised on 6 May 2016 in Munich, Germany
  **/
 
-public class TravelDemandModel {
+public class TravelDemandModel implements TransportModelI {
 
     static Logger logger = Logger.getLogger(TravelDemandModel.class);
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
@@ -42,7 +42,7 @@ public class TravelDemandModel {
         this.rbTravel = ResourceUtil.getPropertyBundle(propFile);
     }
 
-
+    @Override
     public void runTransportModel (int year) {
         // run travel demand model
 
@@ -110,7 +110,7 @@ public class TravelDemandModel {
 
 
 
-
+    @Override
     public void writeOutSocioEconomicDataForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 

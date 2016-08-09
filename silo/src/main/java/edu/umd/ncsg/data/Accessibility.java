@@ -1,14 +1,24 @@
 package edu.umd.ncsg.data;
 
+import java.io.File;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.matsim.core.utils.collections.Tuple;
+
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.MatrixType;
+import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
+
 import edu.umd.ncsg.SiloUtil;
+import edu.umd.ncsg.transportModel.CSVFileWriter;
+import edu.umd.ncsg.transportModel.SiloMatsimUtils;
 import omx.OmxFile;
 import omx.OmxMatrix;
-import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 /**
  * Calculates and stores accessibilities
@@ -50,7 +60,7 @@ public class Accessibility {
 
     public void readSkim(int year) {
         // Read hwySkim matrix for year
-        logger.info("  Reading skims for " + year);
+        logger.info("Reading skims for " + year);
 
         String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
         // Read highway hwySkim
@@ -67,6 +77,32 @@ public class Accessibility {
 //            if (orig > SiloUtil.getHighestZonalId() || dest > SiloUtil.getHighestZonalId()) continue;
 //            hwySkim.setValueAt(orig, dest, hwySkimTbl.getValueAt(row, "time"));
 //        }
+        
+        
+        // new -- write matrix as csv file for testing
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
+        new File(SiloUtil.baseDirectory + "testing").mkdirs();
+        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
+        matrixWriter.writeMatrix(hwySkim);
+        Log.info("For testing: Written skim out as a csv file");
+        // end new
+        
+        
+        // new -- read in matrix from csv
+//        public static Matrix convertCSVToMatrix (String fileName) {
+//        	
+//        for (int i = 0; i < dimensions[0]; i++)
+//            for (int j = 0; j < dimensions[1]; j++) {
+//                mat.setValueAt(i + 1, j + 1, (float) dArray[i][j]);
+////        		System.out.println("i = " + i + " ; j = " + j + " ; dArray[i][j] = " + dArray[i][j]);
+//            }
+//        return mat;
+//        }
+        // end new
+        
+        
+        
+        
         // Read transit hwySkim
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
         OmxFile tSkim = new OmxFile(transitFileName);
@@ -84,7 +120,32 @@ public class Accessibility {
 //        }
 //        for (int zn: SiloUtil.getZones()) transitSkim.setValueAt(zn, zn, 0);  // intrazonal distance not specified in this CUBE skim, set to 0
     }
+    
+    
+    // new Matsim
+    public void readSkimBasedOnMatsim(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+        logger.info("Reading skims based on MATSim travel times for " + year);
+        
+        // new matrix needs to have same dimension as previous matrix
+        int rowCount = hwySkim.getRowCount();
+        int columnCount = hwySkim.getColumnCount();
+        
+//        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
+//
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
+//        matrixWriter.writeMatrix(hwySkim);
+        
 
+        // Read transit hwySkim ... unchanged... see above
+        // comment out ... as would also not be called in no-matsim version!!
+//        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
+//        OmxFile tSkim = new OmxFile(transitFileName);
+//        tSkim.openReadOnly();
+//        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
+//        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
+    }
+    // end new Matsim
+    
 
     public static float getAutoTravelTime(int i, int j) {
         return hwySkim.getValueAt(i, j);
@@ -127,10 +188,38 @@ public class Accessibility {
                 } else {
                     transitImpedance = Math.exp(betaTransit * getTransitTravelTime(orig, dest));
                 }
+                // dz: zone "orig" and its zoneIndex "geoData.getZoneIndex(orig)" are different!!
+                // "orig" is the ID of the zone and zoneIndex is its location in the array
+                // zoneIndex is "indexArray for array" zones
                 autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
                 transitAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaTransit) * transitImpedance;
             }
         }
+        
+        
+        // new -- write output
+//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoData.getZoneIndex(orig)]);
+//      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig));
+        
+        new File(SiloUtil.baseDirectory + "testing").mkdirs();
+        CSVFileWriter accessibilityFileWriter = new CSVFileWriter(SiloUtil.baseDirectory + "testing/accessibility_" + year +".csv", ",");
+		
+		accessibilityFileWriter.writeField("zoneId");
+		accessibilityFileWriter.writeField("autoAccessibility");
+		accessibilityFileWriter.writeNewLine();
+
+		for (int i = 0; i < zones.length; i++) {
+				accessibilityFileWriter.writeField(zones[i]);
+				accessibilityFileWriter.writeField(autoAccessibility[geoData.getZoneIndex(i)]);
+				accessibilityFileWriter.writeNewLine();    
+		}
+		
+		accessibilityFileWriter.close();
+		Log.info("For testing: Written accessibilities out as a csv file");
+		// end new
+		
+		
+		
         autoAccessibility = SiloUtil.scaleArray(autoAccessibility, 100);
         transitAccessibility = SiloUtil.scaleArray(transitAccessibility, 100);
 
