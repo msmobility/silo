@@ -1,14 +1,14 @@
 package edu.umd.ncsg.data;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SiloUtil;
-import jxl.common.Logger;
-
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
-import org.matsim.core.gbl.Gbl;
+import org.apache.log4j.Logger;
+
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
+
+import edu.umd.ncsg.SiloUtil;
 
 /**
  * Zonal, county and regional data used by the SILO Model
