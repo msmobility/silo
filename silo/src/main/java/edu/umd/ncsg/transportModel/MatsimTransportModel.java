@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.utils.collections.Tuple;
@@ -31,7 +32,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.pb.common.util.ResourceUtil;
 
-import common.Logger;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.data.Accessibility;
 import edu.umd.ncsg.data.HouseholdDataManager;
@@ -40,22 +40,20 @@ import edu.umd.ncsg.data.HouseholdDataManager;
  * @author dziemke
  */
 public class MatsimTransportModel implements TransportModelI {
-	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
-
-	private static final String PROPERTIES_ZONES_SHAPEFILE				= "matsim.zones.shapefile";
-	private static final String PROPERTIES_ZONES_CRS 						= "matsim.zones.crs";
-//	private static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
-//	private static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
-//	private static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
-//	private static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
-//	private static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
-	
 	private HouseholdDataManager householdData;
 	private Accessibility acc;
 	private ResourceBundle rb;
 	private Config matsimConfig;
 	
-
+	private static final String PROPERTIES_ZONES_SHAPEFILE				= "zones.shapefile";
+	private static final String PROPERTIES_ZONES_CRS 						= "zones.crs";
+	private static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
+	private static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
+	private static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
+	private static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
+	private static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
+	
+	
 	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
 		this.householdData = householdData;
 		this.acc = acc;
@@ -65,26 +63,20 @@ public class MatsimTransportModel implements TransportModelI {
 	
 	@Override
 	public void runTransportModel(int year) {
-			logger.info("Running MATSim transport model for year " + year + ".");
+			Log.info("Running MATSim transport model for year " + year + ".");
 
-			String scenarioName = rb.getString(SiloUtil.PROPERTIES_SCENARIO_NAME);
+			String scenarioName = rb.getString(PROPERTIES_SCENARIO_NAME);
 
 			String crs = rb.getString(PROPERTIES_ZONES_CRS);
 			String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
 			
-//			int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
-			int numberOfCalcPoints = 1 ; // what is this?
-			
-//			boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
-			boolean writePopulation = false ;
+			int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
+			boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
 
-//			double populationScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
-			double populationScalingFactor = 0.01 ;
-			
+			double populationScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
 			// people working at non-peak times (only peak traffic is simulated), and people going by
 			// a mode other than car in case a car is still available to them
-//			double workerScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_WORKER_SCALING_FACTOR);
-			double workerScalingFactor = 0.66 ;
+			double workerScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_WORKER_SCALING_FACTOR);
 
 			double flowCapacityFactor = populationScalingFactor;
 			matsimConfig.qsim().setFlowCapFactor(flowCapacityFactor);

@@ -108,56 +108,36 @@
 				<configuration>
 					<excludes>
 						<exclude>**/*$*</exclude> <!-- exclude all inner classes -->
-					</excludes>
-
-					<!--execute each test in separate JVM (slow, but otherwise it does not-->
-					<!--work, and no problem as long as there are only integration tests):-->
-					<forkMode>always</forkMode>
-
+											</excludes>
+					<forkMode>once</forkMode>
 					<!-- avoid out of memory errors: -->
 					<argLine>-Xmx2000m -Djava.awt.headless=true
-
 						-Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
 				</configuration>
 			</plugin>
-	<plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-jar-plugin</artifactId>
-		<version>2.3.1</version>
-		<executions>
-			<execution>
-				<goals>
-					<goal>test-jar</goal>
-				</goals>
-				<configuration>
-					<skip>${skipTestJar}</skip>
-				</configuration>
-			</execution>
-		</executions>
-	</plugin>
-<!-- 	<plugin>
-		<groupId>com.igormaznitsa</groupId>
-		<artifactId>jute</artifactId>
-		<version>1.1.1</version>
-		<executions>
-			<execution>
-				<goals>
-					<goal>jute</goal>
-				</goals>
-				<configuration>
-					<verbose>true</verbose>
-				</configuration>
-			</execution>
-		</executions>
-	</plugin>
- -->	<plugin>
-		<!-- Usage (change version numbers, of course) mvn release:prepare -Darguments="-DskipTests 
-			-Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B 
-			mvn release:perform -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1 
-			-DdevelopmentVersion=0.7.2-SNAPSHOT -B -->
-		<artifactId>maven-release-plugin</artifactId>
-		<version>2.5.1</version>
-	</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+                        <configuration>
+                            <skip>${skipTestJar}</skip>
+                        </configuration>
+					</execution>
+				</executions>
+			</plugin>
+            <plugin>
+                <!-- Usage (change version numbers, of course)
+                mvn release:prepare -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B
+                mvn release:perform -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B
+                -->
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.1</version>
+            </plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -337,11 +317,6 @@
 			<artifactId>matrixbasedptrouter</artifactId>
 			<version>0.9.0-SNAPSHOT</version>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>jexcelapi</groupId>
-			<artifactId>jxl</artifactId>
-			<version>2.6</version>
 		</dependency>
 	</dependencies>
 	<properties>
