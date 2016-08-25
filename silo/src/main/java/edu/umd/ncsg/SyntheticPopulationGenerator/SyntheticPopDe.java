@@ -2,6 +2,7 @@ package edu.umd.ncsg.SyntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import com.sun.xml.internal.bind.v2.TODO;
 import edu.umd.ncsg.SiloMuc;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.data.*;
@@ -138,9 +139,10 @@ public class SyntheticPopDe {
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String recLander = recString.substring(0,2);
+                int householdNumber = 0;
                 switch (recLander) {
                     case "09": //Record from Bavaria
-                        int householdNumber = convertToInteger(recString.substring(7,9));
+                        householdNumber = convertToInteger(recString.substring(7,9));
                         if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
                             if (householdNumber != previousHouseholdNumber) {
                                 hhCountTotal++;
@@ -150,7 +152,18 @@ public class SyntheticPopDe {
                                 personCountTotal++;
                             }
                         }
-
+                    /*case "05": //Record from Baden-Wurttemberg
+                        householdNumber = convertToInteger(recString.substring(7,9));
+                        if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
+                            if (householdNumber != previousHouseholdNumber) {
+                                hhCountTotal++;
+                                personCountTotal++;
+                                previousHouseholdNumber = householdNumber; // Update the household number
+                            } else if (householdNumber == previousHouseholdNumber) {
+                                personCountTotal++;
+                            }
+                        }
+*/
                     default:
                         hhOutCountTotal++;
                         break;
@@ -180,6 +193,7 @@ public class SyntheticPopDe {
         int personJobType[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
+        int foreignCount = 0;
         int hhCount = -1;
         //Household variables
         ageBracketsPerson = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_AGES);
@@ -197,12 +211,15 @@ public class SyntheticPopDe {
         int hhSize4[] = new int[hhCountTotal];
         int hhSize5[] = new int[hhCountTotal];
         int hhSize6[] = new int[hhCountTotal];
+        String hhSizeCategory[] = new String[hhCountTotal];
         int hhSizeCount[] = new int[hhCountTotal];
+        int hhForeigners[] = new int[hhCountTotal];
         int hhId [] = new int[hhCountTotal];
         int hhIncome[] = new int[hhCountTotal];
         int personCounts[] = new int[hhCountTotal];
         int hhDwellingType[] = new int[hhCountTotal];
         int incomeCounter = 0;
+        int householdNumber = 0;
         String personalIncome;
 
 
@@ -214,7 +231,7 @@ public class SyntheticPopDe {
                 String recLander = recString.substring(0,2);
                 switch (recLander) {
                     case "09": //Record from Bavaria //Record from Bavaria
-                        int householdNumber = convertToInteger(recString.substring(7, 9));
+                        householdNumber = convertToInteger(recString.substring(7, 9));
                         if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
                             if (householdNumber != previousHouseholdNumber) {
                                 hhCount++;
@@ -224,16 +241,22 @@ public class SyntheticPopDe {
                                 if (hhSize[hhCount] == 1) {
                                     hhSingle[hhCount] = 1;
                                     hhSize1[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize1";
                                 } else if (hhSize[hhCount] == 2){
                                     hhSize2[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize2";
                                 }else if (hhSize[hhCount] == 3){
                                     hhSize3[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize3";
                                 }else if (hhSize[hhCount] == 4){
                                     hhSize4[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize4";
                                 }else if (hhSize[hhCount] == 5){
                                     hhSize5[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize5";
                                 }else {
                                     hhSize6[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize6";
                                 }
                                 hhIncome[hhCount] = incomeCounter;
                                 hhId[hhCount] = convertToInteger(recString.substring(2, 9));
@@ -241,12 +264,15 @@ public class SyntheticPopDe {
                                 if (hhCount > 1) {
                                     hhSizeCount[hhCount - 1] = personHHCount;
                                     personCounts[hhCount - 1] = personCounts[hhCount - 1] + hhSize[hhCount];
+                                    hhForeigners[hhCount - 1] = foreignCount;
                                 } else {
                                     hhSizeCount[hhCount] = hhSize[hhCount];
                                     personCounts[hhCount] = 1;
+                                    hhForeigners[hhCount] = 1;
                                 }
                                 personHHCount = 0;
                                 incomeCounter = 0;
+                                foreignCount = 0;
                             }
                             age[personCount] = convertToInteger(recString.substring(25, 27));
                             gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
@@ -256,7 +282,7 @@ public class SyntheticPopDe {
                             personHH[personCount] = convertToInteger(recString.substring(2, 9));
                             personIncome[personCount] = convertToInteger(recString.substring(297, 299));
                             personalIncome = Integer.toString(personIncome[personCount]);
-                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner;
+                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
                             personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
                             personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
                             personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
@@ -327,12 +353,146 @@ public class SyntheticPopDe {
                                 hhFemaleAge[hhCount][row]++;
                                 hhWorkers[hhCount]++;
                             }
+                            if (personNationality[personCount] == 8){
+                                foreignCount++;
+                            }
                             personCount++;
                             personHHCount++;
                         } else {
                             previousHouseholdNumber = householdNumber; // Update the household number
                         }
-
+                   /* case "05": ////Record from Baden-Wurttemberg
+                        householdNumber = convertToInteger(recString.substring(7, 9));
+                        if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
+                            if (householdNumber != previousHouseholdNumber) {
+                                hhCount++;
+                                hhSize[hhCount] = convertToInteger(recString.substring(323, 324));
+                                hhDwellingType[hhCount] = convertToInteger(recString.substring(476, 477)); // 1: 1-4 apartments, 2: 5-10 apartments, 3: 11 or more, 4: gemainschafts, 6: neubauten
+                                hhTotal[hhCount] = 1;
+                                if (hhSize[hhCount] == 1) {
+                                    hhSingle[hhCount] = 1;
+                                    hhSize1[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize1";
+                                } else if (hhSize[hhCount] == 2){
+                                    hhSize2[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize2";
+                                }else if (hhSize[hhCount] == 3){
+                                    hhSize3[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize3";
+                                }else if (hhSize[hhCount] == 4){
+                                    hhSize4[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize4";
+                                }else if (hhSize[hhCount] == 5){
+                                    hhSize5[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize5";
+                                }else {
+                                    hhSize6[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize6";
+                                }
+                                hhIncome[hhCount] = incomeCounter;
+                                hhId[hhCount] = convertToInteger(recString.substring(2, 9));
+                                previousHouseholdNumber = householdNumber; // Update the household number
+                                if (hhCount > 1) {
+                                    hhSizeCount[hhCount - 1] = personHHCount;
+                                    personCounts[hhCount - 1] = personCounts[hhCount - 1] + hhSize[hhCount];
+                                    hhForeigners[hhCount - 1] = foreignCount;
+                                } else {
+                                    hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = 1;
+                                    hhForeigners[hhCount] = 1;
+                                }
+                                personHHCount = 0;
+                                incomeCounter = 0;
+                                foreignCount = 0;
+                            }
+                            age[personCount] = convertToInteger(recString.substring(25, 27));
+                            gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
+                            //logger.info("Gender " + " of person " + hhPersonCounter + " on household " + hhCount + " is: " + gender[personCount] );
+                            occupation[personCount] = convertToInteger(recString.substring(74, 75)); // 1: employed, 8: unemployed, empty: NA
+                            personId[personCount] = convertToInteger(recString.substring(2, 11));
+                            personHH[personCount] = convertToInteger(recString.substring(2, 9));
+                            personIncome[personCount] = convertToInteger(recString.substring(297, 299));
+                            personalIncome = Integer.toString(personIncome[personCount]);
+                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
+                            personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
+                            personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
+                            personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
+                            personJobType[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
+                            if (personalIncome == "01") {
+                                incomeCounter = incomeCounter + 150;
+                            } else if (personalIncome == "02"){
+                                incomeCounter = incomeCounter + 450;
+                            } else if (personalIncome == "03"){
+                                incomeCounter = incomeCounter + 800;
+                            } else if (personalIncome == "04"){
+                                incomeCounter = incomeCounter + 1200;
+                            } else if (personalIncome == "05"){
+                                incomeCounter = incomeCounter + 1600;
+                            } else if (personalIncome == "06"){
+                                incomeCounter = incomeCounter + 2000;
+                            } else if (personalIncome == "07"){
+                                incomeCounter = incomeCounter + 2350;
+                            } else if (personalIncome == "08"){
+                                incomeCounter = incomeCounter + 2750;
+                            } else if (personalIncome == "09"){
+                                incomeCounter = incomeCounter + 3250;
+                            } else if (personalIncome == "10"){
+                                incomeCounter = incomeCounter + 3750;
+                            } else if (personalIncome == "11"){
+                                incomeCounter = incomeCounter + 4250;
+                            } else if (personalIncome == "12"){
+                                incomeCounter = incomeCounter + 4750;
+                            } else if (personalIncome == "13"){
+                                incomeCounter = incomeCounter + 5250;
+                            } else if (personalIncome == "14"){
+                                incomeCounter = incomeCounter + 5750;
+                            } else if (personalIncome == "15"){
+                                incomeCounter = incomeCounter + 6250;
+                            } else if (personalIncome == "16"){
+                                incomeCounter = incomeCounter + 6750;
+                            } else if (personalIncome == "17"){
+                                incomeCounter = incomeCounter + 7250;
+                            } else if (personalIncome == "18"){
+                                incomeCounter = incomeCounter + 7750;
+                            } else if (personalIncome == "19"){
+                                incomeCounter = incomeCounter + 9000;
+                            } else if (personalIncome == "20"){
+                                incomeCounter = incomeCounter + 11000;
+                            } else if (personalIncome == "21"){
+                                incomeCounter = incomeCounter + 13750;
+                            } else if (personalIncome == "22"){
+                                incomeCounter = incomeCounter + 17500;
+                            } else if (personalIncome == "23"){
+                                incomeCounter = incomeCounter + 27500;
+                            } else if (personalIncome == "24"){
+                                incomeCounter = incomeCounter + 35000;
+                            }
+                            int row = 0;
+                            while (age[personCount] > ageBracketsPerson[row]) {
+                                row++;
+                            }
+                            if (gender[personCount] == 1) {
+                                if (occupation[personCount] == 1) {
+                                    hhMaleWorkers[hhCount]++;
+                                    hhWorkers[hhCount]++;
+                                }
+                                hhMaleAge[hhCount][row]++;
+                            } else if (gender[personCount] == 2) {
+                                if (occupation[personCount] == 1) {
+                                    hhFemaleWorkers[hhCount]++;
+                                }
+                                hhFemaleAge[hhCount][row]++;
+                                hhWorkers[hhCount]++;
+                            }
+                            if (personNationality[personCount] == 8){
+                                foreignCount++;
+                            }
+                            personCount++;
+                            personHHCount++;
+                        } else {
+                            previousHouseholdNumber = householdNumber; // Update the household number
+                        }
+*/
                 }
             }
         } catch (IOException e) {
@@ -376,6 +536,7 @@ public class SyntheticPopDe {
         microRecords.appendColumn(hhSizeCount,"hhSize");
         microRecords.appendColumn(personCounts,"personCount");
         microRecords.appendColumn(hhDwellingType,"hhDwellingType");
+        microRecords.appendColumn(hhSizeCategory,"hhSizeCategory");
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
 
@@ -386,6 +547,7 @@ public class SyntheticPopDe {
         //microRecords1.appendColumn(hhWorkers,"workers");
         microRecords1.appendColumn(hhMaleWorkers,"maleWorkers");
         microRecords1.appendColumn(hhFemaleWorkers,"femaleWorkers");
+
         for (int row = 0; row < ageBracketsPerson.length; row++){
             int[] ageMale = SiloUtil.obtainColumnFromArray(hhMaleAge,hhCountTotal,row);
             int[] ageFemale = SiloUtil.obtainColumnFromArray(hhFemaleAge,hhCountTotal,row);
@@ -402,6 +564,8 @@ public class SyntheticPopDe {
         microRecords1.appendColumn(hhSize4,"hhSize4");
         microRecords1.appendColumn(hhSize5,"hhSize5");
         microRecords1.appendColumn(hhSize6,"hhSize6");
+        microRecords1.appendColumn(hhForeigners,"foreigners");
+        microRecords1.appendColumn(hhSize,"population");
         frequencyMatrix = microRecords1;
 
         /*
@@ -455,8 +619,8 @@ public class SyntheticPopDe {
 
 
         //Create the weights table (for all the municipalities)
-        //TableDataSet weightsTable = new TableDataSet();
-        weightsTable.appendColumn(microDataIds,"ID");
+        TableDataSet weightsMatrix = new TableDataSet();
+        weightsMatrix.appendColumn(microDataIds,"ID");
 
 
         //Stopping criteria (common for all municipalities)
@@ -500,8 +664,8 @@ public class SyntheticPopDe {
             weightedSumsHousehold.appendColumn(dummy00,"ID_city");
             errorsHousehold.appendColumn(dummy01,"ID_city");
             for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
-                float[] dummyA2 = {0,0};
-                float[] dummyB2 = {0,0};
+                double[] dummyA2 = {0,0};
+                double[] dummyB2 = {0,0};
                 weightedSumsHousehold.appendColumn(dummyA2,attributesHousehold[attribute]);
                 errorsHousehold.appendColumn(dummyB2,attributesHousehold[attribute]);
             }
@@ -526,16 +690,18 @@ public class SyntheticPopDe {
             //-----------***** IPU procedure *****-------------------------------------------------------------------
             int iteration = 0;
             int finish = 0;
-            float factor = 0f;
+            float factor = 0;
             int position = 0;
-            float previousWeight = 1f;
-            float weightedSum = 0f;
-            float error = 0f;
+            float previousWeight = 1;
+            float weightedSum = 0;
+            float error = 0;
+            float averageErrorIteration = 0;
 
             while(iteration <= maxIterations && finish == 0){
 
-                float maxErrorIteration = 0f;
+                averageErrorIteration = 0;
                 String maxErrorAttributes = "";
+
                 //For each attribute at the municipality level
                 for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
                     //logger.info("       Iteration: "+ iteration + ". Starting to calculate weight of the attribute " + attribute + " at the household level.");
@@ -562,33 +728,32 @@ public class SyntheticPopDe {
                                 marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]))/
                                 marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]));
                         errorsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attributes],error);
-                        if (error > maxErrorIteration) {
-                            maxErrorIteration = error;
-                            maxErrorAttributes = "attribute_" + Integer.toString(attributes);
+                        averageErrorIteration = averageErrorIteration+error;
                         }
-                    }
+
                 }
-                logger.info("   Iteration " + iteration + " completed. The maximum error is " + maxErrorIteration + " on the attribute: " + maxErrorAttributes);
+                averageErrorIteration = averageErrorIteration/(attributesHousehold.length+1);
+                logger.info("   Iteration " + iteration + " completed. Average error: " + averageErrorIteration);
 
 
                 //Stopping criteria:
-                if (maxErrorIteration < maxError){
+                if (averageErrorIteration < maxError){
                     finish = 1;
                     iteration = maxIterations + 1;
                     logger.info("   IPU finished for municipality " + cityID[area] + " after " + iteration + " iterations.");
                 }
                 else if ((iteration/iterationError) % 1 == 0){
-                    if (Math.abs((initialError-maxErrorIteration)/initialError) < improvementError) {
+                    if (Math.abs((initialError-averageErrorIteration)/initialError) < improvementError) {
                         finish = 1;
-                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The maximum error is: " + maxErrorIteration);
+                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The maximum error is: " + averageErrorIteration);
                     }
                     else
-                        initialError = maxErrorIteration;
+                        initialError = averageErrorIteration;
                         iteration++;
                 }
                 else if (iteration == maxIterations){
                     finish = 1;
-                    logger.info("   IPU finished after the total number of iterations. The maximum error is: " + maxErrorIteration);
+                    logger.info("   IPU finished after the total number of iterations. The maximum error is: " + averageErrorIteration);
                 }
                 else{
                     iteration++;
@@ -596,12 +761,16 @@ public class SyntheticPopDe {
 
             }
             //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
-            weightsTable.appendColumn(weights.getColumnAsFloat(cityIDs[area]),cityIDs[area]);
-            String freqFileName = ("input/syntheticPopulation/weigthsNewTable.csv");
-            SiloUtil.writeTableDataSet(weightsTable, freqFileName);
+            weightsMatrix.appendColumn(weights.getColumnAsFloat(cityIDs[area]),cityIDs[area]);
+            String freqFileName = ("input/syntheticPopulation/weigthsMatrix.csv");
+            SiloUtil.writeTableDataSet(weightsMatrix, freqFileName);
 
-            logger.info("   IPU finished");
         }
+        //Write the weights final table
+        weightsTable = weightsMatrix;
+        weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
+
+        logger.info("   IPU finished");
     }
 
 
@@ -1440,6 +1609,7 @@ public class SyntheticPopDe {
         logger.info("   Finishing reading the results from the IPU");
     }
 
+
     private void selectHouseholds(){
         //Generate the synthetic population using Monte Carlo (select the households according to the weight)
         //Once the household is selected, all the characteristics of the household will be copied (including the household members)
@@ -1485,7 +1655,7 @@ public class SyntheticPopDe {
         municipalityCount++;
 
 
-        //Create table with the number of raster cells per municipality, name of each raster cell and its population density (used as weight)
+        //Create table with the number of raster cells per municipality, name of each raster cell and its population (used as weight to allocate households on that raster cell)
         TableDataSet rasterCells = new TableDataSet();
         TableDataSet rasterWeights = new TableDataSet();
         TableDataSet rasterCellsCount = new TableDataSet();
@@ -1495,12 +1665,17 @@ public class SyntheticPopDe {
         for (int municipality = 0; municipality < listMunicipality.length; municipality++){
             int[] realCells = new int[maxRaster];
             int[] sumCells = {0,0};
-            float[] weightCells = new float[maxRaster];
+            double sumWeights = 0;
+            double[] weightCells = new double[maxRaster];
             for (int row = 0; row < rasterNumbers[municipality];row++){
                 realCells[sumCells[0]] = (int) cellsMatrix.getValueAt(rasterRow,"ID_cell");
                 weightCells[sumCells[0]] = cellsMatrix.getValueAt(rasterRow,"Population");
+                sumWeights =+ weightCells[sumCells[0]];
                 sumCells[0] = sumCells [0] + 1;
                 rasterRow++;
+            }
+            for (int row = 0; row < rasterNumbers[municipality]; row++){
+                weightCells[row] = weightCells[row] / sumWeights;
             }
             rasterCells.appendColumn(realCells,listMunicipalities[municipality]);
             rasterCellsCount.appendColumn(sumCells,listMunicipalities[municipality]);
@@ -1511,6 +1686,11 @@ public class SyntheticPopDe {
         int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
         int previousHouseholds = 0;
         int previousPersons = 0;
+
+
+        //Define car probability
+        //They depend on household size. The probability is for all Bavaria
+
 
 
         //Selection of households, per municipality
@@ -1538,10 +1718,11 @@ public class SyntheticPopDe {
                     int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
                     int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
                     int income = (int) microDataPerson.getValueAt(personCounter, "income");
+                    int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace");
                     if (microDataPerson.getValueAt(personCounter,"nationality") == 8) { //race is equal to other if the person is foreigner.
-                        new Person(idPerson, id, age, gender, Race.other, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                        new Person(idPerson, id, age, gender, Race.other, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     } else {
-                        new Person(idPerson, id, age, gender, Race.white, occupation, listMunicipality[municipality], income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                        new Person(idPerson, id, age, gender, Race.white, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     }
                 }
             }
