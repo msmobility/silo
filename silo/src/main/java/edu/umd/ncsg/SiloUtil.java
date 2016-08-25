@@ -277,7 +277,25 @@ public class SiloUtil {
         return id[probabilities.length - 1];
     }
 
+
+    public static int select (float[] probabilities, int length, int[] name){
+        //select item based on probabilities and return the name
+        //probabilities and name have more items than the required (max number of required items is set on "length")
+        double selPos = getSum(probabilities) * SiloModel.rand.nextFloat();
+        double sum = 0;
+        for (int i = 0; i < length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                //return i;
+                return name[i];
+            }
+        }
+        return name[length - 1];
+    }
+
+
     public static double[] convertProbability (double[] probabilities){
+        //method to return the probability in percentage
         double sum = 0;
         for (int row = 0; row < probabilities.length; row++){
             sum++;
@@ -287,6 +305,7 @@ public class SiloUtil {
         }
         return probabilities;
     }
+
 
     public static int select (int upperRange) {
         // select item based on equal probabilities between 0 and upperRange
@@ -369,7 +388,7 @@ public class SiloUtil {
     }
 
 
-    public static float getWeightedSum(float[] weights, float[] values, int[] positions, int total_positions){
+    public static float getWeightedSum(double[] weights, float[] values, int[] positions, int total_positions){
         // optimization to calculate weighted sum given two sets of arrays
         // The two sets of arrays are complete, but only some cells are different than zero.
         // The third array indicates the location of the cells different than zero.
