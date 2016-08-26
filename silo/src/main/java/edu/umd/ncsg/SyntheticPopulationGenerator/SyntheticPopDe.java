@@ -41,6 +41,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_INITIAL_ERROR                = "ini.error.ipu";
     protected static final String PROPERTIES_IMPROVEMENT_ERROR            = "min.improvement.error.ipu";
     protected static final String PROPERTIES_IMPROVEMENT_ITERATIONS       = "iterations.improvement.ipu";
+    protected static final String PROPERTIES_INCREASE_ERROR               = "increase.error.ipu";
     protected static final String PROPERTIES_REGION_ATTRIBUTES            = "attributes.region";
     protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
     protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
@@ -190,7 +191,8 @@ public class SyntheticPopDe {
         int personWorkplace[] = new int[personCountTotal];
         int personCommuteTime[] = new int[personCountTotal];
         int personTransportationMode[] = new int[personCountTotal];
-        int personJobType[] = new int[personCountTotal];
+        int personJobStatus[] = new int[personCountTotal];
+        int personJobSector[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
         int foreignCount = 0;
@@ -286,7 +288,8 @@ public class SyntheticPopDe {
                             personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
                             personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
                             personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
-                            personJobType[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
+                            personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
+                            personJobSector[personCount] = convertToInteger(recString.substring(101, 105)); //Systematische Übersicht der Klassifizierung der Berufe, Ausgabe 1992
                             if (personalIncome == "01") {
                                 incomeCounter = incomeCounter + 150;
                             } else if (personalIncome == "02"){
@@ -417,7 +420,7 @@ public class SyntheticPopDe {
                             personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
                             personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
                             personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
-                            personJobType[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
+                            personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
                             if (personalIncome == "01") {
                                 incomeCounter = incomeCounter + 150;
                             } else if (personalIncome == "02"){
@@ -512,7 +515,8 @@ public class SyntheticPopDe {
         microPersons.appendColumn(personWorkplace,"workplace");
         microPersons.appendColumn(personCommuteTime,"commuteTime");
         microPersons.appendColumn(personTransportationMode,"commuteMode");
-        microPersons.appendColumn(personJobType,"jobType");
+        microPersons.appendColumn(personJobStatus,"jobStatus");
+        microPersons.appendColumn(personJobSector,"jobSector");
         microDataPerson = microPersons;
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("personID"));
 
@@ -623,11 +627,21 @@ public class SyntheticPopDe {
         weightsMatrix.appendColumn(microDataIds,"ID");
 
 
+        //Create the errors table (for all the municipalities, by attribute)
+        TableDataSet errorsMatrix = new TableDataSet();
+        errorsMatrix.appendColumn(cityIDs,"ID_city");
+        for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+            double[] dummy2 = SiloUtil.createArrayWithValue(cityIDs.length,1.0);
+            errorsMatrix.appendColumn(dummy2, attributesHousehold[attribute]);
+        }
+
+
         //Stopping criteria (common for all municipalities)
         maxIterations= ResourceUtil.getIntegerProperty(rb, PROPERTIES_MAX_ITERATIONS,1000);
         maxError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MAX_ERROR, 0.0001);
         improvementError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_IMPROVEMENT_ERROR, 0.001);
         iterationError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_IMPROVEMENT_ITERATIONS,2);
+        Double increaseError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCREASE_ERROR,1.05);
 
 
         //For each municipality, we perform IPU
@@ -642,6 +656,12 @@ public class SyntheticPopDe {
             double[] dummy = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1.0);
             weights.appendColumn(dummy, cityIDs[area]); //the column label is the municipality cityID
             weights.buildIndex(weights.getColumnPosition("ID"));
+
+            TableDataSet minWeights = new TableDataSet();
+            minWeights.appendColumn(microDataIds,"ID");
+            double[] dummy1 = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1.0);
+            minWeights.appendColumn(dummy1,cityIDs[area]);
+            minWeights.buildIndex(minWeights.getColumnPosition("ID"));
 
 
             //marginalsHousehold: TableDataSet that contains in each column the marginal of a household attribute at the municipality level. Only one "real" row
@@ -696,44 +716,45 @@ public class SyntheticPopDe {
             float weightedSum = 0;
             float error = 0;
             float averageErrorIteration = 0;
+            float minError = 10000;
 
             while(iteration <= maxIterations && finish == 0){
 
                 averageErrorIteration = 0;
-                String maxErrorAttributes = "";
 
-                //For each attribute at the municipality level
-                for(int attribute = 0; attribute < attributesHousehold.length; attribute++){
-                    //logger.info("       Iteration: "+ iteration + ". Starting to calculate weight of the attribute " + attribute + " at the household level.");
-
-
-                    //update the weights according to the weighted sum and constraint of the household attribute
-                    factor = marginalsHousehold.getIndexedValueAt(cityID[area],attributesHousehold[attribute]) /
-                            weightedSumsHousehold.getIndexedValueAt(cityID[area],attributesHousehold[attribute]);
-                    for(int row = 0; row < nonZeroSize.getValueAt(1, attributesHousehold[attribute]); row++){
-                        position = (int) nonZero.getIndexedValueAt(microDataIds[row],attributesHousehold[attribute]);
-                        previousWeight = weights.getValueAt(position,cityIDs[area]);
+                //Calculate weights for each attribute at the municipality level
+                for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+                    //update the weights according to the weighted sum and constraint of this attribute and the weights from the previous attribute
+                    weightedSum = SiloUtil.getWeightedSum(weights.getColumnAsDouble(cityIDs[area]),
+                            frequencyMatrix.getColumnAsFloat(attributesHousehold[attribute]),
+                            nonZero.getColumnAsInt(attributesHousehold[attribute]),
+                            (int)nonZeroSize.getValueAt(1,attributesHousehold[attribute]));
+                    weightedSumsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attribute],weightedSum);
+                    factor = marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attribute]) /
+                            weightedSumsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attribute]);
+                    for (int row = 0; row < nonZeroSize.getValueAt(1, attributesHousehold[attribute]); row++) {
+                        position = (int) nonZero.getIndexedValueAt(microDataIds[row], attributesHousehold[attribute]);
+                        previousWeight = weights.getValueAt(position, cityIDs[area]);
                         weights.setValueAt(position, cityIDs[area], factor * previousWeight);
                     }
-
-
-                    //update the weighted sums and errors of all household attributes, considering the new weights
-                    for (int attributes = 0; attributes < attributesHousehold.length; attributes++){
-                        weightedSum = SiloUtil.getWeightedSum(weights.getColumnAsDouble(cityIDs[area]),
-                                frequencyMatrix.getColumnAsFloat(attributesHousehold[attributes]),
-                                nonZero.getColumnAsInt(attributesHousehold[attributes]),
-                                (int)nonZeroSize.getValueAt(1,attributesHousehold[attributes]));
-                        weightedSumsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attributes],weightedSum);
-                        error = Math.abs((weightedSum -
-                                marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]))/
-                                marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]));
-                        errorsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attributes],error);
-                        averageErrorIteration = averageErrorIteration+error;
-                        }
-
                 }
-                averageErrorIteration = averageErrorIteration/(attributesHousehold.length+1);
-                logger.info("   Iteration " + iteration + " completed. Average error: " + averageErrorIteration);
+
+
+                //update the weighted sums and errors of all household attributes, considering the weights after all the attributes
+                for (int attributes = 0; attributes < attributesHousehold.length; attributes++){
+                    weightedSum = SiloUtil.getWeightedSum(weights.getColumnAsDouble(cityIDs[area]),
+                            frequencyMatrix.getColumnAsFloat(attributesHousehold[attributes]),
+                            nonZero.getColumnAsInt(attributesHousehold[attributes]),
+                            (int)nonZeroSize.getValueAt(1,attributesHousehold[attributes]));
+                    weightedSumsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attributes],weightedSum);
+                    error = Math.abs(weightedSum -
+                            marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]))/
+                            marginalsHousehold.getIndexedValueAt(cityID[area], attributesHousehold[attributes]);
+                    errorsHousehold.setIndexedValueAt(cityID[area],attributesHousehold[attributes],error);
+                    averageErrorIteration += error;
+                }
+                averageErrorIteration = averageErrorIteration/(attributesHousehold.length);
+                logger.info("   Iteration " + iteration + " completed. Average error: " + averageErrorIteration * 100 + " %.");
 
 
                 //Stopping criteria:
@@ -745,25 +766,44 @@ public class SyntheticPopDe {
                 else if ((iteration/iterationError) % 1 == 0){
                     if (Math.abs((initialError-averageErrorIteration)/initialError) < improvementError) {
                         finish = 1;
-                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The maximum error is: " + averageErrorIteration);
+                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The minimum average error is: " + minError * 100 + " %.");
                     }
-                    else
+                    else if (averageErrorIteration > minError * increaseError) {
+                        finish = 1;
+                        logger.info("   IPU finished after " + iteration + " iterations because the error starts increasing. The minimum average error is: " + minError * 100 + " %.");
+                    }
+                    else {
                         initialError = averageErrorIteration;
                         iteration++;
+                    }
                 }
                 else if (iteration == maxIterations){
                     finish = 1;
-                    logger.info("   IPU finished after the total number of iterations. The maximum error is: " + averageErrorIteration);
+                    logger.info("   IPU finished after the total number of iterations. The average error is: " + minError * 100 + " %.");
                 }
                 else{
                     iteration++;
                 }
 
+
+                //Check if the error is lower than the minimum (at the last iterations fluctuates around the minimum error)
+                if (averageErrorIteration < minError){
+                    minWeights.setColumnAsFloat(minWeights.getColumnPosition(cityIDs[area]),weights.getColumnAsFloat(cityIDs[area]));
+                    minError = averageErrorIteration;
+                }
             }
+
+            //Copy the errors per attribute
+            for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
+                errorsMatrix.setValueAt(area+1,attributesHousehold[attribute],errorsHousehold.getIndexedValueAt(cityID[area],attributesHousehold[attribute]));
+            }
+
             //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
-            weightsMatrix.appendColumn(weights.getColumnAsFloat(cityIDs[area]),cityIDs[area]);
+            weightsMatrix.appendColumn(minWeights.getColumnAsFloat(cityIDs[area]),cityIDs[area]);
             String freqFileName = ("input/syntheticPopulation/weigthsMatrix.csv");
             SiloUtil.writeTableDataSet(weightsMatrix, freqFileName);
+            String freqFileName2 = ("input/syntheticPopulation/errorsMatrix.csv");
+            SiloUtil.writeTableDataSet(errorsMatrix, freqFileName2);
 
         }
         //Write the weights final table
@@ -844,6 +884,7 @@ public class SyntheticPopDe {
         initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
         improvementError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_IMPROVEMENT_ERROR, 0.001);
         iterationError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_IMPROVEMENT_ITERATIONS,2);
+        Double increaseError = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCREASE_ERROR,1.05);
 
 
         //Count the number of counties and municipalities at each county
@@ -929,6 +970,13 @@ public class SyntheticPopDe {
                 weights.appendColumn(dummy20, municipalitiesIDs[municipality]); //the column label is the municipality cityID
             }
             weights.buildIndex(weights.getColumnPosition("ID"));
+            TableDataSet minWeights = new TableDataSet();
+            minWeights.appendColumn(microDataIds,"ID");
+            for (int municipality = 0; municipality < municipalitiesID.length; municipality++){
+                double[] dummy20 = SiloUtil.createArrayWithValue(frequencyMatrix.getRowCount(),1.0);
+                minWeights.appendColumn(dummy20, municipalitiesIDs[municipality]); //the column label is the municipality cityID
+            }
+            minWeights.buildIndex(weights.getColumnPosition("ID"));
 
 
             //marginalsRegion: TableDataSet that contains in each column the marginal of a region attribute at the county level. Only one "real"" row
@@ -1036,7 +1084,7 @@ public class SyntheticPopDe {
             int finish = 0;
             float factor = 0f;
             int position = 0;
-            float previousWeight = 1f;
+            float minError = 100000;
             float weightedSum = 0f;
             float error = 0f;
 
@@ -1047,31 +1095,18 @@ public class SyntheticPopDe {
                 String maxErrorAttributes = "";
 
 
-
                 //For each attribute at the region level (landkreise)
                 for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
                     //logger.info("Iteration: " + iteration + ". Starting to calculate attribute " + attributesRegion[attribute] + " at county " + countyIDs[county]);
                     factor = marginalsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]) /
                             weightedSumsRegion.getIndexedValueAt(countyID[county], attributesRegion[attribute]);
-                    float weighted_sum = 0f;
                     for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
                         for (int row = 0; row < nonZeroSize.getValueAt(1, attributesRegion[attribute]); row++) {
                             position = (int) nonZero.getIndexedValueAt(microDataIds[row], attributesRegion[attribute]);
-                            //logger.info(position + " area " + cityIDs[area]);
-                            //logger.info(weight.getValueAt(position,cityIDs[area]));
                             float previous_weight = weights.getValueAt(position, municipalitiesIDs[municipality]);
                             weights.setValueAt(position, municipalitiesIDs[municipality], factor * previous_weight);
                         }
-                        weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsDouble(municipalitiesIDs[municipality]),
-                                frequencyMatrix.getColumnAsFloat(attributesRegion[attribute]),
-                                nonZero.getColumnAsInt(attributesRegion[attribute]),
-                                (int) nonZero.getValueAt(1, attributesRegion[attribute]));
                     }
-                    weightedSumsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], weighted_sum);
-                    float error1 = Math.abs((weighted_sum -
-                            marginalsRegion.getValueAt(1, attributesRegion[attribute])) /
-                            marginalsRegion.getValueAt(1, attributesRegion[attribute]));
-                    errorsRegion.setIndexedValueAt(countyID[county], attributesRegion[attribute], error1);
                 }
 
 
@@ -1172,14 +1207,18 @@ public class SyntheticPopDe {
                 if (averageErrorIteration < maxError){
                     finish = 1;
                     //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
-                    logger.info("   IPU finished after :" + iteration + " iterations with a maximum error of " + averageErrorIteration);
+                    logger.info("   IPU finished after :" + iteration + " iterations with a minimum average error of: " + minError * 100 + " %.");
                     iteration = maxIterations + 1;
                 }
                 else if ((iteration/iterationError) % 1 == 0){
                     if (Math.abs((initialError-averageErrorIteration)/initialError) < improvementError) {
                         finish = 1;
                         //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
-                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The maximum error is: " + averageErrorIteration);
+                        logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The minimum average error is: " + minError * 100 + " %.");
+                    }
+                    else if (averageErrorIteration > minError * increaseError){
+                        finish = 1;
+                        logger.info("   IPU finished after " + iteration + " iterations because the error starts increasing. The minimum average error is: " + minError * 100 + " %.");
                     }
                     else {
                         initialError = averageErrorIteration;
@@ -1189,17 +1228,28 @@ public class SyntheticPopDe {
                 else if (iteration == maxIterations) {
                     finish = 1;
                     //initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
-                    logger.info("   IPU finished after the total number of iterations. The maximum error is: " + averageErrorIteration);
+                    logger.info("   IPU finished after the total number of iterations. The minimum average error is: " + minError * 100 + " %.");
                 }
                 else{
                     iteration = iteration + 1;
                 }
+
+
+                //Update the weights with the smallest error (error fluctuates slightly at the last iterations)
+                if (averageErrorIteration < minError){
+                    for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
+                        minWeights.setColumnAsFloat(weights.getColumnPosition(municipalitiesIDs[municipality]),weights.getColumnAsFloat(municipalitiesIDs[municipality]));
+                    }
+                    minError = averageErrorIteration;
+                }
+
+
             } //for the WHILE loop
 
 
             //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
             for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
-                weightsMatrix.appendColumn(weights.getColumnAsFloat(municipalitiesIDs[municipality]), municipalitiesIDs[municipality]);
+                weightsMatrix.appendColumn(minWeights.getColumnAsFloat(municipalitiesIDs[municipality]), municipalitiesIDs[municipality]);
                 //maxErrorsMatrix.appendColumn(ma);
 
             }
@@ -1670,7 +1720,7 @@ public class SyntheticPopDe {
             for (int row = 0; row < rasterNumbers[municipality];row++){
                 realCells[sumCells[0]] = (int) cellsMatrix.getValueAt(rasterRow,"ID_cell");
                 weightCells[sumCells[0]] = cellsMatrix.getValueAt(rasterRow,"Population");
-                sumWeights =+ weightCells[sumCells[0]];
+                sumWeights = sumWeights + weightCells[sumCells[0]];
                 sumCells[0] = sumCells [0] + 1;
                 rasterRow++;
             }
@@ -1710,7 +1760,7 @@ public class SyntheticPopDe {
                         (int) rasterCellsCount.getValueAt(1,listMunicipalities[municipality]),
                         rasterCells.getColumnAsInt(listMunicipalities[municipality]));
                 int id = HouseholdDataManager.getNextHouseholdId();
-                new Household(id, householdCell, listMunicipality[municipality], householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                new Household(id, householdCell, householdCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
                     int personCounter = (int) microDataHousehold.getIndexedValueAt(record, "personCount") + rowPerson;
@@ -1725,6 +1775,15 @@ public class SyntheticPopDe {
                         new Person(idPerson, id, age, gender, Race.white, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     }
                 }
+                int newDdId = RealEstateDataManager.getNextDwellingId();
+                int pumsDdType = (int) microDataHousehold.getIndexedValueAt(record, "hhDwellingType");
+                DwellingType ddType = translateDwellingType(pumsDdType);
+                int bedRooms = 1; //marginal data at the municipality level
+                int quality = 1; //depend on complete plumbing, complete kitchen and year built.
+                int price = 1; //not significant at this point
+                int year = 2000; //not significant at this point
+                new Dwelling(newDdId, householdCell, id, ddType, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+
             }
             int households = HouseholdDataManager.getHighestHouseholdIdInUse()-previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse()-previousPersons;
@@ -1735,6 +1794,30 @@ public class SyntheticPopDe {
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
         logger.info("   Finished generating households and persons. A population of " + persons + " persons in " + households + " households was generated.");
+    }
+
+
+    private DwellingType translateDwellingType (int pumsDdType) {
+        // translate 10 PUMA into 6 MetCouncil Dwelling Types
+
+        // Available in MICRO CENSUS:
+//        V 01 . Small building (1-4 apartments)
+//        V 02 . Medium buildings (5-10 apartments)
+//        V 03 . Big buildings (11 or more apartments)
+//        V 04 . Group quarter (Gemeinschafts)
+//        V 06 . Neubaten
+
+        DwellingType type;
+        if (pumsDdType == 1) type = DwellingType.MF234; //duplexes and buildings 2-4 units
+        else if (pumsDdType == 6) type = DwellingType.SFD; //single-family house detached
+        //else if (pumsDdType == 3) type = DwellingType.SFA;//single-family house attached or townhouse
+        //else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MH; //mobile home
+        else if (pumsDdType >= 2 && pumsDdType <= 4) type = DwellingType.MF5plus; //multifamily houses with 5+ units
+        else {
+            logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
+            type = null;
+        }
+        return type;
     }
 
 
