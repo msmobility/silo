@@ -1558,6 +1558,7 @@ public class SyntheticPopDe {
             }
             rasterCounter++;
         }
+        if (rasterCounter > maxRaster){maxRaster = rasterCounter;} //If the last municipality is the one with the highest number of cells, maxRaster was equal to the second highest number of cells
         rasterNumbers[municipalityCount] = rasterCounter;
         municipalityCount++;
 
@@ -1575,6 +1576,7 @@ public class SyntheticPopDe {
             double sumWeights = 0;
             double[] weightCells = new double[maxRaster];
             for (int row = 0; row < rasterNumbers[municipality];row++){
+                //logger.info((int) cellsMatrix.getValueAt(rasterRow,"ID_cell"));
                 realCells[sumCells[0]] = (int) cellsMatrix.getValueAt(rasterRow,"ID_cell");
                 weightCells[sumCells[0]] = cellsMatrix.getValueAt(rasterRow,"Population");
                 sumWeights = sumWeights + weightCells[sumCells[0]];
@@ -1631,7 +1633,7 @@ public class SyntheticPopDe {
                     int age = (int) microDataPerson.getValueAt(personCounter, "age");
                     int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
                     int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
-                    int income = (int) microDataPerson.getValueAt(personCounter, "income");
+                    int income = (int) microDataPerson.getValueAt(personCounter, "income"); // TODO. Change income thresholds from Microcensus to the income thresholds of SILO.
                     int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace"); // TODO. Change workplace to the actual raster cell where the person is working base on commute trip lengths distribution
                     if (microDataPerson.getValueAt(personCounter,"nationality") == 8) { //race is equal to other if the person is foreigner.
                         new Person(idPerson, id, age, gender, Race.other, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
@@ -1665,7 +1667,9 @@ public class SyntheticPopDe {
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
         logger.info("   Finished generating households and persons. A population of " + persons + " persons in " + households + " households was generated.");
+
     }
+
 
 
     private DwellingType translateDwellingType (int pumsDdType) {
