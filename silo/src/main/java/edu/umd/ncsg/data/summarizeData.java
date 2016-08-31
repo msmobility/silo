@@ -39,7 +39,9 @@ public class summarizeData {
     protected static final String PROPERTIES_WRITE_BIN_JJ_FILE            = "write.binary.jj.file";
     protected static final String PROPERTIES_PRESTO_REGION_DEFINITION     = "presto.regions";
     protected static final String PROPERTIES_PRESTO_SUMMARY_FILE          = "presto.summary.file";
-
+    protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
+    
+    
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
 
@@ -228,6 +230,7 @@ public class summarizeData {
 
 
     public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData) {
+    	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
         if (!scalingControlTotals.containsColumn(("HH" + year))) {
@@ -577,7 +580,7 @@ public class summarizeData {
 
     public static void summarizePrestoRegion (ResourceBundle rb, int year) {
         // summarize housing costs by income group in SILO region
-
+    	
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 rb.getString(PROPERTIES_PRESTO_SUMMARY_FILE) + SiloUtil.gregorianIterator + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != SiloUtil.getBaseYear());
@@ -611,13 +614,17 @@ public class summarizeData {
 
     public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
         // write out development capacity file to allow model run to be continued from this point later
+    	
+    	boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
+        if(useCapacityAsNumberOfDwellings)	{
+        	String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+                    ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
+            PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+            pwc.println("Zone,DevCapacity");
+            for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
+            pwc.close();
+        }
 
-        String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
-        PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
-        pwc.println("Zone,DevCapacity");
-        for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
-        pwc.close();
         String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);

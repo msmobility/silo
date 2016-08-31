@@ -3,6 +3,7 @@ package edu.umd.ncsg;
 import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.util.ResourceBundle;
 
 /**
@@ -85,8 +86,13 @@ public class SiloCSDMS {
 
     public static void finalizeIt () {
         // close model
-
-        model.finishModel();
+    	try {
+    		model.finishModel();
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
+			//throw e;
+		}
         model.closeAllFiles(startTime);
         logger.info("Finished SILO.");
     }

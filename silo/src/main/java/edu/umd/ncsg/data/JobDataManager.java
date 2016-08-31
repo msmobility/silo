@@ -160,13 +160,20 @@ public class JobDataManager {
     public void updateEmploymentForecast() {
         // create yearly employment forecast files
 
+    	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
         String[] yearsGiven = {"00", "07", "10", "30", "40"};  // Warning: if years are changed, also change interpolation loop below under "// interpolate employment data"
         int highestYear = SiloUtil.getHighestVal(yearsGiven);
         int smallestYear = SiloUtil.getSmallestVal(yearsGiven);
 
         logger.info("  Interpolating employment forecast for all years from " + (2000 + smallestYear) + " to " +
                 (2000 + highestYear));
-        TableDataSet jobs = SiloUtil.readCSVfile(ResourceUtil.getProperty(rb, PROPERTIES_JOB_CONTROL_TOTAL));
+        TableDataSet jobs ;
+        try {
+      	  final String filename = SiloUtil.baseDirectory + "/" + ResourceUtil.getProperty(rb, PROPERTIES_JOB_CONTROL_TOTAL);
+		jobs = SiloUtil.readCSVfile(filename);
+        } catch (Exception ee) {
+      	  throw new RuntimeException( ee ) ;
+        }
         new JobType(rb);
 
         // jobInventory by [industry][year][taz]
@@ -239,7 +246,8 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobArray()) {
-            if (jj == null) continue;   // should not happen, but model crashes without this statement.
+            //TODO THE METHOD RETURNS VALUE ARRAY FROM A MAP -> NULL VALUES MAPPED FOR A FEW KEYS???
+        	if (jj == null) continue;   // should not happen, but model crashes without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
                 int region = geoData.getRegionOfZone(jj.getZone());

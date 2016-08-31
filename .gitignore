@@ -5,3 +5,7 @@ out
 /bin/
 /.settings/
 /target/
+.idea/
+*.iml
+lib/
+/Makefile

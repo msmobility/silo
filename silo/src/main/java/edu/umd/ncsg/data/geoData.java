@@ -1,11 +1,14 @@
 package edu.umd.ncsg.data;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
-import edu.umd.ncsg.SiloUtil;
-
 import java.util.HashMap;
 import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
+
+import edu.umd.ncsg.SiloUtil;
 
 /**
  * Zonal, county and regional data used by the SILO Model
@@ -14,6 +17,7 @@ import java.util.ResourceBundle;
  **/
 
 public class geoData {
+	private static final Logger logger = Logger.getLogger(geoData.class);
 
     protected static final String PROPERTIES_ZONAL_DATA_FILE                   = "zonal.data.file";
     protected static final String PROPERTIES_ZONAL_SCHOOL_QUALITY_INDEX        = "school.quality.index";
@@ -133,7 +137,7 @@ public class geoData {
     }
 
     public static float getRegionalSchoolQuality (int region) {
-        return regionalSchoolQuality[region];
+	    return regionalSchoolQuality[region];
     }
 
     public static float getCountyCrimeRate (int fips) {

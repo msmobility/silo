@@ -29,7 +29,7 @@ public class SiloUtil {
 
     protected static final String PROPERTIES_BASE_DIRECTORY                    = "base.directory";
     protected static final String PROPERTIES_RANDOM_SEED                       = "random.seed";
-    protected static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
+    public static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
     protected static final String PROPERTIES_TRACKING_FILE_NAME                = "track.file.name";
     public static final String PROPERTIES_START_YEAR                        = "start.year";
     public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
@@ -69,7 +69,7 @@ public class SiloUtil {
         File propFile = new File(resourceBundleNames[0]);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        siloTravelPropertiesFile = resourceBundleNames[1];
+        if (ResourceUtil.getBooleanProperty(rb, SiloModel.PROPERTIES_RUN_TRANSPORT_DEMAND_MODEL, false)) siloTravelPropertiesFile = resourceBundleNames[1];
 
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
@@ -78,7 +78,12 @@ public class SiloUtil {
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
         // copy properties file into scenario directory
         String[] prop = resourceBundleNames[0].split("/");
-        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+
+//        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
+        // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
+        // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
+        copyFile(resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber();
         trackingFile("open");
@@ -159,8 +164,11 @@ public class SiloUtil {
         TableDataSet dataTable;
         boolean exists = dataFile.exists();
         if (!exists) {
-            logger.error("File not found: " + fileName);
-            System.exit(1);
+            final String msg = "File not found: " + fileName;
+		logger.error(msg);
+//            System.exit(1);
+            throw new RuntimeException(msg) ;
+            // from the perspective of the junit testing infrastructure, a "System.exit(...)" is not a test failure ... and thus not detected.  kai, aug'16
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
@@ -235,7 +243,7 @@ public class SiloUtil {
         }
     }
 
-
+    //TODO REFACTOR SELECT METHODS TO USE GENERICS
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
         double selPos = getSum(probabilities) * SiloModel.rand.nextDouble();
@@ -678,7 +686,10 @@ public class SiloUtil {
         try {
             Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
         } catch (Exception e) {
-            logger.warn("Unable to copy properties file " + source + " to scenario output directory.");
+            final String msg = "Unable to copy properties file " + source + " to scenario output directory.";
+		logger.warn(msg);
+            throw new RuntimeException(msg) ;
+            // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16
         }
     }
 
