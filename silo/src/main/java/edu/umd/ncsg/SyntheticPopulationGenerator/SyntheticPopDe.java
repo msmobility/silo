@@ -48,6 +48,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_RASTER_CELLS                 = "raster.cells.definition";
 
     protected static final String PROPERTIES_MICRO_DATA_DWELLINGS         = "micro.data.dwellings";
+    protected static final String PROPERTIES_JOB_DESCRIPTION              = "jobs.dictionary";
 
     protected TableDataSet microDataHousehold;
     protected TableDataSet microDataPerson;
@@ -73,6 +74,7 @@ public class SyntheticPopDe {
     protected TableDataSet weightedSumRegion;
     protected TableDataSet errorHousehold;
     protected TableDataSet errorRegion;
+    protected TableDataSet jobsTable;
 
     protected int maxIterations;
     protected double maxError;
@@ -153,26 +155,12 @@ public class SyntheticPopDe {
                                 personCountTotal++;
                             }
                         }
-                    /*case "05": //Record from Baden-Wurttemberg
-                        householdNumber = convertToInteger(recString.substring(7,9));
-                        if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
-                            if (householdNumber != previousHouseholdNumber) {
-                                hhCountTotal++;
-                                personCountTotal++;
-                                previousHouseholdNumber = householdNumber; // Update the household number
-                            } else if (householdNumber == previousHouseholdNumber) {
-                                personCountTotal++;
-                            }
-                        }
-*/
                     default:
                         hhOutCountTotal++;
                         break;
                 }
             }
             logger.info("  Read " + personCountTotal + " person records " + hhCountTotal + " in households in Bavaria from file: " + pumsFileName);
-            //logger.info("  Read " + personCountTotal + " person records in Bavaria from file: " + pumsFileName);
-            //logger.info("  Read " + hhOutCountTotal + " household records outside of Bavaria from file: " + pumsFileName);
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
@@ -223,6 +211,7 @@ public class SyntheticPopDe {
         int incomeCounter = 0;
         int householdNumber = 0;
         String personalIncome;
+        String sector;
 
 
         try {
@@ -289,7 +278,7 @@ public class SyntheticPopDe {
                             personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
                             personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
                             personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
-                            personJobSector[personCount] = convertToInteger(recString.substring(101, 105)); //Systematische Übersicht der Klassifizierung der Berufe, Ausgabe 1992
+                            personJobSector[personCount] = convertToInteger(recString.substring(101, 103)); //Systematische Übersicht der Klassifizierung der Berufe, Ausgabe 1992.
                             if (personalIncome == "01") {
                                 incomeCounter = incomeCounter + 150;
                             } else if (personalIncome == "02"){
@@ -364,138 +353,6 @@ public class SyntheticPopDe {
                         } else {
                             previousHouseholdNumber = householdNumber; // Update the household number
                         }
-                   /* case "05": ////Record from Baden-Wurttemberg
-                        householdNumber = convertToInteger(recString.substring(7, 9));
-                        if (convertToInteger(recString.substring(313,314)) == 1) { //we only match private households
-                            if (householdNumber != previousHouseholdNumber) {
-                                hhCount++;
-                                hhSize[hhCount] = convertToInteger(recString.substring(323, 324));
-                                hhDwellingType[hhCount] = convertToInteger(recString.substring(476, 477)); // 1: 1-4 apartments, 2: 5-10 apartments, 3: 11 or more, 4: gemainschafts, 6: neubauten
-                                hhTotal[hhCount] = 1;
-                                if (hhSize[hhCount] == 1) {
-                                    hhSingle[hhCount] = 1;
-                                    hhSize1[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize1";
-                                } else if (hhSize[hhCount] == 2){
-                                    hhSize2[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize2";
-                                }else if (hhSize[hhCount] == 3){
-                                    hhSize3[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize3";
-                                }else if (hhSize[hhCount] == 4){
-                                    hhSize4[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize4";
-                                }else if (hhSize[hhCount] == 5){
-                                    hhSize5[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize5";
-                                }else {
-                                    hhSize6[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize6";
-                                }
-                                hhIncome[hhCount] = incomeCounter;
-                                hhId[hhCount] = convertToInteger(recString.substring(2, 9));
-                                previousHouseholdNumber = householdNumber; // Update the household number
-                                if (hhCount > 1) {
-                                    hhSizeCount[hhCount - 1] = personHHCount;
-                                    personCounts[hhCount - 1] = personCounts[hhCount - 1] + hhSize[hhCount];
-                                    hhForeigners[hhCount - 1] = foreignCount;
-                                } else {
-                                    hhSizeCount[hhCount] = hhSize[hhCount];
-                                    personCounts[hhCount] = 1;
-                                    hhForeigners[hhCount] = 1;
-                                }
-                                personHHCount = 0;
-                                incomeCounter = 0;
-                                foreignCount = 0;
-                            }
-                            age[personCount] = convertToInteger(recString.substring(25, 27));
-                            gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
-                            //logger.info("Gender " + " of person " + hhPersonCounter + " on household " + hhCount + " is: " + gender[personCount] );
-                            occupation[personCount] = convertToInteger(recString.substring(74, 75)); // 1: employed, 8: unemployed, empty: NA
-                            personId[personCount] = convertToInteger(recString.substring(2, 11));
-                            personHH[personCount] = convertToInteger(recString.substring(2, 9));
-                            personIncome[personCount] = convertToInteger(recString.substring(297, 299));
-                            personalIncome = Integer.toString(personIncome[personCount]);
-                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
-                            personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
-                            personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
-                            personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
-                            personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
-                            if (personalIncome == "01") {
-                                incomeCounter = incomeCounter + 150;
-                            } else if (personalIncome == "02"){
-                                incomeCounter = incomeCounter + 450;
-                            } else if (personalIncome == "03"){
-                                incomeCounter = incomeCounter + 800;
-                            } else if (personalIncome == "04"){
-                                incomeCounter = incomeCounter + 1200;
-                            } else if (personalIncome == "05"){
-                                incomeCounter = incomeCounter + 1600;
-                            } else if (personalIncome == "06"){
-                                incomeCounter = incomeCounter + 2000;
-                            } else if (personalIncome == "07"){
-                                incomeCounter = incomeCounter + 2350;
-                            } else if (personalIncome == "08"){
-                                incomeCounter = incomeCounter + 2750;
-                            } else if (personalIncome == "09"){
-                                incomeCounter = incomeCounter + 3250;
-                            } else if (personalIncome == "10"){
-                                incomeCounter = incomeCounter + 3750;
-                            } else if (personalIncome == "11"){
-                                incomeCounter = incomeCounter + 4250;
-                            } else if (personalIncome == "12"){
-                                incomeCounter = incomeCounter + 4750;
-                            } else if (personalIncome == "13"){
-                                incomeCounter = incomeCounter + 5250;
-                            } else if (personalIncome == "14"){
-                                incomeCounter = incomeCounter + 5750;
-                            } else if (personalIncome == "15"){
-                                incomeCounter = incomeCounter + 6250;
-                            } else if (personalIncome == "16"){
-                                incomeCounter = incomeCounter + 6750;
-                            } else if (personalIncome == "17"){
-                                incomeCounter = incomeCounter + 7250;
-                            } else if (personalIncome == "18"){
-                                incomeCounter = incomeCounter + 7750;
-                            } else if (personalIncome == "19"){
-                                incomeCounter = incomeCounter + 9000;
-                            } else if (personalIncome == "20"){
-                                incomeCounter = incomeCounter + 11000;
-                            } else if (personalIncome == "21"){
-                                incomeCounter = incomeCounter + 13750;
-                            } else if (personalIncome == "22"){
-                                incomeCounter = incomeCounter + 17500;
-                            } else if (personalIncome == "23"){
-                                incomeCounter = incomeCounter + 27500;
-                            } else if (personalIncome == "24"){
-                                incomeCounter = incomeCounter + 35000;
-                            }
-                            int row = 0;
-                            while (age[personCount] > ageBracketsPerson[row]) {
-                                row++;
-                            }
-                            if (gender[personCount] == 1) {
-                                if (occupation[personCount] == 1) {
-                                    hhMaleWorkers[hhCount]++;
-                                    hhWorkers[hhCount]++;
-                                }
-                                hhMaleAge[hhCount][row]++;
-                            } else if (gender[personCount] == 2) {
-                                if (occupation[personCount] == 1) {
-                                    hhFemaleWorkers[hhCount]++;
-                                }
-                                hhFemaleAge[hhCount][row]++;
-                                hhWorkers[hhCount]++;
-                            }
-                            if (personNationality[personCount] == 8){
-                                foreignCount++;
-                            }
-                            personCount++;
-                            personHHCount++;
-                        } else {
-                            previousHouseholdNumber = householdNumber; // Update the household number
-                        }
-*/
                 }
             }
         } catch (IOException e) {
@@ -1743,7 +1600,11 @@ public class SyntheticPopDe {
 
 
 
-        //Selection of households, per municipality
+        //Types of job
+        jobsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_DESCRIPTION));
+
+
+        //Selection of households, persons, jobs and dwellings per municipality
         for (int municipality = 0; municipality < listMunicipality.length; municipality++){
             //logger.info("   Municipality " + municipality + " started.");
 
@@ -1751,6 +1612,9 @@ public class SyntheticPopDe {
             int totalHouseholds = (int) marginalsHouseholdMatrix.getIndexedValueAt(listMunicipality[municipality],"hhTotal");
             double[] probability = weightsTable.getColumnAsDouble(listMunicipalities[municipality]);
             probability = SiloUtil.convertProbability(probability);
+
+            //for all the households that are inside the municipality (we will match perfectly the number of households. The total population will vary compared to the marginals.)
+            //TODO. Consider to add some control variable to the produced population. (i.e. if the population is less than 95% of the total population, add some extra households until population is at least 95% or number of households excess 105 % of households)
             for (int row = 0; row < totalHouseholds; row++) {
                 int record = SiloUtil.select(probability, microDataIds);
                 int householdSize = (int) microDataHousehold.getIndexedValueAt(record, "hhSize");
@@ -1768,12 +1632,19 @@ public class SyntheticPopDe {
                     int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
                     int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
                     int income = (int) microDataPerson.getValueAt(personCounter, "income");
-                    int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace");
+                    int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace"); // TODO. Change workplace to the actual raster cell where the person is working base on commute trip lengths distribution
                     if (microDataPerson.getValueAt(personCounter,"nationality") == 8) { //race is equal to other if the person is foreigner.
                         new Person(idPerson, id, age, gender, Race.other, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     } else {
                         new Person(idPerson, id, age, gender, Race.white, occupation, workplace, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     }
+                    if (occupation == 1){
+                        //We generate a new job because the person is employed
+                        int idJob = JobDataManager.getNextJobId();
+                        int jobPerson = translateJobType(Integer.toString((int) microDataPerson.getValueAt(personCounter,"jobSector")),jobsTable);
+                        //new Job(idJob,workplace,-1,JobType.getJobType(jobPerson)); //TODO. Understand job types and how to generate them
+                    }
+
                 }
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 int pumsDdType = (int) microDataHousehold.getIndexedValueAt(record, "hhDwellingType");
@@ -1820,6 +1691,29 @@ public class SyntheticPopDe {
         return type;
     }
 
+
+    private static int translateJobType (String personJob, TableDataSet jobs){
+        //translate 100 job descriptions to 4 job types
+        //jobs is one TableDataSet that is read from a csv file containing the description, ID and types of jobs.
+        String job = "OTH";
+        int jobClass = 4;
+        int finish = 0;
+        int row = 1;
+        while (finish == 0 & row < jobs.getRowCount()){
+            if (personJob == jobs.getStringValueAt(row,"Description")) {
+                finish =1;
+                job = jobs.getStringValueAt(row,"Type");
+            }
+            else {
+                row++;
+            }
+        }
+        if (job == "RET") {jobClass = 1;}
+        else if (job == "OFF") {jobClass = 2;}
+        else if (job == "IND") {jobClass = 3;}
+
+        return jobClass;
+    }
 
     private void readDwellings(){
         //Read the entry data from the dwellings of the region of Bavaria.
