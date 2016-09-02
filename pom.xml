@@ -41,7 +41,6 @@
 			<url>http://dl.bintray.com/msmobility/maven</url>
 		</repository>
 	</repositories>
-	
 	<distributionManagement>
 		<snapshotRepository>
 			<id>oss-jfrog-artifactory</id>
@@ -196,33 +195,6 @@
 		</plugins>
 	</reporting>
 
-
-	<profiles>
-          <profile>
-            <id>bintray</id>
-            <distributionManagement>
-                <!--Defining this in a separate profile, because deploying to bintray requires not building the test
-                    jar artifact, because it is too big for bintray.
-
-                    This means deploying works like this:
-
-                    mvn deploy -Pbintray
-
-                    And nothing bad will happen if you forget the -Pbintray, it just won't do it because the repository
-                    is not defined.
-
-                    -->
-                <repository>
-                    <id>bintray</id>
-                    <url>https://api.bintray.com/maven/silo/silo/silo</url>
-                </repository>
-            </distributionManagement>
-            <properties>
-                <skipTestJar>true</skipTestJar>
-            </properties>
-          </profile>
-	</profiles>
-
 	<dependencies>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -248,56 +220,25 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-main</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-referencing</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-shapefile</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-epsg-hsql</artifactId>
-			<version>${geotools.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.0.19</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-opengis</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vividsolutions</groupId>
+            <artifactId>jts</artifactId>
+            <version>1.13</version>
+        </dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jcommon</artifactId>
 			<version>1.0.23</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
-			<version>4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject.extensions</groupId>
-			<artifactId>guice-multibindings</artifactId>
-			<version>4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.trove4j</groupId>
-			<artifactId>trove4j</artifactId>
-			<version>3.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>common-base</groupId>
@@ -324,21 +265,22 @@
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>accessibility</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>${matsimVersion}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>matsim4urbansim</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>${matsimVersion}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>matrixbasedptrouter</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>${matsimVersion}</version>
 			<scope>compile</scope>
 		</dependency>
+		<!-- need the jxl dependency for the pb.common calculator, as it is requested at runtime -->
 		<dependency>
 			<groupId>jexcelapi</groupId>
 			<artifactId>jxl</artifactId>
@@ -350,5 +292,6 @@
 		<svnRevision>${buildNumber}</svnRevision>
 		<geotools.version>13.0</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-    </properties>
+		<matsimVersion>0.9.0-SNAPSHOT</matsimVersion>
+	</properties>
 </project>

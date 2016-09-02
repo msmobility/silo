@@ -29,7 +29,7 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
-import common.Logger;
+import org.apache.log4j.Logger;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.HouseholdDataManager;
