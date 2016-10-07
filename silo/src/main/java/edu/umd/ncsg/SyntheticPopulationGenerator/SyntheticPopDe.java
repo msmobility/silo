@@ -57,6 +57,7 @@ public class SyntheticPopDe {
 
     protected TableDataSet microDataHousehold;
     protected TableDataSet microDataPerson;
+    protected TableDataSet microDataDwelling;
     protected TableDataSet frequencyMatrix;
     protected TableDataSet marginalsRegionMatrix;
     protected TableDataSet marginalsHouseholdMatrix;
@@ -102,7 +103,7 @@ public class SyntheticPopDe {
         } else {
             readDataSynPop2010(); //Read the micro data from 2010
         }
-       if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
+/*       if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_DEPENDENT) == 1) {
                 runIPUAreaDependent(); //IPU fitting with two geographical resolutions
             } else {
@@ -113,7 +114,7 @@ public class SyntheticPopDe {
             readIPU();
             selectHouseholds();
         }
-        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());
+        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());*/
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -490,6 +491,8 @@ public class SyntheticPopDe {
         int hhOutCountTotal = 0;
         int personQuarterCountTotal = 0;
         int quarterCountTotal = 0;
+        int movedOut = 0;
+        int hhmovedOut = 0;
         try {
 
             BufferedReader in = new BufferedReader(new FileReader(pumsFileName));
@@ -501,7 +504,7 @@ public class SyntheticPopDe {
                 switch (recLander) {
                     case 9: //Record from Bavaria
                         householdNumber = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
-                        if (convertToInteger(recString.substring(34,35)) == 1) { //we match private households AND group quarters
+                        if (convertToInteger(recString.substring(34,35)) == 1 & convertToInteger(recString.substring(491,493)) > -5) { //private households that has not moved in the last year
                             if (householdNumber != previousHouseholdNumber) {
                                 hhCountTotal++;
                                 personCountTotal++;
@@ -509,21 +512,27 @@ public class SyntheticPopDe {
                             } else if (householdNumber == previousHouseholdNumber) {
                                 personCountTotal++;
                             }
-                        } else { //group quarter
+                        } else if (convertToInteger(recString.substring(34,35)) == 2) { //group quarter
                             personCountTotal++;
                             hhCountTotal++;
                             quarterCountTotal++;
                             personQuarterCountTotal++;
+                        } else {
+                            movedOut++;
+                            if (householdNumber != previousHouseholdNumber) {
+                                hhmovedOut++;
+                                previousHouseholdNumber = householdNumber;
+                            }
                         }
                     default:
                         hhOutCountTotal++;
                         break;
                 }
             }
-            //in.close();
             logger.info("  Read " + (personCountTotal - personQuarterCountTotal) + " person records in " +
                     (hhCountTotal - quarterCountTotal) + " private households and " + personQuarterCountTotal +
                     " person records in " + quarterCountTotal + " group quarters in Bavaria from file: " + pumsFileName);
+            logger.info("   " + movedOut + " persons from Bavaria moved in the last year. " + hhmovedOut + " households are excluded from the analysis.");
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
@@ -545,6 +554,7 @@ public class SyntheticPopDe {
         int personQuarter[] = new int[personCountTotal];
         int personEducation[] = new int[personCountTotal];
         int personStatus[] = new int[personCountTotal];
+        int personEurostat[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
         int foreignCount = 0;
@@ -604,212 +614,238 @@ public class SyntheticPopDe {
                 int recLander = convertToInteger(recString.substring(0,2));
                 switch (recLander) {
                     case 9: //Record from Bavaria //Record from Bavaria
-                        householdNumber = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
-                        //Household and dwelling characteristics
-                        if (householdNumber != previousHouseholdNumber & convertToInteger(recString.substring(34,35)) == 1) {
-                            //Private households
+                        int h1 = convertToInteger(recString.substring(2, 8));
+                        int h2 = convertToInteger(recString.substring(8, 9));
+                        int h3 = convertToInteger(recString.substring(9, 10));
+                        int h4 = convertToInteger(recString.substring(10, 11));
+                        if (h2 < 0) h2 = 0;
+                        if (h3 < 0) h3 = 0;
+                        if (h4 < 0) h4 = 0;
+                        householdNumber = h1 * 1000 + h2 * 100 + h3 * 10 + h4;
 
-                            //Household characteristics
-                            hhCount++;
-                            counterNonZero[hhCount] = hhCount;
-                            hhId[hhCount] = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));;
-                            hhQuarters[hhCount] = 0; //private household
-                            hhSize[hhCount] = convertToInteger(recString.substring(26, 28));
-                            hhTotal[hhCount] = 1;
-                            if (hhSize[hhCount] == 1) {
-                                hhSingle[hhCount] = 1;
-                                hhSize1[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize1";
-                            } else if (hhSize[hhCount] == 2){
-                                hhSize2[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize2";
-                            }else if (hhSize[hhCount] == 3){
-                                hhSize3[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize3";
-                            }else if (hhSize[hhCount] == 4){
-                                hhSize4[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize4";
-                            }else if (hhSize[hhCount] == 5){
-                                hhSize5[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize5";
-                            }else {
-                                hhSize6[hhCount] = 1;
-                                hhSizeCategory[hhCount] = "hhSize6";
+                        if (convertToInteger(recString.substring(491, 493)) == -5) {
+                            //They moved out last year and have no dwelling records.
+                            previousHouseholdNumber = householdNumber;
+                        } else {
+                            //Household and dwelling characteristics
+                            if (householdNumber != previousHouseholdNumber & convertToInteger(recString.substring(34, 35)) == 1) {
+                                //Private households
+
+                                //Household characteristics
+                                hhCount++;
+                                counterNonZero[hhCount] = hhCount;
+                                h1 = convertToInteger(recString.substring(2, 8));
+                                h2 = convertToInteger(recString.substring(8, 9));
+                                h3 = convertToInteger(recString.substring(9, 10));
+                                h4 = convertToInteger(recString.substring(10, 11));
+                                if (h1 <= 0) h1 = 0;
+                                if (h2 <= 0) h2 = 0;
+                                if (h3 <= 0) h3 = 0;
+                                if (h4 <= 0) h4 = 0;
+                                //logger.info(h1 + " "+h2 + " "+h3 + " "+h4);
+                                householdNumber = h1 * 1000 + h2 * 100 + h3 * 10 + h4;
+                                hhId[hhCount] = householdNumber;
+                                hhQuarters[hhCount] = 0; //private household
+                                hhSize[hhCount] = convertToInteger(recString.substring(26, 28));
+                                hhTotal[hhCount] = 1;
+                                if (hhSize[hhCount] == 1) {
+                                    hhSingle[hhCount] = 1;
+                                    hhSize1[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize1";
+                                } else if (hhSize[hhCount] == 2) {
+                                    hhSize2[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize2";
+                                } else if (hhSize[hhCount] == 3) {
+                                    hhSize3[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize3";
+                                } else if (hhSize[hhCount] == 4) {
+                                    hhSize4[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize4";
+                                } else if (hhSize[hhCount] == 5) {
+                                    hhSize5[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize5";
+                                } else {
+                                    hhSize6[hhCount] = 1;
+                                    hhSizeCategory[hhCount] = "hhSize6";
+                                }
+                                if (hhCount > 1 & hhCount < hhCountTotal - 1) {
+                                    hhSizeCount[hhCount - 1] = personHHCount;
+                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                    hhForeigners[hhCount - 1] = foreignCount;
+                                } else if (hhCount == hhCountTotal - 1) {
+                                    hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
+                                    hhForeigners[hhCount - 1] = foreignCount;
+                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                } else {
+                                    hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = hhSize[hhCount];
+                                    hhForeigners[hhCount] = 1;
+                                }
+
+                                //dwelling characteristics
+                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated.
+                                dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
+                                dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
+                                dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
+                                dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512
+                                if (dwellingYear[hhCount] > 0 & dwellingYear[hhCount] < 10) { //Only consider the ones with
+                                    int row = 0;
+                                    while (dwellingYear[hhCount] > yearBracketsDwelling[row]) {
+                                        row++;
+                                    }
+                                    if (dwellingType[hhCount] == 1) {
+                                        dwSmallYear[hhCount][row] = 1;
+                                    } else if (dwellingType[hhCount] > 1) {
+                                        dwMediumYear[hhCount][row] = 1; //also includes the not stated.
+                                    }
+                                }
+                                if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
+                                    dwOwned[hhCount] = 1;
+                                    dwellingUsage[hhCount] = 1;
+                                } else if (dwellingUsage[hhCount] > 0) {
+                                    dwRented[hhCount] = 1;
+                                    dwellingUsage[hhCount] = 2;
+                                }
+                                int row1 = 0;
+                                while (dwellingSpace[hhCount] > sizeBracketsDwelling[row1]) {
+                                    row1++;
+                                }
+                                dwFloorSpace[hhCount][row1] = 1;
+
+                                //Update household number and person counters for the next private household
+                                previousHouseholdNumber = householdNumber;
+                                personHHCount = 0;
+                                foreignCount = 0;
+
+                            } else if (convertToInteger(recString.substring(34, 35)) == 2) {
+                                //Group quarter
+                                hhCount++;
+                                counterNonZero[hhCount] = hhCount;
+                                quarterCounter++;
+                                hhSize[hhCount] = 1; //we put 1 instead of the quarter size because each person in group quarter has its own household
+                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings: 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated
+                                hhQuarters[hhCount] = 1; //group quarter
+                                hhSizeCategory[hhCount] = "group quarter";
+                                hhId[hhCount] = quarterCounter;
+                                quarterId[hhCount] = householdNumber;
+                                if (hhCount > 1 & hhCount < hhCountTotal - 1) {
+                                    hhSizeCount[hhCount - 1] = personHHCount;
+                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                    hhForeigners[hhCount - 1] = foreignCount;
+                                } else if (hhCount == hhCountTotal - 1) {
+                                    hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
+                                    hhForeigners[hhCount - 1] = foreignCount;
+                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                } else {
+                                    hhSizeCount[hhCount] = hhSize[hhCount];
+                                    personCounts[hhCount] = hhSize[hhCount];
+                                    hhForeigners[hhCount] = 1;
+                                }
+
+                                //dwelling characteristics are copied, but they should be equal to -1
+                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated, -1: group quarter.
+                                dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
+                                dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
+                                dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
+                                dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
+                                if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
+                                    dwellingUsage[hhCount] = 1;
+                                } else if (dwellingUsage[hhCount] < 5 & dwellingUsage[hhCount] > 0) {
+                                    dwellingUsage[hhCount] = 2;
+                                }
+                                //All dwelling characteristics for IPU are for private households rather than group quarters.
+
+                                //Update household number and person counters for the next private household
+                                previousHouseholdNumber = householdNumber;
+                                personHHCount = 0;
+                                foreignCount = 0;
                             }
-                            if (hhCount > 1 & hhCount < hhCountTotal - 1) {
-                                hhSizeCount[hhCount - 1] = personHHCount;
-                                personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                hhForeigners[hhCount - 1] = foreignCount;
-                            } else if (hhCount == hhCountTotal - 1) {
-                                hhSizeCount[hhCount] = hhSize[hhCount];
-                                personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
-                                hhForeigners[hhCount - 1] = foreignCount;
-                                personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+
+                            //Person characteristics
+                            age[personCount] = convertToInteger(recString.substring(50, 52)); // 0 to 95. 95 includes 95+
+                            gender[personCount] = convertToInteger(recString.substring(54, 55)); // 1: male; 2: female
+                            occupation[personCount] = convertToInteger(recString.substring(32, 33)); // 1: employed, 2: unemployed, 3: unemployed looking for job, 4: children and retired
+                            personId[personCount] = householdNumber * 100 + convertToInteger(recString.substring(11, 12)) * 10 + convertToInteger(recString.substring(12, 13));
+                            personHH[personCount] = householdNumber;
+                            personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
+                            personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
+                            personEurostat[personCount] = convertToInteger(recString.substring(35, 36)); //definition of person according to EuroStat.
+                            if (occupation[personCount] == 1) { // Only employed persons respond to the sector
+                                personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
+                            }
+                            personTelework[personCount] = convertToInteger(recString.substring(198, 200)); //If they telework
+                            if (personTelework[personCount] < 0) {
+                                personTelework[personCount] = 0;
+                            }
+                            personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
+                            int education = convertToInteger(recString.substring(323, 325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
+                            if (education == 10) {
+                                personEducation[personCount] = 6;
+                            } else if (education == 9) {
+                                personEducation[personCount] = 5;
+                            } else if (education == 6) {
+                                personEducation[personCount] = 2;
+                            } else if (education < 6) {
+                                personEducation[personCount] = 1;
+                            } else if (education > 6) {
+                                personEducation[personCount] = 4;
                             } else {
-                                hhSizeCount[hhCount] = hhSize[hhCount];
-                                personCounts[hhCount] = hhSize[hhCount];
-                                hhForeigners[hhCount] = 1;
+                                personEducation[personCount] = 0;
                             }
-
-                            //dwelling characteristics
-                            dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated.
-                            dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
-                            dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
-                            dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
-                            dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
-                            if (dwellingYear[hhCount] > 0 & dwellingYear[hhCount] < 10){ //Only consider the ones with
-                                int row = 0;
-                                while (dwellingYear[hhCount] > yearBracketsDwelling[row]){
-                                    row++;
-                                }
-                                if (dwellingType[hhCount] == 1){
-                                    dwSmallYear[hhCount][row] = 1;
-                                } else if (dwellingType[hhCount] > 1){
-                                    dwMediumYear[hhCount][row] = 1; //also includes the not stated.
-                                }
+                            int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
+                            if (marital == 2) {
+                                personStatus[personCount] = 2;
+                            } else {
+                                personStatus[personCount] = 1;
                             }
-                            if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0){
-                                dwOwned[hhCount] = 1;
-                                dwellingUsage[hhCount] = 1;
-                            } else if (dwellingUsage[hhCount] > 0) {
-                                dwRented[hhCount] = 1;
-                                dwellingUsage[hhCount] = 2;
+                            if (age[personCount] < 15) {
+                                personStatus[personCount] = 3;
+                            }
+                            int row = 0;
+                            while (age[personCount] > ageBracketsPerson[row]) {
+                                row++;
                             }
                             int row1 = 0;
-                            while (dwellingSpace[hhCount] > sizeBracketsDwelling[row1]){
+                            while (age[personCount] > ageBracketsPersonQuarter[row1]) {
                                 row1++;
                             }
-                            dwFloorSpace[hhCount][row1] = 1;
-
-                            //Update household number and person counters for the next private household
-                            previousHouseholdNumber = householdNumber;
-                            personHHCount = 0;
-                            foreignCount = 0;
-
-                        } else if (convertToInteger(recString.substring(34,35)) == 2) {
-                            //Group quarter
-                            hhCount++;
-                            counterNonZero[hhCount] = hhCount;
-                            quarterCounter++;
-                            hhSize[hhCount] = 1; //we put 1 instead of the quarter size because each person in group quarter has its own household
-                            dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings: 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated
-                            hhQuarters[hhCount] = 1; //group quarter
-                            hhSizeCategory[hhCount] = "group quarter";
-                            hhId[hhCount] = quarterCounter;
-                            quarterId[hhCount] = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));; //we keep the record from the group quarter
-                            if (hhCount > 1 & hhCount < hhCountTotal - 1) {
-                                hhSizeCount[hhCount - 1] = personHHCount;
-                                personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                hhForeigners[hhCount - 1] = foreignCount;
-                            } else if (hhCount == hhCountTotal - 1) {
-                                hhSizeCount[hhCount] = hhSize[hhCount];
-                                personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
-                                hhForeigners[hhCount - 1] = foreignCount;
-                                personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                            } else {
-                                hhSizeCount[hhCount] = hhSize[hhCount];
-                                personCounts[hhCount] = hhSize[hhCount];
-                                hhForeigners[hhCount] = 1;
+                            if (gender[personCount] == 1) {
+                                if (occupation[personCount] == 1) {
+                                    hhMaleWorkers[hhCount]++;
+                                    hhWorkers[hhCount]++;
+                                }
+                                if (personQuarter[personCount] == 1) {
+                                    hhMaleAge[hhCount][row]++;
+                                } else {
+                                    quarterMaleAge[hhCount][row1]++;
+                                }
+                            } else if (gender[personCount] == 2) {
+                                if (occupation[personCount] == 1) {
+                                    hhFemaleWorkers[hhCount]++;
+                                    hhWorkers[hhCount]++;
+                                }
+                                if (personQuarter[personCount] == 1) {
+                                    hhFemaleAge[hhCount][row]++;
+                                } else {
+                                    quarterFemaleAge[hhCount][row1]++;
+                                }
                             }
-
-                            //dwelling characteristics are copied, but they should be equal to -1
-                            dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated, -1: group quarter.
-                            dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
-                            dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
-                            dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
-                            dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
-                            if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0){
-                                dwellingUsage[hhCount] = 1;
-                            } else if (dwellingUsage[hhCount] < 5 & dwellingUsage[hhCount] > 0) {
-                                dwellingUsage[hhCount] = 2;
+                            if (personNationality[personCount] == 8) {
+                                foreignCount++;
                             }
-                            //All dwelling characteristics for IPU are for private households rather than group quarters.
-
-                            //Update household number and person counters for the next private household
-                            previousHouseholdNumber = householdNumber;
-                            personHHCount = 0;
-                            foreignCount = 0;
+                            personCount++;
+                            personHHCount++;
                         }
-
-                        //Person characteristics
-                        age[personCount] = convertToInteger(recString.substring(50, 52)); // 0 to 95. 95 includes 95+
-                        gender[personCount] = convertToInteger(recString.substring(54, 55)); // 1: male; 2: female
-                        occupation[personCount] = convertToInteger(recString.substring(32, 33)); // 1: employed, 2: unemployed, 3: unemployed looking for job, 4: children and retired
-                        personId[personCount] = convertToInteger(recString.substring(2,8)) * 100000 + convertToInteger(recString.substring(8,11)) * 100 + convertToInteger(recString.substring(11,13));
-                        personHH[personCount] = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
-                        personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
-                        personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
-                        if (occupation[personCount] == 1){ // Only employed persons respond to the sector
-                            personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
-                        }
-                        personTelework[personCount] =  convertToInteger(recString.substring(198, 200)); //If they telework
-                        if (personTelework[personCount] < 0){
-                            personTelework[personCount] = 0;
-                        }
-                        personQuarter[personCount] = convertToInteger(recString.substring(34,35)); // 1: private household, 2: group quarter
-                        int education = convertToInteger(recString.substring(323,325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
-                        if (education == 10){
-                            personEducation[personCount] = 6;
-                        } else if (education == 9){
-                            personEducation[personCount] = 5;
-                        } else if (education == 6) {
-                            personEducation[personCount] = 2;
-                        } else if (education < 6) {
-                            personEducation[personCount] = 1;
-                        } else if (education > 6) {
-                            personEducation[personCount] = 4;
-                        } else {
-                            personEducation[personCount] = 0;
-                        }
-                        int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
-                        if (marital == 2){
-                            personStatus[personCount] = 2;
-                        } else {
-                            personStatus[personCount] = 1;
-                        }
-                        if (age[personCount] < 15){
-                            personStatus[personCount] = 3;
-                        }
-                        int row = 0;
-                        while (age[personCount] > ageBracketsPerson[row]) {
-                            row++;
-                        }
-                        int row1 = 0;
-                        while (age[personCount] > ageBracketsPersonQuarter[row1]) {
-                            row1++;
-                        }
-                        if (gender[personCount] == 1) {
-                            if (occupation[personCount] == 1) {
-                                hhMaleWorkers[hhCount]++;
-                                hhWorkers[hhCount]++;
-                            }
-                            if (personQuarter[personCount] == 1) {
-                                hhMaleAge[hhCount][row]++;
-                            } else {
-                                quarterMaleAge[hhCount][row1]++;
-                            }
-                        } else if (gender[personCount] == 2) {
-                            if (occupation[personCount] == 1) {
-                                hhFemaleWorkers[hhCount]++;
-                                hhWorkers[hhCount]++;
-                            }
-                            if (personQuarter[personCount] == 1) {
-                                hhFemaleAge[hhCount][row]++;
-                            } else {
-                                quarterFemaleAge[hhCount][row1]++;
-                            }
-                        }
-                        if (personNationality[personCount] == 8){
-                            foreignCount++;
-                        }
-                        personCount++;
-                        personHHCount++;
                 }
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
+
+        //logger.info(hhId[0] + " " + hhId[hhId.length-1] + " " + householdNumber);
 
         //Copy attributes to the person micro data
         TableDataSet microPersons = new TableDataSet();
@@ -824,6 +860,7 @@ public class SyntheticPopDe {
         microPersons.appendColumn(personTelework,"telework");
         microPersons.appendColumn(personSubsample,"subsample");
         microPersons.appendColumn(personQuarter,"privateHousehold");
+        microPersons.appendColumn(personEurostat,"euroStat");
         microPersons.appendColumn(personEducation,"educationLevel");
         microPersons.appendColumn(personStatus,"maritalStatus");
         microDataPerson = microPersons;
@@ -858,6 +895,11 @@ public class SyntheticPopDe {
         microRecords.appendColumn(hhSizeCategory,"hhSizeCategory");
         microRecords.appendColumn(hhQuarters,"groupQuarters");
         microRecords.appendColumn(quarterId,"microRecord");
+        microRecords.appendColumn(dwellingType,"dwellingType"); //Number of dwellings in the building.
+        microRecords.appendColumn(dwellingUsage,"dwellingUsage"); //Who lives on the dwelling: owner (1) or tenant (2)
+        microRecords.appendColumn(dwellingYear,"dwellingYear"); //Construction year. It has the categories from the micro data
+        microRecords.appendColumn(dwellingSpace,"dwellingFloorSpace"); //Floor space of the dwelling
+        microRecords.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
 
@@ -878,6 +920,8 @@ public class SyntheticPopDe {
         microDwellings.appendColumn(dwellingYear,"dwellingYear"); //Construction year. It has the categories from the micro data
         microDwellings.appendColumn(dwellingSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microDwellings.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
+        microDataDwelling = microDwellings;
+        microDataDwelling.buildIndex(microDataDwelling.getColumnPosition("dwellingID"));
 
 
         //Copy attributes to the frequency matrix (IPU)
@@ -1213,6 +1257,7 @@ public class SyntheticPopDe {
         marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX)); //all the marginals from the region
         marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
         int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
+        int[] nonZeroIds = frequencyMatrix.getColumnAsInt("IDnonZero");
         frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
 
 
@@ -1283,9 +1328,9 @@ public class SyntheticPopDe {
         //Create the collapsed version of the frequency matrix(common for all)
         TableDataSet nonZero = new TableDataSet();
         TableDataSet nonZeroSize = new TableDataSet();
-        nonZero.appendColumn(microDataIds,"ID");
+        nonZero.appendColumn(nonZeroIds,"IDnonZero");
         int[] dummy0 = {0,0};
-        nonZeroSize.appendColumn(dummy0,"ID");
+        nonZeroSize.appendColumn(dummy0,"IDnonZero");
         for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
             int[] nonZeroVector = new int[microDataIds.length];
             int[] sumNonZero = {0, 0};
@@ -1310,8 +1355,8 @@ public class SyntheticPopDe {
             nonZero.appendColumn(nonZeroVector, attributesHousehold[attribute]);
             nonZeroSize.appendColumn(sumNonZero, attributesHousehold[attribute]);
         }
-        nonZero.buildIndex(nonZero.getColumnPosition("ID"));
-        nonZeroSize.buildIndex(nonZeroSize.getColumnPosition("ID"));
+        nonZero.buildIndex(nonZero.getColumnPosition("IDnonZero"));
+        nonZeroSize.buildIndex(nonZeroSize.getColumnPosition("IDnonZero"));
 
 
         //Create the weights table (for all the municipalities)
@@ -1452,7 +1497,6 @@ public class SyntheticPopDe {
             float factor = 0f;
             int position = 0;
             float minError = 100000;
-            float weightedSum = 0f;
             float error = 0f;
 
             initialError = ResourceUtil.getDoubleProperty(rb, PROPERTIES_INITIAL_ERROR, 1000);
@@ -1475,7 +1519,7 @@ public class SyntheticPopDe {
                             weighted_sum;
                     for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
                         for (int row = 0; row < lengthMicroData.getValueAt(1, attributesRegionList[attribute]); row++) {
-                            position = (int) collapsedMicroData.getIndexedValueAt(microDataIds[row], attributesRegionList[attribute]);
+                            position = (int) collapsedMicroData.getIndexedValueAt(nonZeroIds[row], attributesRegionList[attribute]);
                             float previous_weight = weights.getValueAt(position, municipalitiesIDs[municipality]);
                             weights.setValueAt(position, municipalitiesIDs[municipality], factor * previous_weight);
                         }
@@ -1495,7 +1539,7 @@ public class SyntheticPopDe {
                         factor = marginalsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHouseholdList[attribute]) /
                                 weighted_sum;
                         for (int row = 0; row < lengthMicroData.getValueAt(1, attributesHouseholdList[attribute]); row++) {
-                            position = (int) collapsedMicroData.getIndexedValueAt(microDataIds[row], attributesHouseholdList[attribute]);
+                            position = (int) collapsedMicroData.getIndexedValueAt(nonZeroIds[row], attributesHouseholdList[attribute]);
                             float previous_weight = weights.getValueAt(position, municipalitiesIDs[municipality]);
                             weights.setValueAt(position, municipalitiesIDs[municipality], factor * previous_weight);
                         }
@@ -1867,13 +1911,13 @@ public class SyntheticPopDe {
 
                 //Copy the dwelling of that household
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                int pumsDdType = 1; //(int) microDataHousehold.getIndexedValueAt(idHHmicroData, "hhDwellingType")
-                DwellingType ddType = translateDwellingType(pumsDdType);
-                int bedRooms = 1; //marginal data at the municipality level
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built.
-                int price = 1; //not significant at this point
-                int year = 2000; //not significant at this point
-                new Dwelling(newDdId, householdCell, id, ddType, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                int pumsDdType = (int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingType");
+                //DwellingType ddType = translateDwellingType(pumsDdType);
+                int bedRooms = 1; //Not on the micro data
+                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
+                int price = 1; //Monte Carlo
+                int year =(int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingYear");
+                new Dwelling(newDdId, householdCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
 
 
 /*           //update the probability of the record of being selected on the next draw. It increases the error on population due to round-up errors
@@ -1945,6 +1989,7 @@ public class SyntheticPopDe {
             errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters64",quartersFemaleAge[2]);
             errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters99",quartersFemaleAge[3]);
 
+
             float averageError = 0f;
             for (int row = 0; row < attributesHousehold.length; row++){
                 float error = errorsSynPop.getIndexedValueAt(cityID[municipality],attributesHousehold[row])-
@@ -1971,21 +2016,27 @@ public class SyntheticPopDe {
 
 
     private DwellingType translateDwellingType (int pumsDdType) {
-        // translate 10 PUMA into 6 MetCouncil Dwelling Types
+        // translate micro census dwelling types into 6 MetCouncil Dwelling Types
 
         // Available in MICRO CENSUS:
-//        V 01 . Small building (1-4 apartments)
-//        V 02 . Medium buildings (5-10 apartments)
-//        V 03 . Big buildings (11 or more apartments)
-//        V 04 . Group quarter (Gemeinschafts)
-//        V 06 . Neubaten
+//        V 01 . Building with 1-2 apartments
+//        V 02 . Building with 3-6 apartments
+//        V 03 . Building with 1-12 apartments
+//        V 04 . Building with 13-20 apartments
+//        V 05 . Building with 21+ apartments
+//        V 09 . Not stated
+//        V -1 . Living in group quarter
+//        V -5 . Moved in the last 12 months
+
 
         DwellingType type;
-        if (pumsDdType == 1) type = DwellingType.MF234; //duplexes and buildings 2-4 units
-        else if (pumsDdType == 6) type = DwellingType.SFD; //single-family house detached
+        if (pumsDdType == 2) type = DwellingType.MF234; //duplexes and buildings 2-4 units
+        else if (pumsDdType == 1) type = DwellingType.SFD; //single-family house detached
         //else if (pumsDdType == 3) type = DwellingType.SFA;//single-family house attached or townhouse
         //else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MH; //mobile home
-        else if (pumsDdType >= 2 && pumsDdType <= 4) type = DwellingType.MF5plus; //multifamily houses with 5+ units
+        else if (pumsDdType >= 3 ) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that not stated are 5+units
+        else if (pumsDdType == -1) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that group quarters are 5+ units
+        else if (pumsDdType == -5) type = DwellingType.MH; //mobile home; //mobile home. Assumes that group quarters are 5+ units
         else {
             logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
