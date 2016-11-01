@@ -1,6 +1,6 @@
 package de.tum.bgu.msm;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 
@@ -9,8 +9,12 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.population.io.PopulationReader;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
@@ -198,9 +202,21 @@ public class SiloMatsimTest {
 		}
 		{
 			log.info("checking MATSim plans file ...");
-			long checksum_ref = CRCChecksum.getCRCFromFile( utils.getInputDirectory() + "./test_reduced_2001.0.plans.xml.gz");
-			long checksum_run = CRCChecksum.getCRCFromFile(utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.plans.xml.gz");
-			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
+
+			final String referenceFilename = utils.getInputDirectory() + "./test_reduced_2001.0.plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.plans.xml.gz";
+
+			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
+			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
+			
+			new PopulationReader(scRef).readFile(referenceFilename);
+			new PopulationReader(scOut).readFile(outputFilename);
+			
+			assertTrue( "MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ; 
+			
+//			long checksum_ref = CRCChecksum.getCRCFromFile( referenceFilename);
+//			long checksum_run = CRCChecksum.getCRCFromFile(outputFilename);
+//			assertEquals("MATSim plans files are different",  checksum_ref, checksum_run);
 		}{
 			log.info("checking MATSim events file ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "./test_reduced_2001.0.events.xml.gz";
