@@ -19,7 +19,7 @@ import de.tum.bgu.msm.data.summarizeData;
  * @author dziemke
  */
 
-public class SiloMatsim {
+public final class SiloMatsim {
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
 
 //	public static void main(String[] args) {
@@ -39,13 +39,13 @@ public class SiloMatsim {
 	/**
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
-	SiloMatsim(String[] args, Config config) {
+	public SiloMatsim(String[] args, Config config) {
 		SiloUtil.setBaseYear(2000);
 		rb = SiloUtil.siloInitialization(args);
 		matsimConfig = config ;
 	}	    
 
-	void run() {
+	public final void run() {
 		// main run method
 		long startTime = System.currentTimeMillis();
 		try {
