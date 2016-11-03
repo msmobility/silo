@@ -271,7 +271,7 @@
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>${matsimVersion}</version>
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
