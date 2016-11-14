@@ -103,7 +103,7 @@ public class SyntheticPopDe {
         } else {
             readDataSynPop2010(); //Read the micro data from 2010
         }
-/*       if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
+       if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_DEPENDENT) == 1) {
                 runIPUAreaDependent(); //IPU fitting with two geographical resolutions
             } else {
@@ -114,7 +114,7 @@ public class SyntheticPopDe {
             readIPU();
             selectHouseholds();
         }
-        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());*/
+        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -493,6 +493,7 @@ public class SyntheticPopDe {
         int quarterCountTotal = 0;
         int movedOut = 0;
         int hhmovedOut = 0;
+        int ddIncomplete = 0;
         try {
 
             BufferedReader in = new BufferedReader(new FileReader(pumsFileName));
@@ -506,9 +507,14 @@ public class SyntheticPopDe {
                         householdNumber = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
                         if (convertToInteger(recString.substring(34,35)) == 1 & convertToInteger(recString.substring(491,493)) > -5) { //private households that has not moved in the last year
                             if (householdNumber != previousHouseholdNumber) {
-                                hhCountTotal++;
-                                personCountTotal++;
-                                previousHouseholdNumber = householdNumber; // Update the household number
+                                if (convertToInteger(recString.substring(491,493)) == 9 || convertToInteger(recString.substring(493,495)) == 9 ||
+                                        convertToInteger(recString.substring(500,502)) == 99 ){ //incomplete dwelling record (either number of apartments in the building, use or construction year
+                                    ddIncomplete++;
+                                } else {
+                                    hhCountTotal++;
+                                    personCountTotal++;
+                                    previousHouseholdNumber = householdNumber; // Update the household number
+                                }
                             } else if (householdNumber == previousHouseholdNumber) {
                                 personCountTotal++;
                             }
@@ -533,6 +539,7 @@ public class SyntheticPopDe {
                     (hhCountTotal - quarterCountTotal) + " private households and " + personQuarterCountTotal +
                     " person records in " + quarterCountTotal + " group quarters in Bavaria from file: " + pumsFileName);
             logger.info("   " + movedOut + " persons from Bavaria moved in the last year. " + hhmovedOut + " households are excluded from the analysis.");
+            logger.info("   " + ddIncomplete + " incomplete dwelling records. They are excluded from the analysis.");
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
@@ -595,13 +602,14 @@ public class SyntheticPopDe {
         int dwOwned[] = new int[hhCountTotal];
         int dwRented[] = new int[hhCountTotal];
         int dwellingUsage[] = new int[hhCountTotal];
-        int dwellingSpace[] = new int[hhCountTotal];
-        int dwellingYear[] = new int[hhCountTotal];
+        int dwellingFloorSpace[] = new int[hhCountTotal];
+        int dwellingYearConstruction[] = new int[hhCountTotal];
         int dwSmallYear[][] = new int[hhCountTotal][yearBracketsDwelling.length];
         int dwMediumYear[][] = new int[hhCountTotal][yearBracketsDwelling.length];
         int dwFloorSpace[][] = new int[hhCountTotal][sizeBracketsDwelling.length];
-        int dwellingType[] = new int[hhCountTotal];
+        int dwellingBuildingSize[] = new int[hhCountTotal];
         int dwellingRent[] = new int[hhCountTotal];
+        ddIncomplete = 0;
         String personalIncome;
         String sector;
 
@@ -627,216 +635,235 @@ public class SyntheticPopDe {
                             //They moved out last year and have no dwelling records.
                             previousHouseholdNumber = householdNumber;
                         } else {
-                            //Household and dwelling characteristics
-                            if (householdNumber != previousHouseholdNumber & convertToInteger(recString.substring(34, 35)) == 1) {
-                                //Private households
+                            if (convertToInteger(recString.substring(491, 493)) == 9 || convertToInteger(recString.substring(493, 495)) == 9 ||
+                                    convertToInteger(recString.substring(500, 502)) == 99) {
+                                //Incomplete dwelling record
+                                ddIncomplete++;
+                            } else {
+                                if (householdNumber != previousHouseholdNumber & convertToInteger(recString.substring(34, 35)) == 1) {
+                                    //Private household
 
-                                //Household characteristics
-                                hhCount++;
-                                counterNonZero[hhCount] = hhCount;
-                                h1 = convertToInteger(recString.substring(2, 8));
-                                h2 = convertToInteger(recString.substring(8, 9));
-                                h3 = convertToInteger(recString.substring(9, 10));
-                                h4 = convertToInteger(recString.substring(10, 11));
-                                if (h1 <= 0) h1 = 0;
-                                if (h2 <= 0) h2 = 0;
-                                if (h3 <= 0) h3 = 0;
-                                if (h4 <= 0) h4 = 0;
-                                //logger.info(h1 + " "+h2 + " "+h3 + " "+h4);
-                                householdNumber = h1 * 1000 + h2 * 100 + h3 * 10 + h4;
-                                hhId[hhCount] = householdNumber;
-                                hhQuarters[hhCount] = 0; //private household
-                                hhSize[hhCount] = convertToInteger(recString.substring(26, 28));
-                                hhTotal[hhCount] = 1;
-                                if (hhSize[hhCount] == 1) {
-                                    hhSingle[hhCount] = 1;
-                                    hhSize1[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize1";
-                                } else if (hhSize[hhCount] == 2) {
-                                    hhSize2[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize2";
-                                } else if (hhSize[hhCount] == 3) {
-                                    hhSize3[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize3";
-                                } else if (hhSize[hhCount] == 4) {
-                                    hhSize4[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize4";
-                                } else if (hhSize[hhCount] == 5) {
-                                    hhSize5[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize5";
-                                } else {
-                                    hhSize6[hhCount] = 1;
-                                    hhSizeCategory[hhCount] = "hhSize6";
-                                }
-                                if (hhCount > 1 & hhCount < hhCountTotal - 1) {
-                                    hhSizeCount[hhCount - 1] = personHHCount;
-                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                    hhForeigners[hhCount - 1] = foreignCount;
-                                } else if (hhCount == hhCountTotal - 1) {
-                                    hhSizeCount[hhCount] = hhSize[hhCount];
-                                    personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
-                                    hhForeigners[hhCount - 1] = foreignCount;
-                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                } else {
-                                    hhSizeCount[hhCount] = hhSize[hhCount];
-                                    personCounts[hhCount] = hhSize[hhCount];
-                                    hhForeigners[hhCount] = 1;
+                                    //Household characteristics
+                                    hhCount++;
+                                    counterNonZero[hhCount] = hhCount;
+                                    h1 = convertToInteger(recString.substring(2, 8));
+                                    h2 = convertToInteger(recString.substring(8, 9));
+                                    h3 = convertToInteger(recString.substring(9, 10));
+                                    h4 = convertToInteger(recString.substring(10, 11));
+                                    if (h1 <= 0) h1 = 0;
+                                    if (h2 <= 0) h2 = 0;
+                                    if (h3 <= 0) h3 = 0;
+                                    if (h4 <= 0) h4 = 0;
+                                    //logger.info(h1 + " "+h2 + " "+h3 + " "+h4);
+                                    householdNumber = h1 * 1000 + h2 * 100 + h3 * 10 + h4;
+                                    hhId[hhCount] = householdNumber;
+                                    hhQuarters[hhCount] = 0; //private household
+                                    hhSize[hhCount] = convertToInteger(recString.substring(26, 28));
+                                    hhTotal[hhCount] = 1;
+                                    if (hhSize[hhCount] == 1) {
+                                        hhSingle[hhCount] = 1;
+                                        hhSize1[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize1";
+                                    } else if (hhSize[hhCount] == 2) {
+                                        hhSize2[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize2";
+                                    } else if (hhSize[hhCount] == 3) {
+                                        hhSize3[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize3";
+                                    } else if (hhSize[hhCount] == 4) {
+                                        hhSize4[hhCount] = 1;
+                                        //hhSize3[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize4";
+                                    } else if (hhSize[hhCount] == 5) {
+                                        hhSize5[hhCount] = 1;
+                                        //hhSize4[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize5";
+                                    } else {
+                                        hhSize6[hhCount] = 1;
+                                        //hhSize4[hhCount] = 1;
+                                        hhSizeCategory[hhCount] = "hhSize6";
+                                    }
+                                    if (hhCount > 1 & hhCount < hhCountTotal - 1) {
+                                        hhSizeCount[hhCount - 1] = personHHCount;
+                                        personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                        hhForeigners[hhCount - 1] = foreignCount;
+                                    } else if (hhCount == hhCountTotal - 1) {
+                                        hhSizeCount[hhCount] = hhSize[hhCount];
+                                        personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
+                                        hhForeigners[hhCount - 1] = foreignCount;
+                                        personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                    } else {
+                                        hhSizeCount[hhCount] = hhSize[hhCount];
+                                        personCounts[hhCount] = hhSize[hhCount];
+                                        hhForeigners[hhCount] = 1;
+                                    }
+
+                                    //dwelling characteristics
+                                    dwellingBuildingSize[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated.
+                                    dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
+                                    dwellingYearConstruction[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
+                                    dwellingFloorSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
+                                    dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512
+                                    if (dwellingYearConstruction[hhCount] > 0 & dwellingYearConstruction[hhCount] < 10) { //Only consider the ones with
+                                        int row = 0;
+                                        while (dwellingYearConstruction[hhCount] > yearBracketsDwelling[row]) {
+                                            row++;
+                                        }
+                                        if (dwellingBuildingSize[hhCount] == 1) {
+                                            dwSmallYear[hhCount][row] = 1;
+                                        } else if (dwellingBuildingSize[hhCount] > 1) {
+                                            dwMediumYear[hhCount][row] = 1; //also includes the not stated.
+                                        }
+                                    }
+                                    if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
+                                        dwOwned[hhCount] = 1;
+                                        dwellingUsage[hhCount] = 1;
+                                    } else if (dwellingUsage[hhCount] > 0) {
+                                        dwRented[hhCount] = 1;
+                                        dwellingUsage[hhCount] = 2;
+                                    }
+                                    int row1 = 0;
+                                    while (dwellingFloorSpace[hhCount] > sizeBracketsDwelling[row1]) {
+                                        row1++;
+                                    }
+                                    dwFloorSpace[hhCount][row1] = 1;
+
+                                    //Update household number and person counters for the next private household
+                                    previousHouseholdNumber = householdNumber;
+                                    personHHCount = 0;
+                                    foreignCount = 0;
+
+                                } else if (convertToInteger(recString.substring(34, 35)) == 2) {
+                                    //Group quarter
+                                    hhCount++;
+                                    counterNonZero[hhCount] = hhCount;
+                                    quarterCounter++;
+                                    hhSize[hhCount] = 1; //we put 1 instead of the quarter size because each person in group quarter has its own household
+                                    dwellingBuildingSize[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings: 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated
+                                    hhQuarters[hhCount] = 1; //group quarter
+                                    hhSizeCategory[hhCount] = "group quarter";
+                                    hhId[hhCount] = quarterCounter;
+                                    quarterId[hhCount] = householdNumber;
+                                    if (hhCount > 1 & hhCount < hhCountTotal - 1) {
+                                        hhSizeCount[hhCount - 1] = personHHCount;
+                                        personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                        hhForeigners[hhCount - 1] = foreignCount;
+                                    } else if (hhCount == hhCountTotal - 1) {
+                                        hhSizeCount[hhCount] = hhSize[hhCount];
+                                        personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
+                                        hhForeigners[hhCount - 1] = foreignCount;
+                                        personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
+                                    } else {
+                                        hhSizeCount[hhCount] = hhSize[hhCount];
+                                        personCounts[hhCount] = hhSize[hhCount];
+                                        hhForeigners[hhCount] = 1;
+                                    }
+
+                                    //dwelling characteristics are copied, but they should be equal to -1
+                                    dwellingBuildingSize[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated, -1: group quarter.
+                                    dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
+                                    dwellingYearConstruction[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
+                                    dwellingFloorSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
+                                    dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
+                                    if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
+                                        dwellingUsage[hhCount] = 1;
+                                    } else if (dwellingUsage[hhCount] < 5 & dwellingUsage[hhCount] > 0) {
+                                        dwellingUsage[hhCount] = 2;
+                                    }
+                                    //All dwelling characteristics for IPU are for private households rather than group quarters.
+
+                                    //Update household number and person counters for the next private household
+                                    previousHouseholdNumber = householdNumber;
+                                    personHHCount = 0;
+                                    foreignCount = 0;
                                 }
 
-                                //dwelling characteristics
-                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated.
-                                dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
-                                dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
-                                dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
-                                dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512
-                                if (dwellingYear[hhCount] > 0 & dwellingYear[hhCount] < 10) { //Only consider the ones with
-                                    int row = 0;
-                                    while (dwellingYear[hhCount] > yearBracketsDwelling[row]) {
-                                        row++;
-                                    }
-                                    if (dwellingType[hhCount] == 1) {
-                                        dwSmallYear[hhCount][row] = 1;
-                                    } else if (dwellingType[hhCount] > 1) {
-                                        dwMediumYear[hhCount][row] = 1; //also includes the not stated.
-                                    }
+                                //Person characteristics
+                                age[personCount] = convertToInteger(recString.substring(50, 52)); // 0 to 95. 95 includes 95+
+                                gender[personCount] = convertToInteger(recString.substring(54, 55)); // 1: male; 2: female
+                                occupation[personCount] = convertToInteger(recString.substring(32, 33)); // 1: employed, 2: unemployed, 3: unemployed looking for job, 4: children and retired
+                                personId[personCount] = householdNumber * 100 + convertToInteger(recString.substring(11, 12)) * 10 + convertToInteger(recString.substring(12, 13));
+                                personHH[personCount] = householdNumber;
+                                personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
+                                personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
+                                personEurostat[personCount] = convertToInteger(recString.substring(35, 36)); //definition of person according to EuroStat.
+                                if (occupation[personCount] == 1) { // Only employed persons respond to the sector
+                                    personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
                                 }
-                                if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
-                                    dwOwned[hhCount] = 1;
-                                    dwellingUsage[hhCount] = 1;
-                                } else if (dwellingUsage[hhCount] > 0) {
-                                    dwRented[hhCount] = 1;
-                                    dwellingUsage[hhCount] = 2;
+                                personTelework[personCount] = convertToInteger(recString.substring(198, 200)); //If they telework
+                                if (personTelework[personCount] < 0) {
+                                    personTelework[personCount] = 0;
+                                }
+                                personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
+                                int education = convertToInteger(recString.substring(323, 325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
+                                if (education == 10) {
+                                    personEducation[personCount] = 6;
+                                } else if (education == 9) {
+                                    personEducation[personCount] = 5;
+                                } else if (education == 6) {
+                                    personEducation[personCount] = 2;
+                                } else if (education < 6) {
+                                    personEducation[personCount] = 1;
+                                } else if (education > 6) {
+                                    personEducation[personCount] = 4;
+                                } else {
+                                    personEducation[personCount] = 0;
+                                }
+                                int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
+                                if (marital == 2) {
+                                    personStatus[personCount] = 2;
+                                } else {
+                                    personStatus[personCount] = 1;
+                                }
+                                if (age[personCount] < 15) {
+                                    personStatus[personCount] = 3;
+                                }
+                                int row = 0;
+                                while (age[personCount] > ageBracketsPerson[row]) {
+                                    row++;
                                 }
                                 int row1 = 0;
-                                while (dwellingSpace[hhCount] > sizeBracketsDwelling[row1]) {
+                                while (age[personCount] > ageBracketsPersonQuarter[row1]) {
                                     row1++;
                                 }
-                                dwFloorSpace[hhCount][row1] = 1;
-
-                                //Update household number and person counters for the next private household
-                                previousHouseholdNumber = householdNumber;
-                                personHHCount = 0;
-                                foreignCount = 0;
-
-                            } else if (convertToInteger(recString.substring(34, 35)) == 2) {
-                                //Group quarter
-                                hhCount++;
-                                counterNonZero[hhCount] = hhCount;
-                                quarterCounter++;
-                                hhSize[hhCount] = 1; //we put 1 instead of the quarter size because each person in group quarter has its own household
-                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings: 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated
-                                hhQuarters[hhCount] = 1; //group quarter
-                                hhSizeCategory[hhCount] = "group quarter";
-                                hhId[hhCount] = quarterCounter;
-                                quarterId[hhCount] = householdNumber;
-                                if (hhCount > 1 & hhCount < hhCountTotal - 1) {
-                                    hhSizeCount[hhCount - 1] = personHHCount;
-                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                    hhForeigners[hhCount - 1] = foreignCount;
-                                } else if (hhCount == hhCountTotal - 1) {
-                                    hhSizeCount[hhCount] = hhSize[hhCount];
-                                    personCounts[hhCount] = personCountTotal - hhSize[hhCount] + 1;
-                                    hhForeigners[hhCount - 1] = foreignCount;
-                                    personCounts[hhCount - 1] = personCount - hhSize[hhCount - 1] + 1;
-                                } else {
-                                    hhSizeCount[hhCount] = hhSize[hhCount];
-                                    personCounts[hhCount] = hhSize[hhCount];
-                                    hhForeigners[hhCount] = 1;
+                                if (gender[personCount] == 1) {
+                                    if (occupation[personCount] == 1) {
+                                        hhMaleWorkers[hhCount]++;
+                                        hhWorkers[hhCount]++;
+                                    }
+                                    if (personQuarter[personCount] == 1) {
+                                        hhMaleAge[hhCount][row]++;
+                                    } else {
+                                        //quarterMaleAge[hhCount][row1]++;
+                                    }
+                                } else if (gender[personCount] == 2) {
+                                    if (occupation[personCount] == 1) {
+                                        hhFemaleWorkers[hhCount]++;
+                                        hhWorkers[hhCount]++;
+                                    }
+                                    if (personQuarter[personCount] == 1) {
+                                        hhFemaleAge[hhCount][row]++;
+                                    } else {
+                                        //quarterFemaleAge[hhCount][row1]++;
+                                    }
                                 }
-
-                                //dwelling characteristics are copied, but they should be equal to -1
-                                dwellingType[hhCount] = convertToInteger(recString.substring(491, 493)); // 1: 1-2 dwellings; 2: 3-6 dwellings, 3: 7-12 dwellings; 4: 13-20 dwellings, 5: 21+ dwellings, 9: not stated, -1: group quarter.
-                                dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
-                                dwellingYear[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
-                                dwellingSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
-                                dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
-                                if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
-                                    dwellingUsage[hhCount] = 1;
-                                } else if (dwellingUsage[hhCount] < 5 & dwellingUsage[hhCount] > 0) {
-                                    dwellingUsage[hhCount] = 2;
+                                if (personQuarter[personCount] > 1) {
+                                    if (row1 == 0) {
+                                        quarterMaleAge[hhCount][0]++;
+                                    } else {
+                                        if (gender[personCount] == 1) {
+                                            quarterMaleAge[hhCount][1]++;
+                                        } else {
+                                            quarterFemaleAge[hhCount][1]++;
+                                        }
+                                    }
                                 }
-                                //All dwelling characteristics for IPU are for private households rather than group quarters.
-
-                                //Update household number and person counters for the next private household
-                                previousHouseholdNumber = householdNumber;
-                                personHHCount = 0;
-                                foreignCount = 0;
-                            }
-
-                            //Person characteristics
-                            age[personCount] = convertToInteger(recString.substring(50, 52)); // 0 to 95. 95 includes 95+
-                            gender[personCount] = convertToInteger(recString.substring(54, 55)); // 1: male; 2: female
-                            occupation[personCount] = convertToInteger(recString.substring(32, 33)); // 1: employed, 2: unemployed, 3: unemployed looking for job, 4: children and retired
-                            personId[personCount] = householdNumber * 100 + convertToInteger(recString.substring(11, 12)) * 10 + convertToInteger(recString.substring(12, 13));
-                            personHH[personCount] = householdNumber;
-                            personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
-                            personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
-                            personEurostat[personCount] = convertToInteger(recString.substring(35, 36)); //definition of person according to EuroStat.
-                            if (occupation[personCount] == 1) { // Only employed persons respond to the sector
-                                personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
-                            }
-                            personTelework[personCount] = convertToInteger(recString.substring(198, 200)); //If they telework
-                            if (personTelework[personCount] < 0) {
-                                personTelework[personCount] = 0;
-                            }
-                            personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
-                            int education = convertToInteger(recString.substring(323, 325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
-                            if (education == 10) {
-                                personEducation[personCount] = 6;
-                            } else if (education == 9) {
-                                personEducation[personCount] = 5;
-                            } else if (education == 6) {
-                                personEducation[personCount] = 2;
-                            } else if (education < 6) {
-                                personEducation[personCount] = 1;
-                            } else if (education > 6) {
-                                personEducation[personCount] = 4;
-                            } else {
-                                personEducation[personCount] = 0;
-                            }
-                            int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
-                            if (marital == 2) {
-                                personStatus[personCount] = 2;
-                            } else {
-                                personStatus[personCount] = 1;
-                            }
-                            if (age[personCount] < 15) {
-                                personStatus[personCount] = 3;
-                            }
-                            int row = 0;
-                            while (age[personCount] > ageBracketsPerson[row]) {
-                                row++;
-                            }
-                            int row1 = 0;
-                            while (age[personCount] > ageBracketsPersonQuarter[row1]) {
-                                row1++;
-                            }
-                            if (gender[personCount] == 1) {
-                                if (occupation[personCount] == 1) {
-                                    hhMaleWorkers[hhCount]++;
-                                    hhWorkers[hhCount]++;
+                                if (personNationality[personCount] == 8) {
+                                    foreignCount++;
                                 }
-                                if (personQuarter[personCount] == 1) {
-                                    hhMaleAge[hhCount][row]++;
-                                } else {
-                                    quarterMaleAge[hhCount][row1]++;
-                                }
-                            } else if (gender[personCount] == 2) {
-                                if (occupation[personCount] == 1) {
-                                    hhFemaleWorkers[hhCount]++;
-                                    hhWorkers[hhCount]++;
-                                }
-                                if (personQuarter[personCount] == 1) {
-                                    hhFemaleAge[hhCount][row]++;
-                                } else {
-                                    quarterFemaleAge[hhCount][row1]++;
-                                }
+                                personCount++;
+                                personHHCount++;
                             }
-                            if (personNationality[personCount] == 8) {
-                                foreignCount++;
-                            }
-                            personCount++;
-                            personHHCount++;
                         }
                 }
             }
@@ -895,10 +922,10 @@ public class SyntheticPopDe {
         microRecords.appendColumn(hhSizeCategory,"hhSizeCategory");
         microRecords.appendColumn(hhQuarters,"groupQuarters");
         microRecords.appendColumn(quarterId,"microRecord");
-        microRecords.appendColumn(dwellingType,"dwellingType"); //Number of dwellings in the building.
+        microRecords.appendColumn(dwellingBuildingSize,"dwellingType"); //Number of dwellings in the building.
         microRecords.appendColumn(dwellingUsage,"dwellingUsage"); //Who lives on the dwelling: owner (1) or tenant (2)
-        microRecords.appendColumn(dwellingYear,"dwellingYear"); //Construction year. It has the categories from the micro data
-        microRecords.appendColumn(dwellingSpace,"dwellingFloorSpace"); //Floor space of the dwelling
+        microRecords.appendColumn(dwellingYearConstruction,"dwellingYear"); //Construction year. It has the categories from the micro data
+        microRecords.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microRecords.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
@@ -915,10 +942,10 @@ public class SyntheticPopDe {
             microDwellings.appendColumn(yearDwellingSmall,nameSmall);
             microDwellings.appendColumn(yearDwellingMedium ,nameMedium);
         }
-        microDwellings.appendColumn(dwellingType,"dwellingType"); //Number of dwellings in the building.
+        microDwellings.appendColumn(dwellingBuildingSize,"dwellingType"); //Number of dwellings in the building.
         microDwellings.appendColumn(dwellingUsage,"dwellingUsage"); //Who lives on the dwelling: owner (1) or tenant (2)
-        microDwellings.appendColumn(dwellingYear,"dwellingYear"); //Construction year. It has the categories from the micro data
-        microDwellings.appendColumn(dwellingSpace,"dwellingFloorSpace"); //Floor space of the dwelling
+        microDwellings.appendColumn(dwellingYearConstruction,"dwellingYear"); //Construction year. It has the categories from the micro data
+        microDwellings.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microDwellings.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
         microDataDwelling = microDwellings;
         microDataDwelling.buildIndex(microDataDwelling.getColumnPosition("dwellingID"));
@@ -1183,6 +1210,7 @@ public class SyntheticPopDe {
                     error = Math.abs(weightedSum -
                             marginalsHousehold.getIndexedValueAt(municipalityID, attributesHouseholdList[attributes]))/
                             marginalsHousehold.getIndexedValueAt(municipalityID, attributesHouseholdList[attributes]);
+                    //logger.info("   Error of " + error + " at attribute " + attributesHouseholdList[attributes]);
                     errorsHousehold.setIndexedValueAt(municipalityID,attributesHouseholdList[attributes],error);
                     averageErrorIteration += error;
                 }
@@ -1215,6 +1243,7 @@ public class SyntheticPopDe {
                 }
                 else{
                     iteration++;
+
                 }
 
 
@@ -1223,6 +1252,9 @@ public class SyntheticPopDe {
                     minWeights.setColumnAsFloat(minWeights.getColumnPosition(municipalityIDs),weights.getColumnAsFloat(municipalityIDs));
                     minError = averageErrorIteration;
                 }
+
+                logger.info("       Iteration " + iteration + ". The average error is: " + averageErrorIteration * 100 + " %." );
+
             }
 
             //Copy the errors per attribute
@@ -1720,7 +1752,7 @@ public class SyntheticPopDe {
 
 
         //Define car probability
-        //They depend on household size. The probability is for all Bavaria
+        //They depend on household size.
 
 
 
@@ -1729,9 +1761,6 @@ public class SyntheticPopDe {
         double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
         double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
         GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
-
-
-
 
 
         //Errors of the synthetic population
@@ -1783,11 +1812,20 @@ public class SyntheticPopDe {
 
 
             //select the probabilities of the households from the microData, for that municipality
-            int totalHouseholds = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],"hhTotal") +
-                    (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],"privateQuarters");
+            int totalHouseholds = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],"hhTotal");
+            int totalQuarters = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],"privateQuarters");
             double[] probability = weightsTable.getColumnAsDouble(cityIDs[municipality]);
-            //probability = SiloUtil.convertProbability(probability); // I use the weight as it comes. Do not scale to percentage.
-
+            double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
+            double[] probabilityQuarter = new double[probability.length];
+            for (int row = 0; row < probability.length; row++){
+                if ((int) microDataHousehold.getValueAt(row + 1,"groupQuarters") == 0){
+                    probabilityPrivate[row] = probability[row];
+                } else {
+                    probabilityQuarter[row] = probability[row];
+                }
+            }
+            probabilityPrivate = SiloUtil.convertProbability(probabilityPrivate); // Scale the weight to percentage.
+            probabilityQuarter = SiloUtil.convertProbability(probabilityQuarter); // Scale the weight to percentage.
 
             //marginals for the municipality
             int maleWorkers = 0;
@@ -1806,12 +1844,23 @@ public class SyntheticPopDe {
             int quartersTotal = 0;
             int hhForeigners = 0;
             int hhPersons = 0;
+            int vacantDwellings = 0;
+            int ddTotalVacant = 1;
+            int yearBracketsDwelling[] = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_YEAR_DWELLING);
+            int sizeBracketsDwelling[] = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_FLOOR_SPACE_DWELLING);
+            int ddOwned = 0;
+            int ddRented = 0;
+            //int ddUsage = 0;
+            int[] ddFloorSpace= new int[sizeBracketsDwelling.length];
+            int[] ddSmallYear = new int[yearBracketsDwelling.length];
+            int[] ddMediumYear = new int[yearBracketsDwelling.length];
+
 
             //for all the households that are inside the municipality (we will match perfectly the number of households. The total population will vary compared to the marginals.)
             for (int row = 0; row < totalHouseholds; row++) {
 
                 //select the household to copy and allocate it
-                int[] records = select(probability, microDataIds);
+                int[] records = select(probabilityPrivate, microDataIds);
                 int idHHmicroData = records[0];
                 int recordHHmicroData = records[1];
                 int householdCell = SiloUtil.select(rasterCellsWeight,rasterCellsWeight.length,rasterCellsList);
@@ -1823,7 +1872,7 @@ public class SyntheticPopDe {
                         (int) microDataHousehold.getIndexedValueAt(idHHmicroData, "maleWorkers");
                 int householdPrivate = (int) microDataHousehold.getIndexedValueAt(idHHmicroData,"groupQuarters");
                 int id = HouseholdDataManager.getNextHouseholdId();
-                if (householdPrivate == 0) { //Private household
+/*                if (householdPrivate == 0) { //Private household*/
                     new Household(id, idHHmicroData, householdCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                     hhTotal++;
                     if (householdSize == 1) {
@@ -1839,10 +1888,10 @@ public class SyntheticPopDe {
                     } else {
                         hhSize6++;
                     }
-                } else { //Person in group quarter. The group quarter is allocated at the AGS of the municipality for the moment
+/*                } else { //Person in group quarter. The group quarter is allocated at the AGS of the municipality for the moment
                     new Household(id, idHHmicroData, cityID[municipality], householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                     quartersTotal++;
-                }
+                }*/
 
                 //copy all the persons of the household
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
@@ -1858,20 +1907,20 @@ public class SyntheticPopDe {
                         e.printStackTrace();
                     }
                     //int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace"); It will be linked after using the trip length distribution
-                    if (microDataPerson.getValueAt(personCounter,"nationality") == 8) { //race is equal to other if the person is foreigner.
-                        new Person(idPerson, id, age, gender, Race.other, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                    } else {
-                        new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                    }
-/*                  Occupation will be generated later using another process
-                    if (occupation == 1){
-                        //We generate a new job because the person is employed
-                        int idJob = JobDataManager.getNextJobId();
-                        int jobPerson = translateJobType((int) microDataPerson.getValueAt(personCounter,"jobSector"),jobsTable); //Already translated to the 10 types of employment
-
-                        //new Job(idJob,workplace,-1,JobType.getJobType(jobPerson)); //TODO. Understand job types and how to generate them. We will have data from 10 types of employment
-                    }*/
+                    int jobClass = (int) microDataPerson.getValueAt(personCounter, "jobSector");
+                    int educationLevel = (int) microDataPerson.getValueAt(personCounter, "educationLevel");
+                    int maritalStatus = (int) microDataPerson.getValueAt(personCounter, "maritalStatus");
+                    int telework = (int) microDataPerson.getValueAt(personCounter, "telework");
+                    int nationality = (int) microDataPerson.getValueAt(personCounter, "nationality");
+                    Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    pers.setJobClass(jobClass);
+                    pers.setEducationLevel(educationLevel);
+                    pers.setMaritalStatus(maritalStatus);
+                    pers.setNationality(nationality);
+                    pers.setTelework(telework);
                     hhPersons++;
+
+                    //For checking the error of the synthesized population
                     if (microDataPerson.getValueAt(personCounter,"nationality") == 8){
                         hhForeigners++;
                     }
@@ -1884,7 +1933,7 @@ public class SyntheticPopDe {
                             femaleWorkers++;
                         }
                     }
-                    if (householdPrivate == 0){
+                    //if (householdPrivate == 0){
                         int row1 = 0;
                         while (age > ageBracketsPerson[row1]){
                             row1++;
@@ -1895,43 +1944,197 @@ public class SyntheticPopDe {
                             hhFemaleAge[row1]++;
                         }
 
-                    } else {
-                        int row2 = 0;
-                        while (age > ageBracketsPersonQuarter[row2]){
-                            row2++;
-                        }
-                        if (gender == 1){
-                            quartersMaleAge[row2]++;
+/*                    } else {
+                        if (age > 64) {
+                            if (gender == 1){
+                                quartersMaleAge[1]++;
+                            } else {
+                                quartersFemaleAge[1]++;
+                            }
                         } else {
-                            quartersFemaleAge[row2]++;
+                            quartersMaleAge[0]++;
                         }
-                    }
+                    }*/
                 }
 
 
                 //Copy the dwelling of that household
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                int pumsDdType = (int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingType");
-                //DwellingType ddType = translateDwellingType(pumsDdType);
                 int bedRooms = 1; //Not on the micro data
                 int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
                 int price = 1; //Monte Carlo
-                int year =(int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingYear");
-                new Dwelling(newDdId, householdCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                int year = 1; //Not by year. In the data is going to be in classes
+                int floorSpace = (int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingFloorSpace");
+                int usage = (int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingUsage");
+                int buildingSize = (int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingType");
+                int yearConstruction =(int) microDataDwelling.getIndexedValueAt(idHHmicroData, "dwellingYear");
+                Dwelling dwell = new Dwelling(newDdId, householdCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                dwell.setFloorSpace(floorSpace);
+                dwell.setUsage(usage);
+                dwell.setBuildingSize(buildingSize);
+                dwell.setYearConstructionDE(yearConstruction);
+                if (yearConstruction > 0 & yearConstruction < 10){
+                    int row2 = 0;
+                    while (yearConstruction > yearBracketsDwelling[row2]){
+                        row2++;
+                    }
+                    if (buildingSize == 1) {
+                        ddSmallYear[row2]++;
+                    } else if (buildingSize > 1){
+                        ddMediumYear[row2]++;
+                    }
+                }
+                if (usage == 1){
+                    ddOwned++;
+                } else {
+                    ddRented++;
+                }
+                int row3 = 0;
+                while (floorSpace > sizeBracketsDwelling[row3]){
+                    row3++;
+                }
+                ddFloorSpace[row3]++;
 
 
-/*           //update the probability of the record of being selected on the next draw. It increases the error on population due to round-up errors
+            //update the probability of the record of being selected on the next draw. It increases the error on population due to round-up errors
                 if (probability[recordHHmicroData] > 1) {
                     probability[recordHHmicroData] = probability[recordHHmicroData] - 1;
                 } else {
                     probability[recordHHmicroData] = 0;
-                }*/
+                }
             }
+
+            //for all persons in group quarters
+            for (int row = 0; row < totalQuarters; row++){
+
+                //Select the person of the group quarter
+
+                //select the household to copy and allocate it
+                int[] records = select(probabilityQuarter, microDataIds);
+                int idHHmicroData = records[0];
+                int recordHHmicroData = records[1];
+
+                //household characteristics
+                int id = HouseholdDataManager.getNextHouseholdId();
+                new Household(id, idHHmicroData, cityID[municipality], 1, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                quartersTotal++;
+
+                //person characteristics
+                int idPerson = HouseholdDataManager.getNextPersonId();
+                int personCounter = (int) microDataHousehold.getIndexedValueAt(idHHmicroData, "personCount");
+                int age = (int) microDataPerson.getValueAt(personCounter, "age");
+                int gender = (int) microDataPerson.getValueAt(personCounter, "gender");
+                int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
+                int income = 0;
+                try {
+                    income = (int) translateIncome((int) microDataPerson.getValueAt(personCounter, "income"),incomeProbability, gammaDist);
+                } catch (MathException e) {
+                    e.printStackTrace();
+                }
+                //int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace"); It will be linked after using the trip length distribution
+                int jobClass = (int) microDataPerson.getValueAt(personCounter, "jobSector");
+                int educationLevel = (int) microDataPerson.getValueAt(personCounter, "educationLevel");
+                int maritalStatus = (int) microDataPerson.getValueAt(personCounter, "maritalStatus");
+                int telework = (int) microDataPerson.getValueAt(personCounter, "telework");
+                int nationality = (int) microDataPerson.getValueAt(personCounter, "nationality");
+                Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 1, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                pers.setJobClass(jobClass);
+                pers.setEducationLevel(educationLevel);
+                pers.setMaritalStatus(maritalStatus);
+                pers.setNationality(nationality);
+                pers.setTelework(telework);
+                //For checking the error of the synthesized population
+                if (microDataPerson.getValueAt(personCounter,"nationality") == 8){
+                    hhForeigners++;
+                }
+                if (gender == 1){
+                    if (occupation == 1){
+                        maleWorkers++;
+                    }
+                } else {
+                    if (occupation == 1){
+                        femaleWorkers++;
+                    }
+                }
+                if (age > 64) {
+                    if (gender == 1){
+                        quartersMaleAge[1]++;
+                    } else {
+                        quartersFemaleAge[1]++;
+                    }
+                } else {
+                    quartersMaleAge[0]++;
+                }
+            }
+
             int households = HouseholdDataManager.getHighestHouseholdIdInUse()-previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse()-previousPersons;
-
             previousHouseholds = HouseholdDataManager.getHighestHouseholdIdInUse();
             previousPersons = HouseholdDataManager.getHighestPersonIdInUse();
+
+
+            //Vacant dwellings
+            vacantDwellings = (int) marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],"totalDwellingsVacant");
+
+
+            //Probability of floor size
+            float [] vacantFloor = new float[sizeBracketsDwelling.length];
+            for (int row = 0; row < sizeBracketsDwelling.length; row++){
+                String name = "vacantDwellings" + sizeBracketsDwelling[row];
+                vacantFloor[row] = marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],name)/vacantDwellings;
+            }
+
+            //Probability for year and building size
+            float[] vacantSize = new float[yearBracketsDwelling.length * 2];
+            for (int row = 0; row < yearBracketsDwelling.length; row++){
+                String name = "vacantSmallDwellings" + yearBracketsDwelling[row];
+                String name1 = "vacantMediumDwellings" + yearBracketsDwelling[row];
+                vacantSize[row] = marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],name) / vacantDwellings;
+                vacantSize[row + yearBracketsDwelling.length] = marginalsHouseholdMatrix.getIndexedValueAt(cityID[municipality],name1) / vacantDwellings;
+            }
+
+
+            //for all vacant dwellings on the municipality
+            for (int row = 0; row < vacantDwellings; row++){
+                //Monte Carlo simulation for floor space (sqm). The category is converted to continuous variable between 40 and 130 sqm
+                int floorSpace = 0;
+                Random r = new Random();
+                int floorSpaceCat = SiloUtil.select(vacantFloor);
+                if (floorSpaceCat == 0){
+                    floorSpace = 40;
+                } else if (floorSpaceCat == sizeBracketsDwelling.length) {
+                    floorSpace = 130;
+                } else {
+                    floorSpace = r.nextInt(sizeBracketsDwelling[floorSpaceCat]-sizeBracketsDwelling[floorSpaceCat-1]) +
+                            sizeBracketsDwelling[floorSpaceCat - 1]; //Assign random number between both brackets
+                }
+
+                //Monte Carlo simulation for building size and construction year
+                int size = 0;
+                int yearConstruction = 0;
+                int sizeCat = SiloUtil.select(vacantSize);
+                if (sizeCat < yearBracketsDwelling.length + 1){
+                    size = 1;
+                    yearConstruction = sizeCat;
+                } else {
+                    size = 2;
+                    yearConstruction = sizeCat - yearBracketsDwelling.length;
+                }
+
+
+                //Assign the characteristics
+                int newDdId = RealEstateDataManager.getNextDwellingId();
+                int bedRooms = 1; //Not on the micro data
+                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
+                int price = 1; //Monte Carlo
+                int year = 1;
+                int ddCell = SiloUtil.select(rasterCellsWeight,rasterCellsWeight.length,rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
+                Dwelling dwell = new Dwelling(newDdId, ddCell, 0, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                dwell.setFloorSpace(floorSpace);
+                dwell.setUsage(3);
+                dwell.setBuildingSize(size);
+                dwell.setYearConstructionDE(yearConstruction);
+            }
 
 
             //Check the error for each attribute, relative and absolute
@@ -1980,14 +2183,26 @@ public class SyntheticPopDe {
             errorsSynPop.setIndexedValueAt(cityID[municipality],"female74",hhFemaleAge[14]);
             errorsSynPop.setIndexedValueAt(cityID[municipality],"female79",hhFemaleAge[15]);
             errorsSynPop.setIndexedValueAt(cityID[municipality],"female99",hhFemaleAge[16]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters14",quartersMaleAge[0]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters29",quartersMaleAge[1]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters64",quartersMaleAge[2]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters99",quartersMaleAge[3]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters14",quartersFemaleAge[0]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters29",quartersFemaleAge[1]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters64",quartersFemaleAge[2]);
-            errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters99",quartersFemaleAge[3]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters64",quartersMaleAge[0]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"maleQuarters99",quartersMaleAge[1]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"femaleQuarters99",quartersFemaleAge[1]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"dwellings60",ddFloorSpace[0]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"dwellings80",ddFloorSpace[1]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"dwellings100",ddFloorSpace[2]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"dwellings120",ddFloorSpace[3]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"dwellings2000",ddFloorSpace[4]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"smallDwellings2",ddSmallYear[0]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"smallDwellings5",ddSmallYear[1]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"smallDwellings6",ddSmallYear[2]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"smallDwellings7",ddSmallYear[3]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"smallDwellings9",ddSmallYear[4]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"mediumDwellings2",ddMediumYear[0]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"mediumDwellings5",ddMediumYear[1]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"mediumDwellings6",ddMediumYear[2]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"mediumDwellings7",ddMediumYear[3]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"mediumDwellings9",ddMediumYear[4]);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"ownDwellings",ddOwned);
+            errorsSynPop.setIndexedValueAt(cityID[municipality],"rentedDwellings",ddRented);
 
 
             float averageError = 0f;
@@ -2000,7 +2215,7 @@ public class SyntheticPopDe {
                 averageError = averageError + relError;
             }
             averageError = averageError / (1 + attributesHousehold.length) * 100;
-            logger.info("   Municipality " + cityID[municipality]+ ". Generated " + persons + " persons in " + households + " households. Average error of " + averageError);
+            logger.info("   Municipality " + cityID[municipality]+ ". Generated " + hhPersons + " persons in " + hhTotal + " households and " + quartersTotal + " persons in group quarters. Average error of " + averageError);
 
         }
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
@@ -2063,7 +2278,7 @@ public class SyntheticPopDe {
                 low = 0;
                 high = incomeThresholds[0];
             } else if (incomeClass == incomeThresholds.length + 1) {
-                low = incomeThresholds[incomeThresholds.length];
+                low = incomeThresholds[incomeThresholds.length-1];
                 high = 1;
             } else {
                 int i = 2;
