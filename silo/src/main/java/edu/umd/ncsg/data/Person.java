@@ -44,6 +44,11 @@ public class Person implements Serializable {
 	Household hh;
 	PersonType type;
     PersonRole role;
+    int maritalStatus = 0;
+    int telework = 0;
+    int jobClass = 0;
+    int educationLevel = 0;
+    int nationality = 0;
 //    private Lock lock = new ReentrantLock();
 
 
@@ -202,6 +207,7 @@ public class Person implements Serializable {
         pw.println ("Workplace ID         " + workplace);
         pw.println ("Income               " + income);
         pw.println ("Person type          " + type.toString());
+
         // cannot log person role here because when persons are read, the role is not defined yet.
     }
 
@@ -260,5 +266,46 @@ public class Person implements Serializable {
         occupation = 2;
         income = (int) (income * 0.6 + 0.5);  //  todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
     }
+
+    public void setMaritalStatus(int maritalStatus) {
+        this.maritalStatus = maritalStatus;
+    }
+
+    public int getMaritalStatus() {
+        return maritalStatus;
+    }
+
+    public void setEducationLevel(int educationLevel) {
+        this.educationLevel = educationLevel;
+    }
+
+    public int getEducationLevel() {
+        return educationLevel;
+    }
+
+    public void setTelework(int telework) {
+        this.telework = telework;
+    }
+
+    public int getTelework() {
+        return telework;
+    }
+
+    public void setJobClass(int jobClass) {
+        this.jobClass = jobClass;
+    }
+
+    public int getJobClass() {
+        return jobClass;
+    }
+
+    public void setNationality(int nationality) {
+        this.nationality = nationality;
+    }
+
+    public int getNationality() {
+        return nationality;
+    }
+
 
 }
