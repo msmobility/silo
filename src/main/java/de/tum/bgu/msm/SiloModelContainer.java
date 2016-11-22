@@ -16,7 +16,15 @@ import org.apache.log4j.Logger;
 import java.util.ResourceBundle;
 
 /**
- * Created by Joe on 03/08/2016.
+ * @author joemolloy
+ * The Silo Model Container holds all the various models used by the SILO events.
+ * It will eventually simplify the passing of models to events. Currently the cevents are still
+ * called with the individual models, but this approach will be phased out. \n
+ * Once the SiloModelContainer is created using the resourceBundle, each model can be retrieved
+ * using the repsective getter.  \n
+ * All the models are constructed within the SiloModelContainer, removing the initialization code from the SiloModel main body
+ * @see SiloModel
+ * @see SiloModel#initialize()
  */
 public class SiloModelContainer {
     private static final Logger logger = Logger.getLogger(SiloModelContainer.class);
@@ -39,6 +47,31 @@ public class SiloModelContainer {
     private final AutoOwnershipModel aoModel;
     private final UpdateJobs updateJobs;
 
+    /**
+     *
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle)}}
+     * being used to encapsulate the object creation.
+     *
+     *
+     * @param householdData
+     * @param realEstateData
+     * @param jobData
+     * @param iomig
+     * @param cons
+     * @param ddOverwrite
+     * @param renov
+     * @param demol
+     * @param prm
+     * @param birth
+     * @param death
+     * @param mardiv
+     * @param lph
+     * @param move
+     * @param changeEmployment
+     * @param acc
+     * @param aoModel
+     * @param updateJobs
+     */
     private SiloModelContainer(HouseholdDataManager householdData, RealEstateDataManager realEstateData,
                                JobDataManager jobData, InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
@@ -65,17 +98,12 @@ public class SiloModelContainer {
         this.updateJobs = updateJobs;
     }
 
-    public static SiloModelContainer createSiloModelContainer(HouseholdDataManager householdData, RealEstateDataManager realEstateData,
-                                                              JobDataManager jobData, InOutMigration iomig, ConstructionModel cons,
-                                                              ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
-                                                              PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
-                                                              LeaveParentHhModel lph, MovesModel move, ChangeEmploymentModel changeEmployment,
-                                                              Accessibility acc, AutoOwnershipModel aoModel, UpdateJobs updateJobs) {
-        return new SiloModelContainer(householdData, realEstateData, jobData, iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, death, mardiv, lph, move, changeEmployment, acc, aoModel, updateJobs);
-    }
-
-
+    /**
+     * This factory method is used to create all the models needed for SILO from the Configuration file, loaded as a ResourceBundle
+     * Each model is created sequentially, before being passed as parameters to the private constructor.
+     * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
+     * @return A SiloModelContainer, with each model created within
+     */
     public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse) {
 
         // read micro data

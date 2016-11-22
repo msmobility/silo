@@ -351,7 +351,14 @@ private Config matsimConfig;
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
 
-    private void setOldLocalModelVariables() {
+
+    /**
+     * Currently, while a {@link SiloModelContainer} constructs the individual models,
+     * each model is then returned back to the SiloModel. This function will be depreciated,
+     * with the SiloModelContainer being passed to each event.
+     *
+     */
+    @Deprecated private void setOldLocalModelVariables() {
         // read micro data
         realEstateData = modelContainer.getRealEstateData();
         householdData = modelContainer.getHouseholdData();
@@ -376,7 +383,10 @@ private Config matsimConfig;
         ddOverwrite = modelContainer.getDdOverwrite();
     }
 
-
+    /**
+     * The initialize method sets up the SiloModel with the internal models for each component.
+     *
+     */
     public void initialize() {
         // initial steps that only need to performed once to set up the model
 
