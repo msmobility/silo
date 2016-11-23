@@ -1,5 +1,6 @@
 package edu.umd.ncsg.SyntheticPopulationGenerator;
 
+import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import edu.umd.ncsg.SiloModel;
@@ -609,6 +610,8 @@ public class SyntheticPopDe {
         sizeBracketsDwelling = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_FLOOR_SPACE_DWELLING);
         int dwOwned[] = new int[hhCountTotal];
         int dwRented[] = new int[hhCountTotal];
+        int dwSmall[] = new int[hhCountTotal];
+        int dwMedium[] = new int[hhCountTotal];
         int dwellingUsage[] = new int[hhCountTotal];
         int dwellingFloorSpace[] = new int[hhCountTotal];
         int dwellingYearConstruction[] = new int[hhCountTotal];
@@ -641,6 +644,7 @@ public class SyntheticPopDe {
 
                         if (convertToInteger(recString.substring(491, 493)) == -5) {
                             //They moved out last year and have no dwelling records.
+                            //They are not considered.
                             previousHouseholdNumber = householdNumber;
                         } else {
                             if (convertToInteger(recString.substring(491, 493)) == 9 || convertToInteger(recString.substring(493, 495)) == 9 ||
@@ -687,6 +691,7 @@ public class SyntheticPopDe {
                                         hhSizeCategory[hhCount] = "hhSize5";
                                     } else {
                                         hhSize6[hhCount] = 1;
+                                        hhSize5[hhCount] = 1;
                                         hhSizeCategory[hhCount] = "hhSize6";
                                     }
                                     if (hhCount > 1 & hhCount < hhCountTotal - 1) {
@@ -717,8 +722,10 @@ public class SyntheticPopDe {
                                         }
                                         if (dwellingBuildingSize[hhCount] == 1) {
                                             dwSmallYear[hhCount][row] = 1;
+                                            dwSmall[hhCount] = 1;
                                         } else if (dwellingBuildingSize[hhCount] > 1) {
                                             dwMediumYear[hhCount][row] = 1; //also includes the not stated.
+                                            dwMedium[hhCount] = 1;
                                         }
                                     }
                                     if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
@@ -833,27 +840,23 @@ public class SyntheticPopDe {
                                     row1++;
                                 }
                                 if (gender[personCount] == 1) {
-                                    if (occupation[personCount] == 1) {
-                                        hhMaleWorkers[hhCount]++;
-                                        hhWorkers[hhCount]++;
-                                    }
                                     if (personQuarter[personCount] == 1) {
                                         hhMaleAge[hhCount][row]++;
-                                    } else {
-                                        //quarterMaleAge[hhCount][row1]++;
+                                        if (occupation[personCount] == 1) {
+                                            hhMaleWorkers[hhCount]++;
+                                            hhWorkers[hhCount]++;
+                                        }
                                     }
                                 } else if (gender[personCount] == 2) {
-                                    if (occupation[personCount] == 1) {
-                                        hhFemaleWorkers[hhCount]++;
-                                        hhWorkers[hhCount]++;
-                                    }
                                     if (personQuarter[personCount] == 1) {
                                         hhFemaleAge[hhCount][row]++;
-                                    } else {
-                                        //quarterFemaleAge[hhCount][row1]++;
+                                        if (occupation[personCount] == 1) {
+                                            hhFemaleWorkers[hhCount]++;
+                                            hhWorkers[hhCount]++;
+                                        }
                                     }
                                 }
-                                if (personQuarter[personCount] > 1) {
+                                if (personQuarter[personCount] > 1) { //person in group quarter only counts for age, but they don't have value for workers
                                     if (row1 == 0) {
                                         quarterMaleAge[hhCount][0]++;
                                     } else {
@@ -1006,6 +1009,8 @@ public class SyntheticPopDe {
             String name = "dwellings" + sizeBracketsDwelling[row];
             microRecords1.appendColumn(sizeDwelling,name);
         }
+        microRecords1.appendColumn(dwSmall,"smallDwellings");
+        microRecords1.appendColumn(dwMedium,"mediumDwellings");
         frequencyMatrix = microRecords1;
 
 
@@ -1400,6 +1405,23 @@ public class SyntheticPopDe {
         weightsMatrix.appendColumn(microDataIds,"ID");
 
 
+        //Create the errors table (for all the municipalities, by attribute)
+        TableDataSet errorsMatrix = new TableDataSet();
+        errorsMatrix.appendColumn(cityID,"ID_city");
+        for (int attribute = 0; attribute < attributesHousehold.length;attribute++){
+            double[] dummy2 = SiloUtil.createArrayWithValue(cityIDs.length,1.0);
+            errorsMatrix.appendColumn(dummy2, attributesHousehold[attribute]);
+        }
+        TableDataSet errorsMatrixRegion = new TableDataSet();
+        errorsMatrixRegion.appendColumn(countyID,"ID_county");
+        for (int attribute = 0; attribute < attributesRegion.length;attribute++){
+            double[] dummy2 = SiloUtil.createArrayWithValue(countyIDs.length,1.0);
+            errorsMatrixRegion.appendColumn(dummy2, attributesRegion[attribute]);
+        }
+        errorsMatrixRegion.buildIndex(errorsMatrixRegion.getColumnPosition("ID_county"));
+        errorsMatrix.buildIndex(errorsMatrix.getColumnPosition("ID_city"));
+
+
         //For each county, we perform IPU
         for (int county = 0; county < countyID.length; county++){
 
@@ -1585,7 +1607,6 @@ public class SyntheticPopDe {
 
                 //update the weighted sums and errors of the region attributes, given the new weights
                 for (int attributes = 0; attributes < attributesRegionList.length; attributes++) {
-
                     float weighted_sum = 0f;
                     for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
                         weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsDouble(municipalitiesIDs[municipality]),
@@ -1618,15 +1639,11 @@ public class SyntheticPopDe {
 
                 //Calculate the average error among all the attributes (area and municipalities level). This will serve as one stopping criteria
                 int attributesCounter = 1;
-                averageErrorIteration = errorsRegion.getIndexedValueAt(regionID, attributesRegionList[0]);
-                for (int attribute = 1; attribute < attributesRegionList.length; attribute++) {
+                for (int attribute = 0; attribute < attributesRegionList.length; attribute++) {
                     averageErrorIteration = averageErrorIteration + errorsRegion.getIndexedValueAt(regionID, attributesRegionList[attribute]);
                     attributesCounter++;
                 }
                 for(int attribute = 0; attribute < attributesHouseholdList.length; attribute++){
-                    averageErrorIteration = averageErrorIteration +
-                            errorsHousehold.getIndexedValueAt(municipalitiesID[0], attributesHouseholdList[0]);
-                    attributesCounter++;
                     for(int municipality = 0; municipality < municipalitiesID.length; municipality++) {
                         averageErrorIteration = averageErrorIteration +
                                 errorsHousehold.getIndexedValueAt(municipalitiesID[municipality], attributesHouseholdList[attribute]);
@@ -1682,8 +1699,25 @@ public class SyntheticPopDe {
             for (int municipality = 0; municipality < municipalitiesID.length; municipality++) {
                 weightsMatrix.appendColumn(minWeights.getColumnAsFloat(municipalitiesIDs[municipality]), municipalitiesIDs[municipality]);
             }
+
+
+            //Copy the errors per attribute
+            for (int attribute = 0; attribute < attributesRegionList.length; attribute++){
+                errorsMatrixRegion.setIndexedValueAt(regionID,attributesRegionList[attribute],errorsRegion.getIndexedValueAt(regionID,attributesRegionList[attribute]));
+            }
+            for (int attribute = 0; attribute < attributesHouseholdList.length; attribute++){
+                for (int municipality = 0; municipality < municipalitiesID.length; municipality++){
+                    errorsMatrix.setIndexedValueAt(municipalitiesID[municipality],attributesHouseholdList[attribute],errorsHousehold.getIndexedValueAt(municipalitiesID[municipality],attributesHouseholdList[attribute]));
+                }
+            }
+
+            //Write the weights after finishing IPU for each county
             String freqFileName = ("scenOutput/weigthsMatrix.csv");
             SiloUtil.writeTableDataSet(weightsMatrix, freqFileName);
+            String freqFileName2 = ("scenOutput/errorsHouseholdIPU.csv");
+            SiloUtil.writeTableDataSet(errorsMatrix, freqFileName2);
+            String freqFileName3 = ("scenOutput/errorsRegionIPU.csv");
+            SiloUtil.writeTableDataSet(errorsMatrixRegion, freqFileName3);
 
             logger.info("   IPU finished");
         }
@@ -1759,7 +1793,7 @@ public class SyntheticPopDe {
         //These attributes are added to the attributes of the IPU
         String[] attributesHouseholdGen = ResourceUtil.getArray(rb,PROPERTIES_HOUSEHOLD_ATTR_GENERATION);
         String[] attributesRegionGen = ResourceUtil.getArray(rb,PROPERTIES_REGION_ATTR_GENERATION);
-        String[] attributesExtra = new String[attributesHouseholdGen.length + attributesRegionGen.length];
+        String[] attributesExtra = new String[attributesRegion.length + attributesHouseholdGen.length + attributesRegionGen.length];
         if (attributesRegion != null){
             for (int attribute = 0; attribute < attributesRegion.length; attribute++){
                 attributesExtra[attribute] = attributesRegion[attribute];
@@ -1767,12 +1801,12 @@ public class SyntheticPopDe {
         }
         if (attributesHouseholdGen != null){
             for (int attribute = 0; attribute < attributesHouseholdGen.length; attribute++){
-                attributesExtra[attribute] = attributesHouseholdGen[attribute];
+                attributesExtra[attribute + attributesRegion.length] = attributesHouseholdGen[attribute];
             }
         }
         if (attributesRegionGen != null){
             for (int attribute = 0; attribute < attributesRegionGen.length; attribute++){
-                attributesExtra[attribute] = attributesRegionGen[attribute];
+                attributesExtra[attribute + attributesRegion.length + attributesHouseholdGen.length] = attributesRegionGen[attribute];
             }
         }
 
@@ -1991,7 +2025,7 @@ public class SyntheticPopDe {
                 counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
             }
 
-            //for all persons in group quarters
+/*            //for all persons in group quarters
             for (int row = 0; row < totalQuarters; row++){
 
                 //select the person to copy and allocate it
@@ -2038,7 +2072,7 @@ public class SyntheticPopDe {
                 pers.setNationality(nationality);
                 pers.setTelework(telework);
                 counterMunicipality = updateCountersPersonQuarter(pers,counterMunicipality,municipalityID);
-            }
+            }*/
 
             int households = HouseholdDataManager.getHighestHouseholdIdInUse() - previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse() - previousPersons;
@@ -2315,7 +2349,7 @@ public class SyntheticPopDe {
         } else if (household.getHhSize() == 5){
             attributesCount.setIndexedValueAt(mun,"hhSize5",attributesCount.getIndexedValueAt(mun,"hhSize5") + 1);
         } else if (household.getHhSize() > 5){
-            attributesCount.setIndexedValueAt(mun,"hhSize6",attributesCount.getIndexedValueAt(mun,"hhSize6") + 1);
+            attributesCount.setIndexedValueAt(mun,"hhSize5",attributesCount.getIndexedValueAt(mun,"hhSize5") + 1);
         }
         attributesCount.setIndexedValueAt(mun,"hhTotal",attributesCount.getIndexedValueAt(mun,"hhTotal") + 1);
         return attributesCount;
@@ -2323,6 +2357,7 @@ public class SyntheticPopDe {
 
     public static TableDataSet updateCountersPerson (Person person, TableDataSet attributesCount,int mun, int[] ageBracketsPerson) {
         /* method to update the counters with the characteristics of the generated person in a private household*/
+        attributesCount.setIndexedValueAt(mun, "population", attributesCount.getIndexedValueAt(mun, "population") + 1);
         if (person.getNationality() == 8) {
             attributesCount.setIndexedValueAt(mun, "foreigners", attributesCount.getIndexedValueAt(mun, "foreigners") + 1);
         }
@@ -2411,15 +2446,16 @@ public class SyntheticPopDe {
             if (dwelling.getBuildingSize() == 1){
                 String name1 = "smallDwellings" + yearBrackets[row1];
                 attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
+                attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
             } else {
                 String name1 = "mediumDwellings" + yearBrackets[row1];
                 attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
+                attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
             }
         }
 
         return attributesCount;
     }
-
 
     public static TableDataSet updateCountersDwellingVacant (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
@@ -2428,7 +2464,6 @@ public class SyntheticPopDe {
             row++;
         }
         String name = "dwellingsVacant" + sizeBrackets[row];
-        logger.info(mun);
         attributesCount.setIndexedValueAt(mun,name,attributesCount.getIndexedValueAt(mun,name) + 1);
         if (dwelling.getYearConstructionDE() > 0 & dwelling.getYearConstructionDE() < 10) {
             int row1 = 0;
