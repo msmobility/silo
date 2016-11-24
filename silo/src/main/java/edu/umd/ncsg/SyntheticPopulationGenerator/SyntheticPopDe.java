@@ -1334,29 +1334,46 @@ public class SyntheticPopDe {
         int citiesCounter = 0;
         int rowID = 0;
         int rowIDcounty = 0;
-        if (municipalitiesMatrix.getValueAt(1,"Select") == 1f){
-            cityID[rowID] = (int) municipalitiesMatrix.getValueAt(1,"ID_city");
+        int initialRow = 1;
+        while (municipalitiesMatrix.getValueAt(initialRow,"Select") == 0f){
+            initialRow++;
+        }
+        if (municipalitiesMatrix.getValueAt(initialRow,"Select") == 1f){
+            cityID[rowID] = (int) municipalitiesMatrix.getValueAt(initialRow,"ID_city");
             cityIDs[rowID] = Integer.toString(cityID[rowID]);
             cityCountyInitial[rowIDcounty] = rowID;
             rowID++;
             citiesCounter++;
-            countyID[rowIDcounty] = (int) municipalitiesMatrix.getValueAt(1,"ID_county");
+            countyID[rowIDcounty] = (int) municipalitiesMatrix.getValueAt(initialRow,"ID_county");
             countyIDs[rowIDcounty] = Integer.toString(countyID[rowIDcounty]);
             rowIDcounty++;
         }
-        for (int row = 2; row <= municipalitiesMatrix.getRowCount(); row++){
+        for (int row = initialRow + 1; row <= municipalitiesMatrix.getRowCount(); row++){
             if (municipalitiesMatrix.getValueAt(row,"Select") == 1f){
                 cityID[rowID] = (int) municipalitiesMatrix.getValueAt(row,"ID_city");
                 cityIDs[rowID] = Integer.toString(cityID[rowID]);
                 rowID++;
-                citiesCounter++;
-                if (municipalitiesMatrix.getValueAt(row,"ID_county") != municipalitiesMatrix.getValueAt(row - 1,"ID_county")){
-                    countyID[rowIDcounty] = (int) municipalitiesMatrix.getValueAt(row,"ID_county");
-                    countyIDs[rowIDcounty] = Integer.toString(countyID[rowIDcounty]);
-                    cityCountyInitial[rowIDcounty] = rowID - 1;
-                    rowIDcounty++;
-                    citiesCountyAux[rowIDcounty - 1] = citiesCounter;
-                    citiesCounter = 0;
+                if (rowID == initialRow + 1) {
+                    if (municipalitiesMatrix.getValueAt(row, "ID_county") != municipalitiesMatrix.getValueAt(row - 1, "ID_county")) {
+                        countyID[rowIDcounty] = (int) municipalitiesMatrix.getValueAt(row, "ID_county");
+                        countyIDs[rowIDcounty] = Integer.toString(countyID[rowIDcounty]);
+                        cityCountyInitial[rowIDcounty] = rowID - 1;
+                        rowIDcounty++;
+                        citiesCountyAux[rowIDcounty - 1] = citiesCounter;
+                        citiesCounter = 0;
+                    } else {
+                        citiesCounter++;
+                    }
+                } else {
+                    citiesCounter++;
+                    if (municipalitiesMatrix.getValueAt(row, "ID_county") != municipalitiesMatrix.getValueAt(row - 1, "ID_county")) {
+                        countyID[rowIDcounty] = (int) municipalitiesMatrix.getValueAt(row, "ID_county");
+                        countyIDs[rowIDcounty] = Integer.toString(countyID[rowIDcounty]);
+                        cityCountyInitial[rowIDcounty] = rowID - 1;
+                        rowIDcounty++;
+                        citiesCountyAux[rowIDcounty - 1] = citiesCounter;
+                        citiesCounter = 0;
+                    }
                 }
             }
         }
@@ -1490,7 +1507,7 @@ public class SyntheticPopDe {
                 float weighted_sum = 0f;
                 for (int municipality = 0; municipality < municipalitiesID.length;municipality++) {
                     int positions = (int) lengthMicroData.getValueAt(1, attributesRegionList[attribute]);
-                    weighted_sum = SiloUtil.getWeightedSum(weights.getColumnAsDouble(municipalitiesIDs[municipality]),
+                    weighted_sum = weighted_sum + SiloUtil.getWeightedSum(weights.getColumnAsDouble(municipalitiesIDs[municipality]),
                             microDataMatrix.getColumnAsFloat(attributesRegionList[attribute]),
                             collapsedMicroData.getColumnAsInt(attributesRegionList[attribute]), positions);
                 }
@@ -1793,6 +1810,7 @@ public class SyntheticPopDe {
         //These attributes are added to the attributes of the IPU
         String[] attributesHouseholdGen = ResourceUtil.getArray(rb,PROPERTIES_HOUSEHOLD_ATTR_GENERATION);
         String[] attributesRegionGen = ResourceUtil.getArray(rb,PROPERTIES_REGION_ATTR_GENERATION);
+        attributesRegion = ResourceUtil.getArray(rb,PROPERTIES_REGION_ATTRIBUTES);
         String[] attributesExtra = new String[attributesRegion.length + attributesHouseholdGen.length + attributesRegionGen.length];
         if (attributesRegion != null){
             for (int attribute = 0; attribute < attributesRegion.length; attribute++){
@@ -1959,12 +1977,12 @@ public class SyntheticPopDe {
                 timesSelected[recordHHmicroData]++;
 
 
-                //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
+/*                //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
                 if (probabilityPrivate[recordHHmicroData] > 1) {
                     probabilityPrivate[recordHHmicroData] = probabilityPrivate[recordHHmicroData] - 1;
                 } else {
                     probabilityPrivate[recordHHmicroData] = 0;
-                }
+                }*/
 
 
                 //copy the private household characteristics
