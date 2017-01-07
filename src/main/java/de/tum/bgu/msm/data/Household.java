@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.MitoHousehold;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import org.apache.log4j.Logger;
@@ -280,5 +281,20 @@ public class Household implements Serializable {
             cnt++;
         }
         return ahs/(float) cnt;
+    }
+
+    public MitoHousehold convertToMitoHh() {
+        MitoHousehold thh = new MitoHousehold(hhId, hhSize, getNumberOfWorkers(), getHhIncome(), autos,
+                homeZone);
+        return null;
+    }
+
+    public static MitoHousehold[] covertHhs() {
+        MitoHousehold[] thhs = new MitoHousehold[householdMap.size()];
+        Household[] hhSilo = getHouseholdArray();
+        for (int i = 0; i < hhSilo.length; i++) {
+            thhs[i] = hhSilo[i].convertToMitoHh();
+        }
+        return thhs;
     }
 }

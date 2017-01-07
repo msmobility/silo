@@ -20,7 +20,7 @@ public class SiloCSDMS {
     private static long startTime;
 
 
-    public static void main (String[] args) {
+    public static void main (String args) {
         // main run method
 
 //        SyntheticPopUs sp = new SyntheticPopUs(rb);
@@ -33,7 +33,7 @@ public class SiloCSDMS {
     }
 
 
-    public static void mainOld(String[] args) {
+    public static void mainOld(String args) {
         // main run method
 
         SiloUtil.setBaseYear(2000);
@@ -56,7 +56,7 @@ public class SiloCSDMS {
     }
 
 
-    public static void initialize (String[] configFile) {
+    public static void initialize (String configFile) {
         // initialization step for CSDMS
 
         logger.info("Starting SILO Initialization for MSTM with CSDMS Integration");

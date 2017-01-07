@@ -198,8 +198,14 @@ public class Accessibility {
         
         // new -- write output
 //      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoData.getZoneIndex(orig)]);
-//      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig));
-        
+//      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig))
+
+
+/*  RM: Had to comment out this part because model fails when CSVFileWriter is called. Seems to be an issue within MATSim:
+Exception in thread "main" java.lang.NoClassDefFoundError: org/matsim/core/utils/io/IOUtils
+at de.tum.bgu.msm.transportModel.CSVFileWriter.<init>(CSVFileWriter.java:29)
+at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java:204)
+
         new File(SiloUtil.baseDirectory + "testing").mkdirs();
         CSVFileWriter accessibilityFileWriter = new CSVFileWriter(SiloUtil.baseDirectory + "testing/accessibility_" + year +".csv", ",");
 		
@@ -216,7 +222,7 @@ public class Accessibility {
 		accessibilityFileWriter.close();
 		Log.info("For testing: Written accessibilities out as a csv file");
 		// end new
-		
+*/
 		
 		
         autoAccessibility = SiloUtil.scaleArray(autoAccessibility, 100);
@@ -286,5 +292,15 @@ public class Accessibility {
 
     public static float getMinDistanceFromZoneToRegion (int zone, int region) {
         return travelTimeToRegion.getValueAt(zone, region);
+    }
+
+
+    public static Matrix getHwySkim() {
+        return hwySkim;
+    }
+
+
+    public static Matrix getTransitSkim() {
+        return transitSkim;
     }
 }

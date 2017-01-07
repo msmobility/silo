@@ -27,7 +27,7 @@ public class SiloMstm {
         // main run method
 
         SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");

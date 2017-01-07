@@ -122,4 +122,8 @@ public class MatsimTransportModel implements TransportModelI {
 	public void writeOutSocioEconomicDataForMstm(int year) {
 		// not doing anything. 
 	}
+	@Override
+	public void tripGeneration() {
+		// not doing anything.
+	}
 }

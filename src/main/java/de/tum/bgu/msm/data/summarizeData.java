@@ -186,10 +186,10 @@ public class summarizeData {
     public static int[] getHouseholdsByZone () {
         // summarize households by zone
 
-        int[] householdsByZone = new int[geoData.getHighestZonalId() + 1];
+        int[] householdsByZone = new int[geoData.getZones().length];
         for (Household hh: Household.getHouseholdArray()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            householdsByZone[zone]++;
+            householdsByZone[geoData.getZoneIndex(zone)]++;
         }
         return householdsByZone;
     }
@@ -198,7 +198,7 @@ public class summarizeData {
     public static int[] getRetailEmploymentByZone() {
         // summarize retail employment by zone
 
-        int[] retailEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        int[] retailEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
             if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
@@ -206,10 +206,21 @@ public class summarizeData {
     }
 
 
+    public static int[] getOfficeEmploymentByZone() {
+        // summarize office employment by zone
+
+        int[] officeEmplByZone = new int[geoData.getZones().length];
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getType().equals("OFF")) officeEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
+        }
+        return officeEmplByZone;
+    }
+
+
     public static int[] getOtherEmploymentByZone() {
         // summarize other employment by zone
 
-        int[] otherEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        int[] otherEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
             if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
@@ -220,7 +231,7 @@ public class summarizeData {
     public static int[] getTotalEmploymentByZone() {
         // summarize retail employment by zone
 
-        int[] totalEmplByZone = new int[geoData.getHighestZonalId() + 1];
+        int[] totalEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
             totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }

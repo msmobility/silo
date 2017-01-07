@@ -132,6 +132,14 @@ public class geoData {
         return SiloUtil.zonalData.getIndexedValueAt(zone, "ACRES");
     }
 
+    public static float[] getSizeOfZonesInAcres() {
+        float[] size = new float[getZones().length];
+        for (int zone: getZones()) {
+            size[getZoneIndex(zone)] = getSizeOfZoneInAcres(zone);
+        }
+        return size;
+    }
+
     public static int getCountyOfZone(int zone) {
         return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "COUNTYFIPS");
     }

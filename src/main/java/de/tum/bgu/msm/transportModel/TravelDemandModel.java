@@ -2,6 +2,7 @@ package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.transportModel.tripGeneration.TripGeneration;
@@ -12,7 +13,10 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.ResourceBundle;
+
+import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 /**
  * Controls transportation model
@@ -33,13 +37,15 @@ public class TravelDemandModel implements TransportModelI {
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
+    private TripGenerationData tgData;
 
 
     public TravelDemandModel(ResourceBundle rbLandUse) {
         // constructor
         this.rbLandUse = rbLandUse;
-        File propFile = new File(SiloUtil.getSiloTravelPropertiesFile());
-        this.rbTravel = ResourceUtil.getPropertyBundle(propFile);
+        String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
+        rbTravel = ResourceUtil.getPropertyBundle(new File(fileName));
+
     }
 
     @Override
@@ -57,10 +63,11 @@ public class TravelDemandModel implements TransportModelI {
     }
 
 
-    private void tripGeneration () {
+    @Override
+    public void tripGeneration () {
         // run trip generation
 
-        TripGenerationData tgData = new TripGenerationData(rbTravel);
+        tgData = new TripGenerationData(rbTravel);
         tgData.readHouseholdTravelSurvey("all");
         TripGeneration tg = new TripGeneration(rbTravel);
 
@@ -75,39 +82,90 @@ public class TravelDemandModel implements TransportModelI {
 
         }
 
+        logger.info("  Running trip generation");
         // generate trips for every household
-//        for (Household hh: Household.getHouseholdArray()) {
 
-            for (int purp = 0; purp < tripPurposes.values().length; purp++) {
+        for (int purp = 0; purp < tripPurposes.values().length; purp++) {
                 String strPurp = tripPurposes.values()[purp].toString();
-//                TableDataSet hhTypeDef = createHHTypeDefinition(strPurp);
-//                int[] hhTypeArray = tgData.defineHouseholdTypeOfEachSurveyRecords(selectAutoMode(strPurp), hhTypeDef);
-//                HashMap<String, Integer[]> tripsByHhTypeAndPurpose = tgData.collectTripFrequencyDistribution(hhTypeArray);
-//                // Generate trips for each household
-//                for (Household hh: Household.getHouseholdArray()) {
-//                    int region = (int) regionDefinition.getIndexedValueAt(hh.getHomeZone(), "Regions");
-//                    int incCategory = translateIncomeIntoCategory (hh.getHhIncome());
-//                    int hhType = tgData.getHhType(selectAutoMode(strPurp), hhTypeDef, hh.getHhSize(), hh.getNumberOfWorkers(),
-//                            incCategory, hh.getAutos(), region);
-//                    String token = hhType + "_" + strPurp;
-//                    Integer[] tripFrequencies = tripsByHhTypeAndPurpose.get(token);
-//                    if (tripFrequencies == null) {
-//                        logger.error("Could not find trip frequencies for this hhType/Purpose: " + token);
-//                    }
-//                    if (SiloUtil.getSum(tripFrequencies) == 0) continue;
-//                    int numTrips = selectNumberOfTrips(tripFrequencies);
-//                    int mstmIncCat = defineMstmIncomeCategory(hh.getHhIncome());
+                TableDataSet hhTypeDef = createHHTypeDefinition(strPurp);
+                int[] hhTypeArray = tgData.defineHouseholdTypeOfEachSurveyRecords(selectAutoMode(strPurp), hhTypeDef);
+                HashMap<String, Integer[]> tripsByHhTypeAndPurpose = tgData.collectTripFrequencyDistribution(hhTypeArray);
+                // Generate trips for each household
+                for (Household hh: Household.getHouseholdArray()) {
+                    int region = tdd.getRegionOfZone(hh.getHomeZone());
+                    int incCategory = tdd.translateIncomeIntoCategory (hh.getHhIncome());
+                    int hhType = tgData.getHhType(selectAutoMode(strPurp), hhTypeDef, hh.getHhSize(), hh.getNumberOfWorkers(),
+                            incCategory, hh.getAutos(), region);
+                    String token = hhType + "_" + strPurp;
+                    Integer[] tripFrequencies = tripsByHhTypeAndPurpose.get(token);
+                    if (tripFrequencies == null) {
+                        logger.error("Could not find trip frequencies for this hhType/Purpose: " + token);
+                    }
+                    if (SiloUtil.getSum(tripFrequencies) == 0) continue;
+                    int numTrips = selectNumberOfTrips(tripFrequencies);
+                    int mstmIncCat = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
 //                    tripProd[hh.getHomeZone()][purp][mstmIncCat] += numTrips;
 //                }
 //            }
 //            logger.info("  Generated " + SiloUtil.customFormat("###,###", SiloUtil.getSum(tripProd)) + " raw trips.");
         }
-//
-//        ###
-//        }
+        }
     }
 
 
+    private TableDataSet createHHTypeDefinition (String purpose) {
+        // create household type definition file
+        String[] hhDefToken = ResourceUtil.getArray(rbTravel, ("hh.type." + purpose));
+        //        int categoryID = Integer.parseInt(hhDefToken[0]);
+        int numCategories = Integer.parseInt(hhDefToken[1]);
+        String sizeToken = hhDefToken[2];
+        String[] sizePortions = sizeToken.split("\\.");
+        String workerToken = hhDefToken[3];
+        String[] workerPortions = workerToken.split("\\.");
+        String incomeToken = hhDefToken[4];
+        String[] incomePortions = incomeToken.split("\\.");
+        String autoToken = hhDefToken[5];
+        String[] autoPortions = autoToken.split("\\.");
+        String regionToken = hhDefToken[6];
+        String[] regionPortions = regionToken.split("\\.");
+        TableDataSet hhTypeDef = tgData.createHouseholdTypeTableDataSet(numCategories, sizePortions, workerPortions,
+                incomePortions, autoPortions, regionPortions);
+        int[] hhCounter = tgData.defineHouseholdTypeOfEachSurveyRecords(selectAutoMode(purpose), hhTypeDef);
+        HashMap<Integer, Integer> numHhByType = new HashMap<>();
+        for (int hhType: hhCounter) {
+            if (numHhByType.containsKey(hhType)) {
+                int oldNum = numHhByType.get(hhType);
+                numHhByType.put(hhType, (oldNum + 1));
+            } else {
+                numHhByType.put(hhType, 1);
+            }
+        }
+        hhTypeDef.appendColumn(new float[hhTypeDef.getRowCount()], "counter");
+        hhTypeDef.buildIndex(hhTypeDef.getColumnPosition("hhType"));
+        for (int type: numHhByType.keySet()) {
+            if (type == 0) continue;
+            hhTypeDef.setIndexedValueAt(type, "counter", numHhByType.get(type));
+        }
+//        mstmUtilities.writeTable(hhTypeDef, "temp_" + purpose + ".csv");
+        return hhTypeDef;
+    }
+
+
+    private String selectAutoMode (String purpose) {
+        // return autos or autoSufficiency depending on mode chosen
+
+        String autoMode = "autos";
+        if (purpose.equalsIgnoreCase("HBW") || purpose.equalsIgnoreCase("NHBW")) autoMode = "autoSufficiency";
+        return autoMode;
+    }
+
+
+    private int selectNumberOfTrips (Integer[] tripFrequencies) {
+        // select number of trips
+        double[] probabilities = new double[tripFrequencies.length];
+        for (int i = 0; i < tripFrequencies.length; i++) probabilities[i] = (double) tripFrequencies[i];
+        return SiloUtil.select(probabilities);
+    }
 
 
     @Override

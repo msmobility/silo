@@ -31,7 +31,7 @@ public class SiloMuc {
         // main run method
 
         SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) {
             SyntheticPopDe sp = new SyntheticPopDe(rb);

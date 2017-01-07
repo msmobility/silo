@@ -39,7 +39,7 @@ public class SiloMatsimTest {
 	public final void testMainAnnapolis() {
 		SiloMstmTest.cleanUp();
 		
-		String[] args = {"./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties"}; 
+		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties";
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis/matsim/config.xml" ) ;
 		config.controler().setOutputDirectory( utils.getOutputDirectory() ) ;
@@ -49,7 +49,7 @@ public class SiloMatsimTest {
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
 
-		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
+		SiloMatsim siloMatsim = new SiloMatsim(arg, config );
 
 		try {
 			siloMatsim.run();
@@ -94,7 +94,7 @@ public class SiloMatsimTest {
 	@Ignore
 	@Test
 	public final void testMainAnnapolisReducedNetwork() {
-		String[] args = {"./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties"}; 
+		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim_annapolis.properties";
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis/matsim/config_reduced_network.xml" ) ;
 		
@@ -103,7 +103,7 @@ public class SiloMatsimTest {
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
 
-		SiloMatsim siloMatsim = new SiloMatsim(args, config );		
+		SiloMatsim siloMatsim = new SiloMatsim(arg, config );
 
 		try {
 			siloMatsim.run();
@@ -148,7 +148,7 @@ public class SiloMatsimTest {
 	public final void testMainReduced() {
 		SiloMstmTest.cleanUp();
 
-		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties"}; 
+		String arg = "./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties";
 
 		Config config = ConfigUtils.loadConfig( "./test/scenarios/annapolis_reduced/matsim/config.xml" ) ;
 
@@ -161,7 +161,7 @@ public class SiloMatsimTest {
 
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(args, config );		
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config );
 			siloMatsim.run();
 		} catch ( Exception ee ) {
 			ee.printStackTrace();

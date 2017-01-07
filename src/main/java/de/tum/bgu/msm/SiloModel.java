@@ -16,13 +16,11 @@
  */
 package de.tum.bgu.msm;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.transportModel.MatsimTransportModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -31,13 +29,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 
 import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.summarizeData;
-import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.demography.BirthModel;
 import de.tum.bgu.msm.demography.ChangeEmploymentModel;
 import de.tum.bgu.msm.demography.DeathModel;
@@ -71,11 +62,11 @@ public class SiloModel {
 
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
 
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.travel.demand.model";
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
-    public static final String PROPERTIES_RUN_TRANSPORT_DEMAND_MODEL = "run.travel.demand.model";
-    public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM = "matsim.run.travel.model";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mito.travel.demand";
+    public static final String PROPERTIES_FILE_DEMAND_MODEL                 = "mito.properties.file";
+    public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM           = "matsim.run.travel.model";
 
     public static final String PROPERTIES_TRACK_TIME                        = "track.time";
     public static final String PROPERTIES_TRACK_TIME_FILE                   = "track.time.file";
@@ -83,13 +74,14 @@ public class SiloModel {
     protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
     protected static final String PROPERTIES_CBLCM_BASE_YEAR				= "cblcm.base.year";
     protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
-    protected static final String PROPERTIES_CBLCM_MULTIPLIER_PREFIX				= "cblcm.multiplier";
+    protected static final String PROPERTIES_CBLCM_MULTIPLIER_PREFIX		= "cblcm.multiplier";
     protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
     protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME       = "spatial.result.file.name";
     protected static final String PROPERTIES_CREATE_MSTM_OUTPUT_FILES       = "create.mstm.socio.econ.files";
 
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
+    protected Mito mito;
 
     private int[] scalingYears;
     private int currentYear;
@@ -118,7 +110,7 @@ public class SiloModel {
     private long[][] timeCounter;
     private SiloModelContainer modelContainer;
 
-private Config matsimConfig;
+    private Config matsimConfig;
 
     /**
      * Constructor to set up a SILO model
@@ -144,10 +136,32 @@ private Config matsimConfig;
         int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
+        // create main objects and read synthetic population
         modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+
+        final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse,  PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
+        final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
+        final boolean createMstmOutputFiles = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true);
+
+
+        if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
+            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent" ) ;
+        }
+
+        TransportModelI TransportModel ;
+        // this shadows a global definition, not sure if that is intended ... kai, aug'16
+
+        if ( runMatsim ) {
+            logger.info("  MATSim is used as the transport model");
+            TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
+        } else {
+            logger.info("  MITO is used as the transport model");
+            TransportModel = new TravelDemandModel(rbLandUse);
+        }
         setOldLocalModelVariables();
-
-
+        // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
+        // synthetic population for testing
+        // writeOutSmallSP(100);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -192,16 +206,26 @@ private Config matsimConfig;
             em.createListOfEvents(numberOfPlannedCouples);
             if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
-            if (SiloUtil.containsElement(skimYears, year)) {
-                if (year != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, year)) {
-                    // skims are always read in start year and in every year the transportation model ran. Additional
-                    // years to read skims may be provided in skimYears
-                    acc.readSkim(year);
-                    acc.calculateAccessibilities(year);
-                }
+            if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
+                    !ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
+                    year != SiloUtil.getStartYear()) {
+                // skims are always read in start year and in every year the transportation model ran. Additional
+                // years to read skims may be provided in skimYears
+                acc.readSkim(year);
+                acc.calculateAccessibilities(year);
             }
 
-            if (trackTime) startTime = System.currentTimeMillis();
+            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
+                    SiloUtil.containsElement(tdmYears, year)) {
+                String fileName = ResourceUtil.getProperty(rbLandUse,PROPERTIES_FILE_DEMAND_MODEL);
+                mito = new Mito(ResourceUtil.getPropertyBundle(new File(fileName)));
+                mito.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
+                        Household.covertHhs(), summarizeData.getRetailEmploymentByZone(),
+                        summarizeData.getOfficeEmploymentByZone(), summarizeData.getOtherEmploymentByZone(),
+                        summarizeData.getTotalEmploymentByZone(), geoData.getSizeOfZonesInAcres());
+            }
+
+                if (trackTime) startTime = System.currentTimeMillis();
             ddOverwrite.addDwellings(year);
             if (trackTime) timeCounter[EventTypes.values().length + 10][year] += System.currentTimeMillis() - startTime;
 
@@ -289,30 +313,17 @@ private Config matsimConfig;
             }
 
             {
-                  TransportModelI TransportModel ;
-                  // this shadows a global definition, not sure if that is intended ... kai, aug'16
-
-            	final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse,  PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
-            	final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
-            	final boolean createMstmOutputFiles = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true);
-            	
-            	if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
-            		throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent" ) ;
-            	}
 
             	if ( runMatsim ) {
             		logger.info("using MATSim as transport model") ;
-            		TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
             		int nextYearForTransportModel = year + 1;
             		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
             			TransportModel.runTransportModel(nextYearForTransportModel);
             		}
             	} else if ( runTravelDemandModel || createMstmOutputFiles ) {
-            		TransportModel = new TravelDemandModel(rbLandUse);
             		int nextYearForTransportModel = year + 1;
             		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-            			if (runTravelDemandModel)
-            				TransportModel.runTransportModel(nextYearForTransportModel);
+                        TransportModel.runTransportModel(nextYearForTransportModel);
             			if (createMstmOutputFiles)
             				TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
             			// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
@@ -728,5 +739,97 @@ public void setMatsimConfig(Config matsimConfig) {
 //        }
 //        pw.close();
 //    }
+
+
+    private void writeOutSmallSP(int count) {
+        // write out count number of households to have small file for running tests
+
+        logger.info("  Writing out smaller files of synthetic population with " + count + " households only");
+        String filehh = SiloUtil.baseDirectory + "microData/small_hh_2000.csv";
+        String filepp = SiloUtil.baseDirectory + "microData/small_pp_2000.csv";
+        String filedd = SiloUtil.baseDirectory + "microData/small_dd_2000.csv";
+        String filejj = SiloUtil.baseDirectory + "microData/small_jj_2000.csv";
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
+        pwj.println("id,zone,personId,type");
+        Household[] hhs = Household.getHouseholdArray();
+        int counter = 0;
+        for (Household hh : hhs) {
+            counter++;
+            if (counter > count) break;
+            // write out household attributes
+            pwh.print(hh.getId());
+            pwh.print(",");
+            pwh.print(hh.getDwellingId());
+            pwh.print(",");
+            pwh.print(hh.getHomeZone());
+            pwh.print(",");
+            pwh.print(hh.getHhSize());
+            pwh.print(",");
+            pwh.println(hh.getAutos());
+            // write out person attributes
+            for (Person pp : hh.getPersons()) {
+                pwp.print(pp.getId());
+                pwp.print(",");
+                pwp.print(pp.getHhId());
+                pwp.print(",");
+                pwp.print(pp.getAge());
+                pwp.print(",");
+                pwp.print(pp.getGender());
+                pwp.print(",\"");
+                pwp.print(pp.getRole());
+                pwp.print("\",\"");
+                pwp.print(pp.getRace());
+                pwp.print("\",");
+                pwp.print(pp.getOccupation());
+                pwp.print(",0,");
+                pwp.print(pp.getWorkplace());
+                pwp.print(",");
+                pwp.println(pp.getIncome());
+                // write out job attributes (if person is employed)
+                int job = pp.getWorkplace();
+                if (job > 0 && pp.getOccupation() == 1) {
+                    Job jj = Job.getJobFromId(job);
+                    pwj.print(jj.getId());
+                    pwj.print(",");
+                    pwj.print(jj.getZone());
+                    pwj.print(",");
+                    pwj.print(jj.getWorkerId());
+                    pwj.print(",\"");
+                    pwj.print(jj.getType());
+                    pwj.println("\"");
+                }
+            }
+            // write out dwelling attributes
+                Dwelling dd = Dwelling.getDwellingFromId(hh.getDwellingId());
+            pwd.print(dd.getId());
+            pwd.print(",");
+            pwd.print(dd.getZone());
+            pwd.print(",\"");
+            pwd.print(dd.getType());
+            pwd.print("\",");
+            pwd.print(dd.getResidentId());
+            pwd.print(",");
+            pwd.print(dd.getBedrooms());
+            pwd.print(",");
+            pwd.print(dd.getQuality());
+            pwd.print(",");
+            pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getRestriction());
+            pwd.print(",");
+            pwd.println(dd.getYearBuilt());
+        }
+        pwh.close();
+        pwp.close();
+        pwd.close();
+        pwj.close();
+        //System.exit(0);
+    }
 }
 

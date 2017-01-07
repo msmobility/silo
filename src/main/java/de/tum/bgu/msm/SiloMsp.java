@@ -38,7 +38,7 @@ public class SiloMsp {
 
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");

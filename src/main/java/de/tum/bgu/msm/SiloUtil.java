@@ -27,10 +27,10 @@ import java.util.*;
 
 public class SiloUtil {
 
-    protected static final String PROPERTIES_BASE_DIRECTORY                    = "base.directory";
-    protected static final String PROPERTIES_RANDOM_SEED                       = "random.seed";
+    protected static final String PROPERTIES_BASE_DIRECTORY                 = "base.directory";
+    protected static final String PROPERTIES_RANDOM_SEED                    = "random.seed";
     public static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
-    protected static final String PROPERTIES_TRACKING_FILE_NAME                = "track.file.name";
+    protected static final String PROPERTIES_TRACKING_FILE_NAME             = "track.file.name";
     public static final String PROPERTIES_START_YEAR                        = "start.year";
     public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
     public static final String PROPERTIES_END_YEAR                          = "end.year";
@@ -51,7 +51,6 @@ public class SiloUtil {
     public static int numberOfQualityLevels;
     private static ResourceBundle rb;
     private static HashMap rbHashMap;
-    private static String siloTravelPropertiesFile;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
     private static int baseYear;
@@ -63,27 +62,25 @@ public class SiloUtil {
     }
 
 
-    public static ResourceBundle siloInitialization(String[] resourceBundleNames) {
+    public static ResourceBundle siloInitialization(String resourceBundleNames) {
         // initializes Silo
 
-        File propFile = new File(resourceBundleNames[0]);
+        File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        if (ResourceUtil.getBooleanProperty(rb, SiloModel.PROPERTIES_RUN_TRANSPORT_DEMAND_MODEL, false)) siloTravelPropertiesFile = resourceBundleNames[1];
-
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
 
         // create scenario output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
         // copy properties file into scenario directory
-        String[] prop = resourceBundleNames[0].split("/");
+        String[] prop = resourceBundleNames.split("/");
 
 //        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
         // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
         // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody 
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
-        copyFile(resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        copyFile(resourceBundleNames, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber();
         trackingFile("open");
@@ -94,11 +91,6 @@ public class SiloUtil {
 
     public static HashMap getRbHashMap() {
         return rbHashMap;
-    }
-
-
-    public static String getSiloTravelPropertiesFile() {
-        return siloTravelPropertiesFile;
     }
 
 

@@ -28,4 +28,6 @@ public interface TransportModelI {
 	
 	public void writeOutSocioEconomicDataForMstm(int year) ;
 
+	public void tripGeneration();
+
 }

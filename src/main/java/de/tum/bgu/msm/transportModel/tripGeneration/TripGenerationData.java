@@ -76,8 +76,6 @@ public class TripGenerationData {
     }
 
 
-
-
     public TableDataSet createHouseholdTypeTableDataSet (int numCategories, String[] sizePortions, String[] workerPortions,
                                                          String[] incomePortions, String[] autoPortions, String[] regionPortions) {
         // create household type TableDataSet
