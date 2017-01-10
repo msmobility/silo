@@ -1,7 +1,8 @@
 language: java
 jdk:
   - oraclejdk8
-script: mvn test -Dhdf5lib-absolute-path=`pwd`/lib/linux64/libjhdf5.so --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true -Dmaven.test.redirectTestOutputToFile
+script: mvn test -Dhdf5lib-absolute-path=`pwd`/lib/linux64/libjhdf5.so --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true 
+#-Dmaven.test.redirectTestOutputToFile
 env:
   global:
     - export MAVEN_OPTS="-Xmx2500m"
