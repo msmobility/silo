@@ -40,6 +40,10 @@
 			<name>bintray</name>
 			<url>http://dl.bintray.com/msmobility/maven</url>
 		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<snapshotRepository>
@@ -299,10 +303,18 @@
 			<artifactId>jxl</artifactId>
 			<version>2.6</version>
 		</dependency>
-		<dependency>
+<!-- 		This would be the "standard" deployment, which currently (10/jan/2016) fails:
+ --><!-- 		<dependency>
 			<groupId>de.tum.bgu.msm</groupId>
 			<artifactId>mito</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+ -->		
+<!--  		This is the "jitpack" deployment:
+ --> 		<dependency>
+			<groupId>com.github.msmobility</groupId>
+			<artifactId>mito</artifactId>
+			<version>master-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<properties>
