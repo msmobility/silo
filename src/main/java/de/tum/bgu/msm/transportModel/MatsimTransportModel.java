@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
@@ -55,6 +56,7 @@ public class MatsimTransportModel implements TransportModelI {
 	
 
 	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
+		Gbl.assertNotNull(householdData);
 		this.householdData = householdData;
 		this.acc = acc;
 		this.rb = rb;
@@ -71,7 +73,7 @@ public class MatsimTransportModel implements TransportModelI {
 			String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
 			
 //			int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
-			int numberOfCalcPoints = 1 ; // what is this?
+			int numberOfCalcPoints = 1 ; // yyyyyy what is this?
 			
 //			boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
 			boolean writePopulation = false ;

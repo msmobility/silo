@@ -153,12 +153,17 @@ public class SiloModel {
 
         if ( runMatsim ) {
             logger.info("  MATSim is used as the transport model");
+            setOldLocalModelVariables();
             TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
         } else {
             logger.info("  MITO is used as the transport model");
             TransportModel = new TravelDemandModel(rbLandUse);
+            setOldLocalModelVariables();        
         }
-        setOldLocalModelVariables();
+        //        setOldLocalModelVariables();
+        // yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
+        // it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
+
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
         // writeOutSmallSP(100);
