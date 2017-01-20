@@ -1,6 +1,7 @@
 package edu.umd.ncsg;
 
 import com.pb.common.util.ResourceUtil;
+import edu.umd.ncsg.SyntheticPopulationGenerator.ExtractDataDE;
 import edu.umd.ncsg.SyntheticPopulationGenerator.SyntheticPopDe;
 import edu.umd.ncsg.data.summarizeData;
 import edu.umd.ncsg.transportModel.TravelDemandModel;
@@ -34,8 +35,10 @@ public class SiloMuc {
         ResourceBundle rb = SiloUtil.siloInitialization(args);
         long startTime = System.currentTimeMillis();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) {
-            SyntheticPopDe sp = new SyntheticPopDe(rb);
+           SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
+/*            ExtractDataDE de = new ExtractDataDE(rb);
+            de.runSP();*/
         }
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SILO, false)) {
             //try {
