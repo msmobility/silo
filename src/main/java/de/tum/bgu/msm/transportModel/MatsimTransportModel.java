@@ -41,19 +41,14 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
 public class MatsimTransportModel implements TransportModelI {
 	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
 
-	private static final String PROPERTIES_ZONES_SHAPEFILE				= "matsim.zones.shapefile";
-	private static final String PROPERTIES_ZONES_CRS 						= "matsim.zones.crs";
-//	private static final String PROPERTIES_MATSIM_WRITE_POPULATION 		= "matsim.write.population";
-//	private static final String PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS 	= "matsim.number.of.calc.points";
-//	private static final String PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR = "matsim.population.scaling.factor";
-//	private static final String PROPERTIES_MATSIM_WORKER_SCALING_FACTOR 	= "matsim.worker.scaling.factor";
-//	private static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
-	
+	private static final String PROPERTIES_ZONES_SHAPEFILE	= "matsim.zones.shapefile";
+	private static final String PROPERTIES_ZONES_CRS 		= "matsim.zones.crs";
+
 	private HouseholdDataManager householdData;
 	private Accessibility acc;
 	private ResourceBundle rb;
 	private Config matsimConfig;
-	
+
 
 	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
 		Gbl.assertNotNull(householdData);
@@ -62,70 +57,70 @@ public class MatsimTransportModel implements TransportModelI {
 		this.rb = rb;
 		this.matsimConfig = matsimConfig;
 	}
+
 	
 	@Override
 	public void runTransportModel(int year) {
-			logger.info("Running MATSim transport model for year " + year + ".");
+		logger.info("Running MATSim transport model for year " + year + ".");
 
-			String scenarioName = rb.getString(SiloUtil.PROPERTIES_SCENARIO_NAME);
+		String scenarioName = rb.getString(SiloUtil.PROPERTIES_SCENARIO_NAME);
 
-			String crs = rb.getString(PROPERTIES_ZONES_CRS);
-			String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
-			
-//			int numberOfCalcPoints = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MATSIM_NUMBER_OF_CALC_POINTS);
-			int numberOfCalcPoints = 1 ; // yyyyyy what is this?
-			
-//			boolean writePopulation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_MATSIM_WRITE_POPULATION);
-			boolean writePopulation = false ;
+		String crs = rb.getString(PROPERTIES_ZONES_CRS);
+		matsimConfig.global().setCoordinateSystem(crs);
+		String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
+		
+		// In the current implementation, MATSim is used to reflect the functionality that was previously
+		// covered by MSTM. As such, based on the MATSim transport simulation, a travel time matrix (skim)
+		// is computed. To do so, random coordinates in each zone are taken to measure the zone-to-zone
+		// travel times. <code>numberOfCalcPoints</code> states how many such points in each zone are used;
+		// in case multiple points are used; the average of all travel times of a given relation is used.
+		int numberOfCalcPoints = 1;
+		boolean writePopulation = true;
+		double populationScalingFactor = 0.01;
+		
+		// people working at non-peak times (only peak traffic is simulated), and people going by a mode other
+		// than car in case a car is still available to them
+		double workerScalingFactor = 0.66;
+		double flowCapacityFactor = populationScalingFactor;
+		matsimConfig.qsim().setFlowCapFactor(flowCapacityFactor);
+		
+		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
+		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
+		double storageCapacityFactor = Math.round((flowCapacityFactor / (Math.pow(flowCapacityFactor, 0.25)) * 100)) / 100.;
+		matsimConfig.qsim().setStorageCapFactor(storageCapacityFactor);
 
-//			double populationScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_POPULATION_SCALING_FACOTR);
-			double populationScalingFactor = 0.01 ;
-			
-			// people working at non-peak times (only peak traffic is simulated), and people going by
-			// a mode other than car in case a car is still available to them
-//			double workerScalingFactor = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MATSIM_WORKER_SCALING_FACTOR);
-			double workerScalingFactor = 0.66 ;
+		String matsimRunId = scenarioName + "_" + year;
+		Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
 
-			double flowCapacityFactor = populationScalingFactor;
-			matsimConfig.qsim().setFlowCapFactor(flowCapacityFactor);
-			// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9): Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-			double storageCapacityFactor = Math.round((flowCapacityFactor / (Math.pow(flowCapacityFactor, 0.25)) * 100)) / 100.;
-			matsimConfig.qsim().setStorageCapFactor(storageCapacityFactor);
-			
-			matsimConfig.global().setCoordinateSystem(crs);
-			
-			String matsimRunId = scenarioName + "_" + year;
-			Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
+		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
+		for (SimpleFeature feature: zoneFeatures) {
+			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
+			zoneFeatureMap.put(zoneId,feature);
+		}
 
-			Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
-			for (SimpleFeature feature: zoneFeatures) {
-				int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-				zoneFeatureMap.put(zoneId,feature);
-			}
+		Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, zoneFeatureMap,
+				writePopulation, populationScalingFactor * workerScalingFactor);
 
-			Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, zoneFeatureMap, crs,
-					writePopulation, populationScalingFactor * workerScalingFactor);
+		String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
 
-			String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
+		// Get travel Times from MATSim
+		Map<Tuple<Integer, Integer>, Float> travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(numberOfCalcPoints,
+				zoneFeatureMap, population, matsimRunId, matsimConfig, outputDirectoryRoot);
 
-			// Get travel Times from MATSim
-			Map<Tuple<Integer, Integer>, Float> travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(numberOfCalcPoints,
-					zoneFeatureMap, population, matsimRunId, matsimConfig, outputDirectoryRoot);
+		// Update skims in silo from matsim output
+		acc.readSkimBasedOnMatsim(year, travelTimesMap);
 
-			// Update skims in silo from matsim output:
-			acc.readSkimBasedOnMatsim(year, travelTimesMap);
-
-			// Update accessibilities in silo from matsim output:
-			acc.calculateAccessibilities(year);
-			// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
+		// Update accessibilities in silo from matsim output
+		acc.calculateAccessibilities(year);
+		// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
 	}
 
 	@Override
 	public void writeOutSocioEconomicDataForMstm(int year) {
-		// not doing anything. 
+		// Not doing anything
 	}
 	@Override
 	public void tripGeneration() {
-		// not doing anything.
+		// Not doing anything
 	}
 }

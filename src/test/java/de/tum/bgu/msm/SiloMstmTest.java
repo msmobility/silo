@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.matsim.core.utils.misc.CRCChecksum;
 
 public class SiloMstmTest {
 	private static final Logger log = Logger.getLogger(SiloMstmTest.class) ;
