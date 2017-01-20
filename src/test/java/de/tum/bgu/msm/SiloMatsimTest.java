@@ -36,7 +36,7 @@ public class SiloMatsimTest {
 	public final void testMainReduced() {
 		SiloMstmTest.cleanUp();
 
-		boolean cleanupAfterTest = false; // Set to true normally; set to false to be able to inspect files
+		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
 		String arg = "./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties";
 		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis_reduced/matsim_input/config.xml") ;
 
