@@ -18,10 +18,12 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -39,6 +41,7 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
+import de.tum.bgu.msm.SiloMatsimTest;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Job;
@@ -48,9 +51,11 @@ import de.tum.bgu.msm.data.Person;
  * @author dziemke
  */
 public class MatsimPopulationCreator {
+	private static final Logger LOG = Logger.getLogger(SiloMatsimTest.class);
 	
 	public static Population createMatsimPopulation(HouseholdDataManager householdDataManager, int year,
 			Map<Integer,SimpleFeature> zoneFeatureMap, boolean writePopulation, double scalingFactor) {
+		LOG.info("Starting creation of population.");
     	Collection<Person> siloPersons = householdDataManager.getPersons();
     	
     	Config matsimConfig = ConfigUtils.createConfig();
@@ -59,9 +64,7 @@ public class MatsimPopulationCreator {
     	Population matsimPopulation = matsimScenario.getPopulation();   
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
     	
-//    	Random random = new Random();
-    	Random random = MatsimRandom.getLocalInstance() ;
-    	// Make sure that stream of random variables is reproducible. kai, apr'16
+    	Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
     	
     	for (Person siloPerson : siloPersons) {
     		if (random.nextDouble() > scalingFactor) {
@@ -126,6 +129,7 @@ public class MatsimPopulationCreator {
     	
     	
     	if (writePopulation == true) {
+    		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdir();
     		MatsimWriter popWriter = new PopulationWriter(matsimPopulation, matsimNetwork);
     		popWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
     	}

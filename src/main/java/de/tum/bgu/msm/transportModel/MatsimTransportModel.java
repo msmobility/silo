@@ -76,7 +76,8 @@ public class MatsimTransportModel implements TransportModelI {
 		// in case multiple points are used; the average of all travel times of a given relation is used.
 		int numberOfCalcPoints = 1;
 		boolean writePopulation = false;
-		double populationScalingFactor = 0.01;
+//		double populationScalingFactor = 0.01;
+		double populationScalingFactor = 1.; // For test
 		
 		// people working at non-peak times (only peak traffic is simulated), and people going by a mode other
 		// than car in case a car is still available to them
