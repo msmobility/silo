@@ -41,7 +41,6 @@ import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
-import de.tum.bgu.msm.SiloMatsimTest;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Job;
@@ -51,7 +50,7 @@ import de.tum.bgu.msm.data.Person;
  * @author dziemke
  */
 public class MatsimPopulationCreator {
-	private static final Logger LOG = Logger.getLogger(SiloMatsimTest.class);
+	private static final Logger LOG = Logger.getLogger(MatsimPopulationCreator.class);
 	
 	public static Population createMatsimPopulation(HouseholdDataManager householdDataManager, int year,
 			Map<Integer,SimpleFeature> zoneFeatureMap, boolean writePopulation, double scalingFactor) {
