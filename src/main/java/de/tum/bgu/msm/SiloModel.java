@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.transportModel.MatsimTransportModel;
+import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
@@ -64,7 +65,7 @@ public class SiloModel {
 
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mito.travel.demand";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mitoTransportModel";
     public static final String PROPERTIES_FILE_DEMAND_MODEL                 = "mito.properties.file";
     public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM           = "matsim.run.travel.model";
 
@@ -81,7 +82,7 @@ public class SiloModel {
 
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
-    protected Mito mito;
+    protected MitoTransportModel mitoTransportModel;
 
     private int[] scalingYears;
     private int currentYear;
@@ -152,11 +153,11 @@ public class SiloModel {
         // this shadows a global definition, not sure if that is intended ... kai, aug'16
 
         if ( runMatsim ) {
-            logger.info("  MATSim is used as the transport model");
+            logger.info("MATSim is used as the transport model");
             TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
         } else {
-            logger.info("  MITO is used as the transport model");
-            TransportModel = new TravelDemandModel(rbLandUse);
+            logger.info("MITO is used as the transport model");
+            TransportModel = new MitoTransportModel(rbLandUse);
         }
         setOldLocalModelVariables();
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
@@ -217,9 +218,9 @@ public class SiloModel {
 
             if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
                     SiloUtil.containsElement(tdmYears, year)) {
-                String fileName = ResourceUtil.getProperty(rbLandUse,PROPERTIES_FILE_DEMAND_MODEL);
-                mito = new Mito(ResourceUtil.getPropertyBundle(new File(fileName)));
-                mito.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
+                String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
+                mitoTransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)));
+                mitoTransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
                         Household.covertHhs(), summarizeData.getRetailEmploymentByZone(),
                         summarizeData.getOfficeEmploymentByZone(), summarizeData.getOtherEmploymentByZone(),
                         summarizeData.getTotalEmploymentByZone(), geoData.getSizeOfZonesInAcres());

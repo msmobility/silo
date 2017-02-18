@@ -80,10 +80,10 @@ public class Accessibility {
         
         // new -- write matrix as csv file for testing
 //        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
-        new File(SiloUtil.baseDirectory + "testing").mkdirs();
-        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
-        matrixWriter.writeMatrix(hwySkim);
-        Log.info("For testing: Written skim out as a csv file");
+//        new File(SiloUtil.baseDirectory + "testing").mkdirs();
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
+//        matrixWriter.writeMatrix(hwySkim);
+//        Log.info("For testing: Written skim out as a csv file");
         // end new
         
         

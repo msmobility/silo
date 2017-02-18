@@ -284,9 +284,8 @@ public class Household implements Serializable {
     }
 
     public MitoHousehold convertToMitoHh() {
-        MitoHousehold thh = new MitoHousehold(hhId, hhSize, getNumberOfWorkers(), getHhIncome(), autos,
+        return new MitoHousehold(hhId, hhSize, getNumberOfWorkers(), getHhIncome(), autos,
                 homeZone);
-        return null;
     }
 
     public static MitoHousehold[] covertHhs() {
