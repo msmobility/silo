@@ -65,7 +65,7 @@ public class SiloModel {
 
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mitoTransportModel";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mito.travel.demand";
     public static final String PROPERTIES_FILE_DEMAND_MODEL                 = "mito.properties.file";
     public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM           = "matsim.run.travel.model";
 
@@ -153,13 +153,18 @@ public class SiloModel {
         // this shadows a global definition, not sure if that is intended ... kai, aug'16
 
         if ( runMatsim ) {
-            logger.info("MATSim is used as the transport model");
+            logger.info("  MATSim is used as the transport model");
+            setOldLocalModelVariables();
             TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
         } else {
-            logger.info("MITO is used as the transport model");
+            logger.info("  MITO is used as the transport model");
             TransportModel = new MitoTransportModel(rbLandUse);
+            setOldLocalModelVariables();
         }
-        setOldLocalModelVariables();
+        //        setOldLocalModelVariables();
+        // yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
+        // it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
+
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
         // writeOutSmallSP(100);
