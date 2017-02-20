@@ -4,6 +4,7 @@ import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import edu.umd.ncsg.SiloModel;
 import edu.umd.ncsg.SiloUtil;
 import edu.umd.ncsg.data.*;
@@ -38,6 +39,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_SELECTED_MUNICIPALITIES_LIST = "municipalities.list";
     protected static final String PROPERTIES_RASTER_CELLS                 = "raster.cells.definition";
     protected static final String PROPERTIES_JOB_DESCRIPTION              = "jobs.dictionary";
+    protected static final String PROPERTIES_EDUCATION_DESCRIPTION        = "education.dictionary";
     //Routes of input data (if IPU is not performed)
     protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
     //Parameters of the synthetic population
@@ -58,10 +60,12 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_INCOME_GAMMA_PROBABILITY     = "income.probability";
     protected static final String PROPERTIES_INCOME_GAMMA_SHAPE           = "income.gamma.shape";
     protected static final String PROPERTIES_INCOME_GAMMA_RATE            = "income.gamma.rate";
+    protected static final String PROPERTIES_JOB_TYPES_DE                 = "employment.types";
     //Read the synthetic population
     protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.asciiDE";
     protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.asciiDE";
     protected static final String PROPERTIES_DWELLING_SYN_POP             = "dwelling.file.asciiDE";
+    protected static final String PROPERTIES_JOB_SYN_POP                  = "job.file.asciiDE";
 
 
     protected TableDataSet microDataHousehold;
@@ -87,6 +91,7 @@ public class SyntheticPopDe {
 
     protected TableDataSet weightsTable;
     protected TableDataSet jobsTable;
+    protected TableDataSet educationsTable;
 
     protected int maxIterations;
     protected double maxError;
@@ -112,25 +117,27 @@ public class SyntheticPopDe {
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
         logger.info("   Starting to create the synthetic population.");
         long startTime = System.nanoTime();
-/*        if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_YEAR_MICRODATA) == 2000) {
+        if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_YEAR_MICRODATA) == 2000) {
             readDataSynPop(); //Read the micro data from 2000
         } else {
             readDataSynPop2010(); //Read the micro data from 2010
         }
-       if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
-            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_DEPENDENT) == 1) {
-                runIPUAreaDependent(); //IPU fitting with two geographical resolutions
-            } else {
-                runIPUIndependent(); //IPU fitting with one geographical resolution. Each municipality is independent of others
-            }
-            readTravelTimes();
-            selectHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+/*   if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_RUN_IPU) == 1) {
+        if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_DEPENDENT) == 1) {
+            runIPUAreaDependent(); //IPU fitting with two geographical resolutions
         } else {
-            readIPU();
-            readTravelTimes();
-            selectHouseholds();
-        }*/
-        assignJobs();
+            runIPUIndependent(); //IPU fitting with one geographical resolution. Each municipality is independent of others
+        }
+        //readTravelTimes();
+        selectHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+    } else {
+        readIPU();
+        //readTravelTimes();
+        //selectHouseholds();
+    }*/
+        //generateJobs();
+        //assignJobs();
+        testJobs();
         summarizeData.writeOutSyntheticPopulationProjectSeminar(rb, SiloUtil.getBaseYear());
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -587,6 +594,7 @@ public class SyntheticPopDe {
         int foreignCount = 0;
         int hhCount = -1;
         jobsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_DESCRIPTION));
+        educationsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EDUCATION_DESCRIPTION));
         //Household variables
         ageBracketsPerson = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_AGES);
         ageBracketsPersonQuarter = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_AGES_QUARTER);
@@ -703,7 +711,6 @@ public class SyntheticPopDe {
                                         hhSizeCategory[hhCount] = "hhSize5";
                                     } else {
                                         hhSize6[hhCount] = 1;
-                                        hhSize5[hhCount] = 1;
                                         hhSizeCategory[hhCount] = "hhSize6";
                                     }
                                     if (hhCount > 1 & hhCount < hhCountTotal - 1) {
@@ -822,11 +829,13 @@ public class SyntheticPopDe {
                                     personTelework[personCount] = 0;
                                 }
                                 personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
-                                int education = convertToInteger(recString.substring(323, 325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
+/*                                int education = convertToInteger(recString.substring(323, 325)); // 0: without beruflichen Abschluss, 1: Lehre, Berufausbildung im dual System, 2: Fachschulabschluss, 3: Abschluss einer Fachakademie, 4: Fachhochschulabschluss, 5: Hochschulabschluss - Uni, 6: Promotion
                                 if (education == 10) {
                                     personEducation[personCount] = 6;
                                 } else if (education == 9) {
                                     personEducation[personCount] = 5;
+                                } else if (education == 99) {
+                                    personEducation[personCount] = 99;
                                 } else if (education == 6) {
                                     personEducation[personCount] = 2;
                                 } else if (education < 0) {
@@ -835,7 +844,8 @@ public class SyntheticPopDe {
                                     personEducation[personCount] = 4;
                                 } else {
                                     personEducation[personCount] = 1;
-                                }
+                                }*/
+                                personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)),educationsTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
                                 int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
                                 if (marital == 2) {
                                     personStatus[personCount] = 2;
@@ -1276,7 +1286,7 @@ public class SyntheticPopDe {
                     minError = averageErrorIteration;
                 }
 
-                logger.info("       Iteration " + iteration + ". The average error is: " + averageErrorIteration * 100 + " %." );
+                //logger.info("       Iteration " + iteration + ". The average error is: " + averageErrorIteration * 100 + " %." );
 
             }
 
@@ -1801,31 +1811,182 @@ public class SyntheticPopDe {
     }
 
 
-    private void createJobs(){
-        // method to generate synthetic jobs
-        logger.info("  Generating base year jobs");
+    private void generateJobs(){
+        //Generate jobs file. The worker ID will be assigned later on the process "assignJobs"
 
-        //for each municipality
+        logger.info("   Starting to generate jobs");
+        String[] jobTypes = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES_DE);
+        cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
+        int[] rasterCellsIDs = cellsMatrix.getColumnAsInt("ID_cell");
+
+        //For each municipality
         for (int municipality = 0; municipality < cityID.length; municipality++) {
-            logger.info("   Municipality " + cityIDs[municipality] + ". Starting to generate households.");
+            logger.info("   Municipality " + cityIDs[municipality] + ". Starting to generate jobs.");
 
             //-----------***** Data preparation *****-------------------------------------------------------------------
             //Create local variables to avoid accessing to the same variable on the parallel processing
             int municipalityID = cityID[municipality];
             String municipalityIDs = cityIDs[municipality];
+            TableDataSet rasterCellsMatrix = cellsMatrix;
+            rasterCellsMatrix.buildIndex(rasterCellsMatrix.getColumnPosition("ID_cell"));
 
+
+            //obtain the raster cells of the municipality and their weight within the municipality
+            int rasterCount = 0;
+            for (int row = 1; row <= rasterCellsMatrix.getRowCount(); row++){
+                if ((int) rasterCellsMatrix.getValueAt(row,"ID_city") == municipalityID){
+                    rasterCount++;
+                }
+            }
+            int[] rasterCellsList = new int[rasterCount];
+            int finish = 0;
+            int rowAux = 1;
+            int rasterCellCountsAux = 0;
+            while (finish == 0){
+                if ((int) rasterCellsMatrix.getValueAt(rowAux,"ID_city") == municipalityID){
+                    rasterCellsList[rasterCellCountsAux] = (int) rasterCellsMatrix.getValueAt(rowAux,"ID_cell");
+                    rasterCellCountsAux++;
+                }
+                if (rasterCellCountsAux == rasterCellsList.length){
+                    finish = 1;
+                }
+                rowAux++;
+            }
+
+            for (int row = 0; row < jobTypes.length; row++) {
+                String jobType = jobTypes[row];
+                int totalJobs = (int) marginalsHouseholdMatrix.getIndexedValueAt(municipalityID, jobType);
+                //Create jobs according to probability, if there is at least one job
+                if (totalJobs > 0.1) {
+                    //Obtain the probability for that type of job for the raster cells within the municipality
+                    double[] probability = new double[rasterCount];
+                    for (int rasterCell = 0; rasterCell < rasterCount; rasterCell++) {
+                        probability[rasterCell] = rasterCellsMatrix.getIndexedValueAt(rasterCellsList[rasterCell], jobType);
+                    }
+                    //Create jobs and assign the gender of the worker (with replacement)
+                    for (int jobCounterCell = 0; jobCounterCell < totalJobs; jobCounterCell++) {
+                        int[] records = select(probability, rasterCellsList);
+                        probability[records[1]] = probability[records[1]] - 1;
+                        int id = JobDataManager.getNextJobId();
+                        Job job = new Job(id, records[0], 0, jobTypes[row]); //(int id, int zone, int workerId, String type)
+                    }
+                }
+            }
 
         }
+
+    }
+
+
+    private void testJobs(){
+        //Read my synthetic persons
+        TableDataSet persons = SiloUtil.readCSVfile(rb.getString("employment.test"));
+        TableDataSet probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
+
+        int totalPersons = Arrays.stream(persons.getColumnAsInt("weight1")).sum();
+
+        //To check the goodness of fit from Monte Carlo generation and the model in R
+        TableDataSet results = new TableDataSet();
+        int[] dummy = SiloUtil.createArrayWithValue(totalPersons,0);
+        results.appendColumn(dummy, "aux");
+        String[] names = {"job","jobMODEL","jobMC","gender","education","age"};
+        for (int row = 0; row < names.length; row++){
+            int[] dummy1 = SiloUtil.createArrayWithValue(totalPersons, 0);
+            results.appendColumn(dummy1,names[row]);
+        }
+        int[] educationLevel = {0, 1, 4, 5};
+        int[] countersJob = new int[probabilitiesJob.getRowCount()*2*educationLevel.length + 1];
+        int[] countersJobMODEL = new int[probabilitiesJob.getRowCount()*2*educationLevel.length + 1];
+        int[] countersJobMC = new int[probabilitiesJob.getRowCount()*2*educationLevel.length + 1];
+        int[] matchesJobMODEL = new int[probabilitiesJob.getRowCount()*2*educationLevel.length + 1];
+        int[] matchesJobMC = new int[probabilitiesJob.getRowCount()*2*educationLevel.length + 1];
+
+
+        EmploymentChoice ec = new EmploymentChoice(rb);
+        double[] probability = new double[10];
+        String personType = "";
+        int aux = 1;
+        for (int i = 1; i <= persons.getRowCount(); i++){
+            for (int j = 1; j < persons.getValueAt(i,"weight1"); j++) {
+                Person pp = new Person((int) persons.getValueAt(i, "IDpp"), (int) persons.getValueAt(i, "IDhh"), (int) persons.getValueAt(i, "age"), (int) persons.getValueAt(i, "gender"), Race.white, (int) persons.getValueAt(i, "employed"), 0, 0);
+                pp.setEducationLevel((int) persons.getValueAt(i, "education"));
+                pp.setJobClass((int) persons.getValueAt(i, "jobType"));
+                int education = 0;
+                int educationCol = pp.getEducationLevel() - 1;
+/*                switch ((int) persons.getValueAt(i, "education")) {
+                    case 2:
+                        education = 2;
+                        educationCol = 1;
+                        break;
+                    case 3:
+                        education = 1;
+                        educationCol = 1;
+                        break;
+                    case 4:
+                        education = 4;
+                        educationCol = 2;
+                        break;
+                    case 5:
+                        education = 5;
+                        educationCol = 3;
+                        break;
+                    case 6:
+                        education = 5;
+                        educationCol = 3;
+                        break;
+                }*/
+
+                //pp.setMaritalStatus((int)persons.getValueAt(aux,"marriage"));
+                int jobPositionMODEL = ec.selectJobTypePerson(pp) + 1;
+                if (pp.getGender() == 1) {
+                    personType = "maleEducation";
+                } else {
+                    personType = "femaleEducation";
+                }
+                personType = personType + pp.getEducationLevel();
+                probability = probabilitiesJob.getColumnAsDouble(personType);
+                int jobPositionMC = SiloUtil.select(probability) + 1;
+                results.setValueAt(aux, "jobMODEL", jobPositionMODEL);
+                results.setValueAt(aux, "jobMC", jobPositionMC);
+                results.setValueAt(aux,"aux",aux);
+                results.setValueAt(aux,"job",pp.getJobClass());
+                results.setValueAt(aux,"gender",pp.getGender());
+                results.setValueAt(aux,"education",education);
+                results.setValueAt(aux,"age",pp.getAge());
+                countersJob[(probabilitiesJob.getRowCount()-1)*(pp.getGender() - 1)*(educationLevel.length) + (pp.getJobClass()-1)*(educationLevel.length) + educationCol]++;
+                countersJobMODEL[(probabilitiesJob.getRowCount()-1)*(pp.getGender() - 1) *(educationLevel.length) + (jobPositionMODEL-1)*(educationLevel.length) + educationCol]++;
+                countersJobMC[(probabilitiesJob.getRowCount()-1)*(pp.getGender() - 1) * (educationLevel.length)+ (jobPositionMC-1)*(educationLevel.length) + educationCol]++;
+                if (pp.getJobClass() ==  jobPositionMODEL){
+                    matchesJobMODEL[(probabilitiesJob.getRowCount()-1)*(pp.getGender() - 1) *(educationLevel.length) + (jobPositionMODEL-1) * (educationLevel.length) + educationCol]++;
+                }
+                if (pp.getJobClass() ==  jobPositionMC){
+                    matchesJobMC[(probabilitiesJob.getRowCount()-1)*(pp.getGender() - 1) * (educationLevel.length)+ (jobPositionMODEL-1) * (educationLevel.length) + educationCol]++;
+                }
+                aux++;
+                personType = "";
+            }
+        }
+        String freqFileName3 = ("scenOutput/jobTest.csv");
+        SiloUtil.writeTableDataSet(results, freqFileName3);
+        TableDataSet counts = new TableDataSet();
+        counts.appendColumn(countersJob,"jobs");
+        counts.appendColumn(countersJobMODEL,"model");
+        counts.appendColumn(countersJobMC,"monteCarlo");
+        counts.appendColumn(matchesJobMODEL,"matchModel");
+        counts.appendColumn(matchesJobMC,"matchMonteCarlo");
+        SiloUtil.writeTableDataSet(counts,"scenOutput/jobCounts.csv");
     }
 
 
     private void assignJobs(){
-        //Read the synthetic population
+        //Read the synthetic population and the travel times
         TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP));
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP));
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP));
-        TableDataSet timesMatrix = new TableDataSet();
+        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP));
 
+        //Read raster cells and generate the TableDataSet with the auto travel times
+        TableDataSet timesMatrix = new TableDataSet();
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         int[] rasterCellsIDs = cellsMatrix.getColumnAsInt("ID_cell");
         timesMatrix.appendColumn(rasterCellsIDs,"ID_cell");
@@ -1848,12 +2009,35 @@ public class SyntheticPopDe {
         logger.info("   Read OMX matrix");
 
 
-/*        Map<Integer, Household> householdMap = new HashMap<>();
-        ArrayList<Household> householdArrayList = new ArrayList<>();
-        HouseholdDataManager householdDataManager = new HouseholdDataManager(rb);
-        householdDataManager.readPopulation();*/
+        //Generate the households, dwellings and persons
+        int aux = 1;
+        for (int i = 1; i <= households.getRowCount(); i++){
+            Household hh = new Household((int)households.getValueAt(i,"hhID"),(int)households.getValueAt(i,"hhID"),(int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),(int)households.getValueAt(i,"hhWorkers"));
+            for (int j = 1; j <= hh.getHhSize(); j++){
+                Person pp = new Person((int)persons.getValueAt(aux,"personID"),(int)persons.getValueAt(aux,"hhID"),(int)persons.getValueAt(aux,"age"),(int)persons.getValueAt(aux,"gender"),Race.white,(int)persons.getValueAt(aux,"occupation"),0,(int)persons.getValueAt(aux,"income"));
+                pp.setEducationLevel((int)persons.getValueAt(aux,"education"));
+                pp.setMaritalStatus((int)persons.getValueAt(aux,"marriage"));
+                pp.setHhSize(hh.getHhSize());
+                aux++;
+            }
+            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
+            dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
+            dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
+            dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
+        }
 
-        //For each household, we read the persons
+
+        //Generate the jobs
+
+
+
+        //Assign workplaces depending on trip length and adequacy to the job. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
+
+
+
+
+        //Original for HEMA
+        /*//For each household, we read the persons
         //We check if they are working and, if so, provide a workplace based on the number of work trips from his/her home raster cell to other raster cells (Montecarlo)
         int aux = 1;
         for (int i = 1; i <= households.getRowCount(); i++){
@@ -1862,6 +2046,15 @@ public class SyntheticPopDe {
                 Person pp = new Person((int)persons.getValueAt(aux,"personID"),(int)persons.getValueAt(aux,"hhID"),(int)persons.getValueAt(aux,"age"),(int)persons.getValueAt(aux,"gender"),Race.white,(int)persons.getValueAt(aux,"occupation"),0,(int)persons.getValueAt(aux,"income"));
                 pp.setEducationLevel((int)persons.getValueAt(aux,"education"));
                 pp.setMaritalStatus((int)persons.getValueAt(aux,"marriage"));
+                pp.setHhSize(hh.getHhSize());
+                //int jobPosition = ec.selectJobTypePerson(pp); To use the model approach. It gives lower percentage of matches at the individual level.
+                if (pp.getGender() == 1) {
+                    personType = "maleEducation";
+                } else {
+                    personType = "femaleEducation";
+                }
+                probability = probabilitiesJob.getColumnAsDouble(personType + pp.getEducationLevel());
+                pp.setJobTypeDE(SiloUtil.select(probability) + 1);
                 if (pp.getOccupation() == 1){
                     int rasterCellID = hh.getHomeZone();
                     pp.setZone(rasterCellID);
@@ -1889,9 +2082,7 @@ public class SyntheticPopDe {
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
-/*            householdMap.put(hh.getId(), hh);
-            householdArrayList.add(hh);*/
-        }
+        }*/
         String freqFileName3 = ("scenOutput/workTripsMatrix.csv");
         SiloUtil.writeTableDataSet(timesMatrix, freqFileName3);
     }
@@ -2415,6 +2606,25 @@ public class SyntheticPopDe {
             }
         }
         return job;
+    }
+
+
+    private static int translateEducationLevel (int personEducation, TableDataSet jobs){
+        //translate 100 job descriptions to 4 job types
+        //jobs is one TableDataSet that is read from a csv file containing the description, ID and types of jobs.
+        int education = 0;
+        int finish = 0;
+        int row = 1;
+        while (finish == 0 & row < jobs.getRowCount()){
+            if (personEducation == jobs.getValueAt(row,"fdz_mz_sufCode")) {
+                finish =1;
+                education = (int) jobs.getValueAt(row,"SynPopCode");
+            }
+            else {
+                row++;
+            }
+        }
+        return education;
     }
 
 
