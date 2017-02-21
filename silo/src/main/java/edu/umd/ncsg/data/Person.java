@@ -46,9 +46,13 @@ public class Person implements Serializable {
     PersonRole role;
     int maritalStatus = 0;
     int telework = 0;
-    int jobClass = 0;
+    int jobClass = 0; //Copied from the microdata. This category is used only for checking.
     int educationLevel = 0;
     int nationality = 0;
+    float travelTime = 0;
+    int zone = 0;
+    int hhSize = 0;
+    int jobTypeDE = 0; //Assigned by SILO depending on the education level and gender
 //    private Lock lock = new ReentrantLock();
 
 
@@ -307,5 +311,19 @@ public class Person implements Serializable {
         return nationality;
     }
 
+    public void setTravelTime(float travelTime){ this.travelTime = travelTime;}
 
+    public float getTravelTime() { return travelTime; }
+
+    public void setZone(int zone){ this.zone = zone;}
+
+    public int getZone() { return zone; }
+
+    public void setHhSize(int hhSize){ this.hhSize = hhSize;}
+
+    public int getHhSize() { return hhSize; }
+
+    public void setJobTypeDE(int jobTypeDE){ this.jobTypeDE = jobTypeDE;}
+
+    public int getJobTypeDE() { return jobTypeDE; }
 }

@@ -35,6 +35,7 @@ public class Job {
     private int zone;
     private int workerId;
     private String type;
+    private int typeDE;
 
 
     public Job (int id, int zone, int workerId, String type) {
@@ -107,5 +108,9 @@ public class Job {
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
-    
+
+    public void setTypeDE(int typeDE){ this.typeDE = typeDE;}
+
+    public int getTypeDE() { return typeDE; }
+
  }

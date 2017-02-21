@@ -37,7 +37,7 @@ public class SiloMuc {
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) {
            SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
-/*            ExtractDataDE de = new ExtractDataDE(rb);
+           /*ExtractDataDE de = new ExtractDataDE(rb);
             de.runSP();*/
         }
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SILO, false)) {
