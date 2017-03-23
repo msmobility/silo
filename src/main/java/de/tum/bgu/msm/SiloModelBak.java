@@ -55,7 +55,7 @@ import de.tum.bgu.msm.realEstate.ConstructionOverwrite;
 import de.tum.bgu.msm.realEstate.DemolitionModel;
 import de.tum.bgu.msm.realEstate.PricingModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
-import de.tum.bgu.msm.transportModel.TravelDemandModel;
+import de.tum.bgu.msm.transportModel.MstmTransportModel;
 
 /**
  * @author Greg Erhardt 
@@ -101,7 +101,7 @@ public class SiloModelBak {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private TravelDemandModel TransportModel;
+    private MstmTransportModel TransportModel;
     private UpdateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
@@ -413,7 +413,7 @@ public class SiloModelBak {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new TravelDemandModel(rb);
+        TransportModel = new MstmTransportModel(rb);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rb);
 

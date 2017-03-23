@@ -47,7 +47,6 @@ import de.tum.bgu.msm.realEstate.RenovationModel;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.MovesModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
-import de.tum.bgu.msm.transportModel.TravelDemandModel;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
 
 /**
@@ -102,7 +101,7 @@ public class SiloModel {
     private ChangeEmploymentModel changeEmployment;
     private Accessibility acc;
     private AutoOwnershipModel aoModel;
-    private TravelDemandModel TransportModel;
+    private MitoTransportModel TransportModel;
     private UpdateJobs updateJobs;
     private int[] skimYears;
     private int[] tdmYears;
@@ -168,7 +167,7 @@ public class SiloModel {
 
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
-        // writeOutSmallSP(100);
+        // writeOutSmallSP(10000);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -414,10 +413,9 @@ public class SiloModel {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new TravelDemandModel(rbLandUse);
+        TransportModel = new MitoTransportModel(rbLandUse);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
-
     }
 
 
@@ -743,10 +741,10 @@ public void setMatsimConfig(Config matsimConfig) {
         // write out count number of households to have small file for running tests
 
         logger.info("  Writing out smaller files of synthetic population with " + count + " households only");
-        String filehh = SiloUtil.baseDirectory + "microData/small_hh_2000.csv";
-        String filepp = SiloUtil.baseDirectory + "microData/small_pp_2000.csv";
-        String filedd = SiloUtil.baseDirectory + "microData/small_dd_2000.csv";
-        String filejj = SiloUtil.baseDirectory + "microData/small_jj_2000.csv";
+        String filehh = SiloUtil.baseDirectory + "microData/small_10k_hh_2000.csv";
+        String filepp = SiloUtil.baseDirectory + "microData/small_10k_pp_2000.csv";
+        String filedd = SiloUtil.baseDirectory + "microData/small_10k_dd_2000.csv";
+        String filejj = SiloUtil.baseDirectory + "microData/small_10k_jj_2000.csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);

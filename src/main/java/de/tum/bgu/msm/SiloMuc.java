@@ -3,7 +3,7 @@ package de.tum.bgu.msm;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopDe;
 import de.tum.bgu.msm.data.summarizeData;
-import de.tum.bgu.msm.transportModel.TravelDemandModel;
+import de.tum.bgu.msm.transportModel.MstmTransportModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -55,7 +55,7 @@ public class SiloMuc {
         }
         // if land use model was not selected to run, check if travel demand model shall run only
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false)) {
-            TravelDemandModel tdm = new TravelDemandModel(rb);
+            MstmTransportModel tdm = new MstmTransportModel(rb);
             tdm.runTransportModel(-1);  // -1 tells transport model to look up first transport year from properties file
         }
         float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
