@@ -304,18 +304,20 @@
 			<version>2.6</version>
 		</dependency>
 <!-- 		This would be the "standard" deployment, which currently (10/jan/2016) fails:
- --><!-- 		<dependency>
+			On 22 Mar 2017, this worked just fine, and the "jitpack" did not allow to update immediately. Therefore, I
+			uncommented this version and commented out the other version below [RM].
+ --> 		<dependency>
 			<groupId>de.tum.bgu.msm</groupId>
 			<artifactId>mito</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
- -->		
+
 <!--  		This is the "jitpack" deployment:
- --> 		<dependency>
+ --> <!--		<dependency>
 			<groupId>com.github.msmobility</groupId>
 			<artifactId>mito</artifactId>
 			<version>master-SNAPSHOT</version>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
