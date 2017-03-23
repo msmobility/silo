@@ -14,7 +14,7 @@ import java.util.ResourceBundle;
 
 public class TravelDemandData {
 
-    static Logger logger = Logger.getLogger(TravelDemandModel.class);
+    static Logger logger = Logger.getLogger(TravelDemandData.class);
     protected static final String PROPERTIES_SURVEY_REGIONS         = "household.travel.survey.reg";
 
     private TableDataSet regionDefinition;

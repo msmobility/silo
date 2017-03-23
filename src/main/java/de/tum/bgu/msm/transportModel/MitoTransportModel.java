@@ -22,7 +22,7 @@ public class MitoTransportModel implements TransportModelI {
 
     public MitoTransportModel(ResourceBundle rb) {
         this.rb = rb;
-        mito = new MitoModel(rb);
+        this.mito = new MitoModel(rb);
     }
 
 
@@ -30,14 +30,21 @@ public class MitoTransportModel implements TransportModelI {
                          int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
                          float[] sizeOfZonesInAcre) {
         logger.info("  SILO data being sent to MITO");
-        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds,
-        retailEmplByZone, officeEmplByZone, otherEmplByZone, totalEmplByZone,
-        sizeOfZonesInAcre);
+        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, retailEmplByZone,
+                officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);
+    }
+
+
+    public void setScenarioName (String scenarioName) {
+        mito.setScenarioName (scenarioName);
     }
 
 
     @Override
     public void runTransportModel(int year) {
+
+        logger.info("  Running travel demand model MITO for the year " + year);
+        mito.runModel();
     }
 
     @Override

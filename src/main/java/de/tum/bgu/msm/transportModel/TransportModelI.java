@@ -18,16 +18,25 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel;
 
+import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.MitoHousehold;
+
 /**
  * @author nagel
  *
  */
 public interface TransportModelI {
 
+	void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
+				  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
+				  float[] sizeOfZonesInAcre);
+
+	void setScenarioName(String name);
+
 	void runTransportModel(int year);
 	
-	public void writeOutSocioEconomicDataForMstm(int year) ;
+	void writeOutSocioEconomicDataForMstm(int year) ;
 
-	public void tripGeneration();
+	void tripGeneration();
 
 }

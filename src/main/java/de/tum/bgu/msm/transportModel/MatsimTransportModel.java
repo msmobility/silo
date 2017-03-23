@@ -18,11 +18,10 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
+import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.MitoHousehold;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
@@ -58,7 +57,18 @@ public class MatsimTransportModel implements TransportModelI {
 		this.matsimConfig = matsimConfig;
 	}
 
-	
+	@Override
+	public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
+						 int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
+						 float[] sizeOfZonesInAcre) {
+
+	}
+
+	@Override
+	public void setScenarioName(String scenarioName) {
+
+	}
+
 	@Override
 	public void runTransportModel(int year) {
 		logger.info("Running MATSim transport model for year " + year + ".");

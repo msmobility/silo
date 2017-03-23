@@ -65,7 +65,7 @@ public class SiloModel {
 
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "run.mito.travel.demand";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "mito.run.travel.model";
     public static final String PROPERTIES_FILE_DEMAND_MODEL                 = "mito.properties.file";
     public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM           = "matsim.run.travel.model";
 
@@ -82,7 +82,6 @@ public class SiloModel {
 
     protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
-    protected MitoTransportModel mitoTransportModel;
 
     private int[] scalingYears;
     private int currentYear;
@@ -140,7 +139,7 @@ public class SiloModel {
         // create main objects and read synthetic population
         modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
 
-        final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse,  PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
+        final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
         final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
         final boolean createMstmOutputFiles = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true);
 
@@ -158,8 +157,10 @@ public class SiloModel {
             TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
         } else {
             logger.info("  MITO is used as the transport model");
-            TransportModel = new MitoTransportModel(rbLandUse);
+            String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
+            TransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)));
             setOldLocalModelVariables();
+
         }
         //        setOldLocalModelVariables();
         // yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
@@ -221,17 +222,7 @@ public class SiloModel {
                 acc.calculateAccessibilities(year);
             }
 
-            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
-                    SiloUtil.containsElement(tdmYears, year)) {
-                String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
-                mitoTransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)));
-                mitoTransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
-                        Household.covertHhs(), summarizeData.getRetailEmploymentByZone(),
-                        summarizeData.getOfficeEmploymentByZone(), summarizeData.getOtherEmploymentByZone(),
-                        summarizeData.getTotalEmploymentByZone(), geoData.getSizeOfZonesInAcres());
-            }
-
-                if (trackTime) startTime = System.currentTimeMillis();
+            if (trackTime) startTime = System.currentTimeMillis();
             ddOverwrite.addDwellings(year);
             if (trackTime) timeCounter[EventTypes.values().length + 10][year] += System.currentTimeMillis() - startTime;
 
@@ -318,25 +309,26 @@ public class SiloModel {
                 }
             }
 
-            {
-
-            	if ( runMatsim ) {
-            		logger.info("using MATSim as transport model") ;
-            		int nextYearForTransportModel = year + 1;
-            		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-            			TransportModel.runTransportModel(nextYearForTransportModel);
-            		}
-            	} else if ( runTravelDemandModel || createMstmOutputFiles ) {
-            		int nextYearForTransportModel = year + 1;
-            		if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-                        TransportModel.runTransportModel(nextYearForTransportModel);
-            			if (createMstmOutputFiles)
-            				TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
-            			// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
-            			// _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
-            		}
-            	} 
-
+            if ( runMatsim ) {
+                logger.info("using MATSim as transport model") ;
+                int nextYearForTransportModel = year + 1;
+                if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+                    TransportModel.runTransportModel(nextYearForTransportModel);
+                }
+            } else if ( runTravelDemandModel || createMstmOutputFiles ) {
+                int nextYearForTransportModel = year + 1;
+                if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+                    TransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
+                                Household.covertHhs(), summarizeData.getRetailEmploymentByZone(),
+                                summarizeData.getOfficeEmploymentByZone(), summarizeData.getOtherEmploymentByZone(),
+                                summarizeData.getTotalEmploymentByZone(), geoData.getSizeOfZonesInAcres());
+                    TransportModel.setScenarioName(SiloUtil.scenarioName);
+                    TransportModel.runTransportModel(nextYearForTransportModel);
+                    if (createMstmOutputFiles)
+                        TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
+                    // yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
+                    // _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
+                }
             }
 
             if (trackTime) startTime = System.currentTimeMillis();

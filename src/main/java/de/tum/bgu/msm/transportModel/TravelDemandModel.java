@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
+import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.MitoHousehold;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
@@ -49,6 +51,17 @@ public class TravelDemandModel implements TransportModelI {
     }
 
     @Override
+    public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
+                  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
+                  float[] sizeOfZonesInAcre) {
+    }
+
+    @Override
+    public void setScenarioName(String scenarioName) {
+
+    }
+
+    @Override
     public void runTransportModel (int year) {
         // run travel demand model
 
@@ -79,7 +92,6 @@ public class TravelDemandModel implements TransportModelI {
             householdData.readPopulation();
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
-
         }
 
         logger.info("  Running trip generation");
