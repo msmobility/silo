@@ -6,8 +6,6 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.MitoHousehold;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.transportModel.tripGeneration.TripGeneration;
-import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.transportModel.tripGeneration.TripGenerationData;
 import de.tum.bgu.msm.transportModel.tripGeneration.tripPurposes;
 import org.apache.log4j.Logger;
@@ -28,13 +26,15 @@ import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 public class MstmTransportModel implements TransportModelI {
 
-    static Logger logger = Logger.getLogger(MstmTransportModel.class);
-    protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
-    protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
-    protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
-    protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
-    protected static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
-    protected static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
+    private static Logger logger = Logger.getLogger(MstmTransportModel.class);
+    private static final String PROPERTIES_RUN_SILO               = "run.silo.model";
+    private static final String PROPERTIES_RUN_SP                 = "run.synth.pop.generator";
+    private static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
+    private static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
+    private static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
+    private static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
+    private static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
+    private static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
@@ -81,12 +81,11 @@ public class MstmTransportModel implements TransportModelI {
 
         tgData = new TripGenerationData(rbTravel);
         tgData.readHouseholdTravelSurvey("all");
-        TripGeneration tg = new TripGeneration(rbTravel);
 
         TravelDemandData tdd = new TravelDemandData(rbTravel);
         tdd.readData();
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
-                !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO) &&
+                !ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SP)) {
             HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
             householdData.readPopulation();
             householdData.connectPersonsToHouseholds();
@@ -112,9 +111,9 @@ public class MstmTransportModel implements TransportModelI {
                     if (tripFrequencies == null) {
                         logger.error("Could not find trip frequencies for this hhType/Purpose: " + token);
                     }
-                    if (SiloUtil.getSum(tripFrequencies) == 0) continue;
-                    int numTrips = selectNumberOfTrips(tripFrequencies);
-                    int mstmIncCat = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
+//                    if (SiloUtil.getSum(tripFrequencies) == 0) continue;
+//                    int numTrips = selectNumberOfTrips(tripFrequencies);
+//                    int mstmIncCat = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
 //                    tripProd[hh.getHomeZone()][purp][mstmIncCat] += numTrips;
 //                }
 //            }
