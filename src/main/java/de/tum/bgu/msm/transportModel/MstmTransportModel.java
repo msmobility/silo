@@ -26,15 +26,15 @@ import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 public class MstmTransportModel implements TransportModelI {
 
-    private static Logger logger = Logger.getLogger(MstmTransportModel.class);
-    private static final String PROPERTIES_RUN_SILO               = "run.silo.model";
-    private static final String PROPERTIES_RUN_SP                 = "run.synth.pop.generator";
-    private static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
-    private static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
-    private static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
-    private static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
-    private static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
-    private static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
+    protected static Logger logger = Logger.getLogger(MstmTransportModel.class);
+    protected static final String PROPERTIES_RUN_SILO               = "run.silo.model";
+    protected static final String PROPERTIES_RUN_SP                 = "run.synth.pop.generator";
+    protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
+    protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
+    protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
+    protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
+    protected static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
+    protected static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
