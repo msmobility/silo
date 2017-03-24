@@ -19,6 +19,9 @@ import java.util.ResourceBundle;
  */
 public class SiloMuc {
 
+    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
+    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
+    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL  = "run.travel.demand.model";
     // main class
     static Logger logger = Logger.getLogger(SiloMuc.class);
 

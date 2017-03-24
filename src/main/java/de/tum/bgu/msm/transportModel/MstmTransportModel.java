@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.MitoHousehold;
+import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.transportModel.tripGeneration.TripGenerationData;
@@ -26,15 +27,15 @@ import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 public class MstmTransportModel implements TransportModelI {
 
-    protected static Logger logger = Logger.getLogger(MstmTransportModel.class);
-    protected static final String PROPERTIES_RUN_SILO               = "run.silo.model";
-    protected static final String PROPERTIES_RUN_SP                 = "run.synth.pop.generator";
-    protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
-    protected static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
-    protected static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
-    protected static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
-    protected static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
-    protected static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
+    private static Logger logger = Logger.getLogger(MstmTransportModel.class);
+    private static final String PROPERTIES_RUN_SILO               = "run.silo.model";
+    private static final String PROPERTIES_RUN_SP                 = "run.synth.pop.generator";
+    private static final String PROPERTIES_TRANSPORT_MODEL_YEARS  = "transport.model.years";
+    private static final String PROPERTIES_SCHOOL_ENROLLMENT_DATA = "household.distribution";
+    private static final String PROPERTIES_MSTM_SE_DATA_FILE      = "mstm.socio.economic.data.file";
+    private static final String PROPERTIES_MSTM_HH_WRK_DATA_FILE  = "mstm.households.by.workers.file";
+    private static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
+    private static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
@@ -84,8 +85,8 @@ public class MstmTransportModel implements TransportModelI {
 
         TravelDemandData tdd = new TravelDemandData(rbTravel);
         tdd.readData();
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO) &&
-                !ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SP)) {
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
+                !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
             HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
             householdData.readPopulation();
             householdData.connectPersonsToHouseholds();
