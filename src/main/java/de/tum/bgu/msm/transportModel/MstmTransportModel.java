@@ -84,6 +84,8 @@ public class MstmTransportModel implements TransportModelI {
 
         TravelDemandData tdd = new TravelDemandData(rbTravel);
         tdd.readData();
+        System.out.println("Token: "+PROPERTIES_RUN_SILO);
+        System.out.println("Token: "+PROPERTIES_RUN_SP);
         if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO) &&
                 !ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SP)) {
             HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
