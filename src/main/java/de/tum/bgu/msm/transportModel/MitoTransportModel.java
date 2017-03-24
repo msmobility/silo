@@ -16,12 +16,10 @@ import java.util.ResourceBundle;
 
 public class MitoTransportModel implements TransportModelI {
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-    private ResourceBundle rb;
     private MitoModel mito;
 
 
     public MitoTransportModel(ResourceBundle rb) {
-        this.rb = rb;
         this.mito = new MitoModel(rb);
     }
 
