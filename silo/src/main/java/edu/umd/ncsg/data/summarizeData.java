@@ -530,7 +530,7 @@ public class summarizeData {
     }
 
 
-    public static void writeOutSyntheticPopulationProjectSeminar (ResourceBundle rb, int year) {
+    public static void writeOutSyntheticPopulationDE (ResourceBundle rb, int year) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
