@@ -126,35 +126,6 @@ public class SyntheticPopDe {
     public SyntheticPopDe(ResourceBundle rb) {
         // Constructor
         this.rb = rb;
-        //Read the attributes at the municipality level (household attributes) and the marginals at the municipality level
-        attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
-        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
-        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
-
-        //Read the attributes at the county level (Landkreise)
-        rasterCellsIDs = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES); //attributes are decided on the properties file
-        marginalsRegionMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_REGIONAL_MATRIX)); //all the marginals from the region
-        marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_county"));
-
-        //List of municipalities that are used for IPU and Synthetic population
-        municipalitiesMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //array with all municipalities
-        int municipalitiesCount = 0;
-        for (int row = 1; row <= municipalitiesMatrix.getRowCount(); row++){
-            if (municipalitiesMatrix.getValueAt(row,"Select") == 1f){
-                municipalitiesCount++;
-            }
-        }
-        cityID = new int[municipalitiesCount];
-        cityIDs = new String[municipalitiesCount];
-        int rowID = 0;
-        for (int row = 1; row <= municipalitiesMatrix.getRowCount(); row++){
-            if (municipalitiesMatrix.getValueAt(row,"Select") == 1f){
-                cityID[rowID] = (int) municipalitiesMatrix.getValueAt(row,"ID_city");
-                cityIDs[rowID] = Integer.toString(cityID[rowID]);
-                rowID++;
-            }
-        }
-        municipalitiesMatrix.buildIndex(municipalitiesMatrix.getColumnPosition("ID_city"));
     }
 
 
@@ -162,6 +133,7 @@ public class SyntheticPopDe {
         //method to create the synthetic population
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
         logger.info("   Starting to create the synthetic population.");
+        readInputData();
         long startTime = System.nanoTime();
         if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_READ_SYN_POP) == 0) { //Generate the synthetic population
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
@@ -193,6 +165,39 @@ public class SyntheticPopDe {
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
 
+
+    private void readInputData() {
+        //Read the attributes at the municipality level (household attributes) and the marginals at the municipality level
+        attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
+        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
+        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
+
+        //Read the attributes at the county level (Landkreise)
+        rasterCellsIDs = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES); //attributes are decided on the properties file
+        marginalsRegionMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_REGIONAL_MATRIX)); //all the marginals from the region
+        marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_county"));
+
+        //List of municipalities that are used for IPU and Synthetic population
+        municipalitiesMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //array with all municipalities
+        int municipalitiesCount = 0;
+        for (int row = 1; row <= municipalitiesMatrix.getRowCount(); row++){
+            if (municipalitiesMatrix.getValueAt(row,"Select") == 1f){
+                municipalitiesCount++;
+            }
+        }
+        cityID = new int[municipalitiesCount];
+        cityIDs = new String[municipalitiesCount];
+        int rowID = 0;
+        for (int row = 1; row <= municipalitiesMatrix.getRowCount(); row++){
+            if (municipalitiesMatrix.getValueAt(row,"Select") == 1f){
+                cityID[rowID] = (int) municipalitiesMatrix.getValueAt(row,"ID_city");
+                cityIDs[rowID] = Integer.toString(cityID[rowID]);
+                rowID++;
+            }
+        }
+        municipalitiesMatrix.buildIndex(municipalitiesMatrix.getColumnPosition("ID_city"));
+
+    }
 
     private void readDataSynPop(){
         //method to read the synthetic population initial data

@@ -3,7 +3,6 @@ package de.tum.bgu.msm;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopDe;
 import de.tum.bgu.msm.data.summarizeData;
-import de.tum.bgu.msm.transportModel.MstmTransportModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -21,9 +20,8 @@ import java.util.ResourceBundle;
 public class SiloMuc {
 
     // main class
-    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
-    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
-    protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL  = "run.travel.demand.model";
+    //public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
+    //public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
     static Logger logger = Logger.getLogger(SiloMuc.class);
 
 
@@ -36,8 +34,8 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for MUC");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            //SyntheticPopDe sp = new SyntheticPopDe(rb);
-            //sp.runSP();
+            SyntheticPopDe sp = new SyntheticPopDe(rb);
+            sp.runSP();
            /*ExtractDataDE de = new ExtractDataDE(rb);
             de.runSP();*/
             SiloModel model = new SiloModel(rb);
