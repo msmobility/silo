@@ -31,10 +31,13 @@ import java.util.Set;
 public class Job {
 
     private static final Map<Integer, Job> jobMap = new HashMap<>();
+    //Attributes that must be initialized when one job is generated
 	private int id;
     private int zone;
     private int workerId;
     private String type;
+    //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
+    private int typeDE;
 
 
     public Job (int id, int zone, int workerId, String type) {
@@ -107,5 +110,9 @@ public class Job {
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
-    
+
+    public void setTypeDE(int typeDE){ this.typeDE = typeDE;}
+
+    public int getTypeDE() { return typeDE; }
+
  }

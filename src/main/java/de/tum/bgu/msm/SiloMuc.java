@@ -34,8 +34,10 @@ public class SiloMuc {
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) {
-            SyntheticPopDe sp = new SyntheticPopDe(rb);
+           SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
+           /*ExtractDataDE de = new ExtractDataDE(rb);
+            de.runSP();*/
         }
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SILO, false)) {
             try {

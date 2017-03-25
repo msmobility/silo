@@ -540,6 +540,150 @@ public class summarizeData {
     }
 
 
+    public static void writeOutSyntheticPopulationDE (ResourceBundle rb, int year) {
+        // write out files with synthetic population
+
+        logger.info("  Writing household file");
+        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        Household[] hhs = Household.getHouseholdArray();
+        for (Household hh : hhs) {
+            if (hh.getId() == SiloUtil.trackHh) {
+                SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
+                hh.logAttributes(SiloUtil.trackWriter);
+            }
+            pwh.print(hh.getId());
+            pwh.print(",");
+            pwh.print(hh.getDwellingId());
+            pwh.print(",");
+            pwh.print(hh.getHomeZone());
+            pwh.print(",");
+            pwh.print(hh.getHhSize());
+            pwh.print(",");
+            pwh.println(hh.getAutos());
+
+        }
+        pwh.close();
+
+        logger.info("  Writing person file");
+        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,marriage,homeZone,workID,travelTime,license, jobDE");
+        Person[] pps = Person.getPersonArray();
+        for (Person pp : pps) {
+            pwp.print(pp.getId());
+            pwp.print(",");
+            pwp.print(pp.getHhId());
+            pwp.print(",");
+            pwp.print(pp.getAge());
+            pwp.print(",");
+            pwp.print(pp.getGender());
+            pwp.print(",\"");
+            pwp.print(pp.getRole());
+            pwp.print("\",\"");
+            pwp.print(pp.getRace());
+            pwp.print("\",");
+            pwp.print(pp.getOccupation());
+            pwp.print(",");
+            pwp.print(pp.getWorkplace());
+            pwp.print(",");
+            pwp.print(pp.getIncome());
+            pwp.print(",");
+            pwp.print(pp.getNationality());
+            pwp.print(",");
+            pwp.print(pp.getEducationLevel());
+            pwp.print(",");
+            pwp.print(pp.getMaritalStatus());
+            pwp.print(",");
+            pwp.print(pp.getZone());
+            pwp.print(",");
+            pwp.print(pp.getJobID());
+            pwp.print(",");
+            pwp.print(pp.getTravelTime());
+            pwp.print(",");
+            pwp.print(pp.getDriverLicense());
+            pwp.print(",");
+            pwp.println(pp.getJobTypeDE());
+            if (pp.getId() == SiloUtil.trackPp) {
+                SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
+                pp.logAttributes(SiloUtil.trackWriter);
+            }
+        }
+        pwp.close();
+
+        logger.info("  Writing dwelling file");
+        String filedd = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_DD_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year");
+        Dwelling[] dds = Dwelling.getDwellingArray();
+        for (Dwelling dd : dds) {
+            pwd.print(dd.getId());
+            pwd.print(",");
+            pwd.print(dd.getZone());
+            pwd.print(",\"");
+            pwd.print(dd.getType());
+            pwd.print("\",");
+            pwd.print(dd.getResidentId());
+            pwd.print(",");
+            pwd.print(dd.getBedrooms());
+            pwd.print(",");
+            pwd.print(dd.getQuality());
+            pwd.print(",");
+            pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getRestriction());
+            pwd.print(",");
+            pwd.print(dd.getYearBuilt());
+            pwd.print(",");
+            pwd.print(dd.getFloorSpace());
+            pwd.print(",");
+            pwd.print(dd.getBuildingSize());
+            pwd.print(",");
+            pwd.println(dd.getYearConstructionDE());
+            if (dd.getId() == SiloUtil.trackDd) {
+                SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
+                dd.logAttributes(SiloUtil.trackWriter);
+            }
+        }
+        pwd.close();
+
+        logger.info("  Writing job file");
+        String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwj.println("id,zone,personId,type,typeDE");
+        Job[] jjs = Job.getJobArray();
+        for (Job jj : jjs) {
+            pwj.print(jj.getId());
+            pwj.print(",");
+            pwj.print(jj.getZone());
+            pwj.print(",");
+            pwj.print(jj.getWorkerId());
+            pwj.print(",");
+            pwj.print(jj.getType());
+            pwj.print(",");
+            pwj.println(jj.getTypeDE());
+            if (jj.getId() == SiloUtil.trackJj) {
+                SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
+                jj.logAttributes(SiloUtil.trackWriter);
+            }
+        }
+        pwj.close();
+
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_POP_FILES))
+            HouseholdDataManager.writeBinaryPopulationDataObjects(rb);
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_DD_FILE))
+            RealEstateDataManager.writeBinaryDwellingDataObjects(rb);
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_JJ_FILE))
+            JobDataManager.writeBinaryJobDataObjects(rb);
+
+    }
+
+
     public static void summarizeAutoOwnershipByCounty() {
         // This calibration function summarized households by auto-ownership and quits
 
@@ -641,5 +785,70 @@ public class summarizeData {
         pwl.println("Zone,lu41");
         for (int zone: geoData.getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
         pwl.close();
+    }
+
+    public static void writeOutSyntheticPopulationDe (ResourceBundle rb, int year) {
+        // write out files with synthetic population
+
+        logger.info("  Writing household file");
+        String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        Household[] hhs = Household.getHouseholdArray();
+        for (Household hh : hhs) {
+            if (hh.getId() == SiloUtil.trackHh) {
+                SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
+                hh.logAttributes(SiloUtil.trackWriter);
+            }
+            pwh.print(hh.getId());
+            pwh.print(",");
+            pwh.print(hh.getDwellingId());
+            pwh.print(",");
+            pwh.print(hh.getHomeZone());
+            pwh.print(",");
+            pwh.print(hh.getHhSize());
+            pwh.print(",");
+            pwh.println(hh.getAutos());
+        }
+        pwh.close();
+
+        logger.info("  Writing person file");
+        String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
+                year + ".csv";
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        Person[] pps = Person.getPersonArray();
+        for (Person pp : pps) {
+            pwp.print(pp.getId());
+            pwp.print(",");
+            pwp.print(pp.getHhId());
+            pwp.print(",");
+            pwp.print(pp.getAge());
+            pwp.print(",");
+            pwp.print(pp.getGender());
+            pwp.print(",\"");
+            pwp.print(pp.getRole());
+            pwp.print("\",\"");
+            pwp.print(pp.getRace());
+            pwp.print("\",");
+            pwp.print(pp.getOccupation());
+            pwp.print(",0,");
+            pwp.print(pp.getWorkplace());
+            pwp.print(",");
+            pwp.println(pp.getIncome());
+            if (pp.getId() == SiloUtil.trackPp) {
+                SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
+                pp.logAttributes(SiloUtil.trackWriter);
+            }
+        }
+        pwp.close();
+
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_POP_FILES))
+            HouseholdDataManager.writeBinaryPopulationDataObjects(rb);
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_DD_FILE))
+            RealEstateDataManager.writeBinaryDwellingDataObjects(rb);
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_JJ_FILE))
+            JobDataManager.writeBinaryJobDataObjects(rb);
     }
 }
