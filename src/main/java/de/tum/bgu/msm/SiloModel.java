@@ -60,6 +60,7 @@ public class SiloModel {
     private ResourceBundle rbLandUse;
     public static Random rand;
 
+    public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
 
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
@@ -117,8 +118,6 @@ public class SiloModel {
      */
     public SiloModel(ResourceBundle rbLandUse) {
         this.rbLandUse = rbLandUse;
-        summarizeData.openResultFile(rbLandUse);
-        summarizeData.resultFileSpatial(rbLandUse, "open");
         IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
         modelStopper("initialize");
     }
@@ -127,6 +126,7 @@ public class SiloModel {
     public void runModel() {
         //Main method to run a SILO model
 
+        if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO, false)) return;
         logger.info("Start SILO Model");
 
         // define years to simulate

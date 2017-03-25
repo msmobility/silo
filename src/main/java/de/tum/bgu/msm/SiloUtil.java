@@ -70,6 +70,8 @@ public class SiloUtil {
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
+        summarizeData.openResultFile(rb);
+        summarizeData.resultFileSpatial(rb, "open");
 
         // create scenario output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
