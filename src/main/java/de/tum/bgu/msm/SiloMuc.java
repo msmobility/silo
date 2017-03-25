@@ -21,8 +21,8 @@ import java.util.ResourceBundle;
 public class SiloMuc {
 
     // main class
-    //public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
-    //public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
+    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
+    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
     static Logger logger = Logger.getLogger(SiloMuc.class);
 
 
