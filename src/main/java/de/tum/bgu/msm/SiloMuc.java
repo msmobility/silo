@@ -2,6 +2,7 @@ package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopDe;
+import de.tum.bgu.msm.transportModel.MstmTransportModel;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
 
