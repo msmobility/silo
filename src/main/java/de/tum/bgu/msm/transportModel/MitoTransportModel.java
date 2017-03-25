@@ -19,8 +19,9 @@ public class MitoTransportModel implements TransportModelI {
     private MitoModel mito;
 
 
-    public MitoTransportModel(ResourceBundle rb) {
+    public MitoTransportModel(ResourceBundle rb, String baseDirectory) {
         this.mito = new MitoModel(rb);
+        setBaseDirectory(baseDirectory);
     }
 
 
@@ -35,6 +36,11 @@ public class MitoTransportModel implements TransportModelI {
 
     public void setScenarioName (String scenarioName) {
         mito.setScenarioName (scenarioName);
+    }
+
+
+    private void setBaseDirectory (String baseDirectory) {
+        mito.setBaseDirectory(baseDirectory);
     }
 
 

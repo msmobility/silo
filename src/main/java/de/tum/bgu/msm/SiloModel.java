@@ -157,7 +157,7 @@ public class SiloModel {
         } else {
             logger.info("  MITO is used as the transport model");
             String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
-            TransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)));
+            TransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)), SiloUtil.baseDirectory);
             setOldLocalModelVariables();
 
         }
@@ -413,7 +413,7 @@ public class SiloModel {
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         IssueCounter.logIssues();           // log any potential issues during initial setup
 
-        TransportModel = new MitoTransportModel(rbLandUse);
+        TransportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse);
     }
