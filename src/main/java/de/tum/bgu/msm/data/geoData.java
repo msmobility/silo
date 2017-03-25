@@ -129,7 +129,7 @@ public class geoData {
     }
 
     public static float getSizeOfZoneInAcres(int zone) {
-        return SiloUtil.zonalData.getIndexedValueAt(zone, "ACRES");
+        return SiloUtil.zonalData.getIndexedValueAt(zone, "Area");
     }
 
     public static float[] getSizeOfZonesInAcres() {

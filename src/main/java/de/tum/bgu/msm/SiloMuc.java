@@ -30,17 +30,18 @@ public class SiloMuc {
     public static void main(String[] args) {
         // main run method
 
+        logger.info("Run");
         SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) {
-           SyntheticPopDe sp = new SyntheticPopDe(rb);
-            sp.runSP();
-           /*ExtractDataDE de = new ExtractDataDE(rb);
-            de.runSP();*/
         }
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SILO, false)) {
             try {
+                SyntheticPopDe sp = new SyntheticPopDe(rb);
+                sp.runSP();
+           /*ExtractDataDE de = new ExtractDataDE(rb);
+            de.runSP();*/
                 logger.info("Starting SILO land use model for MUC");
                 logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
                 SiloModel model = new SiloModel(rb);
