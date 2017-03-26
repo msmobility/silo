@@ -21,7 +21,7 @@ package de.tum.bgu.msm.transportModel;
 import java.util.*;
 
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.MitoHousehold;
+import de.tum.bgu.msm.data.MitoHousehold;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;

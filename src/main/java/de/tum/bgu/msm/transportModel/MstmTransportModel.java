@@ -3,7 +3,7 @@ package de.tum.bgu.msm.transportModel;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.MitoHousehold;
+import de.tum.bgu.msm.data.MitoHousehold;
 import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
