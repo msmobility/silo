@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.MitoHousehold;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.MitoHousehold;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
