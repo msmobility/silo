@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.MitoHousehold;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import org.apache.log4j.Logger;
