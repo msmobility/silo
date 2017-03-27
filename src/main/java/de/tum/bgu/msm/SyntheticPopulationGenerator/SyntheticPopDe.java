@@ -158,7 +158,7 @@ public class SyntheticPopDe {
         } else { //read the synthetic population
 
 // todo: had to comment out this following method call, because I cannot find the class EmploymentChoice
-//            assignJobs2(); //at the clean version it will go to generation of the synthetic population
+            assignJobs2(); //at the clean version it will go to generation of the synthetic population
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -2040,7 +2040,7 @@ public class SyntheticPopDe {
 
 
     }
-/*
+
 
     private void assignJobs2(){
 
@@ -2258,7 +2258,7 @@ public class SyntheticPopDe {
         }
     }
 
-*/
+
 
     private void selectHouseholds(){
         //Generate the synthetic population using Monte Carlo (select the households according to the weight)

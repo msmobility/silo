@@ -196,7 +196,8 @@ public class JobDataManager {
             }
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 for (String year: yearsGiven) {
-                    jobInventory[jobTp][Integer.parseInt(year)][taz] = jobs.getValueAt(row, JobType.getJobType(jobTp) + year);
+                    logger.info(JobType.getJobType(jobTp));
+                     jobInventory[jobTp][Integer.parseInt(year)][taz] = jobs.getValueAt(row, JobType.getJobType(jobTp) + year);
                 }
             }
 
