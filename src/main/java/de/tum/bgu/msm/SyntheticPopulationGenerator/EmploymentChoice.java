@@ -51,6 +51,7 @@ public class EmploymentChoice {
         int selected = new EnumeratedIntegerDistribution(jobTypes,probabilities).sample();
 
         return selected;
+
     }
 
 
