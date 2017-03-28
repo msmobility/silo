@@ -29,7 +29,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_RUN_IPU                      = "run.ipu";
     protected static final String PROPERTIES_RUN_SYNTHETIC_POPULATION     = "run.synth.pop.generator";
     protected static final String PROPERTIES_YEAR_MICRODATA               = "year.micro.data";
-    protected static final String PROPERTIES_READ_SYN_POP                 = "read.syn.pop";
+    protected static final String PROPERTIES_GENERATE_SYN_POP              = "generate.syn.pop";
     //Routes of the input data
     protected static final String PROPERTIES_MICRODATA_2000_PATH          = "micro.data.2000";
     protected static final String PROPERTIES_MICRODATA_2010_PATH          = "micro.data.2010";
@@ -45,8 +45,6 @@ public class SyntheticPopDe {
     //Parameters of the synthetic population
     protected static final String PROPERTIES_REGION_ATTRIBUTES            = "attributes.region";
     protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
-    protected static final String PROPERTIES_REGION_ATTR_GENERATION       = "attributes.region.extra";
-    protected static final String PROPERTIES_HOUSEHOLD_ATTR_GENERATION    = "attributes.household.extra";
     protected static final String PROPERTIES_HOUSEHOLD_SIZES              = "household.sizes";
     protected static final String PROPERTIES_MICRO_DATA_AGES              = "age.brackets";
     protected static final String PROPERTIES_MICRO_DATA_AGES_QUARTER      = "age.brackets.quarter";
@@ -61,9 +59,8 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_INCOME_GAMMA_PROBABILITY     = "income.probability";
     protected static final String PROPERTIES_INCOME_GAMMA_SHAPE           = "income.gamma.shape";
     protected static final String PROPERTIES_INCOME_GAMMA_RATE            = "income.gamma.rate";
-    protected static final String PROPERTIES_JOB_TYPES_DE                 = "employment.types";
+    protected static final String PROPERTIES_JOB_TYPES_DE                 = "employment.typesDE";
     protected static final String PROPERTIES_JOB_ALPHA                    = "employment.choice.alpha";
-    protected static final String PROPERTIES_JOB_BETA                     = "employment.choice.beta";
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
     protected static final String PROPERTIES_COEFFICIENTS_JOB             = "employment.coefficients";
     //Read the synthetic population
@@ -87,7 +84,7 @@ public class SyntheticPopDe {
     protected int[] countyID;
     protected String[] countyIDs;
 
-    protected String[] rasterCellsIDs;
+    protected String[] attributesRegion;
     protected String[] attributesHousehold;
     protected int[] ageBracketsPerson;
     protected int[] ageBracketsPersonQuarter;
@@ -99,19 +96,14 @@ public class SyntheticPopDe {
     protected TableDataSet jobsTable;
     protected TableDataSet educationsTable;
     protected int[] jobTypes;
+
     protected HashMap<Integer, int[]> idVacantJobsByZoneType;
     protected HashMap<Integer, Integer> numberVacantJobsByType;
     protected HashMap<Integer, int[]> idZonesVacantJobsByType;
     protected HashMap<Integer, Integer> numberVacantJobsByZoneByType;
     protected HashMap<Integer, Integer> numberZonesByType;
 
-    protected int maxIterations;
-    protected double maxError;
-    protected double initialError;
-    protected double improvementError;
-    protected double iterationError;
     protected double alphaJob;
-    protected double betaJob;
     protected double gammaJob;
     protected TableDataSet coefficients;
     protected TableDataSet probabilitiesJob;
@@ -135,30 +127,31 @@ public class SyntheticPopDe {
         logger.info("   Starting to create the synthetic population.");
         readInputData();
         long startTime = System.nanoTime();
-        if (ResourceUtil.getIntegerProperty(rb,PROPERTIES_READ_SYN_POP) == 0) { //Generate the synthetic population
+        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_GENERATE_SYN_POP) == true) {
+            //Generate the synthetic population
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
-                readDataSynPop(); //Read the micro data from 2000
+                readDataSynPop(); //Read the micro data from 2000.
+                // TODO: 28/03/2017  Propose values for the variables that are not contained on the microdata 2000 but are later required (i.e. dwelling)
             } else {
                 readDataSynPop2010(); //Read the micro data from 2010
             }
-            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_IPU) == 1) {
-                if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_RUN_DEPENDENT) == 1) {
+            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
+                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_DEPENDENT) == true) {
                     runIPUAreaDependent(); //IPU fitting with two geographical resolutions
                 } else {
                     runIPUIndependent(); //IPU fitting with one geographical resolution. Each municipality is independent of others
                 }
-                selectHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
             } else {
-                readIPU();
-                selectHouseholds();
-                generateJobs();
-                //assignJobs();
-                summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+                readIPU(); //Read the weights to select the household
             }
+            selectHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+            //assignJobs(); //Job type assignment and workplace allocation
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population
-
+            readSyntheticPopulation();
 // todo: had to comment out this following method call, because I cannot find the class EmploymentChoice
-            assignJobs2(); //at the clean version it will go to generation of the synthetic population
+            //assignJobs2(); //at the clean version it will go to generation of the synthetic population after generateJobs
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -173,11 +166,11 @@ public class SyntheticPopDe {
         marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
 
         //Read the attributes at the county level (Landkreise)
-        rasterCellsIDs = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES); //attributes are decided on the properties file
+        attributesRegion = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES); //attributes are decided on the properties file
         marginalsRegionMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_REGIONAL_MATRIX)); //all the marginals from the region
         marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_county"));
 
-        //List of municipalities that are used for IPU and Synthetic population
+        //List of municipalities and counties that are used for IPU and allocation
         municipalitiesMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //array with all municipalities
         int municipalitiesCount = 0;
         for (int row = 1; row <= municipalitiesMatrix.getRowCount(); row++){
@@ -1338,22 +1331,13 @@ public class SyntheticPopDe {
         logger.info("   Starting to prepare the data for IPU");
 
 
-        //Read the attributes at the municipality level (Gemeinden) - Household attributes
-        attributesHousehold = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES); //attributes are decided on the properties file
-        marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX)); //all the marginals from the region
-        marginalsHouseholdMatrix.buildIndex(marginalsHouseholdMatrix.getColumnPosition("ID_city"));
         int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
         int[] nonZeroIds = frequencyMatrix.getColumnAsInt("IDnonZero");
         frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
 
 
-        //Read the attributes at the county level (Landkreise) - Region attributes
-        rasterCellsIDs = ResourceUtil.getArray(rb, PROPERTIES_REGION_ATTRIBUTES); //attributes are decided on the properties file
-        marginalsRegionMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_REGIONAL_MATRIX)); //all the marginals from the region
-        marginalsRegionMatrix.buildIndex(marginalsRegionMatrix.getColumnPosition("ID_county"));
-
-
         //Obtain the municipalities and counties that are used for IPU (they have Selected = 1 on the Municipalities List)
+        //Duplicates some work on cityID but it is required to obtain the list of municipalities within the county. Only performed if IPU two resolutions is selected.
         municipalitiesMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //array with all municipalities
         int municipalitiesCounts = 0;
         int countiesCounts = 0;
@@ -1426,6 +1410,7 @@ public class SyntheticPopDe {
         for (int row = 0; row < countyID.length; row++){
             citiesCounty[row] = citiesCountyAux[row + 1];
         }
+        municipalitiesMatrix.buildIndex(municipalitiesMatrix.getColumnPosition("ID_city"));
 
 
         //Create the collapsed version of the frequency matrix(common for all)
@@ -1434,17 +1419,17 @@ public class SyntheticPopDe {
         nonZero.appendColumn(nonZeroIds,"IDnonZero");
         int[] dummy0 = {0,0};
         nonZeroSize.appendColumn(dummy0,"IDnonZero");
-        for (int attribute = 0; attribute < rasterCellsIDs.length; attribute++) {
+        for (int attribute = 0; attribute < attributesRegion.length; attribute++) {
             int[] nonZeroVector = new int[microDataIds.length];
             int[] sumNonZero = {0, 0};
             for (int row = 1; row < microDataIds.length + 1; row++) {
-                if (frequencyMatrix.getValueAt(row, rasterCellsIDs[attribute]) != 0) {
+                if (frequencyMatrix.getValueAt(row, attributesRegion[attribute]) != 0) {
                     nonZeroVector[sumNonZero[0]] = row;
                     sumNonZero[0] = sumNonZero[0] + 1;
                 }
             }
-            nonZero.appendColumn(nonZeroVector, rasterCellsIDs[attribute]);
-            nonZeroSize.appendColumn(sumNonZero, rasterCellsIDs[attribute]);
+            nonZero.appendColumn(nonZeroVector, attributesRegion[attribute]);
+            nonZeroSize.appendColumn(sumNonZero, attributesRegion[attribute]);
         }
         for(int attribute = 0; attribute < attributesHousehold.length; attribute++) {
             int[] nonZeroVector = new int[microDataIds.length];
@@ -1476,9 +1461,9 @@ public class SyntheticPopDe {
         }
         TableDataSet errorsMatrixRegion = new TableDataSet();
         errorsMatrixRegion.appendColumn(countyID,"ID_county");
-        for (int attribute = 0; attribute < rasterCellsIDs.length; attribute++){
+        for (int attribute = 0; attribute < attributesRegion.length; attribute++){
             double[] dummy2 = SiloUtil.createArrayWithValue(countyIDs.length,1.0);
-            errorsMatrixRegion.appendColumn(dummy2, rasterCellsIDs[attribute]);
+            errorsMatrixRegion.appendColumn(dummy2, attributesRegion[attribute]);
         }
         errorsMatrixRegion.buildIndex(errorsMatrixRegion.getColumnPosition("ID_county"));
         errorsMatrix.buildIndex(errorsMatrix.getColumnPosition("ID_city"));
@@ -1499,7 +1484,7 @@ public class SyntheticPopDe {
             for (int row = 0; row < municipalitiesID.length; row++){municipalitiesIDs[row] = Integer.toString(municipalitiesID[row]);}
             int regionID = countyID[county];
             String[] attributesHouseholdList = attributesHousehold; //List of attributes at the household level (Gemeinden).
-            String[] attributesRegionList = rasterCellsIDs; //List of attributes at the region level (Landkreise).
+            String[] attributesRegionList = attributesRegion; //List of attributes at the region level (Landkreise).
             TableDataSet microDataMatrix = new TableDataSet(); //Frequency matrix obtained from the micro data.
             microDataMatrix = frequencyMatrix;
             TableDataSet collapsedMicroData = new TableDataSet(); //List of values different than zero, per attribute, from microdata
@@ -1872,11 +1857,8 @@ public class SyntheticPopDe {
         }
     }
 
-/*
 
     private void assignJobs(){
-
-        //TODO: adapt this version according to the final polish from AssignJobs2 (to try multiple alphas and gammas)
 
         //Read the synthetic population, municipalities, cells and travel times
         logger.info("   Starting to read the synthetic population");
@@ -1884,9 +1866,8 @@ public class SyntheticPopDe {
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP));
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP));
         TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP));
-        int[] jobTypesInt = ResourceUtil.getIntegerArray(rb,PROPERTIES_JOB_TYPES_DE);
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
-        int[] rasterID = cellsMatrix.getColumnAsInt("ID_cell");
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
         logger.info("   Finished reading the synthetic population");
 
 
@@ -1912,19 +1893,8 @@ public class SyntheticPopDe {
         logger.info("   Read OMX matrix");
 
 
-        TableDataSet timesMatrix = new TableDataSet();
-        timesMatrix.appendColumn(rasterID,"ID_cell");
-        for (int cell = 0; cell < rasterID.length; cell++){
-            double[] dummy = SiloUtil.createArrayWithValue(rasterID.length,0.0);
-            timesMatrix.appendColumn(dummy,Integer.toString(rasterID[cell]) + "d");
-        }
-        timesMatrix.buildIndex(timesMatrix.getColumnPosition("ID_cell"));
-
-        TableDataSet licenseProb = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
-
         //Generate the households, dwellings and persons
         int aux = 1;
-        int workers = 0;
         int[] personIDs = persons.getColumnAsInt("id");
         Frequency travelTimes = new Frequency();
         for (int i = 1; i <= households.getRowCount(); i++){
@@ -1933,8 +1903,7 @@ public class SyntheticPopDe {
                 Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
                 pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
                 pp.setMaritalStatus((int) persons.getValueAt(aux, "marriage"));
-                //pp.setDriverLicense(obtainDriverLicense(pp.getGender(),pp.getAge(),licenseProb));
-                pp.setDriverLicense((int) persons.getIndexedValueAt(aux,"license"));
+                pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
                 aux++;
@@ -1947,21 +1916,23 @@ public class SyntheticPopDe {
         logger.info("   Generated households, persons and dwellings");
 
 
-        //Generate the jobs and counters per zone and job type
-        int[] jobIDs = jobs.getColumnAsInt("id");
-        for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
-            Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), -1, "RET");
-            jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
-        }
-        identifyVacantJobsByZoneType();
+        //Read the coefficients for zonal allocation and job type probabilities
         coefficients = SiloUtil.readCSVfile(rb.getString(PROPERTIES_COEFFICIENTS_JOB));
         coefficients.buildStringIndex(1);
         probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
         probabilitiesJob.buildStringIndex(1);
         marginalsHouseholdMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));// all the marginals from the municipalities
+        alphaJob = coefficients.getStringIndexedValueAt("alpha",1);
+        gammaJob = coefficients.getStringIndexedValueAt("gamma",1);
 
-        alphaJob = coefficients.getStringIndexedValueAt("alpha", 2);
-        gammaJob = coefficients.getStringIndexedValueAt("gamma", 2);
+
+        //Identify vacant jobs by zone and type
+        for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
+            Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), -1, "RET");
+            jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
+        }
+        identifyVacantJobsByZoneType();
+
 
         //Assign workplaces depending on trip length and adequacy to the job. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
         logger.info("   Started assigning workplaces");
@@ -1970,75 +1941,100 @@ public class SyntheticPopDe {
         int assignedJobs = 0;
         for (int i = 1; i <= Math.round(personIDs.length); i++) {
             int[] person = select(probabilityPerson, personIDs);
-            if (Person.getPersonFromId(person[0]).getOccupation() == 1 & idVacantJobsByZoneType.size() > 0) {
+            if (Person.getPersonFromId(person[0]).getOccupation() == 1) {
 
                 //Select the job type for that person
-                int selectedJobType = ec.selectJobType(Person.getPersonFromId(person[0]),probabilitiesJob,jobTypes);
+                int selectedJobType = ec.selectJobType(Person.getPersonFromId(person[0]), probabilitiesJob, jobTypes);
                 int[] keys = idZonesVacantJobsByType.get(selectedJobType);
                 int lengthKeys = numberZonesByType.get(selectedJobType);
 
                 //Select the workplace location (which raster cell) for that person given his/her job type
-                int[] selectedWorkplace = ec.selectWorkplace(Person.getPersonFromId(person[0]),numberVacantJobsByZoneByType,keys,lengthKeys,
-                        travelTimeMatrix,alphaJob,gammaJob);
+                int[] selectedWorkplace = ec.selectWorkplace(Person.getPersonFromId(person[0]), numberVacantJobsByZoneByType, keys, lengthKeys,
+                        travelTimeMatrix, alphaJob, gammaJob);
 
                 //Select one jobID from that workplace location
                 int[] vacantJobs = idVacantJobsByZoneType.get(selectedWorkplace[0]);
-                int[] job = selectEqualProbability(vacantJobs,numberVacantJobsByZoneByType.get(selectedWorkplace[0]));
+                int[] job = selectEqualProbability(vacantJobs, numberVacantJobsByZoneByType.get(selectedWorkplace[0]));
 
                 //Assign values to job and person
-                travelTimes.addValue((int) travelTimeMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(),Job.getJobFromId(job[0]).getZone()));
+                travelTimes.addValue((int) travelTimeMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Job.getJobFromId(job[0]).getZone()));
                 Job.getJobFromId(job[0]).setWorkerID(person[0]);
                 Person.getPersonFromId(person[0]).setJobID(job[0]);
                 Person.getPersonFromId(person[0]).setJobTypeDE(selectedJobType);
                 Person.getPersonFromId(person[0]).setWorkplace(Job.getJobFromId(job[0]).getZone());
                 Person.getPersonFromId(person[0]).setTravelTime(travelTimeMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Person.getPersonFromId(person[0]).getWorkplace()));
 
+
                 //Update counts of vacant jobs
                 vacantJobs[job[1]] = vacantJobs[numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1];
-                idVacantJobsByZoneType.put(selectedWorkplace[0],vacantJobs);
-                numberVacantJobsByZoneByType.put(selectedWorkplace[0],numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1);
-                numberVacantJobsByType.put(selectedJobType,numberVacantJobsByType.get(selectedJobType) - 1);
-                if (numberVacantJobsByZoneByType.get(selectedWorkplace[0]) < 1){
+                idVacantJobsByZoneType.put(selectedWorkplace[0], vacantJobs);
+                numberVacantJobsByZoneByType.put(selectedWorkplace[0], numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1);
+                numberVacantJobsByType.put(selectedJobType, numberVacantJobsByType.get(selectedJobType) - 1);
+                if (numberVacantJobsByZoneByType.get(selectedWorkplace[0]) < 1) {
                     keys[selectedWorkplace[1]] = keys[numberZonesByType.get(selectedJobType) - 1];
-                    idZonesVacantJobsByType.put(selectedJobType,keys);
-                    numberZonesByType.put(selectedJobType,numberZonesByType.get(selectedJobType) - 1);
-                    if (numberZonesByType.get(selectedJobType) < 1){
+                    idZonesVacantJobsByType.put(selectedJobType, keys);
+                    numberZonesByType.put(selectedJobType, numberZonesByType.get(selectedJobType) - 1);
+                    if (numberZonesByType.get(selectedJobType) < 1) {
                         int w = 0;
-                        while (w < jobTypes.length & selectedJobType > jobTypes[w]){
+                        while (w < jobTypes.length & selectedJobType > jobTypes[w]) {
                             w++;
                         }
                         jobTypes[w] = jobTypes[jobTypes.length - 1];
-                        jobTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobTypes,jobTypes.length - 1);
+                        jobTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobTypes, jobTypes.length - 1);
                     }
                 }
-                logger.info("   Job: " + assignedJobs + " assigned at " + selectedWorkplace[0]);
+                //logger.info("   Job: " + assignedJobs + " assigned at " + selectedWorkplace[0]);
                 assignedJobs++;
             }
             probabilityPerson[person[1]] = 0; //remove the person for consideration the next time
         }
 
 
-        //Trip length frequency distribution
-        int[] timeThresholds1 = new int[31];
-        double[] frequencyTT1 = new double[31];
-        for (int row = 0; row < timeThresholds1.length; row++) {
-            timeThresholds1[row] = 5 * row;
-            frequencyTT1[row] = travelTimes.getCumPct(timeThresholds1[row]);
-            logger.info("Time: " + timeThresholds1[row] + ", cummulated frequency:  " + frequencyTT1[row]);
-        }
-        writeVectorToCSV(timeThresholds1, frequencyTT1, "scenOutput/checking/ttDistribution.csv", alphaJob, gammaJob);
+        //For validation - trip length distribution
+        checkTripLengthDistribution(travelTimes, alphaJob, gammaJob); //Trip length frequency distribution
 
     }
 
-*/
 
     private void readSyntheticPopulation(){
         //Read the synthetic population
 
-        //Once the assign jobs is operational, I would move to this method reading the households, persons, dwellings and jobs
-        //Afterwards, the workplaces will be allocated at the "assignJobs"
+        logger.info("   Starting to read the synthetic population");
+        TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP));
+        TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP));
+        TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP));
+        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP));
 
 
+        //Generate the households, dwellings and persons
+        int aux = 1;
+        for (int i = 1; i <= households.getRowCount(); i++){
+            Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),(int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),(int)households.getValueAt(i,"autos"));
+            for (int j = 1; j <= hh.getHhSize(); j++) {
+                Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
+                pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
+                pp.setMaritalStatus((int) persons.getValueAt(aux, "marriage"));
+                pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
+                pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
+                pp.setNationality((int) persons.getValueAt(aux,"nationality"));
+                pp.setHhSize(hh.getHhSize());
+                pp.setZone(hh.getHomeZone());
+                aux++;
+            }
+            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
+            dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
+            dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
+            dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
+        }
+        logger.info("   Generated households, persons and dwellings");
+
+
+        //Generate the jobs
+        for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
+            Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), (int) jobs.getValueAt(i, "personId"), "RET");
+            jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
+        }
+        logger.info("   Generated jobs");
     }
 
 
@@ -2139,8 +2135,8 @@ public class SyntheticPopDe {
 
         //For validating, generate multiple random seeds and combinations of alpha and gamma
         int maxSeeds = 1;
-        double[] alphas = createArrayDoubles(54, 56, 1);
-        double[] gammas = createArrayDoubles(-0.0045, -0.00425, 1);
+        double[] alphas = createArrayDoubles(54, 56, 0);
+        double[] gammas = createArrayDoubles(-0.0045, -0.00425, 0);
         int count = 0;
 
 
