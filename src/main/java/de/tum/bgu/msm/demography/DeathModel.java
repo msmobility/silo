@@ -95,21 +95,44 @@ public class DeathModel {
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
-        double rnum = SiloModel.rand.nextDouble();
-        if (rnum < deathProbability[per.getType().ordinal()]) {
-            Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
-            hhOfThisPerson.removePerson(per);
+        if (SiloModel.rand.nextDouble() < deathProbability[per.getType().ordinal()]) {
             if (per.getWorkplace() > 0) per.quitJob(true);
+            Household hhOfPersonToDie = Household.getHouseholdFromId(per.getHhId());
+            int hhId = hhOfPersonToDie.getId();
             if (per.getRole() == PersonRole.married) {
-                int widowId = HouseholdDataManager.findMostLikelyPartner(per, hhOfThisPerson);
+                int widowId = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
                 Person widow = Person.getPersonFromId(widowId);
                 widow.setRole(PersonRole.single);
             }
-
-            Person.removePerson(perId);
+            boolean onlyChildrenLeft = checkIfOnlyChildrenRemainInHousehold(hhOfPersonToDie, per);
+            if (onlyChildrenLeft) {
+                for (Person pp: hhOfPersonToDie.getPersons()) {
+                    if (pp != per)
+                    Person.removePerson(pp.getId());
+                    if (pp.getId() == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
+                        SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhId +
+                                " to foster care as remaining child just before head of household (ID " +
+                                per.getId() + ") passed away.");
+                }
+            }
+            hhOfPersonToDie.removePerson(per);
+            Person.removePerson(per.getId());
             EventManager.countEvent(EventTypes.checkDeath);
-            if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("We regret to inform that person " +
-                    perId + " passed away.");
+            if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
+                SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhId +
+                        " has passed away.");
         }
     }
+
+
+    private boolean checkIfOnlyChildrenRemainInHousehold(Household hh, Person personToDie) {
+        // if hh has only children left, send children to foster care (foster care is outside of study area, children
+        // are dropped from this simulation)
+
+        if (hh.getHhSize() == 1) return false;
+        boolean onlyChildren = true;
+        for (Person per: hh.getPersons()) if (per.getId() != personToDie.getId() && per.getAge() >= 16) onlyChildren = false;
+        return onlyChildren;
+    }
+
 }
