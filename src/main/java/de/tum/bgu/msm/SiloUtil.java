@@ -100,9 +100,9 @@ public class SiloUtil {
         // create directory if is does not yet exist
         File file = new File (directory);
         if (!file.exists()) {
-            logger.error("Creating Directory: "+directory);
+            logger.info("   Creating Directory: "+directory);
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory " + scenarioName);
+            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenario directory " + directory);
         }
     }
 
@@ -666,6 +666,14 @@ public class SiloUtil {
     }
 
 
+    public static boolean containsElement (ArrayList<Integer> array, int value) {
+        // returns true if array contains value, otherwise false
+        boolean found = false;
+        for (int i: array) if (i == value) found = true;
+        return found;
+    }
+
+
     public static void deleteFile (String fileName) {
         // delete file with name fileName
         File dataFile = new File(fileName);
@@ -792,7 +800,7 @@ public class SiloUtil {
 
 
     public static void setBaseYear(int year) {
-        // base year is the year for which the initial synthetic population had been generated. Start year is the year
+        // base year is the year for which the initial synthetic population has been generated. Start year is the year
         // the current model run starts with. For example, SILO may run from 2000 to 2007 (base year == 2000 and start
         // year == 2000), then the travel model might be run, and SILO picks up from 2007 to 2040 (base year == 2000 and
         // start year == 2007)

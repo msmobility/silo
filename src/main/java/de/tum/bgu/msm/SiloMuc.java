@@ -29,7 +29,7 @@ public class SiloMuc {
     public static void main(String[] args) {
         // main run method
 
-        SiloUtil.setBaseYear(2000);
+        SiloUtil.setBaseYear(2011);  // Base year is defined by available input data for synthetic population
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         try {
