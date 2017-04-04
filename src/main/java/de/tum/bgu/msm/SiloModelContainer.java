@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
  * @see SiloModel#initialize()
  */
 public class SiloModelContainer {
-    private static final Logger logger = Logger.getLogger(SiloModelContainer.class);
+    private static Logger logger = Logger.getLogger(SiloModelContainer.class);
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;

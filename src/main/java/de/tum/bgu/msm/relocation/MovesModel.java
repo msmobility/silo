@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 
 public class MovesModel {
-    Logger logger = Logger.getLogger(MovesModel.class);
+    private static Logger logger = Logger.getLogger(MovesModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
     protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
