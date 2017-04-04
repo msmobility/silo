@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 public class DeathModel {
 
 //    Logger logger = Logger.getLogger(DeathModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
+    private static Logger traceLogger = Logger.getLogger("trace");
 
     protected static final String PROPERTIES_DEMOGRAPHICS_UEC_FILE              = "Demographics.UEC.FileName";
     protected static final String PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET        = "Demographics.UEC.DataSheetNumber";
