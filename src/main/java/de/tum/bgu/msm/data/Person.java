@@ -47,7 +47,6 @@ public class Person implements Serializable {
 	PersonType type;
     PersonRole role;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
-    int maritalStatus = 0;
     int telework = 0;
     int jobClass = 0; //Copied from the microdata. This category is used only for checking.
     int educationLevel = 0;
@@ -273,14 +272,6 @@ public class Person implements Serializable {
         workplace = -1;
         occupation = 2;
         income = (int) (income * 0.6 + 0.5);  //  todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
-    }
-
-    public void setMaritalStatus(int maritalStatus) {
-        this.maritalStatus = maritalStatus;
-    }
-
-    public int getMaritalStatus() {
-        return maritalStatus;
     }
 
     public void setEducationLevel(int educationLevel) {
