@@ -894,12 +894,7 @@ public class SyntheticPopDe {
                                     }
                                     personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
                                     personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationsTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
-                                    int marital = convertToInteger(recString.substring(59, 60)); //1: single, 2: married, 3: widowed, 4: divorced, 5: same sex marriage, 6: same sex widow, 7: same sex divorced
-                                    if (marital == 2) {
-                                        personStatus[personCount] = 2;
-                                    } else {
-                                        personStatus[personCount] = 1;
-                                    }
+                                    personStatus[personCount] = convertToInteger(recString.substring(40, 42)); //1: head of household, 2: partner of head of household, 3: kid
                                     if (age[personCount] < 15) {
                                         personStatus[personCount] = 3;
                                     }
@@ -1829,10 +1824,12 @@ public class SyntheticPopDe {
             for (int j = 1; j <= hh.getHhSize(); j++) {
                 Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
                 pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-                pp.setMaritalStatus((int) persons.getValueAt(aux, "marriage"));
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
+                if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
+                else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
+                else pp.setRole(PersonRole.child);
                 aux++;
             }
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
@@ -1941,7 +1938,9 @@ public class SyntheticPopDe {
             for (int j = 1; j <= hh.getHhSize(); j++) {
                 Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
                 pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-                pp.setMaritalStatus((int) persons.getValueAt(aux, "marriage"));
+                if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
+                else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
+                else pp.setRole(PersonRole.child);
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
                 pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
                 pp.setNationality((int) persons.getValueAt(aux,"nationality"));
@@ -2042,7 +2041,9 @@ public class SyntheticPopDe {
             for (int j = 1; j <= hh.getHhSize(); j++) {
                 Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
                 pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-                pp.setMaritalStatus((int) persons.getValueAt(aux, "marriage"));
+                if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
+                else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
+                else pp.setRole(PersonRole.child);
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
@@ -2368,9 +2369,18 @@ public class SyntheticPopDe {
                         e.printStackTrace();
                     }
                     Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    household.addPersonForInitialSetup(pers);
                     pers.setJobClass((int) microPersons.getValueAt(personCounter, "jobSector"));
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
-                    pers.setMaritalStatus((int) microPersons.getValueAt(personCounter, "maritalStatus"));
+                    PersonRole role = PersonRole.single;
+                    if (microPersons.getValueAt(personCounter, "maritalStatus") == 2) {
+                        role = PersonRole.married;
+                        Person firstPersonInHousehold = household.getPersons()[0];  // get first person in household and make it married
+                        firstPersonInHousehold.setRole(PersonRole.married);
+                    } else if (microPersons.getValueAt(personCounter, "maritalStatus") == 3) {
+                        role = PersonRole.child;
+                    }
+                    pers.setRole(role);
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
                     hhPersons++;
