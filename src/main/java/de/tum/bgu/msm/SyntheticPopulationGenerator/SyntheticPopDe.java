@@ -123,7 +123,7 @@ public class SyntheticPopDe {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
+        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
             //Generate the synthetic population
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
@@ -148,10 +148,12 @@ public class SyntheticPopDe {
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             //assignJobs(); //Job type assignment and workplace allocation
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-            readSyntheticPopulation();
-            //assignJobs2(); //at the clean version it will go to generation of the synthetic population after generateJobs
-//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            //readSyntheticPopulation();
+// todo: had to comment out this following method call, because I cannot find the class EmploymentChoice
+            assignJobs2(); //at the clean version it will go to generation of the synthetic population after generateJobs
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         }
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -649,6 +651,7 @@ public class SyntheticPopDe {
         int personQuarter[] = new int[personCountTotal];
         int personEducation[] = new int[personCountTotal];
         int personStatus[] = new int[personCountTotal];
+        int personRelationship[] = new int[personCountTotal];
         int personEurostat[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
@@ -894,10 +897,8 @@ public class SyntheticPopDe {
                                     }
                                     personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
                                     personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationsTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
-                                    personStatus[personCount] = convertToInteger(recString.substring(40, 42)); //1: head of household, 2: partner of head of household, 3: kid
-                                    if (age[personCount] < 15) {
-                                        personStatus[personCount] = 3;
-                                    }
+                                    personStatus[personCount] = convertToInteger(recString.substring(40,42)); //1: head of household, 2: partner of head of household, 3: children
+                                    personRelationship[personCount] = convertToInteger(recString.substring(566, 568)); //1: head of household (hHH), 2: partner of hHH, 3: kid of hHH, 4: grandchild of hHH, 5: mother or father of hHH, 6: grandfather or grandmother of hHH, 7: sibling of hHH, 8: other relationship with hHH, 9: not related with hHH
                                     int row = 0;
                                     while (age[personCount] > ageBracketsPerson[row]) {
                                         row++;
@@ -966,7 +967,8 @@ public class SyntheticPopDe {
         microPersons.appendColumn(personQuarter,"privateHousehold");
         microPersons.appendColumn(personEurostat,"euroStat");
         microPersons.appendColumn(personEducation,"educationLevel");
-        microPersons.appendColumn(personStatus,"maritalStatus");
+        microPersons.appendColumn(personStatus,"personStatus");
+        microPersons.appendColumn(personRelationship,"relationshipHousehold");
         microDataPerson = microPersons;
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("personID"));
 
@@ -1082,7 +1084,7 @@ public class SyntheticPopDe {
         frequencyMatrix = microRecords1;
 
 
-/*        String hhFileName = ("microData/interimFiles/microHouseholds.csv");
+        String hhFileName = ("microData/interimFiles/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
 
         String freqFileName = ("microData/interimFiles/frequencyMatrix.csv");
@@ -1092,7 +1094,7 @@ public class SyntheticPopDe {
         SiloUtil.writeTableDataSet(microDataPerson, freqFileName1);
 
         String freqFileName2 = ("microData/interimFiles/microDwelling.csv");
-        SiloUtil.writeTableDataSet(microDwellings, freqFileName2);*/
+        SiloUtil.writeTableDataSet(microDwellings, freqFileName2);
 
         logger.info("   Finished reading the micro data");
     }
@@ -1915,7 +1917,7 @@ public class SyntheticPopDe {
 
 
         //For validation - trip length distribution
-        checkTripLengthDistribution(travelTimes, alphaJob, gammaJob); //Trip length frequency distribution
+        checkTripLengthDistribution(travelTimes, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistribution3.csv"); //Trip length frequency distribution
 
     }
 
@@ -1969,10 +1971,11 @@ public class SyntheticPopDe {
 
         //Read the synthetic population, municipalities, cells and travel times
         logger.info("   Starting to read the synthetic population");
-        TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP));
-        TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP));
-        TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP));
-        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP));
+        String fileEnding = "_40k_2011.csv";
+        TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
+        TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
+        TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
+        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP) + fileEnding);
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
         logger.info("   Finished reading the synthetic population");
@@ -1980,79 +1983,110 @@ public class SyntheticPopDe {
 
         //Read the skim matrix
         logger.info("   Starting to read OMX matrix");
-        String omxFileName= "input/syntheticPopulation/travelTimeMatrix.omx";
+        String omxFileName= "input/syntheticPopulation/tdTest.omx";
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         travelTimeMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        float ttmin = 100000;
+        float ttmin = 1000;
         for (int i = 1; i <= travelTimeMatrix.getRowCount(); i++){
             for (int j = 1; j <= travelTimeMatrix.getColumnCount(); j++){
                 if ( i == j) {
                 } else {
+                    travelTimeMatrix.setValueAt(i,j,travelTimeMatrix.getValueAt(i,j)/1000);
                     if (travelTimeMatrix.getValueAt(i,j) < ttmin){
                         ttmin = travelTimeMatrix.getValueAt(i,j);
                     }
                 }
             }
             travelTimeMatrix.setValueAt(i,i,Math.max(ttmin/2,1));
-            ttmin = 100000;
+            ttmin = 1000;
         }
         logger.info("   Read OMX matrix");
 
 
         //For checking
-        //With the same origin and destination (to control that workers stay at their own municipality)
-        TableDataSet sameOD = new TableDataSet();
-        sameOD.appendColumn(cityID,"ID_city");
-        sameOD.buildIndex(sameOD.getColumnPosition("ID_city"));
         //OD matrix from the commuters data, for validation
-        TableDataSet odCommuters = SiloUtil.readCSVfile("input/syntheticPopulation/odMatrixCommuters.csv");
-        odCommuters.buildIndex(odCommuters.getColumnPosition("ID_city"));
+        TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
+        selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
+        int[] allCounties = selectedMunicipalities.getColumnAsInt("smallCenter");
+        TableDataSet observedODFlow = SiloUtil.readCSVfile("input/syntheticPopulation/odMatrixCommuters.csv");
+        observedODFlow.buildIndex(observedODFlow.getColumnPosition("ID_city"));
         //OD matrix for the core cities, obtained from the commuters data
-        TableDataSet odCoreCommuters = new TableDataSet();
-        int [] coreCities = {9161000, 9162000,9163000,9261000,9761000};
-        odCoreCommuters.appendColumn(coreCities,"Center");
-        for (int i = 0; i < coreCities.length; i++){
-            int[] dummy = SiloUtil.createArrayWithValue(coreCities.length,0);
-            odCoreCommuters.appendColumn(dummy,Integer.toString(coreCities[i]));
+        TableDataSet observedCoreODFlow = new TableDataSet();
+        int [] selectedCounties = SiloUtil.idendifyUniqueValues(allCounties);
+        observedCoreODFlow.appendColumn(selectedCounties,"smallCenter");
+        for (int i = 0; i < selectedCounties.length; i++){
+            int[] dummy = SiloUtil.createArrayWithValue(selectedCounties.length,0);
+            observedCoreODFlow.appendColumn(dummy,Integer.toString(selectedCounties[i]));
         }
-        odCoreCommuters.buildIndex(odCoreCommuters.getColumnPosition("Center"));
+        observedCoreODFlow.buildIndex(observedCoreODFlow.getColumnPosition("smallCenter"));
         int ini = 0;
         int end = 0;
         // We decided to read this file here again, as this method is likely to be removed later, which is why we did not
         // want to create a global variable for TableDataSet selectedMunicipalities (Ana and Rolf, 29 Mar 2017)
-        TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
+
+        int[] citySmallID = selectedMunicipalities.getColumnAsInt("smallID");
         for (int i = 0; i < cityID.length; i++){
-            ini = (int) selectedMunicipalities.getIndexedValueAt(cityID[i],"Center");
+            ini = (int) selectedMunicipalities.getIndexedValueAt(cityID[i],"smallCenter");
             for (int j = 0; j < cityID.length; j++){
-                end = (int) selectedMunicipalities.getIndexedValueAt(cityID[j],"Center");
-                odCoreCommuters.setIndexedValueAt(ini,Integer.toString(end),odCoreCommuters.getIndexedValueAt(ini,Integer.toString(end)) + odCommuters.getIndexedValueAt(cityID[i],Integer.toString(cityID[j])));
+                end = (int) selectedMunicipalities.getIndexedValueAt(cityID[j],"smallCenter");
+                observedCoreODFlow.setIndexedValueAt(ini,Integer.toString(end),
+                        observedCoreODFlow.getIndexedValueAt(ini,Integer.toString(end)) + observedODFlow.getIndexedValueAt(cityID[i],Integer.toString(cityID[j])));
             }
         }
+        //OD flows at the municipality level in one TableDataSet, to facilitate visualization of the deviation between the observed data and the estimated data
+        TableDataSet odFlows = new TableDataSet();
+        int[] cityKeys = new int[citySmallID.length * citySmallID.length];
+        int[] odData = new int[citySmallID.length * citySmallID.length];
+        int k = 0;
+        for (int row = 0; row < citySmallID.length; row++){
+            for (int col = 0; col < citySmallID.length; col++){
+                cityKeys[k] = citySmallID[row] * 1000 + citySmallID[col];
+                odData[k] = (int) observedODFlow.getIndexedValueAt(cityID[row],Integer.toString(cityID[col]));
+                k++;
+            }
+        }
+        odFlows.appendColumn(cityKeys,"ID_od");
+        odFlows.appendColumn(odData,"ObservedFlow");
+        odFlows.buildIndex(odFlows.getColumnPosition("ID_od"));
+        //OD flows at the regional level (5 core cities)
+        TableDataSet od5Flows = new TableDataSet();
+        int[] regionKeys = new int[selectedCounties.length * selectedCounties.length];
+        int[] regionalFlows = new int[selectedCounties.length * selectedCounties.length];
+        k = 0;
+        for (int row = 0; row < selectedCounties.length; row++){
+            for (int col = 0; col < selectedCounties.length; col++){
+                regionKeys[k] = selectedCounties[row] * 1000 + selectedCounties[col];
+                regionalFlows[k] = (int) observedCoreODFlow.getIndexedValueAt(selectedCounties[row],Integer.toString(selectedCounties[col]));
+                k++;
+            }
+        }
+        od5Flows.appendColumn(regionKeys,"ID_od");
+        od5Flows.appendColumn(regionalFlows,"ObservedFlow");
+        od5Flows.buildIndex(od5Flows.getColumnPosition("ID_od"));
 
 
         //Generate the households, dwellings and persons
-        int aux = 1;
         int workers = 0;
         int[] personIDs = persons.getColumnAsInt("id");
         Frequency travelTimes = new Frequency();
         for (int i = 1; i <= households.getRowCount(); i++){
             Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),(int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),(int)households.getValueAt(i,"autos"));
-            for (int j = 1; j <= hh.getHhSize(); j++) {
-                Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
-                pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-                if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
-                else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
-                else pp.setRole(PersonRole.child);
-                pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
-                pp.setHhSize(hh.getHhSize());
-                pp.setZone(hh.getHomeZone());
-                aux++;
-            }
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
+        }
+        for (int aux = 1; aux <= persons.getRowCount(); aux++){
+            Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
+            Household.getHouseholdFromId(pp.getHhId()).addPersonForInitialSetup(pp);
+            pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
+            if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
+            else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
+            else pp.setRole(PersonRole.child);
+            pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
+            pp.setHhSize(Household.getHouseholdFromId(pp.getHhId()).getHhSize());
+            pp.setZone(Household.getHouseholdFromId(pp.getHhId()).getHomeZone());
         }
         logger.info("   Generated households, persons and dwellings");
 
@@ -2066,9 +2100,11 @@ public class SyntheticPopDe {
 
 
         //For validating, generate multiple random seeds and combinations of alpha and gamma
-        int maxSeeds = 1;
-        double[] alphas = createArrayDoubles(54, 56, 0);
-        double[] gammas = createArrayDoubles(-0.0045, -0.00425, 0);
+        int maxSeeds = 5;
+        //double[] alphas = createArrayDoubles(1, 100, 20);
+        //double[] gammas = createArrayDoubles(-0.01, -0.001, 10);
+        double[] alphas = {50, 52, 54, 56, 58, 60, 62, 64};
+        double[] gammas = {-0.002, -0.00175, -0.0015, -0.00125, -0.001, -0.00075, -0.0005, -0.00025};
         int count = 0;
 
 
@@ -2087,7 +2123,7 @@ public class SyntheticPopDe {
                     }
                     identifyVacantJobsByZoneType();
 
-                    TableDataSet odMatrix = new TableDataSet();
+/*                    TableDataSet odMatrix = new TableDataSet();
                     odMatrix.appendColumn(cityID, "ID_city");
                     for (int mun = 0; mun < cityID.length; mun++) {
                         int[] dummy = SiloUtil.createArrayWithValue(cityID.length, 0);
@@ -2095,15 +2131,12 @@ public class SyntheticPopDe {
                     }
                     int[] dums = SiloUtil.createArrayWithValue(cityID.length, 0);
                     odMatrix.appendColumn(dums, "counts");
-                    odMatrix.buildIndex(odMatrix.getColumnPosition("ID_city"));
+                    odMatrix.buildIndex(odMatrix.getColumnPosition("ID_city"));*/
 
-                    TableDataSet od5Matrix = new TableDataSet();
-                    od5Matrix.appendColumn(coreCities,"Center");
-                    for (int i = 0; i < coreCities.length; i++){
-                        int[] dummy = SiloUtil.createArrayWithValue(coreCities.length,0);
-                        od5Matrix.appendColumn(dummy,Integer.toString(coreCities[i]));
-                    }
-                    od5Matrix.buildIndex(od5Matrix.getColumnPosition("Center"));
+                    int[] dummy1 = SiloUtil.createArrayWithValue(cityKeys.length,0);
+                    odFlows.appendColumn(dummy1,Integer.toString(count));
+                    int[] dummy2 = SiloUtil.createArrayWithValue(regionKeys.length,0);
+                    od5Flows.appendColumn(dummy2,Integer.toString(count));
 
 
                     //Assign workplaces depending on trip length and adequacy to the job. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
@@ -2136,16 +2169,16 @@ public class SyntheticPopDe {
                             Person.getPersonFromId(person[0]).setWorkplace(Job.getJobFromId(job[0]).getZone());
                             Person.getPersonFromId(person[0]).setTravelTime(travelTimeMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Person.getPersonFromId(person[0]).getWorkplace()));
 
-                            //For validation OD matrix
-                            int homeMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "ID_city");
-                            int workMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "ID_city");
-                            odMatrix.setIndexedValueAt(homeMun, Integer.toString(workMun), odMatrix.getIndexedValueAt(homeMun, Integer.toString(workMun)) + 1);
-                            int homeCenter = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "Center");
-                            int workCenter = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "Center");
-                            od5Matrix.setIndexedValueAt(homeCenter, Integer.toString(workCenter), od5Matrix.getIndexedValueAt(homeCenter, Integer.toString(workCenter)) + 1);
-                            if (homeMun == workMun) {
-                                odMatrix.setIndexedValueAt(homeMun, "counts", odMatrix.getIndexedValueAt(homeMun, "counts") + 1);
-                            }
+                            //For validation OD TableDataSet
+                            int homeMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "smallID");
+                            int workMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "smallID");
+                            int odPair = homeMun * 1000 + workMun;
+                            odFlows.setIndexedValueAt(odPair,Integer.toString(count),odFlows.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
+                            homeMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "smallCenter");
+                            workMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "smallCenter");
+                            odPair = homeMun * 1000 + workMun;
+                            od5Flows.setIndexedValueAt(odPair,Integer.toString(count),od5Flows.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
+
 
                             //Update counts of vacant jobs
                             vacantJobs[job[1]] = vacantJobs[numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1];
@@ -2173,15 +2206,14 @@ public class SyntheticPopDe {
 
 
                     //For validation OD matrix
-                    checkTripLengthDistribution(travelTimes, alphaJob, gammaJob); //Trip length frequency distribution
-                    checkodMatrix(odMatrix, odCommuters, cityID, alphaJob, gammaJob, seed); //OD Matrix at the municipality level
-                    String nameFile = "microData/interimFiles/odMatrixMun" + count + ".csv";
-                    SiloUtil.writeTableDataSet(odMatrix,nameFile);
-                    writeMatrixToCSV("microData/interimFiles/od4.csv",od5Matrix,alphaJob,gammaJob,seed); //OD Matrix at the region level (for 5 core cities)
-                    sameOD.appendColumn(odMatrix.getColumnAsInt("counts"), Integer.toString(count));
+                    checkTripLengthDistribution(travelTimes, alphas[a], gammas[g], "microData/interimFiles/tripLengthDistribution.csv"); //Trip length frequency distribution
+                    checkodMatrix(odFlows, alphas[a], gammas[g], count,"microData/interimFiles/odFlowDifference.csv"); //OD Matrix at the municipality level
+                    String nameFile = "microData/interimFiles/odMunicipalityFlow.csv";
+                    SiloUtil.writeTableDataSet(odFlows,nameFile);
+                    SiloUtil.writeTableDataSet(od5Flows,"microData/interimFiles/odRegionFlow.csv");
+                    //writeMatrixToCSV("microData/interimFiles/odRegion.csv",od5Flows,alphaJob,gammaJob,count); //OD Matrix at the region level (for 5 core cities)
                     count++;
                 }
-                SiloUtil.writeTableDataSet(sameOD, "microData/interimFiles/sameOD4.csv");
             }
         }
     }
@@ -2214,6 +2246,10 @@ public class SyntheticPopDe {
         GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
 
 
+        //Driver license probability
+        TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
+
+
         //Create the errors table (for all the municipalities)
         TableDataSet counterSynPop = new TableDataSet();
         TableDataSet relativeErrorSynPop = new TableDataSet();
@@ -2241,13 +2277,14 @@ public class SyntheticPopDe {
             TableDataSet microHouseholds = microDataHousehold;
             TableDataSet microPersons = microDataPerson;
             TableDataSet microDwellings = microDataDwelling;
+            microHouseholds.buildIndex(microHouseholds.getColumnPosition("ID"));
+            microDwellings.buildIndex(microDwellings.getColumnPosition("dwellingID"));
             int totalHouseholds = (int) marginalsMunicipality.getIndexedValueAt(municipalityID,"hhTotal");
             int totalQuarters = (int) marginalsMunicipality.getIndexedValueAt(municipalityID,"privateQuarters");
             double[] probability = weightsTable.getColumnAsDouble(Integer.toString(municipalityID));
             int[] agePerson = ageBracketsPerson;
             int[] sizeBuilding = sizeBracketsDwelling;
             int[] yearBuilding = yearBracketsDwelling;
-            int vacantDwellings = (int) marginalsMunicipality.getIndexedValueAt(cityID[municipality],"totalDwellingsVacant");
 
 
             //Counter and errors for the municipality
@@ -2300,11 +2337,11 @@ public class SyntheticPopDe {
 
 
             //select the probabilities of the households from the microData, for that municipality
-            double[] probMD = new double[probability.length]; // Separate private households and group quarters for generation
+            double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
             double[] probabilityQuarter = new double[probability.length];
             for (int row = 0; row < probability.length; row++){
                 if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
-                    probMD[row] = probability[row];
+                    probabilityPrivate[row] = probability[row];
                 } else {
                     probabilityQuarter[row] = probability[row];
                 }
@@ -2323,34 +2360,34 @@ public class SyntheticPopDe {
             for (int row = 0; row < totalHouseholds; row++) {
 
                 //select the household to copy and allocate it
-                int[] records = select(probMD, microDataIds);
-                int hhMD = records[0];
-                int recordMD = records[1];
+                int[] records = select(probabilityPrivate, microDataIds);
+                int hhIdMicroData = records[0];
+                int hhRowMicroData = records[1];
                 int[] recordsCell = select(probCell,probCell.length,rasterCellsList);
                 int hhCell = recordsCell[0];
                 int recordCell = recordsCell[1];
-                timesSelected[recordMD]++;
+                timesSelected[hhRowMicroData]++;
 
 
                 //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
-                if (probMD[recordMD] > 1.0) {
-                    probMD[recordMD] = probMD[recordMD] - 1;
+                if (probabilityPrivate[hhRowMicroData] > 1.0) {
+                    probabilityPrivate[hhRowMicroData] = probabilityPrivate[hhRowMicroData] - 1;
                 } else {
-                    probMD[recordMD] = 0;
+                    probabilityPrivate[hhRowMicroData] = 0;
                 }
-                if (probCell[recordCell] > (int) microHouseholds.getIndexedValueAt(hhMD, "hhSize")) {
-                    probCell[recordCell] = probCell[recordCell] - (int) microHouseholds.getIndexedValueAt(hhMD, "hhSize");
+                if (probCell[recordCell] > (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize")) {
+                    probCell[recordCell] = probCell[recordCell] - (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize");
                 } else {
                     probCell[recordCell] = 0;
                 }
 
 
                 //copy the private household characteristics
-                int householdSize = (int) microHouseholds.getIndexedValueAt(hhMD, "hhSize");
-                int householdWorkers = (int) microHouseholds.getIndexedValueAt(hhMD, "femaleWorkers") +
-                        (int) microHouseholds.getIndexedValueAt(hhMD, "maleWorkers");
+                int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize");
+                int householdWorkers = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "femaleWorkers") +
+                        (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "maleWorkers");
                 id = HouseholdDataManager.getNextHouseholdId();
-                Household household = new Household(id, hhMD, hhCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = new Household(id, hhIdMicroData, hhCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
 
@@ -2358,7 +2395,7 @@ public class SyntheticPopDe {
                 //copy the household members characteristics
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
-                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhMD, "personCount") + rowPerson;
+                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "personCount") + rowPerson;
                     int age = (int) microPersons.getValueAt(personCounter, "age");
                     int gender = (int) microPersons.getValueAt(personCounter, "gender");
                     int occupation = (int) microPersons.getValueAt(personCounter, "occupation");
@@ -2372,17 +2409,23 @@ public class SyntheticPopDe {
                     household.addPersonForInitialSetup(pers);
                     pers.setJobClass((int) microPersons.getValueAt(personCounter, "jobSector"));
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
-                    PersonRole role = PersonRole.single;
-                    if (microPersons.getValueAt(personCounter, "maritalStatus") == 2) {
+                    PersonRole role = PersonRole.single; //default value = single
+                    if (microPersons.getValueAt(personCounter, "personStatus") == 2) {
                         role = PersonRole.married;
-                        Person firstPersonInHousehold = household.getPersons()[0];  // get first person in household and make it married
+                        Person firstPersonInHousehold = household.getPersons()[0];  // get first person in household and make it married (if one person within the household is the partner)
                         firstPersonInHousehold.setRole(PersonRole.married);
-                    } else if (microPersons.getValueAt(personCounter, "maritalStatus") == 3) {
-                        role = PersonRole.child;
+                    } else if (microPersons.getValueAt(personCounter, "personStatus") == 3) { //if the person is not the household head nor his spouse
+                        if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 3) { //the person is son/daughter of the household head
+                            role = PersonRole.child;
+                        } else if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 4) { //the person is the grandchild of the household head
+                            role = PersonRole.child;
+                        }
                     }
                     pers.setRole(role);
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
+                    int license = obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense);
+                    pers.setDriverLicense(license);
                     hhPersons++;
                     counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
                 }
@@ -2394,10 +2437,10 @@ public class SyntheticPopDe {
                 int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
                 int price = 1; //Monte Carlo
                 int year = 1; //Not by year. In the data is going to be in classes
-                int floorSpace = (int) microDwellings.getIndexedValueAt(hhMD, "dwellingFloorSpace");
-                int usage = (int) microDwellings.getIndexedValueAt(hhMD, "dwellingUsage");
-                int buildingSize = (int) microDwellings.getIndexedValueAt(hhMD, "dwellingType");
-                int yearConstruction =(int) microDwellings.getIndexedValueAt(hhMD, "dwellingYear");
+                int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingFloorSpace");
+                int usage = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingUsage");
+                int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingType");
+                int yearConstruction =(int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingYear");
                 Dwelling dwell = new Dwelling(newDdId, hhCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(usage);
@@ -2413,7 +2456,6 @@ public class SyntheticPopDe {
                 int[] records = select(probabilityQuarter, microDataIds);
                 int idHHmicroData = records[0];
                 int recordHHmicroData = records[1];
-
 
                 //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
                 if (probabilityPrivate[recordHHmicroData] > 1) {
@@ -2460,87 +2502,6 @@ public class SyntheticPopDe {
             previousPersons = HouseholdDataManager.getHighestPersonIdInUse();
 
 
-            //Vacant dwellings--------------------------------------------
-            //They have similar characteristics to the dwellings that are occupied (assume that there is no difference between the occupied and vacant dwellings in terms of quality)
-            for (int row = 0; row < vacantDwellings; row++) {
-                int ddID = households - (int) (Math.random() * totalHouseholds);
-
-                int ddCell[] = select(probCell,probCell.length,rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
-                //Assign the characteristics
-                int newDdId = RealEstateDataManager.getNextDwellingId();
-                int bedRooms = 1; //Not on the micro data
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
-                int price = 1; //Monte Carlo
-                int year = 1;
-                Dwelling dwell = new Dwelling(newDdId, ddCell[0], 0, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                dwell.setFloorSpace((int) Dwelling.getDwellingFromId(ddID).getFloorSpace());
-                dwell.setUsage(3); //vacant dwelling = 3
-                dwell.setBuildingSize((int) Dwelling.getDwellingFromId(ddID).getBuildingSize());
-                dwell.setYearConstructionDE((int) Dwelling.getDwellingFromId(ddID).getYearConstructionDE());
-
-            }
-
-
-            /*
-            //Probability of floor size for vacant dwellings
-            float [] vacantFloor = new float[sizeBuilding.length];
-            for (int row = 0; row < sizeBuilding.length; row++){
-                String name = "vacantDwellings" + sizeBuilding[row];
-                vacantFloor[row] = marginalsMunicipality.getIndexedValueAt(municipalityID,name)/vacantDwellings;
-            }
-
-            //Probability for year and building size for vacant dwellings
-            float[] vacantSize = new float[yearBuilding.length * 2];
-            for (int row = 0; row < yearBuilding.length; row++){
-                String name = "vacantSmallDwellings" + yearBuilding[row];
-                String name1 = "vacantMediumDwellings" + yearBuilding[row];
-                vacantSize[row] = marginalsMunicipality.getIndexedValueAt(municipalityID,name) / vacantDwellings;
-                vacantSize[row + yearBuilding.length] = marginalsMunicipality.getIndexedValueAt(municipalityID,name1) / vacantDwellings;
-            }
-
-            //generate vacant dwellings on the municipality
-            for (int row = 0; row < vacantDwellings; row++){
-                //Monte Carlo simulation for floor space (sqm). The category is converted to continuous variable between 40 and 130 sqm
-                int floorSpace = 0;
-                Random r = new Random();
-                int floorSpaceCat = SiloUtil.select(vacantFloor);
-                if (floorSpaceCat == 0){
-                    floorSpace = 40;
-                } else if (floorSpaceCat == sizeBuilding.length) {
-                    floorSpace = 130;
-                } else {
-                    floorSpace = r.nextInt(sizeBuilding[floorSpaceCat]-sizeBuilding[floorSpaceCat-1]) +
-                            sizeBuilding[floorSpaceCat - 1]; //Assign random number between both brackets
-                }
-
-                //Monte Carlo simulation for building size and construction year
-                int size = 0;
-                int yearConstruction = 0;
-                int sizeCat = SiloUtil.select(vacantSize);
-                if (sizeCat < yearBuilding.length + 1){
-                    size = 1;
-                    yearConstruction = sizeCat;
-                } else {
-                    size = 2;
-                    yearConstruction = sizeCat - yearBuilding.length;
-                }
-
-                //Assign the characteristics
-                int newDdId = RealEstateDataManager.getNextDwellingId();
-                int bedRooms = 1; //Not on the micro data
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
-                int price = 1; //Monte Carlo
-                int year = 1;
-                int ddCell[] = select(probCell,probCell.length,rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
-                Dwelling dwell = new Dwelling(newDdId, ddCell[0], 0, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                dwell.setFloorSpace(floorSpace);
-                dwell.setUsage(3);
-                dwell.setBuildingSize(size);
-                dwell.setYearConstructionDE(yearConstruction);
-                //counterMunicipality = updateCountersDwellingVacant(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
-            }*/
-
-
             //Calculate the errors from the synthesized population at the attributes of the IPU.
             //Update the tables for all municipalities with the result of this municipality
 
@@ -2561,21 +2522,99 @@ public class SyntheticPopDe {
 
             logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households and " + quartersTotal + " persons in group quarters. Average error of " + averageError);
             TableDataSet prob = new TableDataSet();
- /*           prob.appendColumn(microDataIds,"ID");
-            prob.appendColumn(probMD,"probabilityPrivate");
+            prob.appendColumn(microDataIds,"ID");
+            prob.appendColumn(probabilityPrivate,"probabilityPrivate");
             prob.appendColumn(timesSelected,"numberSelections");
             SiloUtil.writeTableDataSet(prob,"microData/interimFiles/compara.csv");
             SiloUtil.writeTableDataSet(counterMunicipality,"microData/interimFiles/counterMun.csv");
-            SiloUtil.writeTableDataSet(errorMunicipality,"microData/interimFiles/errorMun.csv");*/
+            SiloUtil.writeTableDataSet(errorMunicipality,"microData/interimFiles/errorMun.csv");
         }
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
         logger.info("   Finished generating households and persons. A population of " + persons + " persons in " + households + " households was generated.");
 
 
-        //Check the errors at the region level
+        //Vacant dwellings--------------------------------------------
+        //They have similar characteristics to the dwellings that are occupied (assume that there is no difference between the occupied and vacant dwellings in terms of quality)
+        for (int municipality = 0; municipality < cityID.length; municipality++) {
+            logger.info("   Municipality " + cityID[municipality] + ". Starting to generate vacant dwellings.");
+            int municipalityID = cityID[municipality];
+            int vacantDwellings = (int) marginalsMunicipality.getIndexedValueAt(cityID[municipality], "totalDwellingsVacant");
+            int totalHouseholds = (int) marginalsMunicipality.getIndexedValueAt(municipalityID, "hhTotal");
+            TableDataSet rasterCellsMatrix = cellsMatrix;
 
+            //obtain the raster cells of the municipality and their weight within the municipality
+            int rasterCount = 0;
+            for (int row = 1; row <= rasterCellsMatrix.getRowCount(); row++) {
+                if ((int) rasterCellsMatrix.getValueAt(row, "ID_city") == municipalityID) {
+                    rasterCount++;
+                }
+            }
+            int[] rasterCellsList = new int[rasterCount];
+            int finish = 0;
+            int rowAux = 1;
+            int rasterCellCountsAux = 0;
+            double[] probCell = new double[rasterCount];
+            while (finish == 0) {
+                if ((int) rasterCellsMatrix.getValueAt(rowAux, "ID_city") == municipalityID) {
+                    rasterCellsList[rasterCellCountsAux] = (int) rasterCellsMatrix.getValueAt(rowAux, "ID_cell");
+                    probCell[rasterCellCountsAux] = rasterCellsMatrix.getValueAt(rowAux, "Population");
+                    rasterCellCountsAux++;
+                }
+                if (rasterCellCountsAux == rasterCellsList.length) {
+                    finish = 1;
+                }
+                rowAux++;
+            }
 
+            //Probability of floor size for vacant dwellings
+            float [] vacantFloor = new float[sizeBracketsDwelling.length];
+            for (int row = 0; row < sizeBracketsDwelling.length; row++){
+                String name = "vacantDwellings" + sizeBracketsDwelling[row];
+                vacantFloor[row] = marginalsMunicipality.getIndexedValueAt(municipalityID,name)/vacantDwellings;
+            }
+
+            //Probability for year and building size for vacant dwellings
+            float[] vacantSize = new float[yearBracketsDwelling.length * 2];
+            for (int row = 0; row < yearBracketsDwelling.length; row++){
+                String name = "vacantSmallDwellings" + yearBracketsDwelling[row];
+                String name1 = "vacantMediumDwellings" + yearBracketsDwelling[row];
+                vacantSize[row] = marginalsMunicipality.getIndexedValueAt(municipalityID,name) / vacantDwellings;
+                vacantSize[row + yearBracketsDwelling.length] = marginalsMunicipality.getIndexedValueAt(municipalityID,name1) / vacantDwellings;
+            }
+
+            //Select the vacant dwelling and copy characteristics
+            for (int row = 0; row < vacantDwellings; row++) {
+                int ddCell[] = select(probCell, probCell.length, rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
+                int newDdId = RealEstateDataManager.getNextDwellingId();
+                int bedRooms = 1; //Not on the micro data
+                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
+                int price = 1; //Monte Carlo
+                int year = 1;
+                Dwelling dwell = new Dwelling(newDdId, ddCell[0], 0, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                dwell.setUsage(3); //vacant dwelling = 3
+                int floorSpace = SiloUtil.select(vacantFloor);
+                int floorSpaceDwelling = 0;
+                Random r = new Random();
+                if (floorSpace == 0){
+                    floorSpaceDwelling = 40;
+                } else if (floorSpace == sizeBracketsDwelling.length) {
+                    floorSpaceDwelling = 130;
+                } else {
+                    floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
+                            sizeBracketsDwelling[floorSpace - 1];
+                }
+                dwell.setFloorSpace(floorSpaceDwelling);
+                int yearSize = SiloUtil.select(vacantSize);
+                if (yearSize < yearBracketsDwelling.length){
+                    dwell.setBuildingSize(1); //small-size building
+                    dwell.setYearConstructionDE(yearBracketsDwelling[yearSize]);
+                } else {
+                    dwell.setBuildingSize(2); //medium-size building
+                    dwell.setYearConstructionDE(yearBracketsDwelling[yearSize - yearBracketsDwelling.length]);
+                }
+            }
+        }
         //Write the files for all municipalities
         String name = ("microData/interimFiles/totalsSynPop.csv");
         SiloUtil.writeTableDataSet(counterSynPop,name);
@@ -2584,7 +2623,7 @@ public class SyntheticPopDe {
     }
 
 
-    private DwellingType translateDwellingType (int pumsDdType) {
+       private DwellingType translateDwellingType (int pumsDdType) {
         // translate micro census dwelling types into 6 MetCouncil Dwelling Types
 
         // Available in MICRO CENSUS:
@@ -3160,44 +3199,37 @@ public class SyntheticPopDe {
     }
 
 
-    public void checkTripLengthDistribution (Frequency travelTimes, double alpha, double gamma){
+    public void checkTripLengthDistribution (Frequency travelTimes, double alpha, double gamma, String fileName){
         //to obtain the trip length distribution
-        int[] timeThresholds1 = new int[31];
-        double[] frequencyTT1 = new double[31];
+        int[] timeThresholds1 = new int[79];
+        double[] frequencyTT1 = new double[79];
         for (int row = 0; row < timeThresholds1.length; row++) {
-            timeThresholds1[row] = 5 * row;
+            timeThresholds1[row] = row + 1;
             frequencyTT1[row] = travelTimes.getCumPct(timeThresholds1[row]);
             //logger.info("Time: " + timeThresholds1[row] + ", cummulated frequency:  " + frequencyTT1[row]);
         }
-        writeVectorToCSV(timeThresholds1, frequencyTT1, "microData/interimFiles/ttDistribution3.csv", alpha, gamma);
+        writeVectorToCSV(timeThresholds1, frequencyTT1, fileName, alpha, gamma);
 
     }
 
-    public void checkodMatrix (TableDataSet odMatrix, TableDataSet commutersODMatrix, int[] cityID, double a, double g, int it){
-        //to obtain the trip length distribution
-        //Trip length frequency distribution
-
+    public void checkodMatrix (TableDataSet odMatrix, double a, double g, int it, String fileName){
+        //to obtain the square difference between the observed and estimated OD flows
         double dif = 0;
         double ind = 0;
         int count = 0;
-        for (int row = 0; row < cityID.length; row++){
-            for (int col = 0; col < cityID.length; col++){
-                ind = odMatrix.getIndexedValueAt(cityID[row],Integer.toString(cityID[col])) - commutersODMatrix.getIndexedValueAt(cityID[row],Integer.toString(cityID[col]));
-                dif = dif + ind * ind;
-                count++;
-            }
+        for (int row = 1; row <= odMatrix.getRowCount(); row++){
+            ind = odMatrix.getValueAt(row,Integer.toString(it)) - odMatrix.getValueAt(row,"ObservedFlow");
+            dif = dif + ind * ind;
+            count++;
         }
-
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter("microData/interimFiles/error4.csv", true));
+            PrintWriter pw = new PrintWriter(new FileWriter(fileName, true));
             pw.println(a + "," + g + "," + dif + "," + dif / count + "," + it);
             pw.flush();
             pw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public static double[] createArrayDoubles(double initial, double end, int length){
