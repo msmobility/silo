@@ -1942,6 +1942,7 @@ public class SyntheticPopDe {
 
 
                 //Update counts of vacant jobs
+                //todo. Update the counts for schools
 /*                vacantJobs[job[1]] = vacantJobs[numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1];
                 idVacantJobsByZoneType.put(selectedWorkplace[0], vacantJobs);
                 numberVacantJobsByZoneByType.put(selectedWorkplace[0], numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1);
