@@ -59,6 +59,7 @@ public class EmploymentChoice {
                                  int[] zoneJobKeys, int lengthZoneKeys, Matrix timesMatrix, double alpha, double gamma) {
         //given a person and job type, select the workplace location (raster cell)
         //it is based on the utility of that job type and each location, multiplied by the number of jobs that remain vacant
+        //it can be directly used for schools, since the utility only checks the distance between the person home and destination
 
         double[] utilities = new double[lengthZoneKeys];
         for (int j = 0; j < lengthZoneKeys; j++){
