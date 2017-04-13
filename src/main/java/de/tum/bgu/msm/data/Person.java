@@ -57,6 +57,7 @@ public class Person implements Serializable {
     int jobTypeDE = 0; //Assigned by SILO depending on the education level and gender
     int jobID = 0;
     int driverLicense = 0;
+    int schoolType = 0;
 //    private Lock lock = new ReentrantLock();
 
 
@@ -97,6 +98,10 @@ public class Person implements Serializable {
     }
 
 
+    public static Map<Integer, Person> getPersonMap() {
+        return personMap;
+    }
+
     public static void savePersons (Person[] pps) {
         for (Person pp: pps) personMap.put(pp.getId(), pp);
     }
@@ -104,6 +109,24 @@ public class Person implements Serializable {
 
     public static Person[] getPersonArray() {
         return personMap.values().toArray(new Person[personMap.size()]);
+    }
+
+
+    public static int[] getPersonIDArray() {
+
+        int[] personIDs = new int[personMap.size()];
+        int j = 0;
+        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
+            personIDs[j] = pair.getValue().getId();
+            j++;
+        }
+        /*Person[] persons = Person.getPersonArray();
+        for (Person pp: persons) {
+            personIDs[j] = pp.getId();
+            j++;
+        }*/
+
+        return personIDs;
     }
 
 
@@ -329,4 +352,8 @@ public class Person implements Serializable {
     public void setDriverLicense(int driverLicense){ this.driverLicense = driverLicense;}
 
     public int getDriverLicense() { return driverLicense; }
+
+    public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
+
+    public int getSchoolType() {return schoolType;}
 }
