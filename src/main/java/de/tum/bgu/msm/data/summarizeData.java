@@ -571,7 +571,7 @@ public class summarizeData {
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workID,travelTime,license,jobDE");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workID,travelTime,license,jobDE,schoolDE");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -604,7 +604,9 @@ public class summarizeData {
             pwp.print(",");
             pwp.print(pp.getDriverLicense());
             pwp.print(",");
-            pwp.println(pp.getJobTypeDE());
+            pwp.print(pp.getJobTypeDE());
+            pwp.print(",");
+            pwp.println(pp.getSchoolType());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 pp.logAttributes(SiloUtil.trackWriter);
@@ -689,7 +691,7 @@ public class summarizeData {
     public static void writeOutSyntheticPopulationDEShort (ResourceBundle rb, int year, int step) {
         // write out files with synthetic population
 
-        String fileEnding = "_40k_" + year + ".csv";
+        String fileEnding = "_" + step + "k_" + year + ".csv";
 
         logger.info("  Writing household file");
         String filehh = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_HH_MICRODATA) + fileEnding;
@@ -698,7 +700,7 @@ public class summarizeData {
         Household[] hhs = Household.getHouseholdArray();
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + fileEnding;
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workID,travelTime,license,jobDE");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workID,travelTime,license,jobDE,schoolDE");
         Person[] pps = Person.getPersonArray();
 
         for (int i = 0; i < hhs.length; i = i + step) {
@@ -748,7 +750,9 @@ public class summarizeData {
                 pwp.print(",");
                 pwp.print(pp.getDriverLicense());
                 pwp.print(",");
-                pwp.println(pp.getJobTypeDE());
+                pwp.print(pp.getJobTypeDE());
+                pwp.print(",");
+                pwp.println(pp.getSchoolType());
                 if (pp.getId() == SiloUtil.trackPp) {
                     SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                     pp.logAttributes(SiloUtil.trackWriter);
