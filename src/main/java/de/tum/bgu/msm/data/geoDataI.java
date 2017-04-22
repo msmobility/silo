@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.container.SiloDataContainer;
+
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
  * @author Ana Moreno and Rolf Moeckel, Technical University of Munich
@@ -42,6 +44,6 @@ public interface geoDataI {
 
     public boolean isThisDwellingTypeAllowed (String dwellingType, int zone);
 
-    public void writeOutDevelopmentCapacityFile (RealEstateDataManager realEstateData);
+    public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer);
 
 }

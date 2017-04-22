@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.container.SiloDataContainer;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
@@ -158,7 +159,7 @@ public class geoDataMuc implements geoDataI {
         }
     }
 
-    public void writeOutDevelopmentCapacityFile (RealEstateDataManager realEstateData) {
+    public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer) {
         // write out development capacity file to allow model run to be continued from this point later
 
         boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
@@ -175,7 +176,7 @@ public class geoDataMuc implements geoDataI {
                 ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
         pwl.println("Zone,lu41");
-        for (int zone: getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
+        for (int zone: getZones()) pwl.println(zone + "," + dataContainer.getRealEstateData().getDevelopableLand(zone));
         pwl.close();
     }
 

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventManager;
@@ -57,12 +58,12 @@ public class ChangeEmploymentModel {
     }
 
 
-    public void quitJob (int perId, JobDataManager jobData) {
+    public void quitJob (int perId, SiloDataContainer dataContainer) {
         // Let person perId quit her/his job and make this job available to others
 
         Person pp = Person.getPersonFromId(perId);
         if (pp == null) return;  // person has died or moved away
-        pp.quitJob(true, jobData);
+        pp.quitJob(true, dataContainer);
         EventManager.countEvent(EventTypes.quitJob);
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }

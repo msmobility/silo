@@ -23,6 +23,8 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
@@ -106,9 +108,7 @@ public class LeaveParentHhModel {
     }
 
 
-    public void chooseLeaveParentHh(int perId, MovesModel moveM, AutoOwnershipModel aoModel,
-                                    RealEstateDataManager realEstateData, Accessibility accessibility,
-                                    JobDataManager jobData, HouseholdDataManager householdData) {
+    public void chooseLeaveParentHh(int perId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // remove person with perId from its household and create new household with this person
 
         Person per = Person.getPersonFromId(perId);
@@ -117,7 +117,7 @@ public class LeaveParentHhModel {
         if (rnum < lphProbability[per.getType().ordinal()]) {
 
             // search if dwelling is available
-            int newDwellingId = moveM.searchForNewDwelling(new Person[]{per}, accessibility);
+            int newDwellingId = modelContainer.getMove().searchForNewDwelling(new Person[]{per}, modelContainer);
             if (newDwellingId < 0) {
                 if (perId == SiloUtil.trackPp || per.getHhId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
                         "Person " + perId + " wanted to but could not leave parental household " + per.getHhId() +
@@ -128,7 +128,7 @@ public class LeaveParentHhModel {
 
             // create new household
             Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
-            hhOfThisPerson.removePerson(per, householdData);
+            hhOfThisPerson.removePerson(per, dataContainer);
             hhOfThisPerson.setType();
             int newHhId = HouseholdDataManager.getNextHouseholdId();
             Household hh = new Household(newHhId, -1, -1, 1, 0);
@@ -138,8 +138,8 @@ public class LeaveParentHhModel {
             per.setRole(PersonRole.single);
 
             // Move new household
-            moveM.moveHousehold(hh, -1, newDwellingId, realEstateData);
-            aoModel.simulateAutoOwnership(hh, accessibility, jobData);
+            modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
+            modelContainer.getAoModel().simulateAutoOwnership(hh, modelContainer, dataContainer);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                     hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +

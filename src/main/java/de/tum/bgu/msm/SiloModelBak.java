@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- */
+ *//*
+
 package de.tum.bgu.msm;
 
 import java.io.BufferedWriter;
@@ -51,11 +52,13 @@ import de.tum.bgu.msm.realEstate.PricingModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.transportModel.MstmTransportModel;
 
+*/
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
  *
- */
+ *//*
+
 public class SiloModelBak {
     static Logger logger = Logger.getLogger(SiloModelBak.class);
 
@@ -103,10 +106,12 @@ public class SiloModelBak {
     private long[][] timeCounter;
     private geoDataI geoData;
 
-    /**
+    */
+/**
      * Constructor to set up a SILO model
      * @param rb ResourceBundle
-     */
+     *//*
+
     public SiloModelBak(ResourceBundle rb) {
         this.rb = rb;
         summarizeData.openResultFile(rb);
@@ -710,4 +715,4 @@ public class SiloModelBak {
     public void setMatsimConfig (Config matsimConfig) {
 	    this.matsimConfig = matsimConfig;
     }
-}
+}*/

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.realEstate;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
@@ -94,7 +95,7 @@ public class ConstructionOverwrite {
     }
 
 
-    public void addDwellings (int year, RealEstateDataManager realEstateData) {
+    public void addDwellings (int year, SiloDataContainer dataContainer) {
         // add overwrite dwellings for this year
 
         if (!useOverwrite) return;
@@ -127,7 +128,7 @@ public class ConstructionOverwrite {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 dd.logAttributes(SiloUtil.trackWriter);
             }
-            realEstateData.addDwellingToVacancyList(dd);
+            dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
         traceFile.close();
     }

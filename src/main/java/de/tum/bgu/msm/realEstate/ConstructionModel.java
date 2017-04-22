@@ -3,6 +3,8 @@ package de.tum.bgu.msm.realEstate;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
@@ -120,16 +122,16 @@ public class ConstructionModel {
     }
 
 
-    public void planNewDwellingsForThisComingYear(int year, RealEstateDataManager realEstateData, Accessibility acc) {
+    public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
 
         HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModel.searchForNewDwelling (int hhId)
-        realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
+        dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
         if (!EventRules.ruleBuildDwelling()) return;
         logger.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
 
         // calculate demand by region
-        double[][] vacancyByRegion = realEstateData.getVacancyRateByTypeAndRegion();
+        double[][] vacancyByRegion = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
         double[][] demandByRegion = new double[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
@@ -142,12 +144,12 @@ public class ConstructionModel {
         }
 
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
-        int[][] existingDwellings = realEstateData.getDwellingCountByTypeAndRegion();
-        DwellingType[] dtOrder = findOrderOfDwellingTypes(realEstateData);
+        int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
+        DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
         plannedDwellings = new ArrayList<>();
         for (DwellingType dt: dtOrder) {
             int dto = dt.ordinal();
-            float acresNeededForOneDwelling = realEstateData.getAcresNeededForOneDwelling(dt);
+            float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
             for (int region: geoData.getRegionList()) {
                 int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
                 if (demand == 0) continue;
@@ -157,15 +159,15 @@ public class ConstructionModel {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
                     if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                     if (avePrice == 0) logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
-                    util[zone] = getUtilityOfDwellingTypeInZone(dt, avePrice, acc.getAutoAccessibility(zone));
+                    util[zone] = getUtilityOfDwellingTypeInZone(dt, avePrice, modelContainer.getAcc().getAutoAccessibility(zone));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;
                     for (int zone: zonesInThisRegion) {
-                        boolean useDwellingsAsCapacity = realEstateData.useDwellingCapacityForThisZone(zone);
-                        double availableLand = realEstateData.getAvailableLandForConstruction(zone);
+                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
+                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
                                 (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
                                 !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
@@ -205,7 +207,7 @@ public class ConstructionModel {
                     }
 
                     plannedDwellings.add(attributes);
-                    realEstateData.convertLand(zone, acresNeededForOneDwelling);
+                    dataContainer.getRealEstateData().convertLand(zone, acresNeededForOneDwelling);
                 }
             }
         }
@@ -318,10 +320,10 @@ public class ConstructionModel {
     }
 
 
-    private DwellingType[] findOrderOfDwellingTypes (RealEstateDataManager realEstateData) {
+    private DwellingType[] findOrderOfDwellingTypes (SiloDataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
-        double[] prices = realEstateData.getAveragePriceByDwellingType();
+        double[] prices = dataContainer.getRealEstateData().getAveragePriceByDwellingType();
         int[] scaledPrices = new int[prices.length];
         for (int i = 0; i < prices.length; i++) {
             if (prices[i] * 10000 > Integer.MAX_VALUE) logger.error("Average housing price for " + DwellingType.values()[i] +
@@ -355,8 +357,7 @@ public class ConstructionModel {
     }
 
 
-    public void buildDwelling (int id, MovesModel move, int year, RealEstateDataManager realEstateData,
-                               Accessibility accessibility) {
+    public void buildDwelling (int id, int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // realize dwelling project id
 
         Integer[] attributes = plannedDwellings.get(id);
@@ -369,9 +370,9 @@ public class ConstructionModel {
         int price = attributes[5];
 
         Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
-        double utils[] = move.updateUtilitiesOfVacantDwelling(dd, accessibility);
+        double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd, modelContainer);
         dd.setUtilitiesOfVacantDwelling(utils);
-        realEstateData.addDwellingToVacancyList(dd);
+        dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         EventManager.countEvent(EventTypes.ddConstruction);
 
         if (ddId == SiloUtil.trackDd) {

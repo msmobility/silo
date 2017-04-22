@@ -1,3 +1,4 @@
+/*
 package de.tum.bgu.msm;
 
 import com.pb.common.datafile.CSVFileWriter;
@@ -18,11 +19,13 @@ import static java.nio.file.StandardCopyOption.*;
 import java.nio.file.Files;
 import java.util.*;
 
+*/
 /**
  * Utilities used by the SILO Model
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 8 December 2009 in Santa Fe
- **/
+ **//*
+
 
 public class SiloUtilBak {
 
@@ -640,4 +643,4 @@ public class SiloUtilBak {
     public static int getEndYear() {
         return endYear;
     }
-}
+}*/

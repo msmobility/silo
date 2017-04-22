@@ -4,6 +4,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
@@ -90,13 +91,13 @@ public class DeathModel {
         }
 	}
 
-	public void chooseDeath(int perId, JobDataManager jobData, HouseholdDataManager householdData) {
+	public void chooseDeath(int perId, SiloDataContainer dataContainer) {
         // simulate if person with ID perId dies in this simulation period
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
         if (SiloModel.rand.nextDouble() < deathProbability[per.getType().ordinal()]) {
-            if (per.getWorkplace() > 0) per.quitJob(true, jobData);
+            if (per.getWorkplace() > 0) per.quitJob(true, dataContainer);
             Household hhOfPersonToDie = Household.getHouseholdFromId(per.getHhId());
             int hhId = hhOfPersonToDie.getId();
             if (per.getRole() == PersonRole.married) {
@@ -115,7 +116,7 @@ public class DeathModel {
                                 per.getId() + ") passed away.");
                 }
             }
-            hhOfPersonToDie.removePerson(per, householdData);
+            hhOfPersonToDie.removePerson(per, dataContainer);
             Person.removePerson(per.getId());
             EventManager.countEvent(EventTypes.checkDeath);
             if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)

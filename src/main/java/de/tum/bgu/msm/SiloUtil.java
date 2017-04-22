@@ -5,6 +5,7 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.geoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -453,10 +454,10 @@ public class SiloUtil {
     }
 
 
-    public static void finish (ConstructionOverwrite overwrite) {
+    public static void finish (SiloModelContainer modelContainer) {
         summarizeData.resultFile("close");
         trackingFile("close");
-        if (overwrite.traceOverwriteDwellings()) overwrite.finishOverwriteTracer();
+        if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
         if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
     }
 

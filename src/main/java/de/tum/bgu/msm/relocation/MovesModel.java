@@ -10,10 +10,13 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.transportModel.SiloMatsimUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -98,10 +101,10 @@ public class MovesModel {
     }
 
 
-    public void calculateAverageHousingSatisfaction (Accessibility accessibility) {
+    public void calculateAverageHousingSatisfaction (SiloModelContainer modelContainer) {
         // calculate average satisfaction with dwelling (utility) for every household type
 
-        evaluateAllDwellingUtilities(accessibility);
+        evaluateAllDwellingUtilities(modelContainer);
         averageHousingSatisfaction = new double[HouseholdType.values().length];
         int[] hhCountyByType = new int[HouseholdType.values().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -156,7 +159,7 @@ public class MovesModel {
     }
 
 
-    private void evaluateAllDwellingUtilities (Accessibility accessibility) {
+    private void evaluateAllDwellingUtilities (SiloModelContainer modelContainer) {
         // walk through each dwelling and evaluate utility of current resident
         // also, calculate utility of vacant dwellings for all household types
 
@@ -169,12 +172,12 @@ public class MovesModel {
         for (Dwelling dd: Dwelling.getDwellingArray()) {
             if (dd.getResidentId() == -1) {
                 // dwelling is vacant, evaluate for all household types
-                double utils[] = updateUtilitiesOfVacantDwelling(dd, accessibility);
+                double utils[] = updateUtilitiesOfVacantDwelling(dd, modelContainer);
                 dd.setUtilitiesOfVacantDwelling(utils);
             } else {
                 // dwelling is occupied, evaluate for the current household
                 Household hh = Household.getHouseholdFromId(dd.getResidentId());
-                double util = calculateUtility(hh.getHouseholdType(), hh.getHhIncome(), dd, accessibility);
+                double util = calculateUtility(hh.getHouseholdType(), hh.getHhIncome(), dd, modelContainer);
                 dd.setUtilOfResident(util);
                 // log UEC values for each household
                 if (logCalculationDwelling)
@@ -263,12 +266,12 @@ public class MovesModel {
     }
 
 
-    public double[] updateUtilitiesOfVacantDwelling (Dwelling dd, Accessibility accessibility) {
+    public double[] updateUtilitiesOfVacantDwelling (Dwelling dd, SiloModelContainer modelContainer) {
         // Calculate utility of this dwelling for each household type
 
         double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht: HouseholdType.values()) {
-            utilByHhType[ht.ordinal()] = calculateUtility(ht, -1, dd, accessibility);
+            utilByHhType[ht.ordinal()] = calculateUtility(ht, -1, dd, modelContainer);
             // log UEC values for each household type
             if (logCalculationDwelling) ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
         }
@@ -452,15 +455,15 @@ public class MovesModel {
     }
 
 
-    public void chooseMove (int hhId, RealEstateDataManager realEstateData, Accessibility accessibility) {
+    public void chooseMove (int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // simulates (a) if this household moves and (b) where this household moves
 
         if (!EventRules.ruleHouseholdMove(Household.getHouseholdFromId(hhId))) return;  // Household does not exist anymore
         if (!moveOrNot(hhId)) return;                            // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
         Household hh = Household.getHouseholdFromId(hhId);
-        int idNewDD = searchForNewDwelling(hh.getPersons(), accessibility);     // Step 2: Choose new dwelling
+        int idNewDD = searchForNewDwelling(hh.getPersons(), modelContainer);     // Step 2: Choose new dwelling
         if (idNewDD > 0) {
-            moveHousehold(hh, hh.getDwellingId(), idNewDD, realEstateData);      // Step 3: Move household
+            moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);      // Step 3: Move household
             EventManager.countEvent(EventTypes.householdMove);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                     Household.getHouseholdFromId(hhId).getDwellingId());
@@ -496,7 +499,7 @@ public class MovesModel {
     }
 
 
-    public int searchForNewDwelling(Person[] persons, Accessibility accessibility) {
+    public int searchForNewDwelling(Person[] persons, SiloModelContainer modelContainer) {
         // search alternative dwellings
 
         // data preparation
@@ -566,7 +569,7 @@ public class MovesModel {
             // multiply by racial share to make zones with higher own racial share more attractive
             double adjProb;
             if (householdQualifiesForSubsidy(householdIncome, dd.getZone(), dd.getPrice())) {
-                adjProb = Math.pow(calculateUtility(ht, householdIncome, dd, accessibility), (1 - selectDwellingRaceRelevance)) *
+                adjProb = Math.pow(calculateUtility(ht, householdIncome, dd, modelContainer), (1 - selectDwellingRaceRelevance)) *
                         Math.pow(racialShare, selectDwellingRaceRelevance);
             } else {
                 adjProb = Math.pow(dd.getUtilByHhType()[ht.ordinal()], (1 - selectDwellingRaceRelevance)) *
@@ -580,16 +583,16 @@ public class MovesModel {
     }
 
 
-    public void moveHousehold(Household hh, int idOldDD, int idNewDD, RealEstateDataManager realEstateData) {
+    public void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer) {
         // Move household hh from oldDD to newDD
 
         // if this household had a dwelling in this study area before, vacate old dwelling
         if (idOldDD > 0) {
             Dwelling dd = Dwelling.getDwellingFromId(idOldDD);
             dd.setResidentID(-1);
-            realEstateData.addDwellingToVacancyList(dd);
+            dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
-        realEstateData.removeDwellingFromVacancyList(idNewDD);
+        dataContainer.getRealEstateData().removeDwellingFromVacancyList(idNewDD);
         hh.setDwelling(idNewDD);
         Dwelling.getDwellingFromId(idNewDD).setResidentID(hh.getId());
         if (hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " +
@@ -598,13 +601,13 @@ public class MovesModel {
     }
 
 
-    private double calculateUtility (HouseholdType ht, int income, Dwelling dd, Accessibility accessibility) {
+    private double calculateUtility (HouseholdType ht, int income, Dwelling dd, SiloModelContainer modelContainer) {
         // calculate utility for household hh in dwelling dd
 
         evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
-        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibility(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibility(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibility(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibility(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingSchoolQuality(geoDataMstm.getZonalSchoolQuality(dd.getZone()));
         evaluateDwellingDmu.setUtilityDwellingCrimeRate(geoDataMstm.getCountyCrimeRate(geoDataMstm.getCountyOfZone(dd.getZone())));
 

@@ -2,6 +2,8 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.relocation.MovesModel;
 import de.tum.bgu.msm.SiloUtil;
 import org.apache.log4j.Logger;
@@ -115,21 +117,20 @@ public class summarizeData {
         }
     }
 
-    public static void summarizeSpatially (int year, MovesModel move, RealEstateDataManager realEstateData,
-                                           geoDataI geoData, Accessibility accessibility) {
+    public static void summarizeSpatially (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // write out results by zone
 
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + SiloUtil.incBrackets[0];
         for (int inc = 0; inc < SiloUtil.incBrackets.length; inc++) hd = hd.concat(",hhInc_>" + SiloUtil.incBrackets[inc]);
         resultFileSpatial(null, hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
 
-        int[] zones = geoData.getZones();
-        int[][] dds = new int[DwellingType.values().length + 1][geoData.getHighestZonalId() + 1];
-        int[] prices = new int[geoData.getHighestZonalId() + 1];
-        int[] jobs = new int[geoData.getHighestZonalId() + 1];
-        int[] hhs = new int[geoData.getHighestZonalId() + 1];
-        int[][] hhInc = new int[SiloUtil.incBrackets.length + 1][geoData.getHighestZonalId() + 1];
-        int[] pop = getPopulationByZone(geoData);
+        int[] zones = dataContainer.getGeoData().getZones();
+        int[][] dds = new int[DwellingType.values().length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
+        int[] prices = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
+        int[] jobs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
+        int[] hhs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
+        int[][] hhInc = new int[SiloUtil.incBrackets.length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
+        int[] pop = getPopulationByZone(dataContainer.getGeoData());
         for (Household hh: Household.getHouseholdArray()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
             int incGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
@@ -150,19 +151,19 @@ public class summarizeData {
             int ddThisZone = 0;
             for (DwellingType dt: DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
             if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
-            double autoAcc = accessibility.getAutoAccessibility(taz);
-            double transitAcc = accessibility.getTransitAccessibility(taz);
-            double availLand = realEstateData.getAvailableLandForConstruction(taz);
+            double autoAcc = modelContainer.getAcc().getAutoAccessibility(taz);
+            double transitAcc = modelContainer.getAcc().getTransitAccessibility(taz);
+            double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
             String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop[taz] + "," + hhs[taz];
             for (int inc = 0; inc <= SiloUtil.incBrackets.length; inc++) txt = txt.concat("," + hhInc[inc][taz]);
             for (DwellingType dt: DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
-                    move.getZonalRacialShare(taz, Race.white) + "," +
-                    move.getZonalRacialShare(taz, Race.black) + "," +
-                    move.getZonalRacialShare(taz, Race.hispanic) + "," +
-                    move.getZonalRacialShare(taz, Race.other));
+                    modelContainer.getMove().getZonalRacialShare(taz, Race.white) + "," +
+                    modelContainer.getMove().getZonalRacialShare(taz, Race.black) + "," +
+                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
+                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
 //            String txt = f.toString();
             resultFileSpatial(null, txt);
         }
@@ -237,8 +238,7 @@ public class summarizeData {
     }
 
 
-    public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData,
-                                                          geoDataI geoData) {
+    public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
     	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
@@ -253,9 +253,9 @@ public class summarizeData {
         int artificialPpId = HouseholdDataManager.getHighestPersonIdInUse() + 1;
 
         // calculate how many households need to be created or deleted in every zone
-        int[] changeOfHh = new int[(geoData.getHighestZonalId() + 1)];
-        HashMap<Integer, int[]> hhByZone = householdData.getHouseholdsByZone();
-        for (int zone: geoData.getZones()) {
+        int[] changeOfHh = new int[(dataContainer.getGeoData().getHighestZonalId() + 1)];
+        HashMap<Integer, int[]> hhByZone = dataContainer.getHouseholdData().getHouseholdsByZone();
+        for (int zone: dataContainer.getGeoData().getZones()) {
             int hhs = 0;
             if (hhByZone.containsKey(zone)) hhs = hhByZone.get(zone).length;
             changeOfHh[zone] =
@@ -266,7 +266,7 @@ public class summarizeData {
         pwh.println("id,dwelling,zone,hhSize,autos");
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(rb.getString(PROPERTIES_SCALED_MICRO_DATA_PP) + year + ".csv", false);
         pwp.println("id,hhID,age,gender,race,occupation,driversLicense,workplace,income");
-        for (int zone: geoData.getZones()) {
+        for (int zone: dataContainer.getGeoData().getZones()) {
             if (hhByZone.containsKey(zone)) {
                 int[] hhInThisZone = hhByZone.get(zone);
                 int[] selectedHH = new int[hhInThisZone.length];

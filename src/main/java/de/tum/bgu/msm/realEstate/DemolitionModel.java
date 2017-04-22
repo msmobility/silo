@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.realEstate;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.MovesModel;
@@ -97,9 +99,7 @@ public class DemolitionModel {
     }
 
 
-    public void checkDemolition (int dwellingId, MovesModel move, InOutMigration iomig,
-                                 RealEstateDataManager realEstateData, Accessibility accessibility,
-                                 HouseholdDataManager householdData, JobDataManager jobData) {
+    public void checkDemolition (int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // check if is demolished
 
         Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
@@ -114,16 +114,16 @@ public class DemolitionModel {
             if (occupied == 1) {
                 // dwelling is currently occupied, force household to move out
                 Household hh = Household.getHouseholdFromId(residentId);
-                int idNewDD = move.searchForNewDwelling(hh.getPersons(), accessibility);
+                int idNewDD = modelContainer.getMove().searchForNewDwelling(hh.getPersons(), modelContainer);
                 if (idNewDD > 0) {
-                    move.moveHousehold(hh, -1, idNewDD, realEstateData);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
+                    modelContainer.getMove().moveHousehold(hh, -1, idNewDD, dataContainer);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
                 } else {
-                    iomig.outMigrateHh(residentId, true, householdData, jobData);
-                    realEstateData.removeDwellingFromVacancyList(dwellingId);
+                    modelContainer.getIomig().outMigrateHh(residentId, true, dataContainer);
+                    dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
                     IssueCounter.countLackOfDwellingForcedOutmigration();
                 }
             } else {
-                realEstateData.removeDwellingFromVacancyList(dwellingId);
+                dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             }
             Dwelling.removeDwelling(dwellingId);
             EventManager.countEvent(EventTypes.ddDemolition);

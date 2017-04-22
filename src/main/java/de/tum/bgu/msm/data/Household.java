@@ -18,6 +18,7 @@ package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -206,7 +207,7 @@ public class Household implements Serializable {
     }
 
 
-    public void removePerson (Person per, HouseholdDataManager householdData) {
+    public void removePerson (Person per, SiloDataContainer dataContainer) {
         // remove this person from household and reduce household size by one
         if (hhSize >= 2) {
             Person[] remainingPersons = new Person[persons.length - 1];
@@ -222,7 +223,7 @@ public class Household implements Serializable {
             setType();
             setHouseholdRace();
         } else {
-            householdData.removeHousehold(hhId);
+            dataContainer.getHouseholdData().removeHousehold(hhId);
         }
         if (hhId == SiloUtil.trackHh || per.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " +
                 per.getId() + " was removed from household " + hhId + ".");

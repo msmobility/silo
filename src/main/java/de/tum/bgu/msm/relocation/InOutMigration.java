@@ -3,6 +3,8 @@ package de.tum.bgu.msm.relocation;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.ChangeEmploymentModel;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -133,10 +135,7 @@ public class InOutMigration {
     }
 
 
-    public void inmigrateHh(int hhId, MovesModel move, ChangeEmploymentModel changeEmployment,
-                            AutoOwnershipModel aoModel, RealEstateDataManager realEstateData,
-                            HouseholdDataManager householdData, Accessibility accessibility,
-                            JobDataManager jobDataManager) {
+    public void inmigrateHh(int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
         if (!EventRules.ruleInmigrate()) return;
@@ -161,7 +160,7 @@ public class InOutMigration {
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                boolean success = changeEmployment.findNewJob(per.getId());
+                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
                 if (!success) per.setOccupation(2);
             }
         }
@@ -169,15 +168,15 @@ public class InOutMigration {
         hh.setHouseholdRace();
         HouseholdDataManager.findMarriedCouple(hh);
         HouseholdDataManager.defineUnmarriedPersons(hh);
-        int newDdId = move.searchForNewDwelling(hh.getPersons(), accessibility);
+        int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons(), modelContainer);
         if (newDdId > 0) {
-            move.moveHousehold(hh, -1, newDdId, realEstateData);
+            modelContainer.getMove().moveHousehold(hh, -1, newDdId, dataContainer);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
-            outMigrateHh(hhId, true, householdData, jobDataManager);
+            outMigrateHh(hhId, true, dataContainer);
             return;
         }
-        aoModel.simulateAutoOwnership(hh, accessibility, jobDataManager);
+        modelContainer.getAoModel().simulateAutoOwnership(hh, modelContainer, dataContainer);
         EventManager.countEvent(EventTypes.inmigration);
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
@@ -186,8 +185,7 @@ public class InOutMigration {
     }
 
 
-    public void outMigrateHh (int hhId, boolean overwriteEventRules, HouseholdDataManager householdData,
-                              JobDataManager jobData) {
+    public void outMigrateHh (int hhId, boolean overwriteEventRules, SiloDataContainer dataContainer) {
         // Household with ID hhId out migrates
         Household hh = Household.getHouseholdFromId(hhId);
         if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) return;
@@ -195,11 +193,11 @@ public class InOutMigration {
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         for (Person pp: hh.getPersons()) {
-            if (pp.getWorkplace() > 0) pp.quitJob(true, jobData);
+            if (pp.getWorkplace() > 0) pp.quitJob(true, dataContainer);
             Person.removePerson(pp.getId());
             if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
         }
-        householdData.removeHousehold(hhId);
+        dataContainer.getHouseholdData().removeHousehold(hhId);
     }
 
 }
