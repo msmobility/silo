@@ -42,6 +42,7 @@ public class ConstructionModel {
 
 
     private ResourceBundle rb;
+    private geoDataI geoData;
     private boolean logCalculation;
     private String uecFileName;
     private int dataSheetNumber;
@@ -58,9 +59,10 @@ public class ConstructionModel {
     private float restrictionForAffordableDd;
 
 
-    public ConstructionModel (ResourceBundle rb) {
+    public ConstructionModel (ResourceBundle rb, geoDataI geoData) {
 
         this.rb = rb;
+        this.geoData = geoData;
         // read properties
         uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
         dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
@@ -118,7 +120,7 @@ public class ConstructionModel {
     }
 
 
-    public void planNewDwellingsForThisComingYear(int year, RealEstateDataManager realEstateData) {
+    public void planNewDwellingsForThisComingYear(int year, RealEstateDataManager realEstateData, Accessibility acc) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
 
         HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModel.searchForNewDwelling (int hhId)
@@ -155,7 +157,7 @@ public class ConstructionModel {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
                     if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                     if (avePrice == 0) logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
-                    util[zone] = getUtilityOfDwellingTypeInZone(dt, avePrice, Accessibility.getAutoAccessibility(zone));
+                    util[zone] = getUtilityOfDwellingTypeInZone(dt, avePrice, acc.getAutoAccessibility(zone));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
@@ -166,7 +168,7 @@ public class ConstructionModel {
                         double availableLand = realEstateData.getAvailableLandForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
                                 (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
-                                !realEstateData.getWhetherConstructionIsPermitted(dt, zone)) {             // construction of this dwelling type allowed in this zone?
+                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
                             prob[zone] = 0.;
                         } else {
                             prob[zone] = betaForZoneChoice * availableLand * util[zone];
@@ -198,7 +200,7 @@ public class ConstructionModel {
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoData.getMSAOfZone(zone);
+                        int msa = geoDataMstm.getMSAOfZone(zone);
                         attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 
@@ -353,7 +355,8 @@ public class ConstructionModel {
     }
 
 
-    public void buildDwelling (int id, MovesModel move, int year) {
+    public void buildDwelling (int id, MovesModel move, int year, RealEstateDataManager realEstateData,
+                               Accessibility accessibility) {
         // realize dwelling project id
 
         Integer[] attributes = plannedDwellings.get(id);
@@ -366,9 +369,9 @@ public class ConstructionModel {
         int price = attributes[5];
 
         Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
-        double utils[] = move.updateUtilitiesOfVacantDwelling(dd);
+        double utils[] = move.updateUtilitiesOfVacantDwelling(dd, accessibility);
         dd.setUtilitiesOfVacantDwelling(utils);
-        RealEstateDataManager.addDwellingToVacancyList(dd);
+        realEstateData.addDwellingToVacancyList(dd);
         EventManager.countEvent(EventTypes.ddConstruction);
 
         if (ddId == SiloUtil.trackDd) {

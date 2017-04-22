@@ -20,6 +20,7 @@ import java.io.*;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.transportModel.MatsimTransportModel;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
@@ -100,7 +101,7 @@ public class SiloModel {
     private LeaveParentHhModel lph;
     private MovesModel move;
     private ChangeEmploymentModel changeEmployment;
-    private Accessibility acc;
+    private Accessibility accessibility;
     private AutoOwnershipModel aoModel;
     private MitoTransportModel TransportModel;
     private UpdateJobs updateJobs;
@@ -109,7 +110,8 @@ public class SiloModel {
     private boolean trackTime;
     private long[][] timeCounter;
     private SiloModelContainer modelContainer;
-
+    private SiloDataContainer dataContainer;
+    public geoDataI geoData;
     private Config matsimConfig;
 
     /**
@@ -123,11 +125,11 @@ public class SiloModel {
     }
 
 
-    public void runModel() {
+    public void runModel(String implementation) {
         //Main method to run a SILO model
 
         if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO, false)) return;
-        logger.info("Start SILO Model");
+        logger.info("Start SILO Model (Implementation " + implementation + ")");
 
         // define years to simulate
         int[] scalingYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_SCALING_YEARS);
@@ -135,8 +137,26 @@ public class SiloModel {
         int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
+        // Define geoData object, which stores all geographical data (zones, zonal data, regions, etc.)
+        switch (implementation) {
+            case "MSTM":
+                geoData = new geoDataMstm(rbLandUse);
+                break;
+            case "Muc":
+                geoData = new geoDataMuc(rbLandUse);
+                break;
+            default:
+                logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
+                System.exit(0);
+                geoData = new geoDataMuc(rbLandUse);  // superfluous statement (after System.exit()), but model complains without
+        }
+
+        geoData.setInitialData();
+        IssueCounter.regionSpecificCounters(geoData);
+
         // create main objects and read synthetic population
-        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData);
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData);
 
         final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
         final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
@@ -149,11 +169,12 @@ public class SiloModel {
 
         TransportModelI TransportModel ;
         // this shadows a global definition, not sure if that is intended ... kai, aug'16
+        // RM: Not sure this should be either-or. Rather, I want to create travel demand with MITO and assign with MATSim
 
         if ( runMatsim ) {
             logger.info("  MATSim is used as the transport model");
             setOldLocalModelVariables();
-            TransportModel = new MatsimTransportModel(householdData, acc, rbLandUse, matsimConfig);
+            TransportModel = new MatsimTransportModel(householdData, accessibility, rbLandUse, matsimConfig);
         } else {
             logger.info("  MITO is used as the transport model");
             String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
@@ -167,19 +188,19 @@ public class SiloModel {
 
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
-        // writeOutSmallSP(10000);
+        writeOutSmallSP(10000);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         long startTime = 0;
-        IssueCounter.logIssues();           // log any potential issues during initial setup
+        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rbLandUse);
+            summarizeData.preparePrestoSummary(rbLandUse, geoData);
 
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             if (SiloUtil.containsElement(scalingYears, year))
-                summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, year, householdData);
+                summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, year, householdData, geoData);
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
@@ -190,12 +211,12 @@ public class SiloModel {
             if (trackTime) timeCounter[EventTypes.values().length][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
-            cons.planNewDwellingsForThisComingYear(year, realEstateData);
+            cons.planNewDwellingsForThisComingYear(year, realEstateData, accessibility);
             if (trackTime) timeCounter[EventTypes.values().length + 1][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
             if (year != SiloUtil.getBaseYear()) {
-                updateJobs.updateJobInventoryMultiThreadedThisYear(year);
+                updateJobs.updateJobInventoryMultiThreadedThisYear(year, jobData, geoData);
                 jobData.identifyVacantJobs();
             }
             if (trackTime) timeCounter[EventTypes.values().length + 2][year] += System.currentTimeMillis() - startTime;
@@ -217,17 +238,17 @@ public class SiloModel {
                     year != SiloUtil.getStartYear()) {
                 // skims are always read in start year and in every year the transportation model ran. Additional
                 // years to read skims may be provided in skimYears
-                acc.readSkim(year);
-                acc.calculateAccessibilities(year);
+                accessibility.readSkim(year);
+                accessibility.calculateAccessibilities(year);
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
-            ddOverwrite.addDwellings(year);
+            ddOverwrite.addDwellings(year, realEstateData);
             if (trackTime) timeCounter[EventTypes.values().length + 10][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
             move.calculateRegionalUtilities(year);
-            move.calculateAverageHousingSatisfaction();
+            move.calculateAverageHousingSatisfaction(accessibility);
             if (trackTime) timeCounter[EventTypes.values().length + 6][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
@@ -235,7 +256,8 @@ public class SiloModel {
             if (trackTime) timeCounter[EventTypes.values().length + 9][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
-            if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear()) summarizeMicroData(year, move, realEstateData);
+            if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear())
+                summarizeMicroData(year, move, realEstateData, jobData);
             if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
             logger.info("  Simulating events");
@@ -253,7 +275,7 @@ public class SiloModel {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkDeath.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    death.chooseDeath(event[1]);
+                    death.chooseDeath(event[1], jobData, householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkBirth.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
@@ -261,15 +283,18 @@ public class SiloModel {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    lph.chooseLeaveParentHh(event[1], move, aoModel);
+                    lph.chooseLeaveParentHh(event[1], move, aoModel, realEstateData, accessibility, jobData,
+                            householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel);
+                    mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel, realEstateData, accessibility,
+                            householdData, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    mardiv.chooseDivorce(event[1], move, aoModel);
+                    mardiv.chooseDivorce(event[1], move, aoModel, realEstateData, accessibility, jobData,
+                            householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.findNewJob.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
@@ -277,19 +302,20 @@ public class SiloModel {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.quitJob.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    changeEmployment.quitJob(event[1]);
+                    changeEmployment.quitJob(event[1], jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.householdMove.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    move.chooseMove(event[1]);
+                    move.chooseMove(event[1],realEstateData, accessibility);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.inmigration.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    iomig.inmigrateHh(event[1], move, changeEmployment, aoModel);
+                    iomig.inmigrateHh(event[1], move, changeEmployment, aoModel, realEstateData, householdData,
+                            accessibility, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.outMigration.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    iomig.outMigrateHh(event[1], false);
+                    iomig.outMigrateHh(event[1], false, householdData, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
@@ -297,11 +323,12 @@ public class SiloModel {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.ddDemolition.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    demol.checkDemolition(event[1], move, iomig);
+                    demol.checkDemolition(event[1], move, iomig, realEstateData, accessibility, householdData,
+                            jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.ddConstruction.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    cons.buildDwelling(event[1], move, year);
+                    cons.buildDwelling(event[1], move, year, realEstateData, accessibility);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else {
                     logger.warn("Unknown event type: " + event[0]);
@@ -318,9 +345,10 @@ public class SiloModel {
                 int nextYearForTransportModel = year + 1;
                 if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                     TransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
-                                Household.covertHhs(), summarizeData.getRetailEmploymentByZone(),
-                                summarizeData.getOfficeEmploymentByZone(), summarizeData.getOtherEmploymentByZone(),
-                                summarizeData.getTotalEmploymentByZone(), geoData.getSizeOfZonesInAcres());
+                            Household.covertHhs(), summarizeData.getRetailEmploymentByZone(geoData),
+                            summarizeData.getOfficeEmploymentByZone(geoData),
+                            summarizeData.getOtherEmploymentByZone(geoData),
+                            summarizeData.getTotalEmploymentByZone(geoData), geoData.getSizeOfZonesInAcres());
                     TransportModel.setScenarioName(SiloUtil.scenarioName);
                     TransportModel.runTransportModel(nextYearForTransportModel);
                     if (createMstmOutputFiles)
@@ -331,11 +359,11 @@ public class SiloModel {
             }
 
             if (trackTime) startTime = System.currentTimeMillis();
-            prm.updatedRealEstatePrices(year, realEstateData);
+            prm.updatedRealEstatePrices(year, realEstateData, geoData);
             if (trackTime) timeCounter[EventTypes.values().length + 8][year] += System.currentTimeMillis() - startTime;
 
             EventManager.logEvents();
-            IssueCounter.logIssues();           // log any issues that arose during this simulation period
+            IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
             logger.info("  Finished this simulation period with " + householdData.getNumberOfPersons() +
                     " persons, " + householdData.getNumberOfHouseholds()+" households and "  +
@@ -343,22 +371,25 @@ public class SiloModel {
             if (modelStopper("check")) break;
         }
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData, geoData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
         if (SiloUtil.getEndYear() != 2040) {
             summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
-            summarizeData.writeOutDevelopmentCapacityFile(rbLandUse, realEstateData);
+            geoData.writeOutDevelopmentCapacityFile(realEstateData);
         }
 
-        summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
+        summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData, jobData);
         SiloUtil.finish(ddOverwrite);
         modelStopper("removeFile");
         if (trackTime) writeOutTimeTracker(timeCounter);
         logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
     }
 
+    public geoDataI getGeoData() {
+        return geoData;
+    }
 
     /**
      * Currently, while a {@link SiloModelContainer} constructs the individual models,
@@ -368,17 +399,17 @@ public class SiloModel {
      */
     @Deprecated private void setOldLocalModelVariables() {
         // read micro data
-        realEstateData = modelContainer.getRealEstateData();
-        householdData = modelContainer.getHouseholdData();
-        jobData = modelContainer.getJobData();
+        realEstateData = dataContainer.getRealEstateData();
+        householdData = dataContainer.getHouseholdData();
+        jobData = dataContainer.getJobData();
 
         death = modelContainer.getDeath();
         birth = modelContainer.getBirth();
         lph = modelContainer.getLph();
         mardiv = modelContainer.getMardiv();
         changeEmployment = modelContainer.getChangeEmployment();
-        acc = modelContainer.getAcc();
-//        summarizeData.summarizeAutoOwnershipByCounty();
+        accessibility = modelContainer.getAcc();
+        //summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
 
         move = modelContainer.getMove();
         iomig = modelContainer.getIomig();
@@ -405,17 +436,18 @@ public class SiloModel {
         tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
+        geoData = new geoDataMstm(rbLandUse);
         // read micro data
-        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse);
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData);
         setOldLocalModelVariables();
 
         trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
-        IssueCounter.logIssues();           // log any potential issues during initial setup
+        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
         TransportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rbLandUse);
+            summarizeData.preparePrestoSummary(rbLandUse, geoData);
     }
 
 
@@ -427,7 +459,7 @@ public class SiloModel {
             System.exit(1);
         }
         if (SiloUtil.containsElement(scalingYears, currentYear))
-            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, currentYear, householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, currentYear, householdData, geoData);
         logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
         IssueCounter.setUpCounter();    // setup issue counter for this simulation period
         SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
@@ -438,12 +470,12 @@ public class SiloModel {
         if (trackTime) timeCounter[EventTypes.values().length][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
-        cons.planNewDwellingsForThisComingYear(currentYear, realEstateData);
+        cons.planNewDwellingsForThisComingYear(currentYear, realEstateData, accessibility);
         if (trackTime) timeCounter[EventTypes.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
         if (currentYear != SiloUtil.getBaseYear()) {
-            updateJobs.updateJobInventoryMultiThreadedThisYear(currentYear);
+            updateJobs.updateJobInventoryMultiThreadedThisYear(currentYear, jobData, geoData);
             jobData.identifyVacantJobs();
         }
         if (trackTime) timeCounter[EventTypes.values().length + 2][currentYear] += System.currentTimeMillis() - startTime;
@@ -464,18 +496,18 @@ public class SiloModel {
             if (currentYear != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, currentYear)) {
                 // skims are always read in start year and in every year the transportation model ran. Additional
                 // years to read skims may be provided in skimYears
-                acc.readSkim(currentYear);
-                acc.calculateAccessibilities(currentYear);
+                accessibility.readSkim(currentYear);
+                accessibility.calculateAccessibilities(currentYear);
             }
         }
 
         if (trackTime) startTime = System.currentTimeMillis();
-        ddOverwrite.addDwellings(currentYear);
+        ddOverwrite.addDwellings(currentYear, realEstateData);
         if (trackTime) timeCounter[EventTypes.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
         move.calculateRegionalUtilities(currentYear);
-        move.calculateAverageHousingSatisfaction();
+        move.calculateAverageHousingSatisfaction(accessibility);
         if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
@@ -484,7 +516,7 @@ public class SiloModel {
 
         if (trackTime) startTime = System.currentTimeMillis();
         if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear())
-            summarizeMicroData(currentYear, move, realEstateData);
+            summarizeMicroData(currentYear, move, realEstateData, jobData);
         if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
         logger.info("  Simulating events");
@@ -502,7 +534,7 @@ public class SiloModel {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkDeath.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                death.chooseDeath(event[1]);
+                death.chooseDeath(event[1], jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkBirth.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
@@ -510,15 +542,16 @@ public class SiloModel {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                lph.chooseLeaveParentHh(event[1], move, aoModel);
+                lph.chooseLeaveParentHh(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel);
+                mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel, realEstateData, accessibility,
+                        householdData, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                mardiv.chooseDivorce(event[1], move, aoModel);
+                mardiv.chooseDivorce(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.findNewJob.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
@@ -526,19 +559,20 @@ public class SiloModel {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.quitJob.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                changeEmployment.quitJob(event[1]);
+                changeEmployment.quitJob(event[1], jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.householdMove.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                move.chooseMove(event[1]);
+                move.chooseMove(event[1], realEstateData, accessibility);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.inmigration.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                iomig.inmigrateHh(event[1], move, changeEmployment, aoModel);
+                iomig.inmigrateHh(event[1], move, changeEmployment, aoModel, realEstateData, householdData,
+                        accessibility, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.outMigration.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                iomig.outMigrateHh(event[1], false);
+                iomig.outMigrateHh(event[1], false, householdData, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
@@ -546,11 +580,12 @@ public class SiloModel {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.ddDemolition.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                demol.checkDemolition(event[1], move, iomig);
+                demol.checkDemolition(event[1], move, iomig, realEstateData, accessibility, householdData,
+                        jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.ddConstruction.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                cons.buildDwelling(event[1], move, currentYear);
+                cons.buildDwelling(event[1], move, currentYear, realEstateData, accessibility);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else {
                 logger.warn("Unknown event type: " + event[0]);
@@ -566,11 +601,11 @@ public class SiloModel {
         }
 
         if (trackTime) startTime = System.currentTimeMillis();
-        prm.updatedRealEstatePrices(currentYear, realEstateData);
+        prm.updatedRealEstatePrices(currentYear, realEstateData, geoData);
         if (trackTime) timeCounter[EventTypes.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
 
         EventManager.logEvents();
-        IssueCounter.logIssues();           // log any issues that arose during this simulation period
+        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
         logger.info("  Finished this simulation period with " + householdData.getNumberOfPersons() +
                 " persons, " + householdData.getNumberOfHouseholds()+" households and "  +
@@ -587,16 +622,16 @@ public class SiloModel {
         summarizeData.resultWriterReplicate = true;
 
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData);
+            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), householdData, geoData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
         if (SiloUtil.getEndYear() != 2040) {
             summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
-            summarizeData.writeOutDevelopmentCapacityFile(rbLandUse, realEstateData);
+            geoData.writeOutDevelopmentCapacityFile(realEstateData);
         }
 
-        summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData);
+        summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData, jobData);
         SiloUtil.finish(ddOverwrite);
         modelStopper("removeFile");
         
@@ -661,7 +696,7 @@ public class SiloModel {
     }
 
 
-    public void summarizeMicroData (int year, MovesModel move, RealEstateDataManager realEstateData) {
+    public void summarizeMicroData (int year, MovesModel move, RealEstateDataManager realEstateData, JobDataManager jobData) {
         // aggregate micro data
 
         if (SiloUtil.trackHh != -1 || SiloUtil.trackPp != -1 || SiloUtil.trackDd != -1)
@@ -670,14 +705,14 @@ public class SiloModel {
 
 
         summarizeData.resultFile("Year " + year, false);
-        HouseholdDataManager.summarizePopulation();
-        RealEstateDataManager.summarizeDwellings(realEstateData);
-        JobDataManager.summarizeJobs();
+        HouseholdDataManager.summarizePopulation(geoData);
+        realEstateData.summarizeDwellings();
+        jobData.summarizeJobs(geoData.getRegionList());
 
         summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
-        summarizeData.summarizeSpatially(year, move, realEstateData);
+        summarizeData.summarizeSpatially(year, move, realEstateData, geoData, accessibility);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_CBLCM_FILES, false))
-            summarizeDataCblcm.createCblcmSummaries(rbLandUse, year);
+            summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, geoData, accessibility);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
             summarizeData.summarizeHousing(rbLandUse, year);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
@@ -741,10 +776,10 @@ public void setMatsimConfig(Config matsimConfig) {
         // write out count number of households to have small file for running tests
 
         logger.info("  Writing out smaller files of synthetic population with " + count + " households only");
-        String filehh = SiloUtil.baseDirectory + "microData/small_10k_hh_2000.csv";
-        String filepp = SiloUtil.baseDirectory + "microData/small_10k_pp_2000.csv";
-        String filedd = SiloUtil.baseDirectory + "microData/small_10k_dd_2000.csv";
-        String filejj = SiloUtil.baseDirectory + "microData/small_10k_jj_2000.csv";
+        String filehh = SiloUtil.baseDirectory + "microData/small_10k_hh_2011.csv";
+        String filepp = SiloUtil.baseDirectory + "microData/small_10k_pp_2011.csv";
+        String filedd = SiloUtil.baseDirectory + "microData/small_10k_dd_2011.csv";
+        String filejj = SiloUtil.baseDirectory + "microData/small_10k_jj_2011.csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);

@@ -90,13 +90,13 @@ public class DeathModel {
         }
 	}
 
-	public void chooseDeath(int perId) {
+	public void chooseDeath(int perId, JobDataManager jobData, HouseholdDataManager householdData) {
         // simulate if person with ID perId dies in this simulation period
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
         if (SiloModel.rand.nextDouble() < deathProbability[per.getType().ordinal()]) {
-            if (per.getWorkplace() > 0) per.quitJob(true);
+            if (per.getWorkplace() > 0) per.quitJob(true, jobData);
             Household hhOfPersonToDie = Household.getHouseholdFromId(per.getHhId());
             int hhId = hhOfPersonToDie.getId();
             if (per.getRole() == PersonRole.married) {
@@ -115,7 +115,7 @@ public class DeathModel {
                                 per.getId() + ") passed away.");
                 }
             }
-            hhOfPersonToDie.removePerson(per);
+            hhOfPersonToDie.removePerson(per, householdData);
             Person.removePerson(per.getId());
             EventManager.countEvent(EventTypes.checkDeath);
             if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)

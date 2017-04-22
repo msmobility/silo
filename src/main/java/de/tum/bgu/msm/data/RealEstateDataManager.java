@@ -21,21 +21,11 @@ public class RealEstateDataManager {
     protected static final String PROPERTIES_DD_FILE_ASCII  = "dwelling.file.ascii";
     protected static final String PROPERTIES_READ_BIN_FILE  = "read.binary.dd.file";
     protected static final String PROPERTIES_DD_FILE_BIN    = "dwellings.file.bin";
-    protected static final String PROPERTIES_LAND_USE_AREA  = "land.use.area.by.taz";
-    protected static final String PROPERTIES_DEVELOPABLE    = "developable.lu.category";
-    protected static final String PROPERTIES_ACRES_BY_DD    = "developer.acres.per.dwelling.by.type";
-    protected static final String PROPERTIES_DEVELOPM_RESTR = "development.restrictions";
     protected static final String PROPERTIES_MAX_NUM_VAC_DD = "vacant.dd.by.reg.array";
-    protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
-    protected static final String PROPERTIES_CAPACITY_FILE  = "growth.capacity.file";
+    protected static final String PROPERTIES_ACRES_BY_DD     = "developer.acres.per.dwelling.by.type";
 
     private ResourceBundle rb;
-    private static TableDataSet landUse;
-    private int[] developableLUtypes;
-    private static TableDataSet developmentRestrictions;
-    private TableDataSet developmentCapacity;
-    private boolean useCapacityAsNumberOfDwellings;
-    private HashMap<DwellingType, Float> acresByDwellingType;
+    private geoDataI geoData;
     public static int largestNoBedrooms;
     public static int[] dwellingsByQuality;
     private static double[] initialQualityShares;
@@ -49,10 +39,12 @@ public class RealEstateDataManager {
     private double[] avePrice;
     private double[] aveVac;
     private static float[] medianRent;
+    private HashMap<DwellingType, Float> acresByDwellingType;
 
-    public RealEstateDataManager(ResourceBundle rb) {
+    public RealEstateDataManager(ResourceBundle rb, geoDataI geoData) {
         // constructor
         this.rb = rb;
+        this.geoData = geoData;
     }
 
 
@@ -64,6 +56,7 @@ public class RealEstateDataManager {
         } else {
             readDwellingData();
         }
+        readAcresNeededByDwellingType();
     }
 
 
@@ -119,6 +112,27 @@ public class RealEstateDataManager {
         logger.info("Finished reading " + recCount + " dwellings.");
     }
 
+
+    private void readAcresNeededByDwellingType () {
+        // read in the area needed to build a dwelling
+
+        String fileNameAcres = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ACRES_BY_DD);
+        TableDataSet tblAcresByDwellingType =  SiloUtil.readCSVfile(fileNameAcres);
+        acresByDwellingType = new HashMap<>();
+        for (int row = 1; row <= tblAcresByDwellingType.getRowCount(); row++) {
+            String type = tblAcresByDwellingType.getStringValueAt(row, "DwellingType");
+            float acres = tblAcresByDwellingType.getValueAt(row, "acres");
+            boolean notFound = true;
+            for (DwellingType dt: DwellingType.values()) {
+                if (dt.toString().equals(type)) {
+                    acresByDwellingType.put(dt, acres);
+                    notFound = false;
+                }
+            }
+            if (notFound) logger.error("Could not reference type " + type + " of " + fileNameAcres + " with DwellingType.");
+        }
+
+    }
 
     public void identifyVacantDwellings() {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
@@ -180,57 +194,6 @@ public class RealEstateDataManager {
             logger.error ("Error reading from binary file " + fileName + ". Object not read.\n" + e);
         }
         logger.info("  Finished reading " + Dwelling.getDwellingCount() + " dwellings.");
-    }
-
-
-    public void readLandUse() {
-        // read land use data
-        logger.info("Reading land use data");
-        String fileName;
-        if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-            fileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + ".csv";
-        } else {                                             // start in different year (continue previous run)
-            fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.startYear + ".csv";
-        }
-        landUse = SiloUtil.readCSVfile(fileName);
-        landUse.buildIndex(landUse.getColumnPosition("Zone"));
-
-        // read developers data
-        developableLUtypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_DEVELOPABLE);
-        String fileNameAcres = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ACRES_BY_DD);
-        TableDataSet tblAcresByDwellingType =  SiloUtil.readCSVfile(fileNameAcres);
-        acresByDwellingType = new HashMap<>();
-        for (int row = 1; row <= tblAcresByDwellingType.getRowCount(); row++) {
-            String type = tblAcresByDwellingType.getStringValueAt(row, "DwellingType");
-            float acres = tblAcresByDwellingType.getValueAt(row, "acres");
-            boolean notFound = true;
-            for (DwellingType dt: DwellingType.values()) {
-                if (dt.toString().equals(type)) {
-                    acresByDwellingType.put(dt, acres);
-                    notFound = false;
-                }
-            }
-            if (notFound) logger.error("Could not reference type " + type + " of " + fileNameAcres + " with DwellingType.");
-        }
-
-        String restrictionsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEVELOPM_RESTR);
-        developmentRestrictions = SiloUtil.readCSVfile(restrictionsFileName);
-        developmentRestrictions.buildIndex(developmentRestrictions.getColumnPosition("Zone"));
-
-        useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
-        if (useCapacityAsNumberOfDwellings) {
-            String capacityFileName;
-            if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-                capacityFileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + ".csv";
-            } else {                                             // start in different year (continue previous run)
-                capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                        ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.startYear + ".csv";
-            }
-            developmentCapacity = SiloUtil.readCSVfile(capacityFileName);
-            developmentCapacity.buildIndex(developmentCapacity.getColumnPosition("Zone"));
-
-        }
     }
 
 
@@ -320,7 +283,7 @@ public class RealEstateDataManager {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Dwelling dd: Dwelling.getDwellingArray()) {
-            int dwellingMSA = geoData.getMSAOfZone(dd.getZone());
+            int dwellingMSA = geoDataMstm.getMSAOfZone(dd.getZone());
             if (rentHashMap.containsKey(dwellingMSA)) {
                 ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
                 rents.add(dd.getPrice());
@@ -342,7 +305,7 @@ public class RealEstateDataManager {
     }
 
 
-    public static void summarizeDwellings (RealEstateDataManager realEstateData) {
+    public void summarizeDwellings () {
         // aggregate dwellings
 
         summarizeData.resultFile("QualityLevel,Dwellings");
@@ -356,11 +319,11 @@ public class RealEstateDataManager {
             summarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
         }
         for (DwellingType dt: DwellingType.values()) {
-            double avePrice = realEstateData.getAveragePriceByDwellingType()[dt.ordinal()];
+            double avePrice = getAveragePriceByDwellingType()[dt.ordinal()];
             summarizeData.resultFile("AveMonthlyPrice,"+dt.toString()+","+avePrice);
         }
         for (DwellingType dt: DwellingType.values()) {
-            double aveVac = realEstateData.getAverageVacancyByDwellingType()[dt.ordinal()];
+            double aveVac = getAverageVacancyByDwellingType()[dt.ordinal()];
             Formatter f = new Formatter();
             f.format("AveVacancy,%s,%f", dt.toString(), aveVac);
             summarizeData.resultFile(f.toString());
@@ -369,7 +332,7 @@ public class RealEstateDataManager {
         summarizeData.resultFile("Available land for construction by region");
         double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         for (int zone: geoData.getZones()) availLand[geoData.getRegionOfZone(zone)] +=
-                realEstateData.getAvailableLandForConstruction(zone);
+                getAvailableLandForConstruction(zone);
         for (int region: geoData.getRegionList()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
@@ -438,7 +401,7 @@ public class RealEstateDataManager {
     }
 
 
-    public static void removeDwellingFromVacancyList (int ddId) {
+    public void removeDwellingFromVacancyList (int ddId) {
         // remove dwelling with ID ddId from list of vacant dwellings
 
         boolean found = false;
@@ -460,7 +423,7 @@ public class RealEstateDataManager {
     }
 
 
-    public static void addDwellingToVacancyList (Dwelling dd) {
+    public void addDwellingToVacancyList (Dwelling dd) {
         // add dwelling to vacancy list
 
         int region = geoData.getRegionOfZone(dd.getZone());
@@ -569,7 +532,7 @@ public class RealEstateDataManager {
 
         double sm;
         if (useDwellingCapacityForThisZone(zone)) {         // use absolute number of dwellings as capacity constraint
-            sm = SiloUtil.rounder(developmentCapacity.getIndexedValueAt(zone, "DevCapacity"),0);  // some capacity values are not integer numbers, not sure why
+            sm = SiloUtil.rounder(geoData.getDevelopmentCapacity(zone),0);  // some capacity values are not integer numbers, not sure why
         } else {
             sm = getDevelopableLand(zone);                            // use land use data
         }
@@ -580,9 +543,9 @@ public class RealEstateDataManager {
     public boolean useDwellingCapacityForThisZone (int zone) {
         // return true if capacity for number of dwellings is used in this zone, otherwise return false
 
-        if (!useCapacityAsNumberOfDwellings) return false;
+        if (!geoData.useNumberOfDwellingsAsCapacity()) return false;
         try {
-            developmentCapacity.getIndexedValueAt(zone, "DevCapacity");
+            geoData.getDevelopmentCapacity(zone);
             return true;
         } catch (Exception e) {
             return false;
@@ -594,25 +557,11 @@ public class RealEstateDataManager {
         // return number of acres of available land for development
 
         double sm = 0;
-        for (int type : developableLUtypes) {
-            String column = "LU" + type;
-            sm += landUse.getIndexedValueAt(zone, column);
+        for (int type : geoData.getDevelopableLandUseTypes()) {
+            String landUseType = "LU" + type;
+            sm += geoData.getAreaOfLandUse(landUseType, zone);
         }
         return sm;
-    }
-
-
-    public boolean getWhetherConstructionIsPermitted(DwellingType dt, int zone) {
-        // return true if DwellingType dt may be built in zone, otherwise return false
-
-        int col = 0;
-        try {
-            col = developmentRestrictions.getColumnPosition(dt.toString());
-        } catch (Exception e) {
-            logger.error("Unknown DwellingType " + dt.toString() + ". Cannot find it in developmentRestrictions.");
-            System.exit(1);
-        }
-        return (developmentRestrictions.getIndexedValueAt(zone, col) == 1);
     }
 
 
@@ -620,34 +569,10 @@ public class RealEstateDataManager {
         // remove acres from developable land
 
         if (useDwellingCapacityForThisZone(zone)) {
-            float capacity = developmentCapacity.getIndexedValueAt(zone, "DevCapacity") - 1f;
-            if (SiloUtil.rounder(capacity,0) < 0) {        // some capacity values are not integer numbers, not sure why
-                logger.error("In zone " + zone + " a dwelling was built even though the dwelling capacity was not available.");
-                capacity = 0;
-            }
-            developmentCapacity.setIndexedValueAt(zone, "DevCapacity", capacity);
+            geoData.reduceDevelopmentCapacityByOneDwelling(zone);
             return;
         } else {
-            for (int type: developableLUtypes) {
-                String column = "LU" + type;
-                float existing = landUse.getIndexedValueAt(zone, column);
-                if (existing < acres) {
-                    landUse.setIndexedValueAt(zone, column, 0);
-                    acres = acres - existing;
-                } else {
-                    float reduced = existing - acres;
-                    landUse.setIndexedValueAt(zone, column, reduced);
-                    acres = 0;
-                }
-                if (acres <= 0) return;
-            }
+            geoData.reduceDevelopmentCapacityByDevelopableAcres(zone, acres);
         }
-        logger.error("In zone " + zone + " new construction occurred even though not enough land was available.");
     }
-
-
-    public float getDevelopmentCapacity (int zone) {
-        return developmentCapacity.getIndexedValueAt(zone, "DevCapacity");
-    }
-
 }

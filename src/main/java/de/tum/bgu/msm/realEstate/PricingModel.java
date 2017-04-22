@@ -1,10 +1,7 @@
 package de.tum.bgu.msm.realEstate;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.geoData;
+import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
@@ -85,7 +82,7 @@ public class PricingModel {
     }
 
 
-    public void updatedRealEstatePrices (int year, RealEstateDataManager realEstateData) {
+    public void updatedRealEstatePrices (int year, RealEstateDataManager realEstateData, geoDataI geoData) {
         // updated prices based on current demand
         logger.info("  Updating real-estate prices");
 

@@ -286,11 +286,11 @@ public class Person implements Serializable {
         return workplace;
     }
 
-    public void quitJob (boolean makeJobAvailableToOthers) {
+    public void quitJob (boolean makeJobAvailableToOthers, JobDataManager jobData) {
         // Person quits job and the job is added to the vacantJobList
         // <makeJobAvailableToOthers> is false if this job disappears from the job market
         Job jb = Job.getJobFromId(workplace);
-        if (makeJobAvailableToOthers) JobDataManager.addJobToVacancyList(jb.getZone(), workplace);
+        if (makeJobAvailableToOthers) jobData.addJobToVacancyList(jb.getZone(), workplace);
         jb.setWorkerID(-1);
         workplace = -1;
         occupation = 2;

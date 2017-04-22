@@ -60,11 +60,13 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private float[][][] currentIncomeDistribution;
     private static float[] medianIncome;
+    private RealEstateDataManager realEstateData;
 
 
-    public HouseholdDataManager(ResourceBundle rb) {
+    public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
         // constructor
         this.rb = rb;
+        this.realEstateData = realEstateData;
         meanIncomeChange = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_INCOME_CHANGE);
     }
 
@@ -193,6 +195,8 @@ public class HouseholdDataManager {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 int gender     = Integer.parseInt(lineElements[posGender]);
                 String relShp  = lineElements[posRelShp].replace("\"", "");
+                // todo: remove next line after synthetic population was corrected:
+                relShp = "single";
                 PersonRole pr  = PersonRole.valueOf(relShp);
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
@@ -348,14 +352,14 @@ public class HouseholdDataManager {
     }
 
 
-    public static void removeHousehold(int householdId) {
+    public void removeHousehold(int householdId) {
         // remove household and add dwelling to vacancy list
 
         int dwellingId = Household.getHouseholdFromId(householdId).getDwellingId();
         if (dwellingId != -1) {
             Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
             dd.setResidentID(-1);
-            RealEstateDataManager.addDwellingToVacancyList(dd);
+            realEstateData.addDwellingToVacancyList(dd);
         }
         Household.remove(householdId);
         if (householdId == SiloUtil.trackHh)
@@ -378,7 +382,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static void summarizePopulation () {
+    public static void summarizePopulation (geoDataI geoData) {
         // summarize population for summary file
 
         int pers[][] = new int[2][101];
@@ -794,7 +798,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByRegion() {
+    public static int[] getNumberOfHouseholdsByRegion(geoDataI geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -811,7 +815,7 @@ public class HouseholdDataManager {
 
         HashMap<Integer, ArrayList<Integer>> incomeHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int homeMSA = geoData.getMSAOfZone(hh.getHomeZone());
+            int homeMSA = geoDataMstm.getMSAOfZone(hh.getHomeZone());
             if (incomeHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = incomeHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());

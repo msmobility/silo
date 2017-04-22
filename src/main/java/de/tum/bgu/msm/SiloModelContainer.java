@@ -1,16 +1,13 @@
 package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.MovesModel;
 import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
-import de.tum.bgu.msm.data.JobDataManager;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -28,9 +25,6 @@ import java.util.ResourceBundle;
  */
 public class SiloModelContainer {
     private static Logger logger = Logger.getLogger(SiloModelContainer.class);
-    private final HouseholdDataManager householdData;
-    private final RealEstateDataManager realEstateData;
-    private final JobDataManager jobData;
     private final InOutMigration iomig;
     private final ConstructionModel cons;
     private final ConstructionOverwrite ddOverwrite;
@@ -49,13 +43,10 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, geoDataI)}}
      * being used to encapsulate the object creation.
      *
      *
-     * @param householdData
-     * @param realEstateData
-     * @param jobData
      * @param iomig
      * @param cons
      * @param ddOverwrite
@@ -72,15 +63,11 @@ public class SiloModelContainer {
      * @param aoModel
      * @param updateJobs
      */
-    private SiloModelContainer(HouseholdDataManager householdData, RealEstateDataManager realEstateData,
-                               JobDataManager jobData, InOutMigration iomig, ConstructionModel cons,
+    private SiloModelContainer(InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModel move, ChangeEmploymentModel changeEmployment,
                                Accessibility acc, AutoOwnershipModel aoModel, UpdateJobs updateJobs) {
-        this.householdData = householdData;
-        this.realEstateData = realEstateData;
-        this.jobData = jobData;
         this.iomig = iomig;
         this.cons = cons;
         this.ddOverwrite = ddOverwrite;
@@ -104,42 +91,20 @@ public class SiloModelContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse) {
-
-        // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse);
-        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
-        JobDataManager jobData = new JobDataManager(rbLandUse);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
-            householdData.connectPersonsToHouseholds();
-            householdData.setTypeOfAllHouseholds();
-        }
-
-        jobData.updateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.readLandUse();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
+    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, geoDataI geoData) {
 
         logger.info("Creating UEC Models");
         DeathModel death = new DeathModel(rbLandUse);
         BirthModel birth = new BirthModel(rbLandUse);
         LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
         MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel();
-        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear());
-//        summarizeData.summarizeAutoOwnershipByCounty();
+        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(geoData);
+        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), geoData);
+        //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
 
-        MovesModel move = new MovesModel(rbLandUse);
+        MovesModel move = new MovesModel(rbLandUse, geoData);
         InOutMigration iomig = new InOutMigration(rbLandUse);
-        ConstructionModel cons = new ConstructionModel(rbLandUse);
+        ConstructionModel cons = new ConstructionModel(rbLandUse, geoData);
         RenovationModel renov = new RenovationModel(rbLandUse);
         DemolitionModel demol = new DemolitionModel(rbLandUse);
         PricingModel prm = new PricingModel(rbLandUse);
@@ -148,21 +113,10 @@ public class SiloModelContainer {
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
         updateJobs = new UpdateJobs(rbLandUse);
 
-        return new SiloModelContainer(householdData, realEstateData, jobData, iomig, cons, ddOverwrite, renov, demol,
+        return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, acc, aoModel, updateJobs);
     }
 
-    public HouseholdDataManager getHouseholdData() {
-        return householdData;
-    }
-
-    public RealEstateDataManager getRealEstateData() {
-        return realEstateData;
-    }
-
-    public JobDataManager getJobData() {
-        return jobData;
-    }
 
     public InOutMigration getIomig() {
         return iomig;
@@ -223,4 +177,5 @@ public class SiloModelContainer {
     public UpdateJobs getUpdateJobs() {
         return updateJobs;
     }
+
 }

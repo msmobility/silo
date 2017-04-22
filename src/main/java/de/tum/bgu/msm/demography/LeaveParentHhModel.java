@@ -106,7 +106,9 @@ public class LeaveParentHhModel {
     }
 
 
-    public void chooseLeaveParentHh(int perId, MovesModel moveM, AutoOwnershipModel aoModel) {
+    public void chooseLeaveParentHh(int perId, MovesModel moveM, AutoOwnershipModel aoModel,
+                                    RealEstateDataManager realEstateData, Accessibility accessibility,
+                                    JobDataManager jobData, HouseholdDataManager householdData) {
         // remove person with perId from its household and create new household with this person
 
         Person per = Person.getPersonFromId(perId);
@@ -115,7 +117,7 @@ public class LeaveParentHhModel {
         if (rnum < lphProbability[per.getType().ordinal()]) {
 
             // search if dwelling is available
-            int newDwellingId = moveM.searchForNewDwelling(new Person[]{per});
+            int newDwellingId = moveM.searchForNewDwelling(new Person[]{per}, accessibility);
             if (newDwellingId < 0) {
                 if (perId == SiloUtil.trackPp || per.getHhId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
                         "Person " + perId + " wanted to but could not leave parental household " + per.getHhId() +
@@ -126,7 +128,7 @@ public class LeaveParentHhModel {
 
             // create new household
             Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
-            hhOfThisPerson.removePerson(per);
+            hhOfThisPerson.removePerson(per, householdData);
             hhOfThisPerson.setType();
             int newHhId = HouseholdDataManager.getNextHouseholdId();
             Household hh = new Household(newHhId, -1, -1, 1, 0);
@@ -136,8 +138,8 @@ public class LeaveParentHhModel {
             per.setRole(PersonRole.single);
 
             // Move new household
-            moveM.moveHousehold(hh, -1, newDwellingId);
-            aoModel.simulateAutoOwnership(hh);
+            moveM.moveHousehold(hh, -1, newDwellingId, realEstateData);
+            aoModel.simulateAutoOwnership(hh, accessibility, jobData);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                     hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +

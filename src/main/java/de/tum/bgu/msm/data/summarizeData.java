@@ -9,9 +9,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
-import static de.tum.bgu.msm.data.RealEstateDataManager.PROPERTIES_CAPACITY_FILE;
-import static de.tum.bgu.msm.data.RealEstateDataManager.PROPERTIES_LAND_USE_AREA;
-
 /**
  * Methods to summarize model results
  * Author: Rolf Moeckel, PB Albuquerque
@@ -118,7 +115,8 @@ public class summarizeData {
         }
     }
 
-    public static void summarizeSpatially (int year, MovesModel move, RealEstateDataManager realEstateData) {
+    public static void summarizeSpatially (int year, MovesModel move, RealEstateDataManager realEstateData,
+                                           geoDataI geoData, Accessibility accessibility) {
         // write out results by zone
 
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + SiloUtil.incBrackets[0];
@@ -131,7 +129,7 @@ public class summarizeData {
         int[] jobs = new int[geoData.getHighestZonalId() + 1];
         int[] hhs = new int[geoData.getHighestZonalId() + 1];
         int[][] hhInc = new int[SiloUtil.incBrackets.length + 1][geoData.getHighestZonalId() + 1];
-        int[] pop = getPopulationByZone();
+        int[] pop = getPopulationByZone(geoData);
         for (Household hh: Household.getHouseholdArray()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
             int incGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
@@ -152,8 +150,8 @@ public class summarizeData {
             int ddThisZone = 0;
             for (DwellingType dt: DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
             if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
-            double autoAcc = Accessibility.getAutoAccessibility(taz);
-            double transitAcc = Accessibility.getTransitAccessibility(taz);
+            double autoAcc = accessibility.getAutoAccessibility(taz);
+            double transitAcc = accessibility.getTransitAccessibility(taz);
             double availLand = realEstateData.getAvailableLandForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
@@ -171,7 +169,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getPopulationByZone () {
+    public static int[] getPopulationByZone (geoDataI geoData) {
         // summarize population by zone
 
         int[] pp = new int[geoData.getHighestZonalId() + 1];
@@ -183,7 +181,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getHouseholdsByZone () {
+    public int[] getHouseholdsByZone (geoDataI geoData) {
         // summarize households by zone
 
         int[] householdsByZone = new int[geoData.getZones().length];
@@ -195,7 +193,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getRetailEmploymentByZone() {
+    public static int[] getRetailEmploymentByZone(geoDataI geoData) {
         // summarize retail employment by zone
 
         int[] retailEmplByZone = new int[geoData.getZones().length];
@@ -206,7 +204,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getOfficeEmploymentByZone() {
+    public static int[] getOfficeEmploymentByZone(geoDataI geoData) {
         // summarize office employment by zone
 
         int[] officeEmplByZone = new int[geoData.getZones().length];
@@ -217,7 +215,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getOtherEmploymentByZone() {
+    public static int[] getOtherEmploymentByZone(geoDataI geoData) {
         // summarize other employment by zone
 
         int[] otherEmplByZone = new int[geoData.getZones().length];
@@ -228,7 +226,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getTotalEmploymentByZone() {
+    public static int[] getTotalEmploymentByZone(geoDataI geoData) {
         // summarize retail employment by zone
 
         int[] totalEmplByZone = new int[geoData.getZones().length];
@@ -239,7 +237,8 @@ public class summarizeData {
     }
 
 
-    public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData) {
+    public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, HouseholdDataManager householdData,
+                                                          geoDataI geoData) {
     	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
@@ -828,7 +827,7 @@ public class summarizeData {
     }
 
 
-    public static void summarizeAutoOwnershipByCounty() {
+    public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, JobDataManager jobData) {
         // This calibration function summarized households by auto-ownership and quits
 
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("autoOwnershipA.csv", false);
@@ -837,10 +836,10 @@ public class summarizeData {
         for (Household hh: Household.getHouseholdArray()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
-            int county = geoData.getCountyOfZone(zone);
+            int county = geoDataMstm.getCountyOfZone(zone);
             autos[autoOwnership][county]++;
             pwa.println(hh.getHhSize()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
-                    Accessibility.getTransitAccessibility(zone)+","+JobDataManager.getJobDensityInZone(zone)+","+hh.getAutos());
+                    accessibility.getTransitAccessibility(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
         }
         pwa.close();
 
@@ -857,7 +856,7 @@ public class summarizeData {
     }
 
 
-    public static void preparePrestoSummary (ResourceBundle rb) {
+    public static void preparePrestoSummary (ResourceBundle rb, geoDataI geoData) {
         // open PRESTO summary file
 
         String prestoZoneFile = SiloUtil.baseDirectory + rb.getString(PROPERTIES_PRESTO_REGION_DEFINITION);
@@ -868,7 +867,7 @@ public class summarizeData {
         for (int zone: geoData.getZones()) {
             try {
                 prestoRegionByTaz[zone] =
-                        (int) regionDefinition.getIndexedValueAt(geoData.getCountyOfZone(zone), "presto");
+                        (int) regionDefinition.getIndexedValueAt(geoDataMstm.getCountyOfZone(zone), "presto");
             } catch (Exception e) {
                 prestoRegionByTaz[zone] = -1;
             }
@@ -909,27 +908,6 @@ public class summarizeData {
         }
     }
 
-
-    public static void writeOutDevelopmentCapacityFile (ResourceBundle rb, RealEstateDataManager realEstateData) {
-        // write out development capacity file to allow model run to be continued from this point later
-    	
-    	boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
-        if(useCapacityAsNumberOfDwellings)	{
-        	String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
-            PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
-            pwc.println("Zone,DevCapacity");
-            for (int zone: geoData.getZones()) pwc.println(zone + "," + realEstateData.getDevelopmentCapacity(zone));
-            pwc.close();
-        }
-
-        String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
-        PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
-        pwl.println("Zone,lu41");
-        for (int zone: geoData.getZones()) pwl.println(zone + "," + realEstateData.getDevelopableLand(zone));
-        pwl.close();
-    }
 
     public static void writeOutSyntheticPopulationDe (ResourceBundle rb, int year) {
         // write out files with synthetic population

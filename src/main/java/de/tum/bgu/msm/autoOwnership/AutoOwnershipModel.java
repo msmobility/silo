@@ -101,7 +101,7 @@ public class AutoOwnershipModel {
     }
 
 
-    public int simulateAutoOwnership (Household hh) {
+    public int simulateAutoOwnership (Household hh, Accessibility accessibility, JobDataManager jobData) {
         // simulate number of autos for household hh
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
@@ -110,8 +110,8 @@ public class AutoOwnershipModel {
         int hhSize = Math.min(hh.getHhSize(), 8);
         int workers = Math.min(hh.getNumberOfWorkers(), 4);
         int incomeCategory = getIncomeCategory(hh.getHhIncome());
-        int transitAcc = (int) (Accessibility.getTransitAccessibility(hh.getHomeZone()) + 0.5);
-        int density = JobDataManager.getJobDensityCategoryOfZone(hh.getHomeZone());
+        int transitAcc = (int) (accessibility.getTransitAccessibility(hh.getHomeZone()) + 0.5);
+        int density = jobData.getJobDensityCategoryOfZone(hh.getHomeZone());
         for (int i = 1; i < 4; i++) prob[i] =
                 autoOwnerShipUtil[i-1][hhSize-1][workers][incomeCategory-1][transitAcc][density-1];
         prob[0] = 1 - SiloUtil.getSum(prob);

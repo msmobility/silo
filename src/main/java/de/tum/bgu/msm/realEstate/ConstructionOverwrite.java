@@ -94,7 +94,7 @@ public class ConstructionOverwrite {
     }
 
 
-    public void addDwellings (int year) {
+    public void addDwellings (int year, RealEstateDataManager realEstateData) {
         // add overwrite dwellings for this year
 
         if (!useOverwrite) return;
@@ -117,7 +117,7 @@ public class ConstructionOverwrite {
             if (restriction != 0) {
                 // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                 // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                int msa = geoData.getMSAOfZone(zone);
+                int msa = geoDataMstm.getMSAOfZone(zone);
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
             Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
@@ -127,7 +127,7 @@ public class ConstructionOverwrite {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 dd.logAttributes(SiloUtil.trackWriter);
             }
-            RealEstateDataManager.addDwellingToVacancyList(dd);
+            realEstateData.addDwellingToVacancyList(dd);
         }
         traceFile.close();
     }

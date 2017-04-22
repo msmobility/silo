@@ -26,21 +26,21 @@ public class summarizeDataCblcm {
     protected static final String PROPERTIES_CBLCM_COUNTY_EMPLOYMENT    = "cblcm.county.employment.file.name";
 
 
-    public static void createCblcmSummaries(ResourceBundle rb, int year) {
+    public static void createCblcmSummaries(ResourceBundle rb, int year, geoDataI geoData, Accessibility accessibility) {
         // create summary files for Chesapeake Bay Land Change Model
 
         if (!SiloUtil.containsElement(ResourceUtil.getIntegerArray(rb, PROPERTIES_CBLCM_YEARS), year)) return;
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/cblcm";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        summarizePopulation(rb, year);
-        summarizeEmployment(rb, year);
-        summarizeDwellings(rb, year);
-        summarizeAccessibilities(rb, year);
+        summarizePopulation(rb, year, geoData);
+        summarizeEmployment(rb, year, geoData);
+        summarizeDwellings(rb, year, geoData);
+        summarizeAccessibilities(rb, year, geoData, accessibility);
         summarizeByCounty(rb, year);
     }
 
 
-    private static void summarizePopulation (ResourceBundle rb, int year) {
+    private static void summarizePopulation (ResourceBundle rb, int year, geoDataI geoData) {
         // summarize households by type and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
@@ -88,7 +88,7 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeEmployment (ResourceBundle rb, int year) {
+    private static void summarizeEmployment (ResourceBundle rb, int year, geoDataI geoData) {
         // summarize employment by type for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
@@ -128,7 +128,7 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeDwellings (ResourceBundle rb, int year) {
+    private static void summarizeDwellings (ResourceBundle rb, int year, geoDataI geoData) {
         // summarize dwellings by type and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
@@ -167,7 +167,8 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeAccessibilities (ResourceBundle rb, int year) {
+    private static void summarizeAccessibilities (ResourceBundle rb, int year, geoDataI geoData,
+                                                  Accessibility accessibility) {
         // summarize accessibilities by type (transit/highway) and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
@@ -180,8 +181,8 @@ public class summarizeDataCblcm {
             double[] accTrn = new double[geoData.getZones().length];
             int[] zones = geoData.getZones();
             for (int i = 0; i < zones.length; i++) {
-                accHwy[i] = Accessibility.getAutoAccessibility(zones[i]);
-                accTrn[i] = Accessibility.getTransitAccessibility(zones[i]);
+                accHwy[i] = accessibility.getAutoAccessibility(zones[i]);
+                accTrn[i] = accessibility.getTransitAccessibility(zones[i]);
             }
             accTable.appendColumn(accHwy, "acc_auto_" + year);
             accTable.appendColumn(accTrn, "acc_transit_" + year);
@@ -190,8 +191,8 @@ public class summarizeDataCblcm {
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(accFileName,false);
             pw.println("zone,acc_auto_" + year + ",acc_transit_" + year);
             int[] zones = geoData.getZones();
-            for (int zone : zones) pw.println(zone + "," + Accessibility.getAutoAccessibility(zone) + "," +
-                    Accessibility.getTransitAccessibility(zone));
+            for (int zone : zones) pw.println(zone + "," + accessibility.getAutoAccessibility(zone) + "," +
+                    accessibility.getTransitAccessibility(zone));
             pw.close();
         }
     }
@@ -212,11 +213,11 @@ public class summarizeDataCblcm {
         int[] hhByCounty = new int[countyOrder.length];
         int[] jobsByCounty = new int[countyOrder.length];
         for (Household hh: Household.getHouseholdArray()) {
-            int homeFips = geoData.getCountyOfZone(hh.getHomeZone());
+            int homeFips = geoDataMstm.getCountyOfZone(hh.getHomeZone());
             if (SiloUtil.containsElement(countyOrder, homeFips)) hhByCounty[countyOrderIndex[homeFips]]++;
         }
         for (Job jj: Job.getJobArray()) {
-            int jobFips = geoData.getCountyOfZone(jj.getZone());
+            int jobFips = geoDataMstm.getCountyOfZone(jj.getZone());
             if (SiloUtil.containsElement(countyOrder, jobFips)) jobsByCounty[countyOrderIndex[jobFips]]++;
         }
 

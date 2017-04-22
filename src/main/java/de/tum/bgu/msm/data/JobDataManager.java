@@ -35,13 +35,15 @@ import org.apache.log4j.Logger;
 public class JobDataManager {
     static Logger logger = Logger.getLogger(JobDataManager.class);
 
-    protected static final String PROPERTIES_JJ_FILE_BIN      = "job.file.bin";
-    protected static final String PROPERTIES_JJ_FILE_ASCII    = "job.file.ascii";
-    protected static final String PROPERTIES_READ_BIN_FILE    = "read.binary.jj.file";
-    protected static final String PROPERTIES_MAX_NUM_VAC_JOB  = "vacant.job.by.reg.array";
-    public static final String PROPERTIES_EMPLOYMENT_FORECAST = "interpol.empl.forecast";
-    public static final String PROPERTIES_JOB_CONTROL_TOTAL   = "job.control.total";
+    protected static final String PROPERTIES_JJ_FILE_BIN       = "job.file.bin";
+    protected static final String PROPERTIES_JJ_FILE_ASCII     = "job.file.ascii";
+    protected static final String PROPERTIES_READ_BIN_FILE     = "read.binary.jj.file";
+    protected static final String PROPERTIES_MAX_NUM_VAC_JOB   = "vacant.job.by.reg.array";
+    public static final String PROPERTIES_EMPLOYMENT_FORECAST  = "interpol.empl.forecast";
+    public static final String PROPERTIES_JOB_CONTROL_TOTAL    = "job.control.total";
+    protected static final String PROPERTIES_JOB_CONTROL_YEARS = "job.control.total.years";
     private ResourceBundle rb;
+    private geoDataI geoData;
 
     private static int highestJobIdInUse;
     private static int[][] vacantJobsByRegion;
@@ -50,9 +52,10 @@ public class JobDataManager {
     private static float[] zonalJobDensity;
 
 
-    public JobDataManager(ResourceBundle rb) {
+    public JobDataManager(ResourceBundle rb, geoDataI geoData) {
         // constructor
         this.rb = rb;
+        this.geoData = geoData;
         numberOfStoredVacantJobs = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MAX_NUM_VAC_JOB);
     }
 
@@ -161,7 +164,14 @@ public class JobDataManager {
         // create yearly employment forecast files
 
     	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
-        String[] yearsGiven = {"00", "07", "10", "30", "40"};  // Warning: if years are changed, also change interpolation loop below under "// interpolate employment data"
+        String[] yearsGiven;
+        if (rb.containsKey(PROPERTIES_JOB_CONTROL_YEARS)) {
+            int[] yearsInt = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_CONTROL_YEARS);
+            yearsGiven = new String[yearsInt.length];
+            for (int i = 0; i < yearsInt.length; i++) yearsGiven[i] = String.valueOf(yearsInt[i]);
+        } else {
+            yearsGiven = new String[]{"00", "07", "10", "30", "40"};  // Warning: if years are changed, also change interpolation loop below under "// interpolate employment data"
+        }
         int highestYear = SiloUtil.getHighestVal(yearsGiven);
         int smallestYear = SiloUtil.getSmallestVal(yearsGiven);
 
@@ -178,7 +188,7 @@ public class JobDataManager {
 
         // jobInventory by [industry][year][taz]
         float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getHighestZonalId() + 1];
-        HashMap<Integer, int[]> tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
+        //HashMap<Integer, int[]> tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
         // read employment data
         // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
@@ -186,14 +196,14 @@ public class JobDataManager {
 
         for (int row = 1; row <= jobs.getRowCount(); row++) {
             int taz = (int) jobs.getValueAt(row, "SMZ");
-            int pumaOfWorkZone = geoData.getSimplifiedPUMAofZone(taz);
-            if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
-                int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
-                int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
-                tazByWorkZonePuma.put(pumaOfWorkZone, newList);
-            } else {
-                tazByWorkZonePuma.put(pumaOfWorkZone, new int[]{taz});
-            }
+//            int pumaOfWorkZone = geoData.getSimplifiedPUMAofZone(taz);
+//            if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
+//                int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
+//                int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
+//                tazByWorkZonePuma.put(pumaOfWorkZone, newList);
+//            } else {
+//                tazByWorkZonePuma.put(pumaOfWorkZone, new int[]{taz});
+//            }
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 for (String year: yearsGiven) {
                      jobInventory[jobTp][Integer.parseInt(year)][taz] = jobs.getValueAt(row, JobType.getJobType(jobTp) + year);
@@ -258,9 +268,6 @@ public class JobDataManager {
                     SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
             }
         }
-//        for (int region: SiloUtil.getRegionList()) logger.info ("Region " + region + " has vacant jobs: " +
-//                (vacantJobsByRegionPos[region]));
-//        System.exit(1);
     }
 
 
@@ -295,10 +302,9 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob (int homeZone) {
+    public static int findVacantJob (int homeZone, int[] regions) {
         // select vacant job for person living in homeZone
 
-        int[] regions = geoData.getRegionList();
         double[] regionProbability = new double[SiloUtil.getHighestVal(regions) + 1];
 
         if (homeZone > 0) {
@@ -345,7 +351,7 @@ public class JobDataManager {
     }
 
 
-    public static void addJobToVacancyList(int zone, int jobId) {
+    public void addJobToVacancyList(int zone, int jobId) {
         // add job jobId to vacancy list
 
         int region = geoData.getRegionOfZone(zone);
@@ -356,23 +362,23 @@ public class JobDataManager {
     }
 
 
-    public static void summarizeJobs() {
+    public void summarizeJobs(int[] regionList) {
         // summarize jobs for summary file
 
         String txt = "jobByRegion";
         for (String empType: JobType.getJobTypes()) txt += "," + empType;
         summarizeData.resultFile(txt + ",total");
 
-        int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
         for (Job job: Job.getJobArray()) {
             jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
         }
 
-        for (int region: geoData.getRegionList()) {
-            String line = String.valueOf(region);
+        for (int region: regionList) {
+            StringBuilder line = new StringBuilder(String.valueOf(region));
             int regionSum = 0;
             for (String empType: JobType.getJobTypes()) {
-                line += "," + jobsByTypeAndRegion[JobType.getOrdinal(empType)][region];
+                line.append(",").append(jobsByTypeAndRegion[JobType.getOrdinal(empType)][region]);
                 regionSum += jobsByTypeAndRegion[JobType.getOrdinal(empType)][region];
             }
             summarizeData.resultFile(line + "," + regionSum);
@@ -388,11 +394,11 @@ public class JobDataManager {
     }
 
 
-    public static float getJobDensityInZone(int zone) {
+    public float getJobDensityInZone(int zone) {
         return zonalJobDensity[geoData.getZoneIndex(zone)];
     }
 
-    public static int getJobDensityCategoryOfZone(int zone) {
+    public int getJobDensityCategoryOfZone(int zone) {
         // return job density category 1 to 10 of zone
 
         float[] densityCategories = {0.f, 0.143f, 0.437f, 0.865f, 1.324f, 1.8778f, 2.664f, 3.99105f, 6.f, 12.7f};

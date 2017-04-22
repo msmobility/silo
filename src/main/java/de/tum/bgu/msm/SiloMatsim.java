@@ -55,7 +55,7 @@ public final class SiloMatsim {
 			sp.runSP();
 			SiloModel model = new SiloModel(rb);
 			model.setMatsimConfig(matsimConfig); // SILO-MATSim integration-specific
-			model.runModel();
+			model.runModel("MSTM");
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
 			logger.error("Error running SILO.");

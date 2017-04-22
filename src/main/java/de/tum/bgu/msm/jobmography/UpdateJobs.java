@@ -119,7 +119,7 @@ public class UpdateJobs {
 //    }
 
 
-    public void updateJobInventoryMultiThreadedThisYear(int year) {
+    public void updateJobInventoryMultiThreadedThisYear(int year, JobDataManager jobData, geoDataI geoData) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
 
         if (!EventRules.ruleStartNewJob() && !EventRules.ruleQuitJob()) return;
@@ -170,7 +170,7 @@ public class UpdateJobs {
                 if (change[0].equalsIgnoreCase("add")) {
                     addJobs(change[1]);
                 } else {              // token "rem"
-                    removeJobs(change[1]);
+                    removeJobs(change[1], jobData);
                 }
                 return null;
             }
@@ -213,7 +213,7 @@ public class UpdateJobs {
     }
 
 
-    private void removeJobs (String removeJobsInstructions) {
+    private void removeJobs (String removeJobsInstructions, JobDataManager jobData) {
         // remove jobs
 
         String[] definition = removeJobsInstructions.split("\\.");
@@ -244,7 +244,7 @@ public class UpdateJobs {
         while (change > 0) {
             Job jobToBeRemoved = Job.getJobFromId(occupiedJobs[counter]);
             int personId = jobToBeRemoved.getWorkerId();
-            Person.getPersonFromId(personId).quitJob(false);
+            Person.getPersonFromId(personId).quitJob(false, jobData);
             synchronized (Job.class) {
                 Job.removeJob(occupiedJobs[counter]);
             }

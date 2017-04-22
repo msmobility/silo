@@ -5,7 +5,7 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.geoData;
+import de.tum.bgu.msm.data.geoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.realEstate.ConstructionOverwrite;
@@ -61,7 +61,7 @@ public class SiloUtilBak {
     }
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleName) {
+    public ResourceBundle siloInitialization(String resourceBundleName) {
         // initializes Silo
 
         File propFile = new File(resourceBundleName);
@@ -80,7 +80,7 @@ public class SiloUtilBak {
 
         initializeRandomNumber();
         trackingFile("open");
-        geoData.setInitialData(rb);
+        //geoData.setInitialData(rb);
         return rb;
     }
 

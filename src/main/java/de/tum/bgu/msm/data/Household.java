@@ -206,7 +206,7 @@ public class Household implements Serializable {
     }
 
 
-    public void removePerson (Person per) {
+    public void removePerson (Person per, HouseholdDataManager householdData) {
         // remove this person from household and reduce household size by one
         if (hhSize >= 2) {
             Person[] remainingPersons = new Person[persons.length - 1];
@@ -222,7 +222,7 @@ public class Household implements Serializable {
             setType();
             setHouseholdRace();
         } else {
-            HouseholdDataManager.removeHousehold(hhId);
+            householdData.removeHousehold(hhId);
         }
         if (hhId == SiloUtil.trackHh || per.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " +
                 per.getId() + " was removed from household " + hhId + ".");

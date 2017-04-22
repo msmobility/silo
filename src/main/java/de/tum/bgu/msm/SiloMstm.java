@@ -2,6 +2,7 @@ package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopUs;
+import de.tum.bgu.msm.data.geoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
 
@@ -35,7 +36,7 @@ public class SiloMstm {
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             SiloModel model = new SiloModel(rb);
-            model.runModel();
+            model.runModel("MSTM");
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
