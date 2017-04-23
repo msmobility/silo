@@ -509,7 +509,7 @@ public class summarizeData {
         }
         pwd.close();
 
-        logger.info ("  Reading dwelling file that was written (for debugging only");
+/*        logger.info ("  Reading dwelling file that was written (for debugging only");
         String recString = "";
         int recCount = 0;
         try {
@@ -518,7 +518,7 @@ public class summarizeData {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 while ((recString = in.readLine()) != null) {
                     recCount++;
-                    System.out.println(recCount+"!"+recString+"!");
+                    System.out.println(recCount+" <"+recString+">");
                 }
             } else {
                 System.out.println("Did not find file " + filedd);
@@ -526,7 +526,7 @@ public class summarizeData {
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + filedd);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
-        }
+        }*/
 
 
 

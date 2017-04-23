@@ -155,7 +155,7 @@ public class SiloModel {
 
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
-        //writeOutSmallSP(10000);
+        // writeOutSmallSP(10000);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
