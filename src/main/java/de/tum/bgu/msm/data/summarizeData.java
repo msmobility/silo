@@ -7,7 +7,8 @@ import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.relocation.MovesModel;
 import de.tum.bgu.msm.SiloUtil;
 import org.apache.log4j.Logger;
-import java.io.PrintWriter;
+
+import java.io.*;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -38,8 +39,8 @@ public class summarizeData {
     protected static final String PROPERTIES_PRESTO_REGION_DEFINITION     = "presto.regions";
     protected static final String PROPERTIES_PRESTO_SUMMARY_FILE          = "presto.summary.file";
     protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
-    
-    
+
+
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
 
@@ -95,7 +96,7 @@ public class summarizeData {
     public static void resultFileSpatial(ResourceBundle rb, String action) {
         resultFileSpatial(rb,action,true);
     }
-        public static void resultFileSpatial(ResourceBundle rb, String action, Boolean writeFinal) {
+    public static void resultFileSpatial(ResourceBundle rb, String action, Boolean writeFinal) {
         // handle summary file
         switch (action) {
             case "open":
@@ -239,7 +240,7 @@ public class summarizeData {
 
 
     public static void scaleMicroDataToExogenousForecast (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
-    	//TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
+        //TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
 
         if (!scalingControlTotals.containsColumn(("HH" + year))) {
@@ -285,72 +286,11 @@ public class summarizeData {
                     }
                 }
 
-            // write out households and duplicate (if changeOfHh > 0) or delete (if changeOfHh < 0) selected households
-            for (int i = 0; i < hhInThisZone.length; i++) {
-                Household hh = Household.getHouseholdFromId(hhInThisZone[i]);
-                if (changeOfHh[zone] > 0) {
-                    // write out original household
-                    pwh.print(hh.getId());
-                    pwh.print(",");
-                    pwh.print(hh.getDwellingId());
-                    pwh.print(",");
-                    pwh.print(hh.getHomeZone());
-                    pwh.print(",");
-                    pwh.print(hh.getHhSize());
-                    pwh.print(",");
-                    pwh.println(hh.getAutos());
-                    for (Person pp: hh.getPersons()) {
-                        pwp.print(pp.getId());
-                        pwp.print(",");
-                        pwp.print(pp.getHhId());
-                        pwp.print(",");
-                        pwp.print(pp.getAge());
-                        pwp.print(",");
-                        pwp.print(pp.getGender());
-                        pwp.print(",");
-                        pwp.print(pp.getRace());
-                        pwp.print(",");
-                        pwp.print(pp.getOccupation());
-                        pwp.print(",0,");
-                        pwp.print(pp.getWorkplace());
-                        pwp.print(",");
-                        pwp.println(pp.getIncome());
-                    }
-                    // duplicate household if selected
-                    if (selectedHH[i] > 0) {    // household to be repeated for this output file
-                        for (int repeat = 0; repeat < selectedHH[i]; repeat++) {
-                            pwh.print(artificialHhId);
-                            pwh.print(",");
-                            pwh.print(hh.getDwellingId());
-                            pwh.print(",");
-                            pwh.print(hh.getHomeZone());
-                            pwh.print(",");
-                            pwh.print(hh.getHhSize());
-                            pwh.print(",");
-                            pwh.println(hh.getAutos());
-                            for (Person pp: hh.getPersons()) {
-                                pwp.print(artificialPpId);
-                                pwp.print(",");
-                                pwp.print(artificialHhId);
-                                pwp.print(",");
-                                pwp.print(pp.getAge());
-                                pwp.print(",");
-                                pwp.print(pp.getGender());
-                                pwp.print(",");
-                                pwp.print(pp.getRace());
-                                pwp.print(",");
-                                pwp.print(pp.getOccupation());
-                                pwp.print(",0,");
-                                pwp.print(pp.getWorkplace());
-                                pwp.print(",");
-                                pwp.println(pp.getIncome());
-                                artificialPpId++;
-                            }
-                            artificialHhId++;
-                        }
-                    }
-                } else if (changeOfHh[zone] < 0) {
-                    if (selectedHH[i] == 0) {    // household to be kept (selectedHH[i] == 1 for households to be deleted)
+                // write out households and duplicate (if changeOfHh > 0) or delete (if changeOfHh < 0) selected households
+                for (int i = 0; i < hhInThisZone.length; i++) {
+                    Household hh = Household.getHouseholdFromId(hhInThisZone[i]);
+                    if (changeOfHh[zone] > 0) {
+                        // write out original household
                         pwh.print(hh.getId());
                         pwh.print(",");
                         pwh.print(hh.getDwellingId());
@@ -377,9 +317,70 @@ public class summarizeData {
                             pwp.print(",");
                             pwp.println(pp.getIncome());
                         }
+                        // duplicate household if selected
+                        if (selectedHH[i] > 0) {    // household to be repeated for this output file
+                            for (int repeat = 0; repeat < selectedHH[i]; repeat++) {
+                                pwh.print(artificialHhId);
+                                pwh.print(",");
+                                pwh.print(hh.getDwellingId());
+                                pwh.print(",");
+                                pwh.print(hh.getHomeZone());
+                                pwh.print(",");
+                                pwh.print(hh.getHhSize());
+                                pwh.print(",");
+                                pwh.println(hh.getAutos());
+                                for (Person pp: hh.getPersons()) {
+                                    pwp.print(artificialPpId);
+                                    pwp.print(",");
+                                    pwp.print(artificialHhId);
+                                    pwp.print(",");
+                                    pwp.print(pp.getAge());
+                                    pwp.print(",");
+                                    pwp.print(pp.getGender());
+                                    pwp.print(",");
+                                    pwp.print(pp.getRace());
+                                    pwp.print(",");
+                                    pwp.print(pp.getOccupation());
+                                    pwp.print(",0,");
+                                    pwp.print(pp.getWorkplace());
+                                    pwp.print(",");
+                                    pwp.println(pp.getIncome());
+                                    artificialPpId++;
+                                }
+                                artificialHhId++;
+                            }
+                        }
+                    } else if (changeOfHh[zone] < 0) {
+                        if (selectedHH[i] == 0) {    // household to be kept (selectedHH[i] == 1 for households to be deleted)
+                            pwh.print(hh.getId());
+                            pwh.print(",");
+                            pwh.print(hh.getDwellingId());
+                            pwh.print(",");
+                            pwh.print(hh.getHomeZone());
+                            pwh.print(",");
+                            pwh.print(hh.getHhSize());
+                            pwh.print(",");
+                            pwh.println(hh.getAutos());
+                            for (Person pp: hh.getPersons()) {
+                                pwp.print(pp.getId());
+                                pwp.print(",");
+                                pwp.print(pp.getHhId());
+                                pwp.print(",");
+                                pwp.print(pp.getAge());
+                                pwp.print(",");
+                                pwp.print(pp.getGender());
+                                pwp.print(",");
+                                pwp.print(pp.getRace());
+                                pwp.print(",");
+                                pwp.print(pp.getOccupation());
+                                pwp.print(",0,");
+                                pwp.print(pp.getWorkplace());
+                                pwp.print(",");
+                                pwp.println(pp.getIncome());
+                            }
+                        }
                     }
                 }
-            }
             } else {
                 if (scalingControlTotals.getIndexedValueAt(zone, ("HH" + year)) > 0) logger.warn("SILO has no households in zone " +
                         zone + " that could be duplicated to match control total of " +
@@ -507,6 +508,27 @@ public class summarizeData {
             }
         }
         pwd.close();
+
+        logger.info ("  Reading dwelling file that was written (for debugging only");
+        String recString = "";
+        int recCount = 0;
+        try {
+            File file = new File(filedd);
+            if (file.exists()) {
+                BufferedReader in = new BufferedReader(new FileReader(file));
+                while ((recString = in.readLine()) != null) {
+                    recCount++;
+                    System.out.println(recCount+"!"+recString+"!");
+                }
+            } else {
+                System.out.println("Did not find file " + filedd);
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop dwelling file: " + filedd);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+
+
 
         logger.info("  Writing job file");
         String filejj = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_JJ_MICRODATA) + "_" +
@@ -877,7 +899,7 @@ public class summarizeData {
 
     public static void summarizePrestoRegion (ResourceBundle rb, int year) {
         // summarize housing costs by income group in SILO region
-    	
+
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
                 rb.getString(PROPERTIES_PRESTO_SUMMARY_FILE) + SiloUtil.gregorianIterator + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != SiloUtil.getBaseYear());
