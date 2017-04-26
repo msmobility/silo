@@ -3,6 +3,7 @@ package de.tum.bgu.msm.events;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.realEstate.ConstructionModel;
@@ -21,19 +22,17 @@ import java.util.ResourceBundle;
 
 public class EventManager {
 
-    static Logger logger = Logger.getLogger(EventManager.class);
+    private static Logger logger = Logger.getLogger(EventManager.class);
 
-    private HouseholdDataManager householdData;
-    private RealEstateDataManager realEstateData;
+    private SiloDataContainer dataContainer;
     private ArrayList<Integer[]> events;
     private int randomEventOrder[];
     private int posInArray;
     private static HashMap<EventTypes, Integer> eventCounter;
 
-    public EventManager (ResourceBundle rb, HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
+    public EventManager (ResourceBundle rb, SiloDataContainer dataContainer) {
         // Constructor of EventManager
-        this.householdData = householdData;
-        this.realEstateData = realEstateData;
+        this.dataContainer = dataContainer;
         EventRules.setUpEventRules(rb);
     }
 
@@ -42,7 +41,7 @@ public class EventManager {
         // create an array list that contains all land use events
 
         events = new ArrayList<>();
-        Collection<Person> persons = householdData.getPersons();
+        Collection<Person> persons = dataContainer.getHouseholdData().getPersons();
         int numEvents = 0;
 
         // create person events
@@ -125,7 +124,7 @@ public class EventManager {
         }
 
         // update dwelling events
-        Collection<Dwelling> dwellings = realEstateData.getDwellings();
+        Collection<Dwelling> dwellings = dataContainer.getRealEstateData().getDwellings();
         for (Dwelling dd: dwellings) {
             int id = dd.getId();
             // renovate dwelling or deteriorate

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventManager;
@@ -15,10 +16,12 @@ import org.apache.log4j.Logger;
 
 public class ChangeEmploymentModel {
     static Logger logger = Logger.getLogger(ChangeEmploymentModel.class);
+    private geoDataI geoData;
 
 
-    public ChangeEmploymentModel() {
+    public ChangeEmploymentModel(geoDataI geoData) {
         // constructor
+        this.geoData = geoData;
     }
 
 
@@ -35,7 +38,7 @@ public class ChangeEmploymentModel {
             return false;
         } else {
             int homeZone = pp.getHomeTaz();
-            int idVacantJob = JobDataManager.findVacantJob(homeZone);
+            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionList());
             if (idVacantJob == -1) {
                 IssueCounter.countMissingJob();
                 return false;
@@ -55,12 +58,12 @@ public class ChangeEmploymentModel {
     }
 
 
-    public void quitJob (int perId) {
+    public void quitJob (int perId, SiloDataContainer dataContainer) {
         // Let person perId quit her/his job and make this job available to others
 
         Person pp = Person.getPersonFromId(perId);
         if (pp == null) return;  // person has died or moved away
-        pp.quitJob(true);
+        pp.quitJob(true, dataContainer);
         EventManager.countEvent(EventTypes.quitJob);
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }

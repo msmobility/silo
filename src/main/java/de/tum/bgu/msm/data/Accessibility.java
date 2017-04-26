@@ -1,18 +1,13 @@
 package de.tum.bgu.msm.data;
 
-import java.io.File;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import de.tum.bgu.msm.transportModel.CSVFileWriter;
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
 import org.matsim.core.utils.collections.Tuple;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.MatrixType;
-import com.pb.common.matrix.MatrixWriter;
 import com.pb.common.util.ResourceUtil;
 
 import de.tum.bgu.msm.SiloUtil;
@@ -38,6 +33,7 @@ public class Accessibility {
 
     static Logger logger = Logger.getLogger(Accessibility.class);
     private ResourceBundle rb;
+    private geoDataI geoData;
     private static Matrix hwySkim;
     private static Matrix transitSkim;
     private static double[] autoAccessibility;
@@ -47,8 +43,9 @@ public class Accessibility {
     private static float autoOperatingCosts;
     private static Matrix travelTimeToRegion;
 
-    public Accessibility(ResourceBundle rb, int year) {
+    public Accessibility(ResourceBundle rb, int year, geoDataI geoData) {
         this.rb = rb;
+        this.geoData = geoData;
         readSkim(year);
         calculateAccessibilities(year);
         readWorkTripLengthFrequencyDistribution();
@@ -168,7 +165,7 @@ public class Accessibility {
         float betaTransit = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_TRANSIT_ACCESSIBILITY_BETA);
 
         int[] zones = geoData.getZones();
-        int[] pop = summarizeData.getPopulationByZone();
+        int[] pop = summarizeData.getPopulationByZone(geoData);
         autoAccessibility = new double[zones.length];
         transitAccessibility = new double[zones.length];
         for (int orig: zones) {
@@ -187,7 +184,7 @@ public class Accessibility {
                 } else {
                     transitImpedance = Math.exp(betaTransit * getTransitTravelTime(orig, dest));
                 }
-                // dz: zone "orig" and its zoneIndex "geoData.getZoneIndex(orig)" are different!!
+                // dz: zone "orig" and its zoneIndex "geoDataMstm.getZoneIndex(orig)" are different!!
                 // "orig" is the ID of the zone and zoneIndex is its location in the array
                 // zoneIndex is "indexArray for array" zones
                 autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
@@ -197,8 +194,8 @@ public class Accessibility {
         
         
         // new -- write output
-//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoData.getZoneIndex(orig)]);
-//      System.out.println("zone = " + orig + " has zoneIndex = " + geoData.getZoneIndex(orig))
+//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoDataMstm.getZoneIndex(orig)]);
+//      System.out.println("zone = " + orig + " has zoneIndex = " + geoDataMstm.getZoneIndex(orig))
 
 
 /*  RM: Had to comment out this part because model fails when CSVFileWriter is called. Seems to be an issue within MATSim:
@@ -215,7 +212,7 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 
 		for (int i = 0; i < zones.length; i++) {
 				accessibilityFileWriter.writeField(zones[i]);
-				accessibilityFileWriter.writeField(autoAccessibility[geoData.getZoneIndex(i)]);
+				accessibilityFileWriter.writeField(autoAccessibility[geoDataMstm.getZoneIndex(i)]);
 				accessibilityFileWriter.writeNewLine();    
 		}
 		
@@ -270,10 +267,11 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     }
 
 
-    public static double getAutoAccessibility(int zone) {
+    public double getAutoAccessibility(int zone) {
         return autoAccessibility[geoData.getZoneIndex(zone)];
     }
-    public static double getTransitAccessibility(int zone) {
+
+    public double getTransitAccessibility(int zone) {
         return transitAccessibility[geoData.getZoneIndex(zone)];
     }
 

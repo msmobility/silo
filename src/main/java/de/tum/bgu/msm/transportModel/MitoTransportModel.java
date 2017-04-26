@@ -5,7 +5,6 @@ import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.MitoHousehold;
 import org.apache.log4j.Logger;
-
 import java.util.ResourceBundle;
 
 /**

@@ -39,12 +39,14 @@ public class MstmTransportModel implements TransportModelI {
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
+    private geoDataI geoData;
     private TripGenerationData tgData;
 
 
-    public MstmTransportModel(ResourceBundle rbLandUse) {
+    public MstmTransportModel(ResourceBundle rbLandUse, geoDataI geoData) {
         // constructor
         this.rbLandUse = rbLandUse;
+        this.geoData = geoData;
         String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
         rbTravel = ResourceUtil.getPropertyBundle(new File(fileName));
 
@@ -67,7 +69,6 @@ public class MstmTransportModel implements TransportModelI {
 
         // if transport model is run by itself, year is not specified by SILO; then, needs to read the first year from properties file
         if (year == -1) {
-            geoData.setInitialData(rbLandUse);
             year = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS)[0];
         }
         logger.info("Running travel demand model for the year " + year);
@@ -87,7 +88,8 @@ public class MstmTransportModel implements TransportModelI {
         tdd.readData();
         if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
-            HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse);
+            RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
+            HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
             householdData.readPopulation();
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();

@@ -2,7 +2,10 @@ package de.tum.bgu.msm.autoOwnership;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloMatsim;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.JobDataManager;
@@ -101,8 +104,8 @@ public class AutoOwnershipModel {
     }
 
 
-    public int simulateAutoOwnership (Household hh) {
-        // simulate number of autos for household hh
+    public void simulateAutoOwnership (Household hh, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+        // simulate number of autos for household hh (Main version)
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
@@ -110,8 +113,27 @@ public class AutoOwnershipModel {
         int hhSize = Math.min(hh.getHhSize(), 8);
         int workers = Math.min(hh.getNumberOfWorkers(), 4);
         int incomeCategory = getIncomeCategory(hh.getHhIncome());
-        int transitAcc = (int) (Accessibility.getTransitAccessibility(hh.getHomeZone()) + 0.5);
-        int density = JobDataManager.getJobDensityCategoryOfZone(hh.getHomeZone());
+        int transitAcc = (int) (modelContainer.getAcc().getTransitAccessibility(hh.getHomeZone()) + 0.5);
+        int density = dataContainer.getJobData().getJobDensityCategoryOfZone(hh.getHomeZone());
+        for (int i = 1; i < 4; i++) prob[i] =
+                autoOwnerShipUtil[i-1][hhSize-1][workers][incomeCategory-1][transitAcc][density-1];
+        prob[0] = 1 - SiloUtil.getSum(prob);
+        hh.setAutos(SiloUtil.select(prob));
+    }
+
+
+    public int simulateAutoOwnership (Household hh, Accessibility accessibility, JobDataManager jobData) {
+        // simulate number of autos for household hh, as called from SyntheticPopUs (SiloModelContainer and
+        // SiloDataContainer does not exist in this case)
+        // Note: This method can only be executed after all households have been generated and allocated to zones,
+        // as calculating accessibilities requires to know where households are living
+
+        double[] prob = new double[4];
+        int hhSize = Math.min(hh.getHhSize(), 8);
+        int workers = Math.min(hh.getNumberOfWorkers(), 4);
+        int incomeCategory = getIncomeCategory(hh.getHhIncome());
+        int transitAcc = (int) (accessibility.getTransitAccessibility(hh.getHomeZone()) + 0.5);
+        int density = jobData.getJobDensityCategoryOfZone(hh.getHomeZone());
         for (int i = 1; i < 4; i++) prob[i] =
                 autoOwnerShipUtil[i-1][hhSize-1][workers][incomeCategory-1][transitAcc][density-1];
         prob[0] = 1 - SiloUtil.getSum(prob);

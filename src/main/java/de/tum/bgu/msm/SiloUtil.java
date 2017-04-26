@@ -5,7 +5,8 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.geoData;
+import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.geoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.realEstate.ConstructionOverwrite;
@@ -70,6 +71,7 @@ public class SiloUtil {
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
+        startYear = ResourceUtil.getIntegerProperty(rb, PROPERTIES_START_YEAR);
         summarizeData.openResultFile(rb);
         summarizeData.resultFileSpatial(rb, "open");
 
@@ -86,7 +88,6 @@ public class SiloUtil {
 
         initializeRandomNumber();
         trackingFile("open");
-        geoData.setInitialData(rb);
         return rb;
     }
 
@@ -453,10 +454,10 @@ public class SiloUtil {
     }
 
 
-    public static void finish (ConstructionOverwrite overwrite) {
+    public static void finish (SiloModelContainer modelContainer) {
         summarizeData.resultFile("close");
         trackingFile("close");
-        if (overwrite.traceOverwriteDwellings()) overwrite.finishOverwriteTracer();
+        if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
         if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
     }
 

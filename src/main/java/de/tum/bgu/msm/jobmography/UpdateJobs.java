@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.jobmography;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventRules;
@@ -119,12 +120,12 @@ public class UpdateJobs {
 //    }
 
 
-    public void updateJobInventoryMultiThreadedThisYear(int year) {
+    public void updateJobInventoryMultiThreadedThisYear(int year, SiloDataContainer dataContainer) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
 
         if (!EventRules.ruleStartNewJob() && !EventRules.ruleQuitJob()) return;
         logger.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
-        int[][] jobsByZone = new int[JobType.getNumberOfJobTypes()][geoData.getHighestZonalId()+1];
+        int[][] jobsByZone = new int[JobType.getNumberOfJobTypes()][dataContainer.getGeoData().getHighestZonalId()+1];
         for (Job jj: Job.getJobArray()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
             jobsByZone[jobTypeId][jj.getZone()]++;
@@ -170,7 +171,7 @@ public class UpdateJobs {
                 if (change[0].equalsIgnoreCase("add")) {
                     addJobs(change[1]);
                 } else {              // token "rem"
-                    removeJobs(change[1]);
+                    removeJobs(change[1], dataContainer);
                 }
                 return null;
             }
@@ -213,7 +214,7 @@ public class UpdateJobs {
     }
 
 
-    private void removeJobs (String removeJobsInstructions) {
+    private void removeJobs (String removeJobsInstructions, SiloDataContainer dataContainer) {
         // remove jobs
 
         String[] definition = removeJobsInstructions.split("\\.");
@@ -244,7 +245,7 @@ public class UpdateJobs {
         while (change > 0) {
             Job jobToBeRemoved = Job.getJobFromId(occupiedJobs[counter]);
             int personId = jobToBeRemoved.getWorkerId();
-            Person.getPersonFromId(personId).quitJob(false);
+            Person.getPersonFromId(personId).quitJob(false, dataContainer);
             synchronized (Job.class) {
                 Job.removeJob(occupiedJobs[counter]);
             }

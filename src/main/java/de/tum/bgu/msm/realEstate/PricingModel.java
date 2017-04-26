@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.realEstate;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.geoData;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
@@ -85,12 +83,12 @@ public class PricingModel {
     }
 
 
-    public void updatedRealEstatePrices (int year, RealEstateDataManager realEstateData) {
+    public void updatedRealEstatePrices (int year, SiloDataContainer dataContainer) {
         // updated prices based on current demand
         logger.info("  Updating real-estate prices");
 
         // get vacancy rate
-        double[][] vacRate = realEstateData.getVacancyRateByTypeAndRegion();
+        double[][] vacRate = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
 
         HashMap<String, Integer> priceChange = new HashMap<>();
 
@@ -103,7 +101,7 @@ public class PricingModel {
             float structuralVacHigh = (float) (structuralVacancy[dto] * inflectionHigh);
             int currentPrice = dd.getPrice();
             int zn = dd.getZone();
-            int region = geoData.getRegionOfZone(zn);
+            int region = dataContainer.getGeoData().getRegionOfZone(zn);
             double changeRate;
             if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply
@@ -139,7 +137,7 @@ public class PricingModel {
             int dto = dt.ordinal();
             averagePrice[dto] = sumOfPrices[dto] / cnt[dto];
         }
-        realEstateData.setAvePriceByDwellingType(averagePrice);
+        dataContainer.getRealEstateData().setAvePriceByDwellingType(averagePrice);
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(("priceUpdate"+String.valueOf(year)+".csv"), false);
         pw.println("type,regVacRate,oldPrice,newPrice,frequency");
