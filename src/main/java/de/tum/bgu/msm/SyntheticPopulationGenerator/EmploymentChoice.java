@@ -61,15 +61,29 @@ public class EmploymentChoice {
         //it is based on the utility of that job type and each location, multiplied by the number of jobs that remain vacant
         //it can be directly used for schools, since the utility only checks the distance between the person home and destination
 
-        double[] utilities = new double[lengthZoneKeys];
+        double[] probabilities = new double[lengthZoneKeys];
         for (int j = 0; j < lengthZoneKeys; j++){
-            utilities[j] = Math.exp(calculateUtilityZoneJobType(person, zoneJobKeys[j], timesMatrix, alpha, gamma)) * vacantJobsByZoneByType.get(zoneJobKeys[j]);
+            probabilities[j] = Math.exp(calculateUtilityZoneJobType(person, zoneJobKeys[j], timesMatrix, alpha, gamma)) * vacantJobsByZoneByType.get(zoneJobKeys[j]);
+            //probability = exp(utility) * number of vacant jobs
         }
-        //calculate denominator
-        double probability_denominator = Arrays.stream(utilities).sum();
 
-        //calculate probabilities
-        double[] probabilities = Arrays.stream(utilities).map(u -> u / probability_denominator).toArray();
+        int[] work = select(probabilities,zoneJobKeys);
+
+        return work;
+    }
+
+
+    public int[] selectWorkplace2(int home, HashMap<Integer, Integer> vacantJobsByZoneByType,
+                                 int[] zoneJobKeys, int lengthZoneKeys, Matrix impedanceMatrix) {
+        //given a person and job type, select the workplace location (raster cell)
+        //it is based on the utility of that job type and each location, multiplied by the number of jobs that remain vacant
+        //it can be directly used for schools, since the utility only checks the distance between the person home and destination
+
+        double[] probabilities = new double[lengthZoneKeys];
+        for (int j = 0; j < lengthZoneKeys; j++){
+            probabilities[j] = impedanceMatrix.getValueAt(home, zoneJobKeys[j] / 100) * vacantJobsByZoneByType.get(zoneJobKeys[j]);
+            //probability = impedance * number of vacant jobs. Impedance is calculated in advance as exp(utility)
+        }
 
         int[] work = select(probabilities,zoneJobKeys);
 
