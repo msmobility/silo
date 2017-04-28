@@ -161,6 +161,12 @@ public class Household implements Serializable {
         return wrk;
     }
 
+    public int getHHLicenseHolders () {
+        int lic = 0;
+        for (Person pp: persons) if (pp.getDriverLicense() == 1) lic++;
+        return lic;
+    }
+
     public void setDwelling (int id) {
         this.dwellingId = id;
         setHomeZone(Dwelling.getDwellingFromId(id).getZone());

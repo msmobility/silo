@@ -264,5 +264,16 @@ public class geoDataMuc implements geoDataI {
         return (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
     }
 
+    public static int getDistanceToTransit (int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt (zone, "distanceToTransit");
+    }
+
+    public static int getAreaTypeOfZone (int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "BBSR");
+    }
+
+    public static int getMunicipalityOfZone(int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "GEMEINDE");
+    }
 
 }
