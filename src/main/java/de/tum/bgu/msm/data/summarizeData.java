@@ -52,6 +52,8 @@ public class summarizeData {
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
+    //public geoDataI geoData;
+
 
     public static void openResultFile(ResourceBundle rb) {
         // open summary file
@@ -996,12 +998,12 @@ public class summarizeData {
             JobDataManager.writeBinaryJobDataObjects(rb);
     }
 
-    public static void summarizeAutoOwnershipByMunicipality(geoDataMuc geoData) {
+    public static void summarizeAutoOwnershipByMunicipality(geoDataI geoData) {
         // This calibration function summarizes household auto-ownership by municipality and quits
 
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carSynthesisA.csv", false);
         pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
-        int[][] autos = new int[4][10000];
+        int[][] autos = new int[4][10000000];
         for (Household hh: Household.getHouseholdArray()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
@@ -1014,7 +1016,7 @@ public class summarizeData {
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting("carSynthesisB.csv", false);
         pw.println("Municipality,0autos,1auto,2autos,3+autos");
-        for (int municipality = 0; municipality < 10000; municipality++) {
+        for (int municipality = 0; municipality < 10000000; municipality++) {
             int sm = 0;
             for (int a = 0; a < 4; a++) sm += autos[a][municipality];
             if (sm > 0) pw.println(municipality+","+autos[0][municipality]+","+autos[1][municipality]+","+autos[2][municipality]+","+autos[3][municipality]);
@@ -1022,7 +1024,7 @@ public class summarizeData {
         pw.close();
 
         logger.info("Summarized auto ownership and quit.");
-        System.exit(0);
+        //System.exit(0);
 
     }
 }

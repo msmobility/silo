@@ -55,7 +55,7 @@ public class geoDataMuc implements geoDataI {
         SiloUtil.incBrackets = ResourceUtil.getIntegerArray(rb, SiloUtil.PROPERTIES_INCOME_BRACKETS);
         SiloUtil.numberOfQualityLevels = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
         readZones();
-        readLandUse();
+        //readLandUse();
     }
 
 
@@ -264,16 +264,15 @@ public class geoDataMuc implements geoDataI {
         return (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
     }
 
-    public static int getDistanceToTransit (int zone) {
+    public float getDistanceToTransit (int zone) {
         return (int) SiloUtil.zonalData.getIndexedValueAt (zone, "distanceToTransit");
     }
 
-    public static int getAreaTypeOfZone (int zone) {
+    public int getAreaTypeOfZone (int zone) {
         return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "BBSR");
     }
 
-    public static int getMunicipalityOfZone(int zone) {
-        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "GEMEINDE");
+    public int getMunicipalityOfZone(int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "ID_city");
     }
-
 }

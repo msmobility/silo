@@ -322,5 +322,16 @@ public class geoDataMstm implements geoDataI {
         return regionalCrimeRate[region];
     }
 
+    public float getDistanceToTransit (int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt (zone, "distanceToTransit");
+    }
+
+    public int getAreaTypeOfZone (int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "BBSR");
+    }
+
+    public int getMunicipalityOfZone(int zone) {
+        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "ID_city");
+    }
 
 }

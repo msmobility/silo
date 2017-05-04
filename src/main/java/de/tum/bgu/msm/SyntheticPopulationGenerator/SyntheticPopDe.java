@@ -129,50 +129,100 @@ public class SyntheticPopDe {
 
     public void runSP(){
         //method to create the synthetic population
+//        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
+//        logger.info("   Starting to create the synthetic population.");
+//        readInputData();
+//        createDirectoryForOutput();
+//        long startTime = System.nanoTime();
+//        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
+//        if (!temporaryTokenForTesting) {           // todo:  after testing is completed
+//            //Generate the synthetic population
+//            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
+//                readMicroData2000();
+//            } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
+//                readMicroData2010();
+//            } else {
+//                logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
+//                        "year.micro.data in properties file.");
+//                System.exit(0);
+//            }
+//            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
+//                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
+//                    runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
+//                } else {
+//                    runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+//                }
+//            } else {
+//                readIPU(); //Read the weights to select the household
+//            }
+//            generateHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+//            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+//            assignJobs(); //Workplace allocation
+//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+//            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
+//            assignSchools(); //School allocation
+//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+//            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
+//        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
+//            logger.info("Testing workplace allocation and school allocation");
+//            readSyntheticPopulation();
+//            assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
+//            assignSchools();
+//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+//        }
+//
+//
+//        logger.info("Finished creating the synthetic population.");
+//        long estimatedTime = System.nanoTime() - startTime;
+//        logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
+
+
+      //  }
+    //method to create the synthetic population
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
-        logger.info("   Starting to create the synthetic population.");
-        readInputData();
-        createDirectoryForOutput();
-        long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
-        if (!temporaryTokenForTesting) {           // todo:  after testing is completed
-            //Generate the synthetic population
-            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
-                readMicroData2000();
-            } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
-                readMicroData2010();
-            } else {
-                logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
-                        "year.micro.data in properties file.");
-                System.exit(0);
-            }
-            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
-                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
-                    runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
-                } else {
-                    runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-                }
-            } else {
-                readIPU(); //Read the weights to select the household
-            }
-            generateHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-            assignJobs(); //Workplace allocation
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
-            assignSchools(); //School allocation
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
-        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-            logger.info("Testing workplace allocation and school allocation");
+        logger.info("Starting to create the synthetic population.");
+
+        boolean flagSkipCreationOfSPforDebugging = true;
+            if (!flagSkipCreationOfSPforDebugging) createSyntheticPopulationDwellingsJobs();
             readSyntheticPopulation();
-            assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
-            assignSchools();
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-        }
-        long estimatedTime = System.nanoTime() - startTime;
-        logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
+            addSyntheticCars(flagSkipCreationOfSPforDebugging);
+            logger.info("Finished creating the synthetic population.");
     }
+
+    private void createSyntheticPopulationDwellingsJobs() {
+        // Create synthetic households, persons, dwellings and jobs
+        logger.info("IPU started");
+    }
+
+    private void addSyntheticCars ( boolean flagSkipCreationOfSPforDebugging) {
+        // add synthetic cars to households
+        SynthesizeCars synthesizeCars  = new SynthesizeCars(rb);
+        synthesizeCars.run(flagSkipCreationOfSPforDebugging);
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     private void readInputData() {
@@ -2003,7 +2053,7 @@ public class SyntheticPopDe {
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_40k_" + SiloUtil.getBaseYear() + ".csv";
+        String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
         TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);

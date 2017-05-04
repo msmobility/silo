@@ -1,14 +1,18 @@
 package de.tum.bgu.msm.SyntheticPopulationGenerator;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
+import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import omx.OmxFile;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.ResourceBundle;
 
 /**
@@ -31,6 +35,9 @@ public class SynthesizeCars {
     private int dataSheetNumber;
     int numAltsAutoOwnership;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][license][workers][income][logdistToTransit][areaType]
+    public geoDataI geoData;
+
+   // private ResourceBundle rbLandUse;
 
 
     public SynthesizeCars(ResourceBundle rb) {
@@ -105,25 +112,41 @@ public class SynthesizeCars {
         }
     }
 
-    public void selectAutoOwnership (Household hh, geoDataMuc geoData) {
-        // simulate number of autos for household hh (Main version)
+
+    public void run(boolean flagSkipCreationOfSPforDebugging) {
+        // main run method
+        //Read geoData
+        geoData = new geoDataMuc(rb);
+        geoData.setInitialData();
+        selectAutoOwnership();
+        summarizeData.summarizeAutoOwnershipByMunicipality(geoData);
+
+        if (flagSkipCreationOfSPforDebugging) {
+            logger.info("Finished auto-ownership model");
+            System.exit(0);
+        }
+    }
+
+    public void selectAutoOwnership () {
+        // simulate number of autos for household hh (Version without the use of SiloDataContainer)
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as distance to transit and areaType is dependent on where households are living
+        for (Household hh: Household.getHouseholdArray()) {
+            int license = Math.min(hh.getHHLicenseHolders(), 7);
+            int workers = Math.min(hh.getNumberOfWorkers(), 7);
+            int income = Math.min(hh.getHhIncome(), 13504);
+            int logDistanceToTransit = Math.min((int) (Math.log(geoData.getDistanceToTransit(hh.getHomeZone()))), 10);
+            int areaType = geoData.getAreaTypeOfZone(hh.getHomeZone());
 
-        int license = Math.min(hh.getHHLicenseHolders(), 7);
-        int workers = Math.min(hh.getNumberOfWorkers(), 7);
-        int income = Math.min(hh.getHhIncome(), 13504);
-        int logDistanceToTransit = Math.min((int)(Math.log(geoData.getDistanceToTransit(hh.getHomeZone()))), 10);
-        int areaType = geoData.getAreaTypeOfZone(hh.getHomeZone());
+            double[] prob = new double[4];
 
-        double[] prob = new double[4];
+            for (int i = 1; i < 4; i++)
+                prob[i] =
+                        autoOwnerShipUtil[i - 1][license][workers][income][logDistanceToTransit][areaType - 1];
 
-        for (int i = 1; i < 4; i++) prob[i] =
-                autoOwnerShipUtil[i-1][license][workers][income][logDistanceToTransit][areaType - 1];
-
-        prob[0] = 1 - SiloUtil.getSum(prob);
-        hh.setAutos(SiloUtil.select(prob));
-
-        summarizeData.summarizeAutoOwnershipByMunicipality(geoData);
+            prob[0] = 1 - SiloUtil.getSum(prob);
+            hh.setAutos(SiloUtil.select(prob));
+        }
     }
 }
+
