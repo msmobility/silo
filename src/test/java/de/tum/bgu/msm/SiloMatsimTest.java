@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -104,7 +105,7 @@ public class SiloMatsimTest {
 		
 		if (cleanupAfterTest) {
 			File dir = new File(utils.getOutputDirectory());
-			IOUtils.deleteDirectory(dir);
+			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
 			SiloMstmTest.cleanUp();
 		}
 	}
