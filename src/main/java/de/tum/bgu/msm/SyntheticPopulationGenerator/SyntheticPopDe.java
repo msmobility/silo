@@ -2098,11 +2098,25 @@ public class SyntheticPopDe {
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
                 pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
                 pp.setNationality((int) persons.getValueAt(aux,"nationality"));
-                pp.setSchoolType(translateSchoolType((int) persons.getValueAt(aux,"schoolDE"), schoolsTable));
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
+                pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
+/*                if (pp.getSchoolType() == 1){
+                    if (pp.getAge() < 11 & pp.getAge() > 4) {
+                    } else {
+                        pp.setSchoolType(0);
+                    }
+                } else if (pp.getSchoolType() < 4){
+                    pp.setSchoolType(assignGymnasiumMitteByTAZ(pp));
+                }*/
+                pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
+                pp.setTravelTime((int) persons.getValueAt(aux,"travelTime"));
+                pp.setJobID((int) persons.getValueAt(aux,"workID"));
+                pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
                 aux++;
             }
+        }
+        for (int i = 1; i <= dwellings.getRowCount(); i++){
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
@@ -2404,6 +2418,10 @@ public class SyntheticPopDe {
                     int license = obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense);
                     pers.setDriverLicense(license);
                     pers.setSchoolType((int) microPersons.getValueAt(personCounter, "schoolType"));
+                    pers.setZone(household.getHomeZone());
+                    if (pers.getSchoolType() > 1 & pers.getSchoolType() < 4){
+                        pers.setSchoolType(assignGymnasiumMitteByTAZ(pers)); //Allocate students to Gymnasium or Mittelschule according to the proportion on the municipality
+                    }
                     hhPersons++;
                     counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
                 }
@@ -3300,14 +3318,14 @@ public class SyntheticPopDe {
     }
 
 
-    public int schoolTypeByTAZ (Person pp){
+    public int assignGymnasiumMitteByTAZ (Person pp){
         //provide the type of school for the student given the TAZ proportion
 
-        int school = 2; //by default they are in Mittelschule
+        int school = 3; //by default they are in Mittelschule
         double threshold = cellsMatrix.getIndexedValueAt(pp.getZone(),"proportion");
         Random rnd = new Random();
         if (rnd.nextDouble() > threshold){
-            school = 3; //Gymnasium if the random number if greater than the threshold
+            school = 2; //Gymnasium if the random number if greater than the threshold
         }
         return school;
     }
