@@ -56,7 +56,7 @@ public class Person implements Serializable {
     int zone = 0;
     int hhSize = 0;
     int jobTypeDE = 0; //Assigned by SILO depending on the education level and gender
-    int jobID = 0;
+    int jobTAZ = 0;
     int driverLicense = 0;
     int schoolType = 0;
     int schoolPlace = 0;
@@ -347,9 +347,9 @@ public class Person implements Serializable {
 
     public int getJobTypeDE() { return jobTypeDE; }
 
-    public void setJobID(int jobID){ this.jobID = jobID;}
+    public void setJobTAZ(int jobTAZ){ this.jobTAZ = jobTAZ;}
 
-    public int getJobID() { return jobID; }
+    public int getJobTAZ() { return jobTAZ; }
 
     public void setDriverLicense(int driverLicense){ this.driverLicense = driverLicense;}
 

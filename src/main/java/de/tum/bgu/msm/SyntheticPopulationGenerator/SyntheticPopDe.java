@@ -168,9 +168,9 @@ public class SyntheticPopDe {
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing workplace allocation and school allocation");
             readSyntheticPopulation();
-            assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
-            assignSchools();
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result_");
+            //assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
+            //assignSchools();
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -1897,8 +1897,8 @@ public class SyntheticPopDe {
 
                 //Assign values to job and person
                 Job.getJobFromId(jobID).setWorkerID(pp.getId());
-                pp.setJobID(jobID);
-                pp.setWorkplace(Job.getJobFromId(jobID).getZone());
+                pp.setJobTAZ(Job.getJobFromId(jobID).getZone());
+                pp.setWorkplace(jobID);
                 pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getWorkplace()));
 
                 //For validation OD TableDataSet
@@ -2076,7 +2076,7 @@ public class SyntheticPopDe {
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
+        String fileEnding = "_may1_" + SiloUtil.getBaseYear() + ".csv";
         TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
@@ -2109,9 +2109,9 @@ public class SyntheticPopDe {
                 } else if (pp.getSchoolType() < 4){
                     pp.setSchoolType(assignGymnasiumMitteByTAZ(pp));
                 }*/
-                pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
+                pp.setWorkplace((int) persons.getValueAt(aux,"workZone"));
                 pp.setTravelTime((int) persons.getValueAt(aux,"travelTime"));
-                pp.setJobID((int) persons.getValueAt(aux,"workID"));
+                pp.setJobTAZ((int) persons.getValueAt(aux,"workplace"));
                 pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
                 aux++;
             }
