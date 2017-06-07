@@ -23,7 +23,9 @@ import omx.OmxMatrix;
 public class Accessibility {
 
     protected static final String PROPERTIES_AUTO_PEAK_SKIM                  = "auto.peak.sov.skim.";
+    protected static final String PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME      = "auto.peak.sov.skim.matrix.name";
     protected static final String PROPERTIES_TRANSIT_PEAK_SKIM               = "transit.peak.time.";
+    protected static final String PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME   = "transit.peak.time.matrix.name";
     protected static final String PROPERTIES_AUTO_ACCESSIBILITY_ALPHA        = "auto.accessibility.alpha";
     protected static final String PROPERTIES_AUTO_ACCESSIBILITY_BETA         = "auto.accessibility.beta";
     protected static final String PROPERTIES_TRANSIT_ACCESSIBILITY_ALPHA     = "transit.accessibility.a";
@@ -62,7 +64,10 @@ public class Accessibility {
         // Read highway hwySkim
         OmxFile hSkim = new OmxFile(hwyFileName);
         hSkim.openReadOnly();
-        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix("HOVTime");
+        // Work-around to make sure that existing code does not break
+        String matrixName = "HOVTime";
+        if (rb.containsKey(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME)) matrixName = rb.getString(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME);
+        OmxMatrix timeOmxSkimAutos = hSkim.getMatrix(matrixName);
         hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
 //        TableDataSet hwySkimTbl = SiloUtil.readCSVfile(hwyFileName);
 //        hwySkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);
@@ -103,7 +108,11 @@ public class Accessibility {
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
         OmxFile tSkim = new OmxFile(transitFileName);
         tSkim.openReadOnly();
-        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
+        // Work-around to make sure that existing code does not break
+        String transitMatrixName = "CheapJrnyTime";
+        if (rb.containsKey(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME)) transitMatrixName = rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME);
+
+        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix(transitMatrixName);
         transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
 //        TableDataSet transitSkimTbl = SiloUtil.readCSVfile(transitFileName);
 //        transitSkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);

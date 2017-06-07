@@ -160,10 +160,12 @@ public class summarizeData {
             for (int inc = 0; inc <= SiloUtil.incBrackets.length; inc++) txt = txt.concat("," + hhInc[inc][taz]);
             for (DwellingType dt: DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
-                    modelContainer.getMove().getZonalRacialShare(taz, Race.white) + "," +
-                    modelContainer.getMove().getZonalRacialShare(taz, Race.black) + "," +
-                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
-                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
+                    // todo: make the summary application specific, Munich does not work with these race categories
+                    "0,0,0,0");
+//                    modelContainer.getMove().getZonalRacialShare(taz, Race.white) + "," +
+//                    modelContainer.getMove().getZonalRacialShare(taz, Race.black) + "," +
+//                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
+//                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
 //            String txt = f.toString();
             resultFileSpatial(null, txt);
         }
@@ -688,7 +690,7 @@ public class summarizeData {
             pwj.print(",");
             pwj.print(jj.getType());
             pwj.print(",");
-            pwj.println(jj.getTypeDE());
+            pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
                 jj.logAttributes(SiloUtil.trackWriter);
@@ -839,7 +841,7 @@ public class summarizeData {
             pwj.print(",");
             pwj.print(jj.getType());
             pwj.print(",");
-            pwj.println(jj.getTypeDE());
+            pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
                 jj.logAttributes(SiloUtil.trackWriter);
@@ -986,7 +988,7 @@ public class summarizeData {
             pwj.print(",");
             pwj.print(jj.getType());
             pwj.print(",");
-            pwj.println(jj.getTypeDE());
+            pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
                 jj.logAttributes(SiloUtil.trackWriter);

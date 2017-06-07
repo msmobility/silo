@@ -60,24 +60,26 @@ public class JobDataManager {
     }
 
 
-    public void readJobs () {
+    public void readJobs (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
         new JobType(rb);
         boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
         if (readBin) {
             readBinaryJobDataObjects();
         } else {
-            readJobData();
+            readJobData(readSmallSynPop, sizeSmallSynPop);
         }
         setHighestJobId();
     }
 
 
-    private void readJobData() {
+    private void readJobData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading job micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII) + "_" + year + ".csv";
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII);
+        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        fileName += "_" + year + ".csv";
 
         String recString = "";
         int recCount = 0;

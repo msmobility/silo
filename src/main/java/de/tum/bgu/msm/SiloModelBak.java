@@ -28,7 +28,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.realEstate.RenovationModel;
 import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.MovesModel;
+import de.tum.bgu.msm.relocation.MovesModelMstm;
 import de.tum.bgu.msm.transportModel.MatsimTransportModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -94,7 +94,7 @@ public class SiloModelBak {
     private DeathModel death;
     private MarryDivorceModel mardiv;
     private LeaveParentHhModel lph;
-    private MovesModel move;
+    private MovesModelMstm move;
     private ChangeEmploymentModel changeEmployment;
     private Accessibility accessibility;
     private AutoOwnershipModel aoModel;
@@ -164,7 +164,7 @@ public class SiloModelBak {
         Accessibility accessibility = new Accessibility(rb, SiloUtil.getStartYear(), geoData);
         //summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
 
-        MovesModel move = new MovesModel(rb, geoData);
+        MovesModelMstm move = new MovesModelMstm(rb, geoData);
         InOutMigration iomig = new InOutMigration(rb);
         ConstructionModel cons = new ConstructionModel(rb, geoData);
         RenovationModel renov = new RenovationModel(rb);
@@ -399,7 +399,7 @@ public class SiloModelBak {
         accessibility = new Accessibility(rb, SiloUtil.getStartYear(), geoData);
         //summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
 
-        move = new MovesModel(rb, geoData);
+        move = new MovesModelMstm(rb, geoData);
         iomig = new InOutMigration(rb);
         cons = new ConstructionModel(rb, geoData);
         renov = new RenovationModel(rb);
@@ -641,7 +641,7 @@ public class SiloModelBak {
     }
 
 
-    public void summarizeMicroData (int year, MovesModel move, RealEstateDataManager realEstateData,
+    public void summarizeMicroData (int year, MovesModelMstm move, RealEstateDataManager realEstateData,
                                     JobDataManager jobData) {
         // aggregate micro data
 

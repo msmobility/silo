@@ -16,14 +16,13 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.transportModel.SiloMatsimUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.ResourceBundle;
 
-public class MovesModel {
-    private static Logger logger = Logger.getLogger(MovesModel.class);
+public class MovesModelMstm implements MovesModelI {
+    private static Logger logger = Logger.getLogger(MovesModelMstm.class);
     static Logger traceLogger = Logger.getLogger("trace");
     private geoDataI geoData;
     protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
@@ -66,7 +65,7 @@ public class MovesModel {
     private int[] householdsByRegion;
 
 
-    public MovesModel(ResourceBundle rb, geoDataI geoData) {
+    public MovesModelMstm(ResourceBundle rb, geoDataI geoData) {
         // constructor
         this.rb = rb;
         this.geoData = geoData;
@@ -119,7 +118,7 @@ public class MovesModel {
 
 
     private void calculateRacialCompositionByZoneAndRegion() {
-        // Calculate share of races by zone
+        // Calculate share of races by zone and region
 
         zonalRacialComposition = new float[geoData.getZones().length][4];
         regionalRacialComposition = new float[geoData.getRegionList().length][4];
@@ -321,7 +320,7 @@ public class MovesModel {
     }
 
 
-    public void calculateRegionalUtilities(int year) {
+    public void calculateRegionalUtilities() {
         // everything is available
 
         calculateRacialCompositionByZoneAndRegion();
@@ -367,26 +366,6 @@ public class MovesModel {
             }
         }
         householdsByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
-
-        // todo: remove
-//        PrintWriter utilWriter = SiloUtil.openFileForSequentialWriting("regionalUtilities.csv", true);
-//        utilWriter.print(year+"_region");
-//        for (Race race: Race.values()) {
-//            for (int inc = 1; inc <= SiloUtil.incBrackets.length + 1; inc++) {
-//                utilWriter.print(","+inc+"_"+race);
-//            }
-//        }
-//        utilWriter.println(",vacantDwellings,price");
-//        for (int region: regions) {
-//            utilWriter.print(region);
-//            for (Race race: Race.values()) {
-//                for (int inc = 1; inc <= SiloUtil.incBrackets.length + 1; inc++) {
-//                    utilWriter.print("," + utilityRegion[inc - 1][race.ordinal()][geoData.getRegionIndex(region)]);
-//                }
-//            }
-//            utilWriter.println("," + RealEstateDataManager.getNumberOfVacantDDinRegion(region) + "," + calculateRegPrice(region));
-//        }
-//        utilWriter.close();
     }
 
 
@@ -432,7 +411,7 @@ public class MovesModel {
     }
 
 
-    public double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
+    private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
         // return utility of regions based on household type and based on work location of workers in household
 
         int[] regions = geoData.getRegionList();
@@ -491,7 +470,7 @@ public class MovesModel {
     }
 
 
-    public boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
+    private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
         if (dd.getRestriction() <= 0) return true;   // Dwelling is not income restricted
         int msa = geoDataMstm.getMSAOfZone(dd.getZone());

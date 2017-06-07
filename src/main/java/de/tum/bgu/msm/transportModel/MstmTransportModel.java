@@ -90,7 +90,7 @@ public class MstmTransportModel implements TransportModelI {
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
             RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
             HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
-            householdData.readPopulation();
+            householdData.readPopulation(false, 0);
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
         }

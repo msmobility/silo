@@ -7,8 +7,10 @@ import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.MovesModel;
+import de.tum.bgu.msm.relocation.MovesModelMstm;
 import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
+import de.tum.bgu.msm.relocation.MovesModelI;
+import de.tum.bgu.msm.relocation.MovesModelMuc;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -36,7 +38,7 @@ public class SiloModelContainer {
     private final DeathModel death;
     private final MarryDivorceModel mardiv;
     private final LeaveParentHhModel lph;
-    private final MovesModel move;
+    private final MovesModelI move;
     private final ChangeEmploymentModel changeEmployment;
     private final Accessibility acc;
     private final AutoOwnershipModel aoModel;
@@ -44,7 +46,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, geoDataI)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, geoDataI, String)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -67,7 +69,7 @@ public class SiloModelContainer {
     private SiloModelContainer(InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
-                               LeaveParentHhModel lph, MovesModel move, ChangeEmploymentModel changeEmployment,
+                               LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
                                Accessibility acc, AutoOwnershipModel aoModel, UpdateJobs updateJobs) {
         this.iomig = iomig;
         this.cons = cons;
@@ -92,7 +94,8 @@ public class SiloModelContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, geoDataI geoData) {
+    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, geoDataI geoData,
+                                                              String implementation) {
 
         logger.info("Creating UEC Models");
         DeathModel death = new DeathModel(rbLandUse);
@@ -102,8 +105,12 @@ public class SiloModelContainer {
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(geoData);
         Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), geoData);
         //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
-
-        MovesModel move = new MovesModel(rbLandUse, geoData);
+        MovesModelI move;
+        if (implementation.equals("MSTM")) {
+            move = new MovesModelMstm(rbLandUse, geoData);
+        } else {
+            move = new MovesModelMuc(rbLandUse, geoData);
+        }
         InOutMigration iomig = new InOutMigration(rbLandUse);
         ConstructionModel cons = new ConstructionModel(rbLandUse, geoData);
         RenovationModel renov = new RenovationModel(rbLandUse);
@@ -159,7 +166,7 @@ public class SiloModelContainer {
         return lph;
     }
 
-    public MovesModel getMove() {
+    public MovesModelI getMove() {
         return move;
     }
 

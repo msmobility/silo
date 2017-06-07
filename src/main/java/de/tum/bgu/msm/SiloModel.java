@@ -51,6 +51,9 @@ public class SiloModel {
     public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
 
+    protected static final String PROPERTIES_READ_SMALL_SYNPOP              = "read.small.syn.pop";
+    protected static final String PROPERTIES_WRITE_SMALL_SYNPOP             = "write.small.syn.pop";
+
     protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
     protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
     protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "mito.run.travel.model";
@@ -124,8 +127,11 @@ public class SiloModel {
         IssueCounter.regionSpecificCounters(geoData);
 
         // create main objects and read synthetic population
-        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData);
-        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData);
+        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData,
+                ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_READ_SMALL_SYNPOP, false));
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_WRITE_SMALL_SYNPOP))
+            dataContainer.getHouseholdData().writeOutSmallSynPop();
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, implementation);
 
         final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
         final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
@@ -155,7 +161,6 @@ public class SiloModel {
 
         // Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
         // synthetic population for testing
-        // writeOutSmallSP(10000);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -214,7 +219,7 @@ public class SiloModel {
             if (trackTime) timeCounter[EventTypes.values().length + 10][year] += System.currentTimeMillis() - startTime;
 
             if (trackTime) startTime = System.currentTimeMillis();
-            modelContainer.getMove().calculateRegionalUtilities(year);
+            modelContainer.getMove().calculateRegionalUtilities();
             modelContainer.getMove().calculateAverageHousingSatisfaction(modelContainer);
             if (trackTime) timeCounter[EventTypes.values().length + 6][year] += System.currentTimeMillis() - startTime;
 
@@ -370,11 +375,13 @@ public class SiloModel {
         currentYear = SiloUtil.getStartYear();
         tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
         skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
-
+        // Note: only implemented for MSTM:
         geoData = new geoDataMstm(rbLandUse);
+        // Note: only implemented for MSTM:
+        String implementation = "MSTM";
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, implementation);
         // read micro data
-        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData);
-        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData);
+        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData, false);
 
         trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
         timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -441,7 +448,7 @@ public class SiloModel {
         if (trackTime) timeCounter[EventTypes.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
         if (trackTime) startTime = System.currentTimeMillis();
-        modelContainer.getMove().calculateRegionalUtilities(currentYear);
+        modelContainer.getMove().calculateRegionalUtilities();
         modelContainer.getMove().calculateAverageHousingSatisfaction(modelContainer);
         if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
@@ -704,95 +711,5 @@ public void setMatsimConfig(Config matsimConfig) {
 //    }
 
 
-    private void writeOutSmallSP(int count) {
-        // write out count number of households to have small file for running tests
-
-        logger.info("  Writing out smaller files of synthetic population with " + count + " households only");
-        String filehh = SiloUtil.baseDirectory + "microData/small_10k_hh_2011.csv";
-        String filepp = SiloUtil.baseDirectory + "microData/small_10k_pp_2011.csv";
-        String filedd = SiloUtil.baseDirectory + "microData/small_10k_dd_2011.csv";
-        String filejj = SiloUtil.baseDirectory + "microData/small_10k_jj_2011.csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
-        pwh.println("id,dwelling,zone,hhSize,autos");
-        pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
-        pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
-        pwj.println("id,zone,personId,type");
-        Household[] hhs = Household.getHouseholdArray();
-        int counter = 0;
-        for (Household hh : hhs) {
-            counter++;
-            if (counter > count) break;
-            // write out household attributes
-            pwh.print(hh.getId());
-            pwh.print(",");
-            pwh.print(hh.getDwellingId());
-            pwh.print(",");
-            pwh.print(hh.getHomeZone());
-            pwh.print(",");
-            pwh.print(hh.getHhSize());
-            pwh.print(",");
-            pwh.println(hh.getAutos());
-            // write out person attributes
-            for (Person pp : hh.getPersons()) {
-                pwp.print(pp.getId());
-                pwp.print(",");
-                pwp.print(pp.getHhId());
-                pwp.print(",");
-                pwp.print(pp.getAge());
-                pwp.print(",");
-                pwp.print(pp.getGender());
-                pwp.print(",\"");
-                pwp.print(pp.getRole());
-                pwp.print("\",\"");
-                pwp.print(pp.getRace());
-                pwp.print("\",");
-                pwp.print(pp.getOccupation());
-                pwp.print(",0,");
-                pwp.print(pp.getWorkplace());
-                pwp.print(",");
-                pwp.println(pp.getIncome());
-                // write out job attributes (if person is employed)
-                int job = pp.getWorkplace();
-                if (job > 0 && pp.getOccupation() == 1) {
-                    Job jj = Job.getJobFromId(job);
-                    pwj.print(jj.getId());
-                    pwj.print(",");
-                    pwj.print(jj.getZone());
-                    pwj.print(",");
-                    pwj.print(jj.getWorkerId());
-                    pwj.print(",\"");
-                    pwj.print(jj.getType());
-                    pwj.println("\"");
-                }
-            }
-            // write out dwelling attributes
-                Dwelling dd = Dwelling.getDwellingFromId(hh.getDwellingId());
-            pwd.print(dd.getId());
-            pwd.print(",");
-            pwd.print(dd.getZone());
-            pwd.print(",\"");
-            pwd.print(dd.getType());
-            pwd.print("\",");
-            pwd.print(dd.getResidentId());
-            pwd.print(",");
-            pwd.print(dd.getBedrooms());
-            pwd.print(",");
-            pwd.print(dd.getQuality());
-            pwd.print(",");
-            pwd.print(dd.getPrice());
-            pwd.print(",");
-            pwd.print(dd.getRestriction());
-            pwd.print(",");
-            pwd.println(dd.getYearBuilt());
-        }
-        pwh.close();
-        pwp.close();
-        pwd.close();
-        pwj.close();
-        //System.exit(0);
-    }
 }
 

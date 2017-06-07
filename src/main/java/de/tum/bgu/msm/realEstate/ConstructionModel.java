@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.relocation.MovesModel;
 import org.apache.log4j.Logger;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
@@ -125,7 +124,7 @@ public class ConstructionModel {
     public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
 
-        HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModel.searchForNewDwelling (int hhId)
+        HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
         dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
         if (!EventRules.ruleBuildDwelling()) return;
         logger.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
