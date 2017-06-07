@@ -213,6 +213,7 @@ public class SyntheticPopDe {
         }
         cityID = SiloUtil.convertArrayListToIntArray(municipalities);
         countyID = SiloUtil.convertArrayListToIntArray(counties);
+        //todo. Add map with the TAZ per municipality
 
 
         //TAZ attributes
@@ -226,20 +227,14 @@ public class SyntheticPopDe {
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        //float ttmin = 1000;
         for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
             for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
                 if ( i == j) {
                     distanceMatrix.setValueAt(i,j, 50/1000);
                 } else {
                     distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
-/*                    if (distanceMatrix.getValueAt(i,j) < ttmin){
-                        ttmin = distanceMatrix.getValueAt(i,j);
-                    }*/
                 }
             }
-            //distanceMatrix.setValueAt(i,i,Math.max(ttmin/10,0));
-            //ttmin = 1000;
         }
         logger.info("   Read OMX matrix");
     }
@@ -754,6 +749,8 @@ public class SyntheticPopDe {
         int dwFloorSpace[][] = new int[hhCountTotal][sizeBracketsDwelling.length];
         int dwellingBuildingSize[] = new int[hhCountTotal];
         int dwellingRent[] = new int[hhCountTotal];
+        int dwHeating[] = new int[hhCountTotal];
+        int dwAdditionalHeating[] = new int[hhCountTotal];
         ddIncomplete = 0;
         String personalIncome;
         String sector;
@@ -875,7 +872,8 @@ public class SyntheticPopDe {
                                             row1++;
                                         }
                                         dwFloorSpace[hhCount][row1] = 1;
-
+                                        dwHeating[hhCount] = convertToInteger(recString.substring(506, 508));
+                                        dwAdditionalHeating[hhCount] = convertToInteger(recString.substring(1017, 1019)); //Additional heating with wood, pellets
                                         //Update household number and person counters for the next private household
                                         previousHouseholdNumber = householdNumber;
                                         personHHCount = 0;
@@ -1078,6 +1076,8 @@ public class SyntheticPopDe {
         microDwellings.appendColumn(dwellingYearConstruction,"dwellingYear"); //Construction year. It has the categories from the micro data
         microDwellings.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microDwellings.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
+        microDwellings.appendColumn(dwHeating, "dwellingHeating"); //Heating type
+        microDwellings.appendColumn(dwAdditionalHeating, "dwellingAdHeating"); //Additional heating by wood or pellets
         microDataDwelling = microDwellings;
         microDataDwelling.buildIndex(microDataDwelling.getColumnPosition("dwellingID"));
 
@@ -1141,11 +1141,11 @@ public class SyntheticPopDe {
         String freqFileName = ("microData/interimFiles/frequencyMatrix.csv");
         SiloUtil.writeTableDataSet(frequencyMatrix, freqFileName);
 
-        String freqFileName1 = ("microData/interimFiles/microPerson.csv");
-        SiloUtil.writeTableDataSet(microDataPerson, freqFileName1);
+        String ppFileName = ("microData/interimFiles/microPerson.csv");
+        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
 
-        String freqFileName2 = ("microData/interimFiles/microDwelling.csv");
-        SiloUtil.writeTableDataSet(microDwellings, freqFileName2);
+        String ddFileName = ("microData/interimFiles/microDwelling.csv");
+        SiloUtil.writeTableDataSet(microDwellings, ddFileName);
 
         logger.info("   Finished reading the micro data");
     }
@@ -2371,11 +2371,9 @@ public class SyntheticPopDe {
 
                 //copy the private household characteristics
                 int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize");
-                int householdWorkers = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "femaleWorkers") +
-                        (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "maleWorkers");
                 id = HouseholdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                Household household = new Household(id, newDdId, hhCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = new Household(id, newDdId, hhCell, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
 
@@ -2389,7 +2387,8 @@ public class SyntheticPopDe {
                     int occupation = (int) microPersons.getValueAt(personCounter, "occupation");
                     int income = (int) microPersons.getValueAt(personCounter, "income");
                     try {
-                        income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist);
+                        income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist)
+                                * 12;  //convert monthly income to yearly income
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
@@ -2428,9 +2427,10 @@ public class SyntheticPopDe {
 
                 //Copy the dwelling of that household
                 int bedRooms = 1; //Not on the micro data
+                //todo. add method to estimate quality of the building.
                 int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
-                int price = 1; //Monte Carlo
-                int year = 1; //Not by year. In the data is going to be in classes
+                int price = 1; //Monte Carlo //todo. add rent price
+                int year = 1; //Not by year. In the data is going to be in classes //todo. add German year with 4 digits
                 int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingFloorSpace");
                 int usage = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingUsage");
                 int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingType");
