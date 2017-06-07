@@ -258,14 +258,16 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobArray()) {
-            //TODO THE METHOD RETURNS VALUE ARRAY FROM A MAP -> NULL VALUES MAPPED FOR A FEW KEYS???
-        	if (jj == null) continue;   // should not happen, but model crashes without this statement.
+        	if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
                 int region = geoData.getRegionOfZone(jj.getZone());
-                vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
-                if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) vacantJobsByRegionPos[region]++;
-                if (vacantJobsByRegionPos[region] >= numberOfStoredVacantJobs) IssueCounter.countExcessOfVacantJobs(region);
+                if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
+                    vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
+                    vacantJobsByRegionPos[region]++;
+                } else {
+                    IssueCounter.countExcessOfVacantJobs(region);
+                }
                 if (jobId == SiloUtil.trackJj)
                     SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
             }

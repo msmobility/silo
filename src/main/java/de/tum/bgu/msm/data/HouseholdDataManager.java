@@ -1003,6 +1003,43 @@ public class HouseholdDataManager {
             pwd.print(",");
             pwd.println(dd.getYearBuilt());
         }
+        // add a few empty dwellings
+        for (Dwelling dd: Dwelling.getDwellingArray()) {
+            if (dd.getResidentId() == -1 && SiloUtil.select(100) > 90) {
+                // write out dwelling attributes
+                pwd.print(dd.getId());
+                pwd.print(",");
+                pwd.print(dd.getZone());
+                pwd.print(",\"");
+                pwd.print(dd.getType());
+                pwd.print("\",");
+                pwd.print(dd.getResidentId());
+                pwd.print(",");
+                pwd.print(dd.getBedrooms());
+                pwd.print(",");
+                pwd.print(dd.getQuality());
+                pwd.print(",");
+                pwd.print(dd.getPrice());
+                pwd.print(",");
+                pwd.print(dd.getRestriction());
+                pwd.print(",");
+                pwd.println(dd.getYearBuilt());
+            }
+        }
+        // add a few empty jobs
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getWorkerId() == -1 && SiloUtil.select(100) > 90) {
+                pwj.print(jj.getId());
+                pwj.print(",");
+                pwj.print(jj.getZone());
+                pwj.print(",");
+                pwj.print(jj.getWorkerId());
+                pwj.print(",\"");
+                pwj.print(jj.getType());
+                pwj.println("\"");
+            }
+        }
+
         pwh.close();
         pwp.close();
         pwd.close();
