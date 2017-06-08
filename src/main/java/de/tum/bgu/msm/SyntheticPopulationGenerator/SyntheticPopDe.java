@@ -3,7 +3,9 @@ package de.tum.bgu.msm.SyntheticPopulationGenerator;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import omx.OmxFile;
 import org.apache.commons.math.MathException;
@@ -40,6 +42,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_JOB_DESCRIPTION              = "jobs.dictionary";
     protected static final String PROPERTIES_EDUCATION_DESCRIPTION        = "education.dictionary";
     protected static final String PROPERTIES_SCHOOL_DESCRIPTION           = "school.dictionary";
+    protected static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
     //Routes of input data (if IPU is not performed)
     protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
     //Parameters of the synthetic population
@@ -94,6 +97,7 @@ public class SyntheticPopDe {
     protected int[] sizeBracketsDwelling;
     protected int[] yearBracketsDwelling;
     protected int[] householdSizes;
+    protected int numberofQualityLevels;
 
     protected TableDataSet weightsTable;
     protected TableDataSet jobsTable;
@@ -139,9 +143,9 @@ public class SyntheticPopDe {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
+        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
-            //Generate the synthetic population
+            //Read entry data from the micro data
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
                 readMicroData2000();
             } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
@@ -151,6 +155,7 @@ public class SyntheticPopDe {
                         "year.micro.data in properties file.");
                 System.exit(0);
             }
+            //Run fitting procedure
             if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
                 if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
                     runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
@@ -162,8 +167,8 @@ public class SyntheticPopDe {
             }
             generateHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-            assignJobs(); //Workplace allocation
-            assignSchools(); //School allocation
+            //assignJobs(); //Workplace allocation
+            //assignSchools(); //School allocation
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing workplace allocation and school allocation");
@@ -749,6 +754,7 @@ public class SyntheticPopDe {
         int dwFloorSpace[][] = new int[hhCountTotal][sizeBracketsDwelling.length];
         int dwellingBuildingSize[] = new int[hhCountTotal];
         int dwellingRent[] = new int[hhCountTotal];
+        int dwHeatingType[] = new int[hhCountTotal];
         int dwHeating[] = new int[hhCountTotal];
         int dwAdditionalHeating[] = new int[hhCountTotal];
         ddIncomplete = 0;
@@ -873,6 +879,7 @@ public class SyntheticPopDe {
                                         }
                                         dwFloorSpace[hhCount][row1] = 1;
                                         dwHeating[hhCount] = convertToInteger(recString.substring(506, 508));
+                                        dwHeatingType[hhCount] = convertToInteger(recString.substring(504, 506)); //1: district heating; 2: central heating; 3:  floor heating; 4: individual heating; 9: no idea; -1: group quarter; -5: moved
                                         dwAdditionalHeating[hhCount] = convertToInteger(recString.substring(1017, 1019)); //Additional heating with wood, pellets
                                         //Update household number and person counters for the next private household
                                         previousHouseholdNumber = householdNumber;
@@ -1076,7 +1083,8 @@ public class SyntheticPopDe {
         microDwellings.appendColumn(dwellingYearConstruction,"dwellingYear"); //Construction year. It has the categories from the micro data
         microDwellings.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microDwellings.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
-        microDwellings.appendColumn(dwHeating, "dwellingHeating"); //Heating type
+        microDwellings.appendColumn(dwHeating, "dwellingHeatingEnergy"); //Heating type
+        microDwellings.appendColumn(dwHeatingType, "dwellingHeatingType");
         microDwellings.appendColumn(dwAdditionalHeating, "dwellingAdHeating"); //Additional heating by wood or pellets
         microDataDwelling = microDwellings;
         microDataDwelling.buildIndex(microDataDwelling.getColumnPosition("dwellingID"));
@@ -2250,6 +2258,15 @@ public class SyntheticPopDe {
         probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
         probabilitiesJob.buildStringIndex(1);
         jobTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_TYPES_DE);
+        HashMap<Integer, int[]> ddQuality = new HashMap<>();
+        numberofQualityLevels = ResourceUtil.getIntegerProperty(rb, PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
+        for (int municipality = 0; municipality < cityID.length; municipality++){
+            for (int year : yearBracketsDwelling){
+                int[] probability = SiloUtil.createArrayWithValue(numberofQualityLevels, 0);
+                int key = year * 1000 + cityID[municipality];
+                ddQuality.put(key, probability);
+            }
+        }
 
 
         //Selection of households, persons, jobs and dwellings per municipality
@@ -2427,19 +2444,28 @@ public class SyntheticPopDe {
 
                 //Copy the dwelling of that household
                 int bedRooms = 1; //Not on the micro data
-                //todo. add method to estimate quality of the building.
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
                 int price = 1; //Monte Carlo //todo. add rent price
-                int year = 1; //Not by year. In the data is going to be in classes //todo. add German year with 4 digits
+                int year = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingYear"); //Not by year. In the data is going to be in classes //todo. add German year with 4 digits
                 int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingFloorSpace");
                 int usage = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingUsage");
                 int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingType");
-                int yearConstruction =(int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingYear");
+                int heatingType = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingHeatingType");
+                int heatingEnergy = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingHeatingEnergy");
+                int heatingAdditional = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingAdHeating");
+                int quality = guessQualityDE(heatingType, heatingEnergy, heatingAdditional, year, numberofQualityLevels); //depend on year built and type of heating
+                int yearVacant = 0;
+                while (year > yearBracketsDwelling[yearVacant]) {
+                    yearVacant++;
+                }
+                int key = municipalityID + yearBracketsDwelling[yearVacant] * 1000;
+                int[] qualityCounts = ddQuality.get(key);
+                qualityCounts[quality - 1]++;
+                ddQuality.put(key, qualityCounts);
+                year = selectDwellingYear(year); //convert from year class to actual 4-digit year
                 Dwelling dwell = new Dwelling(newDdId, hhCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(usage);
                 dwell.setBuildingSize(buildingSize);
-                dwell.setYearConstructionDE(yearConstruction);
                 counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
             }
 
@@ -2577,17 +2603,17 @@ public class SyntheticPopDe {
                 int ddCell[] = select(probCell, probCell.length, rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 int bedRooms = 1; //Not on the micro data
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
                 int price = 1; //Monte Carlo
-                int year = 1;
+                int[] buildingSizeAndYearBuilt = selectBuildingSizeYear(vacantSize, yearBracketsDwelling);
+                int key = municipalityID + buildingSizeAndYearBuilt[1] * 1000;
+                int quality = select(ddQuality.get(key)) + 1; //Based on the distribution of qualities at the municipality for that construction period
+                int year = selectVacantDwellingYear(buildingSizeAndYearBuilt[1]);
+                int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
                 Dwelling dwell = new Dwelling(newDdId, ddCell[0], -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setUsage(3); //vacant dwelling = 3; and hhID is equal to -1
-                vacantCounter++;
-                int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
                 dwell.setFloorSpace(floorSpaceDwelling);
-                int[] yearSize = selectBuildingSizeYear(vacantSize, yearBracketsDwelling);
-                dwell.setBuildingSize(yearSize[0]);
-                dwell.setYearConstructionDE(yearSize[1]);
+                dwell.setBuildingSize(buildingSizeAndYearBuilt[0]);
+                vacantCounter++;
             }
             logger.info("   The number of vacant dwellings is: " + vacantCounter);
         }
@@ -2771,9 +2797,11 @@ public class SyntheticPopDe {
         int floorSpace = SiloUtil.select(vacantFloor);
         Random r = new Random();
         if (floorSpace == 0){
-            floorSpaceDwelling = 40;
-        } else if (floorSpace == sizeBracketsDwelling.length) {
-            floorSpaceDwelling = 130;
+            float rnd = SiloModel.rand.nextFloat();
+            floorSpaceDwelling = (int) (30 + rnd * 20);
+        } else if (floorSpace == sizeBracketsDwelling.length - 1) {
+            float rnd = SiloModel.rand.nextFloat();
+            floorSpaceDwelling = (int) (120 + rnd * 200);
         } else {
             floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
                     sizeBracketsDwelling[floorSpace - 1];
@@ -2784,18 +2812,85 @@ public class SyntheticPopDe {
 
     private static int[] selectBuildingSizeYear(float[] vacantSize, int[] yearBracketsDwelling){
         //provide the size of the building
-        int[] sizeYear = new int[2];
+        int[] buildingSizeAndYear = new int[2];
         int yearSize = SiloUtil.select(vacantSize);
         if (yearSize < yearBracketsDwelling.length){
-            sizeYear[0] = 1; //small-size building
-            sizeYear[1] = yearBracketsDwelling[yearSize];
+            buildingSizeAndYear[0] = 1; //small-size building
+            buildingSizeAndYear[1] = yearBracketsDwelling[yearSize];
         } else {
-            sizeYear[0] = 2; //medium-size building
-            sizeYear[1] = yearBracketsDwelling[yearSize - yearBracketsDwelling.length];
+            buildingSizeAndYear[0] = 2; //medium-size building
+            buildingSizeAndYear[1] = yearBracketsDwelling[yearSize - yearBracketsDwelling.length];
         }
-        return sizeYear;
+        return buildingSizeAndYear;
     }
 
+
+    private static int selectDwellingYear(int yearBuilt){
+        //assign randomly one construction year to the dwelling within the year brackets of the microdata
+        //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+        int selectedYear = 1;
+        float rnd = SiloModel.rand.nextFloat();
+        switch (yearBuilt){
+            case 1: selectedYear = 1919;
+                break;
+            case 2: selectedYear = (int) (1919 + rnd * 39);
+                break;
+            case 3: selectedYear = (int) (1949 + rnd * 29);
+                break;
+            case 4: selectedYear = (int) (1979 + rnd * 7);
+                break;
+            case 5: selectedYear = (int) (1987 + rnd * 3);
+                break;
+            case 6: selectedYear = (int) (1991 + rnd * 9);
+                break;
+            case 7: selectedYear = (int) (2001 + rnd * 3);
+                break;
+            case 8: selectedYear = (int) (2005 + rnd * 3);
+                break;
+            case 9: selectedYear = (int) (2009 + rnd * 2);
+                break;
+        }
+        return selectedYear;
+    }
+
+
+    private static int selectVacantDwellingYear(int yearBuilt){
+        //assign randomly one construction year to the dwelling within the year brackets of the microdata -
+        //Ages - 2: Before 1948, 5: 1949 - 1990; 6: 1991 - 2000; 9: 2001 or later
+        int selectedYear = 1;
+        float rnd = SiloModel.rand.nextFloat();
+        switch (yearBuilt){
+            case 2: selectedYear = (int) (1919 + rnd * 39);
+                break;
+            case 5: selectedYear = (int) (1949 + rnd * 41);
+                break;
+            case 6: selectedYear = (int) (1991 + rnd * 9);
+                break;
+            case 9: selectedYear = (int) (2001 + rnd * 10);
+                break;
+        }
+        return selectedYear;
+    }
+
+    private static int guessQualityDE(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt, int numberofQualityLevels){
+        //guess quality of dwelling based on construction year and heating characteristics.
+        //kitchen and bathroom quality are not coded on the micro data
+        int quality = numberofQualityLevels;
+        if (heatingType > 2) quality--; //reduce quality if not central or district heating
+        if (heatingEnergy > 4) quality--; //reduce quality if energy is not gas, electricity or heating oil (i.e. coal, wood, biomass, solar energy)
+        if (additionalHeating == 0) quality++; //increase quality if there is additional heating in the house (regardless the used energy)
+        if (yearBuilt > 0){
+            //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+            float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
+            float prob = deteriorationProbability[yearBuilt - 1];
+            //attempt to drop quality by age two times (to get some spreading of quality levels)
+            quality = quality - SiloUtil.select(new double[]{1 - prob ,prob});
+            quality = quality - SiloUtil.select(new double[]{1 - prob, prob});
+        }
+        quality = Math.max(quality, 1);      // ensure that quality never drops below 1
+        quality = Math.min(quality, numberofQualityLevels);      // ensure that quality never excess the number of quality levels
+        return quality;
+    }
 
     private void identifyVacantJobsByZoneType() {
         // populate HashMap with Jobs by zone and job type
@@ -2960,6 +3055,20 @@ public class SyntheticPopDe {
         results[0] = id[probabilities.length - 1];
         results[1] = probabilities.length - 1;
         return results;
+    }
+
+
+    public static int select (int[] probabilities) {
+        // select item based on probabilities (for zero-based float array)
+        double selPos = SiloUtil.getSum(probabilities) * SiloModel.rand.nextDouble();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                return i;
+            }
+        }
+        return probabilities.length - 1;
     }
 
 
@@ -3146,6 +3255,7 @@ public class SyntheticPopDe {
         return attributesCount;
     }
 
+
     public static TableDataSet updateCountersPersonQuarter (Person person, TableDataSet attributesCount,int mun){
         /* method to update the counters with the characteristics of the generated person living in a group quarter*/
         if (person.getNationality() == 8){
@@ -3173,6 +3283,7 @@ public class SyntheticPopDe {
         return attributesCount;
     }
 
+
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
         if (dwelling.getUsage() == 1){
@@ -3180,28 +3291,11 @@ public class SyntheticPopDe {
         } else {
             attributesCount.setIndexedValueAt(mun,"rentedDwellings",attributesCount.getIndexedValueAt(mun,"rentedDwellings") + 1);
         }
-/*        int row = 0;
-        while (dwelling.getFloorSpace() > sizeBrackets[row]){
-            row++;
+        if (dwelling.getBuildingSize() == 1){
+            attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
+        } else {
+            attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
         }
-        String name = "dwellings" + sizeBrackets[row];
-        attributesCount.setIndexedValueAt(mun,name,attributesCount.getIndexedValueAt(mun,name) + 1);*/
-        //if (dwelling.getYearConstructionDE() > 0 & dwelling.getYearConstructionDE() < 10) {
-/*            int row1 = 0;
-            while (dwelling.getYearConstructionDE() > yearBrackets[row1]){
-                row1++;
-            }*/
-            if (dwelling.getBuildingSize() == 1){
-                //String name1 = "smallDwellings" + yearBrackets[row1];
-                //attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-                attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
-            } else {
-                //String name1 = "mediumDwellings" + yearBrackets[row1];
-                //attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-                attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
-            }
-        //}
-
         return attributesCount;
     }
 
