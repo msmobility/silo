@@ -478,7 +478,7 @@ public class SiloUtilBak {
     }
 
 
-    public static int getSmallestVal(String[] array) {
+    public static int getLowestVal(String[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
         for (String num : array) low = Math.min(low, Integer.parseInt(num));

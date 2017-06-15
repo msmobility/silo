@@ -20,6 +20,8 @@ import java.io.*;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+import com.sun.media.sound.SoftTuning;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -151,9 +153,8 @@ public class SiloModel {
             TransportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
         } else {
             logger.info("  MITO is used as the transport model");
-            String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
-            TransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(new File(fileName)), SiloUtil.baseDirectory);
-
+            File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
+            TransportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory);
         }
         //        setOldLocalModelVariables();
         // yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
@@ -235,6 +236,8 @@ public class SiloModel {
             logger.info("  Simulating events");
             // walk through all events
             for (int i = 1; i <= em.getNumberOfEvents(); i++) {
+
+                if (i > 5) continue;
                 //	    if (i%500000==0) logger.info("Processing event " + i);
                 // event[] stores event id in position [0] and person id in position [1]
                 Integer[] event = em.selectNextEvent();
@@ -312,7 +315,7 @@ public class SiloModel {
                 int nextYearForTransportModel = year + 1;
                 if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
                     TransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
-                            Household.covertHhs(), summarizeData.getRetailEmploymentByZone(geoData),
+                            Household.convertHhs(), Person.convertPps(), summarizeData.getRetailEmploymentByZone(geoData),
                             summarizeData.getOfficeEmploymentByZone(geoData),
                             summarizeData.getOtherEmploymentByZone(geoData),
                             summarizeData.getTotalEmploymentByZone(geoData), geoData.getSizeOfZonesInAcres());
@@ -321,7 +324,7 @@ public class SiloModel {
                     if (createMstmOutputFiles)
                         TransportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
                     // yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
-                    // _AFTER_ the transport model?  kai, aug'16 -it is just for cube model in maryland - rolf
+                    // _AFTER_ the transport model?  kai, aug'16 -it is just to pass a summary file to the cube model in maryland - rolf
                 }
             }
 

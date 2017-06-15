@@ -54,8 +54,8 @@ public class MstmTransportModel implements TransportModelI {
 
     @Override
     public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-                  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
-                  float[] sizeOfZonesInAcre) {
+                  MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
+                         int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
     }
 
     @Override

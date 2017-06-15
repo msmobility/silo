@@ -307,7 +307,7 @@ public class Household implements Serializable {
                licenseHolder, getHhIncome(), autos, homeZone);
     }
 
-    public static MitoHousehold[] covertHhs() {
+    public static MitoHousehold[] convertHhs() {
         MitoHousehold[] thhs = new MitoHousehold[householdMap.size()];
         Household[] hhSilo = getHouseholdArray();
         for (int i = 0; i < hhSilo.length; i++) {
