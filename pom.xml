@@ -308,20 +308,21 @@
 			but it generates an error with travis-cl. Unclear why. Therefore, this dependency is commented out
 			for the official version, and the jitpack dependency below is used instead. This way, travis-cl is
 			happy. On my computer, I have to use the first dependency, not the jitpack dependency. (RM, 23 Mar 2017)
- --> 		<dependency>
+ -->
+<!--		<dependency>
 			<groupId>de.tum.bgu.msm</groupId>
 			<artifactId>mito</artifactId>
 			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
-
+-->
 <!--  		This is the "jitpack" deployment:
  -->
-<!--		<dependency>
+		<dependency>
 			<groupId>com.github.msmobility</groupId>
 			<artifactId>mito</artifactId>
 			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
--->		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
