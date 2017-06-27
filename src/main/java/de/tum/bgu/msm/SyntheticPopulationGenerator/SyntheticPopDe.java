@@ -2684,7 +2684,7 @@ public class SyntheticPopDe {
                 row++;
             }
         }
-        if (education == 0){education = 1;}
+        //if (education == 0){education = 1;}
         return education;
     }
 
