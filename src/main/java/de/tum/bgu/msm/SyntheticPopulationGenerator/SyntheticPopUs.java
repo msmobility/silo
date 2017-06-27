@@ -235,7 +235,7 @@ public class SyntheticPopUs {
         int[] stateNumber = {24,11,10,42,51,54};      // FIPS code of String states[]
 
         jobErrorCounter = new HashMap<>();
-        geoDataI geoData = new geoDataMstm(rb);
+        //geoDataI geoData = new geoDataMstm(rb);
 
         for (int st = 0; st < states.length; st++) {
             String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +

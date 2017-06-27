@@ -1,10 +1,15 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.matrix.Matrix;
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.MitoHousehold;
+import de.tum.bgu.msm.data.MitoPerson;
 import org.apache.log4j.Logger;
+
+import java.io.File;
 import java.util.ResourceBundle;
 
 /**
@@ -27,10 +32,10 @@ public class MitoTransportModel implements TransportModelI {
 
 
     public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-                         int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
+                         MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
                          float[] sizeOfZonesInAcre) {
         logger.info("  SILO data being sent to MITO");
-        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, retailEmplByZone,
+        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
                 officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);
     }
 

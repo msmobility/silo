@@ -348,4 +348,24 @@ public class Person implements Serializable {
     public void setSchoolPlace(int schoolPlace) {this.schoolPlace = schoolPlace;}
 
     public int getSchoolPlace() {return schoolPlace;}
+
+
+    public MitoPerson convertToMitoPp() {
+        if (workplace > 0) {
+            return new MitoPerson(id, hhid, occupation, Job.getJobFromId(workplace).getZone());
+        } else {
+            return new MitoPerson(id, hhid, occupation, -1);
+        }
+    }
+
+
+    public static MitoPerson[] convertPps() {
+        MitoPerson[] tpps = new MitoPerson[personMap.size()];
+        Person[] ppSilo = getPersonArray();
+        for (int i = 0; i < ppSilo.length; i++) {
+            tpps[i] = ppSilo[i].convertToMitoPp();
+        }
+        return tpps;
+    }
+
 }

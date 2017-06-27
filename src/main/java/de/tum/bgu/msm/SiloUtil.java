@@ -681,7 +681,7 @@ public class SiloUtil {
     }
 
 
-    public static int getSmallestVal(String[] array) {
+    public static int getLowestVal(String[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
         for (String num: array) low = Math.min(low, Integer.parseInt(num));
@@ -689,7 +689,7 @@ public class SiloUtil {
     }
 
 
-    public static int getSmallestVal(int[] array) {
+    public static int getLowestVal(int[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
         for (int num: array) low = Math.min(low, num);
