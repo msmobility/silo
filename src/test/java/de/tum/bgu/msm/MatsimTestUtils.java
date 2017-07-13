@@ -21,6 +21,7 @@ package de.tum.bgu.msm;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.nio.file.Paths;
 import java.security.Permission;
 
 import org.junit.Assert;
@@ -93,7 +94,8 @@ public class MatsimTestUtils extends TestWatchman {
 		if ((!this.outputDirCreated) && (this.outputDirectory != null)) {
 			File directory = new File(this.outputDirectory);
 			if (directory.exists()) {
-				IOUtils.deleteDirectory(directory);
+				IOUtils.deleteDirectoryRecursively(Paths.get(directory.getAbsolutePath()));
+//				IOUtils.deleteDirectory(directory);
 			}
 			this.outputDirCreated = directory.mkdirs();
 			Assert.assertTrue("Could not create the output directory " + this.outputDirectory, this.outputDirCreated);

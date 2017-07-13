@@ -2,12 +2,6 @@ package de.tum.bgu.msm.container;
 
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.demography.*;
-import de.tum.bgu.msm.jobmography.UpdateJobs;
-import de.tum.bgu.msm.realEstate.*;
-import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.MovesModel;
-import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -21,6 +15,7 @@ import java.util.ResourceBundle;
  */
 public class SiloDataContainer {
     private static Logger logger = Logger.getLogger(SiloDataContainer.class);
+    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP              = "size.small.syn.pop";
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;
@@ -28,7 +23,7 @@ public class SiloDataContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, geoDataI)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, geoDataI, boolean)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -51,16 +46,19 @@ public class SiloDataContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse, geoDataI geoData) {
+    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse, geoDataI geoData,
+                                                            boolean readSmallSynPop) {
 
         // read micro data
         RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
         HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
         JobDataManager jobData = new JobDataManager(rbLandUse, geoData);
         if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
-            householdData.readPopulation();
-            realEstateData.readDwellings();
-            jobData.readJobs();
+            int smallSize = 0;
+            if (readSmallSynPop) smallSize = ResourceUtil.getIntegerProperty(rbLandUse, PROPERTIES_SIZE_SMALL_SYNPOP);
+            householdData.readPopulation(readSmallSynPop, smallSize);
+            realEstateData.readDwellings(readSmallSynPop, smallSize);
+            jobData.readJobs( readSmallSynPop, smallSize);
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
         }

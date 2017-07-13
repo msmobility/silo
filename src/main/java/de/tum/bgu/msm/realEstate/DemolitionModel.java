@@ -4,8 +4,6 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.MovesModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;

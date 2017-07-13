@@ -22,7 +22,7 @@ public class RealEstateDataManager {
     protected static final String PROPERTIES_READ_BIN_FILE  = "read.binary.dd.file";
     protected static final String PROPERTIES_DD_FILE_BIN    = "dwellings.file.bin";
     protected static final String PROPERTIES_MAX_NUM_VAC_DD = "vacant.dd.by.reg.array";
-    protected static final String PROPERTIES_ACRES_BY_DD     = "developer.acres.per.dwelling.by.type";
+    protected static final String PROPERTIES_ACRES_BY_DD    = "developer.acres.per.dwelling.by.type";
 
     private ResourceBundle rb;
     private geoDataI geoData;
@@ -48,24 +48,26 @@ public class RealEstateDataManager {
     }
 
 
-    public void readDwellings () {
+    public void readDwellings (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
         boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
         if (readBin) {
             readBinaryDwellingDataObjects();
         } else {
-            readDwellingData();
+            readDwellingData( readSmallSynPop, sizeSmallSynPop);
         }
         readAcresNeededByDwellingType();
     }
 
 
-    private void readDwellingData() {
+    private void readDwellingData(boolean readSmallSynPop, int sizeSmallSynPop) {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII) + "_" + year + ".csv";
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII);
+        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        fileName += "_" + year + ".csv";
 
         String recString = "";
         int recCount = 0;

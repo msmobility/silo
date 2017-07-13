@@ -49,16 +49,15 @@ public class Person implements Serializable {
     PersonRole role;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     int telework = 0;
-    int jobClass = 0; //Copied from the microdata. This category is used only for checking.
     int educationLevel = 0;
     int nationality = 0;
     float travelTime = 0;
     int zone = 0;
     int hhSize = 0;
-    int jobTypeDE = 0; //Assigned by SILO depending on the education level and gender
-    int jobID = 0;
+    int jobTAZ = 0;
     int driverLicense = 0;
     int schoolType = 0;
+    int schoolPlace = 0;
 //    private Lock lock = new ReentrantLock();
 
 
@@ -314,14 +313,6 @@ public class Person implements Serializable {
         return telework;
     }
 
-    public void setJobClass(int jobClass) {
-        this.jobClass = jobClass;
-    }
-
-    public int getJobClass() {
-        return jobClass;
-    }
-
     public void setNationality(int nationality) {
         this.nationality = nationality;
     }
@@ -342,13 +333,9 @@ public class Person implements Serializable {
 
     public int getHhSize() { return hhSize; }
 
-    public void setJobTypeDE(int jobTypeDE){ this.jobTypeDE = jobTypeDE;}
+    public void setJobTAZ(int jobTAZ){ this.jobTAZ = jobTAZ;}
 
-    public int getJobTypeDE() { return jobTypeDE; }
-
-    public void setJobID(int jobID){ this.jobID = jobID;}
-
-    public int getJobID() { return jobID; }
+    public int getJobTAZ() { return jobTAZ; }
 
     public void setDriverLicense(int driverLicense){ this.driverLicense = driverLicense;}
 
@@ -357,4 +344,28 @@ public class Person implements Serializable {
     public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
 
     public int getSchoolType() {return schoolType;}
+
+    public void setSchoolPlace(int schoolPlace) {this.schoolPlace = schoolPlace;}
+
+    public int getSchoolPlace() {return schoolPlace;}
+
+
+    public MitoPerson convertToMitoPp() {
+        if (workplace > 0) {
+            return new MitoPerson(id, hhid, occupation, Job.getJobFromId(workplace).getZone());
+        } else {
+            return new MitoPerson(id, hhid, occupation, -1);
+        }
+    }
+
+
+    public static MitoPerson[] convertPps() {
+        MitoPerson[] tpps = new MitoPerson[personMap.size()];
+        Person[] ppSilo = getPersonArray();
+        for (int i = 0; i < ppSilo.length; i++) {
+            tpps[i] = ppSilo[i].convertToMitoPp();
+        }
+        return tpps;
+    }
+
 }

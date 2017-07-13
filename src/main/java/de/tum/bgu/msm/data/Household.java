@@ -44,6 +44,7 @@ public class Household implements Serializable {
     private int dwellingId;
     private int hhSize;
     private Race race;
+    private Nationality nationality;
     private int autos;
     private int homeZone;
     private HouseholdType type;
@@ -154,6 +155,10 @@ public class Household implements Serializable {
     }
 
     public Race getRace() {return race; }
+
+    public Nationality getNationality() {
+        return nationality;
+    }
 
     public int getNumberOfWorkers () {
         int wrk = 0;
@@ -308,7 +313,7 @@ public class Household implements Serializable {
                licenseHolder, getHhIncome(), autos, homeZone);
     }
 
-    public static MitoHousehold[] covertHhs() {
+    public static MitoHousehold[] convertHhs() {
         MitoHousehold[] thhs = new MitoHousehold[householdMap.size()];
         Household[] hhSilo = getHouseholdArray();
         for (int i = 0; i < hhSilo.length; i++) {

@@ -36,9 +36,8 @@ public class Job {
     private int zone;
     private int workerId;
     private String type;
-    //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
-    private int typeDE;
 
+    
 
     public Job (int id, int zone, int workerId, String type) {
         // Create new job object
@@ -110,9 +109,5 @@ public class Job {
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
-
-    public void setTypeDE(int typeDE){ this.typeDE = typeDE;}
-
-    public int getTypeDE() { return typeDE; }
 
  }

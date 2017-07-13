@@ -54,8 +54,8 @@ public class MstmTransportModel implements TransportModelI {
 
     @Override
     public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-                  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
-                  float[] sizeOfZonesInAcre) {
+                  MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
+                         int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
     }
 
     @Override
@@ -90,7 +90,7 @@ public class MstmTransportModel implements TransportModelI {
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
             RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
             HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
-            householdData.readPopulation();
+            householdData.readPopulation(false, 0);
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
         }

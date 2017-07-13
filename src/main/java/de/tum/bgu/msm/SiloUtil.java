@@ -609,6 +609,44 @@ public class SiloUtil {
     }
 
 
+    public static String[] removeOneElementFromZeroBasedArray(String[] array, int elementIndex) {
+        // remove elementIndex'th element from array
+        if (elementIndex < 0 || elementIndex > array.length-1) logger.error("Cannot remove element "+elementIndex +
+                " from zero-based int array with length " + array.length);
+        String[] reduced = new String[array.length - 1];
+        if (elementIndex == 0) {
+            // remove first element
+            System.arraycopy(array, 1, reduced, 0, reduced.length);
+        } else if (elementIndex == array.length - 1) {
+            // remove last element
+            System.arraycopy(array, 0, reduced, 0, reduced.length);
+        } else {
+            System.arraycopy(array, 0, reduced, 0, elementIndex);
+            System.arraycopy(array, elementIndex + 1, reduced, elementIndex, reduced.length - elementIndex);
+        }
+        return reduced;
+    }
+
+
+    public static double[] removeOneElementFromZeroBasedArray(double[] array, int elementIndex) {
+        // remove elementIndex'th element from array
+        if (elementIndex < 0 || elementIndex > array.length-1) logger.error("Cannot remove element "+elementIndex +
+                " from zero-based int array with length " + array.length);
+        double[] reduced = new double[array.length - 1];
+        if (elementIndex == 0) {
+            // remove first element
+            System.arraycopy(array, 1, reduced, 0, reduced.length);
+        } else if (elementIndex == array.length - 1) {
+            // remove last element
+            System.arraycopy(array, 0, reduced, 0, reduced.length);
+        } else {
+            System.arraycopy(array, 0, reduced, 0, elementIndex);
+            System.arraycopy(array, elementIndex + 1, reduced, elementIndex, reduced.length - elementIndex);
+        }
+        return reduced;
+    }
+
+
     public static int getHighestVal(int[] array) {
         // return highest number in int array
         int high = Integer.MIN_VALUE;
@@ -643,7 +681,7 @@ public class SiloUtil {
     }
 
 
-    public static int getSmallestVal(String[] array) {
+    public static int getLowestVal(String[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
         for (String num: array) low = Math.min(low, Integer.parseInt(num));
@@ -651,7 +689,7 @@ public class SiloUtil {
     }
 
 
-    public static int getSmallestVal(int[] array) {
+    public static int getLowestVal(int[] array) {
         // return highest number in String array
         int low = Integer.MAX_VALUE;
         for (int num: array) low = Math.min(low, num);

@@ -15,7 +15,6 @@ public class JobType {
 
     protected static final String PROPERTIES_EMPLOYMENT_TYPE                  = "employment.types";
     private static String[] jobTypes;
-    private static int nJobTypes;
     private static HashMap<String,Integer> ordinal;
 
 
@@ -25,7 +24,6 @@ public class JobType {
         for (int i = 0; i < jobTypes.length; i++) {
             ordinal.put(jobTypes[i], i);
         }
-        nJobTypes = jobTypes.length;
     }
 
 
@@ -46,6 +44,6 @@ public class JobType {
 
 
     public static int getNumberOfJobTypes() {
-        return nJobTypes;
+        return jobTypes.length;
     }
 }

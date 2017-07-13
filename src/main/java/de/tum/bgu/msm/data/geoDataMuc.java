@@ -267,7 +267,6 @@ public class geoDataMuc implements geoDataI {
 
     public static int getSimplifiedPUMAofZone (int taz) {
         // return PUMA in which taz is located (less geographic detail, last digit is rounded to 1)
-        System.out.println("I'm in muc");
         return (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
     }
 

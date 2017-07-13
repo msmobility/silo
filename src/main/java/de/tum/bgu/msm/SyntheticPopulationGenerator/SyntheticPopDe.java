@@ -3,6 +3,7 @@ package de.tum.bgu.msm.SyntheticPopulationGenerator;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
@@ -10,6 +11,7 @@ import omx.OmxFile;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
+import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -41,6 +43,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_JOB_DESCRIPTION              = "jobs.dictionary";
     protected static final String PROPERTIES_EDUCATION_DESCRIPTION        = "education.dictionary";
     protected static final String PROPERTIES_SCHOOL_DESCRIPTION           = "school.dictionary";
+    protected static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
     //Routes of input data (if IPU is not performed)
     protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
     //Parameters of the synthetic population
@@ -60,18 +63,19 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_INCOME_GAMMA_PROBABILITY     = "income.probability";
     protected static final String PROPERTIES_INCOME_GAMMA_SHAPE           = "income.gamma.shape";
     protected static final String PROPERTIES_INCOME_GAMMA_RATE            = "income.gamma.rate";
-    protected static final String PROPERTIES_JOB_TYPES_DE                 = "employment.typesDE";
-    protected static final String PROPERTIES_SCHOOL_TYPES_DE              = "school.typesDE";
+    protected static final String PROPERTIES_JOB_TYPES                    = "employment.types";
+    protected static final String PROPERTIES_SCHOOL_TYPES_DE              = "school.types";
     protected static final String PROPERTIES_JOB_ALPHA                    = "employment.choice.alpha";
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
-    protected static final String PROPERTIES_COEFFICIENTS_JOB             = "employment.coefficients";
-    protected static final String PROPERTIES_SCHOOL_ALPHA                 = "school.choice.alpha";
-    protected static final String PROPERTIES_SCHOOL_GAMMA                 = "school.choice.gamma";
+    protected static final String PROPERTIES_UNIVERSITY_ALPHA             = "university.choice.alpha";
+    protected static final String PROPERTIES_UNIVERSITY_GAMMA             = "university.choice.gamma";
     //Read the synthetic population
     protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.ascii";
     protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.ascii";
     protected static final String PROPERTIES_DWELLING_SYN_POP             = "dwelling.file.ascii";
     protected static final String PROPERTIES_JOB_SYN_POP                  = "job.file.ascii";
+    protected static final String PROPERTIES_ATRIBUTES_MICRODATA_PP        = "read.attributes.pp";
+    protected static final String PROPERTIES_ATRIBUTES_MICRODATA_HH        = "read.attributes.hh";
 
 
     protected TableDataSet microDataHousehold;
@@ -85,6 +89,7 @@ public class SyntheticPopDe {
     protected int[] cityID;
     protected int[] countyID;
     protected HashMap<Integer, int[]> municipalitiesByCounty;
+    protected HashMap<Integer, int[]> cityTAZ;
 
     protected String[] attributesCounty;
     protected String[] attributesMunicipality;
@@ -93,12 +98,16 @@ public class SyntheticPopDe {
     protected int[] sizeBracketsDwelling;
     protected int[] yearBracketsDwelling;
     protected int[] householdSizes;
+    protected int numberofQualityLevels;
+    protected TableDataSet counterMunicipality;
+    protected TableDataSet errorMunicipality;
 
     protected TableDataSet weightsTable;
     protected TableDataSet jobsTable;
-    protected TableDataSet educationsTable;
-    protected TableDataSet schoolsTable;
-    protected int[] jobTypes;
+    protected TableDataSet educationDegreeTable;
+    protected TableDataSet schoolLevelTable;
+    HashMap<String, Integer> jobIntTypes;
+    protected String[] jobStringTypes;
     protected int[] schoolTypes;
 
     protected HashMap<Integer, int[]> idVacantJobsByZoneType;
@@ -110,6 +119,7 @@ public class SyntheticPopDe {
     protected HashMap<Integer, Integer> numberVacantSchoolsByZoneByType;
     protected HashMap<Integer, int[]> idZonesVacantSchoolsByType;
     protected HashMap<Integer, Integer> numberZonesWithVacantSchoolsByType;
+    protected HashMap<Integer, Integer> schoolCapacityByType;
 
     protected double alphaJob;
     protected double gammaJob;
@@ -117,7 +127,9 @@ public class SyntheticPopDe {
     protected TableDataSet probabilitiesJob;
 
     protected Matrix distanceMatrix;
-
+    protected Matrix distanceImpedance;
+    protected TableDataSet odMunicipalityFlow;
+    protected TableDataSet odCountyFlow;
 
     static Logger logger = Logger.getLogger(SyntheticPopDe.class);
 
@@ -130,100 +142,51 @@ public class SyntheticPopDe {
 
     public void runSP(){
         //method to create the synthetic population
-//        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
-//        logger.info("   Starting to create the synthetic population.");
-//        readInputData();
-//        createDirectoryForOutput();
-//        long startTime = System.nanoTime();
-//        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
-//        if (!temporaryTokenForTesting) {           // todo:  after testing is completed
-//            //Generate the synthetic population
-//            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
-//                readMicroData2000();
-//            } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
-//                readMicroData2010();
-//            } else {
-//                logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
-//                        "year.micro.data in properties file.");
-//                System.exit(0);
-//            }
-//            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
-//                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
-//                    runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
-//                } else {
-//                    runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-//                }
-//            } else {
-//                readIPU(); //Read the weights to select the household
-//            }
-//            generateHouseholds(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-//            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-//            assignJobs(); //Workplace allocation
-//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-//            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
-//            assignSchools(); //School allocation
-//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-//            summarizeData.writeOutSyntheticPopulationDEShort(rb,SiloUtil.getBaseYear(),50);
-//        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-//            logger.info("Testing workplace allocation and school allocation");
-//            readSyntheticPopulation();
-//            assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
-//            assignSchools();
-//            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-//        }
-//
-//
-//        logger.info("Finished creating the synthetic population.");
-//        long estimatedTime = System.nanoTime() - startTime;
-//        logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
-
-
-      //  }
-    //method to create the synthetic population
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
-        logger.info("Starting to create the synthetic population.");
-
-        boolean flagSkipCreationOfSPforDebugging = true;
-            if (!flagSkipCreationOfSPforDebugging) createSyntheticPopulationDwellingsJobs();
+        logger.info("   Starting to create the synthetic population.");
+        readInputData();
+        createDirectoryForOutput();
+        long startTime = System.nanoTime();
+        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
+        if (!temporaryTokenForTesting) {           // todo:  after testing is completed
+            //Read entry data from the micro data
+            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
+                readMicroData2000();
+            } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
+                readMicroData2010();
+            } else {
+                logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
+                        "year.micro.data in properties file.");
+                System.exit(0);
+            }
+            //Run fitting procedure
+            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
+                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
+                    runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
+                } else {
+                    runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+                }
+            } else {
+                readIPU(); //Read the weights to select the household
+            }
+            generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_d_");
+            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+            assignJobs(); //Workplace allocation
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_e_");
+            assignSchools(); //School allocation
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
+        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
+            logger.info("Testing workplace allocation and school allocation");
             readSyntheticPopulation();
-            addCars(flagSkipCreationOfSPforDebugging);
-            logger.info("Finished creating the synthetic population.");
+            //assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
+            assignSchools();
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
+            //readAndStoreMicroData();
+        }
+        long estimatedTime = System.nanoTime() - startTime;
+        logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
-
-    private void createSyntheticPopulationDwellingsJobs() {
-        // Create synthetic households, persons, dwellings and jobs
-        logger.info("IPU started");
-    }
-
-    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
-        // add synthetic cars to households
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
-        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private void readInputData() {
@@ -266,6 +229,19 @@ public class SyntheticPopDe {
         //TAZ attributes
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
+        cityTAZ = new HashMap<>();
+        for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
+            int city = (int) cellsMatrix.getValueAt(i,"ID_city");
+            int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
+            if (cityTAZ.containsKey(city)){
+                int[] previousTaz = cityTAZ.get(city);
+                previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
+                cityTAZ.put(city, previousTaz);
+            } else {
+                int[] previousTaz = {taz};
+                cityTAZ.put(city,previousTaz);
+            }
+        }
 
 
         //Read the skim matrix
@@ -274,19 +250,14 @@ public class SyntheticPopDe {
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        float ttmin = 1000;
         for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
             for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
                 if ( i == j) {
+                    distanceMatrix.setValueAt(i,j, 50/1000);
                 } else {
                     distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
-                    if (distanceMatrix.getValueAt(i,j) < ttmin){
-                        ttmin = distanceMatrix.getValueAt(i,j);
-                    }
                 }
             }
-            distanceMatrix.setValueAt(i,i,Math.max(ttmin/2,1));
-            ttmin = 1000;
         }
         logger.info("   Read OMX matrix");
     }
@@ -753,8 +724,8 @@ public class SyntheticPopDe {
         int foreignCount = 0;
         int hhCount = -1;
         jobsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_DESCRIPTION));
-        educationsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EDUCATION_DESCRIPTION));
-        schoolsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
+        educationDegreeTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EDUCATION_DESCRIPTION));
+        schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
         //Household variables
         householdSizes = ResourceUtil.getIntegerArray(rb,PROPERTIES_HOUSEHOLD_SIZES);
         ageBracketsPerson = ResourceUtil.getIntegerArray(rb, PROPERTIES_MICRO_DATA_AGES);
@@ -801,6 +772,9 @@ public class SyntheticPopDe {
         int dwFloorSpace[][] = new int[hhCountTotal][sizeBracketsDwelling.length];
         int dwellingBuildingSize[] = new int[hhCountTotal];
         int dwellingRent[] = new int[hhCountTotal];
+        int dwHeatingType[] = new int[hhCountTotal];
+        int dwHeating[] = new int[hhCountTotal];
+        int dwAdditionalHeating[] = new int[hhCountTotal];
         ddIncomplete = 0;
         String personalIncome;
         String sector;
@@ -922,7 +896,9 @@ public class SyntheticPopDe {
                                             row1++;
                                         }
                                         dwFloorSpace[hhCount][row1] = 1;
-
+                                        dwHeating[hhCount] = convertToInteger(recString.substring(506, 508));
+                                        dwHeatingType[hhCount] = convertToInteger(recString.substring(504, 506)); //1: district heating; 2: central heating; 3:  floor heating; 4: individual heating; 9: no idea; -1: group quarter; -5: moved
+                                        dwAdditionalHeating[hhCount] = convertToInteger(recString.substring(1017, 1019)); //Additional heating with wood, pellets
                                         //Update household number and person counters for the next private household
                                         previousHouseholdNumber = householdNumber;
                                         personHHCount = 0;
@@ -959,7 +935,7 @@ public class SyntheticPopDe {
                                         dwellingUsage[hhCount] = convertToInteger(recString.substring(493, 495)); // 1: owner of the building, 2: owner of the apartment, 3: main tenant, 4: subtenant, 9: not stated.
                                         dwellingYearConstruction[hhCount] = convertToInteger(recString.substring(500, 502)); // Construction year. 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later, 99: not stated.
                                         dwellingFloorSpace[hhCount] = convertToInteger(recString.substring(495, 498)); // Size of the apartment in square meters (from 10 to 999).
-                                        dwellingRent[hhCount] = convertToInteger(recString.substring(1081, 1085)); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
+                                        dwellingRent[hhCount] = Math.max(convertToInteger(recString.substring(1081, 1085)), 0); // Monthly rent, in euros (Bruttokaltmiete). For Gesamtmiete, 508-512.
                                         if (dwellingUsage[hhCount] < 3 & dwellingUsage[hhCount] > 0) {
                                             dwellingUsage[hhCount] = 1;
                                         } else if (dwellingUsage[hhCount] < 5 & dwellingUsage[hhCount] > 0) {
@@ -982,20 +958,27 @@ public class SyntheticPopDe {
                                     personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
                                     personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
                                     personEurostat[personCount] = convertToInteger(recString.substring(35, 36)); //definition of person according to EuroStat.
-                                    if (occupation[personCount] == 1) { // Only employed persons respond to the sector
+/*                                    if (occupation[personCount] == 1) { // Only employed persons respond to the sector
                                         personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
                                     } else {
                                         personJobSector[personCount] = 0;
-                                    }
+                                    }*/
                                     personTelework[personCount] = convertToInteger(recString.substring(198, 200)); //If they telework
                                     if (personTelework[personCount] < 0) {
                                         personTelework[personCount] = 0;
                                     }
                                     personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
-                                    personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationsTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
+                                    personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationDegreeTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
                                     personStatus[personCount] = convertToInteger(recString.substring(40,42)); //1: head of household, 2: partner of head of household, 3: children
                                     personRelationship[personCount] = convertToInteger(recString.substring(566, 568)); //1: head of household (hHH), 2: partner of hHH, 3: kid of hHH, 4: grandchild of hHH, 5: mother or father of hHH, 6: grandfather or grandmother of hHH, 7: sibling of hHH, 8: other relationship with hHH, 9: not related with hHH
-                                    personSchool[personCount] = translateSchoolType(convertToInteger(recString.substring(307, 309)),schoolsTable); //Type of school that hey have attended on the last year. 0: haven't attended, 1: primary school, 2: high school (German: Freie Waldorfschule, Gesamtschule and Gymnasium), 3: middle school (German: Mittelschule, Hauptshule and Realschule), 4: special school (German: Forderschule), 5: others
+                                    personSchool[personCount] = translateSchoolType(convertToInteger(recString.substring(307, 309)), schoolLevelTable); //Type of school that hey have attended on the last year. 0: haven't attended, 1: primary school, 2: high school (German: Freie Waldorfschule, Gesamtschule and Gymnasium), 3: middle school (German: Mittelschule, Hauptshule and Realschule), 4: special school (German: Forderschule), 5: others
+                                    if (occupation[personCount] > 1){
+                                        if (personSchool[personCount] == 0){
+                                            occupation[personCount] = 2; // unemployed, not attending school
+                                        } else {
+                                            occupation[personCount] = 3; //student
+                                        }
+                                    }
                                     int row = 0;
                                     while (age[personCount] > ageBracketsPerson[row]) {
                                         row++;
@@ -1125,6 +1108,9 @@ public class SyntheticPopDe {
         microDwellings.appendColumn(dwellingYearConstruction,"dwellingYear"); //Construction year. It has the categories from the micro data
         microDwellings.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microDwellings.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
+        microDwellings.appendColumn(dwHeating, "dwellingHeatingEnergy"); //Heating type
+        microDwellings.appendColumn(dwHeatingType, "dwellingHeatingType");
+        microDwellings.appendColumn(dwAdditionalHeating, "dwellingAdHeating"); //Additional heating by wood or pellets
         microDataDwelling = microDwellings;
         microDataDwelling.buildIndex(microDataDwelling.getColumnPosition("dwellingID"));
 
@@ -1188,11 +1174,11 @@ public class SyntheticPopDe {
         String freqFileName = ("microData/interimFiles/frequencyMatrix.csv");
         SiloUtil.writeTableDataSet(frequencyMatrix, freqFileName);
 
-        String freqFileName1 = ("microData/interimFiles/microPerson.csv");
-        SiloUtil.writeTableDataSet(microDataPerson, freqFileName1);
+        String ppFileName = ("microData/interimFiles/microPerson.csv");
+        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
 
-        String freqFileName2 = ("microData/interimFiles/microDwelling.csv");
-        SiloUtil.writeTableDataSet(microDwellings, freqFileName2);
+        String ddFileName = ("microData/interimFiles/microDwelling.csv");
+        SiloUtil.writeTableDataSet(microDwellings, ddFileName);
 
         logger.info("   Finished reading the micro data");
     }
@@ -1815,9 +1801,8 @@ public class SyntheticPopDe {
         //Generate jobs file. The worker ID will be assigned later on the process "assignJobs"
 
         logger.info("   Starting to generate jobs");
-        int[] jobTypeInt = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_TYPES_DE);
-        String[] jobTypes = new String[jobTypeInt.length];
-        for (int i = 0; i < jobTypeInt.length; i++){ jobTypes[i] = "job" + jobTypeInt[i]; }
+
+        String[] jobStringType = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
         int[] rasterCellsIDs = cellsMatrix.getColumnAsInt("ID_cell");
 
         //For each municipality
@@ -1832,46 +1817,25 @@ public class SyntheticPopDe {
 
 
             //obtain the raster cells of the municipality and their weight within the municipality
-            int rasterCount = 0;
-            for (int row = 1; row <= rasterCellsMatrix.getRowCount(); row++){
-                if ((int) rasterCellsMatrix.getValueAt(row,"ID_city") == municipalityID){
-                    rasterCount++;
-                }
-            }
-            int[] rasterCellsList = new int[rasterCount];
-            int finish = 0;
-            int rowAux = 1;
-            int rasterCellCountsAux = 0;
-            while (finish == 0){
-                if ((int) rasterCellsMatrix.getValueAt(rowAux,"ID_city") == municipalityID){
-                    rasterCellsList[rasterCellCountsAux] = (int) rasterCellsMatrix.getValueAt(rowAux,"ID_cell");
-                    rasterCellCountsAux++;
-                }
-                if (rasterCellCountsAux == rasterCellsList.length){
-                    finish = 1;
-                }
-                rowAux++;
-            }
+            int[] tazInCity = cityTAZ.get(municipalityID);
 
 
             //generate jobs
-            for (int row = 0; row < jobTypes.length; row++) {
-                String jobType = jobTypes[row];
+            for (int row = 0; row < jobStringType.length; row++) {
+                String jobType = jobStringType[row];
                 int totalJobs = (int) marginalsMunicipality.getIndexedValueAt(municipalityID, jobType);
-                //Create jobs according to probability, if there is at least one job
                 if (totalJobs > 0.1) {
-                    //Obtain the probability for that type of job for the raster cells within the municipality
-                    double[] probability = new double[rasterCount];
-                    for (int rasterCell = 0; rasterCell < rasterCount; rasterCell++) {
-                        probability[rasterCell] = rasterCellsMatrix.getIndexedValueAt(rasterCellsList[rasterCell], jobType);
+                    //Obtain the number of jobs of that type in each TAZ of the municipality
+                    double[] jobsInTaz = new double[tazInCity.length];
+                    for (int i = 0; i < tazInCity.length; i++) {
+                        jobsInTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobType);
                     }
-                    //Create jobs and assign the gender of the worker (with replacement)
-                    for (int jobCounterCell = 0; jobCounterCell < totalJobs; jobCounterCell++) {
-                        int[] records = select(probability, rasterCellsList);
-                        probability[records[1]] = probability[records[1]] - 1;
+                    //Create and allocate jobs to TAZs (with replacement)
+                    for (int job = 0; job < totalJobs; job++) {
+                        int[] records = select(jobsInTaz, tazInCity);
+                        jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
                         int id = JobDataManager.getNextJobId();
-                        Job job = new Job(id, records[0], -1, jobTypes[row]); //(int id, int zone, int workerId, String type)
-                        job.setTypeDE(row + 1);
+                        Job jj = new Job(id, records[0], -1, jobType); //(int id, int zone, int workerId, String type)
                     }
                 }
             }
@@ -1885,10 +1849,15 @@ public class SyntheticPopDe {
         //If there are no more workplaces of the specific job type, the worker is sent outside the area (workplace = -2; distance = 1000 km)
         //Workers that also attend school are considered only as workers (educational place is not selected for them)
 
-
-        //Read the coefficients for zonal allocation
+        //Calculate distance impedance
         alphaJob = ResourceUtil.getDoubleProperty(rb,PROPERTIES_JOB_ALPHA);
         gammaJob = ResourceUtil.getDoubleProperty(rb,PROPERTIES_JOB_GAMMA);
+        distanceImpedance = new Matrix(distanceMatrix.getRowCount(), distanceMatrix.getColumnCount());
+        for (int i = 1; i <= distanceMatrix.getRowCount(); i ++){
+            for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
+                distanceImpedance.setValueAt(i,j,(float) Math.exp(alphaJob * Math.exp(distanceMatrix.getValueAt(i,j) * gammaJob)));
+            }
+        }
 
 
         //Identify vacant jobs and schools by zone and type
@@ -1896,92 +1865,132 @@ public class SyntheticPopDe {
 
 
         //For validation - obtain the trip length distribution
-        Frequency commuteDistance = new Frequency();
+/*        Frequency commuteDistance = new Frequency();
+        validationCommutersFlow(); //Generates the validation tabledatasets
+        int[] flow = SiloUtil.createArrayWithValue(odMunicipalityFlow.getRowCount(),0);
+        int[] flowR = SiloUtil.createArrayWithValue(odCountyFlow.getRowCount(),0);
+        int count = 0;
+        odMunicipalityFlow.appendColumn(flow,Integer.toString(count));
+        odCountyFlow.appendColumn(flowR,Integer.toString(count));*/
 
 
-        //Assign workplaces depending on trip length and adequacy to the job. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
-        logger.info("   Started assigning workplaces");
-        EmploymentChoice ec = new EmploymentChoice(rb);
-        int[] personIDs = Person.getPersonIDArray();
-        double[] probabilityPerson = SiloUtil.createArrayWithValue(personIDs.length, 1.0);
-        int assignedJobs = 0;
-        for (int i = 1; i <= Math.round(personIDs.length); i++) {
-            int[] person = select(probabilityPerson, personIDs);
-            if (Person.getPersonFromId(person[0]).getOccupation() == 1) {
-
-                //Select the zones with vacant jobs for that person, given the job type
-                int selectedJobType = Person.getPersonFromId(person[0]).getJobTypeDE();
-                int[] keys = idZonesVacantJobsByType.get(selectedJobType);
-                int lengthKeys = numberZonesByType.get(selectedJobType);
-
-                if (lengthKeys > 0) {
-
-                    //Select the workplace location (which raster cell) for that person given his/her job type
-                    int[] workplace = ec.selectWorkplace(Person.getPersonFromId(person[0]), numberVacantJobsByZoneByType, keys, lengthKeys,
-                            distanceMatrix, alphaJob, gammaJob);
-
-                    //Select one jobID from that workplace location
-                    int[] vacantJobs = idVacantJobsByZoneType.get(workplace[0]);
-                    int[] job = selectEqualProbability(vacantJobs, numberVacantJobsByZoneByType.get(workplace[0]));
-
-                    //Assign values to job and person
-                    commuteDistance.addValue((int) distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Job.getJobFromId(job[0]).getZone()));
-                    Job.getJobFromId(job[0]).setWorkerID(person[0]);
-                    Person.getPersonFromId(person[0]).setJobID(job[0]);
-                    Person.getPersonFromId(person[0]).setWorkplace(Job.getJobFromId(job[0]).getZone());
-                    Person.getPersonFromId(person[0]).setTravelTime(distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Person.getPersonFromId(person[0]).getWorkplace()));
-
-
-                    //Update counts of vacant jobs
-                    vacantJobs[job[1]] = vacantJobs[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
-                    idVacantJobsByZoneType.put(workplace[0], vacantJobs);
-                    numberVacantJobsByZoneByType.put(workplace[0], numberVacantJobsByZoneByType.get(workplace[0]) - 1);
-                    numberVacantJobsByType.put(selectedJobType, numberVacantJobsByType.get(selectedJobType) - 1);
-                    if (numberVacantJobsByZoneByType.get(workplace[0]) < 1) {
-                        keys[workplace[1]] = keys[numberZonesByType.get(selectedJobType) - 1];
-                        idZonesVacantJobsByType.put(selectedJobType, keys);
-                        numberZonesByType.put(selectedJobType, numberZonesByType.get(selectedJobType) - 1);
-                        if (numberZonesByType.get(selectedJobType) < 1) {
-                            int w = 0;
-                            while (w < jobTypes.length & selectedJobType > jobTypes[w]) {
-                                w++;
-                            }
-                            jobTypes[w] = jobTypes[jobTypes.length - 1];
-                            jobTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobTypes, jobTypes.length - 1);
-                        }
-                    }
-                    logger.info("   Job " + assignedJobs + " assigned at " + workplace[0]);
-                    assignedJobs++;
-                } else {
-                    Person.getPersonFromId(person[0]).setWorkplace(-2);
-                    Person.getPersonFromId(person[0]).setTravelTime(1000);
-                    logger.info("   No more jobs available of " + selectedJobType + " class. Person " + person[0] + " has workplace outside the study area.");
-                }
-
+        //Produce one array list with workers' ID
+        Map<Integer, Person> personMap = Person.getPersonMap();
+        ArrayList<Person> workerArrayList = new ArrayList<>();
+        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
+            if (pair.getValue().getOccupation() == 1){
+                workerArrayList.add(pair.getValue());
             }
-            probabilityPerson[person[1]] = 0; //remove the person for consideration the next time
+        }
+        //Randomize the order of the worker array list
+        Collections.shuffle(workerArrayList);
+
+
+        //Job type probabilities
+        probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
+        probabilitiesJob.buildStringIndex(1);
+
+
+        //Start the selection of the jobs in random order to avoid geographical bias
+        logger.info("   Started assigning workplaces");
+        int assignedJobs = 0;
+        for (Person pp : workerArrayList){
+
+            //Select the zones with vacant jobs for that person, given the job type
+            int selectedJobType = selectJobType(pp);
+
+            int[] keys = idZonesVacantJobsByType.get(selectedJobType);
+            int lengthKeys = numberZonesByType.get(selectedJobType);
+            // if there are still TAZ with vacant jobs in the region, select one of them. If not, assign them outside the area
+            if (lengthKeys > 0) {
+
+                //Select the workplace location (TAZ) for that person given his/her job type
+                int[] workplace = selectWorkplace(pp.getZone(), numberVacantJobsByZoneByType, keys, lengthKeys,
+                        distanceImpedance);
+
+                //Assign last vacant jobID from the TAZ
+                int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
+
+                //Assign values to job and person
+                Job.getJobFromId(jobID).setWorkerID(pp.getId());
+                pp.setJobTAZ(Job.getJobFromId(jobID).getZone());
+                pp.setWorkplace(jobID);
+                //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), Job.getJobFromId(jobID).getZone()));
+
+                //For validation OD TableDataSet
+/*
+                commuteDistance.addValue((int) distanceMatrix.getValueAt(pp.getZone(), Job.getJobFromId(jobID).getZone()));
+                int homeMun = (int) cellsMatrix.getIndexedValueAt(pp.getZone(), "smallID");
+                int workMun = (int) cellsMatrix.getIndexedValueAt(pp.getWorkplace(), "smallID");
+                int odPair = homeMun * 1000 + workMun;
+                odMunicipalityFlow.setIndexedValueAt(odPair,Integer.toString(count),odMunicipalityFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
+                homeMun = (int) cellsMatrix.getIndexedValueAt(pp.getZone(), "smallCenter");
+                workMun = (int) cellsMatrix.getIndexedValueAt(pp.getWorkplace(), "smallCenter");
+                odPair = homeMun * 1000 + workMun;
+                odCountyFlow.setIndexedValueAt(odPair,Integer.toString(count),odCountyFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
+*/
+
+                //Update counts of vacant jobs
+                numberVacantJobsByZoneByType.put(workplace[0], numberVacantJobsByZoneByType.get(workplace[0]) - 1);
+                numberVacantJobsByType.put(selectedJobType, numberVacantJobsByType.get(selectedJobType) - 1);
+                if (numberVacantJobsByZoneByType.get(workplace[0]) < 1) {
+                    keys[workplace[1]] = keys[numberZonesByType.get(selectedJobType) - 1];
+                    idZonesVacantJobsByType.put(selectedJobType, keys);
+                    numberZonesByType.put(selectedJobType, numberZonesByType.get(selectedJobType) - 1);
+                    if (numberZonesByType.get(selectedJobType) < 1) {
+                        int w = 0;
+                        while (w < jobStringTypes.length & selectedJobType > jobIntTypes.get(jobStringTypes[w])) {
+                            w++;
+                        }
+                        jobIntTypes.remove(jobStringTypes[w]);
+                        jobStringTypes[w] = jobStringTypes[jobStringTypes.length - 1];
+                        jobStringTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobStringTypes, jobStringTypes.length - 1);
+
+                    }
+                }
+                //logger.info("   Job " + assignedJobs + " assigned at " + workplace[0]);
+                assignedJobs++;
+
+            } else { //No more vacant jobs in the study area. This person will work outside the study area
+                pp.setWorkplace(-2);
+                //pp.setTravelTime(1000);
+                logger.info("   No more jobs available of " + selectedJobType + " class. Person " + pp.getId() + " has workplace outside the study area.");
+            }
         }
 
 
         //For validation - trip length distribution
-        checkTripLengthDistribution(commuteDistance, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionWork.csv", 1); //Trip length frequency distribution
+        //checkTripLengthDistribution(commuteDistance, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionWork.csv", 1); //Trip length frequency distribution
+        //checkodMatrix(odMunicipalityFlow, alphaJob, gammaJob, count,"microData/interimFiles/odMunicipalityDifference.csv");
+        //SiloUtil.writeTableDataSet(odMunicipalityFlow,"microData/interimFiles/odMunicipalityFlow.csv");
+        //SiloUtil.writeTableDataSet(odCountyFlow,"microData/interimFiles/odRegionFlow.csv");
+        //count++;
+
     }
 
 
-    private void assignSchools(){
+        private void assignSchools(){
         //method to assign the school location for students. They should be registered on the microdata as students
 
         //todo. Things to consider:
-        //The location of the school is stored under "workplace location", as education is supposed to be their main activity
-        //Workers that also attended school last year do not have school location. At this point, the "workplace" can be duplicated for educational purposes
-        //We have 6 types of school, but the number of students from individual schools has only 5 types. Berufschule should be integrated or added at some point to the individual data. (Now I assume that it is the same as university)
-        //If there are no more school places for the student, they are sent outside the area (workplace = -2)
+        //The location of the school is stored under "schoolplace location"
+        //Students from Berufschule are considered to be working full-time and therefore they don't attend class
+        //If there are no more school places for the student, they are sent outside the area (schoolplace = -2)
         //For the following years, we school transition should be accomplished
 
+        int count = 0;
 
-        //Read the coefficients for zonal allocation
-        double alphaSchool = ResourceUtil.getDoubleProperty(rb,PROPERTIES_SCHOOL_ALPHA);
-        double gammaSchool = ResourceUtil.getDoubleProperty(rb,PROPERTIES_SCHOOL_GAMMA);
+        //Calculate distance impedance for students
+        double alphaUniversity = ResourceUtil.getDoubleProperty(rb, PROPERTIES_UNIVERSITY_ALPHA);
+        double gammaUniversity = ResourceUtil.getDoubleProperty(rb, PROPERTIES_UNIVERSITY_GAMMA);
+        Matrix universityDistanceImpedance = new Matrix(distanceMatrix.getRowCount(), distanceMatrix.getColumnCount());
+        Matrix schoolDistanceImpedance = new Matrix(distanceMatrix.getRowCount(), distanceMatrix.getColumnCount());
+        for (int i = 1; i <= distanceMatrix.getRowCount(); i++) {
+            for (int j = 1; j <= distanceMatrix.getColumnCount(); j++) {
+                universityDistanceImpedance.setValueAt(i, j, (float) Math.exp(alphaUniversity * Math.exp(distanceMatrix.getValueAt(i, j) * gammaUniversity)));
+                schoolDistanceImpedance.setValueAt(i, j, distanceMatrix.getValueAt(i, j));
+            }
+        }
 
 
         //Identify vacant schools by zone and type
@@ -1989,64 +1998,98 @@ public class SyntheticPopDe {
 
 
         //For validation - obtain the trip length distribution
-        Frequency travelDistance = new Frequency();
+        Frequency travelSecondary = new Frequency();
+        Frequency travelUniversity = new Frequency();
+        Frequency travelPrimary = new Frequency();
+        validationCommutersFlow(); //Generates the validation tabledatasets
+        int[] flow = SiloUtil.createArrayWithValue(odMunicipalityFlow.getRowCount(),0);
+        odMunicipalityFlow.appendColumn(flow,Integer.toString(count));
 
-        //Assign schools depending on trip length and school type. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
+
+        //Produce one array list with students' ID
+        Map<Integer, Person> personMap = Person.getPersonMap();
+        ArrayList<Person> studentArrayList = new ArrayList<>();
+        int[] studentsByType2 = new int[schoolTypes.length];
+        for (Map.Entry<Integer, Person> pair : personMap.entrySet()) {
+            int school = pair.getValue().getSchoolType();
+            if (school > 0) { //They are studying
+                studentArrayList.add(pair.getValue());
+                logger.info(school);
+                studentsByType2[school - 1] = studentsByType2[school - 1] + 1;
+            }
+        }
+        //Randomize the order of the students
+        Collections.shuffle(studentArrayList);
+
+
+        //Start the selection of schools in random order to avoid geographical bias
         logger.info("   Started assigning schools");
         EmploymentChoice ec = new EmploymentChoice(rb);
-        int[] personIDs = Person.getPersonIDArray();
-        double[] probabilityPerson = SiloUtil.createArrayWithValue(personIDs.length, 1.0);
         int assignedSchools = 0;
-        for (int i = 1; i <= personIDs.length; i++) {
-            int[] person = select(probabilityPerson, personIDs);
-            if (Person.getPersonFromId(person[0]).getSchoolType() > 0 &
-                    Person.getPersonFromId(person[0]).getOccupation() > 1) {
+        int[] studentsOutside = new int[schoolTypes.length];
+        int[] studentsByType = new int[schoolTypes.length];
+        for (Person pp : studentArrayList) {
 
-                //Select the zones with vacant schools for that person, given the school type
-                int schoolType = Person.getPersonFromId(person[0]).getSchoolType();
-                int[] keys = idZonesVacantSchoolsByType.get(schoolType);
-                int lengthKeys = numberZonesWithVacantSchoolsByType.get(schoolType);
+            //Select the zones with vacant schools for that person, given the school type
+            int schoolType = pp.getSchoolType();
+            studentsByType[schoolType - 1] = studentsByType[schoolType - 1] + 1;
+            int[] keys = idZonesVacantSchoolsByType.get(schoolType);
+            int lengthKeys = numberZonesWithVacantSchoolsByType.get(schoolType);
+            if (lengthKeys > 0) {//if there are still TAZ with school capacity in the region, select one of them. If not, assign them outside the area
 
-                if (lengthKeys > 0) {
-
-                    //Select the school location (which raster cell) for that person given his/her job type
-                    int[] schoolPlace = ec.selectWorkplace(Person.getPersonFromId(person[0]), numberVacantSchoolsByZoneByType, keys, lengthKeys,
-                            distanceMatrix, alphaSchool, gammaSchool); //the workplace method is adequate because the utility only considers distance and remaining places by zone
-
-                    //Assign values to job and person
-                    travelDistance.addValue((int) distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), schoolPlace[0] / 100));
-                    Person.getPersonFromId(person[0]).setWorkplace(schoolPlace[0] / 100);
-                    Person.getPersonFromId(person[0]).setTravelTime(distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Person.getPersonFromId(person[0]).getWorkplace()));
-
-
-                    //Update counts of vacant school places
-                    numberVacantSchoolsByZoneByType.put(schoolPlace[0],numberVacantSchoolsByZoneByType.get(schoolPlace[0]) - 1);
-                    if (numberVacantSchoolsByZoneByType.get(schoolPlace[0]) < 1){
-                        keys[schoolPlace[1]] = keys[numberZonesWithVacantSchoolsByType.get(schoolType) - 1];
-                        idZonesVacantSchoolsByType.put(schoolType,keys);
-                        numberZonesWithVacantSchoolsByType.put(schoolType,numberZonesWithVacantSchoolsByType.get(schoolType) - 1);
-                        if (numberZonesWithVacantSchoolsByType.get(schoolType) < 1){
-                            int w = 0;
-                            while (w < schoolTypes.length & schoolType > schoolTypes[w]){
-                                w++;
-                            }
-                            schoolTypes[w] = schoolTypes[schoolTypes.length - 1];
-                            schoolTypes = SiloUtil.removeOneElementFromZeroBasedArray(schoolTypes, schoolTypes.length - 1);
-                        }
-                    }
-                    logger.info("   Student " + assignedSchools + " assigned at " + schoolPlace[0]);
-                    assignedSchools++;
+                //Select the school location (which raster cell) for that person given his/her job type
+                int[] schoolPlace = new int[2];
+                if (schoolType == 3) {
+                    schoolPlace = ec.selectWorkplace2(pp.getZone(), numberVacantSchoolsByZoneByType,
+                            keys, lengthKeys, universityDistanceImpedance);
+                    travelUniversity.addValue((int) distanceMatrix.getValueAt(pp.getZone(), schoolPlace[0] / 100));
                 } else {
-                    Person.getPersonFromId(person[0]).setWorkplace(-2); //they attend one school out of the area
-                    logger.info("   No more schools available of " + schoolType + " type. Student " + person[0] + " attends school out of the area");
+                    schoolPlace = ec.selectWorkplace3(pp.getZone(), numberVacantSchoolsByZoneByType,
+                            keys, lengthKeys, schoolDistanceImpedance);
+                    if (schoolType == 1){
+                        travelPrimary.addValue((int) distanceMatrix.getValueAt(pp.getZone(),schoolPlace[0] / 100));
+                    } else if (schoolType == 2){
+                        travelSecondary.addValue((int) distanceMatrix.getValueAt(pp.getZone(), schoolPlace[0] / 100));
+                    }
                 }
+
+                //Assign values to job and person
+                pp.setSchoolPlace(schoolPlace[0] / 100);
+                //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
+
+                //For validation OD TableDataSet
+                int homeMun = (int) cellsMatrix.getIndexedValueAt(pp.getZone(), "smallID");
+                int workMun = (int) cellsMatrix.getIndexedValueAt(pp.getSchoolPlace(), "smallID");
+                int odPair = homeMun * 1000 + workMun;
+                odMunicipalityFlow.setIndexedValueAt(odPair,Integer.toString(count),odMunicipalityFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
+
+                //Update counts of vacant school places
+                numberVacantSchoolsByZoneByType.put(schoolPlace[0], numberVacantSchoolsByZoneByType.get(schoolPlace[0]) - 1);
+                if (numberVacantSchoolsByZoneByType.get(schoolPlace[0]) < 1) {
+                    numberVacantSchoolsByZoneByType.put(schoolPlace[0], 0);
+                    keys[schoolPlace[1]] = keys[numberZonesWithVacantSchoolsByType.get(schoolType) - 1];
+                    idZonesVacantSchoolsByType.put(schoolType, keys);
+                    numberZonesWithVacantSchoolsByType.put(schoolType, numberZonesWithVacantSchoolsByType.get(schoolType) - 1);
+                    if (numberZonesWithVacantSchoolsByType.get(schoolType) < 1) {
+                        numberZonesWithVacantSchoolsByType.put(schoolType, 0);
+                    }
+                }
+                assignedSchools++;
+            } else {//No more school capacity in the study area. This person will study outside the area
+                pp.setSchoolPlace(-2); //they attend one school out of the area
+                studentsOutside[schoolType - 1] = studentsOutside[schoolType - 1] + 1;
             }
-            probabilityPerson[person[1]] = 0; //remove the person for consideration the next time
         }
 
 
         //For validation - trip length distribution
-        checkTripLengthDistribution(travelDistance, alphaSchool, gammaSchool, "microData/interimFiles/tripLengthDistributionSchool.csv", 0.2); //Trip length frequency distribution
+        checkTripLengthDistribution(travelPrimary, 0, 0, "microData/interimFiles/tripLengthDistributionPrimary.csv", 1);
+        checkTripLengthDistribution(travelSecondary, 0, 0, "microData/interimFiles/tripLengthDistributionSecondary.csv", 1); //Trip length frequency distribution
+        checkTripLengthDistribution(travelUniversity, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionUniversity.csv", 1);
+        SiloUtil.writeTableDataSet(odMunicipalityFlow,"microData/interimFiles/odMunicipalityFlow.csv");
+        for (int i = 0; i < schoolTypes.length; i++) {
+            logger.info("  School type: " + schoolTypes[i] + ". " + studentsOutside[schoolTypes[i] - 1] + " students out of " + studentsByType[schoolTypes[i] - 1] + " study outside the area");
+        }
     }
 
 
@@ -2054,44 +2097,53 @@ public class SyntheticPopDe {
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
+        String fileEnding = "_e_" + SiloUtil.getBaseYear() + ".csv";
         TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
         TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP) + fileEnding);
+        schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
 
 
         //Generate the households, dwellings and persons
         int aux = 1;
         for (int i = 1; i <= households.getRowCount(); i++){
-            Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),(int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),(int)households.getValueAt(i,"autos"));
+            Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),
+                    (int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),
+                    (int)households.getValueAt(i,"autos"));
             for (int j = 1; j <= hh.getHhSize(); j++) {
-                Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
+                Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"),
+                        (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"),
+                        Race.white, (int) persons.getValueAt(aux, "occupation"), 0,
+                        (int) persons.getValueAt(aux, "income"));
                 hh.addPersonForInitialSetup(pp);
                 pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
                 if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
                 else pp.setRole(PersonRole.child);
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
-                //pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
                 pp.setNationality((int) persons.getValueAt(aux,"nationality"));
-                //pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
-                int school = 0;
-                if (pp.getAge() < 10){ school = 1;}
-                else if (pp.getAge() < 18){
-                    if (Math.random() > 0.5) {
-                        school = 2;
-                    } else {
-                        school = 3;
-                    }
-                }
-                pp.setSchoolType(school);
-                //todo. Once the method read the school type per each one of them, remove the previous lines
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
+                pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
+/*                if (pp.getSchoolType() == 1){
+                    if (pp.getAge() < 11 & pp.getAge() > 4) {
+                    } else {
+                        pp.setSchoolType(0);
+                    }
+                } else if (pp.getSchoolType() < 4){
+                    pp.setSchoolType(assignGymnasiumMitteByTAZ(pp));
+                }*/
+                pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
+                pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
                 aux++;
             }
-            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
+        }
+        for (int i = 1; i <= dwellings.getRowCount(); i++){
+            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
+                    (int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
+                    (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),
+                    (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
@@ -2099,52 +2151,17 @@ public class SyntheticPopDe {
         }
         logger.info("   Generated households, persons and dwellings");
 
-        /*
+
         //Generate the jobs
-        for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
-            //Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), (int) jobs.getValueAt(i, "personId"), "RET");
-            //todo. comment this line after testing. It clears all previous workplace assignment
-            Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), -1, "RET");
-            jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
+        for (int i = 1; i <= jobs.getRowCount(); i++) {
+            Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"),
+                    (int) jobs.getValueAt(i, "personId"), jobs.getStringValueAt(i, "type"));
         }
-        logger.info("   Generated jobs"); */
+        logger.info("   Generated jobs");
     }
 
 
-    private void assignJobs2(){
-
-        //Read the synthetic population, municipalities, cells and travel times
-        logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_40k_2011.csv";
-        TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
-        TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
-        TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
-        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP) + fileEnding);
-        logger.info("   Finished reading the synthetic population");
-
-
-        //Read the skim matrix
-        logger.info("   Starting to read OMX matrix");
-        String omxFileName= "input/syntheticPopulation/tdTest.omx";
-        OmxFile travelTimeOmx = new OmxFile(omxFileName);
-        travelTimeOmx.openReadOnly();
-        distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        float ttmin = 1000;
-        for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
-            for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
-                if ( i == j) {
-                } else {
-                    distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
-                    if (distanceMatrix.getValueAt(i,j) < ttmin){
-                        ttmin = distanceMatrix.getValueAt(i,j);
-                    }
-                }
-            }
-            distanceMatrix.setValueAt(i,i,Math.max(ttmin/2,1));
-            ttmin = 1000;
-        }
-        logger.info("   Read OMX matrix");
-
+    private void validationCommutersFlow(){
 
         //For checking
         //OD matrix from the commuters data, for validation
@@ -2177,7 +2194,7 @@ public class SyntheticPopDe {
             }
         }
         //OD flows at the municipality level in one TableDataSet, to facilitate visualization of the deviation between the observed data and the estimated data
-        TableDataSet odFlows = new TableDataSet();
+        odMunicipalityFlow = new TableDataSet();
         int[] cityKeys = new int[citySmallID.length * citySmallID.length];
         int[] odData = new int[citySmallID.length * citySmallID.length];
         int k = 0;
@@ -2188,11 +2205,14 @@ public class SyntheticPopDe {
                 k++;
             }
         }
-        odFlows.appendColumn(cityKeys,"ID_od");
-        odFlows.appendColumn(odData,"ObservedFlow");
-        odFlows.buildIndex(odFlows.getColumnPosition("ID_od"));
+        int[] initial = SiloUtil.createArrayWithValue(cityKeys.length, 0);
+        odMunicipalityFlow.appendColumn(cityKeys,"ID_od");
+        odMunicipalityFlow.appendColumn(odData,"ObservedFlow");
+        odMunicipalityFlow.appendColumn(initial,"SimulatedFlow");
+        odMunicipalityFlow.buildIndex(odMunicipalityFlow.getColumnPosition("ID_od"));
+
         //OD flows at the regional level (5 core cities)
-        TableDataSet od5Flows = new TableDataSet();
+        odCountyFlow = new TableDataSet();
         int[] regionKeys = new int[selectedCounties.length * selectedCounties.length];
         int[] regionalFlows = new int[selectedCounties.length * selectedCounties.length];
         k = 0;
@@ -2203,176 +2223,18 @@ public class SyntheticPopDe {
                 k++;
             }
         }
-        od5Flows.appendColumn(regionKeys,"ID_od");
-        od5Flows.appendColumn(regionalFlows,"ObservedFlow");
-        od5Flows.buildIndex(od5Flows.getColumnPosition("ID_od"));
-
-
-        //Generate the households, dwellings and persons
-        int workers = 0;
-        int[] personIDs = persons.getColumnAsInt("id");
-        Frequency travelTimes = new Frequency();
-        for (int i = 1; i <= households.getRowCount(); i++){
-            Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),(int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),(int)households.getValueAt(i,"autos"));
-            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),(int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),(int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),(int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
-            dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
-            dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
-            dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
-        }
-        for (int aux = 1; aux <= persons.getRowCount(); aux++){
-            Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"), (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"), Race.white, (int) persons.getValueAt(aux, "occupation"), 0, (int) persons.getValueAt(aux, "income"));
-            Household.getHouseholdFromId(pp.getHhId()).addPersonForInitialSetup(pp);
-            pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-            if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
-            else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
-            else pp.setRole(PersonRole.child);
-            pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
-            pp.setHhSize(Household.getHouseholdFromId(pp.getHhId()).getHhSize());
-            pp.setZone(Household.getHouseholdFromId(pp.getHhId()).getHomeZone());
-            pp.setJobTypeDE((int)persons.getValueAt(aux,"jobDE"));
-        }
-        logger.info("   Generated households, persons and dwellings");
-
-
-        //Read the coefficients for zonal allocation and job type probabilities
-        coefficients = SiloUtil.readCSVfile(rb.getString(PROPERTIES_COEFFICIENTS_JOB));
-        coefficients.buildStringIndex(1);
-        probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
-        probabilitiesJob.buildStringIndex(1);
-        marginalsMunicipality = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));// all the marginals from the municipalities
-
-
-        //For validating, generate multiple random seeds and combinations of alpha and gamma
-        int maxSeeds = 1;
-        //double[] alphas = createArrayDoubles(1, 100, 20);
-        //double[] gammas = createArrayDoubles(-0.01, -0.001, 10);
-        double[] alphas = {50};
-        double[] gammas = {-0.003};
-        int count = 0;
-
-
-        //Start assignment
-        for (int seed = 0; seed < maxSeeds; seed++) {
-
-            for (int a = 0; a < alphas.length; a++) {
-                alphaJob = alphas[a];
-
-                for (int g = 0; g < gammas.length; g++) {
-                    gammaJob = gammas[g];
-
-                    for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
-                        Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), -1, "RET");
-                        jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
-                    }
-                    identifyVacantJobsByZoneType();
-
-/*                    TableDataSet odMatrix = new TableDataSet();
-                    odMatrix.appendColumn(cityID, "ID_city");
-                    for (int mun = 0; mun < cityID.length; mun++) {
-                        int[] dummy = SiloUtil.createArrayWithValue(cityID.length, 0);
-                        odMatrix.appendColumn(dummy, Integer.toString(cityID[mun]));
-                    }
-                    int[] dums = SiloUtil.createArrayWithValue(cityID.length, 0);
-                    odMatrix.appendColumn(dums, "counts");
-                    odMatrix.buildIndex(odMatrix.getColumnPosition("ID_city"));*/
-
-                    int[] dummy1 = SiloUtil.createArrayWithValue(cityKeys.length,0);
-                    odFlows.appendColumn(dummy1,Integer.toString(count));
-                    int[] dummy2 = SiloUtil.createArrayWithValue(regionKeys.length,0);
-                    od5Flows.appendColumn(dummy2,Integer.toString(count));
-
-
-                    //Assign workplaces depending on trip length and adequacy to the job. The parameters from the model are calibrated to match the trip length distribution from commuters and the OD matrix
-                    logger.info("   Started assigning workplaces");
-                    EmploymentChoice ec = new EmploymentChoice(rb);
-                    double[] probabilityPerson = SiloUtil.createArrayWithValue(persons.getRowCount(), 1.0);
-                    int assignedJobs = 0;
-                    for (int i = 1; i <= Math.round(personIDs.length); i++) {
-                        int[] person = select(probabilityPerson, personIDs);
-                        if (Person.getPersonFromId(person[0]).getOccupation() == 1) {
-
-                            //Select the job type for that person
-                            //int selectedJobType = ec.selectJobType(Person.getPersonFromId(person[0]), probabilitiesJob, jobTypes);
-                            int selectedJobType = Person.getPersonFromId(person[0]).getJobTypeDE();
-                            int[] keys = idZonesVacantJobsByType.get(selectedJobType);
-                            int lengthKeys = numberZonesByType.get(selectedJobType);
-
-                            //Select the workplace location (which raster cell) for that person given his/her job type
-                            int[] selectedWorkplace = ec.selectWorkplace(Person.getPersonFromId(person[0]), numberVacantJobsByZoneByType, keys, lengthKeys,
-                                    distanceMatrix, alphaJob, gammaJob);
-
-                            //Select one jobID from that workplace location
-                            int[] vacantJobs = idVacantJobsByZoneType.get(selectedWorkplace[0]);
-                            int[] job = selectEqualProbability(vacantJobs, numberVacantJobsByZoneByType.get(selectedWorkplace[0]));
-
-                            //Assign values to job and person
-                            travelTimes.addValue((int) distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Job.getJobFromId(job[0]).getZone()));
-                            Job.getJobFromId(job[0]).setWorkerID(person[0]);
-                            Person.getPersonFromId(person[0]).setJobID(job[0]);
-                            Person.getPersonFromId(person[0]).setJobTypeDE(selectedJobType);
-                            Person.getPersonFromId(person[0]).setWorkplace(Job.getJobFromId(job[0]).getZone());
-                            Person.getPersonFromId(person[0]).setTravelTime(distanceMatrix.getValueAt(Person.getPersonFromId(person[0]).getZone(), Person.getPersonFromId(person[0]).getWorkplace()));
-
-                            //For validation OD TableDataSet
-                            int homeMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "smallID");
-                            int workMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "smallID");
-                            int odPair = homeMun * 1000 + workMun;
-                            odFlows.setIndexedValueAt(odPair,Integer.toString(count),odFlows.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
-                            homeMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getZone(), "smallCenter");
-                            workMun = (int) cellsMatrix.getIndexedValueAt(Person.getPersonFromId(person[0]).getWorkplace(), "smallCenter");
-                            odPair = homeMun * 1000 + workMun;
-                            od5Flows.setIndexedValueAt(odPair,Integer.toString(count),od5Flows.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
-
-
-                            //Update counts of vacant jobs
-                            vacantJobs[job[1]] = vacantJobs[numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1];
-                            idVacantJobsByZoneType.put(selectedWorkplace[0], vacantJobs);
-                            numberVacantJobsByZoneByType.put(selectedWorkplace[0], numberVacantJobsByZoneByType.get(selectedWorkplace[0]) - 1);
-                            numberVacantJobsByType.put(selectedJobType, numberVacantJobsByType.get(selectedJobType) - 1);
-                            if (numberVacantJobsByZoneByType.get(selectedWorkplace[0]) < 1) {
-                                keys[selectedWorkplace[1]] = keys[numberZonesByType.get(selectedJobType) - 1];
-                                idZonesVacantJobsByType.put(selectedJobType, keys);
-                                numberZonesByType.put(selectedJobType, numberZonesByType.get(selectedJobType) - 1);
-                                if (numberZonesByType.get(selectedJobType) < 1) {
-                                    int w = 0;
-                                    while (w < jobTypes.length & selectedJobType > jobTypes[w]) {
-                                        w++;
-                                    }
-                                    jobTypes[w] = jobTypes[jobTypes.length - 1];
-                                    jobTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobTypes, jobTypes.length - 1);
-                                }
-                            }
-                            //logger.info("   Job: " + assignedJobs + " assigned at " + selectedWorkplace[0]);
-                            assignedJobs++;
-                        }
-                        probabilityPerson[person[1]] = 0; //remove the person for consideration the next time
-                    }
-
-
-                    //For validation OD matrix
-                    checkTripLengthDistribution(travelTimes, alphas[a], gammas[g], "microData/interimFiles/tripLengthDistribution.csv", 1); //Trip length frequency distribution
-                    checkodMatrix(odFlows, alphas[a], gammas[g], count,"microData/interimFiles/odFlowDifference.csv"); //OD Matrix at the municipality level
-                    String nameFile = "microData/interimFiles/odMunicipalityFlow.csv";
-                    SiloUtil.writeTableDataSet(odFlows,nameFile);
-                    SiloUtil.writeTableDataSet(od5Flows,"microData/interimFiles/odRegionFlow.csv");
-                    //writeMatrixToCSV("microData/interimFiles/odRegion.csv",od5Flows,alphaJob,gammaJob,count); //OD Matrix at the region level (for 5 core cities)
-                    count++;
-                }
-            }
-        }
+        int[] initialFlow = SiloUtil.createArrayWithValue(regionKeys.length, 0);
+        odCountyFlow.appendColumn(regionKeys,"ID_od");
+        odCountyFlow.appendColumn(regionalFlows,"ObservedFlow");
+        odCountyFlow.appendColumn(initialFlow,"SimulatedFlow");
+        odCountyFlow.buildIndex(odCountyFlow.getColumnPosition("ID_od"));
     }
 
 
-
-    private void generateHouseholds(){
+    private void generateHouseholdsPersonsDwellings(){
         //Generate the synthetic population using Monte Carlo (select the households according to the weight)
         //Once the household is selected, all the characteristics of the household will be copied (including the household members)
         logger.info("   Starting to generate households and persons.");
-
-        //List of raster cells
-        int[] rasterCellsID = cellsMatrix.getColumnAsInt("ID_cell");
-        String[] rasterCellsIDs = new String[rasterCellsID.length];
-        for (int row = 0; row < rasterCellsID.length; row++){rasterCellsIDs[row] = Integer.toString(rasterCellsID[row]);}
 
 
         //List of households of the micro data
@@ -2392,24 +2254,18 @@ public class SyntheticPopDe {
         TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
 
 
-        //Create the errors table (for all the municipalities)
-        TableDataSet counterSynPop = new TableDataSet();
-        TableDataSet relativeErrorSynPop = new TableDataSet();
-        counterSynPop.appendColumn(cityID,"ID_city");
-        relativeErrorSynPop.appendColumn(cityID,"ID_city");
-        for(int attribute = 0; attribute < attributesMunicipality.length; attribute++) {
-            double[] dummy2 = SiloUtil.createArrayWithValue(cityID.length,0.0);
-            double[] dummy3 = SiloUtil.createArrayWithValue(cityID.length,0.0);
-            counterSynPop.appendColumn(dummy2, attributesMunicipality[attribute]);
-            relativeErrorSynPop.appendColumn(dummy3, attributesMunicipality[attribute]);
-        }
-        counterSynPop.buildIndex(counterSynPop.getColumnPosition("ID_city"));
-        relativeErrorSynPop.buildIndex(relativeErrorSynPop.getColumnPosition("ID_city"));
+        generateCountersForValidation();
 
-        EmploymentChoice ec = new EmploymentChoice(rb);
-        probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
-        probabilitiesJob.buildStringIndex(1);
-        jobTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_TYPES_DE);
+        //Create hashmaps to store quality of occupied dwellings
+        HashMap<Integer, int[]> ddQuality = new HashMap<>();
+        numberofQualityLevels = ResourceUtil.getIntegerProperty(rb, PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
+        for (int municipality = 0; municipality < cityID.length; municipality++){
+            for (int year : yearBracketsDwelling){
+                int[] probability = SiloUtil.createArrayWithValue(numberofQualityLevels, 0);
+                int key = year * 1000 + cityID[municipality];
+                ddQuality.put(key, probability);
+            }
+        }
 
 
         //Selection of households, persons, jobs and dwellings per municipality
@@ -2435,7 +2291,7 @@ public class SyntheticPopDe {
 
 
             //Counter and errors for the municipality
-            TableDataSet counterMunicipality = new TableDataSet();
+/*            TableDataSet counterMunicipality = new TableDataSet();
             TableDataSet errorMunicipality = new TableDataSet();
             TableDataSet marginals = new TableDataSet();
             int[] dummy = SiloUtil.createArrayWithValue(1,municipalityID);
@@ -2454,107 +2310,94 @@ public class SyntheticPopDe {
             }
             counterMunicipality.buildIndex(counterMunicipality.getColumnPosition("ID_city"));
             errorMunicipality.buildIndex(errorMunicipality.getColumnPosition("ID_city"));
-            marginals.buildIndex(marginals.getColumnPosition("ID_city"));
+            marginals.buildIndex(marginals.getColumnPosition("ID_city"));*/
 
 
             //obtain the raster cells of the municipality and their weight within the municipality
-            int rasterCount = 0;
-            for (int row = 1; row <= rasterCellsMatrix.getRowCount(); row++){
-                if ((int) rasterCellsMatrix.getValueAt(row,"ID_city") == municipalityID){
-                    rasterCount++;
-                }
-            }
-            int[] rasterCellsList = new int[rasterCount];
-            int finish = 0;
-            int rowAux = 1;
-            int rasterCellCountsAux = 0;
-            double[] probCell = new double[rasterCount];
-            while (finish == 0){
-                if ((int) rasterCellsMatrix.getValueAt(rowAux,"ID_city") == municipalityID){
-                    rasterCellsList[rasterCellCountsAux] = (int) rasterCellsMatrix.getValueAt(rowAux,"ID_cell");
-                    probCell[rasterCellCountsAux] = rasterCellsMatrix.getValueAt(rowAux,"Population");
-                    //rasterPopulation = rasterPopulation + rasterCellsMatrix.getValueAt(rowAux,"Population");
-                    rasterCellCountsAux++;
-                }
-                if (rasterCellCountsAux == rasterCellsList.length){
-                    finish = 1;
-                }
-                rowAux++;
+            int[] tazInCity = cityTAZ.get(municipalityID);
+            double[] probTaz = new double[tazInCity.length];
+            double tazRemaining = 0;
+            for (int i = 0; i < tazInCity.length; i++){
+                probTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i],"Population");
+                tazRemaining = tazRemaining + probTaz[i];
             }
 
 
             //select the probabilities of the households from the microData, for that municipality
-            double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
-            double[] probabilityQuarter = new double[probability.length];
+            double[] pAux = new double[probability.length]; // Separate private households and group quarters for generation
+            double hhRemaining = totalHouseholds;
+            int[] idAux = new int[microDataIds.length];
+            int aux = 0;
             for (int row = 0; row < probability.length; row++){
                 if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
-                    probabilityPrivate[row] = probability[row];
-                } else {
-                    probabilityQuarter[row] = probability[row];
+                    pAux[aux] = probability[row];
+                    hhRemaining = hhRemaining + pAux[aux];
+                    idAux[aux] = idAux[row];
+                    aux++;
                 }
             }
+            double[] probHh = new double[aux];
+            int[] idsMD = new int[aux];
+            System.arraycopy(pAux, 0, probHh, 0, aux);
+            System.arraycopy(idAux, 0, idsMD, 0, aux);
 
 
             //marginals for the municipality
             int hhPersons = 0;
             int hhTotal = 0;
             int quartersTotal = 0;
-            int[] timesSelected = new int[probability.length];
             int id = 0;
 
 
             //for all the households that are inside the municipality (we will match perfectly the number of households. The total population will vary compared to the marginals.)
             for (int row = 0; row < totalHouseholds; row++) {
 
-                //select the household to copy and allocate it
-                int[] records = select(probabilityPrivate, microDataIds);
-                int hhIdMicroData = records[0];
-                int hhRowMicroData = records[1];
-                int[] recordsCell = select(probCell,probCell.length,rasterCellsList);
-                int hhCell = recordsCell[0];
-                int recordCell = recordsCell[1];
-                timesSelected[hhRowMicroData]++;
+                //select the household to copy from the micro data(with replacement)
+                int[] records = select(probHh, microDataIds, hhRemaining);
+                int hhIdMD = records[0];
+                int hhRowMD = records[1];
+                if (probHh[hhRowMD] > 1.0) {
+                    probHh[hhRowMD] = probHh[hhRowMD] - 1;
+                    hhRemaining = hhRemaining - 1;
+                } else {
+                    hhRemaining = hhRowMD - probHh[hhRowMD];
+                    probHh[hhRowMD] = probHh[probHh.length - 1];
+                    idsMD[hhRowMD] = idsMD[probHh.length - 1];
+                    probHh = SiloUtil.removeOneElementFromZeroBasedArray(probHh, probHh.length - 1);
+                    idsMD = SiloUtil.removeOneElementFromZeroBasedArray(idsMD, idsMD.length - 1);
+                }
 
 
-                //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
-                if (probabilityPrivate[hhRowMicroData] > 1.0) {
-                    probabilityPrivate[hhRowMicroData] = probabilityPrivate[hhRowMicroData] - 1;
-                } else {
-                    probabilityPrivate[hhRowMicroData] = 0;
-                }
-                if (probCell[recordCell] > (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize")) {
-                    probCell[recordCell] = probCell[recordCell] - (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize");
-                } else {
-                    probCell[recordCell] = 0;
-                }
+                //Select the taz to allocate the household (without replacement)
+                int[] recordsCell = select(probTaz, tazInCity, tazRemaining);
+                int tazID = recordsCell[0];
 
 
                 //copy the private household characteristics
-                int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "hhSize");
-                int householdWorkers = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "femaleWorkers") +
-                        (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "maleWorkers");
+                int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMD, "hhSize");
                 id = HouseholdDataManager.getNextHouseholdId();
-                Household household = new Household(id, hhIdMicroData, hhCell, householdSize, householdWorkers); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                int newDdId = RealEstateDataManager.getNextDwellingId();
+                Household household = new Household(id, newDdId, tazID, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
-                counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
+                //counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
 
 
                 //copy the household members characteristics
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
-                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMicroData, "personCount") + rowPerson;
+                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
                     int age = (int) microPersons.getValueAt(personCounter, "age");
                     int gender = (int) microPersons.getValueAt(personCounter, "gender");
                     int occupation = (int) microPersons.getValueAt(personCounter, "occupation");
                     int income = (int) microPersons.getValueAt(personCounter, "income");
                     try {
-                        income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist);
+                        income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist)
+                                * 12;  //convert monthly income to yearly income
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
                     Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     household.addPersonForInitialSetup(pers);
-                    pers.setJobClass((int) microPersons.getValueAt(personCounter, "jobSector"));
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.single; //default value = single
                     if (microPersons.getValueAt(personCounter, "personStatus") == 2) {
@@ -2571,81 +2414,41 @@ public class SyntheticPopDe {
                     pers.setRole(role);
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
-                    int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
-                    pers.setJobTypeDE(selectedJobType);
+                    //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
+                    //pers.setJobTypeDE(selectedJobType);
                     int license = obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense);
                     pers.setDriverLicense(license);
                     pers.setSchoolType((int) microPersons.getValueAt(personCounter, "schoolType"));
+                    pers.setZone(household.getHomeZone());
                     hhPersons++;
-                    counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
+                    //counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
                 }
 
 
                 //Copy the dwelling of that household
-                int newDdId = RealEstateDataManager.getNextDwellingId();
                 int bedRooms = 1; //Not on the micro data
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
-                int price = 1; //Monte Carlo
-                int year = 1; //Not by year. In the data is going to be in classes
-                int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingFloorSpace");
-                int usage = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingUsage");
-                int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingType");
-                int yearConstruction =(int) microDwellings.getIndexedValueAt(hhIdMicroData, "dwellingYear");
-                Dwelling dwell = new Dwelling(newDdId, hhCell, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                int price = Math.max((int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingRentPrice"), 0); //Copied from micro data
+                int year = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingYear"); //Not by year. In the data is going to be in classes
+                int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingFloorSpace");
+                int usage = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingUsage");
+                int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingType");
+                int heatingType = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingHeatingType");
+                int heatingEnergy = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingHeatingEnergy");
+                int heatingAdditional = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingAdHeating");
+                int quality = guessQualityDE(heatingType, heatingEnergy, heatingAdditional, year, numberofQualityLevels); //depend on year built and type of heating
+                int yearVacant = 0;
+                while (year > yearBracketsDwelling[yearVacant]) {yearVacant++;}
+                int key = municipalityID + yearBracketsDwelling[yearVacant] * 1000;
+                int[] qualityCounts = ddQuality.get(key);
+                qualityCounts[quality - 1]++;
+                ddQuality.put(key, qualityCounts);
+                year = selectDwellingYear(year); //convert from year class to actual 4-digit year
+                Dwelling dwell = new Dwelling(newDdId, tazID, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(usage);
                 dwell.setBuildingSize(buildingSize);
-                dwell.setYearConstructionDE(yearConstruction);
-                counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
+                //counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
             }
-
-/*            //for all persons in group quarters
-            for (int row = 0; row < totalQuarters; row++){
-
-                //select the person to copy and allocate it
-                int[] records = select(probabilityQuarter, microDataIds);
-                int idHHmicroData = records[0];
-                int recordHHmicroData = records[1];
-
-                //update the probability of the record of being selected on the next draw. It increases the correlation between the probability and the number of draws at the end
-                if (probabilityPrivate[recordHHmicroData] > 1) {
-                    probabilityPrivate[recordHHmicroData] = probabilityPrivate[recordHHmicroData] - 1;
-                } else {
-                    probabilityPrivate[recordHHmicroData] = 0;
-                }
-
-                //Group quarter - household characteristics
-                int id = HouseholdDataManager.getNextHouseholdId();
-                Household household = new Household(id, idHHmicroData, municipalityID, 1, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
-                quartersTotal++;
-
-                //person characteristics
-                int idPerson = HouseholdDataManager.getNextPersonId();
-                int personCounter = (int) microHouseholds.getIndexedValueAt(idHHmicroData, "personCount");
-                int age = (int) microPersons.getValueAt(personCounter, "age");
-                int gender = (int) microPersons.getValueAt(personCounter, "gender");
-                int occupation = (int) microPersons.getValueAt(personCounter, "occupation");
-                int income = 0;
-                try {
-                    income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist);
-                } catch (MathException e) {
-                    e.printStackTrace();
-                }
-                //int workplace = (int) microDataPerson.getValueAt(personCounter,"workplace"); It will be linked after using the trip length distribution
-                int jobClass = (int) microPersons.getValueAt(personCounter, "jobSector");
-                int educationLevel = (int) microPersons.getValueAt(personCounter, "educationLevel");
-                int maritalStatus = (int) microPersons.getValueAt(personCounter, "maritalStatus");
-                int telework = (int) microPersons.getValueAt(personCounter, "telework");
-                int nationality = (int) microPersons.getValueAt(personCounter, "nationality");
-                Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 1, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                pers.setJobClass(jobClass);
-                pers.setEducationLevel(educationLevel);
-                pers.setMaritalStatus(maritalStatus);
-                pers.setNationality(nationality);
-                pers.setTelework(telework);
-                counterMunicipality = updateCountersPersonQuarter(pers,counterMunicipality,municipalityID);
-            }*/
-
             int households = HouseholdDataManager.getHighestHouseholdIdInUse() - previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse() - previousPersons;
             previousHouseholds = HouseholdDataManager.getHighestHouseholdIdInUse();
@@ -2657,7 +2460,7 @@ public class SyntheticPopDe {
 
             //Consider if I need to add also the errors from other attributes. They must be at the marginals file, or one extra file
             //For county level they should be calculated on a next step, outside this loop.
-            float averageError = 0f;
+/*            float averageError = 0f;
             for (int attribute = 0; attribute < attributesHouseholdIPU.length; attribute++){
                 float error = Math.abs((counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]) -
                         marginals.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute])) /
@@ -2667,17 +2470,12 @@ public class SyntheticPopDe {
                 counterSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
                 relativeErrorSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],errorMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
             }
-            averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;
+            averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;*/
 
 
-            logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households and " + quartersTotal + " persons in group quarters. Average error of " + averageError);
-            TableDataSet prob = new TableDataSet();
-            prob.appendColumn(microDataIds,"ID");
-            prob.appendColumn(probabilityPrivate,"probabilityPrivate");
-            prob.appendColumn(timesSelected,"numberSelections");
-            SiloUtil.writeTableDataSet(prob,"microData/interimFiles/compara.csv");
-            SiloUtil.writeTableDataSet(counterMunicipality,"microData/interimFiles/counterMun.csv");
-            SiloUtil.writeTableDataSet(errorMunicipality,"microData/interimFiles/errorMun.csv");
+            logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households and " + quartersTotal + " persons in group quarters.");
+            //SiloUtil.writeTableDataSet(counterMunicipality,"microData/interimFiles/counterMun.csv");
+            //SiloUtil.writeTableDataSet(errorMunicipality,"microData/interimFiles/errorMun.csv");
         }
         int households = HouseholdDataManager.getHighestHouseholdIdInUse();
         int persons = HouseholdDataManager.getHighestPersonIdInUse();
@@ -2686,36 +2484,29 @@ public class SyntheticPopDe {
 
         //Vacant dwellings--------------------------------------------
         //They have similar characteristics to the dwellings that are occupied (assume that there is no difference between the occupied and vacant dwellings in terms of quality)
+        int vacantCounter = 0;
         for (int municipality = 0; municipality < cityID.length; municipality++) {
+
             logger.info("   Municipality " + cityID[municipality] + ". Starting to generate vacant dwellings.");
             int municipalityID = cityID[municipality];
             int vacantDwellings = (int) marginalsMunicipality.getIndexedValueAt(cityID[municipality], "totalDwellingsVacant");
-            int totalHouseholds = (int) marginalsMunicipality.getIndexedValueAt(municipalityID, "hhTotal");
             TableDataSet rasterCellsMatrix = cellsMatrix;
 
             //obtain the raster cells of the municipality and their weight within the municipality
+            int[] tazInCity = cityTAZ.get(municipalityID);
+            double[] probTaz = new double[tazInCity.length];
+            double sumProbTaz = 0;
+            for (int i = 0; i < tazInCity.length; i++){
+                probTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i],"Population");
+                sumProbTaz = sumProbTaz + probTaz[i];
+            }
             int rasterCount = 0;
             for (int row = 1; row <= rasterCellsMatrix.getRowCount(); row++) {
                 if ((int) rasterCellsMatrix.getValueAt(row, "ID_city") == municipalityID) {
                     rasterCount++;
                 }
             }
-            int[] rasterCellsList = new int[rasterCount];
-            int finish = 0;
-            int rowAux = 1;
-            int rasterCellCountsAux = 0;
-            double[] probCell = new double[rasterCount];
-            while (finish == 0) {
-                if ((int) rasterCellsMatrix.getValueAt(rowAux, "ID_city") == municipalityID) {
-                    rasterCellsList[rasterCellCountsAux] = (int) rasterCellsMatrix.getValueAt(rowAux, "ID_cell");
-                    probCell[rasterCellCountsAux] = rasterCellsMatrix.getValueAt(rowAux, "Population");
-                    rasterCellCountsAux++;
-                }
-                if (rasterCellCountsAux == rasterCellsList.length) {
-                    finish = 1;
-                }
-                rowAux++;
-            }
+
 
             //Probability of floor size for vacant dwellings
             float [] vacantFloor = new float[sizeBracketsDwelling.length];
@@ -2735,41 +2526,32 @@ public class SyntheticPopDe {
 
             //Select the vacant dwelling and copy characteristics
             for (int row = 0; row < vacantDwellings; row++) {
-                int ddCell[] = select(probCell, probCell.length, rasterCellsList); // I allocate vacant dwellings using the same proportion as occupied dwellings.
+
+                //Allocation
+                int ddCell[] = select(probTaz, tazInCity, sumProbTaz); // I allocate vacant dwellings using the same proportion as occupied dwellings.
+
+                //Copy characteristics
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 int bedRooms = 1; //Not on the micro data
-                int quality = 1; //depend on complete plumbing, complete kitchen and year built. Not on the micro data
-                int price = 1; //Monte Carlo
-                int year = 1;
-                Dwelling dwell = new Dwelling(newDdId, ddCell[0], 0, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                dwell.setUsage(3); //vacant dwelling = 3
-                int floorSpace = SiloUtil.select(vacantFloor);
-                int floorSpaceDwelling = 0;
-                Random r = new Random();
-                if (floorSpace == 0){
-                    floorSpaceDwelling = 40;
-                } else if (floorSpace == sizeBracketsDwelling.length) {
-                    floorSpaceDwelling = 130;
-                } else {
-                    floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
-                            sizeBracketsDwelling[floorSpace - 1];
-                }
+                int price = 0; //Monte Carlo
+                int[] buildingSizeAndYearBuilt = selectBuildingSizeYear(vacantSize, yearBracketsDwelling);
+                int key = municipalityID + buildingSizeAndYearBuilt[1] * 1000;
+                int quality = select(ddQuality.get(key)) + 1; //Based on the distribution of qualities at the municipality for that construction period
+                int year = selectVacantDwellingYear(buildingSizeAndYearBuilt[1]);
+                int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
+                Dwelling dwell = new Dwelling(newDdId, ddCell[0], -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                dwell.setUsage(3); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
-                int yearSize = SiloUtil.select(vacantSize);
-                if (yearSize < yearBracketsDwelling.length){
-                    dwell.setBuildingSize(1); //small-size building
-                    dwell.setYearConstructionDE(yearBracketsDwelling[yearSize]);
-                } else {
-                    dwell.setBuildingSize(2); //medium-size building
-                    dwell.setYearConstructionDE(yearBracketsDwelling[yearSize - yearBracketsDwelling.length]);
-                }
+                dwell.setBuildingSize(buildingSizeAndYearBuilt[0]);
+                vacantCounter++;
             }
+            logger.info("   The number of vacant dwellings is: " + vacantCounter);
         }
-        //Write the files for all municipalities
+/*        //Write the files for all municipalities
         String name = ("microData/interimFiles/totalsSynPop.csv");
         SiloUtil.writeTableDataSet(counterSynPop,name);
         String name1 = ("microData/interimFiles/errorsSynPop.csv");
-        SiloUtil.writeTableDataSet(relativeErrorSynPop,name1);
+        SiloUtil.writeTableDataSet(relativeErrorSynPop,name1);*/
     }
 
 
@@ -2903,7 +2685,7 @@ public class SyntheticPopDe {
                 row++;
             }
         }
-        if (education == 0){education = 1;}
+        //if (education == 0){education = 1;}
         return education;
     }
 
@@ -2939,6 +2721,107 @@ public class SyntheticPopDe {
     }
 
 
+    private static int selectFloorSpace(float[] vacantFloor, int[] sizeBracketsDwelling){
+        //provide the size of the building
+        int floorSpaceDwelling = 0;
+        int floorSpace = SiloUtil.select(vacantFloor);
+        Random r = new Random();
+        if (floorSpace == 0){
+            float rnd = SiloModel.rand.nextFloat();
+            floorSpaceDwelling = (int) (30 + rnd * 20);
+        } else if (floorSpace == sizeBracketsDwelling.length - 1) {
+            float rnd = SiloModel.rand.nextFloat();
+            floorSpaceDwelling = (int) (120 + rnd * 200);
+        } else {
+            floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
+                    sizeBracketsDwelling[floorSpace - 1];
+        }
+        return floorSpaceDwelling;
+    }
+
+
+    private static int[] selectBuildingSizeYear(float[] vacantSize, int[] yearBracketsDwelling){
+        //provide the size of the building
+        int[] buildingSizeAndYear = new int[2];
+        int yearSize = SiloUtil.select(vacantSize);
+        if (yearSize < yearBracketsDwelling.length){
+            buildingSizeAndYear[0] = 1; //small-size building
+            buildingSizeAndYear[1] = yearBracketsDwelling[yearSize];
+        } else {
+            buildingSizeAndYear[0] = 2; //medium-size building
+            buildingSizeAndYear[1] = yearBracketsDwelling[yearSize - yearBracketsDwelling.length];
+        }
+        return buildingSizeAndYear;
+    }
+
+
+    private static int selectDwellingYear(int yearBuilt){
+        //assign randomly one construction year to the dwelling within the year brackets of the microdata
+        //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+        int selectedYear = 1;
+        float rnd = SiloModel.rand.nextFloat();
+        switch (yearBuilt){
+            case 1: selectedYear = 1919;
+                break;
+            case 2: selectedYear = (int) (1919 + rnd * 39);
+                break;
+            case 3: selectedYear = (int) (1949 + rnd * 29);
+                break;
+            case 4: selectedYear = (int) (1979 + rnd * 7);
+                break;
+            case 5: selectedYear = (int) (1987 + rnd * 3);
+                break;
+            case 6: selectedYear = (int) (1991 + rnd * 9);
+                break;
+            case 7: selectedYear = (int) (2001 + rnd * 3);
+                break;
+            case 8: selectedYear = (int) (2005 + rnd * 3);
+                break;
+            case 9: selectedYear = (int) (2009 + rnd * 2);
+                break;
+        }
+        return selectedYear;
+    }
+
+
+    private static int selectVacantDwellingYear(int yearBuilt){
+        //assign randomly one construction year to the dwelling within the year brackets of the microdata -
+        //Ages - 2: Before 1948, 5: 1949 - 1990; 6: 1991 - 2000; 9: 2001 or later
+        int selectedYear = 1;
+        float rnd = SiloModel.rand.nextFloat();
+        switch (yearBuilt){
+            case 2: selectedYear = (int) (1919 + rnd * 39);
+                break;
+            case 5: selectedYear = (int) (1949 + rnd * 41);
+                break;
+            case 6: selectedYear = (int) (1991 + rnd * 9);
+                break;
+            case 9: selectedYear = (int) (2001 + rnd * 10);
+                break;
+        }
+        return selectedYear;
+    }
+
+    private static int guessQualityDE(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt, int numberofQualityLevels){
+        //guess quality of dwelling based on construction year and heating characteristics.
+        //kitchen and bathroom quality are not coded on the micro data
+        int quality = numberofQualityLevels;
+        if (heatingType > 2) quality--; //reduce quality if not central or district heating
+        if (heatingEnergy > 4) quality--; //reduce quality if energy is not gas, electricity or heating oil (i.e. coal, wood, biomass, solar energy)
+        if (additionalHeating == 0) quality++; //increase quality if there is additional heating in the house (regardless the used energy)
+        if (yearBuilt > 0){
+            //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+            float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
+            float prob = deteriorationProbability[yearBuilt - 1];
+            //attempt to drop quality by age two times (to get some spreading of quality levels)
+            quality = quality - SiloUtil.select(new double[]{1 - prob ,prob});
+            quality = quality - SiloUtil.select(new double[]{1 - prob, prob});
+        }
+        quality = Math.max(quality, 1);      // ensure that quality never drops below 1
+        quality = Math.min(quality, numberofQualityLevels);      // ensure that quality never excess the number of quality levels
+        return quality;
+    }
+
     private void identifyVacantJobsByZoneType() {
         // populate HashMap with Jobs by zone and job type
         // adapted from SyntheticPopUS
@@ -2949,60 +2832,69 @@ public class SyntheticPopDe {
         idVacantJobsByZoneType = new HashMap<>();
         numberVacantJobsByType = new HashMap<>();
         idZonesVacantJobsByType = new HashMap<>();
-        numberZonesByType= new HashMap<>();
+        numberZonesByType = new HashMap<>();
         numberVacantJobsByZoneByType = new HashMap<>();
-        jobTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_TYPES_DE);
+        jobStringTypes = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
+        jobIntTypes = new HashMap<>();
+        for (int i = 0; i < jobStringTypes.length; i++) {
+            jobIntTypes.put(jobStringTypes[i], i);
+        }
         int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
 
-        //create the int[] with the maximum length possible
-
         //create the counter hashmaps
-        for (int i = 0; i < jobTypes.length; i++){
-            numberZonesByType.put(jobTypes[i],0);
-            numberVacantJobsByType.put(jobTypes[i],0);
+        for (int i = 0; i < jobStringTypes.length; i++){
+            int type = jobIntTypes.get(jobStringTypes[i]);
+            numberZonesByType.put(type,0);
+            numberVacantJobsByType.put(type,0);
             for (int j = 0; j < cellsID.length; j++){
-                numberVacantJobsByZoneByType.put(jobTypes[i] + cellsID[j] * 100, 0);
+                numberVacantJobsByZoneByType.put(type + cellsID[j] * 100, 0);
             }
         }
         //get the totals
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
+                int type = jobIntTypes.get(jj.getType());
+                int typeZone = type + jj.getZone() * 100;
                 //update the set of zones that have ID
-                if (numberVacantJobsByZoneByType.get(jj.getTypeDE() + jj.getZone() * 100) == 0){
-                    numberZonesByType.put(jj.getTypeDE(),numberZonesByType.get(jj.getTypeDE()) + 1);
+                if (numberVacantJobsByZoneByType.get(typeZone) == 0){
+                    numberZonesByType.put(type, numberZonesByType.get(type) + 1);
                 }
                 //update the number of vacant jobs per job type
-                numberVacantJobsByType.put(jj.getTypeDE(),numberVacantJobsByType.get(jj.getTypeDE()) + 1);
-                numberVacantJobsByZoneByType.put(jj.getTypeDE() + jj.getZone() * 100,numberVacantJobsByZoneByType.get(jj.getTypeDE() + jj.getZone() * 100) + 1);
+                numberVacantJobsByType.put(type, numberVacantJobsByType.get(type) + 1);
+                numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
             }
         }
         //create the IDs Hashmaps and reset the counters
-        for (int i = 0; i < jobTypes.length; i++){
-            int[] dummy = SiloUtil.createArrayWithValue(numberZonesByType.get(jobTypes[i]),0);
-            idZonesVacantJobsByType.put(jobTypes[i],dummy);
-            numberZonesByType.put(jobTypes[i],0);
+        for (int i = 0; i < jobStringTypes.length; i++){
+            int type = jobIntTypes.get(jobStringTypes[i]);
+            int[] dummy = SiloUtil.createArrayWithValue(numberZonesByType.get(type),0);
+            idZonesVacantJobsByType.put(type,dummy);
+            numberZonesByType.put(type,0);
             for (int j = 0; j < cellsID.length; j++){
-                int[] dummy2 = SiloUtil.createArrayWithValue(numberVacantJobsByZoneByType.get(jobTypes[i] + cellsID[j] * 100), 0);
-                idVacantJobsByZoneType.put(jobTypes[i] + cellsID[j] * 100, dummy2);
-                numberVacantJobsByZoneByType.put(jobTypes[i] + cellsID[j] * 100, 0);
+                int typeZone = type + cellsID[j] * 100;
+                int[] dummy2 = SiloUtil.createArrayWithValue(numberVacantJobsByZoneByType.get(typeZone), 0);
+                idVacantJobsByZoneType.put(typeZone, dummy2);
+                numberVacantJobsByZoneByType.put(typeZone, 0);
             }
         }
         //fill the Hashmaps with IDs
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
+                int type = jobIntTypes.get(jj.getType());
+                int typeZone = jobIntTypes.get(jj.getType()) + jj.getZone() * 100;
                 //update the list of job IDs per zone and job type
-                int [] previousJobIDs = idVacantJobsByZoneType.get(jj.getZone() * 100 + jj.getTypeDE());
-                previousJobIDs[numberVacantJobsByZoneByType.get(jj.getZone() * 100 + jj.getTypeDE())] = jj.getId();
-                idVacantJobsByZoneType.put(jj.getZone() * 100 + jj.getTypeDE(),previousJobIDs);
+                int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
+                previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();
+                idVacantJobsByZoneType.put(typeZone,previousJobIDs);
                 //update the set of zones that have ID
-                if (numberVacantJobsByZoneByType.get(jj.getZone() * 100 + jj.getTypeDE()) == 0){
-                    int[] previousZones = idZonesVacantJobsByType.get(jj.getTypeDE());
-                    previousZones[numberZonesByType.get(jj.getTypeDE())] = jj.getZone() * 100 + jj.getTypeDE();
-                    idZonesVacantJobsByType.put(jj.getTypeDE(),previousZones);
-                    numberZonesByType.put(jj.getTypeDE(),numberZonesByType.get(jj.getTypeDE()) + 1);
+                if (numberVacantJobsByZoneByType.get(typeZone) == 0){
+                    int[] previousZones = idZonesVacantJobsByType.get(type);
+                    previousZones[numberZonesByType.get(type)] = typeZone;
+                    idZonesVacantJobsByType.put(type,previousZones);
+                    numberZonesByType.put(type, numberZonesByType.get(type) + 1);
                 }
                 //update the number of vacant jobs per job type
-                numberVacantJobsByZoneByType.put(jj.getZone() * 100 + jj.getTypeDE(),numberVacantJobsByZoneByType.get(jj.getZone() * 100 + jj.getTypeDE()) + 1);
+                numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
             }
         }
     }
@@ -3014,26 +2906,30 @@ public class SyntheticPopDe {
         numberVacantSchoolsByZoneByType = new HashMap<>();
         numberZonesWithVacantSchoolsByType = new HashMap<>();
         idZonesVacantSchoolsByType = new HashMap<>();
+        schoolCapacityByType = new HashMap<>();
         schoolTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCHOOL_TYPES_DE);
         int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
 
 
         //create the counter hashmaps
-        for (int i : schoolTypes){
+        for (int col = 0; col < schoolTypes.length; col++){
+            int i = schoolTypes[col];
             for (int j : cellsID){
                 int count = (int) cellsMatrix.getIndexedValueAt(j,"school" + i);
+                numberVacantSchoolsByZoneByType.put(i + j * 100, count);
                 if (count > 0) {
                     if (idZonesVacantSchoolsByType.containsKey(i)){
                         numberZonesWithVacantSchoolsByType.put(i,numberZonesWithVacantSchoolsByType.get(i) + 1);
                         int[] zones = idZonesVacantSchoolsByType.get(i);
                         zones = SiloUtil.expandArrayByOneElement(zones, i + j * 100);
                         idZonesVacantSchoolsByType.put(i, zones);
+                        schoolCapacityByType.put(i, schoolCapacityByType.get(i) + count);
                     } else {
                         numberZonesWithVacantSchoolsByType.put(i, 1);
                         int[] zones = {i + j * 100};
                         idZonesVacantSchoolsByType.put(i, zones);
+                        schoolCapacityByType.put(i,count);
                     }
-                    numberVacantSchoolsByZoneByType.put(i + j * 100, count);
                 }
             }
         }
@@ -3100,6 +2996,60 @@ public class SyntheticPopDe {
         return results;
     }
 
+
+    public static int select (int[] probabilities) {
+        // select item based on probabilities (for zero-based float array)
+        double selPos = SiloUtil.getSum(probabilities) * SiloModel.rand.nextDouble();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                return i;
+            }
+        }
+        return probabilities.length - 1;
+    }
+
+
+    public static int[] select (double[] probabilities, int[] id, int sumProb) {
+        // select item based on probabilities (for zero-based float array)
+        int[] results = new int[2];
+        Random rand = new Random();
+        double selPos = sumProb * rand.nextDouble();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                //return i;
+                results[0] = id[i];
+                results[1] = i;
+                return results;
+            }
+        }
+        results[0] = id[probabilities.length - 1];
+        results[1] = probabilities.length - 1;
+        return results;
+    }
+
+    public static int[] select (double[] probabilities, int[] id, double sumProb) {
+        // select item based on probabilities (for zero-based float array)
+        int[] results = new int[2];
+        Random rand = new Random();
+        double selPos = sumProb * rand.nextDouble();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                //return i;
+                results[0] = id[i];
+                results[1] = i;
+                return results;
+            }
+        }
+        results[0] = id[probabilities.length - 1];
+        results[1] = probabilities.length - 1;
+        return results;
+    }
 
     public static int[] selectEqualProbability(int[] id) {
         // select item based on equal probability for all elements
@@ -3202,6 +3152,30 @@ public class SyntheticPopDe {
         return results;
     }
 
+
+    public static int[] select (double[] probabilities, int length, int[] id, double sumProb){
+        //select item based on probabilities and return the name
+        //probabilities and name have more items than the required (max number of required items is set on "length")
+
+        int[] results = new int[2];
+        Random rand = new Random();
+        double selPos = sumProb * rand.nextDouble();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                //return i;
+                results[0] = id[i];
+                results[1] = i;
+                return results;
+            }
+        }
+        results[0] = id[probabilities.length - 1];
+        results[1] = probabilities.length - 1;
+        return results;
+    }
+
+
     public static double[] convertProbability (double[] probabilities){
         //method to return the probability in percentage
         double sum = 0;
@@ -3261,22 +3235,9 @@ public class SyntheticPopDe {
             String name = "female" + ageBracketsPerson[row1];
             attributesCount.setIndexedValueAt(mun, name, attributesCount.getIndexedValueAt(mun, name) + 1);
         }
-/*        int education = person.getEducationLevel();
-        if (education == 99){education = 1;}
-        String name = "education" + education;
-        attributesCount.setIndexedValueAt(mun, name, attributesCount.getIndexedValueAt(mun, name) + 1);*/
-/*        if (person.getMaritalStatus() == 1) {
-            attributesCount.setIndexedValueAt(mun, "single", attributesCount.getIndexedValueAt(mun, "single") + 1);
-        } else if (person.getMaritalStatus() == 2) {
-            attributesCount.setIndexedValueAt(mun, "married", attributesCount.getIndexedValueAt(mun, "married") + 1);
-        } else {
-            attributesCount.setIndexedValueAt(mun, "children", attributesCount.getIndexedValueAt(mun, "children") + 1);
-        }
-        int jobSector = person.getJobClass();
-        String name = "job" + jobSector;
-        attributesCount.setIndexedValueAt(mun, name, attributesCount.getIndexedValueAt(mun, name) + 1);*/
         return attributesCount;
     }
+
 
     public static TableDataSet updateCountersPersonQuarter (Person person, TableDataSet attributesCount,int mun){
         /* method to update the counters with the characteristics of the generated person living in a group quarter*/
@@ -3305,6 +3266,7 @@ public class SyntheticPopDe {
         return attributesCount;
     }
 
+
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
         if (dwelling.getUsage() == 1){
@@ -3312,28 +3274,11 @@ public class SyntheticPopDe {
         } else {
             attributesCount.setIndexedValueAt(mun,"rentedDwellings",attributesCount.getIndexedValueAt(mun,"rentedDwellings") + 1);
         }
-/*        int row = 0;
-        while (dwelling.getFloorSpace() > sizeBrackets[row]){
-            row++;
+        if (dwelling.getBuildingSize() == 1){
+            attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
+        } else {
+            attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
         }
-        String name = "dwellings" + sizeBrackets[row];
-        attributesCount.setIndexedValueAt(mun,name,attributesCount.getIndexedValueAt(mun,name) + 1);*/
-        //if (dwelling.getYearConstructionDE() > 0 & dwelling.getYearConstructionDE() < 10) {
-/*            int row1 = 0;
-            while (dwelling.getYearConstructionDE() > yearBrackets[row1]){
-                row1++;
-            }*/
-            if (dwelling.getBuildingSize() == 1){
-                //String name1 = "smallDwellings" + yearBrackets[row1];
-                //attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-                attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
-            } else {
-                //String name1 = "mediumDwellings" + yearBrackets[row1];
-                //attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-                attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
-            }
-        //}
-
         return attributesCount;
     }
 
@@ -3448,6 +3393,236 @@ public class SyntheticPopDe {
 
     }
 
+
+    public int assignGymnasiumMitteByTAZ (Person pp){
+        //provide the type of school for the student given the TAZ proportion
+
+        int school = 3; //by default they are in Mittelschule
+        double threshold = cellsMatrix.getIndexedValueAt(pp.getZone(),"proportion");
+        Random rnd = new Random();
+        if (rnd.nextDouble() > threshold){
+            school = 2; //Gymnasium if the random number if greater than the threshold
+        }
+        return school;
+    }
+
+    private void readAndStoreMicroData(){
+        //method to read the synthetic population initial data
+        logger.info("   Starting to read the micro data");
+
+        //Scanning the file to obtain the number of households and persons in Bavaria
+
+        jobsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_DESCRIPTION));
+        schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
+        educationDegreeTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EDUCATION_DESCRIPTION));
+        double incomeShape = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_SHAPE);
+        double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
+        double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
+        GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
+        String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
+        String recString = "";
+        int recCount = 0;
+        int hhCountTotal = 0;
+        int personCountTotal = 0;
+        try {
+
+            BufferedReader in = new BufferedReader(new FileReader(pumsFileName));
+            int previousHouseholdNumber = -1;
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                int householdNumber = 0;
+                int recLander = convertToInteger(recString.substring(0,2));
+                switch (recLander){
+                    case 9:
+                    householdNumber = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
+                    if (householdNumber != previousHouseholdNumber) {
+                        hhCountTotal++;
+                        personCountTotal++;
+                        previousHouseholdNumber = householdNumber; // Update the household number
+
+                    } else if (householdNumber == previousHouseholdNumber) {
+                        personCountTotal++;
+                    }
+                }
+            }
+            logger.info("  Read " + (personCountTotal) + " person records in " +
+                    (hhCountTotal) + " private households from file: " + pumsFileName);
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+
+
+        TableDataSet microHouseholds = new TableDataSet();
+        TableDataSet microPersons = new TableDataSet();
+        int[] dummy = SiloUtil.createArrayWithValue(hhCountTotal,0);
+        int[] dummy1 = SiloUtil.createArrayWithValue(personCountTotal,0);
+        int[] dummy4 = SiloUtil.createArrayWithValue(personCountTotal,0);
+        int[] dummy5 = SiloUtil.createArrayWithValue(personCountTotal,0);
+        microHouseholds.appendColumn(dummy,"IDhh");
+        microPersons.appendColumn(dummy1,"IDpp");
+        microPersons.appendColumn(dummy4,"IDhh");
+        microPersons.appendColumn(dummy5,"WZ08");
+
+
+        //Obtain person and household variables and add one column to the microData
+        TableDataSet ppVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_MICRODATA_PP));// variables at the person level
+        TableDataSet hhVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_MICRODATA_HH)); //variables at the household level
+        for (int i = 1; i <= ppVariables.getRowCount(); i++){
+            int[] dummy2 = SiloUtil.createArrayWithValue(personCountTotal,0);
+            microPersons.appendColumn(dummy2,ppVariables.getStringValueAt(i,"EF"));
+        }
+        for (int i = 1; i <= hhVariables.getRowCount(); i++){
+            int[] dummy2 = SiloUtil.createArrayWithValue(hhCountTotal,0);
+            microHouseholds.appendColumn(dummy2,hhVariables.getStringValueAt(i,"EF"));
+            int[] dummy3 = SiloUtil.createArrayWithValue(personCountTotal,0);
+            microPersons.appendColumn(dummy3,hhVariables.getStringValueAt(i,"EF"));
+        }
+
+
+        //read the micro data and assign the characteristics
+        int hhCount = 0;
+        int personCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(pumsFileName));
+            int previousHouseholdNumber = -1;
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                int recLander = convertToInteger(recString.substring(0,2));
+                switch (recLander){
+                    case 9:
+                        int householdNumber = convertToInteger(recString.substring(2,8)) * 1000 + convertToInteger(recString.substring(8,11));
+                        //Household attributes (only if the number of household differs)
+                        if (householdNumber != previousHouseholdNumber) {
+                            hhCount++;
+                            microHouseholds.setValueAt(hhCount,"IDhh",hhCount);
+                            for (int i = 1; i <= hhVariables.getRowCount(); i++){
+                                int start = (int) hhVariables.getValueAt(i,"initial");
+                                int finish = (int) hhVariables.getValueAt(i,"end");
+                                microHouseholds.setValueAt(hhCount,hhVariables.getStringValueAt(i,"EF"),convertToInteger(recString.substring(start,finish)));
+                            }
+                            previousHouseholdNumber = householdNumber; // Update the household number
+                        }
+                        //Person attributes
+                        personCount++;
+                        microPersons.setValueAt(personCount,"IDpp",personCount);
+                        microPersons.setValueAt(personCount,"IDhh",hhCount);
+                        for (int i = 1; i <= ppVariables.getRowCount(); i++){
+                            int start = (int) ppVariables.getValueAt(i,"initial");
+                            int finish = (int) ppVariables.getValueAt(i,"end");
+                            microPersons.setValueAt(personCount,ppVariables.getStringValueAt(i,"EF"),convertToInteger(recString.substring(start,finish)));
+                        }
+                        for (int i = 1; i <= hhVariables.getRowCount(); i++){
+                            int start = (int) hhVariables.getValueAt(i,"initial");
+                            int finish = (int) hhVariables.getValueAt(i,"end");
+                            microPersons.setValueAt(personCount,hhVariables.getStringValueAt(i,"EF"),convertToInteger(recString.substring(start,finish)));
+                        }
+                        //translate the person categories to our categories
+                        int school = (int) microPersons.getValueAt(personCount,"ppSchool");
+                        if (school > 0) {
+                            microPersons.setValueAt(personCount, "ppSchool", translateEducationLevel(school, schoolLevelTable));
+                        } else {
+                            microPersons.setValueAt(personCount, "ppSchool", 0);
+                        }
+                        if (microPersons.getValueAt(personCount,"ppOccupation") == 1) { // Only employed persons respond to the sector
+                            microPersons.setValueAt(personCount,"WZ08", translateJobType(Math.round((int) microPersons.getValueAt(personCount,"ppSector1")/10), jobsTable)); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
+                        } else {
+                            microPersons.setValueAt(personCount,"WZ08",0);
+                        }
+                        int income = (int) microPersons.getValueAt(personCount,"ppIncome");
+                        try{
+                            microPersons.setValueAt(personCount,"ppIncome",(int) translateIncome(income, incomeProbability, gammaDist));
+                        } catch (MathException e){
+                            e.printStackTrace();
+                        }
+                        int education = (int) microPersons.getValueAt(personCount,"ppEducation");
+                        microPersons.setValueAt(personCount,"ppEducation", translateEducationLevel(education, educationDegreeTable));
+                    }
+            }
+            logger.info("  Read " + (personCountTotal) + " person records in " +
+                    (hhCountTotal) + " private households from file: " + pumsFileName);
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + pumsFileName);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+
+        SiloUtil.writeTableDataSet(microPersons, "input/summary/microPersonsAna.csv");
+        SiloUtil.writeTableDataSet(microHouseholds, "input/summary/microHouseholdsAna.csv");
+
+        logger.info("   Finished reading the micro data");
+    }
+
+
+    public int selectJobType(Person person) {
+        //given a person, select the job type. It is based on the probabilities
+
+        double[] probabilities = new double[jobStringTypes.length];
+        int[] jobTypes = new int[jobStringTypes.length];
+        //Person and job type values
+        String name = "";
+        if (person.getGender() == 1) {
+            name = "maleEducation";
+        } else {
+            name = "femaleEducation";
+        }
+        name = name + person.getEducationLevel();
+
+        //if (jobStringTypes.length == probabilitiesJob.getRowCount()) {
+        //    probabilities = probabilitiesJob.getColumnAsDouble(name);
+        //} else {
+            for (int job = 0; job < jobStringTypes.length; job++){
+                jobTypes[job] = jobIntTypes.get(jobStringTypes[job]);
+                probabilities[job] = probabilitiesJob.getStringIndexedValueAt(jobStringTypes[job],name);
+            }
+        //}
+        int selected = new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
+        return selected;
+
+    }
+
+
+    public int[] selectWorkplace(int home, HashMap<Integer, Integer> vacantJobsByZoneByType,
+                                  int[] zoneJobKeys, int lengthZoneKeys, Matrix impedanceMatrix) {
+        //given a person and job type, select the workplace location (raster cell)
+        //it is based on the utility of that job type and each location, multiplied by the number of jobs that remain vacant
+        //it can be directly used for schools, since the utility only checks the distance between the person home and destination
+
+        double[] probabilities = new double[lengthZoneKeys];
+        for (int j = 0; j < lengthZoneKeys; j++){
+            probabilities[j] = impedanceMatrix.getValueAt(home, zoneJobKeys[j] / 100) * vacantJobsByZoneByType.get(zoneJobKeys[j]);
+            //probability = impedance * number of vacant jobs. Impedance is calculated in advance as exp(utility)
+        }
+        int[] work = select(probabilities,zoneJobKeys);
+        return work;
+    }
+
+
+    private void generateCountersForValidation(){
+        //method to obtain the errors from the generated synthetic population
+        //Create the errors table (for all the municipalities)
+        counterMunicipality = new TableDataSet();
+        errorMunicipality = new TableDataSet();
+        counterMunicipality.appendColumn(cityID,"ID_city");
+        errorMunicipality.appendColumn(cityID,"ID_city");
+        for(int attribute = 0; attribute < attributesMunicipality.length; attribute++) {
+            double[] dummy2 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+            double[] dummy3 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+            counterMunicipality.appendColumn(dummy2, attributesMunicipality[attribute]);
+            errorMunicipality.appendColumn(dummy3, attributesMunicipality[attribute]);
+        }
+        counterMunicipality.buildIndex(counterMunicipality.getColumnPosition("ID_city"));
+        errorMunicipality.buildIndex(errorMunicipality.getColumnPosition("ID_city"));
+
+
+    }
+
+    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
+        // add synthetic cars to households
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
+        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
+
+
+    }
 
 
 }

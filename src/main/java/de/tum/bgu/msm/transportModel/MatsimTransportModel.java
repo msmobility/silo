@@ -22,6 +22,7 @@ import java.util.*;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.data.MitoHousehold;
+import de.tum.bgu.msm.data.MitoPerson;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
@@ -59,8 +60,8 @@ public class MatsimTransportModel implements TransportModelI {
 
 	@Override
 	public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-						 int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
-						 float[] sizeOfZonesInAcre) {
+						 MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
+						 int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
 
 	}
 

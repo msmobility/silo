@@ -41,14 +41,17 @@ import com.pb.common.util.IndexSort;
 public class HouseholdDataManager {
     static Logger logger = Logger.getLogger(HouseholdDataManager.class);
 
-    protected static final String PROPERTIES_HH_FILE_ASCII   = "household.file.ascii";
-    protected static final String PROPERTIES_PP_FILE_ASCII   = "person.file.ascii";
-    protected static final String PROPERTIES_READ_BIN_FILE   = "read.binary.pop.files";
-    protected static final String PROPERTIES_POP_FILE_BIN    = "population.file.bin";
-    protected static final String PROPERTIES_INCOME_CHANGE   = "mean.change.of.yearly.income";
-    protected static final String PROPERTIES_SUMMARIZE_METRO = "summarize.hh.near.selected.metro.stp";
-    protected static final String PROPERTIES_SELECTED_METRO  = "selected.metro.stops";
-    protected static final String PROPERTIES_HH_NEAR_METRO   = "hh.near.selected.metro.stops.summary";
+    protected static final String PROPERTIES_HH_FILE_ASCII     = "household.file.ascii";
+    protected static final String PROPERTIES_PP_FILE_ASCII     = "person.file.ascii";
+    protected static final String PROPERTIES_DD_FILE_ASCII     = "dwelling.file.ascii";
+    protected static final String PROPERTIES_JJ_FILE_ASCII     = "job.file.ascii";
+    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP = "size.small.syn.pop";
+    protected static final String PROPERTIES_READ_BIN_FILE     = "read.binary.pop.files";
+    protected static final String PROPERTIES_POP_FILE_BIN      = "population.file.bin";
+    protected static final String PROPERTIES_INCOME_CHANGE     = "mean.change.of.yearly.income";
+    protected static final String PROPERTIES_SUMMARIZE_METRO   = "summarize.hh.near.selected.metro.stp";
+    protected static final String PROPERTIES_SELECTED_METRO    = "selected.metro.stops";
+    protected static final String PROPERTIES_HH_NEAR_METRO     = "hh.near.selected.metro.stops.summary";
     private ResourceBundle rb;
 
     private static int highestHouseholdIdInUse;
@@ -71,23 +74,25 @@ public class HouseholdDataManager {
     }
 
 
-    public void readPopulation () {
+    public void readPopulation (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
         boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
         if (readBin) {
             readBinaryPopulationDataObjects();
         } else {
-            readHouseholdData();
-            readPersonData();
+            readHouseholdData(readSmallSynPop,  sizeSmallSynPop);
+            readPersonData(readSmallSynPop, sizeSmallSynPop);
         }
     }
 
 
-    private void readHouseholdData() {
+    private void readHouseholdData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading household micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII) + "_" + year + ".csv";
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII);
+        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        fileName += "_" + year + ".csv";
 
         String recString = "";
         int recCount = 0;
@@ -162,11 +167,13 @@ public class HouseholdDataManager {
     }
 
 
-    private void readPersonData() {
+    private void readPersonData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading person micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII) + "_" + year + ".csv";
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII);
+        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        fileName += "_" + year + ".csv";
 
         String recString = "";
         int recCount = 0;
@@ -798,6 +805,16 @@ public class HouseholdDataManager {
     }
 
 
+    public static int[] getNumberOfHouseholdsByZone (geoDataI geoData) {
+        // return number of households by zone
+        int[] hhByZone = new int[geoData.getZones().length];
+        for (Household hh: Household.getHouseholdArray()) {
+            hhByZone[geoData.getZoneIndex(hh.getHomeZone())]++;
+        }
+        return hhByZone;
+    }
+
+
     public static int[] getNumberOfHouseholdsByRegion(geoDataI geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
@@ -895,4 +912,139 @@ public class HouseholdDataManager {
 
         pw.close();
     }
+
+
+    public void writeOutSmallSynPop() {
+        // write out numberOfHh number of households to have small file for running tests
+
+        int numberOfHh = ResourceUtil.getIntegerProperty(rb, PROPERTIES_SIZE_SMALL_SYNPOP);
+        logger.info("  Writing out smaller files of synthetic population with " + numberOfHh + " households only");
+        String filehh = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII) + "_" +
+                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
+        String filepp = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII) + "_" +
+                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
+        String filedd = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII) + "_" +
+                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
+        String filejj = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII) + "_" +
+                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
+        pwj.println("id,zone,personId,type");
+        Household[] hhs = Household.getHouseholdArray();
+        int counter = 0;
+        for (Household hh : hhs) {
+            counter++;
+            if (counter > numberOfHh) break;
+            // write out household attributes
+            pwh.print(hh.getId());
+            pwh.print(",");
+            pwh.print(hh.getDwellingId());
+            pwh.print(",");
+            pwh.print(hh.getHomeZone());
+            pwh.print(",");
+            pwh.print(hh.getHhSize());
+            pwh.print(",");
+            pwh.println(hh.getAutos());
+            // write out person attributes
+            for (Person pp : hh.getPersons()) {
+                pwp.print(pp.getId());
+                pwp.print(",");
+                pwp.print(pp.getHhId());
+                pwp.print(",");
+                pwp.print(pp.getAge());
+                pwp.print(",");
+                pwp.print(pp.getGender());
+                pwp.print(",\"");
+                pwp.print(pp.getRole());
+                pwp.print("\",\"");
+                pwp.print(pp.getRace());
+                pwp.print("\",");
+                pwp.print(pp.getOccupation());
+                pwp.print(",0,");
+                pwp.print(pp.getWorkplace());
+                pwp.print(",");
+                pwp.println(pp.getIncome());
+                // write out job attributes (if person is employed)
+                int job = pp.getWorkplace();
+                if (job > 0 && pp.getOccupation() == 1) {
+                    Job jj = Job.getJobFromId(job);
+                    pwj.print(jj.getId());
+                    pwj.print(",");
+                    pwj.print(jj.getZone());
+                    pwj.print(",");
+                    pwj.print(jj.getWorkerId());
+                    pwj.print(",\"");
+                    pwj.print(jj.getType());
+                    pwj.println("\"");
+                }
+            }
+            // write out dwelling attributes
+            Dwelling dd = Dwelling.getDwellingFromId(hh.getDwellingId());
+            pwd.print(dd.getId());
+            pwd.print(",");
+            pwd.print(dd.getZone());
+            pwd.print(",\"");
+            pwd.print(dd.getType());
+            pwd.print("\",");
+            pwd.print(dd.getResidentId());
+            pwd.print(",");
+            pwd.print(dd.getBedrooms());
+            pwd.print(",");
+            pwd.print(dd.getQuality());
+            pwd.print(",");
+            pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getRestriction());
+            pwd.print(",");
+            pwd.println(dd.getYearBuilt());
+        }
+        // add a few empty dwellings
+        for (Dwelling dd: Dwelling.getDwellingArray()) {
+            if (dd.getResidentId() == -1 && SiloUtil.select(100) > 90) {
+                // write out dwelling attributes
+                pwd.print(dd.getId());
+                pwd.print(",");
+                pwd.print(dd.getZone());
+                pwd.print(",\"");
+                pwd.print(dd.getType());
+                pwd.print("\",");
+                pwd.print(dd.getResidentId());
+                pwd.print(",");
+                pwd.print(dd.getBedrooms());
+                pwd.print(",");
+                pwd.print(dd.getQuality());
+                pwd.print(",");
+                pwd.print(dd.getPrice());
+                pwd.print(",");
+                pwd.print(dd.getRestriction());
+                pwd.print(",");
+                pwd.println(dd.getYearBuilt());
+            }
+        }
+        // add a few empty jobs
+        for (Job jj: Job.getJobArray()) {
+            if (jj.getWorkerId() == -1 && SiloUtil.select(100) > 90) {
+                pwj.print(jj.getId());
+                pwj.print(",");
+                pwj.print(jj.getZone());
+                pwj.print(",");
+                pwj.print(jj.getWorkerId());
+                pwj.print(",\"");
+                pwj.print(jj.getType());
+                pwj.println("\"");
+            }
+        }
+
+        pwh.close();
+        pwp.close();
+        pwd.close();
+        pwj.close();
+        //System.exit(0);
+    }
+
 }
