@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import omx.OmxFile;
 import org.apache.commons.math.MathException;
@@ -185,7 +186,7 @@ public class SyntheticPopDe {
         boolean flagSkipCreationOfSPforDebugging = true;
             if (!flagSkipCreationOfSPforDebugging) createSyntheticPopulationDwellingsJobs();
             readSyntheticPopulation();
-            addSyntheticCars(flagSkipCreationOfSPforDebugging);
+            addCars(flagSkipCreationOfSPforDebugging);
             logger.info("Finished creating the synthetic population.");
     }
 
@@ -194,10 +195,10 @@ public class SyntheticPopDe {
         logger.info("IPU started");
     }
 
-    private void addSyntheticCars ( boolean flagSkipCreationOfSPforDebugging) {
+    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
         // add synthetic cars to households
-        SynthesizeCars synthesizeCars  = new SynthesizeCars(rb);
-        synthesizeCars.run(flagSkipCreationOfSPforDebugging);
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
+        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
 
 
     }
@@ -2072,7 +2073,7 @@ public class SyntheticPopDe {
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
                 else pp.setRole(PersonRole.child);
                 pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
-                pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
+                //pp.setJobTypeDE((int) persons.getValueAt(aux,"jobDE"));
                 pp.setNationality((int) persons.getValueAt(aux,"nationality"));
                 //pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
                 int school = 0;
@@ -2098,7 +2099,7 @@ public class SyntheticPopDe {
         }
         logger.info("   Generated households, persons and dwellings");
 
-
+        /*
         //Generate the jobs
         for (int i = 1; i <= Math.round(jobs.getRowCount()); i++) {
             //Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), (int) jobs.getValueAt(i, "personId"), "RET");
@@ -2106,7 +2107,7 @@ public class SyntheticPopDe {
             Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"), -1, "RET");
             jj.setTypeDE((int) jobs.getValueAt(i, "typeDE"));
         }
-        logger.info("   Generated jobs");
+        logger.info("   Generated jobs"); */
     }
 
 

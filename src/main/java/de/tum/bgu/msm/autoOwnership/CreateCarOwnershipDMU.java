@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.autoOwnership;
 
 import com.pb.common.calculator.IndexValues;
 import org.apache.log4j.Logger;
@@ -8,8 +8,8 @@ import org.apache.log4j.Logger;
  * Created on 28/04/2017 in Munich, Germany.
  */
 
-public class SynthesizeCarsDMU {
-    protected transient Logger logger = Logger.getLogger(SynthesizeCarsDMU.class);
+public class CreateCarOwnershipDMU {
+    protected transient Logger logger = Logger.getLogger(CreateCarOwnershipDMU.class);
 
     // uec variables
     private IndexValues dmuIndex;
@@ -21,7 +21,7 @@ public class SynthesizeCarsDMU {
     private int areaType;
 
 
-    public SynthesizeCarsDMU() {
+    public CreateCarOwnershipDMU() {
         dmuIndex = new IndexValues();
     }
 

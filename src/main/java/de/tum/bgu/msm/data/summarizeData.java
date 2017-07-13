@@ -998,10 +998,10 @@ public class summarizeData {
             JobDataManager.writeBinaryJobDataObjects(rb);
     }
 
-    public static void summarizeAutoOwnershipByMunicipality(geoDataI geoData) {
+    public static void summarizeCarOwnershipByMunicipality(geoDataI geoData) {
         // This calibration function summarizes household auto-ownership by municipality and quits
 
-        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carSynthesisA.csv", false);
+        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carOwnershipA.csv", false);
         pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
         int[][] autos = new int[4][10000000];
         for (Household hh: Household.getHouseholdArray()) {
@@ -1014,7 +1014,7 @@ public class summarizeData {
         }
         pwa.close();
 
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting("carSynthesisB.csv", false);
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting("carOwnershipB.csv", false);
         pw.println("Municipality,0autos,1auto,2autos,3+autos");
         for (int municipality = 0; municipality < 10000000; municipality++) {
             int sm = 0;
