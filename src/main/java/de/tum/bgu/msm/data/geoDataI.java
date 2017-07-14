@@ -46,4 +46,10 @@ public interface geoDataI {
 
     public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer);
 
+    public float getDistanceToTransit (int zone);
+
+    public int getAreaTypeOfZone (int zone);
+
+    public int getMunicipalityOfZone (int zone);
+
 }

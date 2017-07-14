@@ -51,6 +51,8 @@ public class summarizeData {
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
+    //public geoDataI geoData;
+
 
     public static void openResultFile(ResourceBundle rb) {
         // open summary file
@@ -1127,5 +1129,35 @@ public class summarizeData {
             RealEstateDataManager.writeBinaryDwellingDataObjects(rb);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_WRITE_BIN_JJ_FILE))
             JobDataManager.writeBinaryJobDataObjects(rb);
+    }
+
+    public static void summarizeCarOwnershipByMunicipality(geoDataI geoData) {
+        // This calibration function summarizes household auto-ownership by municipality and quits
+
+        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carOwnershipA.csv", false);
+        pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
+        int[][] autos = new int[4][10000000];
+        for (Household hh: Household.getHouseholdArray()) {
+            int autoOwnership = hh.getAutos();
+            int zone = hh.getHomeZone();
+            int municipality = geoData.getMunicipalityOfZone(zone);
+            autos[autoOwnership][municipality]++;
+            pwa.println(hh.getHHLicenseHolders()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
+                    (int)(Math.log(geoData.getDistanceToTransit(zone)))+","+geoData.getAreaTypeOfZone(zone)+","+hh.getAutos());
+        }
+        pwa.close();
+
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting("carOwnershipB.csv", false);
+        pw.println("Municipality,0autos,1auto,2autos,3+autos");
+        for (int municipality = 0; municipality < 10000000; municipality++) {
+            int sm = 0;
+            for (int a = 0; a < 4; a++) sm += autos[a][municipality];
+            if (sm > 0) pw.println(municipality+","+autos[0][municipality]+","+autos[1][municipality]+","+autos[2][municipality]+","+autos[3][municipality]);
+        }
+        pw.close();
+
+        logger.info("Summarized auto ownership and quit.");
+        //System.exit(0);
+
     }
 }

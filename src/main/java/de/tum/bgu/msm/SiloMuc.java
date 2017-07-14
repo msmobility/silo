@@ -38,7 +38,7 @@ public class SiloMuc {
             SyntheticPopDe sp = new SyntheticPopDe(rb);
             sp.runSP();
            /*ExtractDataDE de = new ExtractDataDE(rb);
-            de.runSP();*/
+            de.runSP(); */
             SiloModel model = new SiloModel(rb);
             model.runModel("Muc");
             logger.info("Finished SILO.");

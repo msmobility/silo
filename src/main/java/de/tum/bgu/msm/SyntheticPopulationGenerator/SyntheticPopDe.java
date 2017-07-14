@@ -5,6 +5,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import omx.OmxFile;
 import org.apache.commons.math.MathException;
@@ -169,16 +170,18 @@ public class SyntheticPopDe {
                 readIPU(); //Read the weights to select the household
             }
             generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_d_");
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             assignJobs(); //Workplace allocation
+            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_e_");
             assignSchools(); //School allocation
-            //todo. add synthesize cars from Matthew in this line (final location)
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            addCars(false);
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing workplace allocation and school allocation");
             readSyntheticPopulation();
-            //todo. add synthesize cars from Matthew in this line (functionality testing)
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            addCars(true);
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -2155,10 +2158,6 @@ public class SyntheticPopDe {
                     (int) jobs.getValueAt(i, "personId"), jobs.getStringValueAt(i, "type"));
         }
         logger.info("   Generated jobs");
-
-
-        //Get householdAutos
-
     }
 
 
@@ -3593,6 +3592,14 @@ public class SyntheticPopDe {
         }
         counterMunicipality.buildIndex(counterMunicipality.getColumnPosition("ID_city"));
         errorMunicipality.buildIndex(errorMunicipality.getColumnPosition("ID_city"));
+
+
+    }
+
+    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
+        // add synthetic cars to households
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
+        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
 
 
     }
