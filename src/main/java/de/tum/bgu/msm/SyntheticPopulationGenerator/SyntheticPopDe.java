@@ -169,18 +169,16 @@ public class SyntheticPopDe {
                 readIPU(); //Read the weights to select the household
             }
             generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_d_");
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             assignJobs(); //Workplace allocation
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_e_");
             assignSchools(); //School allocation
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
+            //todo. add synthesize cars from Matthew in this line (final location)
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing workplace allocation and school allocation");
             readSyntheticPopulation();
-            //assignJobs(); //at the clean version it will go to generation of the synthetic population after generateJobs
-            assignSchools();
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
+            //todo. add synthesize cars from Matthew in this line (functionality testing)
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -2157,6 +2155,10 @@ public class SyntheticPopDe {
                     (int) jobs.getValueAt(i, "personId"), jobs.getStringValueAt(i, "type"));
         }
         logger.info("   Generated jobs");
+
+
+        //Get householdAutos
+
     }
 
 
@@ -2322,24 +2324,7 @@ public class SyntheticPopDe {
             }
 
 
-            //select the probabilities of the households from the microData, for that municipality
-            double[] pAux = new double[probability.length]; // Separate private households and group quarters for generation
-            double hhRemaining = totalHouseholds;
-            int[] idAux = new int[microDataIds.length];
-            int aux = 0;
-            for (int row = 0; row < probability.length; row++){
-                if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
-                    pAux[aux] = probability[row];
-                    hhRemaining = hhRemaining + pAux[aux];
-                    idAux[aux] = idAux[row];
-                    aux++;
-                }
-            }
-            double[] probHh = new double[aux];
-            int[] idsMD = new int[aux];
-            System.arraycopy(pAux, 0, probHh, 0, aux);
-            System.arraycopy(idAux, 0, idsMD, 0, aux);
-
+            double hhRemaining = SiloUtil.getSum(probability);
 
             //marginals for the municipality
             int hhPersons = 0;
@@ -2352,18 +2337,15 @@ public class SyntheticPopDe {
             for (int row = 0; row < totalHouseholds; row++) {
 
                 //select the household to copy from the micro data(with replacement)
-                int[] records = select(probHh, microDataIds, hhRemaining);
+                int[] records = select(probability, microDataIds, hhRemaining);
                 int hhIdMD = records[0];
                 int hhRowMD = records[1];
-                if (probHh[hhRowMD] > 1.0) {
-                    probHh[hhRowMD] = probHh[hhRowMD] - 1;
+                if (probability[hhRowMD] > 1.0) {
+                    probability[hhRowMD] = probability[hhRowMD] - 1;
                     hhRemaining = hhRemaining - 1;
                 } else {
-                    hhRemaining = hhRowMD - probHh[hhRowMD];
-                    probHh[hhRowMD] = probHh[probHh.length - 1];
-                    idsMD[hhRowMD] = idsMD[probHh.length - 1];
-                    probHh = SiloUtil.removeOneElementFromZeroBasedArray(probHh, probHh.length - 1);
-                    idsMD = SiloUtil.removeOneElementFromZeroBasedArray(idsMD, idsMD.length - 1);
+                    hhRemaining = hhRowMD - probability[hhRowMD];
+                    probability[hhRowMD] = 0;
                 }
 
 
