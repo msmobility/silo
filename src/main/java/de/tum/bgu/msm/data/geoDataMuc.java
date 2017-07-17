@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import omx.OmxFile;
+import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
@@ -278,14 +279,12 @@ public class geoDataMuc implements geoDataI {
         String omxFileName= SiloUtil.baseDirectory + ResourceUtil.getProperty(rb,PROPERTIES_TRANSIT_ACCEESS_TIME);
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
-        accessDistanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
+        Matrix accessDistanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
+        OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
+        int[] zonesInMatrix = (int[]) omxLookUp.getLookup();
 
         distanceToTransit = new TableDataSet();
-        int [] zoneNO = SiloUtil.createArrayWithValue(accessDistanceMatrix.getRowCount(),0);
-        distanceToTransit.appendColumn(zoneNO, "zoneNO");
-        for (int z = 1; z<=accessDistanceMatrix.getRowCount(); z++){
-            distanceToTransit.setValueAt(z,"zoneNO",z);
-        }
+        distanceToTransit.appendColumn(zonesInMatrix,"zoneNO");
         float[] minDist = SiloUtil.createArrayWithValue(distanceToTransit.getRowCount(),0f);
         distanceToTransit.appendColumn(minDist, "minDist");
 
@@ -297,13 +296,14 @@ public class geoDataMuc implements geoDataI {
                     minDistance = accessDistanceMatrix.getValueAt(i,j);
                 }
             }
-            distanceToTransit.setValueAt(i,"minDist",minDistance+1);
+            distanceToTransit.setValueAt(i,"minDist",minDistance + 1);
         }
+        distanceToTransit.buildIndex(distanceToTransit.getColumnPosition("zoneNO"));
         distanceToTransit.writeFile("checkDistToTransit.csv",distanceToTransit);
     }
 
     public float getDistanceToTransit (int zone) {
-        return (int) distanceToTransit.getValueAt((zone ),"minDist");
+        return (int) distanceToTransit.getIndexedValueAt(zone,"minDist");
     }
 
     public int getAreaTypeOfZone (int zone) {
