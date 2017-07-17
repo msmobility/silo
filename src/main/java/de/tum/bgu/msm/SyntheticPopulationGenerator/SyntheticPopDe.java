@@ -8,6 +8,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import omx.OmxFile;
+import omx.OmxLookup;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
@@ -147,7 +148,7 @@ public class SyntheticPopDe {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
+        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
             //Read entry data from the micro data
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
@@ -170,17 +171,15 @@ public class SyntheticPopDe {
                 readIPU(); //Read the weights to select the household
             }
             generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_d_");
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             assignJobs(); //Workplace allocation
-            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_e_");
             assignSchools(); //School allocation
             addCars(false);
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing workplace allocation and school allocation");
             readSyntheticPopulation();
-            addCars(true);
+            addCars(false);
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
             //readAndStoreMicroData();
         }
@@ -250,9 +249,12 @@ public class SyntheticPopDe {
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
+        OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
+        int[] externalNumbers = (int[]) omxLookUp.getLookup();
+        distanceMatrix.setExternalNumbersZeroBased(externalNumbers);
         for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
             for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
-                if ( i == j) {
+                if (i == j) {
                     distanceMatrix.setValueAt(i,j, 50/1000);
                 } else {
                     distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
@@ -2014,7 +2016,6 @@ public class SyntheticPopDe {
             int school = pair.getValue().getSchoolType();
             if (school > 0) { //They are studying
                 studentArrayList.add(pair.getValue());
-                logger.info(school);
                 studentsByType2[school - 1] = studentsByType2[school - 1] + 1;
             }
         }
@@ -2097,7 +2098,7 @@ public class SyntheticPopDe {
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_e_" + SiloUtil.getBaseYear() + ".csv";
+        String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
         TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
         TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
         TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
@@ -2121,7 +2122,7 @@ public class SyntheticPopDe {
                 if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
                 else pp.setRole(PersonRole.child);
-                pp.setDriverLicense((int) persons.getValueAt(aux,"license"));
+                pp.setDriverLicense((int) persons.getValueAt(aux,"driversLicense"));
                 pp.setNationality((int) persons.getValueAt(aux,"nationality"));
                 pp.setHhSize(hh.getHhSize());
                 pp.setZone(hh.getHomeZone());
@@ -2135,7 +2136,7 @@ public class SyntheticPopDe {
                     pp.setSchoolType(assignGymnasiumMitteByTAZ(pp));
                 }*/
                 pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
-                pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
+                //pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
                 aux++;
             }
         }
@@ -2323,7 +2324,15 @@ public class SyntheticPopDe {
             }
 
 
-            double hhRemaining = SiloUtil.getSum(probability);
+            double hhRemaining = 0;
+            //logger.info("   " + probability[0]);
+            double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
+            for (int row = 0; row < probability.length; row++){
+                if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
+                    probabilityPrivate[row] = probability[row];
+                    hhRemaining = hhRemaining + probability[row];
+                }
+            }
 
             //marginals for the municipality
             int hhPersons = 0;
@@ -2336,15 +2345,15 @@ public class SyntheticPopDe {
             for (int row = 0; row < totalHouseholds; row++) {
 
                 //select the household to copy from the micro data(with replacement)
-                int[] records = select(probability, microDataIds, hhRemaining);
+                int[] records = select(probabilityPrivate, microDataIds, hhRemaining);
                 int hhIdMD = records[0];
                 int hhRowMD = records[1];
-                if (probability[hhRowMD] > 1.0) {
-                    probability[hhRowMD] = probability[hhRowMD] - 1;
+                if (probabilityPrivate[hhRowMD] > 1.0) {
+                    probabilityPrivate[hhRowMD] = probabilityPrivate[hhRowMD] - 1;
                     hhRemaining = hhRemaining - 1;
                 } else {
-                    hhRemaining = hhRowMD - probability[hhRowMD];
-                    probability[hhRowMD] = 0;
+                    hhRemaining = hhRemaining - probabilityPrivate[hhRowMD];
+                    probabilityPrivate[hhRowMD] = 0;
                 }
 
 
