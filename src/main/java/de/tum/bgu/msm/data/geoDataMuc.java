@@ -63,7 +63,7 @@ public class geoDataMuc implements geoDataI {
         SiloUtil.numberOfQualityLevels = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
         readZones();
         setDistanceToTransit();
-        //readLandUse();
+        readLandUse();
     }
 
 
@@ -275,6 +275,7 @@ public class geoDataMuc implements geoDataI {
     public void setDistanceToTransit(){
         //convert access time matrix to access distance matrix considering a walking speed of 5km/h
         //set the minimum value of each row as the respective zone's distance to transit
+        //todo. remove this method from geoData and add it into the car ownership class [Ana and Rolf, 18.07.17]
         logger.info("   Starting to read OMX matrix");
         String omxFileName= SiloUtil.baseDirectory + ResourceUtil.getProperty(rb,PROPERTIES_TRANSIT_ACCEESS_TIME);
         OmxFile travelTimeOmx = new OmxFile(omxFileName);

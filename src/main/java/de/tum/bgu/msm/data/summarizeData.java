@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.SiloUtil;
@@ -738,7 +739,7 @@ public class summarizeData {
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + file +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -771,7 +772,11 @@ public class summarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolType());
             pwp.print(",");
-            pwp.println(pp.getSchoolPlace());
+            pwp.print(pp.getSchoolPlace());
+            pwp.print(",");
+            pwp.print(Household.getHouseholdFromId(pp.getHhId()).getAutos());
+            pwp.print(",");
+            pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 pp.logAttributes(SiloUtil.trackWriter);
@@ -1131,7 +1136,7 @@ public class summarizeData {
             JobDataManager.writeBinaryJobDataObjects(rb);
     }
 
-    public static void summarizeCarOwnershipByMunicipality(geoDataI geoData) {
+    /*public static void summarizeCarOwnershipByMunicipality(geoDataI geoData) {
         // This calibration function summarizes household auto-ownership by municipality and quits
 
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carOwnershipA.csv", false);
@@ -1159,5 +1164,5 @@ public class summarizeData {
         logger.info("Summarized auto ownership and quit.");
         //System.exit(0);
 
-    }
+    }*/
 }

@@ -114,7 +114,7 @@ public class CreateCarOwnershipModel {
         for (Household hh: Household.getHouseholdArray()){
             simulateCarOwnership(hh);
         }
-        summarizeData.summarizeCarOwnershipByMunicipality(geoData);
+        //summarizeData.summarizeCarOwnershipByMunicipality(geoData);
         if (flagSkipCreationOfSPforDebugging) {
             logger.info("Finished car ownership model");
             System.exit(0);
@@ -128,6 +128,7 @@ public class CreateCarOwnershipModel {
         int license = Math.min(hh.getHHLicenseHolders(), 7);
         int workers = Math.min(hh.getNumberOfWorkers(), 7);
         int income = Math.min(hh.getHhIncome(), 13504);
+        //todo. refactor distanceToTransit and areaType into this class instead of directing into geoData class [Ana and Rolf, 18.07.17]
         int logDistanceToTransit = Math.min((int) (Math.log(geoData.getDistanceToTransit(hh.getHomeZone()))), 10);
         int areaType = geoData.getAreaTypeOfZone(hh.getHomeZone());
 
