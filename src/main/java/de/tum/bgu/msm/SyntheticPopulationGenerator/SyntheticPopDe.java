@@ -175,9 +175,9 @@ public class SyntheticPopDe {
             assignJobs(); //Workplace allocation
             assignSchools(); //School allocation
             addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-            logger.info("Testing workplace allocation and school allocation");
+            logger.info("Testing mode");
             readSyntheticPopulation();
             addCars(false);
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
@@ -3606,11 +3606,10 @@ public class SyntheticPopDe {
     }
 
     private void addCars(boolean flagSkipCreationOfSPforDebugging) {
-        // add synthetic cars to households
+        //method to estimate the number of cars per household
+        //it must be run after generating the population
         CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
         createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
-
-
     }
 
 

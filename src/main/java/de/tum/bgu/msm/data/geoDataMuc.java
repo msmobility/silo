@@ -31,7 +31,6 @@ public class geoDataMuc implements geoDataI {
     protected static final String PROPERTIES_DEVELOPM_RESTR   = "development.restrictions";
     protected static final String PROPERTIES_USE_CAPACITY     = "use.growth.capacity.data";
     protected static final String PROPERTIES_CAPACITY_FILE    = "growth.capacity.file";
-    protected static final String PROPERTIES_TRANSIT_ACCEESS_TIME = "transit.access.time";
 
     private ResourceBundle rb;
     private static int[] zoneIndex;
@@ -62,7 +61,6 @@ public class geoDataMuc implements geoDataI {
         SiloUtil.incBrackets = ResourceUtil.getIntegerArray(rb, SiloUtil.PROPERTIES_INCOME_BRACKETS);
         SiloUtil.numberOfQualityLevels = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
         readZones();
-        setDistanceToTransit();
         readLandUse();
     }
 
@@ -271,47 +269,4 @@ public class geoDataMuc implements geoDataI {
         return (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
     }
 
-
-    public void setDistanceToTransit(){
-        //convert access time matrix to access distance matrix considering a walking speed of 5km/h
-        //set the minimum value of each row as the respective zone's distance to transit
-        //todo. remove this method from geoData and add it into the car ownership class [Ana and Rolf, 18.07.17]
-        logger.info("   Starting to read OMX matrix");
-        String omxFileName= SiloUtil.baseDirectory + ResourceUtil.getProperty(rb,PROPERTIES_TRANSIT_ACCEESS_TIME);
-        OmxFile travelTimeOmx = new OmxFile(omxFileName);
-        travelTimeOmx.openReadOnly();
-        Matrix accessDistanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
-        int[] zonesInMatrix = (int[]) omxLookUp.getLookup();
-
-        distanceToTransit = new TableDataSet();
-        distanceToTransit.appendColumn(zonesInMatrix,"zoneNO");
-        float[] minDist = SiloUtil.createArrayWithValue(distanceToTransit.getRowCount(),0f);
-        distanceToTransit.appendColumn(minDist, "minDist");
-
-        for (int i = 1; i <= accessDistanceMatrix.getRowCount(); i++){
-            float minDistance = 9999;
-            for (int j = 1; j <= accessDistanceMatrix.getColumnCount(); j++){
-                accessDistanceMatrix.setValueAt(i,j, accessDistanceMatrix.getValueAt(i,j)*83.33f);
-                if (accessDistanceMatrix.getValueAt(i,j) > 0 & accessDistanceMatrix.getValueAt(i,j) < minDistance){
-                    minDistance = accessDistanceMatrix.getValueAt(i,j);
-                }
-            }
-            distanceToTransit.setValueAt(i,"minDist",minDistance + 1);
-        }
-        distanceToTransit.buildIndex(distanceToTransit.getColumnPosition("zoneNO"));
-        distanceToTransit.writeFile("checkDistToTransit.csv",distanceToTransit);
-    }
-
-    public float getDistanceToTransit (int zone) {
-        return (int) distanceToTransit.getIndexedValueAt(zone,"minDist");
-    }
-
-    public int getAreaTypeOfZone (int zone) {
-        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "BBSR");
-    }
-
-    public int getMunicipalityOfZone(int zone) {
-        return (int) SiloUtil.zonalData.getIndexedValueAt(zone, "ID_city");
-    }
 }
