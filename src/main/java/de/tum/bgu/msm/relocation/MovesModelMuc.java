@@ -18,6 +18,7 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;
 
+import javax.print.attribute.standard.MediaSize;
 import java.io.File;
 import java.util.ResourceBundle;
 
@@ -322,7 +323,9 @@ public class MovesModelMuc implements MovesModelI {
             regAcc[region] = (float) convertAccessToUtility(Accessibility.getRegionalAccessibility(region));
         }
         selectRegionDmu.setRegionalAccessibility(regAcc);
-        // todo: implement selectRegionDmu.setShareOfForeigners
+        float[] regionalNationalShare = new float[highestRegion + 1];
+        for (int region : regions) regionalNationalShare[region] = regionalShareForeigners[geoData.getRegionIndex(region)];
+        selectRegionDmu.setRegionalNationality(Nationality.values()[1], regionalNationalShare);
         utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][numAltsSelReg];
         for (int income = 1; income <= SiloUtil.incBrackets.length + 1; income++) {
             // set DMU attributes
@@ -330,17 +333,18 @@ public class MovesModelMuc implements MovesModelI {
             for (int region: regions) priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
             selectRegionDmu.setMedianRegionPrice(priceUtil);
             selectRegionDmu.setIncomeGroup(income - 1);
-            // todo: implement selectRegionDmu.setRace(race);
-            double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
-            for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
-                // todo: currently set equally for nationals and foreigners
-                utilityRegion[income - 1][0][alternative] = util[alternative];
-                utilityRegion[income - 1][1][alternative] = util[alternative];
+            for (Nationality nationality: Nationality.values()) {
+                selectRegionDmu.setNationality(nationality);
+                double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
+                for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
+                    utilityRegion[income - 1][nationality.ordinal()][alternative] = util[alternative];
+                    //utilityRegion[income - 1][1][alternative] = util[alternative];
+                }
+                // log UEC values for each household type
+                if (logCalculationRegion)
+                    selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
+                            income);
             }
-            // log UEC values for each household type
-            if (logCalculationRegion)
-                selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
-                        income);
         }
         householdsByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
     }

@@ -2,6 +2,7 @@ package de.tum.bgu.msm.relocation;
 
 //import java.util.HashMap;
 
+import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.data.Race;
 import org.apache.log4j.Logger;
 
@@ -21,6 +22,7 @@ public class MovesDMU {
     // uec variables
     private int householdType;
     private int householdRace;
+    private int householdNationality;
     private int incomeGroup;
     private double ddPriceUtility;
     private double ddQualityUtility;
@@ -38,6 +40,8 @@ public class MovesDMU {
     private float[] regionalShareWhite;
     private float[] regionalShareBlack;
     private float[] regionalShareHispanic;
+    private float[] regionalShareForeigners;
+
     private IndexValues dmuIndex;
 	
 	public MovesDMU() {
@@ -54,6 +58,10 @@ public class MovesDMU {
 
     public void setRace (Race race) {
         this.householdRace = race.ordinal();
+    }
+
+    public void setNationality (Nationality nationality) {
+        this.householdNationality = nationality.ordinal();
     }
 
     public void setUtilityDwellingPrice(double ddPrice) {
@@ -104,6 +112,7 @@ public class MovesDMU {
         this.regionalSchoolQuality = regionalSchoolQuality;
     }
 
+
     public void setRegionalCrimeRate (float[] regionalCrimeRate) {
         this.regionalCrimeRate = regionalCrimeRate;
     }
@@ -118,6 +127,12 @@ public class MovesDMU {
         }
     }
 
+    public void setRegionalNationality(Nationality nationality, float[] regionalNationalityShare){
+        if (nationality == Nationality.other){
+            this.regionalShareForeigners = regionalNationalityShare;
+        }
+    }
+
     public IndexValues getDmuIndexValues() {
         return dmuIndex; 
     }
@@ -129,6 +144,8 @@ public class MovesDMU {
 	}
 
     public int getHouseholdRace() { return householdRace; }
+
+    public int getHouseholdNationality(){return householdNationality;}
 
     public int getIncomeGroup() { return incomeGroup; }
 
@@ -195,5 +212,7 @@ public class MovesDMU {
     public float getRegionalShareHispanic(int index) {
         return regionalShareHispanic[index];
     }
+
+    public float getRegionalShareForeigners(int index){return regionalShareForeigners[index];}
 
 }
