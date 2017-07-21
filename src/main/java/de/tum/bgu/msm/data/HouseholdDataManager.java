@@ -757,14 +757,14 @@ public class HouseholdDataManager {
 
             // find job
             if (changeRate[gen][age] > 0 && !employed) {
-                if (SiloModel.rand.nextFloat() < changeRate[gen][age]) {
+                if (SiloUtil.getRandomNumberAsFloat() < changeRate[gen][age]) {
                     alFindJob.add(pp.getId());
                     testCounter[gen][age]++;
                 }
             }
             // lose job
             if (changeRate[gen][age] < 0 && employed) {
-                if (SiloModel.rand.nextFloat() < Math.abs(changeRate[gen][age])) {
+                if (SiloUtil.getRandomNumberAsFloat() < Math.abs(changeRate[gen][age])) {
                     alQuitJob.add(pp.getId());
                     testCounter[gen][age]--;
                 }

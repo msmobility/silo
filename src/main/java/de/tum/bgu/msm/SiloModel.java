@@ -48,7 +48,6 @@ public class SiloModel {
     static Logger logger = Logger.getLogger(SiloModel.class);
 
     private ResourceBundle rbLandUse;
-    public static Random rand;
 
     public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
@@ -393,6 +392,7 @@ public class SiloModel {
         transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse, geoData);
+        SiloUtil.initializeRandomNumber();
     }
 
 

@@ -6,10 +6,8 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.geoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.realEstate.ConstructionOverwrite;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
@@ -39,6 +37,7 @@ public class SiloUtil {
     public static final String PROPERTIES_INCOME_BRACKETS                   = "income.brackets.hh.types";
     public static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
 
+    private static Random rand;
     public static String baseDirectory;
     public static String scenarioName;
     public static TableDataSet zonalData;
@@ -108,13 +107,26 @@ public class SiloUtil {
     }
 
 
-    private static void initializeRandomNumber() {
+    public static void initializeRandomNumber() {
         // initialize random number generator
-        int seed = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RANDOM_SEED);
+        int seed = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_RANDOM_SEED);
         if (seed == -1)
-            SiloModel.rand = new Random();
+            rand = new Random();
         else
-            SiloModel.rand = new Random(seed);
+            rand = new Random(seed);
+    }
+
+
+    public static Random getRandomObject() {
+        return rand;
+    }
+
+    public static float getRandomNumberAsFloat() {
+        return rand.nextFloat();
+    }
+
+    public static double getRandomNumberAsDouble() {
+        return rand.nextDouble();
     }
 
 
@@ -241,7 +253,7 @@ public class SiloUtil {
     //TODO REFACTOR SELECT METHODS TO USE GENERICS
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
-        double selPos = getSum(probabilities) * SiloModel.rand.nextDouble();
+        double selPos = getSum(probabilities) * getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -255,7 +267,7 @@ public class SiloUtil {
 
     public static int select (float[] probabilities) {
         // select item based on probabilities (for zero-based float array)
-        float selPos = getSum(probabilities) * SiloModel.rand.nextFloat();
+        float selPos = getSum(probabilities) * getRandomNumberAsFloat();
         float sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -268,7 +280,7 @@ public class SiloUtil {
 
     public static int select (double[] probabilities, int[] id) {
         // select item based on probabilities (for zero-based float array)
-        double selPos = getSum(probabilities) * SiloModel.rand.nextFloat();
+        double selPos = getSum(probabilities) * getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -284,7 +296,7 @@ public class SiloUtil {
     public static int select (float[] probabilities, int length, int[] name){
         //select item based on probabilities and return the name
         //probabilities and name have more items than the required (max number of required items is set on "length")
-        double selPos = getSum(probabilities) * SiloModel.rand.nextFloat();
+        double selPos = getSum(probabilities) * getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < length; i++) {
             sum += probabilities[i];
@@ -312,7 +324,7 @@ public class SiloUtil {
 
     public static int select (int upperRange) {
         // select item based on equal probabilities between 0 and upperRange
-        int selected = (int) (upperRange * SiloModel.rand.nextFloat());
+        int selected = (int) (upperRange * getRandomNumberAsFloat());
         return Math.max(1, selected);
     }
 

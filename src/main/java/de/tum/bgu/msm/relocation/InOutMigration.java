@@ -82,7 +82,7 @@ public class InOutMigration {
         ArrayList<Integer> selectedOutmigrationHh = new ArrayList<>();
         int createdOutMigrants = 0;
         if (outmigrants > 0) do {
-            int selected = (int) (hhs.length * SiloModel.rand.nextDouble());
+            int selected = (int) (hhs.length * SiloUtil.getRandomNumberAsDouble());
             selectedOutmigrationHh.add(hhs[selected].getId());
             createdOutMigrants += hhs[selected].getHhSize();
         } while (createdOutMigrants < outmigrants);
@@ -107,7 +107,7 @@ public class InOutMigration {
             int[] inData = new int[31];
             // 0: hhSize, for p1 through p10 (1: age p1, 2: gender p1, 3: race p1, 4: occupation p1, 5: income p1, 6: workplace)
             // if this order in inData[] is changed, adjust method  "public void inmigrateHh (int hhId)" as well
-            int selected = (int) (hhs.length * SiloModel.rand.nextDouble());
+            int selected = (int) (hhs.length * SiloUtil.getRandomNumberAsFloat());
             inData[0] = Math.min(hhs[selected].getHhSize(), 5);
             int k = 0;
             for (Person pp: hhs[selected].getPersons()) {
