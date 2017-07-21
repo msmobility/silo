@@ -141,12 +141,12 @@ public class SiloModel {
 
 
         if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
-            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent" ) ;
+            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
         }
 
         TransportModelI TransportModel ;
         // this shadows a global definition, not sure if that is intended ... kai, aug'16
-        // RM: Not sure this should be either-or. Rather, I want to create travel demand with MITO and assign with MATSim
+        // RM: Not sure this should be either-or. At some point, I want to create travel demand with MITO and assign with MATSim
 
         if ( runMatsim ) {
             logger.info("  MATSim is used as the transport model");
