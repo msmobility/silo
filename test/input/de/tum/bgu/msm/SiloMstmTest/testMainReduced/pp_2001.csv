@@ -4,10 +4,10 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 3,2,40,2,"single","black",1,0,3896097,30000
 4,2,44,2,"single","black",1,0,3756274,61000
 5,3,40,2,"single","black",1,0,2112067,30000
-6,3,44,2,"single","black",1,0,2298203,61000
+6,3,45,2,"single","black",1,0,2298203,61000
 7,4,40,2,"single","black",1,0,3479563,30000
 8,4,44,2,"single","black",1,0,527084,61000
-9,5,40,2,"single","black",1,0,1386256,30000
+9,5,40,2,"single","black",2,0,-1,18000
 10,5,44,2,"single","black",1,0,2729405,61000
 11,6,40,2,"single","black",1,0,2865472,30000
 12,6,44,2,"single","black",1,0,3301102,61000
@@ -121,7 +121,7 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 120,56,37,1,"single","white",1,0,3638411,57300
 121,56,4,1,"single","white",0,0,-1,0
 122,56,0,1,"single","white",0,0,-1,0
-123,57,37,2,"single","white",2,0,-1,28380
+123,57,37,2,"single","white",1,0,874065,47300
 124,57,37,1,"single","white",1,0,1673630,57300
 125,57,4,1,"single","white",0,0,-1,0
 126,57,0,1,"single","white",0,0,-1,0
@@ -213,7 +213,7 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 212,79,17,2,"single","black",1,0,2547600,7000
 213,79,8,1,"single","black",0,0,-1,0
 214,79,30,2,"single","black",1,0,5142273,22000
-215,80,24,1,"single","black",1,0,5135085,25000
+215,80,23,1,"single","black",1,0,5135085,25000
 216,80,17,2,"single","black",1,0,2561930,7000
 217,80,8,1,"single","black",0,0,-1,0
 218,80,30,2,"single","black",1,0,2575512,22000

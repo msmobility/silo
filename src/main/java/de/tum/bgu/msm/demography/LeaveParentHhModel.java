@@ -111,8 +111,7 @@ public class LeaveParentHhModel {
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleLeaveParHousehold(per)) return;   // Person got married this simulation period
-        double rnum = SiloModel.rand.nextDouble();
-        if (rnum < lphProbability[per.getType().ordinal()]) {
+        if (SiloUtil.getRandomNumberAsDouble() < lphProbability[per.getType().ordinal()]) {
 
             // search if dwelling is available
             int newDwellingId = modelContainer.getMove().searchForNewDwelling(new Person[]{per}, modelContainer);

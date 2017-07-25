@@ -517,7 +517,7 @@ public class MovesModelMuc implements MovesModelI {
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
-            if (SiloModel.rand.nextFloat() > factor) continue;
+            if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
             double util = calculateUtility(ht, dd, modelContainer);
             expProbs[i] = Math.exp(parameter_SelectDD * util);

@@ -118,12 +118,11 @@ public class BirthModel {
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleGiveBirth(per)) return;  // Person has died or moved away
-        double rnum = SiloModel.rand.nextDouble();
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb;
         if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * marriedScaler;
         else birthProb = birthProbability[per.getType().ordinal()] * singleScaler;
-        if (rnum < birthProb) {
+        if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
             EventManager.countEvent(EventTypes.checkBirth);
