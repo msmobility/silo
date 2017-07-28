@@ -41,6 +41,13 @@ public class SiloMatsimTest {
 		String arg = "./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties";
 		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis_reduced/matsim_input/config.xml") ;
 
+		//TODO: apparently this is required for some machines, as the test class of utils is not initialized at this point,
+		// resulting in exceptions when trying to get output directory 'ana,nico 07/'17
+		try {
+			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMainReduced", null));
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		config.global().setNumberOfThreads(1);
 		config.parallelEventHandling().setNumberOfThreads(1);
