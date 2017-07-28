@@ -188,7 +188,7 @@ public class ConstructionModel {
                     attributes[3] = SiloUtil.numberOfQualityLevels;  // set all new dwellings to highest quality level
                     attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
                     if (makeSomeNewDdAffordable) {
-                        if (SiloModel.rand.nextFloat() <= shareOfAffordableDd)
+                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
                              attributes[4] = (int) (restrictionForAffordableDd * 100);
                     }
                     if (attributes[4] == 0) {

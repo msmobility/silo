@@ -2716,11 +2716,9 @@ public class SyntheticPopDe {
         int floorSpace = SiloUtil.select(vacantFloor);
         Random r = new Random();
         if (floorSpace == 0){
-            float rnd = SiloModel.rand.nextFloat();
-            floorSpaceDwelling = (int) (30 + rnd * 20);
+            floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 20);
         } else if (floorSpace == sizeBracketsDwelling.length - 1) {
-            float rnd = SiloModel.rand.nextFloat();
-            floorSpaceDwelling = (int) (120 + rnd * 200);
+            floorSpaceDwelling = (int) (120 + SiloUtil.getRandomNumberAsFloat() * 200);
         } else {
             floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
                     sizeBracketsDwelling[floorSpace - 1];
@@ -2748,7 +2746,7 @@ public class SyntheticPopDe {
         //assign randomly one construction year to the dwelling within the year brackets of the microdata
         //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
         int selectedYear = 1;
-        float rnd = SiloModel.rand.nextFloat();
+        float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (yearBuilt){
             case 1: selectedYear = 1919;
                 break;
@@ -2777,7 +2775,7 @@ public class SyntheticPopDe {
         //assign randomly one construction year to the dwelling within the year brackets of the microdata -
         //Ages - 2: Before 1948, 5: 1949 - 1990; 6: 1991 - 2000; 9: 2001 or later
         int selectedYear = 1;
-        float rnd = SiloModel.rand.nextFloat();
+        float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (yearBuilt){
             case 2: selectedYear = (int) (1919 + rnd * 39);
                 break;
@@ -2988,7 +2986,7 @@ public class SyntheticPopDe {
 
     public static int select (int[] probabilities) {
         // select item based on probabilities (for zero-based float array)
-        double selPos = SiloUtil.getSum(probabilities) * SiloModel.rand.nextDouble();
+        double selPos = SiloUtil.getSum(probabilities) * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];

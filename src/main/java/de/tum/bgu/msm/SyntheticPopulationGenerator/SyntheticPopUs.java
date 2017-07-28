@@ -454,7 +454,7 @@ public class SyntheticPopUs {
 
         //Ages: 1. 1999 to 2000, 2. 1995 to 1998, 3. 1990 to 1994, 4. 1980 to 1989, 5. 1970 to 1979, 6. 1960 to 1969, 7. 1950 to 1959, 8. 1940 to 1949, 9. 1939 or earlier
         int selectedYear = 0;
-        float rnd = SiloModel.rand.nextFloat();
+        float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (yearBuilt) {
             case 1: selectedYear = (int) (1999 + rnd * 2);
                 break;

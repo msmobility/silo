@@ -261,7 +261,7 @@ public class Household implements Serializable {
         // create new Person for this household
         int id = HouseholdDataManager.getNextPersonId();
         int gender = 1;
-        if (SiloModel.rand.nextDouble() <= BirthModel.getProbabilityForGirl()) gender = 2;
+        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) gender = 2;
         Person per = new Person (id, hhId, 0, gender, race, 0, 0, 0);
         per.setRole(PersonRole.child);
         Person previousPers[] = getPersons();

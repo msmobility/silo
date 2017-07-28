@@ -26,7 +26,7 @@ public class MitoTransportModel implements TransportModelI {
 
     public MitoTransportModel(ResourceBundle rb, String baseDirectory) {
         this.mito = new MitoModel(rb);
-        mito.setRandomNumberGenerator(SiloModel.rand);
+        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
     }
 
