@@ -2094,7 +2094,7 @@ public class SyntheticPopDe {
     }
 
 
-    private void readSyntheticPopulation(){
+    public void readSyntheticPopulation(){
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
