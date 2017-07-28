@@ -18,12 +18,6 @@ import java.util.ResourceBundle;
  *
  */
 
-/**
- * done 1: Read interested variables like household structure, number of Olders in the household .. from data resource/ (it is not in the current data input files)
- * done 2: Careful with the categories of variables, like gender (0 male; 1 female. or 1 male; 2 female); hhInc, nationality, educationLevel (3 categories? 2 categories?)
- * 3: Use the Utility Expression Calculator method to calculate the teleworkStatus Probability, which need to creat DataSheet and UtilitySheet in new excel file,
- * and add the file name into the siloMuc.properities file.
- * */
 public class TeleworkChoice {
     private ResourceBundle rb;
     static Logger logger = Logger.getLogger(TeleworkChoice.class);
@@ -33,19 +27,7 @@ public class TeleworkChoice {
     protected static final String PROPERTIES_Telework_UEC_DATA_SHEET         = "Telework.UEC.DataSheetNumber";
     protected static final String PROPERTIES_Telework_UEC_UTILITY            = "Telework.UEC.UtilitySheetNumber";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_TELEWORK = "log.util.teleWork";
-
-    //Read the synthetic population
-    protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.ascii";
-    protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.ascii";
-    protected static final String PROPERTIES_DWELLING_SYN_POP             = "dwelling.file.ascii";
-    protected static final String PROPERTIES_JOB_SYN_POP                  = "job.file.ascii";
-    protected static final String PROPERTIES_ATRIBUTES_MICRODATA_PP       = "read.attributes.pp";
-    protected static final String PROPERTIES_ATRIBUTES_MICRODATA_HH       = "read.attributes.hh";
-    protected static final String PROPERTIES_SCHOOL_DESCRIPTION           = "school.dictionary";
-    protected static final String PROPERTIES_PP_FILE_ASCII                = "person.file.ascii";
-    protected TableDataSet schoolLevelTable;
     public geoDataI geoData;
-
     private double [][][][][][][][] teleworkStatus; //[3 teleowrk probability][age][gender][hasElderPerson][nationality][householdStructure][education level][household income level]
     private double[] teleworkPro= new double[3]; // The probability for three type of telework choice.
 
@@ -90,12 +72,12 @@ public class TeleworkChoice {
         teleworkStatus = new double [2][96][2][2][2][3][3][3];
 
         for(int age=20;age<96;age++){
-            for(int gender=1; gender<3; gender++){
-                for(int hasElderlyPerson=1; hasElderlyPerson<3; hasElderlyPerson++){
+            for(int gender=0; gender<2; gender++){
+                for(int hasElderlyPerson=0; hasElderlyPerson<2; hasElderlyPerson++){
                     for(int nationality=0; nationality<2; nationality++){
-                        for(int hhStructure=1; hhStructure<4; hhStructure++){
-                            for(int newEducationLevel=1; newEducationLevel<4; newEducationLevel++){
-                                for(int hhIncomeLevel=1; hhIncomeLevel<4; hhIncomeLevel++){
+                        for(int hhStructure=0; hhStructure<3; hhStructure++){
+                            for(int newEducationLevel=0; newEducationLevel<3; newEducationLevel++){
+                                for(int hhIncomeLevel=0; hhIncomeLevel<3; hhIncomeLevel++){
                                     teleworkDMU.setAge(age);
                                     teleworkDMU.setGender(gender);
                                     teleworkDMU.setHasElderlyPerson(hasElderlyPerson);
@@ -112,22 +94,8 @@ public class TeleworkChoice {
 
                                     teleworkPro[0] = 1d / (SiloUtil.getSum(util) + 1d);
                                     for (int i = 1; i < teAvail.length; i++) {
-                                        teleworkStatus[i-1][age][gender-1][hasElderlyPerson-1][nationality][hhStructure-1][newEducationLevel-1][hhIncomeLevel-1] = util[i-1] * teleworkPro[0];
+                                        teleworkStatus[i-1][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * teleworkPro[0];
                                     }
-/*
-                                    if (logCalculation) {
-                                        // log UEC values for each person type
-                                        teleworkUtility.logAnswersArray(traceLogger, "Telework Choice Model. age: " + age +
-                                                ", gender: " + gender + ", hasElderlyPerson: " + hasElderlyPerson + ", nationality: " + nationality + ", hhStructure: " + hhStructure +
-                                                ", educationLevel: " + newEducationLevel + ", hhIncomeLevel: " + hhIncomeLevel);
-
-                                        logger.info(age + "," + gender + "," + hasElderlyPerson + "," + nationality + "," + hhStructure + "," + newEducationLevel + "," + hhIncomeLevel +
-                                                "," + teleworkPro[0] + "," +
-                                                teleworkStatus[0][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] + "," +
-                                                teleworkStatus[1][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] + "," +
-                                                teleworkStatus[2][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel]);
-                                    }
-                                    */
                                 }
                             }
                         }
@@ -135,52 +103,6 @@ public class TeleworkChoice {
                 }
             }
         }
-
-        //////estimate the Probability for different telework status///////////
-        /*
-        if(educationLevel==1) {
-            if(hhInc==1){
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 1.263 * educationLevel - 0.615 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 1.926 * educationLevel - 1.215 * hhInc));
-            }else if(hhInc==2) {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 1.263 * educationLevel - 0.577 * (hhInc-1)));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 1.926 * educationLevel - 0.708 * (hhInc-1)));
-            }
-            else {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 1.263 * educationLevel - 0.000 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 1.926 * educationLevel - 0.000 * hhInc));
-            }
-        }else if(educationLevel==2){
-            if(hhInc==1) {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.637 * (educationLevel-1) - 0.615 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.889 * (educationLevel-1) - 1.215 * hhInc));
-            }else if(hhInc==2) {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.637 * (educationLevel-1) - 0.577 * (hhInc-1)));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.889 * (educationLevel-1) - 0.708 * (hhInc-1)));
-            }else {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.637 * (educationLevel-1) - 0.000 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.889 * (educationLevel-1) - 0.000 * hhInc));
-            }
-        }else {
-            if(hhInc==1) {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.000 * educationLevel - 0.615 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.000 * educationLevel - 1.215 * hhInc));
-            }else if(hhInc==2) {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.000 * educationLevel - 0.577 * (hhInc-1)));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.000 * educationLevel - 0.708 * (hhInc-1)));
-            }else {
-                teleworkPro[1] = 1 - 1d / (1d + Math.exp(-3.394 + 0.032 * age + 0.119 * gender + 0.225 * nationality - 0.000 * educationLevel - 0.000 * hhInc));
-                teleworkPro[2] = 1 - 1d / (1d + Math.exp(-0.703 + 0.012 * age - 0.363 * gender + 0.296 * nationality - 0.000 * educationLevel - 0.000 * hhInc));
-            }
-        }
-
-        teleworkPro[0]=1-teleworkPro[1]-teleworkPro[2];
-        double randomNumber;
-        randomNumber=Math.random();
-        if (randomNumber>=0 && randomNumber<=teleworkPro[0]){telework=0;}
-        else if (randomNumber>=teleworkPro[0] && randomNumber<=teleworkPro[0]+teleworkPro[1]) {telework=1;}
-        else {telework=2;}
-        */
     }
 
     private void simulateTeleworkStatus(Person pp){
@@ -194,7 +116,6 @@ public class TeleworkChoice {
         int nationality=pp.getNationality();
         int newNationality;
         int hasElderlyPerson=0;
-        //boolean hasElderlyPerson=false;
         boolean hasKid=false;
         PersonRole personRole=pp.getRole();
         int hhStructure;
@@ -208,31 +129,30 @@ public class TeleworkChoice {
 
         // Variable hasElderlyPerson: whether or not the household has Elderly person that aged at least 65 years old.
         for(Person ppinHousehold:hh.getPersons()){
-            //if(ppinHousehold.getAge()>=65) hasElderlyPerson=true;
             if(ppinHousehold.getAge()>=65) hasElderlyPerson=1;
             if(ppinHousehold.getAge()<=16) hasKid=true;
         }
 
         // Variable hhStructure: 1 for Single without kids; 2 for Single with kids; 3 for Others(Married or Partner).
-        if(personRole.equals("single") && hasKid==false) hhStructure=1;
-        else if(personRole.equals("single") && hasKid==true) hhStructure=2;
-        else hhStructure=3;
+        if(personRole.equals("single") && hasKid==false) hhStructure=0;
+        else if(personRole.equals("single") && hasKid==true) hhStructure=1;
+        else hhStructure=2;
 
         // Classify household income into 3 levels: hhIncomeLevel=1 for 0-2600 Euro; hhIncomeLevel=2 for 2600-5000 Euro; hhIncomeLevel=3 for 5000- Euro.
-        if(hhInc<=2600)hhIncomeLevel=1;
-        else if(hhInc<=5000) hhIncomeLevel=2;
-        else hhIncomeLevel=3;
+        if(hhInc<=2600)hhIncomeLevel=0;
+        else if(hhInc<=5000) hhIncomeLevel=1;
+        else hhIncomeLevel=2;
 
         // Classify educationLevel into 3 levels: newEducationLevel=1 for original category educationLevel 1-2 ("Without beruflichen Abschluss", "Lehre, Berufausbildung im dual System", "Fachschulabschluss“， ”Abschluss einer Fachakademie“)；
         // newEducationLevel=2 for original category educationLevel 3 (Fachhochschulabschluss);
         // newEducationLevel=3 for original category educationLevel 4 (Hochschulabschluss - Uni, Promotion).
         // Original category educationLevel came from personEducation in SyntheticPopDe 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion.
-        if(educationLevel<=2)newEducationLevel=1;
-        else if(educationLevel==3) newEducationLevel=2;
-        else newEducationLevel=3;
+        if(educationLevel<=2)newEducationLevel=0;
+        else if(educationLevel==3) newEducationLevel=1;
+        else newEducationLevel=2;
 
         for(int i=1; i<3; i++){
-            teleworkPro[i]=teleworkStatus[i-1][age][gender-1][hasElderlyPerson][nationality][hhStructure-1][newEducationLevel-1][hhIncomeLevel-1];
+            teleworkPro[i]=teleworkStatus[i-1][age][gender-1][hasElderlyPerson][newNationality][hhStructure][newEducationLevel][hhIncomeLevel];
         }
 
         telework=SiloUtil.select(teleworkPro);
