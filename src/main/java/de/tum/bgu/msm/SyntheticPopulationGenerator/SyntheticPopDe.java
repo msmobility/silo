@@ -70,6 +70,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
     protected static final String PROPERTIES_UNIVERSITY_ALPHA             = "university.choice.alpha";
     protected static final String PROPERTIES_UNIVERSITY_GAMMA             = "university.choice.gamma";
+    protected static final String PROPERTIES_EMPLOYMENT_BY_GENDER_EDU     = "employment.probability";
     //Read the synthetic population
     protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.ascii";
     protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.ascii";
@@ -124,7 +125,6 @@ public class SyntheticPopDe {
 
     protected double alphaJob;
     protected double gammaJob;
-    protected TableDataSet coefficients;
     protected TableDataSet probabilitiesJob;
 
     protected Matrix distanceMatrix;
@@ -1889,7 +1889,7 @@ public class SyntheticPopDe {
 
 
         //Job type probabilities
-        probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
+        probabilitiesJob = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EMPLOYMENT_BY_GENDER_EDU));
         probabilitiesJob.buildStringIndex(1);
 
 
@@ -3299,7 +3299,6 @@ public class SyntheticPopDe {
     public void writeVectorToCSV(int[] thresholds, double[] frequencies, String outputFile, double a, double g){
         try {
 
-            //TableDataSet coefficients = SiloUtil.readCSVfile(rb.getString("employment.coefficients"));
             PrintWriter pw = new PrintWriter(new FileWriter(outputFile, true));
             pw.println("alpha,gamma,threshold,frequency,iteration");
 
