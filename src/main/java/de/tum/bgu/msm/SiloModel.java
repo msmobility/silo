@@ -237,7 +237,7 @@ public class SiloModel {
             // walk through all events
             for (int i = 1; i <= em.getNumberOfEvents(); i++) {
 
-                if (i > 5) continue;
+                //if (i > 5) continue;
                 //	    if (i%500000==0) logger.info("Processing event " + i);
                 // event[] stores event id in position [0] and person id in position [1]
                 Integer[] event = em.selectNextEvent();
