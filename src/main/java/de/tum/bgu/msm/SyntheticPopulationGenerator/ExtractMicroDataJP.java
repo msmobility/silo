@@ -266,6 +266,7 @@ public class ExtractMicroDataJP {
         } else {
             frequencyMatrix.setValueAt(i,"ddUse" + usageBracketsDwelling[0] , 1);
         }*/
+
     }
 
     private void updateHhSize(int hhSize, int i) {
