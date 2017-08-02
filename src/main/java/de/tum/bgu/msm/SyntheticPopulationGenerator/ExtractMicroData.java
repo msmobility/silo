@@ -13,8 +13,6 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 
-import javax.measure.unit.SI;
-
 
 /**
  * Reads the micro data as an input for the synthetic population
@@ -30,9 +28,7 @@ public class ExtractMicroData {
     protected static final String PROPERTIES_MICRODATA_PATH               = "micro.data.2010";
 
     //Attributes at the person and household level
-    protected static final String PROPERTIES_VARIABLES_PP                 = "pp.microData.attributes";
-    protected static final String PROPERTIES_VARIABLES_HH                 = "hh.microData.attributes";
-    protected static final String PROPERTIES_VARIABLES_DD                 = "dd.microData.attributes";
+    protected static final String PROPERTIES_VARIABLES                    = "microData.attributes";
     protected static final String PROPERTIES_EXCEPTION_MICRODATA          = "microData.exceptions";
 
     //Conversion tables from microdata categories to control total categories
@@ -52,9 +48,6 @@ public class ExtractMicroData {
     protected TableDataSet microPersons;
     protected TableDataSet microDwellings;
     protected TableDataSet frequencyMatrix;
-    protected TableDataSet ppVariables;
-    protected TableDataSet hhVariables;
-    protected TableDataSet ddVariables;
     protected TableDataSet exceptions;
     protected TableDataSet educationDegreeTable;
     protected TableDataSet schoolLevelTable;
@@ -77,7 +70,8 @@ public class ExtractMicroData {
 
     static Logger logger = Logger.getLogger(SyntheticPopDe.class);
     private String[] attributes;
-
+    private TableDataSet ipuVariables;
+    private HashMap<String, String[]> attributesMicroData;
 
 
     public ExtractMicroData(ResourceBundle rb) {
@@ -91,6 +85,7 @@ public class ExtractMicroData {
         logger.info("   Starting to create the synthetic population.");
         long startTime = System.nanoTime();
         setInputData();
+        setAttributes();
         readMicroData();
         translatePersonMicroData();
         createFrequencyMatrix();
@@ -98,16 +93,30 @@ public class ExtractMicroData {
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
 
+    private void setAttributes() {
+        //method to set the attributes to read
+        int[] count = new int[3];
+        attributesMicroData = new HashMap<>();
+        for (int i = 1; i <= ipuVariables.getRowCount(); i++){
+            String key = ipuVariables.getStringValueAt(i,"Type");
+            String value = ipuVariables.getStringValueAt(i,"VariableNameMicroData");
+            if (attributesMicroData.containsKey(key)){
+                String[] previous = attributesMicroData.get(key);
+                previous = SiloUtil.expandArrayByOneElement(previous, value);
+                attributesMicroData.put(key,previous);
+            } else {
+                String[] previous = new String[1];
+                previous[0] = value;
+                attributesMicroData.put(key,previous);
+            }
+        }
+    }
+
     private void setInputData() {
         //method with all the inputs that are required to read externally for this class
 
         //To exclude from the microData some records
         exceptions = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EXCEPTION_MICRODATA));
-
-        //Variables to read from the microData at the person, household and dwelling level
-        ppVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_VARIABLES_PP));// variables at the person level
-        hhVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_VARIABLES_HH)); //variables at the household level
-        ddVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_VARIABLES_DD)); //variables at the household level
 
         //Dictionaries to translate categories from microData to SILO
         educationDegreeTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EDUCATION_DESCRIPTION));
@@ -125,6 +134,8 @@ public class ExtractMicroData {
 
         //Attributes list
         attributes = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
+        ipuVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_VARIABLES));
+        ipuVariables.buildStringIndex(ipuVariables.getColumnPosition("VariableNameMicroData"));
     }
 
 
@@ -234,22 +245,106 @@ public class ExtractMicroData {
 
         //Read the attributes to match and initialize frequency matrix
         initializeAttributesMunicipality();
-        //initializeFrequencyMatrix();
+        attributesMunicipality = frequencyMatrix.getColumnLabels();
+        SiloUtil.writeTableDataSet(frequencyMatrix,"input/testing/frequencyMatrix.csv");
 
         //Update the frequency matrix with the microdata
         for (int i = 1; i <= frequencyMatrix.getRowCount(); i++){
-
-
+           //checkContainsAndUpdate(attributesMunicipality[i],);
+            frequencyMatrix.setValueAt(i,"hhTotal",1);
+            int hhSize = (int) microHouseholds.getValueAt(i,"hhSize");
+            updateHhSize(hhSize, i);
+            updateDdUse((int) microDwellings.getValueAt(i,"ddUse"), i);
+            updateDdYear((int) microDwellings.getValueAt(i,"ddYear"), i);
+            updateDdFloor((int) microDwellings.getValueAt(i,"ddFloor"), i);
+            for (int j = 0; j < hhSize; j++){
+                int row = (int) microHouseholds.getValueAt(i,"firstPerson") + j;
+                int age = (int) microPersons.getValueAt(row,"age");
+                int gender = (int) microPersons.getValueAt(row,"gender");
+                int occupation = (int) microPersons.getValueAt(row,"occupation");
+                int nationality = (int) microPersons.getValueAt(row,"nationality");
+                updateHhAgeGender(age, gender, i);
+                updateHhWorkers(gender,occupation, i);
+                updateHhForeigners(nationality, i);
+            }
+            frequencyMatrix.setValueAt(i,"population",hhSize);
         }
         SiloUtil.writeTableDataSet(frequencyMatrix,"input/testing/frequencyMatrix.csv");
 
-
-
-
-
-
         logger.info("   Finished creating the frequency matrix");
     }
+
+
+    private void updateHhForeigners(int nationality, int i) {
+        if (nationality > 2){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"Nat1");
+            frequencyMatrix.setValueAt(i,"Nat1",value);
+        }
+    }
+
+
+    private void updateHhWorkers(int gender, int occupation, int i) {
+        if (occupation == 1){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"W_" + gender);
+            frequencyMatrix.setValueAt(i,"W_" + gender,value);
+        }
+    }
+
+
+    private void updateHhAgeGender(int age, int gender, int i) {
+        int row = 0;
+        while (age > ageBracketsPerson[row]) {
+            row++;
+        }
+        if (gender == 1){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"M_" + ageBracketsPerson[row]);
+            frequencyMatrix.setValueAt(i,"M_" + ageBracketsPerson[row],value);
+        } else {
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"F_" + ageBracketsPerson[row]);
+            frequencyMatrix.setValueAt(i,"F_" + ageBracketsPerson[row],value);
+        }
+    }
+
+
+    private void updateDdYear(int ddYear, int i) {
+        int row = 0;
+        while (ddYear > yearBracketsDwelling[row]) {
+            row++;
+        }
+        frequencyMatrix.setValueAt(i,"ddYear" + yearBracketsDwelling[row],1);
+    }
+
+
+    private void updateDdFloor(int ddFloor, int i) {
+        int row = 0;
+        if (ddFloor > sizeBracketsDwelling[sizeBracketsDwelling.length-1]){
+            row = sizeBracketsDwelling.length - 1;
+        } else {
+            while (ddFloor > sizeBracketsDwelling[row]) {
+                row++;
+            }
+        }
+        frequencyMatrix.setValueAt(i,"ddFloor" + sizeBracketsDwelling[row],1);
+    }
+
+
+    private void updateDdUse(int ddUse, int i) {
+        //Method to update the dwelling use
+        if (ddUse > usageBracketsDwelling[0]){
+            frequencyMatrix.setValueAt(i,"ddUse" + usageBracketsDwelling[1], 1);
+        } else {
+            frequencyMatrix.setValueAt(i,"ddUse" + usageBracketsDwelling[0] , 1);
+        }
+    }
+
+    private void updateHhSize(int hhSize, int i) {
+        //Method to update the frequency matrix depending on hhSize
+        if (hhSize > householdSizes[householdSizes.length - 1]){
+            hhSize = householdSizes[householdSizes.length - 1];
+        }
+        frequencyMatrix.setValueAt(i,"hhSize"+ hhSize, 1);
+    }
+
 
     private void initializeAttributesMunicipality() {
         //Method to create the list of attributes given the generic names and the brackets
@@ -261,7 +356,8 @@ public class ExtractMicroData {
         for (int i = 0; i < attributes.length; i++){
             map.put(attributes[i],1);
         }
-        checkContainsAndAdd("ddSize",sizeBracketsDwelling, map);
+        checkContainsAndAdd("ddYear",yearBracketsDwelling,map);
+        checkContainsAndAdd("ddFloor",sizeBracketsDwelling, map);
         checkContainsAndAdd("ddUse",usageBracketsDwelling, map);
         checkContainsAndAdd("Nat",nationalityBrackets, map);
         checkContainsAndAdd("M_",ageBracketsPerson, map);
@@ -297,15 +393,19 @@ public class ExtractMicroData {
         addIntegerColumnToTableDataSet(microPersons,"recordPp");
         addIntegerColumnToTableDataSet(microDwellings,"id",hhCountTotal);
 
-        for (int i = 1; i <= ppVariables.getRowCount(); i++){
-            addIntegerColumnToTableDataSet(microPersons,ppVariables.getStringValueAt(i,"VariableName"));
+        for (int i = 0; i < attributesMicroData.get("Person").length; i++){
+            addIntegerColumnToTableDataSet(microPersons,attributesMicroData.get("Person")[i]);
         }
-        for (int i = 1; i <= hhVariables.getRowCount(); i++){
-            addIntegerColumnToTableDataSet(microHouseholds,hhVariables.getStringValueAt(i,"VariableName"));
+        for (int i = 0; i < attributesMicroData.get("Household").length; i++){
+            addIntegerColumnToTableDataSet(microHouseholds,attributesMicroData.get("Household")[i]);
         }
-        for (int i = 1; i <= ddVariables.getRowCount(); i++){
-            addIntegerColumnToTableDataSet(microDwellings,ddVariables.getStringValueAt(i,"VariableName"));
+        for (int i = 0; i < attributesMicroData.get("Dwelling").length; i++){
+            addIntegerColumnToTableDataSet(microDwellings,attributesMicroData.get("Dwelling")[i]);
         }
+
+        microHouseholds.buildIndex(microHouseholds.getColumnPosition("id"));
+        microPersons.buildIndex(microPersons.getColumnPosition("id"));
+        microDwellings.buildIndex(microDwellings.getColumnPosition("id"));
     }
 
 
@@ -315,10 +415,10 @@ public class ExtractMicroData {
         microPersons.setValueAt(personCount,"id",personCount);
         microPersons.setValueAt(personCount,"idHh",hhCount);
         microPersons.setValueAt(personCount,"recordHh",householdNumber);
-        for (int i = 1; i <= ppVariables.getRowCount(); i++){
-            int start = (int) ppVariables.getValueAt(i,"initial");
-            int finish = (int) ppVariables.getValueAt(i,"end");
-            microPersons.setValueAt(personCount,ppVariables.getStringValueAt(i,"VariableName"),convertToInteger(recString.substring(start,finish)));
+        for (int i = 0; i < attributesMicroData.get("Person").length; i++){
+            int start = (int) ipuVariables.getStringIndexedValueAt(attributesMicroData.get("Person")[i],"initial");
+            int finish = (int) ipuVariables.getStringIndexedValueAt(attributesMicroData.get("Person")[i],"end");
+            microPersons.setValueAt(personCount,attributesMicroData.get("Person")[i],convertToInteger(recString.substring(start,finish)));
         }
     }
 
@@ -329,10 +429,10 @@ public class ExtractMicroData {
         microHouseholds.setValueAt(hhCount,"id",hhCount);
         microHouseholds.setValueAt(hhCount,"recordHh",householdNumber);
         microHouseholds.setValueAt(hhCount,"firstPerson",personCount);
-        for (int i = 1; i <= hhVariables.getRowCount(); i++){
-            int start = (int) hhVariables.getValueAt(i,"initial");
-            int finish = (int) hhVariables.getValueAt(i,"end");
-            microHouseholds.setValueAt(hhCount,hhVariables.getStringValueAt(i,"VariableName"),convertToInteger(recString.substring(start,finish)));
+        for (int i = 0; i < attributesMicroData.get("Household").length; i++){
+            int start = (int) ipuVariables.getStringIndexedValueAt(attributesMicroData.get("Household")[i],"initial");
+            int finish = (int) ipuVariables.getStringIndexedValueAt(attributesMicroData.get("Household")[i],"end");
+            microHouseholds.setValueAt(hhCount,attributesMicroData.get("Household")[i],convertToInteger(recString.substring(start,finish)));
         }
     }
 
@@ -341,21 +441,10 @@ public class ExtractMicroData {
         //method to update the values of the TDS of dwellings
 
         microDwellings.setValueAt(hhCount,"id",hhCount);
-        for (int i = 1; i <= ddVariables.getRowCount(); i++){
-            int start = (int) ddVariables.getValueAt(i,"initial");
-            int finish = (int) ddVariables.getValueAt(i,"end");
-            microDwellings.setValueAt(hhCount,ddVariables.getStringValueAt(i,"VariableName"),convertToInteger(recString.substring(start,finish)));
-        }
-    }
-
-
-    private void initializeFrequencyMatrix(){
-        //create the frequency matrix with all the values equal to zero
-
-        frequencyMatrix = new TableDataSet();
-        frequencyMatrix.appendColumn(microHouseholds.getColumnAsInt("id"),"id");
-        for (int i = 0; i < attributesMunicipality.length; i++){
-            addIntegerColumnToTableDataSet(frequencyMatrix,attributesMunicipality[i]);
+        for (int i = 0; i <  attributesMicroData.get("Dwelling").length; i++){
+            int start = (int) ipuVariables.getStringIndexedValueAt( attributesMicroData.get("Dwelling")[i],"initial");
+            int finish = (int) ipuVariables.getStringIndexedValueAt(attributesMicroData.get("Dwelling")[i],"end");
+            microDwellings.setValueAt(hhCount,attributesMicroData.get("Dwelling")[i],convertToInteger(recString.substring(start,finish)));
         }
     }
 
