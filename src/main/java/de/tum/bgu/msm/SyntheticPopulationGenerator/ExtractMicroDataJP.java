@@ -72,7 +72,21 @@ public class ExtractMicroDataJP {
         this.rb = rb;
     }
 
+    public TableDataSet getFrequencyMatrix() {
+        return frequencyMatrix;
+    }
 
+    public TableDataSet getMicroHouseholds() {
+        return microHouseholds;
+    }
+
+    public TableDataSet getMicroPersons() {
+        return microPersons;
+    }
+
+    public TableDataSet getMicroDwellings() {
+        return microDwellings;
+    }
 
     public void run(){
         //method to create the synthetic population
@@ -149,13 +163,13 @@ public class ExtractMicroDataJP {
             }
         }
         initializeMicroData(hhCount, microData.getRowCount());
-        String ppFileName = ("input/testing/microPersons.csv");
+        String ppFileName = ("input/testing/output/microPersons.csv");
         SiloUtil.writeTableDataSet(microPersons, ppFileName);
-        String hhFileName = ("input/testing/microHouseholds.csv");
+        String hhFileName = ("input/testing/output/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
-        String ddFileName = ("input/testing/microDwellings.csv");
+        String ddFileName = ("input/testing/output/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
-        SiloUtil.writeTableDataSet(microData,"input/testing/microDATA.csv");
+        SiloUtil.writeTableDataSet(microData,"input/testing/output/microDATA.csv");
         hhCount = 0;
         personCount = 0;
         for (int i = 1; i <=microData.getRowCount();i++){
@@ -194,11 +208,11 @@ public class ExtractMicroDataJP {
                 }
             }
         }
-        ppFileName = ("input/testing/microPersons.csv");
+        ppFileName = ("input/testing/output/microPersons.csv");
         SiloUtil.writeTableDataSet(microPersons, ppFileName);
-        hhFileName = ("input/testing/microHouseholds.csv");
+        hhFileName = ("input/testing/output/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
-        ddFileName = ("input/testing/microDwellings.csv");
+        ddFileName = ("input/testing/output/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
     }
 
@@ -232,7 +246,7 @@ public class ExtractMicroDataJP {
             }
             frequencyMatrix.setValueAt(i,"population",hhSize);
         }
-        SiloUtil.writeTableDataSet(frequencyMatrix,"input/testing/frequencyMatrix.csv");
+        SiloUtil.writeTableDataSet(frequencyMatrix,"input/testing/output/frequencyMatrix.csv");
         logger.info("   Finished creating the frequency matrix");
     }
 
