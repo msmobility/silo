@@ -2,6 +2,7 @@ package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopDe;
+import de.tum.bgu.msm.SyntheticPopulationGenerator.TeleworkChoice;
 import de.tum.bgu.msm.data.geoDataMuc;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
@@ -35,12 +36,15 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            SyntheticPopDe sp = new SyntheticPopDe(rb);
-            sp.runSP();
+            // SyntheticPopDe sp = new SyntheticPopDe(rb);
+            // sp.runSP();
+            TeleworkChoice tw = new TeleworkChoice(rb);
+            tw.run();
+
            /*ExtractDataDE de = new ExtractDataDE(rb);
             de.runSP(); */
-            SiloModel model = new SiloModel(rb);
-            model.runModel("Muc");
+            //SiloModel model = new SiloModel(rb);
+            //model.runModel("Muc");
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");

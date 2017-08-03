@@ -738,7 +738,7 @@ public class summarizeData {
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + file +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE,schoolplace");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE,schoolplace,telework");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -771,7 +771,9 @@ public class summarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolType());
             pwp.print(",");
-            pwp.println(pp.getSchoolPlace());
+            pwp.print(pp.getSchoolPlace());
+            pwp.print(",");
+            pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 pp.logAttributes(SiloUtil.trackWriter);

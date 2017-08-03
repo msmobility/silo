@@ -69,9 +69,9 @@ public class TeleworkChoice {
             teAvail[i] = 1;
         }
 
-        teleworkStatus = new double [2][96][2][2][2][3][3][3];
+        teleworkStatus = new double [3][96][2][2][2][3][3][3];
 
-        for(int age=20;age<96;age++){
+        for(int age=0;age<96;age++){
             for(int gender=0; gender<2; gender++){
                 for(int hasElderlyPerson=0; hasElderlyPerson<2; hasElderlyPerson++){
                     for(int nationality=0; nationality<2; nationality++){
@@ -92,9 +92,9 @@ public class TeleworkChoice {
                                         util[i-1] = Math.exp(util[i-1]);
                                     }
 
-                                    teleworkPro[0] = 1d / (SiloUtil.getSum(util) + 1d);
+                                    teleworkStatus[0][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = 1d / (SiloUtil.getSum(util) + 1d);
                                     for (int i = 1; i < teAvail.length; i++) {
-                                        teleworkStatus[i-1][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * teleworkPro[0];
+                                        teleworkStatus[i][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * teleworkStatus[0][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel];
                                     }
                                 }
                             }
@@ -151,8 +151,8 @@ public class TeleworkChoice {
         else if(educationLevel==3) newEducationLevel=1;
         else newEducationLevel=2;
 
-        for(int i=1; i<3; i++){
-            teleworkPro[i]=teleworkStatus[i-1][age][gender-1][hasElderlyPerson][newNationality][hhStructure][newEducationLevel][hhIncomeLevel];
+        for(int i=0; i<3; i++){
+            teleworkPro[i]=teleworkStatus[i][age][gender-1][hasElderlyPerson][newNationality][hhStructure][newEducationLevel][hhIncomeLevel];
         }
 
         telework=SiloUtil.select(teleworkPro);

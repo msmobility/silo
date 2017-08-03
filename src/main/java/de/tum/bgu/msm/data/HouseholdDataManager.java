@@ -192,6 +192,12 @@ public class HouseholdDataManager {
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
+            int posNationality = SiloUtil.findPositionInArray("nationality",header);
+            int posEducation = SiloUtil.findPositionInArray("education",header);
+            int posHomeZone = SiloUtil.findPositionInArray("homeZone",header);
+            int posWorkZone = SiloUtil.findPositionInArray("workZone",header);
+            int posDrivers = SiloUtil.findPositionInArray("driversLicense",header);
+            int posSchool = SiloUtil.findPositionInArray("schoolDE",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -202,8 +208,6 @@ public class HouseholdDataManager {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 int gender     = Integer.parseInt(lineElements[posGender]);
                 String relShp  = lineElements[posRelShp].replace("\"", "");
-                // todo: remove next line after synthetic population was corrected:
-                relShp = "single";
                 PersonRole pr  = PersonRole.valueOf(relShp);
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
@@ -212,6 +216,20 @@ public class HouseholdDataManager {
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 Person pp = new Person(id, hhid, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
                 pp.setRole(pr);
+                int nationality = Integer.parseInt(lineElements[posNationality]);
+                int education = Integer.parseInt(lineElements[posEducation]);
+                int homeZone         = Integer.parseInt(lineElements[posHomeZone]);
+                int workZone         = Integer.parseInt(lineElements[posWorkZone]);
+                int drivers         = Integer.parseInt(lineElements[posDrivers]);
+                int school         = Integer.parseInt(lineElements[posSchool]);
+
+                pp.setNationality(nationality);
+                pp.setEducationLevel(education);
+                pp.setZone(homeZone);
+                pp.setJobTAZ(workZone);
+                pp.setDriverLicense(drivers);
+                pp.setSchoolType(school);
+
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     Person.getPersonFromId(id).logAttributes(SiloUtil.trackWriter);
