@@ -2372,6 +2372,7 @@ public class SyntheticPopDe {
 
 
                 //copy the household members characteristics
+                int[] roleCounter = new int[3];
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
                     int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
@@ -2389,18 +2390,27 @@ public class SyntheticPopDe {
                     household.addPersonForInitialSetup(pers);
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.single; //default value = single
-                    if (microPersons.getValueAt(personCounter, "personStatus") == 2) {
+                    if (microPersons.getValueAt(personCounter, "relationshipHousehold") == 2) { //is the spouse of the household head
                         role = PersonRole.married;
                         Person firstPersonInHousehold = household.getPersons()[0];  // get first person in household and make it married (if one person within the household is the partner)
                         firstPersonInHousehold.setRole(PersonRole.married);
-                    } else if (microPersons.getValueAt(personCounter, "personStatus") == 3) { //if the person is not the household head nor his spouse
+                    } else if (microPersons.getValueAt(personCounter, "relationshipHousehold") > 2) { //if the person is not the household head nor his spouse
                         if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 3) { //the person is son/daughter of the household head
                             role = PersonRole.child;
                         } else if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 4) { //the person is the grandchild of the household head
                             role = PersonRole.child;
+                        } else if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 8 & age < 16){ //the person is not son, grandchild, father, grandfather, brother of household head
+                            role = PersonRole.child;
                         }
                     }
                     pers.setRole(role);
+                    if (role.equals(PersonRole.child)){
+                        roleCounter[3]++;
+                    } else if (role.equals(PersonRole.married)){
+                        roleCounter[2]++;
+                    } else if (role.equals(PersonRole.single)){
+                        roleCounter[1]++;
+                    }
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
                     //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
@@ -2411,6 +2421,52 @@ public class SyntheticPopDe {
                     pers.setZone(household.getHomeZone());
                     hhPersons++;
                     //counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
+                }
+
+                //check for person relationship (to avoid having one married person in one household or two single persons same age in the same household)
+                if (roleCounter[2] == 1){   //I have only one married person -> Put as single
+                    Person[] pers = Household.getHouseholdFromId(id).getPersons();
+                    for (int i = 0; i < pers.length; i++){
+                        if (pers[i].getRole().equals(PersonRole.married)){
+                            pers[i].setRole(PersonRole.single);
+                            break;
+                        }
+                    }
+                } else if (roleCounter[1] == 2 & roleCounter[2] == 0){ //More than two singles in the household and 0 married persons -> look for a couple to marry
+                    Person[] pers = Household.getHouseholdFromId(id).getPersons();
+                    int[] personLikelyToMarry = new int[roleCounter[1]];
+                    int i = 0;
+                    for (Person pp:pers){
+                        if (pp.getRole().equals(PersonRole.single)){
+                            personLikelyToMarry[i] = pp.getId();
+                            i++;
+                        }
+                    }
+                    int ageDiff = Person.getPersonFromId(personLikelyToMarry[0]).getAge() - Person.getPersonFromId(personLikelyToMarry[1]).getAge();
+                    int genderDiff = Person.getPersonFromId(personLikelyToMarry[0]).getGender() - Person.getPersonFromId(personLikelyToMarry[1]).getGender();
+                    if (genderDiff == 0 & Math.abs(ageDiff) < 5){
+                        Person.getPersonFromId(personLikelyToMarry[0]).setRole(PersonRole.married);
+                        Person.getPersonFromId(personLikelyToMarry[1]).setRole(PersonRole.married);
+                    }
+                } else if (roleCounter[1] > 2 & roleCounter[2] == 0){
+                    //think on the most likely two to get married.
+/*                    Person[] pers = Household.getHouseholdFromId(id).getPersons();
+                    int[] personLikelyToMarry = new int[roleCounter[1]];
+                    int i = 0;
+                    for (Person pp:pers){
+                        if (pp.getRole().equals(PersonRole.single)){
+                            personLikelyToMarry[i] = pp.getId();
+                            i++;
+                        }
+                    }
+                    int ageDiff = Person.getPersonFromId(personLikelyToMarry[0]).getAge() - Person.getPersonFromId(personLikelyToMarry[1]).getAge();
+                    int genderDiff = Person.getPersonFromId(personLikelyToMarry[0]).getGender() - Person.getPersonFromId(personLikelyToMarry[1]).getGender();
+                    if (genderDiff == 0 & Math.abs(ageDiff) < 5){
+                        Person.getPersonFromId(personLikelyToMarry[0]).setRole(PersonRole.married);
+                        Person.getPersonFromId(personLikelyToMarry[1]).setRole(PersonRole.married);
+                    }*/
+                    logger.info("Household high more than two singles and no marriage");
+
                 }
 
 
