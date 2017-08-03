@@ -139,13 +139,13 @@ public class PricingModel {
         }
         dataContainer.getRealEstateData().setAvePriceByDwellingType(averagePrice);
 
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(("priceUpdate"+String.valueOf(year)+".csv"), false);
+/*        PrintWriter pw = SiloUtil.openFileForSequentialWriting(("priceUpdate"+String.valueOf(year)+".csv"), false);
         pw.println("type,regVacRate,oldPrice,newPrice,frequency");
         for (String token: priceChange.keySet()) {
             String[] values = token.split("_");
             for (String val: values) pw.print(val + ",");
             pw.println(priceChange.get(token));
         }
-        pw.close();
+        pw.close();*/
     }
 }

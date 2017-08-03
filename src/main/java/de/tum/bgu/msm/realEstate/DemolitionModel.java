@@ -107,7 +107,7 @@ public class DemolitionModel {
         int occupied;
         if (residentId > 0) occupied = 1;
         else occupied = 0;
-        if (SiloModel.rand.nextDouble() < demolitionProbability[quality - 1][occupied]) {
+        if (SiloUtil.getRandomNumberAsDouble() < demolitionProbability[quality - 1][occupied]) {
             // demolish dwelling
             if (occupied == 1) {
                 // dwelling is currently occupied, force household to move out

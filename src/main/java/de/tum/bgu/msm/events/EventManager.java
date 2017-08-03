@@ -150,7 +150,7 @@ public class EventManager {
         logger.info("  Events are randomized");
         int randomNumArray[] = new int[numEvents];
         for (int i = 0; i < numEvents; i++) {
-            randomNumArray[i] = (int) (SiloModel.rand.nextDouble() * (float) numEvents * 10f);
+            randomNumArray[i] = (int) (SiloUtil.getRandomNumberAsDouble() * (float) numEvents * 10f);
         }
         randomEventOrder = IndexSort.indexSort(randomNumArray);
         posInArray = 0;

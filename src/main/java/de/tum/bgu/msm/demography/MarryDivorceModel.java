@@ -156,8 +156,8 @@ public class MarryDivorceModel {
             if (EventRules.ruleGetMarried(pp) && pp.getAge() < 100) {
                 int size = Household.getHouseholdFromId(pp.getHhId()).getHhSize();
                 // put only every fifth person into marriage market, emphasize single-person households
-                if (size == 1 && SiloModel.rand.nextFloat() > 0.1 * onePersonHhMarriageBias) continue;
-                if (size != 1 && SiloModel.rand.nextFloat() > 0.1) continue;
+                if (size == 1 && SiloUtil.getRandomNumberAsFloat() > 0.1 * onePersonHhMarriageBias) continue;
+                if (size != 1 && SiloUtil.getRandomNumberAsFloat() > 0.1) continue;
                 // Store persons by age and gender
                 String token = pp.getAge() + "_" + pp.getGender();
                 if (ppByAgeAndGender.containsKey(token)) {
@@ -178,13 +178,13 @@ public class MarryDivorceModel {
                 double marryProb = marriageProbability[pp.getType().ordinal()];   // raw marriage probability for this age/gender group
                 // to keep things simple, emphasize prop to initialize marriage for people from single-person households. Single-person household has no influence on whether someone is selected by the marriage initializer
                 if (Household.getHouseholdFromId(pp.getHhId()).getHhSize() == 1) marryProb *= onePersonHhMarriageBias;
-                if (SiloModel.rand.nextDouble() >= marryProb) continue;
+                if (SiloUtil.getRandomNumberAsDouble() >= marryProb) continue;
                 // person was selected to find a partner
                 personSelectedForMarriage[pp.getId()] = true;
 
                 // First, select interracial or monoracial marriage
                 boolean sameRace = true;
-                if (SiloModel.rand.nextFloat() <= interRacialMarriageShare) sameRace = false;
+                if (SiloUtil.getRandomNumberAsFloat() <= interRacialMarriageShare) sameRace = false;
 
                 // Second, select age of new partner
                 double[] ageProb = new double[ageOffset * 2 + 1];
@@ -416,9 +416,8 @@ public class MarryDivorceModel {
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleGetDivorced(per)) return;
-        double rnum = SiloModel.rand.nextDouble();
 
-        if (rnum < divorceProbability[per.getType().ordinal()]) {
+        if (SiloUtil.getRandomNumberAsDouble() < divorceProbability[per.getType().ordinal()]) {
             // check if vacant dwelling is available
             int newDwellingId = modelContainer.getMove().searchForNewDwelling(new Person[] {per}, modelContainer);
             if (newDwellingId < 0) {

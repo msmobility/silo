@@ -58,6 +58,16 @@ public class SiloMstmTest {
 			ee.printStackTrace();
 			Assert.fail( "something did not work" ) ;
 		}
+
+		//TODO: apparently this is required for some machines, as the test class of utils is not initialized at this point,
+		// resulting in exceptions when trying to get output directory 'ana,nico 07/'17
+		try {
+			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMainReduced", null));
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+
+
 		
 		// The following passes when the test is run alone, but fails when all tests are run in conjunction.  Not sure what it is ...
 		// ... but it is certainly not good that multiple test write in the same directories.  "scenarios" should be something like shared input

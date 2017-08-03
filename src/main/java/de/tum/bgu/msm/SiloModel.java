@@ -48,7 +48,6 @@ public class SiloModel {
     static Logger logger = Logger.getLogger(SiloModel.class);
 
     private ResourceBundle rbLandUse;
-    public static Random rand;
 
     public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
     protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
@@ -141,12 +140,12 @@ public class SiloModel {
 
 
         if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
-            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent" ) ;
+            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
         }
 
         TransportModelI TransportModel ;
         // this shadows a global definition, not sure if that is intended ... kai, aug'16
-        // RM: Not sure this should be either-or. Rather, I want to create travel demand with MITO and assign with MATSim
+        // RM: Not sure this should be either-or. At some point, I want to create travel demand with MITO and assign with MATSim
 
         if ( runMatsim ) {
             logger.info("  MATSim is used as the transport model");
@@ -237,7 +236,7 @@ public class SiloModel {
             // walk through all events
             for (int i = 1; i <= em.getNumberOfEvents(); i++) {
 
-                if (i > 5) continue;
+                //if (i > 5) continue;
                 //	    if (i%500000==0) logger.info("Processing event " + i);
                 // event[] stores event id in position [0] and person id in position [1]
                 Integer[] event = em.selectNextEvent();
@@ -393,6 +392,7 @@ public class SiloModel {
         transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory);
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse, geoData);
+        SiloUtil.initializeRandomNumber();
     }
 
 

@@ -70,6 +70,7 @@ public class SyntheticPopDe {
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
     protected static final String PROPERTIES_UNIVERSITY_ALPHA             = "university.choice.alpha";
     protected static final String PROPERTIES_UNIVERSITY_GAMMA             = "university.choice.gamma";
+    protected static final String PROPERTIES_EMPLOYMENT_BY_GENDER_EDU     = "employment.probability";
     //Read the synthetic population
     protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.ascii";
     protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.ascii";
@@ -124,7 +125,6 @@ public class SyntheticPopDe {
 
     protected double alphaJob;
     protected double gammaJob;
-    protected TableDataSet coefficients;
     protected TableDataSet probabilitiesJob;
 
     protected Matrix distanceMatrix;
@@ -175,9 +175,9 @@ public class SyntheticPopDe {
             assignJobs(); //Workplace allocation
             assignSchools(); //School allocation
             addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(), "_f_");
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-            logger.info("Testing workplace allocation and school allocation");
+            logger.info("Testing mode");
             readSyntheticPopulation();
             addCars(false);
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
@@ -1889,7 +1889,7 @@ public class SyntheticPopDe {
 
 
         //Job type probabilities
-        probabilitiesJob = SiloUtil.readCSVfile(rb.getString("employment.probability"));
+        probabilitiesJob = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EMPLOYMENT_BY_GENDER_EDU));
         probabilitiesJob.buildStringIndex(1);
 
 
@@ -2716,11 +2716,9 @@ public class SyntheticPopDe {
         int floorSpace = SiloUtil.select(vacantFloor);
         Random r = new Random();
         if (floorSpace == 0){
-            float rnd = SiloModel.rand.nextFloat();
-            floorSpaceDwelling = (int) (30 + rnd * 20);
+            floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 20);
         } else if (floorSpace == sizeBracketsDwelling.length - 1) {
-            float rnd = SiloModel.rand.nextFloat();
-            floorSpaceDwelling = (int) (120 + rnd * 200);
+            floorSpaceDwelling = (int) (120 + SiloUtil.getRandomNumberAsFloat() * 200);
         } else {
             floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
                     sizeBracketsDwelling[floorSpace - 1];
@@ -2748,7 +2746,7 @@ public class SyntheticPopDe {
         //assign randomly one construction year to the dwelling within the year brackets of the microdata
         //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
         int selectedYear = 1;
-        float rnd = SiloModel.rand.nextFloat();
+        float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (yearBuilt){
             case 1: selectedYear = 1919;
                 break;
@@ -2777,7 +2775,7 @@ public class SyntheticPopDe {
         //assign randomly one construction year to the dwelling within the year brackets of the microdata -
         //Ages - 2: Before 1948, 5: 1949 - 1990; 6: 1991 - 2000; 9: 2001 or later
         int selectedYear = 1;
-        float rnd = SiloModel.rand.nextFloat();
+        float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (yearBuilt){
             case 2: selectedYear = (int) (1919 + rnd * 39);
                 break;
@@ -2988,7 +2986,7 @@ public class SyntheticPopDe {
 
     public static int select (int[] probabilities) {
         // select item based on probabilities (for zero-based float array)
-        double selPos = SiloUtil.getSum(probabilities) * SiloModel.rand.nextDouble();
+        double selPos = SiloUtil.getSum(probabilities) * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3299,7 +3297,6 @@ public class SyntheticPopDe {
     public void writeVectorToCSV(int[] thresholds, double[] frequencies, String outputFile, double a, double g){
         try {
 
-            //TableDataSet coefficients = SiloUtil.readCSVfile(rb.getString("employment.coefficients"));
             PrintWriter pw = new PrintWriter(new FileWriter(outputFile, true));
             pw.println("alpha,gamma,threshold,frequency,iteration");
 
@@ -3606,11 +3603,10 @@ public class SyntheticPopDe {
     }
 
     private void addCars(boolean flagSkipCreationOfSPforDebugging) {
-        // add synthetic cars to households
+        //method to estimate the number of cars per household
+        //it must be run after generating the population
         CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
         createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
-
-
     }
 
 
