@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.SiloUtil;
@@ -595,7 +596,7 @@ public class summarizeData {
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + "_" +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -738,7 +739,7 @@ public class summarizeData {
         String filepp = SiloUtil.baseDirectory + rb.getString(PROPERTIES_FILENAME_PP_MICRODATA) + file +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE,schoolplace,telework");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -772,6 +773,8 @@ public class summarizeData {
             pwp.print(pp.getSchoolType());
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
+            pwp.print(",");
+            pwp.print(Household.getHouseholdFromId(pp.getHhId()).getAutos());
             pwp.print(",");
             pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
@@ -1133,23 +1136,25 @@ public class summarizeData {
             JobDataManager.writeBinaryJobDataObjects(rb);
     }
 
-    public static void summarizeCarOwnershipByMunicipality(geoDataI geoData) {
+    public static void summarizeCarOwnershipByMunicipality(TableDataSet zonalData) {
         // This calibration function summarizes household auto-ownership by municipality and quits
 
-        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("carOwnershipA.csv", false);
+        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carOwnershipA.csv", false);
         pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
         int[][] autos = new int[4][10000000];
         for (Household hh: Household.getHouseholdArray()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
-            int municipality = geoData.getMunicipalityOfZone(zone);
+            int municipality = (int) zonalData.getIndexedValueAt(zone, "ID_city");
+            int distance = (int) Math.log(zonalData.getIndexedValueAt(zone, "distanceToTransit"));
+            int area = (int) zonalData.getIndexedValueAt(zone,"BBSR");
             autos[autoOwnership][municipality]++;
-            pwa.println(hh.getHHLicenseHolders()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
-                    (int)(Math.log(geoData.getDistanceToTransit(zone)))+","+geoData.getAreaTypeOfZone(zone)+","+hh.getAutos());
+            pwa.println(hh.getHHLicenseHolders()+ "," + hh.getNumberOfWorkers() + "," + hh.getHhIncome() + "," +
+                    distance + "," + area + "," + hh.getAutos());
         }
         pwa.close();
 
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting("carOwnershipB.csv", false);
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carOwnershipB.csv", false);
         pw.println("Municipality,0autos,1auto,2autos,3+autos");
         for (int municipality = 0; municipality < 10000000; municipality++) {
             int sm = 0;

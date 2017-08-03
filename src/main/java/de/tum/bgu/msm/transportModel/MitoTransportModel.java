@@ -7,7 +7,6 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.MitoHousehold;
 import de.tum.bgu.msm.data.MitoPerson;
-import de.tum.bgu.msm.io.input.InputFeed;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -36,9 +35,8 @@ public class MitoTransportModel implements TransportModelI {
                          MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
                          float[] sizeOfZonesInAcre) {
         logger.info("  SILO data being sent to MITO");
-        InputFeed feed = new InputFeed(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
+        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
                 officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);
-        mito.feedData(feed);
     }
 
 

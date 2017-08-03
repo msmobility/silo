@@ -132,6 +132,7 @@ public class HouseholdDataManager {
     }
 
 
+
     public static void writeBinaryPopulationDataObjects(ResourceBundle appRb) {
         // Store population object data in binary file
         String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, PROPERTIES_POP_FILE_BIN);
