@@ -26,6 +26,7 @@ public class ExtractMicroData {
 
     //Routes of the input data
     protected static final String PROPERTIES_MICRODATA_PATH               = "micro.data.2010";
+    protected static final String PROPERTIES_MICRODATA_JP                 = "micro.data.2010";
 
     //Attributes at the person and household level
     protected static final String PROPERTIES_VARIABLES                    = "microData.attributes";
@@ -74,6 +75,7 @@ public class ExtractMicroData {
     private HashMap<String, String[]> attributesMicroData;
 
 
+
     public ExtractMicroData(ResourceBundle rb) {
         // Constructor
         this.rb = rb;
@@ -86,31 +88,14 @@ public class ExtractMicroData {
         long startTime = System.nanoTime();
         setInputData();
         setAttributes();
-        readMicroData();
+        //readMicroData();
+        readCSVMicroData();
         translatePersonMicroData();
         createFrequencyMatrix();
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
 
-    private void setAttributes() {
-        //method to set the attributes to read
-        int[] count = new int[3];
-        attributesMicroData = new HashMap<>();
-        for (int i = 1; i <= ipuVariables.getRowCount(); i++){
-            String key = ipuVariables.getStringValueAt(i,"Type");
-            String value = ipuVariables.getStringValueAt(i,"VariableNameMicroData");
-            if (attributesMicroData.containsKey(key)){
-                String[] previous = attributesMicroData.get(key);
-                previous = SiloUtil.expandArrayByOneElement(previous, value);
-                attributesMicroData.put(key,previous);
-            } else {
-                String[] previous = new String[1];
-                previous[0] = value;
-                attributesMicroData.put(key,previous);
-            }
-        }
-    }
 
     private void setInputData() {
         //method with all the inputs that are required to read externally for this class
@@ -136,6 +121,26 @@ public class ExtractMicroData {
         attributes = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
         ipuVariables = SiloUtil.readCSVfile(rb.getString(PROPERTIES_VARIABLES));
         ipuVariables.buildStringIndex(ipuVariables.getColumnPosition("VariableNameMicroData"));
+    }
+
+
+    private void setAttributes() {
+        //method to set the attributes to read
+        int[] count = new int[3];
+        attributesMicroData = new HashMap<>();
+        for (int i = 1; i <= ipuVariables.getRowCount(); i++){
+            String key = ipuVariables.getStringValueAt(i,"Type");
+            String value = ipuVariables.getStringValueAt(i,"VariableNameMicroData");
+            if (attributesMicroData.containsKey(key)){
+                String[] previous = attributesMicroData.get(key);
+                previous = SiloUtil.expandArrayByOneElement(previous, value);
+                attributesMicroData.put(key,previous);
+            } else {
+                String[] previous = new String[1];
+                previous[0] = value;
+                attributesMicroData.put(key,previous);
+            }
+        }
     }
 
 
@@ -214,6 +219,59 @@ public class ExtractMicroData {
         logger.info("   Finished reading the micro data");
     }
 
+
+    private void readCSVMicroData() {
+
+        TableDataSet microData = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MICRODATA_JP));
+        int hhCount = 0;
+        int personCount = 0;
+        int previoushhID = 0;
+        for (int i = 1; i <=microData.getRowCount(); i++){
+            if ((int) microData.getValueAt(i,"id") != previoushhID){
+                hhCount++;
+                previoushhID = (int) microData.getValueAt(i,"id");
+            }
+        }
+        initializeMicroData(hhCount, microData.getRowCount());
+        hhCount = 0;
+        personCount = 0;
+        for (int i = 1; i <=microData.getRowCount();i++){
+            int householdNumber = (int) microData.getValueAt(i,"id");
+            if ( householdNumber != previoushhID){
+                hhCount++;
+                personCount++;
+                microHouseholds.setValueAt(hhCount,"id",hhCount);
+                microHouseholds.setValueAt(hhCount,"recordHh",householdNumber);
+                microHouseholds.setValueAt(hhCount,"firstPerson",personCount);
+                for (int j = 0; j < attributesMicroData.get("Household").length; j++){
+                    int value = (int) microData.getValueAt(i,attributesMicroData.get("Household")[i]);
+                    microHouseholds.setValueAt(hhCount,attributesMicroData.get("Household")[i],value);
+                }
+                microDwellings.setValueAt(hhCount,"id",hhCount);
+                for (int j = 0; j < attributesMicroData.get("Dwelling").length; j++){
+                    int value = (int) microData.getValueAt(i,attributesMicroData.get("Dwelling")[i]);
+                    microDwellings.setValueAt(hhCount,attributesMicroData.get("Dwelling")[i],value);
+                }
+                microPersons.setValueAt(personCount,"id",personCount);
+                microPersons.setValueAt(personCount,"idHh",hhCount);
+                microPersons.setValueAt(personCount,"recordHh",householdNumber);
+                for (int j = 0; j < attributesMicroData.get("Person").length; j++){
+                    int value = (int) microData.getValueAt(i,attributesMicroData.get("Person")[i]);
+                    microPersons.setValueAt(hhCount,attributesMicroData.get("Person")[i],value);
+                }
+                previoushhID = householdNumber;
+            } else {
+                personCount++;
+                microPersons.setValueAt(personCount,"id",personCount);
+                microPersons.setValueAt(personCount,"idHh",hhCount);
+                microPersons.setValueAt(personCount,"recordHh",householdNumber);
+                for (int j = 0; j < attributesMicroData.get("Person").length; j++){
+                    int value = (int) microData.getValueAt(i,attributesMicroData.get("Person")[i]);
+                    microPersons.setValueAt(hhCount,attributesMicroData.get("Person")[i],value);
+                }
+            }
+        }
+    }
 
     private void translatePersonMicroData(){
         //method to translate the categories from the initial micro data to the categories from SILO
