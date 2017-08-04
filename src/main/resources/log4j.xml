@@ -7,8 +7,8 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %5p %m%n"/>
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-		  <param name="LevelMin" value="debug" />
-		  <param name="LevelMax" value="debug" />
+		  <param name="LevelMin" value="info" />
+		  <param name="LevelMax" value="info" />
 		</filter>
 	</appender>
 	<appender name="stderr" class="org.apache.log4j.ConsoleAppender">
@@ -17,8 +17,8 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %5p %C{1}:%L %m%n"/>
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-		  <param name="LevelMin" value="debug" />
-		  <param name="LevelMax" value="debug" />
+		  <param name="LevelMin" value="info" />
+		  <param name="LevelMax" value="info" />
 		</filter>
 	</appender>
 
@@ -49,7 +49,7 @@
   </logger> -->
   
 	<root>
-		<priority value="debug"></priority>
+		<priority value="info"></priority>
 		<appender-ref ref="stdout"/>
 		<appender-ref ref="stderr"/>
 	</root>
