@@ -31,7 +31,7 @@ public class SiloMstm {
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
         long startTime = System.currentTimeMillis();
         try {
-            logger.info("Starting SILO program for MSTM");
+            logger.info("Starting SILO program for MSTM. Hello world.");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
