@@ -71,7 +71,7 @@ public class TeleworkChoice {
 
         teleworkStatus = new double [3][96][2][2][2][3][3][3];
 
-        for(int age=0;age<96;age++){
+        for(int age=15;age<96;age++){
             for(int gender=0; gender<2; gender++){
                 for(int hasElderlyPerson=0; hasElderlyPerson<2; hasElderlyPerson++){
                     for(int nationality=0; nationality<2; nationality++){
@@ -91,10 +91,9 @@ public class TeleworkChoice {
                                      for (int i = 1; i < teAvail.length; i++) {
                                         util[i-1] = Math.exp(util[i-1]);
                                     }
-
-                                    teleworkStatus[0][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = 1d / (SiloUtil.getSum(util) + 1d);
+                                    double prob0telework = 1d / (SiloUtil.getSum(util) + 1d);
                                     for (int i = 1; i < teAvail.length; i++) {
-                                        teleworkStatus[i][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * teleworkStatus[0][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel];
+                                        teleworkStatus[i-1][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * prob0telework;
                                     }
                                 }
                             }
@@ -130,7 +129,7 @@ public class TeleworkChoice {
         // Variable hasElderlyPerson: whether or not the household has Elderly person that aged at least 65 years old.
         for(Person ppinHousehold:hh.getPersons()){
             if(ppinHousehold.getAge()>=65) hasElderlyPerson=1;
-            if(ppinHousehold.getAge()<=16) hasKid=true;
+            if(ppinHousehold.getAge()<=15) hasKid=true;
         }
 
         // Variable hhStructure: 1 for Single without kids; 2 for Single with kids; 3 for Others(Married or Partner).
@@ -151,10 +150,10 @@ public class TeleworkChoice {
         else if(educationLevel==3) newEducationLevel=1;
         else newEducationLevel=2;
 
-        for(int i=0; i<3; i++){
-            teleworkPro[i]=teleworkStatus[i][age][gender-1][hasElderlyPerson][newNationality][hhStructure][newEducationLevel][hhIncomeLevel];
+        for(int i=1; i<3; i++){
+            teleworkPro[i]=teleworkStatus[i-1][age][gender-1][hasElderlyPerson][newNationality][hhStructure][newEducationLevel][hhIncomeLevel];
         }
-
+        teleworkPro[0]=1 - SiloUtil.getSum(teleworkPro);
         telework=SiloUtil.select(teleworkPro);
         pp.setTelework(telework);
     }
