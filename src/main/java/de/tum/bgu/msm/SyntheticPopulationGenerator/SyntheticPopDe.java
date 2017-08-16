@@ -722,6 +722,8 @@ public class SyntheticPopDe {
         int personEducation[] = new int[personCountTotal];
         int personStatus[] = new int[personCountTotal];
         int personRelationship[] = new int[personCountTotal];
+        int personMarriage[] = new int[personCountTotal];
+        int personSpouse[] = new int[personCountTotal];
         int personEurostat[] = new int[personCountTotal];
         int personSchool[] = new int[personCountTotal];
         int personCount = 0;
@@ -973,6 +975,8 @@ public class SyntheticPopDe {
                                     personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
                                     personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationDegreeTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
                                     personStatus[personCount] = convertToInteger(recString.substring(40,42)); //1: head of household, 2: partner of head of household, 3: children
+                                    personMarriage[personCount] = convertToInteger(recString.substring(59,60));
+                                    personSpouse[personCount] = convertToInteger(recString.substring(36,38));
                                     personRelationship[personCount] = convertToInteger(recString.substring(566, 568)); //1: head of household (hHH), 2: partner of hHH, 3: kid of hHH, 4: grandchild of hHH, 5: mother or father of hHH, 6: grandfather or grandmother of hHH, 7: sibling of hHH, 8: other relationship with hHH, 9: not related with hHH
                                     if (personRelationship[personCount]  > 2){
                                         if (personRelationship[personCount] == 4) { //the person is the grandchild of the household head
@@ -1060,6 +1064,8 @@ public class SyntheticPopDe {
         microPersons.appendColumn(personEurostat,"euroStat");
         microPersons.appendColumn(personEducation,"educationLevel");
         microPersons.appendColumn(personStatus,"personStatus");
+        microPersons.appendColumn(personMarriage, "marriage");
+        microPersons.appendColumn(personSpouse, "spouseInHousehold");
         microPersons.appendColumn(personRelationship,"relationshipHousehold");
         microPersons.appendColumn(personSchool,"schoolType");
         microDataPerson = microPersons;
@@ -1199,22 +1205,52 @@ public class SyntheticPopDe {
     private void checkHouseholdRelationship(){
         //method to check how household members are related
 
-        int[] hhRelationshipCounter = new int[4];
+        int[][] hhRelationshipCounter = new int[3][2];
         int[] counterRelationships = new int[6];
         int[] dummy = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), -1);
         int[] dummy1 = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), -1);
         microDataHousehold.appendColumn(dummy,"relationships");
         microDataHousehold.appendColumn(dummy1,"explain");
+        int[] dummy2 = SiloUtil.createArrayWithValue(microDataPerson.getRowCount(), -1);
+        microDataPerson.appendColumn(dummy2, "personalRole");
         for (int k = 1; k <= microDataHousehold.getRowCount(); k++){
             //count how many persons from the household have that relationship
             int hhSize = (int) microDataHousehold.getValueAt(k,"hhSize");
             int firstMember = (int) microDataHousehold.getValueAt(k,"personCount");
             for (int j = 0; j < hhSize; j++){
                 int row = firstMember + j;
-                int relation = (int) microDataPerson.getValueAt(row,"relationshipHousehold");
-                hhRelationshipCounter[relation - 1]++;
+                int relation = (int) microDataPerson.getValueAt(row,"spouseInHousehold");
+                if (relation == -5){
+                    relation = 3;
+                    if ((int) microDataPerson.getValueAt(firstMember + j, "personStatus") == 3) {
+                        microDataPerson.setValueAt(row, "personalRole", 3);
+                    } else {
+                        microDataPerson.setValueAt(row, "personalRole", 1);
+                    }
+                }
+                int gender = (int) microDataPerson.getValueAt(row,"gender");
+                hhRelationshipCounter[relation - 1][gender - 1]++;
             }
-            //I have only one person as the partner of the household head
+            if (hhRelationshipCounter[1][0] != hhRelationshipCounter[1][1]){
+                //I have different number of married males and females
+                if (hhSize == 2){ //same gender marriage -> set them as single
+                    for (int j = 0; j <hhSize; j++){
+                        microDataPerson.setValueAt(firstMember + j,"personalRole", 1);
+                    }
+                } else {
+                    for (int j = 0; j <hhSize; j++) {
+                        if ((int) microDataPerson.getValueAt(firstMember + j, "personStatus") == 3){
+                            microDataPerson.setValueAt(firstMember + j, "personalRole", 3);
+                        } else {
+                            microDataPerson.setValueAt(firstMember + j, "personalRole", 1);
+                        }
+                    }
+                }
+                microDataHousehold.setValueAt(k,"relationships",1);
+                logger.info("   Different number of married males and females at row " + k);
+            }
+
+            /*//I have only one person as the partner of the household head
             if (hhRelationshipCounter[0] == 0) {
                 logger.info("   No household head");
                 counterRelationships[0]++;
@@ -1224,43 +1260,48 @@ public class SyntheticPopDe {
                 counterRelationships[1]++;
                 microDataHousehold.setValueAt(k,"relationships",1);
             } else {
-                if (hhRelationshipCounter[1] == 1) {
+                if (hhRelationshipCounter[1] == 1) { //I have one married person in the household
                     //obtain the gender of the married person
                     int genderMarried = 0;
-                    int married = 0;
+                    int rowMarried = 0;
                     for (int j = 0; j < hhSize; j++) {
                         int row = firstMember + j;
                         if (microDataPerson.getValueAt(row,"relationshipHousehold") == 2) {
                             genderMarried = (int) microDataPerson.getValueAt(row,"gender");
-                            married = row;
+                            rowMarried = row;
                             break;
                         }
                     }
                     //check the gender of the household head
+                    int genderHead = 0;
+                    int rowHead = 0;
                     for (int j = 0; j < hhSize; j++) {
                         int row = firstMember + j;
                         if (microDataPerson.getValueAt(row,"relationshipHousehold") == 1) {
-                            if ((int) microDataPerson.getValueAt(row,"gender") != genderMarried) {
-                                microDataPerson.setValueAt(row,"personStatus",2); //if they have different gender, set as married
-                                counterRelationships[2]++;
-                                microDataHousehold.setValueAt(k,"relationships",2);
-                            } else {
-                                microDataPerson.setValueAt(row,"personStatus",1); //if they have the same gender, set as single the married person
-                                counterRelationships[3]++;
-                                microDataHousehold.setValueAt(k,"relationships",3);
-                            }
+                            genderHead = (int) microDataPerson.getValueAt(row,"gender");
+                            rowHead = row;
+                            break;
                         }
+                    }
+                    if (genderHead != genderMarried) {
+                        microDataPerson.setValueAt(rowHead,"personStatus",2); //if they have different gender, set as married
+                        counterRelationships[2]++;
+                        microDataHousehold.setValueAt(k,"relationships",2);
+                    } else {
+                        microDataPerson.setValueAt(rowMarried,"personStatus",1); //if they have the same gender, set as single the married person
+                        counterRelationships[3]++;
+                        microDataHousehold.setValueAt(k,"relationships",3);
                     }
                 } else if (hhRelationshipCounter[3] > 0) { //I have the household head and one person that is from a different gender in the household as single
                     //obtain the gender of the household head person
                     int genderHead = 0;
-                    int head = 0;
+                    int rowHead = 0;
                     int ageHead = 0;
                     for (int j = 0; j < hhSize; j++) {
                         int row = firstMember + j;
                         if (microDataPerson.getValueAt(row,"relationshipHousehold") == 1) {
                             genderHead = (int) microDataPerson.getValueAt(row,"gender");
-                            head = row;
+                            rowHead = row;
                             ageHead = (int) microDataPerson.getValueAt(row,"age");
                             break;
                         }
@@ -1280,28 +1321,41 @@ public class SyntheticPopDe {
                             }
                         }
                     }
-                    if (rowPartner > 0) { // one suitable partner
-                        microDataPerson.setValueAt(head,"personStatus",2);
-                        microDataPerson.setValueAt(rowPartner,"personStatus",2);
+                    int getMarried = 0;
+                    if (rowPartner > 0){
+                        if (minDiff <= 20){
+                            double rand = Math.random();
+                            double probability = (20 - minDiff) / 10;
+                            if (rand < probability){
+                                getMarried = 1;
+                            }
+                        }
+                    }
+                    if (getMarried == 1) { // there is one suitable partner
+                        //set probability of getting married
+                        microDataPerson.setValueAt(rowHead, "personStatus", 2);
+                        microDataPerson.setValueAt(rowPartner, "personStatus", 2);
                         counterRelationships[4]++;
-                        microDataHousehold.setValueAt(k,"relationships",4);
+                        microDataHousehold.setValueAt(k, "relationships", 4);
                     } else {
                         counterRelationships[5]++;
                         microDataHousehold.setValueAt(k,"relationships",5);
                     }//no suitable partner, and therefore I don't make them married
                     microDataHousehold.setValueAt(k,"explain",minDiff);
                 }
-            }
-            for (int i = 0; i < hhRelationshipCounter.length; i++){
-                hhRelationshipCounter[i] = 0;
+            }*/
+            for (int i = 0; i < hhRelationshipCounter[0].length; i++){
+                for (int j = 0; j < hhRelationshipCounter[1].length; j++) {
+                    hhRelationshipCounter[i][j] = 0;
+                }
             }
         }
 
         String[] cases = {"No household head", "Multiple household heads", "Married couples", "Spouse converted to single", "One single converted to spouse of head", "Spouse of head cohabits with other singles"};
         int remaining = microDataHousehold.getRowCount();
         for (int i = 0; i < cases.length; i++){
+            remaining = remaining - counterRelationships[i];
             logger.info("   Statistics: " + counterRelationships[i] + " households are " + cases[i]);
-            remaining =- counterRelationships[i];
         }
         logger.info("   Total households is " + microDataHousehold.getRowCount() + ". A total of " + remaining + " are not categorized as before");
 
@@ -2519,8 +2573,12 @@ public class SyntheticPopDe {
                     PersonRole role = PersonRole.single; //default value = single
                     if (microPersons.getValueAt(personCounter, "relationshipStatus") == 2) { //is married
                         role = PersonRole.married;
+                       // roleCounter[1]++;
                     } else if (microPersons.getValueAt(personCounter, "relationshipStatus") == 3) { //is children
                         role = PersonRole.child;
+                        //roleCounter[2]++;
+                    } else {
+                        //roleCounter[0]++;
                     }
                     pers.setRole(role);
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
