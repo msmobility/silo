@@ -16,28 +16,24 @@
  */
 package de.tum.bgu.msm;
 
-import java.io.*;
-import java.util.Random;
-import java.util.ResourceBundle;
-
-import com.sun.media.sound.SoftTuning;
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+import com.pb.common.datafile.TableDataSet;
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.transportModel.MatsimTransportModel;
-import de.tum.bgu.msm.transportModel.MitoTransportModel;
-import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
-
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.transportModel.MatsimTransportModel;
+import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+
+import java.io.*;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author Greg Erhardt 
@@ -313,8 +309,20 @@ public class SiloModel {
             } else if ( runTravelDemandModel || createMstmOutputFiles ) {
                 int nextYearForTransportModel = year + 1;
                 if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+
+                    Map<Integer, MitoHousehold> households = Household.convertHhs();
+                    for(Person person: Person.getPersons()) {
+                        int hhId = person.getHhId();
+                        if(households.containsKey(hhId)) {
+                            households.get(hhId).getPersons().add(person.convertToMitoPp());
+                        } else {
+                            logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
+                                    + " and will thus NOT be considered in the transport model.");
+                        }
+                    }
+
                     TransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
-                            Household.convertHhs(), Person.convertPps(), summarizeData.getRetailEmploymentByZone(geoData),
+                            households, summarizeData.getRetailEmploymentByZone(geoData),
                             summarizeData.getOfficeEmploymentByZone(geoData),
                             summarizeData.getOtherEmploymentByZone(geoData),
                             summarizeData.getTotalEmploymentByZone(geoData), geoData.getSizeOfZonesInAcres());
