@@ -380,7 +380,7 @@ public class Person implements Serializable {
             workzone = Job.getJobFromId(workplace).getZone();
         }
 
-        return new MitoPerson(id, hhid, mitoOccupation, workzone, age, mitoGender, licenseBoolean);
+        return new MitoPerson(id, mitoOccupation, workzone, age, mitoGender, licenseBoolean);
     }
 
 

@@ -298,11 +298,12 @@ public class Household implements Serializable {
         return new MitoHousehold(hhId, getHhIncome(), autos, homeZone);
     }
 
-    public static MitoHousehold[] convertHhs() {
-        MitoHousehold[] thhs = new MitoHousehold[householdMap.size()];
+    public static Map<Integer, MitoHousehold> convertHhs() {
+        Map<Integer, MitoHousehold> thhs = new HashMap();
         Household[] hhSilo = getHouseholdArray();
         for (int i = 0; i < hhSilo.length; i++) {
-            thhs[i] = hhSilo[i].convertToMitoHh();
+            MitoHousehold household = hhSilo[i].convertToMitoHh();
+            thhs.put(household.getHhId(), household);
         }
         return thhs;
     }
