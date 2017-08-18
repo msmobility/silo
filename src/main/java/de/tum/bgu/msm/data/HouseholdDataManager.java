@@ -202,8 +202,6 @@ public class HouseholdDataManager {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 int gender     = Integer.parseInt(lineElements[posGender]);
                 String relShp  = lineElements[posRelShp].replace("\"", "");
-                // todo: remove next line after synthetic population was corrected:
-                relShp = "single";
                 PersonRole pr  = PersonRole.valueOf(relShp);
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
