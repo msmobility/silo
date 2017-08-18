@@ -17,6 +17,8 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.resources.Gender;
+import de.tum.bgu.msm.resources.Occupation;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -351,11 +353,34 @@ public class Person implements Serializable {
 
 
     public MitoPerson convertToMitoPp() {
-        if (workplace > 0) {
-            return new MitoPerson(id, hhid, occupation, Job.getJobFromId(workplace).getZone());
+
+        Gender mitoGender;
+        if(gender == 2) {
+            mitoGender = Gender.FEMALE;
         } else {
-            return new MitoPerson(id, hhid, occupation, -1);
+            mitoGender = Gender.MALE;
         }
+
+        Occupation mitoOccupation;
+        if(occupation == 1) {
+            mitoOccupation = Occupation.WORKER;
+        } else if(occupation == 3) {
+            mitoOccupation = Occupation.STUDENT;
+        } else {
+            mitoOccupation = Occupation.UNEMPLOYED;
+        }
+
+        boolean licenseBoolean = false;
+        if(driverLicense > 0) {
+            licenseBoolean = true;
+        }
+
+        int workzone = -1;
+        if(workplace > 0) {
+            workzone = Job.getJobFromId(workplace).getZone();
+        }
+
+        return new MitoPerson(id, mitoOccupation, workzone, age, mitoGender, licenseBoolean);
     }
 
 
