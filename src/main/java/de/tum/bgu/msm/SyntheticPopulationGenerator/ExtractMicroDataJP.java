@@ -163,13 +163,13 @@ public class ExtractMicroDataJP {
             }
         }
         initializeMicroData(hhCount, microData.getRowCount());
-        String ppFileName = ("input/testing/output/microPersons.csv");
+        String ppFileName = ("microData/interimFiles/microPersons.csv");
         SiloUtil.writeTableDataSet(microPersons, ppFileName);
-        String hhFileName = ("input/testing/output/microHouseholds.csv");
+        String hhFileName = ("microData/interimFiles/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
-        String ddFileName = ("input/testing/output/microDwellings.csv");
+        String ddFileName = ("microData/interimFiles/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
-        SiloUtil.writeTableDataSet(microData,"input/testing/output/microDATA.csv");
+        SiloUtil.writeTableDataSet(microData,"microData/interimFiles/microDATA.csv");
         hhCount = 0;
         personCount = 0;
         for (int i = 1; i <=microData.getRowCount();i++){
@@ -208,11 +208,11 @@ public class ExtractMicroDataJP {
                 }
             }
         }
-        ppFileName = ("input/testing/output/microPersons.csv");
+        ppFileName = ("microData/interimFiles/microPersons.csv");
         SiloUtil.writeTableDataSet(microPersons, ppFileName);
-        hhFileName = ("input/testing/output/microHouseholds.csv");
+        hhFileName = ("microData/interimFiles/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
-        ddFileName = ("input/testing/output/microDwellings.csv");
+        ddFileName = ("microData/interimFiles/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
     }
 
@@ -246,7 +246,7 @@ public class ExtractMicroDataJP {
             }
             frequencyMatrix.setValueAt(i,"population",hhSize);
         }
-        SiloUtil.writeTableDataSet(frequencyMatrix,"input/testing/output/frequencyMatrix.csv");
+        SiloUtil.writeTableDataSet(frequencyMatrix,"microData/interimFiles/frequencyMatrix.csv");
         logger.info("   Finished creating the frequency matrix");
     }
 
