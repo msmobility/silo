@@ -309,8 +309,7 @@ public class Household implements Serializable {
             // if (pp == student) students++;
             if (pp.getDriverLicense() == 1) licenseHolder++;
         }
-        return new MitoHousehold(hhId, hhSize, females, children, youngAdults, retirees, getNumberOfWorkers(), students,
-               licenseHolder, getHhIncome(), autos, homeZone);
+        return new MitoHousehold(hhId, getHhIncome(), autos, homeZone);
     }
 
     public static MitoHousehold[] convertHhs() {

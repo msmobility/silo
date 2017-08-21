@@ -350,7 +350,7 @@ public class Person implements Serializable {
     public int getSchoolPlace() {return schoolPlace;}
 
 
-    public MitoPerson convertToMitoPp() {
+/*    public MitoPerson convertToMitoPp() {
         if (workplace > 0) {
             return new MitoPerson(id, hhid, occupation, Job.getJobFromId(workplace).getZone());
         } else {
@@ -366,6 +366,6 @@ public class Person implements Serializable {
             tpps[i] = ppSilo[i].convertToMitoPp();
         }
         return tpps;
-    }
+    }*/
 
 }

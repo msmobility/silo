@@ -35,8 +35,8 @@ public class MitoTransportModel implements TransportModelI {
                          MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
                          float[] sizeOfZonesInAcre) {
         logger.info("  SILO data being sent to MITO");
-        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
-                officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);
+/*        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
+                officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);*/
     }
 
 
