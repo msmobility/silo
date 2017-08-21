@@ -88,10 +88,10 @@ public class ExtractMicroData {
         long startTime = System.nanoTime();
         setInputData();
         setAttributes();
-        //readMicroData();
-        readCSVMicroData();
-        translatePersonMicroData();
-        createFrequencyMatrix();
+        readMicroData();
+        //readCSVMicroData();
+        //translatePersonMicroData();
+        //createFrequencyMatrix();
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -133,7 +133,7 @@ public class ExtractMicroData {
             String value = ipuVariables.getStringValueAt(i,"VariableNameMicroData");
             if (attributesMicroData.containsKey(key)){
                 String[] previous = attributesMicroData.get(key);
-                previous = SiloUtil.expandArrayByOneElement(previous, value);
+                previous = expandArrayByOneElement(previous, value);
                 attributesMicroData.put(key,previous);
             } else {
                 String[] previous = new String[1];
@@ -209,12 +209,12 @@ public class ExtractMicroData {
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
 
-        String ppFileName = ("input/testing/microPersons.csv");
+        String ppFileName = ("input/telework/microPersonsAugust.csv");
         SiloUtil.writeTableDataSet(microPersons, ppFileName);
-        String hhFileName = ("input/testing/microHouseholds.csv");
+        /*String hhFileName = ("input/testing/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
         String ddFileName = ("input/testing/microDwellings.csv");
-        SiloUtil.writeTableDataSet(microDwellings, ddFileName);
+        SiloUtil.writeTableDataSet(microDwellings, ddFileName);*/
 
         logger.info("   Finished reading the micro data");
     }
@@ -570,5 +570,13 @@ public class ExtractMicroData {
             }
         }
         return restriction;
+    }
+
+    public static String[] expandArrayByOneElement (String[] existing, String addElement) {
+        // create new array that has length of existing.length + 1 and copy values into new array
+        String[] expanded = new String[existing.length + 1];
+        System.arraycopy(existing, 0, expanded, 0, existing.length);
+        expanded[expanded.length - 1] = addElement;
+        return expanded;
     }
 }

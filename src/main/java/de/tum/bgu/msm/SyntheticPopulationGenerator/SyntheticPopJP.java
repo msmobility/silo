@@ -144,8 +144,6 @@ public class SyntheticPopJP {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        //Read entry data from the micro data
-
         //Run fitting procedure
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
             runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
@@ -176,9 +174,9 @@ public class SyntheticPopJP {
         municipalitiesByCounty = new HashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
-                int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
+                int city = (int) selectedMunicipalities.getValueAt(row,"V1");
                 municipalities.add(city);
-                int county = (int) selectedMunicipalities.getValueAt(row,"ID_county");
+                int county = (int) selectedMunicipalities.getValueAt(row,"V2");
                 if (!SiloUtil.containsElement(counties, county)) {
                     counties.add(county);
                 }
@@ -248,30 +246,31 @@ public class SyntheticPopJP {
 
 
         //Read the frequency matrix
-        int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
-        int[] nonZeroIds = frequencyMatrix.getColumnAsInt("ID");
+        //int[] microDataIds = frequencyMatrix.getColumnAsInt("ID");
+        //int[] nonZeroIds = frequencyMatrix.getColumnAsInt("ID");
         frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
+
+        //Zonal data for IPU
+        TableDataSet regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
+        regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
 
         HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix = new HashMap<>();
         for (int i = 1; i <= microDataDwelling.getRowCount();i++){
-            int key = (int) microDataDwelling.getValueAt(i,"PtResCode");
-            int value = (int) microDataDwelling.getValueAt(i,"id");
-            if (householdsForFrequencyMatrix.containsKey(key)){
-                householdsForFrequencyMatrix.get(key).put(value,1);
+            int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
+            int ddID = (int) microDataDwelling.getValueAt(i,"id");
+            if (householdsForFrequencyMatrix.containsKey(v2Zone)){
+                householdsForFrequencyMatrix.get(v2Zone).put(ddID,1);
             } else {
                 HashMap<Integer,Integer> map = new HashMap<>();
-                map.put(value,1);
-                householdsForFrequencyMatrix.put(key,map);
+                map.put(ddID,1);
+                householdsForFrequencyMatrix.put(v2Zone,map);
             }
         }
-
-        TableDataSet regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
-        regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
 
 
         //Create the weights table (for all the municipalities)
         TableDataSet weightsMatrix = new TableDataSet();
-        weightsMatrix.appendColumn(microDataIds,"ID");
+        weightsMatrix.appendColumn(frequencyMatrix.getColumnAsInt("id"),"ID");
 
 
         //Create the errors table (for all the municipalities, by attribute)
@@ -297,20 +296,19 @@ public class SyntheticPopJP {
             for (int k = 0; k < attributesHouseholdList.length; k++){
                 attributesHouseholdList[k] = attributesMunicipality[k+1];
             }
-            TableDataSet microDataMatrix = new TableDataSet(); //Frequency matrix obtained from the micro data.
-            microDataMatrix = frequencyMatrix;
             int v2zone = (int) regionsforFrequencyMatrix.getIndexedValueAt(municipalityID,"V2");
+            TableDataSet microDataMatrix = new TableDataSet(); //Frequency matrix obtained from the micro data.
             HashMap<Integer,Integer> hhs = householdsForFrequencyMatrix.get(v2zone);
-            for (int i = 1; i <=microDataMatrix.getRowCount(); i++){
-                int zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
-                if (hhs.containsKey(zone)){
-
-                } else {
-                    for (int j = 2; j < microDataMatrix.getColumnCount(); j++) {
-                        microDataMatrix.setValueAt(i, j, 0);
-                    }
+            microDataMatrix.appendColumn(hhs.keySet().toArray(), "id");
+            for (int i = 1; i <= microDataMatrix.getRowCount(); i++){
+                int ddID = (int) microDataMatrix.getValueAt(i, "id");
+                for (int j = 2; j < microDataMatrix.getColumnCount(); j++) {
+                    int value = (int) frequencyMatrix.getIndexedValueAt(i, j);
+                    microDataMatrix.setValueAt(i, j, value);
                 }
             }
+            int[] nonZeroIds = microDataMatrix.getColumnAsInt("id");
+            int[] microDataIds = microDataMatrix.getColumnAsInt("id");
 
             //Create the collapsed matrix (common for all municipalities, because it depends on the microData)
             TableDataSet nonZero = new TableDataSet();

@@ -139,7 +139,7 @@ public class ExtractMicroDataJP {
             String value = variables.getStringValueAt(i,"VariableNameMicroData");
             if (attributesMicroData.containsKey(key)){
                 String[] previous = attributesMicroData.get(key);
-                previous = SiloUtil.expandArrayByOneElement(previous, value);
+                previous = ExtractMicroData.expandArrayByOneElement(previous, value);
                 attributesMicroData.put(key,previous);
             } else {
                 String[] previous = new String[1];
