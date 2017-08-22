@@ -1,15 +1,13 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.MitoModel;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.MitoHousehold;
-import de.tum.bgu.msm.data.MitoPerson;
+import de.tum.bgu.msm.io.input.InputFeed;
 import org.apache.log4j.Logger;
 
-import java.io.File;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -31,12 +29,13 @@ public class MitoTransportModel implements TransportModelI {
     }
 
 
-    public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-                         MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
+    public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, Map<Integer, MitoHousehold> mitoHouseholds,
+                         int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone, int[] totalEmplByZone,
                          float[] sizeOfZonesInAcre) {
         logger.info("  SILO data being sent to MITO");
-/*        mito.feedData(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, mitoPersons, retailEmplByZone,
-                officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);*/
+        InputFeed feed = new InputFeed(zones, autoTravelTimes, transitTravelTimes, mitoHouseholds, retailEmplByZone,
+                officeEmplByZone, otherEmplByZone, totalEmplByZone, sizeOfZonesInAcre);
+        mito.feedData(feed);
     }
 
 

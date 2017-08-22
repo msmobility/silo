@@ -59,8 +59,8 @@ public class MatsimTransportModel implements TransportModelI {
 	}
 
 	@Override
-	public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, MitoHousehold[] mitoHouseholds,
-						 MitoPerson[] mitoPersons, int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
+	public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, Map<Integer, MitoHousehold> mitoHouseholds,
+						 int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
 						 int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
 
 	}

@@ -295,28 +295,15 @@ public class Household implements Serializable {
     }
 
     public MitoHousehold convertToMitoHh() {
-        int females = 0;
-        int children = 0;
-        int youngAdults = 0;
-        int retirees = 0;
-        int students = 0;
-        int licenseHolder = 0;
-        for (Person pp: getPersons()) {
-            if (pp.getGender() == 2) females++;
-            if (pp.getAge() < 18) children++;
-            if (pp.getAge() >= 18 && pp.getAge() <= 25) youngAdults++;
-            if (pp.getAge() >= 65) retirees++;
-            // if (pp == student) students++;
-            if (pp.getDriverLicense() == 1) licenseHolder++;
-        }
         return new MitoHousehold(hhId, getHhIncome(), autos, homeZone);
     }
 
-    public static MitoHousehold[] convertHhs() {
-        MitoHousehold[] thhs = new MitoHousehold[householdMap.size()];
+    public static Map<Integer, MitoHousehold> convertHhs() {
+        Map<Integer, MitoHousehold> thhs = new HashMap();
         Household[] hhSilo = getHouseholdArray();
         for (int i = 0; i < hhSilo.length; i++) {
-            thhs[i] = hhSilo[i].convertToMitoHh();
+            MitoHousehold household = hhSilo[i].convertToMitoHh();
+            thhs.put(household.getHhId(), household);
         }
         return thhs;
     }
