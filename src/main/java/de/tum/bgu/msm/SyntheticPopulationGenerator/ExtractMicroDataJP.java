@@ -172,7 +172,7 @@ public class ExtractMicroDataJP {
         SiloUtil.writeTableDataSet(microData,"microData/interimFiles/microDATA.csv");
         hhCount = 0;
         personCount = 0;
-        for (int i = 1; i <=microData.getRowCount();i++){
+        for (int i = 1; i <= microData.getRowCount();i++){
             int householdNumber = (int) microData.getValueAt(i,"H_Code");
             if ( householdNumber != previoushhID){
                 hhCount++;
@@ -196,6 +196,9 @@ public class ExtractMicroDataJP {
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
                 }
+                int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
+                microPersons.setValueAt(personCount,"occupation", job[0]);
+                microPersons.setValueAt(personCount,"jobType", job[1]);
                 previoushhID = householdNumber;
             } else {
                 personCount++;
@@ -206,6 +209,9 @@ public class ExtractMicroDataJP {
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
                 }
+                int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
+                microPersons.setValueAt(personCount,"occupation", job[0]);
+                microPersons.setValueAt(personCount,"jobType", job[1]);
             }
         }
         ppFileName = ("microData/interimFiles/microPersons.csv");
@@ -378,6 +384,9 @@ public class ExtractMicroDataJP {
             addIntegerColumnToTableDataSet(microDwellings,attributesMicroData.get("Dwelling")[i]);
         }
 
+        addIntegerColumnToTableDataSet(microPersons, "occupation");
+        addIntegerColumnToTableDataSet(microPersons, "jobType");
+
         microHouseholds.buildIndex(microHouseholds.getColumnPosition("id"));
         microPersons.buildIndex(microPersons.getColumnPosition("id"));
         microDwellings.buildIndex(microDwellings.getColumnPosition("id"));
@@ -397,6 +406,12 @@ public class ExtractMicroDataJP {
         return table;
     }
 
+    private int[] translateOccupationJobType(int occupation){
+        int[] job = new int[2];
+        job[0] = (int) ppJobDictionary.getIndexedValueAt(occupation,"occupation");
+        job[1] = (int) ppJobDictionary.getIndexedValueAt(occupation,"jobType");
+        return job;
+    }
 
 
 }
