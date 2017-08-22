@@ -46,8 +46,7 @@ public class SyntheticPopJP {
     protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
     protected static final String PROPERTIES_HOUSEHOLD_SIZES              = "household.sizes";
     protected static final String PROPERTIES_MICRO_DATA_AGES              = "age.brackets";
-    protected static final String PROPERTIES_MICRO_DATA_AGES_QUARTER      = "age.brackets.quarter";
-    protected static final String PROPERTIES_MICRO_DATA_YEAR_DWELLING     = "year.dwelling";
+    protected static final String PROPERTIES_MICRO_DATA_YEAR_DWELLING     = "year.brackets";
     protected static final String PROPERTIES_MICRO_DATA_FLOOR_SPACE_DWELLING = "floor.space.dwelling";
     protected static final String PROPERTIES_MAX_ITERATIONS               = "max.iterations.ipu";
     protected static final String PROPERTIES_MAX_ERROR                    = "max.error.ipu";
@@ -152,8 +151,8 @@ public class SyntheticPopJP {
         } else {
             readIPU(); //Read the weights to select the household
         }
-        /*generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-        generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+        /*generateJobs(); //Generate the jobs by type. Allocated to TAZ level
         assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
         addCars(false);
@@ -1010,7 +1009,6 @@ public class SyntheticPopJP {
             microHouseholds.buildIndex(microHouseholds.getColumnPosition("ID"));
             microDwellings.buildIndex(microDwellings.getColumnPosition("dwellingID"));
             int totalHouseholds = (int) marginalsMunicipality.getIndexedValueAt(municipalityID,"hhTotal");
-            int totalQuarters = (int) marginalsMunicipality.getIndexedValueAt(municipalityID,"privateQuarters");
             double[] probability = weightsTable.getColumnAsDouble(Integer.toString(municipalityID));
             int[] agePerson = ageBracketsPerson;
             int[] sizeBuilding = sizeBracketsDwelling;
@@ -1051,7 +1049,6 @@ public class SyntheticPopJP {
 
 
             double hhRemaining = 0;
-            //logger.info("   " + probability[0]);
             double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
             for (int row = 0; row < probability.length; row++){
                 if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
@@ -1089,7 +1086,7 @@ public class SyntheticPopJP {
 
 
                 //copy the private household characteristics
-                int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMD, "hhSize");
+                int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMD, "HHsize");
                 id = HouseholdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 Household household = new Household(id, newDdId, tazID, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
@@ -1100,10 +1097,11 @@ public class SyntheticPopJP {
                 //copy the household members characteristics
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
-                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
+                    int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMD, "firstPerson") + rowPerson;
                     int age = (int) microPersons.getValueAt(personCounter, "age");
-                    int gender = (int) microPersons.getValueAt(personCounter, "gender");
-                    int occupation = (int) microPersons.getValueAt(personCounter, "occupation");
+                    int gender = (int) microPersons.getValueAt(personCounter, "Gender");
+                    int occupation = (int) microPersons.getValueAt(personCounter, "job");
+
                     int income = (int) microPersons.getValueAt(personCounter, "income");
                     try {
                         income = (int) translateIncome((int) microPersons.getValueAt(personCounter, "income"),incomeProbability, gammaDist)
@@ -1147,10 +1145,7 @@ public class SyntheticPopJP {
                 int floorSpace = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingFloorSpace");
                 int usage = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingUsage");
                 int buildingSize = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingType");
-                int heatingType = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingHeatingType");
-                int heatingEnergy = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingHeatingEnergy");
-                int heatingAdditional = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingAdHeating");
-                int quality = guessQualityDE(heatingType, heatingEnergy, heatingAdditional, year, numberofQualityLevels); //depend on year built and type of heating
+                int quality = guessQualityJP(year, numberofQualityLevels); //depend on year built and type of heating
                 int yearVacant = 0;
                 while (year > yearBracketsDwelling[yearVacant]) {yearVacant++;}
                 int key = municipalityID + yearBracketsDwelling[yearVacant] * 1000;
@@ -1522,6 +1517,24 @@ public class SyntheticPopJP {
         if (heatingType > 2) quality--; //reduce quality if not central or district heating
         if (heatingEnergy > 4) quality--; //reduce quality if energy is not gas, electricity or heating oil (i.e. coal, wood, biomass, solar energy)
         if (additionalHeating == 0) quality++; //increase quality if there is additional heating in the house (regardless the used energy)
+        if (yearBuilt > 0){
+            //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+            float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
+            float prob = deteriorationProbability[yearBuilt - 1];
+            //attempt to drop quality by age two times (to get some spreading of quality levels)
+            quality = quality - SiloUtil.select(new double[]{1 - prob ,prob});
+            quality = quality - SiloUtil.select(new double[]{1 - prob, prob});
+        }
+        quality = Math.max(quality, 1);      // ensure that quality never drops below 1
+        quality = Math.min(quality, numberofQualityLevels);      // ensure that quality never excess the number of quality levels
+        return quality;
+    }
+
+
+    private static int guessQualityJP(int yearBuilt, int numberofQualityLevels){
+        //guess quality of dwelling based on construction year and heating characteristics.
+        //kitchen and bathroom quality are not coded on the micro data
+        int quality = numberofQualityLevels;
         if (yearBuilt > 0){
             //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
             float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
@@ -2105,18 +2118,6 @@ public class SyntheticPopJP {
 
     }
 
-
-    public int assignGymnasiumMitteByTAZ (Person pp){
-        //provide the type of school for the student given the TAZ proportion
-
-        int school = 3; //by default they are in Mittelschule
-        double threshold = cellsMatrix.getIndexedValueAt(pp.getZone(),"proportion");
-        Random rnd = new Random();
-        if (rnd.nextDouble() > threshold){
-            school = 2; //Gymnasium if the random number if greater than the threshold
-        }
-        return school;
-    }
 
     private void readAndStoreMicroData(){
         //method to read the synthetic population initial data
