@@ -32,6 +32,7 @@ public class SyntheticPopJP {
     protected static final String PROPERTIES_MICRODATA_2010_PATH          = "micro.data.2010";
     protected static final String PROPERTIES_MARGINALS_REGIONAL_MATRIX    = "marginals.county";
     protected static final String PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX   = "marginals.municipality";
+    protected static final String PROPERTIES_JOBS_MUNICIPALITY            = "jobs.municipality";
     protected static final String PROPERTIES_SELECTED_MUNICIPALITIES_LIST = "municipalities.list";
     protected static final String PROPERTIES_RASTER_CELLS                 = "raster.cells.definition";
     protected static final String PROPERTIES_DISTANCE_RASTER_CELLS        = "distanceODmatrix";
@@ -80,6 +81,7 @@ public class SyntheticPopJP {
     protected TableDataSet microDataDwelling;
     protected TableDataSet frequencyMatrix;
     protected TableDataSet marginalsMunicipality;
+    protected TableDataSet jobsMunicipality;
     protected TableDataSet cellsMatrix;
     protected TableDataSet regionsforFrequencyMatrix;
 
@@ -150,6 +152,7 @@ public class SyntheticPopJP {
         sizeBracketsDwelling = extractMicroData.getSizeBracketsDwelling();
         yearBracketsDwelling = extractMicroData.getYearBracketsDwelling();
         ageBracketsPerson = extractMicroData.getAgeBracketsPerson();
+        jobStringTypes = extractMicroData.getOccupationBrackets();
         attributesMunicipality = extractMicroData.getAttributesMunicipality();
         readInputData();
         createDirectoryForOutput();
@@ -161,21 +164,26 @@ public class SyntheticPopJP {
             readIPU(); //Read the weights to select the household
         }
         generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-        /*generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         assignJobs(); //Workplace allocation
-        assignSchools(); //School allocation
+        //assignSchools(); //School allocation
         addCars(false);
-        summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());*/
+        summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
 
 
     private void readInputData() {
+
+
         //Read the attributes at the municipality level (household attributes) and the marginals at the municipality level (German: Gemeinden)
         //attributesMunicipality = frequencyMatrix.getColumnLabels();
         marginalsMunicipality = SiloUtil.readCSVfile(rb.getString(PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("CODE_Z01"));
+        jobsMunicipality = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOBS_MUNICIPALITY));
+        jobsMunicipality.buildIndex(jobsMunicipality.getColumnPosition("CODE_Z01"));
 
         //List of municipalities and counties that are used for IPU and allocation
         TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
@@ -536,9 +544,7 @@ public class SyntheticPopJP {
         //Generate jobs file. The worker ID will be assigned later on the process "assignJobs"
 
         logger.info("   Starting to generate jobs");
-
-        String[] jobStringType = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
-        int[] rasterCellsIDs = cellsMatrix.getColumnAsInt("ID_cell");
+        String[] gender = {"M_", "F_"};
 
         //For each municipality
         for (int municipality = 0; municipality < cityID.length; municipality++) {
@@ -556,21 +562,24 @@ public class SyntheticPopJP {
 
 
             //generate jobs
-            for (int row = 0; row < jobStringType.length; row++) {
-                String jobType = jobStringType[row];
-                int totalJobs = (int) marginalsMunicipality.getIndexedValueAt(municipalityID, jobType);
-                if (totalJobs > 0.1) {
-                    //Obtain the number of jobs of that type in each TAZ of the municipality
-                    double[] jobsInTaz = new double[tazInCity.length];
-                    for (int i = 0; i < tazInCity.length; i++) {
-                        jobsInTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobType);
-                    }
-                    //Create and allocate jobs to TAZs (with replacement)
-                    for (int job = 0; job < totalJobs; job++) {
-                        int[] records = select(jobsInTaz, tazInCity);
-                        jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
-                        int id = JobDataManager.getNextJobId();
-                        Job jj = new Job(id, records[0], -1, jobType); //(int id, int zone, int workerId, String type)
+            for (int row = 0; row < jobStringTypes.length; row++) {
+                for (int g = 0; g < gender.length; g++) {
+                    String jobType = jobStringTypes[row];
+                    String jobTypeGender = gender[g] + jobType;
+                    int totalJobs = (int) jobsMunicipality.getIndexedValueAt(municipalityID, jobTypeGender);
+                    if (totalJobs > 0.1) {
+                        //Obtain the number of jobs of that type in each TAZ of the municipality
+                        double[] jobsInTaz = new double[tazInCity.length];
+                        for (int i = 0; i < tazInCity.length; i++) {
+                            jobsInTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobTypeGender);
+                        }
+                        //Create and allocate jobs to TAZs (with replacement)
+                        for (int job = 0; job < totalJobs; job++) {
+                            int[] records = select(jobsInTaz, tazInCity);
+                            jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
+                            int id = JobDataManager.getNextJobId();
+                            Job jj = new Job(id, records[0], -1, jobType); //(int id, int zone, int workerId, String type)
+                        }
                     }
                 }
             }
@@ -583,6 +592,8 @@ public class SyntheticPopJP {
         //todo. Things to consider:
         //If there are no more workplaces of the specific job type, the worker is sent outside the area (workplace = -2; distance = 1000 km)
         //Workers that also attend school are considered only as workers (educational place is not selected for them)
+
+        logger.info("   Starting to assign jobs");
 
         //Calculate distance impedance
         alphaJob = ResourceUtil.getDoubleProperty(rb,PROPERTIES_JOB_ALPHA);
@@ -632,7 +643,7 @@ public class SyntheticPopJP {
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
-            int selectedJobType = selectJobType(pp);
+            int selectedJobType = pp.getJobType() - 1;
 
             int[] keys = idZonesVacantJobsByType.get(selectedJobType);
             int lengthKeys = numberZonesByType.get(selectedJobType);
@@ -1161,9 +1172,6 @@ public class SyntheticPopJP {
                 previousPersons = HouseholdDataManager.getHighestPersonIdInUse();
 
 
-                //Calculate the errors from the synthesized population at the attributes of the IPU.
-                //Update the tables for all municipalities with the result of this municipality
-
                 //Consider if I need to add also the errors from other attributes. They must be at the marginals file, or one extra file
                 //For county level they should be calculated on a next step, outside this loop.
                 float averageError = 0f;
@@ -1175,11 +1183,9 @@ public class SyntheticPopJP {
                     averageError = averageError + error;
                }
                 averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;
-
+                householdByMunicipality.put(municipalityID, generatedHouseholds);
 
                 logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households. Average error of " + averageError + " %.");
-
-                householdByMunicipality.put(municipalityID, generatedHouseholds);
 
             } else {
                 logger.info("   Municipality " + municipalityID + " has no TAZ assigned.");
@@ -1536,7 +1542,6 @@ public class SyntheticPopJP {
         idZonesVacantJobsByType = new HashMap<>();
         numberZonesByType = new HashMap<>();
         numberVacantJobsByZoneByType = new HashMap<>();
-        jobStringTypes = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
         jobIntTypes = new HashMap<>();
         for (int i = 0; i < jobStringTypes.length; i++) {
             jobIntTypes.put(jobStringTypes[i], i);

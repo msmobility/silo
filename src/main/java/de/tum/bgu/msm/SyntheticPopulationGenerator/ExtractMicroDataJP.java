@@ -104,6 +104,8 @@ public class ExtractMicroDataJP {
 
     public String[] getAttributesMunicipality() {return attributesMunicipality;}
 
+    public String[] getOccupationBrackets() {return occupationBrackets;}
+
     public void run(){
         //method to create the synthetic population
         logger.info("   Starting to create the synthetic population.");
