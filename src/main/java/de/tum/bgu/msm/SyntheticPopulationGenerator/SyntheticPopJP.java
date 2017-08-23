@@ -23,14 +23,10 @@ import java.util.*;
 public class SyntheticPopJP {
     private ResourceBundle rb;
     //Options to run de synthetic population
-    protected static final String PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY  = "run.ipu.city.and.county";
     protected static final String PROPERTIES_RUN_IPU                      = "run.ipu.synthetic.pop";
     protected static final String PROPERTIES_RUN_SYNTHETIC_POPULATION     = "run.synth.pop.generator";
-    protected static final String PROPERTIES_YEAR_MICRODATA               = "year.micro.data";
     //Routes of the input data
-    protected static final String PROPERTIES_MICRODATA_2000_PATH          = "micro.data.2000";
     protected static final String PROPERTIES_MICRODATA_2010_PATH          = "micro.data.2010";
-    protected static final String PROPERTIES_MARGINALS_REGIONAL_MATRIX    = "marginals.county";
     protected static final String PROPERTIES_MARGINALS_HOUSEHOLD_MATRIX   = "marginals.municipality";
     protected static final String PROPERTIES_JOBS_MUNICIPALITY            = "jobs.municipality";
     protected static final String PROPERTIES_SELECTED_MUNICIPALITIES_LIST = "municipalities.list";
@@ -43,12 +39,6 @@ public class SyntheticPopJP {
     //Routes of input data (if IPU is not performed)
     protected static final String PROPERTIES_WEIGHTS_MATRIX               = "weights.matrix";
     //Parameters of the synthetic population
-    protected static final String PROPERTIES_REGION_ATTRIBUTES            = "attributes.region";
-    protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
-    protected static final String PROPERTIES_HOUSEHOLD_SIZES              = "household.sizes";
-    protected static final String PROPERTIES_MICRO_DATA_AGES              = "age.brackets";
-    protected static final String PROPERTIES_MICRO_DATA_YEAR_DWELLING     = "year.brackets";
-    protected static final String PROPERTIES_MICRO_DATA_FLOOR_SPACE_DWELLING = "floor.space.dwelling";
     protected static final String PROPERTIES_MAX_ITERATIONS               = "max.iterations.ipu";
     protected static final String PROPERTIES_MAX_ERROR                    = "max.error.ipu";
     protected static final String PROPERTIES_INITIAL_ERROR                = "ini.error.ipu";
@@ -58,7 +48,7 @@ public class SyntheticPopJP {
     protected static final String PROPERTIES_INCOME_GAMMA_PROBABILITY     = "income.probability";
     protected static final String PROPERTIES_INCOME_GAMMA_SHAPE           = "income.gamma.shape";
     protected static final String PROPERTIES_INCOME_GAMMA_RATE            = "income.gamma.rate";
-    protected static final String PROPERTIES_JOB_TYPES                    = "employment.types";
+
     protected static final String PROPERTIES_SCHOOL_TYPES_DE              = "school.types";
     protected static final String PROPERTIES_JOB_ALPHA                    = "employment.choice.alpha";
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
@@ -95,7 +85,6 @@ public class SyntheticPopJP {
     protected int[] sizeBracketsDwelling;
     protected int[] yearBracketsDwelling;
     protected String[] typeBracketsDwelling;
-    protected int[] householdSizes;
     protected int numberofQualityLevels;
     protected TableDataSet counterMunicipality;
     protected TableDataSet errorMunicipality;
@@ -165,10 +154,8 @@ public class SyntheticPopJP {
         }
         generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
         generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-        summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         assignJobs(); //Workplace allocation
         //assignSchools(); //School allocation
-        addCars(false);
         summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -1029,7 +1016,7 @@ public class SyntheticPopJP {
                 double [] sizeDistribution = new double[sizeBracketsDwelling.length];
                 for (int row = 0; row < sizeBracketsDwelling.length; row++){
                     String name = "HA_LT_" + sizeBracketsDwelling[row] + "sqm";
-                    sizeDistribution[row] = marginalsMunicipality.getIndexedValueAt(municipalityID, name) / totalHouseholds;
+                    sizeDistribution[row] = marginalsMunicipality.getIndexedValueAt(municipalityID, name);
                 }
                 //Probability for year and building size for vacant dwellings
                 double[] yearDistribution = new double[yearBracketsDwelling.length];
@@ -1227,8 +1214,8 @@ public class SyntheticPopJP {
                 //Copy characteristics
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 int bedRooms = Dwelling.getDwellingFromId(dd).getBedrooms();
-                int price = Dwelling.getDwellingFromId(dd).getPrice(); //Monte Carlo
-                int quality = Dwelling.getDwellingFromId(dd).getQuality(); //Based on the distribution of qualities at the municipality for that construction period
+                int price = Dwelling.getDwellingFromId(dd).getPrice();
+                int quality = Dwelling.getDwellingFromId(dd).getQuality();
                 int year = Dwelling.getDwellingFromId(dd).getYearBuilt();
                 DwellingType type = Dwelling.getDwellingFromId(dd).getType();
                 int floorSpaceDwelling = Dwelling.getDwellingFromId(dd).getFloorSpace();
