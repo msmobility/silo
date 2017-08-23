@@ -60,6 +60,7 @@ public class Person implements Serializable {
     int driverLicense = 0;
     int schoolType = 0;
     int schoolPlace = 0;
+    int jobType = 0;
 //    private Lock lock = new ReentrantLock();
 
 
@@ -393,4 +394,8 @@ public class Person implements Serializable {
         return tpps;
     }
 
+
+    public int getJobType() {return jobType;}
+
+    public void setJobType(int jobType) {this.jobType = jobType;}
 }
