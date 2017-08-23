@@ -37,6 +37,8 @@ public class ExtractMicroDataJP {
     protected static final String PROPERTIES_MICRO_DATA_OCCUPATION        = "occupation.brackets";
     protected static final String PROPERTIES_MICRO_DATA_DWELLING_USE      = "use.brackets";
     protected static final String PROPERTIES_MICRO_DATA_TYPE              = "type.brackets";
+    protected static final String PROPERTIES_MICRO_DATA_DD_SIZE           = "size.brackets";
+    protected static final String PROPERTIES_MICRO_DATA_DD_YEAR           = "year.brackets";
     protected static final String PROPERTIES_DD_USE_DICTIONARY            = "dd.use.dictionary";
     protected static final String PROPERTIES_DD_TYPE_DICTIONARY           = "dd.type.dictionary";
     protected static final String PROPERTIES_PP_JOB_DICTIONARY            = "pp.jobs.dictionary";
@@ -52,6 +54,8 @@ public class ExtractMicroDataJP {
     protected int[] genderBrackets;
     protected String[] occupationBrackets;
     protected String[] usageBracketsDwelling;
+    protected int[] sizeBracketsDwelling;
+    protected int[] yearBracketsDwelling;
     private String[] typeBracketsDwelling;
 
     protected String[] attributesMunicipality;
@@ -88,6 +92,18 @@ public class ExtractMicroDataJP {
         return microDwellings;
     }
 
+    public String[] getUsageBracketsDwelling() {return usageBracketsDwelling;}
+
+    public String[] getTypeBracketsDwelling() {return typeBracketsDwelling;}
+
+    public int[] getSizeBracketsDwelling() {return sizeBracketsDwelling;}
+
+    public int[] getYearBracketsDwelling() {return yearBracketsDwelling;}
+
+    public int[] getAgeBracketsPerson() {return ageBracketsPerson;}
+
+    public String[] getAttributesMunicipality() {return attributesMunicipality;}
+
     public void run(){
         //method to create the synthetic population
         logger.info("   Starting to create the synthetic population.");
@@ -114,6 +130,8 @@ public class ExtractMicroDataJP {
         occupationBrackets = ResourceUtil.getArray(rb,PROPERTIES_MICRO_DATA_OCCUPATION);
         usageBracketsDwelling = ResourceUtil.getArray(rb,PROPERTIES_MICRO_DATA_DWELLING_USE);
         typeBracketsDwelling = ResourceUtil.getArray(rb,PROPERTIES_MICRO_DATA_TYPE);
+        yearBracketsDwelling = ResourceUtil.getIntegerArray(rb,PROPERTIES_MICRO_DATA_DD_YEAR);
+        sizeBracketsDwelling = ResourceUtil.getIntegerArray(rb,PROPERTIES_MICRO_DATA_DD_SIZE);
 
         //Attributes list
         attributesControlTotal = ResourceUtil.getArray(rb, PROPERTIES_HOUSEHOLD_ATTRIBUTES);
@@ -229,7 +247,18 @@ public class ExtractMicroDataJP {
 
         //Read the attributesControlTotal to match and initialize frequency matrix
         initializeAttributesMunicipality();
+/*        String[] labels = frequencyMatrix.getColumnLabels();
+        attributesMunicipality = new String[labels.length - 2];
+        for (int i = 0; i < attributesMunicipality.length; i++){
+            attributesMunicipality[i] = labels [i - 1];
+        }*/
         attributesMunicipality = frequencyMatrix.getColumnLabels();
+
+        //Add the string attributes to the dwelling and person TDS
+        addIntegerColumnToTableDataSet(microDwellings,"H_");
+        addIntegerColumnToTableDataSet(microDwellings,"ddT_");
+        addIntegerColumnToTableDataSet(microPersons,"occupation");
+        addIntegerColumnToTableDataSet(microPersons,"jobType");
 
        //Update the frequency matrix with the microdata
         for (int i = 1; i <= frequencyMatrix.getRowCount(); i++){
@@ -260,18 +289,26 @@ public class ExtractMicroDataJP {
         //Method to update the dwelling use
         String ddTypeString = ddTypeDictionary.getIndexedStringValueAt(ddType,"controlTotalLabel");
         frequencyMatrix.setValueAt(i,"ddT_" + ddTypeString , 1);
+        int ddTypeInt = (int) ddTypeDictionary.getIndexedValueAt(ddType,"silo");
+        microDwellings.setValueAt(i, "ddT_", ddTypeInt);
     }
 
 
     private void updateHhWorkerGender(int gender, int occupation, int i) {
         //Method to update the number of workers by gender and job type on the frequency matrix
-        String jobTypeString = ppJobDictionary.getIndexedStringValueAt(occupation,"controlTotalLabel");
-        if (gender == 1){
-            int value = 1 + (int) frequencyMatrix.getValueAt(i, "M_" + jobTypeString);
-            frequencyMatrix.setValueAt(i,"M_"+jobTypeString, value);
-        } else {
-            int value = 1 + (int) frequencyMatrix.getValueAt(i, "F_" + jobTypeString);
-            frequencyMatrix.setValueAt(i,"F_"+jobTypeString, value);
+        if (occupation > 0 & occupation < 4) {
+            String jobTypeString = ppJobDictionary.getIndexedStringValueAt(occupation,"controlTotalLabel");
+            int occupationSILO = (int) ppJobDictionary.getIndexedValueAt(occupation, "occupation");
+            if (gender == 1) {
+                int value = 1 + (int) frequencyMatrix.getValueAt(i, "M_" + jobTypeString);
+                frequencyMatrix.setValueAt(i, "M_" + jobTypeString, value);
+            } else {
+                int value = 1 + (int) frequencyMatrix.getValueAt(i, "F_" + jobTypeString);
+                frequencyMatrix.setValueAt(i, "F_" + jobTypeString, value);
+            }
+            int jobType = (int) ppJobDictionary.getIndexedValueAt(occupation, "jobType");
+            microPersons.setValueAt(i, "jobType", jobType);
+            microPersons.setValueAt(i, "occupation", occupationSILO);
         }
     }
 
@@ -295,6 +332,8 @@ public class ExtractMicroDataJP {
         //Method to update the dwelling use on the frequency matrix
        String ddUseString = ddUseDictionary.getIndexedStringValueAt(ddUse,"controlTotalLabel");
        frequencyMatrix.setValueAt(i,"H_" + ddUseString , 1);
+       int ddUseInt = (int) ddUseDictionary.getIndexedValueAt(ddUse,"silo");
+       microDwellings.setValueAt(i,"H_", ddUseInt);
     }
 
     private void updateHhSize(int hhSize, int i) {
@@ -353,7 +392,7 @@ public class ExtractMicroDataJP {
     private void checkContainsAndAdd(String key, int[] brackets, Map<String, String> map) {
         if (map.containsKey(key)){
             for (int i = 0; i < brackets.length; i++){
-                String label = key + brackets[i];
+                String label = key + brackets[brackets.length - 1 - i];
                 addIntegerColumnToTableDataSet(frequencyMatrix,label);
             }
         }
