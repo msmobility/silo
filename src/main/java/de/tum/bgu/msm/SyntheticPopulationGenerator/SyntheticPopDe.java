@@ -1291,7 +1291,7 @@ public class SyntheticPopDe {
                         int ageFemale = notClassifiedFemales.get(rowFemale);
                         int diffAge = Math.abs(ageFemale - ageMale);
                         double threshold = (20 - diffAge) / 10;
-                        if (Math.random() < threshold) {
+                        if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                             married = updateInnerMap(married, 1, ageMale, rowMale);
                             married = updateInnerMap(married, 2, ageFemale, rowFemale);
                         } else {
@@ -1332,7 +1332,7 @@ public class SyntheticPopDe {
                             }
                             if (rowMarried > 0) {
                                 double threshold = (20 - minDiff) / 10;
-                                if (Math.random() < threshold) {
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                                     married = updateInnerMap(married, 1, minDiff, rowMarried);
                                     married = updateInnerMap(married, 2, ageFemale, rowFemale);
                                 } else {
@@ -1353,7 +1353,7 @@ public class SyntheticPopDe {
                             }
                             if (rowMarried > 0) {
                                 double threshold = (20 - minDiff) / 10;
-                                if (Math.random() < threshold) {
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                                     married = updateInnerMap(married, 1, minDiff, rowMarried);
                                     married = updateInnerMap(married, 2, ageFemale, rowFemale);
                                 } else {
@@ -1392,7 +1392,7 @@ public class SyntheticPopDe {
                             }
                             if (rowMarried > 0) {
                                 double threshold = (20 - minDiff) / 10;
-                                if (Math.random() < threshold) {
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                                     married = updateInnerMap(married, 1, ageMale, rowMale);
                                     married = updateInnerMap(married, 2, minDiff, rowMarried);
                                 } else {
@@ -1413,7 +1413,7 @@ public class SyntheticPopDe {
                             }
                             if (rowMarried > 0) {
                                 double threshold = (20 - minDiff) / 10;
-                                if (Math.random() < threshold) {
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                                     married = updateInnerMap(married, 1, ageMale, rowMale);
                                     married = updateInnerMap(married, 2, minDiff, rowMarried);
                                 } else {
@@ -2819,8 +2819,7 @@ public class SyntheticPopDe {
                     }
                 }
             }
-            Random rnd = new Random();
-            double cummulativeProb = rnd.nextDouble()*(high - low) + low;
+            double cummulativeProb = SiloUtil.getRandomNumberAsDouble()*(high - low) + low;
             income = q.inverseCumulativeProbability(cummulativeProb);
         }
         return income;
@@ -2908,8 +2907,7 @@ public class SyntheticPopDe {
             } else {
                 threshold = (int) prob.getValueAt(row, "female");
             }
-            Random rn = new Random();
-            if (rn.nextDouble() * 100 < threshold) {
+            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
                 license = 1;
             }
         } //if they are younger than 18, they don't hold driver license
@@ -2921,13 +2919,12 @@ public class SyntheticPopDe {
         //provide the size of the building
         int floorSpaceDwelling = 0;
         int floorSpace = SiloUtil.select(vacantFloor);
-        Random r = new Random();
         if (floorSpace == 0){
             floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 20);
         } else if (floorSpace == sizeBracketsDwelling.length - 1) {
             floorSpaceDwelling = (int) (120 + SiloUtil.getRandomNumberAsFloat() * 200);
         } else {
-            floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
+            floorSpaceDwelling = (int) SiloUtil.getRandomNumberAsDouble()*(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
                     sizeBracketsDwelling[floorSpace - 1];
         }
         return floorSpaceDwelling;
@@ -3173,8 +3170,7 @@ public class SyntheticPopDe {
         double sumProb = 0;
         int[] results = new int[2];
         for (double val: probabilities) sumProb += val;
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3208,8 +3204,7 @@ public class SyntheticPopDe {
     public static int[] select (double[] probabilities, int[] id, int sumProb) {
         // select item based on probabilities (for zero-based float array)
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3228,8 +3223,7 @@ public class SyntheticPopDe {
     public static int[] select (double[] probabilities, int[] id, double sumProb) {
         // select item based on probabilities (for zero-based float array)
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3254,8 +3248,7 @@ public class SyntheticPopDe {
         for (int i = 0; i < length; i++) {
             sumProb += probabilities[i];
         }
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3277,8 +3270,7 @@ public class SyntheticPopDe {
         //probabilities and name have more items than the required (max number of required items is set on "length")
 
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
