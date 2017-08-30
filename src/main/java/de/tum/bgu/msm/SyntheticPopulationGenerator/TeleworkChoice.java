@@ -88,13 +88,20 @@ public class TeleworkChoice {
 
                                     double util[] = teleworkUtility.solve(teleworkDMU.getDmuIndexValues(), teleworkDMU, teAvail);
 
-                                     for (int i = 1; i < teAvail.length; i++) {
+                                    for (int i = 1; i < teAvail.length; i++) {
                                         util[i-1] = Math.exp(util[i-1]);
                                     }
                                     double prob0telework = 1d / (SiloUtil.getSum(util) + 1d);
                                     for (int i = 1; i < teAvail.length; i++) {
                                         teleworkStatus[i-1][age][gender][hasElderlyPerson][nationality][hhStructure][newEducationLevel][hhIncomeLevel] = util[i-1] * prob0telework;
                                     }
+
+                                    if (logCalculation){
+                                        // log UEC values for each person type
+                                        teleworkUtility.logAnswersArray(logger, "Telework");
+                                        for (int i=0; i< util.length;i++) logger.info("Position "+i+": "+util[i]);
+                                    }
+
                                 }
                             }
                         }
