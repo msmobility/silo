@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -28,11 +29,12 @@ public class SiloMatsimMultiYearTest {
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 	
+	@Ignore
 	@Test
 	public final void testMainMultiYear() {
 		SiloMstmTest.cleanUp();
 
-		boolean cleanupAfterTest = false; // Set to true normally; set to false to be able to inspect files
+		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
 		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim_multiYear.properties";
 		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis/matsim_input/config.xml") ;
 
