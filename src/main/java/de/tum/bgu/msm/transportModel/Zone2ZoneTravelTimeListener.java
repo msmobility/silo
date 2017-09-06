@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
@@ -35,10 +36,12 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 	private double timeOfDay;
 	private int numberOfCalcPoints;
 	private Map<Tuple<Integer, Integer>, Float> travelTimesMap;
+	private Random random;
 
 	
-	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration, Map<Integer,SimpleFeature> zoneFeatureMap,
-			double timeOfDay, int numberOfCalcPoints, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration,
+			Map<Integer,SimpleFeature> zoneFeatureMap, double timeOfDay, int numberOfCalcPoints,
+			Map<Tuple<Integer, Integer>, Float> travelTimesMap, Random random) {
 		this.controler = controler;
 		this.network = network;
 		this.finalIteration = finalIteration;
@@ -46,6 +49,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 		this.timeOfDay = timeOfDay;
 		this.numberOfCalcPoints = numberOfCalcPoints;
 		this.travelTimesMap = travelTimesMap;
+		this.random = random;
 	}
 	
 	
@@ -65,7 +69,7 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			for (int zoneId : zoneFeatureMap.keySet()) {
 				for (int i = 0; i < numberOfCalcPoints; i++) { // Several points in a given origin zone
 					SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
-					Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
+					Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature, random);
 					Link originLink = NetworkUtils.getNearestLink(network, originCoord);
 					Node originNode = originLink.getFromNode();
 					
