@@ -16,14 +16,14 @@ public class SiloMstmTest {
 	@Rule
 	public MatsimTestUtils utils = new MatsimTestUtils();
 	
-	public final static String filename_dd = "./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv";
-	public final static String filename_hh = "./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv";
-	public final static String filename_jj = "./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv";
-	public final static String filename_pp = "./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv";
-	public final static String filename_a0 = "./test/scenarios/annapolis_reduced/testing/accessibility_2000.csv";
-	public final static String filename_a1 = "./test/scenarios/annapolis_reduced/testing/accessibility_2001.csv";
-	public final static String filename_gi = "./test/scenarios/annapolis_reduced/testing/given_impedance_2000.csv";
-	public final static String filename_st = "./test/scenarios/annapolis_reduced/status.csv";
+	public final static String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
+	public final static String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
+	public final static String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
+	public final static String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
+	public final static String filename_a0 = "./test/scenarios/annapolis/testing/accessibility_2000.csv";
+	public final static String filename_a1 = "./test/scenarios/annapolis/testing/accessibility_2001.csv";
+	public final static String filename_gi = "./test/scenarios/annapolis/testing/given_impedance_2000.csv";
+	public final static String filename_st = "./test/scenarios/annapolis/status.csv";
 
 
 	public static void cleanUp() {
@@ -45,12 +45,12 @@ public class SiloMstmTest {
 	 * This test does NOT test MSTM, despite the name: transport.model.years is set to -1, effectively ignoring the transport model.
 	 */
 	@Test
-	public final void testMainReduced() {
+	public final void testMain() {
 		// yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
 		
 		cleanUp();
 		
-		String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMstm_reduced.properties"}; 
+		String[] args = {"./test/scenarios/annapolis/javaFiles/siloMstm.properties"}; 
 
 		try {
 			SiloMstm.main( args );
@@ -62,7 +62,7 @@ public class SiloMstmTest {
 		//TODO: apparently this is required for some machines, as the test class of utils is not initialized at this point,
 		// resulting in exceptions when trying to get output directory 'ana,nico 07/'17
 		try {
-			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMainReduced", null));
+			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMain", null));
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
