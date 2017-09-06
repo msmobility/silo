@@ -34,17 +34,17 @@ public class SiloMatsimTest {
 	 * in the ABMTRANS'16 paper).
 	 */
 	@Test
-	public final void testMainReduced() {
+	public final void testMain() {
 		SiloMstmTest.cleanUp();
 
 		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
-		String arg = "./test/scenarios/annapolis_reduced/javaFiles/siloMatsim_reduced.properties";
-		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis_reduced/matsim_input/config.xml") ;
+		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim.properties";
+		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis/matsim_input/config.xml") ;
 
 		//TODO: apparently this is required for some machines, as the test class of utils is not initialized at this point,
 		// resulting in exceptions when trying to get output directory 'ana,nico 07/'17
 		try {
-			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMainReduced", null));
+			utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMain", null));
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
@@ -63,36 +63,36 @@ public class SiloMatsimTest {
 		{
 			log.info("Checking dwellings file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2001.csv");
-			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv";
+			final String filename = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Dwelling files are different", checksum_ref, checksum_run);
 			if (cleanupAfterTest) new File(filename).delete();
 		}{
 			log.info("Checking households file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./hh_2001.csv");
-			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv";
+			final String filename = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Household files are different", checksum_ref, checksum_run);
 			if (cleanupAfterTest) new File(filename).delete();
 		}{
 			log.info("Checking jobs file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./jj_2001.csv");
-			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv";
+			final String filename = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Job files are different", checksum_ref, checksum_run);
 			if (cleanupAfterTest) new File(filename).delete();
 		}{
 			log.info("checking SILO population file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./pp_2001.csv");
-			final String filename = "./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv";
+			final String filename = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Population files are different", checksum_ref, checksum_run);
 			if (cleanupAfterTest) new File(filename).delete();
 		}{
 			log.info("Checking MATSim plans file ...");
 
-			final String referenceFilename = utils.getInputDirectory() + "./test_reduced_matsim_2001.0.plans.xml.gz";
-			final String outputFilename = utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.plans.xml.gz";
+			final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2001.0.plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "./test_matsim_2001/ITERS/it.0/test_matsim_2001.0.plans.xml.gz";
 
 			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -103,8 +103,8 @@ public class SiloMatsimTest {
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ; 
 		}{
 			log.info("Checking MATSim events file ...");
-			final String eventsFilenameReference = utils.getInputDirectory() + "./test_reduced_matsim_2001.0.events.xml.gz";
-			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_reduced_matsim_2001/ITERS/it.0/test_reduced_matsim_2001.0.events.xml.gz";
+			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.0.events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001/ITERS/it.0/test_matsim_2001.0.events.xml.gz";
 			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 		}
 		

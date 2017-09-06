@@ -22,15 +22,13 @@ import com.vividsolutions.jts.geom.Point;
 public class SiloMatsimUtils {
 	private final static Logger log = Logger.getLogger(SiloMatsimUtils.class);
 	
-	public final static Random random = MatsimRandom.getRandom();
 	private final static GeometryFactory geometryFactory = new GeometryFactory();
 
-	
-	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature) {
+	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature, Random random) {
 		Geometry geometry = (Geometry) feature.getDefaultGeometry();
 		Envelope envelope = geometry.getEnvelopeInternal();
 		while (true) {
-			Point point = getRandomPointInEnvelope(envelope);
+			Point point = getRandomPointInEnvelope(envelope, random);
 			if (point.within(geometry)) {
 				return new Coord(point.getX(), point.getY());
 			}
@@ -38,7 +36,7 @@ public class SiloMatsimUtils {
 	}
 	
 	
-	public static final Point getRandomPointInEnvelope(Envelope envelope) {
+	public static final Point getRandomPointInEnvelope(Envelope envelope, Random random) {
 		double x = envelope.getMinX() + random.nextDouble() * envelope.getWidth();
 		double y = envelope.getMinY() + random.nextDouble() * envelope.getHeight();
 		return geometryFactory.createPoint(new Coordinate(x,y));

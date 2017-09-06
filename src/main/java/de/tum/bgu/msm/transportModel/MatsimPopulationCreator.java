@@ -37,7 +37,6 @@ import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -53,7 +52,7 @@ public class MatsimPopulationCreator {
 	private static final Logger LOG = Logger.getLogger(MatsimPopulationCreator.class);
 	
 	public static Population createMatsimPopulation(HouseholdDataManager householdDataManager, int year,
-			Map<Integer,SimpleFeature> zoneFeatureMap, boolean writePopulation, double scalingFactor) {
+			Map<Integer,SimpleFeature> zoneFeatureMap, boolean writePopulation, double scalingFactor, Random random) {
 		LOG.info("Starting creation of population.");
     	Collection<Person> siloPersons = householdDataManager.getPersons();
     	
@@ -62,9 +61,7 @@ public class MatsimPopulationCreator {
     	Network matsimNetwork = matsimScenario.getNetwork();
     	Population matsimPopulation = matsimScenario.getPopulation();   
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
-    	
-    	Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
-    	
+    	    	
     	for (Person siloPerson : siloPersons) {
     		if (random.nextDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
@@ -109,14 +106,14 @@ public class MatsimPopulationCreator {
     		matsimPerson.addPlan(matsimPlan);
 
     		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
-    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
+    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature, random);
     		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
     		activity1.setEndTime(6 * 3600 + 3 * random.nextDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
     		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
-    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
+    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature, random);
     		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
     		activity2.setEndTime(15 * 3600 + 3 * random.nextDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity2);
