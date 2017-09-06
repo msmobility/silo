@@ -7,6 +7,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
+import javafx.scene.control.Tab;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.commons.math.MathException;
@@ -15,6 +16,7 @@ import org.apache.commons.math.stat.Frequency;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
+import javax.measure.unit.SI;
 import java.io.*;
 import java.util.ResourceBundle;
 import java.util.*;
@@ -50,7 +52,7 @@ public class SyntheticPopDe {
     //Parameters of the synthetic population
     protected static final String PROPERTIES_REGION_ATTRIBUTES            = "attributes.region";
     protected static final String PROPERTIES_HOUSEHOLD_ATTRIBUTES         = "attributes.household";
-    protected static final String PROPERTIES_HOUSEHOLD_SIZES              = "household.sizes";
+    protected static final String PROPERTIES_HOUSEHOLD_SIZES              = "household.size.brackets";
     protected static final String PROPERTIES_MICRO_DATA_AGES              = "age.brackets";
     protected static final String PROPERTIES_MICRO_DATA_AGES_QUARTER      = "age.brackets.quarter";
     protected static final String PROPERTIES_MICRO_DATA_YEAR_DWELLING     = "year.dwelling";
@@ -148,7 +150,7 @@ public class SyntheticPopDe {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
+        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
             //Read entry data from the micro data
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
@@ -160,6 +162,7 @@ public class SyntheticPopDe {
                         "year.micro.data in properties file.");
                 System.exit(0);
             }
+            checkHouseholdRelationship();
             //Run fitting procedure
             if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
                 if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
@@ -178,9 +181,11 @@ public class SyntheticPopDe {
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing mode");
-            readSyntheticPopulation();
-            addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
+            readMicroData2010();
+            //checkHouseholdRelationship();
+            //readSyntheticPopulation();
+            //addCars(false);
+            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -303,11 +308,11 @@ public class SyntheticPopDe {
                             } else if (householdNumber == previousHouseholdNumber) {
                                 personCountTotal++;
                             }
-                        } else {
+/*                        } else {
                             personCountTotal++;
                             hhCountTotal++;
                             quarterCountTotal++;
-                            personQuarterCountTotal++;
+                            personQuarterCountTotal++;*/
                         }
                     default:
                         hhOutCountTotal++;
@@ -402,19 +407,19 @@ public class SyntheticPopDe {
                                 hhSingle[hhCount] = 1;
                                 hhSize1[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize1";
-                            } else if (hhSize[hhCount] == 2){
+                            } else if (hhSize[hhCount] == 2) {
                                 hhSize2[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize2";
-                            }else if (hhSize[hhCount] == 3){
+                            } else if (hhSize[hhCount] == 3) {
                                 hhSize3[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize3";
-                            }else if (hhSize[hhCount] == 4){
+                            } else if (hhSize[hhCount] == 4) {
                                 hhSize4[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize4";
-                            }else if (hhSize[hhCount] == 5){
+                            } else if (hhSize[hhCount] == 5) {
                                 hhSize5[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize5";
-                            }else {
+                            } else {
                                 hhSize6[hhCount] = 1;
                                 hhSizeCategory[hhCount] = "hhSize6";
                             }
@@ -439,7 +444,7 @@ public class SyntheticPopDe {
                             personHHCount = 0;
                             incomeCounter = 0;
                             foreignCount = 0;
-                        } else if (convertToInteger(recString.substring(313,314)) != 1) { //we have a group quarter
+                        /*} else if (convertToInteger(recString.substring(313,314)) != 1) { //we have a group quarter
                             hhCount++;
                             quarterCounter++;
                             hhSize[hhCount] = 1; //we put 1 instead of the quarter size because each person in group quarter has its own household
@@ -466,61 +471,62 @@ public class SyntheticPopDe {
                             }
                             personHHCount = 0;
                             incomeCounter = 0;
-                            foreignCount = 0;
-                        }
-                        //Person characteristics
-                        age[personCount] = convertToInteger(recString.substring(25, 27));
-                        gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
-                        occupation[personCount] = convertToInteger(recString.substring(74, 75)); // 1: employed, 8: unemployed, empty: NA
-                        personId[personCount] = convertToInteger(recString.substring(2, 11));
-                        personHH[personCount] = convertToInteger(recString.substring(2, 9));
-                        personIncome[personCount] = convertToInteger(recString.substring(297, 299));
-                        personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
-                        personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
-                        personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
-                        personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
-                        personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
-                        personJobSector[personCount] = convertToInteger(recString.substring(101, 103)); //Systematische Übersicht der Klassifizierung der Berufe, Ausgabe 1992.
-                        personTelework[personCount] =  convertToInteger(recString.substring(141, 142)); //If they telework
-                        personSubsample[personCount] =  convertToInteger(recString.substring(497, 498));
-                        personQuarter[personCount] = convertToInteger(recString.substring(313,314)); // 1: private household,
-                        int row = 0;
-                        while (age[personCount] > ageBracketsPerson[row]) {
-                            row++;
-                        }
-                        int row1 = 0;
-                        while (age[personCount] > ageBracketsPersonQuarter[row1]) {
-                            row1++;
-                        }
-                        if (gender[personCount] == 1) {
-                            if (occupation[personCount] == 1) {
-                                hhMaleWorkers[hhCount]++;
-                                hhWorkers[hhCount]++;
+                            foreignCount = 0;*/
+
+                            //Person characteristics
+                            age[personCount] = convertToInteger(recString.substring(25, 27));
+                            gender[personCount] = convertToInteger(recString.substring(28, 29)); // 1: male; 2: female
+                            occupation[personCount] = convertToInteger(recString.substring(74, 75)); // 1: employed, 8: unemployed, empty: NA
+                            personId[personCount] = convertToInteger(recString.substring(2, 11));
+                            personHH[personCount] = convertToInteger(recString.substring(2, 9));
+                            personIncome[personCount] = convertToInteger(recString.substring(297, 299));
+                            personNationality[personCount] = convertToInteger(recString.substring(45, 46)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
+                            personWorkplace[personCount] = convertToInteger(recString.substring(151, 152)); //1: at the municipality, 2: in Berlin, 3: in other municipality of the Bundeslandes, 9: NA
+                            personCommuteTime[personCount] = convertToInteger(recString.substring(157, 157)); //1: less than 10 min, 2: 10-30 min, 3: 30-60 min, 4: more than 60 min, 9: NA
+                            personTransportationMode[personCount] = convertToInteger(recString.substring(158, 160)); //1: bus, 2: ubahn, 3: eisenbahn, 4: car (driver), 5: carpooled, 6: motorcycle, 7: bike, 8: walk, 9; other, 99: NA
+                            personJobStatus[personCount] = convertToInteger(recString.substring(99, 101)); //1: self employed without employees, 2: self employed with employees, 3: family worker, 4: officials judges, 5: worker, 6: home workers, 7: tech trainee, 8: commercial trainee, 9: soldier, 10: basic compulsory military service, 11: zivildienstleistender
+                            personJobSector[personCount] = convertToInteger(recString.substring(101, 103)); //Systematische Übersicht der Klassifizierung der Berufe, Ausgabe 1992.
+                            personTelework[personCount] = convertToInteger(recString.substring(141, 142)); //If they telework
+                            personSubsample[personCount] = convertToInteger(recString.substring(497, 498));
+                            personQuarter[personCount] = convertToInteger(recString.substring(313, 314)); // 1: private household,
+                            int row = 0;
+                            while (age[personCount] > ageBracketsPerson[row]) {
+                                row++;
                             }
-                            if (personQuarter[personCount] == 1) {
-                                hhMaleAge[hhCount][row]++;
-                            } else {
-                                quarterMaleAge[hhCount][row1]++;
+                            int row1 = 0;
+                            while (age[personCount] > ageBracketsPersonQuarter[row1]) {
+                                row1++;
                             }
-                        } else if (gender[personCount] == 2) {
-                            if (occupation[personCount] == 1) {
-                                hhFemaleWorkers[hhCount]++;
-                                hhWorkers[hhCount]++;
+                            if (gender[personCount] == 1) {
+                                if (occupation[personCount] == 1) {
+                                    hhMaleWorkers[hhCount]++;
+                                    hhWorkers[hhCount]++;
+                                }
+                                if (personQuarter[personCount] == 1) {
+                                    hhMaleAge[hhCount][row]++;
+                                } else {
+                                    quarterMaleAge[hhCount][row1]++;
+                                }
+                            } else if (gender[personCount] == 2) {
+                                if (occupation[personCount] == 1) {
+                                    hhFemaleWorkers[hhCount]++;
+                                    hhWorkers[hhCount]++;
+                                }
+                                if (personQuarter[personCount] == 1) {
+                                    hhFemaleAge[hhCount][row]++;
+                                } else {
+                                    quarterFemaleAge[hhCount][row1]++;
+                                }
                             }
-                            if (personQuarter[personCount] == 1) {
-                                hhFemaleAge[hhCount][row]++;
-                            } else {
-                                quarterFemaleAge[hhCount][row1]++;
+                            if (personNationality[personCount] == 8) {
+                                foreignCount++;
                             }
-                        }
-                        if (personNationality[personCount] == 8){
-                            foreignCount++;
-                        }
-                        personCount++;
-                        personHHCount++;
+                            personCount++;
+                            personHHCount++;
                         /*} else {
                             previousHouseholdNumber = householdNumber; // Update the household number
                         }*/
+                        }
                 }
             }
         } catch (IOException e) {
@@ -675,11 +681,11 @@ public class SyntheticPopDe {
                                     personCountTotal++;
                                 }
                             }
-                        } else if (convertToInteger(recString.substring(34,35)) == 2) { //group quarter
+/*                        } else if (convertToInteger(recString.substring(34,35)) == 2) { //group quarter
                             personCountTotal++;
                             hhCountTotal++;
                             quarterCountTotal++;
-                            personQuarterCountTotal++;
+                            personQuarterCountTotal++;*/
                         } else {
                             movedOut++;
                             if (householdNumber != previousHouseholdNumber) {
@@ -719,8 +725,11 @@ public class SyntheticPopDe {
         int personEducation[] = new int[personCountTotal];
         int personStatus[] = new int[personCountTotal];
         int personRelationship[] = new int[personCountTotal];
+        int personMarriage[] = new int[personCountTotal];
+        int personSpouse[] = new int[personCountTotal];
         int personEurostat[] = new int[personCountTotal];
         int personSchool[] = new int[personCountTotal];
+        int personHhSize[] = new int[personCountTotal];
         int personCount = 0;
         int personHHCount = 0;
         int foreignCount = 0;
@@ -810,7 +819,7 @@ public class SyntheticPopDe {
                                 //Incomplete dwelling record
                                 ddIncomplete++;
                             } else {
-                                if (convertToInteger(recString.substring(658, 660)) < 91) {
+                                if (convertToInteger(recString.substring(658, 660)) < 91 & convertToInteger(recString.substring(34, 35)) == 1) {
                                     if (householdNumber != previousHouseholdNumber & convertToInteger(recString.substring(34, 35)) == 1) {
                                         //Private household
 
@@ -905,7 +914,6 @@ public class SyntheticPopDe {
                                         previousHouseholdNumber = householdNumber;
                                         personHHCount = 0;
                                         foreignCount = 0;
-
                                     } else if (convertToInteger(recString.substring(34, 35)) == 2) {
                                         //Group quarter
                                         hhCount++;
@@ -944,7 +952,6 @@ public class SyntheticPopDe {
                                             dwellingUsage[hhCount] = 2;
                                         }
                                         //All dwelling characteristics for IPU are for private households rather than group quarters.
-
                                         //Update household number and person counters for the next private household
                                         previousHouseholdNumber = householdNumber;
                                         personHHCount = 0;
@@ -960,6 +967,7 @@ public class SyntheticPopDe {
                                     personIncome[personCount] = convertToInteger(recString.substring(471, 473)); //Netto income in EUR, 24 categories. 50: from agriculture, 90: any income, 99: not stated
                                     personNationality[personCount] = convertToInteger(recString.substring(370, 372)); // 1: only German, 2: dual German citizenship, 8: foreigner; (Marginals consider dual citizens as Germans)
                                     personEurostat[personCount] = convertToInteger(recString.substring(35, 36)); //definition of person according to EuroStat.
+                                    personHhSize[personCount] = hhSize[hhCount];
 /*                                    if (occupation[personCount] == 1) { // Only employed persons respond to the sector
                                         personJobSector[personCount] = translateJobType(convertToInteger(recString.substring(163, 165)), jobsTable); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
                                     } else {
@@ -972,7 +980,18 @@ public class SyntheticPopDe {
                                     personQuarter[personCount] = convertToInteger(recString.substring(34, 35)); // 1: private household, 2: group quarter
                                     personEducation[personCount] = translateEducationLevel(convertToInteger(recString.substring(323, 325)), educationDegreeTable); // 1: without beruflichen Abschluss, 2: Lehre, Berufausbildung im dual System, Fachschulabschluss, Abschluss einer Fachakademie, 3: Fachhochschulabschluss, 4: Hochschulabschluss - Uni, Promotion, 99: not stated
                                     personStatus[personCount] = convertToInteger(recString.substring(40,42)); //1: head of household, 2: partner of head of household, 3: children
+                                    personMarriage[personCount] = convertToInteger(recString.substring(59,60));
+                                    personSpouse[personCount] = convertToInteger(recString.substring(36,38));
                                     personRelationship[personCount] = convertToInteger(recString.substring(566, 568)); //1: head of household (hHH), 2: partner of hHH, 3: kid of hHH, 4: grandchild of hHH, 5: mother or father of hHH, 6: grandfather or grandmother of hHH, 7: sibling of hHH, 8: other relationship with hHH, 9: not related with hHH
+                                    if (personRelationship[personCount]  > 2){
+                                        if (personRelationship[personCount] == 4) { //the person is the grandchild of the household head
+                                            personRelationship[personCount] = 3;
+                                        } else if (personRelationship[personCount] > 8 & age[personCount] < 16){ //the person is not son, grandchild, father, grandfather, brother of household head
+                                            personRelationship[personCount] = 3;
+                                        } else {
+                                            personRelationship[personCount] = 4; //not household head, spouse or dependant children
+                                        }
+                                    }
                                     personSchool[personCount] = translateSchoolType(convertToInteger(recString.substring(307, 309)), schoolLevelTable); //Type of school that hey have attended on the last year. 0: haven't attended, 1: primary school, 2: high school (German: Freie Waldorfschule, Gesamtschule and Gymnasium), 3: middle school (German: Mittelschule, Hauptshule and Realschule), 4: special school (German: Forderschule), 5: others
                                     if (occupation[personCount] > 1){
                                         if (personSchool[personCount] == 0){
@@ -1050,7 +1069,10 @@ public class SyntheticPopDe {
         microPersons.appendColumn(personEurostat,"euroStat");
         microPersons.appendColumn(personEducation,"educationLevel");
         microPersons.appendColumn(personStatus,"personStatus");
+        microPersons.appendColumn(personMarriage, "marriage");
+        microPersons.appendColumn(personSpouse, "spouseInHousehold");
         microPersons.appendColumn(personRelationship,"relationshipHousehold");
+        microPersons.appendColumn(personHhSize, "hhSize");
         microPersons.appendColumn(personSchool,"schoolType");
         microDataPerson = microPersons;
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("personID"));
@@ -1090,6 +1112,7 @@ public class SyntheticPopDe {
         microRecords.appendColumn(dwellingFloorSpace,"dwellingFloorSpace"); //Floor space of the dwelling
         microRecords.appendColumn(dwellingRent,"dwellingRentPrice"); //Rental price of the dwelling
         microRecords.appendColumn(hhRecord,"recordMicroData");
+        //microRecords.setValueAt(hhSizeCount.length - 1,"hhSize", 2);
         microDataHousehold = microRecords;
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
 
@@ -1185,6 +1208,252 @@ public class SyntheticPopDe {
         logger.info("   Finished reading the micro data");
     }
 
+
+    private void checkHouseholdRelationship(){
+        //method to check how household members are related
+
+        int[][] hhRelationshipCounter = new int[3][2];
+        int[] counterRelationships = new int[6];
+        int[] dummy = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), 0);
+        int[] dummy1 = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), 0);
+        microDataHousehold.appendColumn(dummy,"nonClassifiedMales");
+        microDataHousehold.appendColumn(dummy1,"nonClassifiedFemales");
+        int[] dummy2 = SiloUtil.createArrayWithValue(microDataPerson.getRowCount(), -1);
+        int[] dummy3 = SiloUtil.createArrayWithValue(microDataPerson.getRowCount(), 0);
+        microDataPerson.appendColumn(dummy2, "personRole");
+        microDataPerson.appendColumn(dummy3, "rearrangedRole");
+
+
+        for (int k = 1; k <= microDataHousehold.getRowCount(); k++){
+
+            int hhSize = (int) microDataHousehold.getValueAt(k,"hhSize");
+            int firstMember = (int) microDataHousehold.getValueAt(k, "personCount");
+
+            //single person household -> all set as single directly
+            if (hhSize == 1){
+                microDataPerson.setValueAt(firstMember,"personRole",1); //set as single directly
+
+            //multiperson household
+            } else {
+
+                //Create the maps to store the classified members of the households
+                HashMap<Integer, Integer> childrenInHousehold = new HashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> noClass = new HashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> singles = new HashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> married = new HashMap<>();
+
+                //direct classification of the members of the household
+                for (int j = 0; j < hhSize; j++) {
+                    int row = firstMember + j;
+                    int spouseInHousehold = (int) microDataPerson.getValueAt(row, "spouseInHousehold");
+                    int relationToHead = (int) microDataPerson.getValueAt(row, "personStatus");
+                    int maritalStatus = (int) microDataPerson.getValueAt(row, "marriage");
+                    int age = (int) microDataPerson.getValueAt(row, "age");
+                    int gender = (int) microDataPerson.getValueAt(row, "gender");
+
+                    if (relationToHead == 3) {
+                        childrenInHousehold.put(row, age); //children -> children
+                    } else if (maritalStatus == 2) {
+                        if (spouseInHousehold == 1) {
+                            married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
+                        } else if (spouseInHousehold == -5) {
+                            singles = updateInnerMap(singles, gender, age, row); //married and spouse not in household -> single
+                        } else {
+                            noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
+                        }
+                    } else if (maritalStatus > 4) {
+                        singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
+                    } else if (maritalStatus == 3 & spouseInHousehold == -5) {
+                        singles = updateInnerMap(singles, gender, age, row); //widow and spouse not in household -> single
+                    } else {
+                        noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
+                    }
+                }
+                int[] countNotClassified = new int[2];
+                int checkForCohabitation = 0;
+                HashMap<Integer, Integer> notClassifiedMales = noClass.get("male");
+                if (notClassifiedMales != null){
+                    countNotClassified[0] = notClassifiedMales.size();
+                    checkForCohabitation = 1;
+                }
+                HashMap<Integer, Integer> notClassifiedFemales = noClass.get("female");
+                if (notClassifiedFemales != null){
+                    countNotClassified[1] = notClassifiedFemales.size();
+                    checkForCohabitation = 1;
+                }
+                if (checkForCohabitation == 1) {
+                    //look for cohabitation
+                    if (countNotClassified[0] == 1 & countNotClassified[1] == 1) { //one male and one female were not classified
+                                                            //check age difference for possible marriage
+                        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
+                        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
+                        int ageMale = notClassifiedMales.get(rowMale);
+                        int ageFemale = notClassifiedFemales.get(rowFemale);
+                        int diffAge = Math.abs(ageFemale - ageMale);
+                        double threshold = (20 - diffAge) / 10;
+                        if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                            married = updateInnerMap(married, 1, ageMale, rowMale);
+                            married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                        } else {
+                            singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                        }
+                    } else if (countNotClassified[0] == 0 & countNotClassified[1] > 1) { //only females were not classified
+                                                                    //set all of them as single
+                        for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
+                            int newRow = pair.getKey();
+                            int newAge = pair.getValue();
+                            singles = updateInnerMap(singles, 2, newAge, newRow);
+                        }
+                    } else if (countNotClassified[1] == 0 & countNotClassified[0] > 1) { //only males were not classified
+                                                                    // set all of them as single
+                        for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
+                            int newRow = pair.getKey();
+                            int newAge = pair.getValue();
+                            singles = updateInnerMap(singles, 1, newAge, newRow);
+                        }
+                    } else if (countNotClassified[1] - countNotClassified[0] == 1) {  //one female was not classified
+                                                                //check for a possible single male to get married (408 households with)
+                        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
+                        int ageFemale = notClassifiedFemales.get(rowFemale);
+                        HashMap<Integer, Integer> singleMale = singles.get("male");
+                        if (singleMale == null & notClassifiedMales == null) { //no possible single male to marry -> set as single
+                            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                        } else if (singleMale != null) { //check for marriage with the male with the lowest age difference
+                            int minDiff = 20;
+                            int rowMarried = 0;
+                            int[] rowSingles = new int[singleMale.size()];
+                            for (Map.Entry<Integer, Integer> pair : singleMale.entrySet()) {
+                                int age = pair.getValue();
+                                if (Math.abs(ageFemale - age) < minDiff) {
+                                    minDiff = Math.abs(ageFemale - age);
+                                    rowMarried = pair.getKey();
+                                }
+                            }
+                            if (rowMarried > 0) {
+                                double threshold = (20 - minDiff) / 10;
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                    married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                } else {
+                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                }
+                            } else {
+                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                            }
+                        } else {
+                            int minDiff = 20;
+                            int rowMarried = 0;
+                            for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
+                                int age = pair.getValue();
+                                if (Math.abs(ageFemale - age) < minDiff) {
+                                    minDiff = Math.abs(ageFemale - age);
+                                    rowMarried = pair.getKey();
+                                }
+                            }
+                            if (rowMarried > 0) {
+                                double threshold = (20 - minDiff) / 10;
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                    married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                } else {
+                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    singles = updateInnerMap(singles, 1, minDiff, rowMarried);
+                                }
+                            } else {
+                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                for (int i = 0; i < notClassifiedMales.keySet().toArray().length; i++){
+                                    int rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                                    singles = updateInnerMap(singles, 1, ageFemale, rowMale);
+                                }
+                            }
+                            if (notClassifiedFemales.keySet().toArray().length > 1){
+                                for (int i = 1; i < notClassifiedFemales.keySet().toArray().length; i++){
+                                    rowFemale = (int) notClassifiedFemales.keySet().toArray()[i];
+                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                }
+                            }
+                        }
+                    } else if (countNotClassified[0] - countNotClassified[1] == 1) { //check for a possible single female to get married (94 households)
+                        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
+                        int ageMale = notClassifiedMales.get(rowMale);
+                        HashMap<Integer, Integer> singleFemale = singles.get("female");
+                        if (singleFemale == null & notClassifiedFemales == null) { //no possible single female to marry -> set as single
+                            singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                        } else if (singleFemale != null){ //check for marriage with the female with the lowest age difference
+                            int minDiff = 20;
+                            int rowMarried = 0;
+                            for (Map.Entry<Integer, Integer> pair : singleFemale.entrySet()) {
+                                int age = pair.getValue();
+                                if (Math.abs(ageMale - age) < minDiff) {
+                                    minDiff = Math.abs(ageMale - age);
+                                    rowMarried = pair.getKey();
+                                }
+                            }
+                            if (rowMarried > 0) {
+                                double threshold = (20 - minDiff) / 10;
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                    married = updateInnerMap(married, 1, ageMale, rowMale);
+                                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                } else {
+                                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                }
+                            } else {
+                                singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                            }
+                        } else {
+                            int minDiff = 20;
+                            int rowMarried = 0;
+                            for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
+                                int age = pair.getValue();
+                                if (Math.abs(ageMale - age) < minDiff) {
+                                    minDiff = Math.abs(ageMale - age);
+                                    rowMarried = pair.getKey();
+                                }
+                            }
+                            if (rowMarried > 0) {
+                                double threshold = (20 - minDiff) / 10;
+                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                    married = updateInnerMap(married, 1, ageMale, rowMale);
+                                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                } else {
+                                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                    singles = updateInnerMap(singles, 2, minDiff, rowMarried);
+                                }
+                            } else {
+                                singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                for (int i = 0; i < notClassifiedFemales.keySet().toArray().length; i++){
+                                    rowMale = (int) notClassifiedFemales.keySet().toArray()[i];
+                                    singles = updateInnerMap(singles, 2, ageMale, rowMale);
+                                }
+                            }
+                            if (notClassifiedMales.keySet().toArray().length > 1){
+                                for (int i = 1; i < notClassifiedMales.keySet().toArray().length; i++){
+                                    rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                }
+                            }
+                        }
+                    } else {
+                        logger.info("   Case without treatment. Please check this household " + k);
+                    }
+                }
+                setRoles(singles, married, childrenInHousehold, noClass);
+            }
+        }
+        //double checking for persons that are not classified
+        for (int i = 1; i <= microDataPerson.getRowCount(); i++){
+            if (microDataPerson.getValueAt(i,"personRole") == -1){
+                microDataPerson.setValueAt(i, "personRole", 1);
+            }
+        }
+
+        String hhFileName = ("microData/interimFiles/microHouseholds2.csv");
+        SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
+
+        String ppFileName = ("microData/interimFiles/microPerson2.csv");
+        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
+    }
 
     private void runIPUbyCity(){
         //IPU process for independent municipalities (only household attributes)
@@ -1809,7 +2078,7 @@ public class SyntheticPopDe {
 
         //For each municipality
         for (int municipality = 0; municipality < cityID.length; municipality++) {
-            logger.info("   Municipality " + cityID[municipality] + ". Starting to generate jobs.");
+            //logger.info("   Municipality " + cityID[municipality] + ". Starting to generate jobs.");
 
             //-----------***** Data preparation *****-------------------------------------------------------------------
             //Create local variables to avoid accessing to the same variable on the parallel processing
@@ -1980,6 +2249,7 @@ public class SyntheticPopDe {
         //If there are no more school places for the student, they are sent outside the area (schoolplace = -2)
         //For the following years, we school transition should be accomplished
 
+            logger.info("   Started assigning schools");
         int count = 0;
 
         //Calculate distance impedance for students
@@ -2291,29 +2561,6 @@ public class SyntheticPopDe {
             int[] yearBuilding = yearBracketsDwelling;
 
 
-            //Counter and errors for the municipality
-/*            TableDataSet counterMunicipality = new TableDataSet();
-            TableDataSet errorMunicipality = new TableDataSet();
-            TableDataSet marginals = new TableDataSet();
-            int[] dummy = SiloUtil.createArrayWithValue(1,municipalityID);
-            int[] dummy1 = SiloUtil.createArrayWithValue(1,municipalityID);
-            int[] dummy4 = SiloUtil.createArrayWithValue(1,municipalityID);
-            counterMunicipality.appendColumn(dummy,"ID_city");
-            errorMunicipality.appendColumn(dummy1,"ID_city");
-            marginals.appendColumn(dummy4,"ID_city");
-            for (int attribute = 0;attribute < attributesHouseholdIPU.length; attribute++) {
-                double[] dummy2 = SiloUtil.createArrayWithValue(1,0.0);
-                double[] dummy3 = SiloUtil.createArrayWithValue(1,0.0);
-                int[] dummy5 = SiloUtil.createArrayWithValue(1,(int) marginalsMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
-                counterMunicipality.appendColumn(dummy2, attributesHouseholdIPU[attribute]);
-                errorMunicipality.appendColumn(dummy3,attributesHouseholdIPU[attribute]);
-                marginals.appendColumn(dummy5,attributesHouseholdIPU[attribute]);
-            }
-            counterMunicipality.buildIndex(counterMunicipality.getColumnPosition("ID_city"));
-            errorMunicipality.buildIndex(errorMunicipality.getColumnPosition("ID_city"));
-            marginals.buildIndex(marginals.getColumnPosition("ID_city"));*/
-
-
             //obtain the raster cells of the municipality and their weight within the municipality
             int[] tazInCity = cityTAZ.get(municipalityID);
             double[] probTaz = new double[tazInCity.length];
@@ -2328,10 +2575,10 @@ public class SyntheticPopDe {
             //logger.info("   " + probability[0]);
             double[] probabilityPrivate = new double[probability.length]; // Separate private households and group quarters for generation
             for (int row = 0; row < probability.length; row++){
-                if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
+                //if ((int) microHouseholds.getValueAt(row + 1,"groupQuarters") == 0){
                     probabilityPrivate[row] = probability[row];
                     hhRemaining = hhRemaining + probability[row];
-                }
+                //}
             }
 
             //marginals for the municipality
@@ -2368,10 +2615,11 @@ public class SyntheticPopDe {
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 Household household = new Household(id, newDdId, tazID, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
-                //counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
+                counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
 
 
                 //copy the household members characteristics
+                int[] roleCounter = new int[3];
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = HouseholdDataManager.getNextPersonId();
                     int personCounter = (int) microHouseholds.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
@@ -2389,16 +2637,10 @@ public class SyntheticPopDe {
                     household.addPersonForInitialSetup(pers);
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.single; //default value = single
-                    if (microPersons.getValueAt(personCounter, "personStatus") == 2) {
+                    if (microPersons.getValueAt(personCounter, "personRole") == 2) { //is married
                         role = PersonRole.married;
-                        Person firstPersonInHousehold = household.getPersons()[0];  // get first person in household and make it married (if one person within the household is the partner)
-                        firstPersonInHousehold.setRole(PersonRole.married);
-                    } else if (microPersons.getValueAt(personCounter, "personStatus") == 3) { //if the person is not the household head nor his spouse
-                        if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 3) { //the person is son/daughter of the household head
-                            role = PersonRole.child;
-                        } else if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 4) { //the person is the grandchild of the household head
-                            role = PersonRole.child;
-                        }
+                    } else if (microPersons.getValueAt(personCounter, "personRole") == 3) { //is children
+                        role = PersonRole.child;
                     }
                     pers.setRole(role);
                     pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
@@ -2410,7 +2652,7 @@ public class SyntheticPopDe {
                     pers.setSchoolType((int) microPersons.getValueAt(personCounter, "schoolType"));
                     pers.setZone(household.getHomeZone());
                     hhPersons++;
-                    //counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
+                    counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipalityID,agePerson);
                 }
 
 
@@ -2436,7 +2678,7 @@ public class SyntheticPopDe {
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(usage);
                 dwell.setBuildingSize(buildingSize);
-                //counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
+                counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipalityID,yearBuilding,sizeBuilding);
             }
             int households = HouseholdDataManager.getHighestHouseholdIdInUse() - previousHouseholds;
             int persons = HouseholdDataManager.getHighestPersonIdInUse() - previousPersons;
@@ -2449,20 +2691,20 @@ public class SyntheticPopDe {
 
             //Consider if I need to add also the errors from other attributes. They must be at the marginals file, or one extra file
             //For county level they should be calculated on a next step, outside this loop.
-/*            float averageError = 0f;
+            float averageError = 0f;
             for (int attribute = 0; attribute < attributesHouseholdIPU.length; attribute++){
                 float error = Math.abs((counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]) -
-                        marginals.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute])) /
-                        marginals.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
+                        marginalsMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute])) /
+                        marginalsMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
                 errorMunicipality.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],error);
                 averageError = averageError + error;
-                counterSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
-                relativeErrorSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],errorMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
+                //counterSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
+                //relativeErrorSynPop.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],errorMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
             }
-            averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;*/
+            averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;
 
 
-            logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households and " + quartersTotal + " persons in group quarters.");
+            logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households. The error is " + averageError + " %.");
             //SiloUtil.writeTableDataSet(counterMunicipality,"microData/interimFiles/counterMun.csv");
             //SiloUtil.writeTableDataSet(errorMunicipality,"microData/interimFiles/errorMun.csv");
         }
@@ -2536,41 +2778,6 @@ public class SyntheticPopDe {
             }
             logger.info("   The number of vacant dwellings is: " + vacantCounter);
         }
-/*        //Write the files for all municipalities
-        String name = ("microData/interimFiles/totalsSynPop.csv");
-        SiloUtil.writeTableDataSet(counterSynPop,name);
-        String name1 = ("microData/interimFiles/errorsSynPop.csv");
-        SiloUtil.writeTableDataSet(relativeErrorSynPop,name1);*/
-    }
-
-
-       private DwellingType translateDwellingType (int pumsDdType) {
-        // translate micro census dwelling types into 6 MetCouncil Dwelling Types
-
-        // Available in MICRO CENSUS:
-//        V 01 . Building with 1-2 apartments
-//        V 02 . Building with 3-6 apartments
-//        V 03 . Building with 1-12 apartments
-//        V 04 . Building with 13-20 apartments
-//        V 05 . Building with 21+ apartments
-//        V 09 . Not stated
-//        V -1 . Living in group quarter
-//        V -5 . Moved in the last 12 months
-
-
-        DwellingType type;
-        if (pumsDdType == 2) type = DwellingType.MF234; //duplexes and buildings 2-4 units
-        else if (pumsDdType == 1) type = DwellingType.SFD; //single-family house detached
-        //else if (pumsDdType == 3) type = DwellingType.SFA;//single-family house attached or townhouse
-        //else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MH; //mobile home
-        else if (pumsDdType >= 3 ) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that not stated are 5+units
-        else if (pumsDdType == -1) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that group quarters are 5+ units
-        else if (pumsDdType == -5) type = DwellingType.MH; //mobile home; //mobile home. Assumes that group quarters are 5+ units
-        else {
-            logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
-            type = null;
-        }
-        return type;
     }
 
 
@@ -2612,8 +2819,7 @@ public class SyntheticPopDe {
                     }
                 }
             }
-            Random rnd = new Random();
-            double cummulativeProb = rnd.nextDouble()*(high - low) + low;
+            double cummulativeProb = SiloUtil.getRandomNumberAsDouble()*(high - low) + low;
             income = q.inverseCumulativeProbability(cummulativeProb);
         }
         return income;
@@ -2701,8 +2907,7 @@ public class SyntheticPopDe {
             } else {
                 threshold = (int) prob.getValueAt(row, "female");
             }
-            Random rn = new Random();
-            if (rn.nextDouble() * 100 < threshold) {
+            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
                 license = 1;
             }
         } //if they are younger than 18, they don't hold driver license
@@ -2714,13 +2919,12 @@ public class SyntheticPopDe {
         //provide the size of the building
         int floorSpaceDwelling = 0;
         int floorSpace = SiloUtil.select(vacantFloor);
-        Random r = new Random();
         if (floorSpace == 0){
             floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 20);
         } else if (floorSpace == sizeBracketsDwelling.length - 1) {
             floorSpaceDwelling = (int) (120 + SiloUtil.getRandomNumberAsFloat() * 200);
         } else {
-            floorSpaceDwelling = r.nextInt(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
+            floorSpaceDwelling = (int) SiloUtil.getRandomNumberAsDouble()*(sizeBracketsDwelling[floorSpace]-sizeBracketsDwelling[floorSpace-1]) +
                     sizeBracketsDwelling[floorSpace - 1];
         }
         return floorSpaceDwelling;
@@ -2966,8 +3170,7 @@ public class SyntheticPopDe {
         double sumProb = 0;
         int[] results = new int[2];
         for (double val: probabilities) sumProb += val;
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3001,8 +3204,7 @@ public class SyntheticPopDe {
     public static int[] select (double[] probabilities, int[] id, int sumProb) {
         // select item based on probabilities (for zero-based float array)
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3021,8 +3223,7 @@ public class SyntheticPopDe {
     public static int[] select (double[] probabilities, int[] id, double sumProb) {
         // select item based on probabilities (for zero-based float array)
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3038,81 +3239,6 @@ public class SyntheticPopDe {
         return results;
     }
 
-    public static int[] selectEqualProbability(int[] id) {
-        // select item based on equal probability for all elements
-
-        int[] results = new int[2];
-        double step = 1/(id.length);
-        Random rand = new Random();
-        double sel = rand.nextDouble();
-        double prob = 0;
-        for (int i = 0; i < id.length; i++){
-            prob = prob + step;
-            if (prob > sel){
-                results[0] = id[i];
-                results[1] = i;
-                return results;
-            }
-        }
-        results[0] = id[id.length - 1];
-        results[1] = id.length - 1;
-
-        return results;
-    }
-
-    public static int[] removeLastElementFromZeroBasedArray(int[] array) {
-        // remove elementIndex'th element from array
-
-        int[] reduced = new int[array.length - 1];
-            // remove last element
-            System.arraycopy(array, 0, reduced, 0, reduced.length);
-
-        return reduced;
-    }
-
-    public static int[] subsetFromZeroBasedArray(int[] array, int newLength) {
-        // remove elementIndex'th element from array
-
-        int[] reduced = new int[newLength];
-        // remove elements with zero
-        System.arraycopy(array, 0, reduced, 0, reduced.length);
-
-        return reduced;
-    }
-
-    public static String[] removeLastElementFromZeroBasedArray(String[] array) {
-        // remove elementIndex'th element from array
-
-        String[] reduced = new String[array.length - 1];
-        // remove last element
-        System.arraycopy(array, 0, reduced, 0, reduced.length);
-
-        return reduced;
-    }
-
-
-    public static int[] selectEqualProbability (int[] id, int length) {
-        // select item based on equal probability for all elements, given a constraint length (only consider until one row, not the complete array)
-
-        int[] results = new int[2];
-        double step = 1/(length);
-        Random rand = new Random();
-        double sel = rand.nextDouble();
-        double prob = 0;
-        for (int i = 0; i < length; i++){
-            prob = prob + step;
-            if (prob > sel){
-                results[0] = id[i];
-                results[1] = i;
-                return results;
-            }
-        }
-        results[0] = id[length - 1];
-        results[1] = length - 1;
-
-        return results;
-    }
-
 
     public static int[] select (double[] probabilities, int length, int[] id){
         //select item based on probabilities and return the name
@@ -3122,8 +3248,7 @@ public class SyntheticPopDe {
         for (int i = 0; i < length; i++) {
             sumProb += probabilities[i];
         }
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3145,8 +3270,7 @@ public class SyntheticPopDe {
         //probabilities and name have more items than the required (max number of required items is set on "length")
 
         int[] results = new int[2];
-        Random rand = new Random();
-        double selPos = sumProb * rand.nextDouble();
+        double selPos = sumProb * SiloUtil.getRandomNumberAsDouble();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -3162,19 +3286,6 @@ public class SyntheticPopDe {
         return results;
     }
 
-
-    public static double[] convertProbability (double[] probabilities){
-        //method to return the probability in percentage
-        double sum = 0;
-        double[] relProb = new double[probabilities.length];
-        for (int row = 0; row < probabilities.length; row++){
-            sum = sum + probabilities[row];
-        }
-        for (int row = 0; row < probabilities.length; row++) {
-            relProb[row] = probabilities[row]/sum*1000;
-        }
-        return relProb;
-    }
 
     public static TableDataSet updateCountersHousehold (Household household, TableDataSet attributesCount, int mun){
         /* method to update the counters with the characteristics of the generated private household*/
@@ -3226,34 +3337,6 @@ public class SyntheticPopDe {
     }
 
 
-    public static TableDataSet updateCountersPersonQuarter (Person person, TableDataSet attributesCount,int mun){
-        /* method to update the counters with the characteristics of the generated person living in a group quarter*/
-        if (person.getNationality() == 8){
-            attributesCount.setIndexedValueAt(mun,"foreigners",attributesCount.getIndexedValueAt(mun,"foreigners") + 1);
-        }
-        if (person.getGender() == 1){
-            if(person.getOccupation() == 1) {
-                attributesCount.setIndexedValueAt(mun,"maleWorkers",attributesCount.getIndexedValueAt(mun,"maleWorkers") + 1);
-            }
-            if (person.getAge() > 64){
-                attributesCount.setIndexedValueAt(mun,"maleQuarters99",attributesCount.getIndexedValueAt(mun,"maleQuarters99") + 1);
-            } else {
-                attributesCount.setIndexedValueAt(mun,"maleQuarters64",attributesCount.getIndexedValueAt(mun,"maleQuarters64") + 1);
-            }
-        } else {
-            if(person.getOccupation() == 1) {
-                attributesCount.setIndexedValueAt(mun,"femaleWorkers",attributesCount.getIndexedValueAt(mun,"femaleWorkers") + 1);
-            }
-            if (person.getAge() > 64){
-                attributesCount.setIndexedValueAt(mun,"femaleQuarters99",attributesCount.getIndexedValueAt(mun,"femaleQuarters99") + 1);
-            } else {
-                attributesCount.setIndexedValueAt(mun,"maleQuarters64",attributesCount.getIndexedValueAt(mun,"maleQuarters64") + 1); //females and males are on the same group!!
-            }
-        }
-        return attributesCount;
-    }
-
-
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
         if (dwelling.getUsage() == 1){
@@ -3269,30 +3352,6 @@ public class SyntheticPopDe {
         return attributesCount;
     }
 
-    public static TableDataSet updateCountersDwellingVacant (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
-        /* method to update the counters with the characteristics of the generated dwelling*/
-        int row = 0;
-        while (dwelling.getFloorSpace() > sizeBrackets[row]){
-            row++;
-        }
-        String name = "dwellingsVacant" + sizeBrackets[row];
-        attributesCount.setIndexedValueAt(mun,name,attributesCount.getIndexedValueAt(mun,name) + 1);
-        if (dwelling.getYearConstructionDE() > 0 & dwelling.getYearConstructionDE() < 10) {
-            int row1 = 0;
-            while (dwelling.getYearConstructionDE() > yearBrackets[row1]){
-                row1++;
-            }
-            if (dwelling.getBuildingSize() == 1){
-                String name1 = "smallDwellingsVacant" + yearBrackets[row1];
-                attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-            } else {
-                String name1 = "mediumDwellingsVacant" + yearBrackets[row1];
-                attributesCount.setIndexedValueAt(mun,name1,attributesCount.getIndexedValueAt(mun,name1) + 1);
-            }
-        }
-        attributesCount.setIndexedValueAt(mun,"vacantDwellings",attributesCount.getIndexedValueAt(mun,"vacantDwellings") + 1);
-        return attributesCount;
-    }
 
     public void writeVectorToCSV(int[] thresholds, double[] frequencies, String outputFile, double a, double g){
         try {
@@ -3379,18 +3438,6 @@ public class SyntheticPopDe {
 
     }
 
-
-    public int assignGymnasiumMitteByTAZ (Person pp){
-        //provide the type of school for the student given the TAZ proportion
-
-        int school = 3; //by default they are in Mittelschule
-        double threshold = cellsMatrix.getIndexedValueAt(pp.getZone(),"proportion");
-        Random rnd = new Random();
-        if (rnd.nextDouble() > threshold){
-            school = 2; //Gymnasium if the random number if greater than the threshold
-        }
-        return school;
-    }
 
     private void readAndStoreMicroData(){
         //method to read the synthetic population initial data
@@ -3511,7 +3558,7 @@ public class SyntheticPopDe {
                             microPersons.setValueAt(personCount, "ppSchool", 0);
                         }
                         if (microPersons.getValueAt(personCount,"ppOccupation") == 1) { // Only employed persons respond to the sector
-                            microPersons.setValueAt(personCount,"WZ08", translateJobType(Math.round((int) microPersons.getValueAt(personCount,"ppSector1")/10), jobsTable)); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
+                            //microPersons.setValueAt(personCount,"WZ08", translateJobType(Math.round((int) microPersons.getValueAt(personCount,"ppSector1")/10), jobsTable)); //First two digits of the WZ08 job classification in Germany. They are converted to 10 job classes (Zensus 2011 - Erwerbstätige nach Wirtschaftszweig Wirtschafts(unter)bereiche)
                         } else {
                             microPersons.setValueAt(personCount,"WZ08",0);
                         }
@@ -3564,6 +3611,61 @@ public class SyntheticPopDe {
         int selected = new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
         return selected;
 
+    }
+
+
+    private HashMap<String,HashMap<Integer,Integer>> updateInnerMap(HashMap<String, HashMap<Integer, Integer>> outer, int gender, int age, int row) {
+
+        String key = "male";
+        if (gender == 2) {
+            key = "female";
+        }
+        HashMap<Integer, Integer> inner = outer.get(key);
+        if (inner == null){
+            inner = new HashMap<Integer, Integer>();
+            outer.put(key, inner);
+        }
+        inner.put(row, age);
+        return outer;
+    }
+
+
+    private void setRoles(HashMap<String, HashMap<Integer, Integer>> singles, HashMap<String, HashMap<Integer, Integer>> married,
+                          HashMap<Integer, Integer> childrenInHousehold, HashMap<String, HashMap<Integer, Integer>> noClass) {
+
+        //set children in the household
+        if (childrenInHousehold != null){
+            for (Map.Entry<Integer, Integer> pair : childrenInHousehold.entrySet()){
+                int row = pair.getKey();
+                microDataPerson.setValueAt(row, "personRole", 3);
+            }
+        }
+        //set singles and married in the household
+        String[] keys = {"male", "female"};
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            HashMap<Integer, Integer> inner = singles.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    microDataPerson.setValueAt(row, "personRole", 1);
+                }
+            }
+            inner = married.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    microDataPerson.setValueAt(row, "personRole", 2);
+                }
+            }
+            inner = noClass.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    microDataPerson.setValueAt(row, "rearrangedRole", 1);
+                }
+            }
+        }
     }
 
 
