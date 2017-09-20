@@ -8,6 +8,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.utils.TableDataFileReader2;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
@@ -187,6 +188,32 @@ public class SiloUtil {
         }
         return dataTable;
     }
+
+    public static TableDataSet readCSVfile2 (String fileName) {
+        // read csv file and return as TableDataSet
+        File dataFile = new File(fileName);
+        TableDataSet dataTable;
+        boolean exists = dataFile.exists();
+        if (!exists) {
+            final String msg = "File not found: " + fileName;
+            logger.error(msg);
+//            System.exit(1);
+            throw new RuntimeException(msg) ;
+            // from the perspective of the junit testing infrastructure, a "System.exit(...)" is not a test failure ... and thus not detected.  kai, aug'16
+        }
+        try {
+//            TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
+//            dataTable = reader.readFile(dataFile);
+            TableDataFileReader2 reader = TableDataFileReader2.createReader2(dataFile);
+            dataTable = reader.readFile(dataFile);
+            reader.close();
+        } catch (Exception e) {
+            logger.error("Error reading file " + dataFile);
+            throw new RuntimeException(e);
+        }
+        return dataTable;
+    }
+
 
 
     public static boolean checkIfFileExists (String fileName) {
