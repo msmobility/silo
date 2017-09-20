@@ -473,7 +473,12 @@ public class MovesModelMuc implements MovesModelI {
             workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
             pos++;
             householdIncome += pp.getIncome();
-            if (pp.getRace() != householdRace) householdRace = Race.other;
+            if (pp.getRace() != householdRace) householdRace = Race.black; //changed this so race is a proxy of nationality
+        }
+        if (householdRace == Race.other){
+            householdRace = Race.black;
+        } else if (householdRace == Race.hispanic){
+            householdRace = Race.black;
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
         HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.length, incomeBracket);

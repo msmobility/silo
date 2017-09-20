@@ -181,11 +181,11 @@ public class SyntheticPopDe {
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing mode");
-            readMicroData2010();
+            //readMicroData2010();
             //checkHouseholdRelationship();
-            //readSyntheticPopulation();
+            readSyntheticPopulation();
             //addCars(false);
-            //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_result3_");
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -2061,7 +2061,7 @@ public class SyntheticPopDe {
     private void readIPU(){
         //Read entry data for household selection
         logger.info("   Reading the weights matrix");
-        weightsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
+        weightsTable = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
         weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
 
         logger.info("   Finishing reading the results from the IPU");
@@ -2369,50 +2369,61 @@ public class SyntheticPopDe {
 
         logger.info("   Starting to read the synthetic population");
         String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
-        TableDataSet households = SiloUtil.readCSVfile(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
-        TableDataSet persons = SiloUtil.readCSVfile(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
-        TableDataSet dwellings = SiloUtil.readCSVfile(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
-        TableDataSet jobs = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOB_SYN_POP) + fileEnding);
+        TableDataSet households = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
+        TableDataSet persons = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
+        TableDataSet dwellings = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
+        TableDataSet jobs = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_JOB_SYN_POP) + fileEnding);
         schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
+        logger.info("   Read input data");
 
 
         //Generate the households, dwellings and persons
-        int aux = 1;
-        for (int i = 1; i <= households.getRowCount(); i++){
-            Household hh = new Household((int)households.getValueAt(i,"id"),(int)households.getValueAt(i,"dwelling"),
-                    (int)households.getValueAt(i,"zone"),(int)households.getValueAt(i,"hhSize"),
-                    (int)households.getValueAt(i,"autos"));
-            for (int j = 1; j <= hh.getHhSize(); j++) {
-                Person pp = new Person((int) persons.getValueAt(aux, "id"), (int) persons.getValueAt(aux, "hhid"),
-                        (int) persons.getValueAt(aux, "age"), (int) persons.getValueAt(aux, "gender"),
-                        Race.white, (int) persons.getValueAt(aux, "occupation"), 0,
-                        (int) persons.getValueAt(aux, "income"));
-                hh.addPersonForInitialSetup(pp);
-                pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
-                if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.single);
-                else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.married);
-                else pp.setRole(PersonRole.child);
-                pp.setDriverLicense((int) persons.getValueAt(aux,"driversLicense"));
-                pp.setNationality((int) persons.getValueAt(aux,"nationality"));
-                pp.setHhSize(hh.getHhSize());
-                pp.setZone(hh.getHomeZone());
-                pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
-/*                if (pp.getSchoolType() == 1){
-                    if (pp.getAge() < 11 & pp.getAge() > 4) {
-                    } else {
-                        pp.setSchoolType(0);
-                    }
-                } else if (pp.getSchoolType() < 4){
-                    pp.setSchoolType(assignGymnasiumMitteByTAZ(pp));
-                }*/
-                pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
-                //pp.setSchoolPlace((int) persons.getValueAt(aux, "schoolPlace"));
-                aux++;
-            }
+        logger.info("   Starting to generate households");
+        for (int i = 1; i <= households.getRowCount(); i++) {
+            Household hh = new Household((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
+                    (int) households.getValueAt(i, "zone"), (int) households.getValueAt(i, "hhSize"),
+                    (int) households.getValueAt(i, "autos"));
         }
+
+        logger.info("   Starting to generate persons");
+        for (int i = 1; i <= persons.getRowCount(); i++) {
+            Race race = Race.white;
+            if ((int) persons.getValueAt(i,"nationality") > 1){race = Race.black;}
+            int hhID = (int) persons.getValueAt(i, "hhid");
+            Person pp = new Person((int) persons.getValueAt(i, "id"),hhID ,
+                    (int) persons.getValueAt(i, "age"), (int) persons.getValueAt(i, "gender"),
+                    race, (int) persons.getValueAt(i, "occupation"), (int) persons.getValueAt(i, "workplace"),
+                    (int) persons.getValueAt(i, "income"));
+            Household.getHouseholdFromId(hhID).addPersonForInitialSetup(pp);
+            pp.setEducationLevel((int) persons.getValueAt(i, "education"));
+            if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.single);
+            else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.married);
+            else pp.setRole(PersonRole.child);
+            pp.setDriverLicense((int) persons.getValueAt(i,"driversLicense"));
+            int nationality = (int) persons.getValueAt(i,"nationality");
+            if (nationality == 1) {
+                pp.setNationality(Nationality.german);
+            } else {
+                pp.setNationality(Nationality.other);
+            }
+            pp.setHhSize(Household.getHouseholdFromId(hhID).getHhSize());
+            pp.setZone(Household.getHouseholdFromId(hhID).getHomeZone());
+            pp.setSchoolType((int) persons.getValueAt(i,"schoolDE"));
+            pp.setWorkplace((int) persons.getValueAt(i,"workplace"));
+        }
+
+        logger.info("   Starting to generate dwellings");
         for (int i = 1; i <= dwellings.getRowCount(); i++){
+            int buildingSize = (int) dwellings.getValueAt(i,"building");
+            int zone = (int) dwellings.getValueAt(i,"zone");
+            int municipality = (int) cellsMatrix.getIndexedValueAt(zone,"ID_city");
+            float ddType1Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling12");
+            float ddType3Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling37");
+            DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);
+            int size = (int) dwellings.getValueAt(i,"floor");
+            int bedrooms = guessBedrooms(size);
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
-                    (int)dwellings.getValueAt(i,"hhID"),DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
+                    (int)dwellings.getValueAt(i,"hhID"),type,bedrooms,
                     (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
@@ -2424,11 +2435,32 @@ public class SyntheticPopDe {
 
 
         //Generate the jobs
+        //Starting to generate jobs
+        logger.info("   Starting to generate jobs");
         for (int i = 1; i <= jobs.getRowCount(); i++) {
             Job jj = new Job((int) jobs.getValueAt(i, "id"), (int) jobs.getValueAt(i, "zone"),
                     (int) jobs.getValueAt(i, "personId"), jobs.getStringValueAt(i, "type"));
         }
         logger.info("   Generated jobs");
+    }
+
+    private int guessBedrooms(int size) {
+        int bedrooms = 0;
+        if (size < 40){
+            bedrooms = 0;
+        } else if (size < 60){
+            bedrooms = 1;
+        } else if (size < 80){
+            bedrooms = 2;
+        } else if (size < 100){
+            bedrooms = 3;
+        } else if (size < 120){
+            bedrooms = 4;
+        } else {
+            bedrooms = 5;
+        }
+
+        return bedrooms;
     }
 
 
@@ -2524,7 +2556,6 @@ public class SyntheticPopDe {
         //Driver license probability
         TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
 
-
         generateCountersForValidation();
 
         //Create hashmaps to store quality of occupied dwellings
@@ -2559,6 +2590,8 @@ public class SyntheticPopDe {
             int[] agePerson = ageBracketsPerson;
             int[] sizeBuilding = sizeBracketsDwelling;
             int[] yearBuilding = yearBracketsDwelling;
+            float ddType1Prob = marginalsMunicipality.getIndexedValueAt(municipalityID,"dwelling12");
+            float ddType3Prob = marginalsMunicipality.getIndexedValueAt(municipalityID,"dwelling37");
 
 
             //obtain the raster cells of the municipality and their weight within the municipality
@@ -2643,7 +2676,12 @@ public class SyntheticPopDe {
                         role = PersonRole.child;
                     }
                     pers.setRole(role);
-                    pers.setNationality((int) microPersons.getValueAt(personCounter, "nationality"));
+                    int nationality = (int) microPersons.getValueAt(personCounter,"nationality");
+                    if (nationality == 1) {
+                        pers.setNationality(Nationality.german);
+                    } else {
+                        pers.setNationality(Nationality.other);
+                    }
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
                     //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
                     //pers.setJobTypeDE(selectedJobType);
@@ -2667,6 +2705,7 @@ public class SyntheticPopDe {
                 int heatingEnergy = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingHeatingEnergy");
                 int heatingAdditional = (int) microDwellings.getIndexedValueAt(hhIdMD, "dwellingAdHeating");
                 int quality = guessQualityDE(heatingType, heatingEnergy, heatingAdditional, year, numberofQualityLevels); //depend on year built and type of heating
+                DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);
                 int yearVacant = 0;
                 while (year > yearBracketsDwelling[yearVacant]) {yearVacant++;}
                 int key = municipalityID + yearBracketsDwelling[yearVacant] * 1000;
@@ -2674,7 +2713,7 @@ public class SyntheticPopDe {
                 qualityCounts[quality - 1]++;
                 ddQuality.put(key, qualityCounts);
                 year = selectDwellingYear(year); //convert from year class to actual 4-digit year
-                Dwelling dwell = new Dwelling(newDdId, tazID, id, DwellingType.MF234 , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = new Dwelling(newDdId, tazID, id, type , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(usage);
                 dwell.setBuildingSize(buildingSize);
@@ -3013,6 +3052,26 @@ public class SyntheticPopDe {
         return quality;
     }
 
+    private static DwellingType guessDwellingType(int buildingSize, float ddType1Prob, float ddType3Prob){
+        //Guess dwelling type based on the number of dwellings in the building from micro data (buildingSize, from micro data)
+        //and the probability of having 1 dwelling out of having 1 or 2 (distribution in the municipality, from census)
+        //and the probability of having 3-6 dwellings out of having 3-3+ (distribution in the municipality, from census)
+        DwellingType type = DwellingType.MF234;
+        if (buildingSize < 3){
+            if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
+                type = DwellingType.SFD;
+            } else {
+                type = DwellingType.SFA;
+            }
+        } else {
+            if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
+                type = DwellingType.MF5plus;
+            }
+        }
+
+        return type;
+    }
+
     private void identifyVacantJobsByZoneType() {
         // populate HashMap with Jobs by zone and job type
         // adapted from SyntheticPopUS
@@ -3309,7 +3368,7 @@ public class SyntheticPopDe {
     public static TableDataSet updateCountersPerson (Person person, TableDataSet attributesCount,int mun, int[] ageBracketsPerson) {
         /* method to update the counters with the characteristics of the generated person in a private household*/
         attributesCount.setIndexedValueAt(mun, "population", attributesCount.getIndexedValueAt(mun, "population") + 1);
-        if (person.getNationality() == 8) {
+        if (person.getNationality() == Nationality.other) {
             attributesCount.setIndexedValueAt(mun, "foreigners", attributesCount.getIndexedValueAt(mun, "foreigners") + 1);
         }
         if (person.getGender() == 1) {
