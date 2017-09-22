@@ -2,11 +2,9 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.relocation.MovesModelJSCalculator;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.Assert;
-import org.junit.rules.ExpectedException;
+import org.junit.Before;
+import org.junit.Test;
 
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
