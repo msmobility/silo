@@ -17,9 +17,10 @@
 package de.tum.bgu.msm.demography;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ResourceBundle;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
@@ -32,6 +33,8 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
 
+import javax.script.ScriptException;
+
 /**
  * Simulates children that leave the parental household
  * Author: Rolf Moeckel, PB Albuquerque
@@ -43,24 +46,16 @@ public class LeaveParentHhModel {
 //    static Logger logger = Logger.getLogger(LeaveParentHhModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_FILE            = "Demographics.UEC.FileName";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET      = "Demographics.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_LPH = "Demographics.UEC.ModelSheetNumber.LPH";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_LPH    = "log.util.leaveParentHh";
 
     // properties
     private String uecFileName;
     private int dataSheetNumber;
-
     private double[] lphProbability;
+    private LeaveParentHhJSCalculator calculator;
+
 
     public LeaveParentHhModel(ResourceBundle rb) {
         // constructor
-
-        // read properties
-        uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET);
-
         setupLPHModel(rb);
     }
 
@@ -68,39 +63,22 @@ public class LeaveParentHhModel {
     private void setupLPHModel(ResourceBundle rb) {
 
         // read properties
-        int lphModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_LPH);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_LPH);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
+        calculator = new LeaveParentHhJSCalculator(reader, false);
 
-        // initialize UEC
-
-        UtilityExpressionCalculator lphModel = new UtilityExpressionCalculator(new File(uecFileName),
-                lphModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                LeaveParentHhDMU.class);
-
-        LeaveParentHhDMU lphDmu = new LeaveParentHhDMU();
-
-        // everything is available
-        int numAlts = lphModel.getNumberOfAlternatives();
-        int[] lphAvail = new int[numAlts+1];
-        for (int i=1; i < lphAvail.length; i++) {
-            lphAvail[i] = 1;
-        }
-
+        // initialize results for each alternative
         PersonType[] types = PersonType.values();
         lphProbability = new double[types.length];
-        for (int i=0; i<types.length; i++) {
 
-            // set DMU attributes
-            lphDmu.setType(types[i]);
-
-            // There is only one alternative, and the utility is really the probability of giving birth
-            double util[] = lphModel.solve(lphDmu.getDmuIndexValues(), lphDmu, lphAvail);
-            lphProbability[i] = util[0];
-            if (logCalculation) {
-                // log UEC values for each person type
-                lphModel.logAnswersArray(traceLogger, "Leave-Parental-Household Model for Person Type " + types[i].toString());
+        //apply the calculator to each alternative
+        for (int i = 0; i < types.length; i++) {
+            // set calculator bindings
+            calculator.setPersonType(i);
+            //calculate
+            try {
+                lphProbability[i] = calculator.calculate();
+            } catch (ScriptException e) {
+                e.printStackTrace();
             }
         }
     }
