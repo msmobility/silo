@@ -8,7 +8,6 @@ package de.tum.bgu.msm.relocation;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -18,8 +17,10 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;
 
-import javax.print.attribute.standard.MediaSize;
+import javax.script.ScriptException;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ResourceBundle;
 
 public class MovesModelMuc implements MovesModelI {
@@ -30,7 +31,6 @@ public class MovesModelMuc implements MovesModelI {
     protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_MOVEORNOT = "HH.Moves.UEC.ModelSheetNumber.moveOrNot";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_REGION    = "HH.Moves.UEC.ModelSheetNumber.selectRegion";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DWELLING  = "HH.Moves.UEC.ModelSheetNumber.selDwelling";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_D = "log.util.hhRelocation.dd";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_R = "log.util.hhRelocation.rg";
@@ -45,7 +45,6 @@ public class MovesModelMuc implements MovesModelI {
     private boolean logCalculationRegion;
     private ResourceBundle rb;
     private int numAltsMoveOrNot;
-    private int numAltsSelReg;
     private double[][][] utilityRegion;
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
@@ -53,13 +52,12 @@ public class MovesModelMuc implements MovesModelI {
     int[] evalDwellingAvail;
     int numAltsEvalDwelling;
     private UtilityExpressionCalculator ddUtilityModel;
-    private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU evaluateDwellingDmu;
-    private MovesDMU selectRegionDmu;
     private double[] averageHousingSatisfaction;
     private float[] zonalShareForeigners;
     private float[] regionalShareForeigners;
     private int[] householdsByRegion;
+    private MovesModelJSCalculator calculator;
 
 
     public MovesModelMuc(ResourceBundle rb, geoDataI geoData) {
@@ -294,27 +292,17 @@ public class MovesModelMuc implements MovesModelI {
 
     private void setupSelectRegionModel() {
         // set up model for selection of region
-
-        int selRegModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_REGION);
-        // initialize UEC
-        selectRegionModel = new UtilityExpressionCalculator(new File(uecFileName),
-                selRegModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MovesDMU.class);
-        selectRegionDmu = new MovesDMU();
-        numAltsSelReg = selectRegionModel.getNumberOfAlternatives();
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesModelCalc"));
+        calculator = new MovesModelJSCalculator(reader, false);
     }
 
 
     public void calculateRegionalUtilities() {
         // everything is available
 
-        calculateShareOfForeignersByZoneAndRegion();
-        int[] selRegAvail = new int[numAltsSelReg + 1];
-        for (int i = 1; i < selRegAvail.length; i++) selRegAvail[i] = 1;
-
         int[] regions = geoData.getRegionList();
+        calculateShareOfForeignersByZoneAndRegion();
+
         int highestRegion = SiloUtil.getHighestVal(regions);
         int[] regPrice = new int[highestRegion + 1];
         float[] regAcc = new float[highestRegion + 1];
@@ -322,28 +310,31 @@ public class MovesModelMuc implements MovesModelI {
             regPrice[region] = calculateRegPrice(region);
             regAcc[region] = (float) convertAccessToUtility(Accessibility.getRegionalAccessibility(region));
         }
-        selectRegionDmu.setRegionalAccessibility(regAcc);
-        float[] regionalNationalShare = new float[highestRegion + 1];
-        for (int region : regions) regionalNationalShare[region] = regionalShareForeigners[geoData.getRegionIndex(region)];
-        selectRegionDmu.setRegionalNationality(Nationality.values()[1], regionalNationalShare);
-        utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][numAltsSelReg];
+
+        utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][regions.length];
         for (int income = 1; income <= SiloUtil.incBrackets.length + 1; income++) {
-            // set DMU attributes
+
             float[] priceUtil = new float[highestRegion + 1];
-            for (int region: regions) priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
-            selectRegionDmu.setMedianRegionPrice(priceUtil);
-            selectRegionDmu.setIncomeGroup(income - 1);
+
+            for (int region: regions) {
+                priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
+            }
+
             for (Nationality nationality: Nationality.values()) {
-                selectRegionDmu.setNationality(nationality);
-                double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
-                for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
-                    utilityRegion[income - 1][nationality.ordinal()][alternative] = util[alternative];
-                    //utilityRegion[income - 1][1][alternative] = util[alternative];
+                for (int region: regions) {
+                    calculator.setIncomeGroup(income - 1);
+                    calculator.setNationality(nationality);
+                    calculator.setMedianPrice(priceUtil[region]);
+                    calculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
+                    calculator.setAccessibility(regAcc[region]);
+                    double utility = 0;
+                    try {
+                        utility = calculator.calculate();
+                        utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
+                    } catch (ScriptException e) {
+                        e.printStackTrace();
+                    }
                 }
-                // log UEC values for each household type
-                if (logCalculationRegion)
-                    selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
-                            income);
             }
         }
         householdsByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
@@ -396,9 +387,9 @@ public class MovesModelMuc implements MovesModelI {
         // return utility of regions based on household type and based on work location of workers in household
 
         int[] regions = geoData.getRegionList();
-        double[] util = new double[numAltsSelReg];
-        double[] workDistanceFactor = new double[numAltsSelReg];
-        for (int i = 0; i < numAltsSelReg; i++) {
+        double[] util = new double[regions.length];
+        double[] workDistanceFactor = new double[regions.length];
+        for (int i = 0; i < regions.length; i++) {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
@@ -408,7 +399,7 @@ public class MovesModelMuc implements MovesModelI {
             }
         }
         int incomeCat = HouseholdType.convertHouseholdTypeToIncomeCategory(ht);
-        for (int i = 0; i < numAltsSelReg; i++) {
+        for (int i = 0; i < regions.length; i++) {
             util[i] = utilityRegion[incomeCat - 1][race.ordinal()][i] * workDistanceFactor[i];
         }
         return util;
