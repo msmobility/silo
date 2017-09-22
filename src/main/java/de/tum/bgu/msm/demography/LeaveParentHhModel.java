@@ -16,24 +16,19 @@
  */
 package de.tum.bgu.msm.demography;
 
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.ResourceBundle;
-
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
-import org.apache.log4j.Logger;
 
 import javax.script.ScriptException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ResourceBundle;
 
 /**
  * Simulates children that leave the parental household
@@ -43,13 +38,8 @@ import javax.script.ScriptException;
 
 public class LeaveParentHhModel {
 
-//    static Logger logger = Logger.getLogger(LeaveParentHhModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
-
 
     // properties
-    private String uecFileName;
-    private int dataSheetNumber;
     private double[] lphProbability;
     private LeaveParentHhJSCalculator calculator;
 
