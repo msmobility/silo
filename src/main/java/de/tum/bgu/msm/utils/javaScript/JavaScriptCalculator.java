@@ -42,13 +42,9 @@ public abstract class JavaScriptCalculator<T> {
         bindings.put("log", log);
     }
 
-    public T calculate() {
-        try {
-            bindings.logValues();
-            return (T) compiledScript.eval(bindings);
-        } catch (ScriptException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public T calculate() throws ScriptException {
+        bindings.logValues();
+        return (T) compiledScript.eval(bindings);
+
     }
 }

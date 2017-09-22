@@ -8,7 +8,6 @@ package de.tum.bgu.msm.relocation;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -18,7 +17,7 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;
 
-import javax.print.attribute.standard.MediaSize;
+import javax.script.ScriptException;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -328,9 +327,13 @@ public class MovesModelMuc implements MovesModelI {
                     calculator.setMedianPrice(priceUtil[region]);
                     calculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
                     calculator.setAccessibility(regAcc[region]);
-                    double utility = calculator.calculate();
-
-                    utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
+                    double utility = 0;
+                    try {
+                        utility = calculator.calculate();
+                        utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
+                    } catch (ScriptException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

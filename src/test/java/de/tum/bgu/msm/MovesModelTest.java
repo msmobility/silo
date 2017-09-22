@@ -17,9 +17,6 @@ public class MovesModelTest {
     private Reader reader;
     private MovesModelJSCalculator calculator;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Before
     public void setup() {
         reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesModelCalc"));
@@ -27,7 +24,7 @@ public class MovesModelTest {
     }
 
     @Test
-    public void testMovesModelOne() {
+    public void testMovesModelOne() throws ScriptException {
         calculator.setIncomeGroup(2);
         calculator.setNationality(Nationality.german);
         calculator.setAccessibility(100);
@@ -37,7 +34,7 @@ public class MovesModelTest {
     }
 
     @Test
-    public void testMovesModelTwo() {
+    public void testMovesModelTwo() throws ScriptException {
         calculator.setIncomeGroup(0);
         calculator.setNationality(Nationality.other);
         calculator.setAccessibility(100);
@@ -46,14 +43,13 @@ public class MovesModelTest {
         Assert.assertEquals(359.125, (double) calculator.calculate(), 0.);
     }
 
-    @Test
-    public void testMovesModelFailures() {
+    @Test(expected = ScriptException.class)
+    public void testMovesModelFailures() throws ScriptException {
         calculator.setIncomeGroup(5);
         calculator.setNationality(Nationality.other);
         calculator.setAccessibility(100);
         calculator.setForeignersShare(0.5f);
         calculator.setMedianPrice(500);
-        exception.expect(ScriptException.class);
         calculator.calculate();
     }
 }
