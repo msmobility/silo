@@ -6,6 +6,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.demography.LeaveParentHhJSCalculator;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -13,6 +14,9 @@ import org.apache.log4j.Logger;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 
+import javax.script.ScriptException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.io.File;
@@ -59,6 +63,8 @@ public class ConstructionModel {
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
 
+    private ConstructionDemandJSCalculator constructionDemandCalculator;
+
 
     public ConstructionModel (ResourceBundle rb, geoDataI geoData) {
 
@@ -75,6 +81,28 @@ public class ConstructionModel {
 
 
     private void setupConstructionModel() {
+
+
+        // read properties
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
+        constructionDemandCalculator = new ConstructionDemandJSCalculator(reader, false);
+
+        // initialize results for each alternative
+        DwellingType[] types = DwellingType.values();
+        sizeAdjustment = new float[types.length];
+
+        //apply the calculator to each alternative
+        for (int i=0; i<types.length; i++) {
+            // set calculator bindings
+            constructionDemandCalculator.setDwellingType(types[i]);
+            //calculate
+            try {
+                sizeAdjustment[i]= constructionDemandCalculator.calculate();
+            } catch (ScriptException e) {
+                e.printStackTrace();
+            }
+        }
+
 
         // Construction Demand
         int constructionModelSheetNumberA = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND);
