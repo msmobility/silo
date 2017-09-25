@@ -1,7 +1,7 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.data.Nationality;
-import de.tum.bgu.msm.relocation.MovesModelJSCalculator;
+import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,15 +10,15 @@ import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-public class MovesModelTest {
+public class SelectRegionTest {
 
     private Reader reader;
-    private MovesModelJSCalculator calculator;
+    private SelectRegionJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesModelCalc"));
-        calculator = new MovesModelJSCalculator(reader, true);
+        reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+        calculator = new SelectRegionJSCalculator(reader, true);
     }
 
     @Test

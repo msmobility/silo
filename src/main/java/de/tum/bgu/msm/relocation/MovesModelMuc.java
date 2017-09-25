@@ -31,24 +31,21 @@ public class MovesModelMuc implements MovesModelI {
     protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_MOVEORNOT = "HH.Moves.UEC.ModelSheetNumber.moveOrNot";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DWELLING  = "HH.Moves.UEC.ModelSheetNumber.selDwelling";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_D = "log.util.hhRelocation.dd";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_R = "log.util.hhRelocation.rg";
     protected static final String PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_MODEL  = "move.or.not.binomial.log.model.parameter";
     protected static final String PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_SHIFT  = "move.or.not.binomial.log.shift.parameter";
-    protected static final String PROPERTIES_SELECT_DWELLING_MN_LOG_MODEL    = "select.dwelling.mn.log.model.parameter";
+
 
     // properties
     private String uecFileName;
     private int dataSheetNumber;
     private boolean logCalculationDwelling;
-    private boolean logCalculationRegion;
     private ResourceBundle rb;
     private int numAltsMoveOrNot;
     private double[][][] utilityRegion;
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
-    private double parameter_SelectDD;
     int[] evalDwellingAvail;
     int numAltsEvalDwelling;
     private UtilityExpressionCalculator ddUtilityModel;
@@ -57,7 +54,8 @@ public class MovesModelMuc implements MovesModelI {
     private float[] zonalShareForeigners;
     private float[] regionalShareForeigners;
     private int[] householdsByRegion;
-    private MovesModelJSCalculator calculator;
+    private SelectRegionJSCalculator regionCalculator;
+    private SelectDwellingJSCalculator dwellingCalculator;
 
 
     public MovesModelMuc(ResourceBundle rb, geoDataI geoData) {
@@ -69,7 +67,6 @@ public class MovesModelMuc implements MovesModelI {
         uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MOVES_UEC_FILE);
         dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_DATA_SHEET);
         logCalculationDwelling = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_D);
-        logCalculationRegion = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_R);
         evaluateDwellingDmu = new MovesDMU();
 
         setupEvaluateDwellings();
@@ -292,8 +289,8 @@ public class MovesModelMuc implements MovesModelI {
 
     private void setupSelectRegionModel() {
         // set up model for selection of region
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesModelCalc"));
-        calculator = new MovesModelJSCalculator(reader, false);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+        regionCalculator = new SelectRegionJSCalculator(reader, false);
     }
 
 
@@ -322,14 +319,14 @@ public class MovesModelMuc implements MovesModelI {
 
             for (Nationality nationality: Nationality.values()) {
                 for (int region: regions) {
-                    calculator.setIncomeGroup(income - 1);
-                    calculator.setNationality(nationality);
-                    calculator.setMedianPrice(priceUtil[region]);
-                    calculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
-                    calculator.setAccessibility(regAcc[region]);
+                    regionCalculator.setIncomeGroup(income - 1);
+                    regionCalculator.setNationality(nationality);
+                    regionCalculator.setMedianPrice(priceUtil[region]);
+                    regionCalculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
+                    regionCalculator.setAccessibility(regAcc[region]);
                     double utility = 0;
                     try {
-                        utility = calculator.calculate();
+                        utility = regionCalculator.calculate();
                         utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
                     } catch (ScriptException e) {
                         e.printStackTrace();
@@ -360,26 +357,8 @@ public class MovesModelMuc implements MovesModelI {
     private void setupSelectDwellingModel() {
         // set up model for choice of dwelling
 
-        int selectDwellingSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_DWELLING);
-        // initialize UEC
-        UtilityExpressionCalculator selectDwellingModel = new UtilityExpressionCalculator(new File(uecFileName),
-                selectDwellingSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MovesDMU.class);
-        MovesDMU selectDwellingDmu = new MovesDMU();
-        // everything is available
-        numAltsMoveOrNot = selectDwellingModel.getNumberOfAlternatives();
-        int[] selectDwellingAvail = new int[numAltsMoveOrNot + 1];
-        for (int i = 1; i < selectDwellingAvail.length; i++) selectDwellingAvail[i] = 1;
-        // set DMU attributes
-        selectDwellingModel.solve(selectDwellingDmu.getDmuIndexValues(), selectDwellingDmu, selectDwellingAvail);
-        // todo: looks wrong, parameter should be read from UEC file, not from properties file
-        parameter_SelectDD = ResourceUtil.getDoubleProperty(rb, PROPERTIES_SELECT_DWELLING_MN_LOG_MODEL);
-        if (logCalculationDwelling) {
-            // log UEC values for each household type
-            selectDwellingModel.logAnswersArray(traceLogger, "Select-Dwelling Model");
-        }
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        dwellingCalculator = new SelectDwellingJSCalculator(reader, false);
     }
 
 
@@ -510,16 +489,23 @@ public class MovesModelMuc implements MovesModelI {
         // Step 2: select vacant dwelling in selected region
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(regions[selectedRegion]);
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
+        double sumProbs = 0.;
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
             double util = calculateUtility(ht, dd, modelContainer);
-            expProbs[i] = Math.exp(parameter_SelectDD * util);
+            dwellingCalculator.setDwellingUtility(util);
+            try {
+                expProbs[i] = dwellingCalculator.calculate();
+            } catch (ScriptException e) {
+                e.printStackTrace();
+            }
+            sumProbs =+ expProbs[i];
         }
-        if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs);
+        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
+        int selected = SiloUtil.select(expProbs, sumProbs);
         return vacantDwellings[selected];
     }
 
