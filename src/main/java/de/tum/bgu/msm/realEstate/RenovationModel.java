@@ -9,10 +9,14 @@ import de.tum.bgu.msm.data.RealEstateDataManager;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ResourceBundle;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+
+import javax.script.ScriptException;
 
 /**
  * Simulates renovation and deterioration of dwellings
@@ -21,28 +25,15 @@ import org.apache.log4j.Logger;
  **/
 
 public class RenovationModel {
-    static Logger logger = Logger.getLogger(RenovationModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
-
-    protected static final String PROPERTIES_RealEstate_UEC_FILE                   = "RealEstate.UEC.FileName";
-    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET             = "RealEstate.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_RENOVATION = "RealEstate.UEC.ModelSheetNumber.Renovation";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_RENOVATION  = "log.util.ddChangeQual";
 
     // properties
-    private String uecFileName;
-    private int dataSheetNumber;
 	private double[][] renovationProbability;
     private ResourceBundle rb;
+    private RenovationJSCalculator renovationCalculator;
 
     public RenovationModel(ResourceBundle rb) {
         // constructor
-
         this.rb = rb;
-        // read properties
-		uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
-		dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
-
         setupRenovationModel();
 	}
 
@@ -50,40 +41,27 @@ public class RenovationModel {
 	private void setupRenovationModel() {
 
 		// read properties
-		int renovationModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_RENOVATION);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_RENOVATION);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
+        renovationCalculator = new RenovationJSCalculator(reader, false);
 
-		// initialize UEC
-        UtilityExpressionCalculator renovationModel = new UtilityExpressionCalculator(new File(uecFileName),
-        		renovationModelSheetNumber,
-        		dataSheetNumber,
-        		SiloUtil.getRbHashMap(),
-        		RenovationDMU.class);
-		RenovationDMU renovationDmu = new RenovationDMU();
-
-		// everything is available
-		int numAlts = renovationModel.getNumberOfAlternatives();
-		int[] renovationAvail = new int[numAlts+1];
-        for (int i=1; i < renovationAvail.length; i++) renovationAvail[i] = 1;
-
-        renovationProbability = new double[SiloUtil.numberOfQualityLevels][numAlts];
+        //set renovation probabilities
+        renovationProbability = new double[SiloUtil.numberOfQualityLevels][5];
         for (int oldQual = 0; oldQual < SiloUtil.numberOfQualityLevels; oldQual++) {
-
-        	// set DMU attributes
-        	renovationDmu.setQuality(oldQual + 1);
-            // There is only one alternative, and the utility is really the probability of giving birth
-    		double util[] = renovationModel.solve(renovationDmu.getDmuIndexValues(), renovationDmu, renovationAvail);
-            System.arraycopy(util, 0, renovationProbability[oldQual], 0, numAlts);
-            if (logCalculation) {
-                // log UEC values for each person type
-                renovationModel.logAnswersArray(traceLogger, "Renovation Model for Dwelling Quality " + oldQual);
+            renovationCalculator.setQuality(oldQual + 1);
+            for (int alternative = 0; alternative < 5; alternative++){
+                renovationCalculator.setAlternative(alternative + 1);
+                try {
+                    renovationProbability[oldQual][alternative] = renovationCalculator.calculate();
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                }
             }
         }
 	}
 
 
     public void checkRenovation(int dwellingId) {
-        // check if dwelling is renovated or deteriorates
+        //check if dwelling is renovated or deteriorates
         Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
         if (!EventRules.ruleChangeDwellingQuality(dd)) return;  // Dwelling not available for renovation
         int currentQuality = dd.getQuality();
