@@ -292,6 +292,20 @@ public class SiloUtil {
     }
 
 
+    public static int select (double[] probabilities, double sumProb) {
+        // select item based on probabilities (for zero-based double array)
+        double selPos = sumProb * getRandomNumberAsFloat();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+            sum += probabilities[i];
+            if (sum > selPos) {
+                return i;
+            }
+        }
+        return probabilities.length - 1;
+    }
+
+
     public static int select (float[] probabilities) {
         // select item based on probabilities (for zero-based float array)
         float selPos = getSum(probabilities) * getRandomNumberAsFloat();
