@@ -5,9 +5,9 @@ import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
 
 import java.io.Reader;
 
-public class MovesModelJSCalculator extends JavaScriptCalculator<Double> {
+public class SelectRegionJSCalculator extends JavaScriptCalculator<Double> {
 
-    public MovesModelJSCalculator(Reader reader, boolean log) {
+    public SelectRegionJSCalculator(Reader reader, boolean log) {
         super(reader, log);
     }
 

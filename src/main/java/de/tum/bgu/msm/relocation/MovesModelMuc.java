@@ -57,7 +57,7 @@ public class MovesModelMuc implements MovesModelI {
     private float[] zonalShareForeigners;
     private float[] regionalShareForeigners;
     private int[] householdsByRegion;
-    private MovesModelJSCalculator calculator;
+    private SelectRegionJSCalculator calculator;
 
 
     public MovesModelMuc(ResourceBundle rb, geoDataI geoData) {
@@ -292,8 +292,8 @@ public class MovesModelMuc implements MovesModelI {
 
     private void setupSelectRegionModel() {
         // set up model for selection of region
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesModelCalc"));
-        calculator = new MovesModelJSCalculator(reader, false);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+        calculator = new SelectRegionJSCalculator(reader, false);
     }
 
 
@@ -510,6 +510,7 @@ public class MovesModelMuc implements MovesModelI {
         // Step 2: select vacant dwelling in selected region
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(regions[selectedRegion]);
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
+        double sumProbs = 0.;
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
@@ -517,9 +518,10 @@ public class MovesModelMuc implements MovesModelI {
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
             double util = calculateUtility(ht, dd, modelContainer);
             expProbs[i] = Math.exp(parameter_SelectDD * util);
+            sumProbs =+ expProbs[i];
         }
-        if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs);
+        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
+        int selected = SiloUtil.select(expProbs, sumProbs);
         return vacantDwellings[selected];
     }
 
