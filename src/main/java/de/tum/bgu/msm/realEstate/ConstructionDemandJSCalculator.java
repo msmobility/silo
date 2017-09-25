@@ -21,4 +21,6 @@ public class ConstructionDemandJSCalculator extends JavaScriptCalculator<Double>
     public void setVacancyByRegion(double vacancyByRegion) {
         this.bindings.put("vacancyByRegion", vacancyByRegion);
     }
+
+
 }

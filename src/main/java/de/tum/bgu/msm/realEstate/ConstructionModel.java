@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.util.IndexSort;
+import com.vividsolutions.jts.util.Assert;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -53,8 +54,6 @@ public class ConstructionModel {
     private int dataSheetNumber;
     private ConstructionDMU evaluateZoneDmu;
     private UtilityExpressionCalculator zoneUtilityModel;
-//    private float[] sizeAdjustment;
-//    private float[] shapeAdjustment;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private ArrayList<Integer[]> plannedDwellings;
@@ -79,38 +78,11 @@ public class ConstructionModel {
         setupEvaluationOfZones();
     }
 
-
     private void setupConstructionModel() {
-
-
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader, false);
 
-
-
-        // Construction Demand
-//        int constructionModelSheetNumberA = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND);
-//        UtilityExpressionCalculator constructionModelDemand = new UtilityExpressionCalculator(new File(uecFileName),
-//                constructionModelSheetNumberA,
-//                dataSheetNumber,
-//                SiloUtil.getRbHashMap(),
-//                ConstructionDMU.class);
-//        ConstructionDMU constructionDemandDmu = new ConstructionDMU();
-//
-//        int[] availability = {1, 1};
-//        sizeAdjustment = new float[DwellingType.values().length];
-//        shapeAdjustment = new float[DwellingType.values().length];
-//        for (DwellingType dwellingTp: DwellingType.values()) {
-//            int dtType = dwellingTp.ordinal();
-//            constructionDemandDmu.setType(dwellingTp);
-//            constructionDemandDmu.setToken(1);
-//            double parOne[] = constructionModelDemand.solve(constructionDemandDmu.getDmuIndexValues(), constructionDemandDmu, availability);
-//            sizeAdjustment[dtType] = (float) parOne[0];
-//            constructionDemandDmu.setToken(2);
-//            double parTwo[] = constructionModelDemand.solve(constructionDemandDmu.getDmuIndexValues(), constructionDemandDmu, availability);
-//            shapeAdjustment[dtType] = (float) parTwo[0];
-//        }
         makeSomeNewDdAffordable = ResourceUtil.getBooleanProperty(rb, PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE, false);
         if (makeSomeNewDdAffordable) {
             shareOfAffordableDd = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE);
@@ -153,23 +125,13 @@ public class ConstructionModel {
             int dto = dt.ordinal();
             for (int region: geoData.getRegionList()) {
                 constructionDemandCalculator.setVacancyByRegion(vacancyByRegion[dto][region]);
-                //double oldValue = sizeAdjustment[dto] / Math.exp(shapeAdjustment[dto] * vacancyByRegion[dto][region]);
                 try {
-                    logger.info(vacancyByRegion[dto][region]);
                     demandByRegion[dto][region] = constructionDemandCalculator.calculate().floatValue();
-                    logger.info(demandByRegion[dto][region]);
                 } catch (ScriptException e) {
                     e.printStackTrace();
                 }
-
-                //test lines
-                //if (oldValue -demandByRegion[dto][region] != 0){
-//                    logger.error("false result " + oldValue + " is not the same as " + demandByRegion[dto][region]);
-//                }
-
             }
         }
-
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
         int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
         DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
