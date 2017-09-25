@@ -18,6 +18,8 @@ package de.tum.bgu.msm;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -32,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -162,6 +165,8 @@ public class SiloModel {
         long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
         long startTime = 0;
         IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
+
+        UpdateCarOwnershipModel.initializeHouseholdsChanged();
 
         if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
             summarizeData.preparePrestoSummary(rbLandUse, geoData);
@@ -299,6 +304,9 @@ public class SiloModel {
                     logger.warn("Unknown event type: " + event[0]);
                 }
             }
+
+            updateCars();
+
 
             if ( runMatsim ) {
                 logger.info("using MATSim as transport model") ;
@@ -704,6 +712,13 @@ public class SiloModel {
             pw.println();
         }
         pw.close();
+    }
+
+    private void updateCars() {
+        //method to estimate the number of cars per household
+        //it must be run after generating the population
+        UpdateCarOwnershipModel updateCarOwnershipModel = new UpdateCarOwnershipModel(rbLandUse);
+        updateCarOwnershipModel.run();
     }
 
 

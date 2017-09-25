@@ -4,16 +4,22 @@ import com.pb.common.calculator.IndexValues;
 import org.apache.log4j.Logger;
 
 /**
- * Created by matthewokrah on 12/06/2017.
+ * @author Matthew Okrah
+ * Created on 28/08/2017 in Munich, Germany.
  */
+
 public class UpdateCarOwnershipDMU {
     protected transient Logger logger = Logger.getLogger(UpdateCarOwnershipDMU.class);
 
     // uec variables
     private IndexValues dmuIndex;
-    private int initialCars;
-    private int difEV;
-
+    private int previousCars;
+    private int hhSizePlus;
+    private int hhSizeMinus;
+    private int hhIncomePlus;
+    private int hhIncomeMinus;
+    private int licensePlus;
+    private int changeResidence;
 
     public UpdateCarOwnershipDMU(){
         dmuIndex = new IndexValues();
@@ -23,21 +29,61 @@ public class UpdateCarOwnershipDMU {
         return dmuIndex;
     }
 
-    public void setInitialCars(int initialCars) {
-        this.initialCars = initialCars;
+
+    public int getPreviousCars() {
+        return previousCars;
     }
 
-    public void setDifEV(int difEV) {
-        this.difEV = difEV;
+    public void setPreviousCars(int previousCars) {
+        this.previousCars = previousCars;
     }
 
-    // DMU methods - define one of these for every @var in the mode choice control file.
-    public int getInitialCars() {
-        return initialCars;
+    public int getHhSizePlus() {
+        return hhSizePlus;
     }
 
-    public int getDifEV() {
-        return difEV;
+    public void setHhSizePlus(int hhSizePlus) {
+        this.hhSizePlus = hhSizePlus;
+    }
+
+    public int getHhSizeMinus() {
+        return hhSizeMinus;
+    }
+
+    public void setHhSizeMinus(int hhSizeMinus) {
+        this.hhSizeMinus = hhSizeMinus;
+    }
+
+    public int getHhIncomePlus() {
+        return hhIncomePlus;
+    }
+
+    public void setHhIncomePlus(int hhIncomePlus) {
+        this.hhIncomePlus = hhIncomePlus;
+    }
+
+    public int getHhIncomeMinus() {
+        return hhIncomeMinus;
+    }
+
+    public void setHhIncomeMinus(int hhIncomeMinus) {
+        this.hhIncomeMinus = hhIncomeMinus;
+    }
+
+    public int getLicensePlus() {
+        return licensePlus;
+    }
+
+    public void setLicensePlus(int licensePlus) {
+        this.licensePlus = licensePlus;
+    }
+
+    public int getChangeResidence() {
+        return changeResidence;
+    }
+
+    public void setChangeResidence(int changeResidence) {
+        this.changeResidence = changeResidence;
     }
 
 }

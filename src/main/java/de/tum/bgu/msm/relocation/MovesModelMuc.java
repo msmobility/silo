@@ -10,6 +10,7 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -425,6 +426,7 @@ public class MovesModelMuc implements MovesModelI {
         if (idNewDD > 0) {
             moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
             EventManager.countEvent(EventTypes.householdMove);
+            UpdateCarOwnershipModel.addHouseholdThatMoved(hh);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                     Household.getHouseholdFromId(hhId).getDwellingId());
         } else {

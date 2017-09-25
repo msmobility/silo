@@ -2,8 +2,8 @@ package de.tum.bgu.msm.demography;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
@@ -119,6 +119,7 @@ public class DeathModel {
             hhOfPersonToDie.removePerson(per, dataContainer);
             Person.removePerson(per.getId());
             EventManager.countEvent(EventTypes.checkDeath);
+            UpdateCarOwnershipModel.addHouseholdThatChanged(hhOfPersonToDie);
             if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
                 SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhId +
                         " has passed away.");

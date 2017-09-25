@@ -21,7 +21,7 @@ import java.util.ResourceBundle;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
@@ -126,6 +126,7 @@ public class BirthModel {
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
             EventManager.countEvent(EventTypes.checkBirth);
+            UpdateCarOwnershipModel.addHouseholdThatChanged(hhOfThisWoman);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
             }

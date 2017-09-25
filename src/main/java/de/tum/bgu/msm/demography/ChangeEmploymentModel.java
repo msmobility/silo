@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventTypes;
@@ -52,6 +53,7 @@ public class ChangeEmploymentModel {
             int inc = HouseholdDataManager.selectIncomeForPerson(gender, age, 1);
             pp.setIncome(inc);
             EventManager.countEvent(EventTypes.findNewJob);
+            UpdateCarOwnershipModel.addHouseholdThatChanged(Household.getHouseholdFromId(pp.getHhId()));
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " started working for job " + jj.getId());
             return true;
         }
@@ -65,6 +67,7 @@ public class ChangeEmploymentModel {
         if (pp == null) return;  // person has died or moved away
         pp.quitJob(true, dataContainer);
         EventManager.countEvent(EventTypes.quitJob);
+        UpdateCarOwnershipModel.addHouseholdThatChanged(Household.getHouseholdFromId(pp.getHhId()));
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }
 }

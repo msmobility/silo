@@ -7,10 +7,14 @@ import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
- * Created by matthewokrah on 12/06/2017.
+ * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
+ * @author Matthew Okrah
+ * Created on 28/08/2017 in Munich, Germany.
  */
 public class UpdateCarOwnershipModel {
 
@@ -26,9 +30,8 @@ public class UpdateCarOwnershipModel {
     private String uecFileName;
     private int dataSheetNumber;
     int numAltsCarUpdate;
-    private double[][][] carUpdateProbability;   // [previous number of cars][difference in Expected Value][number of alternatives]
-    public geoDataI geoData;
-    public CreateCarOwnershipModel createCarOwnershipModel;
+    private double[][][][][][][][] carUpdateUtil; // [four probabilities][previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes]
+    protected static HashMap<Integer, int[]> householdsChanged;
 
 
     public UpdateCarOwnershipModel(ResourceBundle rb){
@@ -53,118 +56,153 @@ public class UpdateCarOwnershipModel {
         // everything is available
         numAltsCarUpdate = cuModelUtility.getNumberOfAlternatives();
 
-        int[] cuAvail = new int[numAltsCarUpdate];
+        int[] cuAvail = new int[numAltsCarUpdate + 1];
         for (int i = 0; i < cuAvail.length; i++) {
             cuAvail[i] = 1;
         }
 
         // carUpdateProabability [cars, difEV)
-        carUpdateProbability = new double [4][3][numAltsCarUpdate];
-        for (int cars = 0; cars < 4; cars++){
-            for (int difEV=1; difEV<=3; difEV++) {
-                // set DMU attributes
-                updateCarOwnershipDMU.setInitialCars(cars);
-                if (difEV == 1) updateCarOwnershipDMU.setDifEV(-1);
-                else if (difEV == 2) updateCarOwnershipDMU.setDifEV(0);
-                else updateCarOwnershipDMU.setDifEV(1);
+        carUpdateUtil = new double [2][4][2][2][2][2][2][2];
+        for (int prevCar = 0; prevCar < 4; prevCar++){
+            for (int sizePlus = 0; sizePlus < 2; sizePlus++){
+                for (int sizeMinus = 0; sizeMinus < 2; sizeMinus++){
+                    for (int incPlus = 0; incPlus < 2; incPlus++){
+                        for (int incMinus = 0; incMinus < 2; incMinus++){
+                            for (int licPlus = 0; licPlus < 2; licPlus++){
+                                for (int changeRes = 0; changeRes < 2; changeRes++){
+                                    //set DMU attributes
+                                    updateCarOwnershipDMU.setPreviousCars(prevCar);
+                                    updateCarOwnershipDMU.setHhSizePlus(sizePlus);
+                                    updateCarOwnershipDMU.setHhSizeMinus(sizeMinus);
+                                    updateCarOwnershipDMU.setHhIncomePlus(incPlus);
+                                    updateCarOwnershipDMU.setHhIncomeMinus(incMinus);
+                                    updateCarOwnershipDMU.setLicensePlus(licPlus);
+                                    updateCarOwnershipDMU.setChangeResidence(changeRes);
 
-                double util[] = cuModelUtility.solve(updateCarOwnershipDMU.getDmuIndexValues(),
-                        updateCarOwnershipDMU, cuAvail);
+                                    double util[]= cuModelUtility.solve(updateCarOwnershipDMU.getDmuIndexValues(),
+                                            updateCarOwnershipDMU, cuAvail);
 
-                System.arraycopy(util, 0, carUpdateProbability[cars][difEV], 0, numAltsCarUpdate);
-                if (logCalculation) {
-                    // log UEC values for each
-                    cuModelUtility.logAnswersArray(traceLogger, "Car Update Model. OldCars: " + cars +
-                            "Difference in Expected Value of HH Cars: " + difEV);
+                                    for (int i = 1; i < cuAvail.length; i++){
+                                        util[i-1] = Math.exp(util[i-1]);
+                                    }
+
+                                    double prob0change = 1d / (SiloUtil.getSum(util) + 1d);
+
+                                    for (int i = 1; i < cuAvail.length; i++){
+                                        carUpdateUtil[i-1][prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes]
+                                                = util[i-1] * prob0change;
+                                    }
+
+                                    if (logCalculation){
+                                        // log UEC values for each hh type
+                                        cuModelUtility.logAnswersArray(traceLogger, " Car Update Model. PrevCar: " + prevCar +
+                                                ", sizePlus: " + sizePlus + ", sizeMinus: " + sizeMinus + ", incPlus: " + incPlus +
+                                                ", incMinus: " + incMinus + ", licPlus: " + licPlus + ", changeRes " + changeRes);
+
+                                        logger.info(prevCar + "," + sizePlus + "," + sizeMinus + "," + incPlus + "," +
+                                                incMinus + "," + licPlus + "," + changeRes + "," + prob0change + "," +
+                                                carUpdateUtil[0][prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] + "," +
+                                                carUpdateUtil[1][prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes]
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-/*
-    public void run(boolean flagSkipCreationOfSPforDebugging) {
-        // main run method
-        //Read geoData
-        setStartData();
+    //public void run (boolean flagSkipCreationOfSPforDebugging
+    public void run (){
+        //main run method
 
-        geoData = new geoDataMuc(rb);
-        geoData.setInitialData();
-        createCarOwnershipModel.selectCarOwnership();
-        updateCarOwnership();
-        summarizeData.summarizeAutoOwnershipByMunicipality(geoData);
+         for (Map.Entry<Integer, int[]> pair : householdsChanged.entrySet()) {
+            Household hh = Household.getHouseholdFromId(pair.getKey());
+            int[] previousAttributes = pair.getValue();
+            updateHouseholdCars(hh, previousAttributes);
+            householdsChanged.remove(hh.getId());
+        }
 
-        if (flagSkipCreationOfSPforDebugging) {
-            logger.info("Finished car ownership model");
-            System.exit(0);
+    }
+
+    public void updateHouseholdCars(Household hh, int[] previousAttributes){
+        // update cars owned by household hh
+        int previousCars = hh.getAutos();
+        int hhSizePlus = 0;
+        int hhSizeMinus = 0;
+        int hhIncomePlus = 0;
+        int hhIncomeMinus = 0;
+        int licensePlus = 0;
+        int changeResidence = previousAttributes[3];
+
+        if (hh.getHhSize() > previousAttributes[0]){
+            hhSizePlus = 1;
+        } else if (hh.getHhSize() < previousAttributes[0]){
+            hhSizeMinus = 1;
+        }
+        if (hh.getHhIncome() > previousAttributes[1] + 500) {
+            hhIncomePlus = 1;
+        } else if (hh.getHhIncome() < previousAttributes[1] - 500) {
+            hhIncomeMinus = 1;
+        }
+        if (hh.getHHLicenseHolders() > previousAttributes[2]){
+            licensePlus = 1;
+        }
+        double[] prob = new double[3];
+        for (int i = 1; i < 3; i++){
+            prob[i] = carUpdateUtil[i-1][previousCars][hhSizePlus][hhSizeMinus][hhIncomePlus][hhIncomeMinus][licensePlus][changeResidence];
+        }
+        prob[0] = 1 - SiloUtil.getSum(prob); //maintain the number of cars. If it is selected, don´t do anything
+        int action = SiloUtil.select(prob);
+        if (action == 1){ //add one car
+            if (hh.getAutos() < 3) { //maximum number of cars is equal to 3
+                hh.setAutos(hh.getAutos() + 1);
+            }
+        } else if (action == 2) { //remove one car
+            if (hh.getAutos() > 0){ //cannot have less than zero cars
+                hh.setAutos(hh.getAutos() - 1);
+            }
         }
     }
 
-    public void setStartData(){
-        for (Household hh: Household.getHouseholdArray()) {
-            int startCars = Math.min(hh.getAutos(), 3);
-            double startEV = hh.getEV;
-            hh.
+    public static void initializeHouseholdsChanged (){
+        householdsChanged = new HashMap<>();
+    }
+
+    public static void addHouseholdThatChanged (Household hh){
+        //Add one household that probably had changed their attributes for the car updating model
+
+        if (householdsChanged.containsKey(hh.getId())) {
+
+        } else {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 0;
+            householdsChanged.put(hh.getId(), currentHouseholdAttributes);
         }
     }
 
-    public void setEndData(){
-        for (Household hh: Household.getHouseholdArray()) {
-            double endEV = hh.getEV;
-            double rawDifEV = endEV - startEV
+    public static void addHouseholdThatMoved (Household hh){
+        //Add one household that moved out for the car updating model
+
+        if (householdsChanged.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = householdsChanged.get(hh.getId());
+            currentHouseholdAttributes [3] = 1;
+            householdsChanged.put(hh.getId(), currentHouseholdAttributes);
+        } else {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 1;
+            householdsChanged.put(hh.getId(), currentHouseholdAttributes);
         }
     }
 
 
-
-
-    public void updateCarOwnership() {
-        // simulate number of autos for household hh (Version without the use of SiloDataContainer)
-        // Note: This method can only be executed after all households have been generated and allocated to zones,
-        // as distance to transit and areaType is dependent on where households are living
-        for (Household hh: Household.getHouseholdArray()) {
-            int initialCars = Math.min(hh.getAutos(), 3);
-            double initialEV = hh.getEV;
-            double currentEV = hh.get
-            int difEV = hh.getdifEV();
-            int logDistanceToTransit = Math.min((int) (Math.log(geoData.getDistanceToTransit(hh.getHomeZone()))), 10);
-
-            double[] prob = new double[4];
-
-            for (int i = 1; i < 4; i++)
-                prob[i] =
-                        carOwnerShipUtil[i - 1][license][workers][income][logDistanceToTransit][areaType - 1];
-
-            prob[0] = 1 - SiloUtil.getSum(prob);
-
-            double expectedValofCars = prob[1] + 2*prob[2] + 3*prob[3];
-
-            hh.setAutos(SiloUtil.select(prob));
-
-        }
-    }
-
-    private double[] getProbabilities (int currentQual) {
-        // return probabilities to upgrade or deteriorate based on current quality of dwelling and average
-        // quality of all dwellings
-        double[] currentShare = RealEstateDataManager.getCurrentQualShares();
-        // if share of certain quality level is currently 0, set it to very small number to ensure model keeps working
-        for (int i = 0; i < currentShare.length; i++) if (currentShare[i] == 0) currentShare[i] = 0.01d;
-        double[] initialShare = RealEstateDataManager.getInitialQualShares();
-        for (int i = 0; i < initialShare.length; i++) if (initialShare[i] == 0) initialShare[i] = 0.01d;
-        double[] probs = new double[5];
-        for (int i = 0; i < probs.length; i++) {
-            int potentialNewQual = currentQual + i - 2;  // translate into new quality level this alternative would generate
-            double ratio;
-            if (potentialNewQual >= 1 && potentialNewQual <= 4) ratio = initialShare[potentialNewQual - 1] / currentShare[potentialNewQual - 1];
-            else ratio = 0.;
-            if (i <= 1) {
-                probs[i] = renovationProbability[currentQual - 1][i] * ratio;
-            } else if (i == 2) {
-                probs[i] = renovationProbability[currentQual - 1][i];
-            } else if (i >= 3) probs[i] = renovationProbability[currentQual - 1][i] * ratio;
-        }
-        return probs;
-    }
-*/
 
 
 }

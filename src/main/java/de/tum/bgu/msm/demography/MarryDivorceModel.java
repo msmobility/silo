@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -385,6 +386,8 @@ public class MarryDivorceModel {
         partner2.setRole(PersonRole.married);
         modelContainer.getAoModel().simulateAutoOwnership(Household.getHouseholdFromId(partner1.getHhId()), modelContainer, dataContainer);
         EventManager.countEvent(EventTypes.checkMarriage);
+        UpdateCarOwnershipModel.addHouseholdThatChanged(hhOfPartner1);
+        UpdateCarOwnershipModel.addHouseholdThatChanged(hhOfPartner2);
     }
 
 
@@ -451,6 +454,8 @@ public class MarryDivorceModel {
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
             EventManager.countEvent(EventTypes.checkDivorce);
+            UpdateCarOwnershipModel.addHouseholdThatChanged(oldHh);
+            UpdateCarOwnershipModel.addHouseholdThatChanged(newHh);
         }
     }
 }
