@@ -22,7 +22,7 @@ public class LeaveParentHhTest {
     @Test
     public void testModelOne() throws ScriptException {
         calculator.setPersonType(31);
-        Assert.assertEquals(0.0003, (double) calculator.calculate(), 0.);
+        Assert.assertEquals(0.0003, calculator.calculate(), 0.);
     }
 
     @Test(expected = ScriptException.class)

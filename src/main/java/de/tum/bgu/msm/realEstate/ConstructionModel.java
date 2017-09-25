@@ -13,6 +13,9 @@ import org.apache.log4j.Logger;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 
+import javax.script.ScriptException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.io.File;
@@ -28,27 +31,22 @@ import java.io.File;
 public class ConstructionModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_RealEstate_UEC_FILE                      = "RealEstate.UEC.FileName";
-    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET                = "RealEstate.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND   = "RealEstate.UEC.ModelSheetNumber.ConsDemand";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTLOCATION = "RealEstate.UEC.ModelSheetNumber.ConsLocatn";
-    protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION     = "log.util.ddConstruction";
-    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_BETA             = "construct.dwelling.mn.log.model.beta";
-    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR         = "construct.dwelling.mn.log.model.inflator";
-    protected static final String PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE           = "make.new.dwellings.partly.affordable";
-    protected static final String PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE        = "share.of.affordable.dwellings";
-    protected static final String PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD    = "level.of.affordability.setting";
+    protected static final String PROPERTIES_RealEstate_UEC_FILE = "RealEstate.UEC.FileName";
+    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET = "RealEstate.UEC.DataSheetNumber";
+    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND = "RealEstate.UEC.ModelSheetNumber.ConsDemand";
+    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_BETA = "construct.dwelling.mn.log.model.beta";
+    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR = "construct.dwelling.mn.log.model.inflator";
+    protected static final String PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE = "make.new.dwellings.partly.affordable";
+    protected static final String PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE = "share.of.affordable.dwellings";
+    protected static final String PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD = "level.of.affordability.setting";
 
 
     private ResourceBundle rb;
     private geoDataI geoData;
-    private boolean logCalculation;
     private String uecFileName;
     private int dataSheetNumber;
-    private ConstructionDMU evaluateZoneDmu;
-    private UtilityExpressionCalculator zoneUtilityModel;
+    private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float[] sizeAdjustment;
     private float[] shapeAdjustment;
     private float betaForZoneChoice;
@@ -60,15 +58,14 @@ public class ConstructionModel {
     private float restrictionForAffordableDd;
 
 
-    public ConstructionModel (ResourceBundle rb, geoDataI geoData) {
-
+    public ConstructionModel(ResourceBundle rb, geoDataI geoData) {
         this.rb = rb;
         this.geoData = geoData;
         // read properties
-        uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
+        uecFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
         dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
-        logCalculation  = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION);
-        evaluateZoneDmu = new ConstructionDMU();
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
+        constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader, false);
         setupConstructionModel();
         setupEvaluationOfZones();
     }
@@ -88,7 +85,7 @@ public class ConstructionModel {
         int[] availability = {1, 1};
         sizeAdjustment = new float[DwellingType.values().length];
         shapeAdjustment = new float[DwellingType.values().length];
-        for (DwellingType dwellingTp: DwellingType.values()) {
+        for (DwellingType dwellingTp : DwellingType.values()) {
             int dtType = dwellingTp.ordinal();
             constructionDemandDmu.setType(dwellingTp);
             constructionDemandDmu.setToken(1);
@@ -108,14 +105,6 @@ public class ConstructionModel {
 
     private void setupEvaluationOfZones() {
         // set up model to evaluate zones for construction of new dwellings
-
-        int zoneUtilityModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTLOCATION);
-        // initialize UEC
-        zoneUtilityModel = new UtilityExpressionCalculator(new File(uecFileName),
-                zoneUtilityModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                ConstructionDMU.class);
         betaForZoneChoice = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_RealEstate_ZONE_UTILITY_BETA);
         priceIncreaseForNewDwelling = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR);
     }
@@ -135,9 +124,9 @@ public class ConstructionModel {
         float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 demandByRegion[dto][region] = sizeAdjustment[dto] / Math.exp(shapeAdjustment[dto] * vacancyByRegion[dto][region]);
             }
         }
@@ -146,25 +135,26 @@ public class ConstructionModel {
         int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
         DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
         plannedDwellings = new ArrayList<>();
-        for (DwellingType dt: dtOrder) {
+        for (DwellingType dt : dtOrder) {
             int dto = dt.ordinal();
             float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
                 if (demand == 0) continue;
                 int[] zonesInThisRegion = geoData.getZonesInRegion(region);
                 double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
-                for (int zone: zonesInThisRegion) {
+                for (int zone : zonesInThisRegion) {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
                     if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                    if (avePrice == 0) logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                    if (avePrice == 0)
+                        logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
                     util[zone] = getUtilityOfDwellingTypeInZone(dt, avePrice, modelContainer.getAcc().getAutoAccessibility(zone));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;
-                    for (int zone: zonesInThisRegion) {
+                    for (int zone : zonesInThisRegion) {
                         boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
                         double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
@@ -177,7 +167,7 @@ public class ConstructionModel {
                         }
                     }
                     if (probSum == 0) continue;
-                    for (int zone: zonesInThisRegion) {
+                    for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
                     int zone = SiloUtil.select(prob);
@@ -189,7 +179,7 @@ public class ConstructionModel {
                     attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
                     if (makeSomeNewDdAffordable) {
                         if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
-                             attributes[4] = (int) (restrictionForAffordableDd * 100);
+                            attributes[4] = (int) (restrictionForAffordableDd * 100);
                     }
                     if (attributes[4] == 0) {
                         // dwelling is unrestricted, generate free-market price
@@ -220,16 +210,16 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][geoData.getHighestZonalId() + 1];
         int[][] counter = new int[DwellingType.values().length][geoData.getHighestZonalId() + 1];
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
             int zone = dd.getZone();
             counter[dt][zone]++;
             avePrice[dt][zone] += dd.getPrice();
         }
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
             float[] avePriceThisType = new float[geoData.getHighestZonalId() + 1];
-            for (int zone: geoData.getZones()) {
+            for (int zone : geoData.getZones()) {
                 if (counter[dto][zone] > 0) {
                     avePriceThisType[zone] = avePrice[dto][zone] / counter[dto][zone];
                 } else {
@@ -237,7 +227,7 @@ public class ConstructionModel {
                 }
             }
             float[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
-            for (int zones: geoData.getZones()) {
+            for (int zones : geoData.getZones()) {
                 avePrice[dto][zones] = scaledAvePriceThisDwellingType[zones];
             }
         }
@@ -250,16 +240,16 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getRegionOfZone(dd.getZone());
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();
         }
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
             float[] avePriceThisType = new float[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 if (counter[dto][region] > 0) {
                     avePriceThisType[region] = avePrice[dto][region] / counter[dto][region];
                 } else {
@@ -267,7 +257,7 @@ public class ConstructionModel {
                 }
             }
             float[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 avePrice[dto][region] = scaledAvePriceThisDwellingType[region];
             }
         }
@@ -280,15 +270,15 @@ public class ConstructionModel {
 
         float[][] aveSize = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getRegionOfZone(dd.getZone());
             counter[dt][region]++;
             aveSize[dt][region] += dd.getBedrooms();
         }
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 if (counter[dto][region] > 0) {
                     aveSize[dto][region] = aveSize[dto][region] / counter[dto][region];
                 } else {
@@ -298,10 +288,10 @@ public class ConstructionModel {
         }
         // catch if one region should not have a given dwelling type (should almost never happen, but theoretically possible)
         float[] totalAveSizeByType = new float[DwellingType.values().length];
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
             int validRegions = 0;
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 if (aveSize[dto][region] > 0) {
                     totalAveSizeByType[dto] += aveSize[dto][region];
                     validRegions++;
@@ -309,9 +299,9 @@ public class ConstructionModel {
             }
             totalAveSizeByType[dto] = totalAveSizeByType[dto] / validRegions;
         }
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionList()) {
+            for (int region : geoData.getRegionList()) {
                 if (aveSize[dto][region] == 0) aveSize[dto][region] = totalAveSizeByType[dto];
             }
         }
@@ -319,14 +309,15 @@ public class ConstructionModel {
     }
 
 
-    private DwellingType[] findOrderOfDwellingTypes (SiloDataContainer dataContainer) {
+    private DwellingType[] findOrderOfDwellingTypes(SiloDataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
         double[] prices = dataContainer.getRealEstateData().getAveragePriceByDwellingType();
         int[] scaledPrices = new int[prices.length];
         for (int i = 0; i < prices.length; i++) {
-            if (prices[i] * 10000 > Integer.MAX_VALUE) logger.error("Average housing price for " + DwellingType.values()[i] +
-                    " with " + prices[i] + " is too large to be sorted. Adjust code.");
+            if (prices[i] * 10000 > Integer.MAX_VALUE)
+                logger.error("Average housing price for " + DwellingType.values()[i] +
+                        " with " + prices[i] + " is too large to be sorted. Adjust code.");
             scaledPrices[i] = (int) prices[i] * 10000;
         }
         int[] sortedPrices = IndexSort.indexSort(scaledPrices);
@@ -340,23 +331,19 @@ public class ConstructionModel {
 
     private double getUtilityOfDwellingTypeInZone(DwellingType dt, float avePrice, double accessibility) {
         // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-
-        int numAltsEvalZones = zoneUtilityModel.getNumberOfAlternatives();
-        int[] evaluationAvail = new int[numAltsEvalZones +1];
-        for (int i=1; i < evaluationAvail.length; i++) evaluationAvail[i] = 1;
-        // set DMU attributes
-        evaluateZoneDmu.setType(dt);
-        evaluateZoneDmu.setAvePrice(avePrice);
-        evaluateZoneDmu.setZonalAccessibility((float) accessibility);
-        double util[] = zoneUtilityModel.solve(evaluateZoneDmu.getDmuIndexValues(), evaluateZoneDmu, evaluationAvail);
-        // log UEC values
-        if (logCalculation)
-            zoneUtilityModel.logAnswersArray(traceLogger, "Quality of zone for construction of " + dt);
-        return util[0];
+        constructionLocationJSCalculator.setPrice(avePrice);
+        constructionLocationJSCalculator.setDwellingType(dt);
+        constructionLocationJSCalculator.setAccessibility(accessibility);
+        double utilJs = Double.NaN;
+        try {
+            utilJs = constructionLocationJSCalculator.calculate();
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+        return utilJs;
     }
 
-
-    public void buildDwelling (int id, int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public void buildDwelling(int id, int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // realize dwelling project id
 
         Integer[] attributes = plannedDwellings.get(id);
@@ -378,6 +365,5 @@ public class ConstructionModel {
             SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
             dd.logAttributes(SiloUtil.trackWriter);
         }
-
     }
 }
