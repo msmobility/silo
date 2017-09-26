@@ -1,6 +1,5 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.demography.LeaveParentHhJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +22,7 @@ public class LeaveParentHhTest {
     @Test
     public void testModelOne() throws ScriptException {
         calculator.setPersonType(31);
-        Assert.assertEquals(0.0003, (double) calculator.calculate(), 0.);
+        Assert.assertEquals(0.0003, calculator.calculate(), 0.);
     }
 
     @Test(expected = ScriptException.class)

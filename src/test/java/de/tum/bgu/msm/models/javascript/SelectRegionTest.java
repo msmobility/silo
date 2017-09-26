@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
@@ -28,7 +28,7 @@ public class SelectRegionTest {
         calculator.setAccessibility(100);
         calculator.setForeignersShare(0.5f);
         calculator.setMedianPrice(500);
-        Assert.assertEquals(227.225, (double) calculator.calculate(), 0.);
+        Assert.assertEquals(227.225, calculator.calculate(), 0.);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class SelectRegionTest {
         calculator.setAccessibility(100);
         calculator.setForeignersShare(0.5f);
         calculator.setMedianPrice(500);
-        Assert.assertEquals(359.125, (double) calculator.calculate(), 0.);
+        Assert.assertEquals(359.125, calculator.calculate(), 0.);
     }
 
     @Test(expected = ScriptException.class)

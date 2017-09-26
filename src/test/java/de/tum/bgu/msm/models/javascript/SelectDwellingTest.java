@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.relocation.SelectDwellingJSCalculator;
 import org.junit.Assert;
@@ -23,6 +23,6 @@ public class SelectDwellingTest {
     @Test
     public void testModelOne() throws ScriptException {
         calculator.setDwellingUtility(3);
-        Assert.assertEquals(0.22313016014842982, (double) calculator.calculate(), 0.);
+        Assert.assertEquals(0.22313016014842982, calculator.calculate(), 0.);
     }
 }
