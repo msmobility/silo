@@ -6,6 +6,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.demography.LeaveParentHhJSCalculator;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -49,6 +50,8 @@ public class ConstructionModel {
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float[] sizeAdjustment;
     private float[] shapeAdjustment;
+    private ConstructionDMU evaluateZoneDmu;
+    private UtilityExpressionCalculator zoneUtilityModel;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private ArrayList<Integer[]> plannedDwellings;
@@ -56,6 +59,8 @@ public class ConstructionModel {
     private boolean makeSomeNewDdAffordable;
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
+
+    private ConstructionDemandJSCalculator constructionDemandCalculator;
 
 
     public ConstructionModel(ResourceBundle rb, geoDataI geoData) {
@@ -70,31 +75,11 @@ public class ConstructionModel {
         setupEvaluationOfZones();
     }
 
-
     private void setupConstructionModel() {
+        // read properties
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
+        constructionDemandCalculator = new ConstructionDemandJSCalculator(reader, false);
 
-        // Construction Demand
-        int constructionModelSheetNumberA = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND);
-        UtilityExpressionCalculator constructionModelDemand = new UtilityExpressionCalculator(new File(uecFileName),
-                constructionModelSheetNumberA,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                ConstructionDMU.class);
-        ConstructionDMU constructionDemandDmu = new ConstructionDMU();
-
-        int[] availability = {1, 1};
-        sizeAdjustment = new float[DwellingType.values().length];
-        shapeAdjustment = new float[DwellingType.values().length];
-        for (DwellingType dwellingTp : DwellingType.values()) {
-            int dtType = dwellingTp.ordinal();
-            constructionDemandDmu.setType(dwellingTp);
-            constructionDemandDmu.setToken(1);
-            double parOne[] = constructionModelDemand.solve(constructionDemandDmu.getDmuIndexValues(), constructionDemandDmu, availability);
-            sizeAdjustment[dtType] = (float) parOne[0];
-            constructionDemandDmu.setToken(2);
-            double parTwo[] = constructionModelDemand.solve(constructionDemandDmu.getDmuIndexValues(), constructionDemandDmu, availability);
-            shapeAdjustment[dtType] = (float) parTwo[0];
-        }
         makeSomeNewDdAffordable = ResourceUtil.getBooleanProperty(rb, PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE, false);
         if (makeSomeNewDdAffordable) {
             shareOfAffordableDd = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE);
@@ -124,13 +109,18 @@ public class ConstructionModel {
         float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
-        for (DwellingType dt : DwellingType.values()) {
+        for (DwellingType dt: DwellingType.values()) {
+            constructionDemandCalculator.setDwellingType(dt);
             int dto = dt.ordinal();
-            for (int region : geoData.getRegionList()) {
-                demandByRegion[dto][region] = sizeAdjustment[dto] / Math.exp(shapeAdjustment[dto] * vacancyByRegion[dto][region]);
+            for (int region: geoData.getRegionList()) {
+                constructionDemandCalculator.setVacancyByRegion(vacancyByRegion[dto][region]);
+                try {
+                    demandByRegion[dto][region] = constructionDemandCalculator.calculate().floatValue();
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
         int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
         DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
@@ -299,9 +289,9 @@ public class ConstructionModel {
             }
             totalAveSizeByType[dto] = totalAveSizeByType[dto] / validRegions;
         }
-        for (DwellingType dt : DwellingType.values()) {
+        for (DwellingType dt: DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region : geoData.getRegionList()) {
+            for (int region: geoData.getRegionList()) {
                 if (aveSize[dto][region] == 0) aveSize[dto][region] = totalAveSizeByType[dto];
             }
         }
@@ -309,7 +299,7 @@ public class ConstructionModel {
     }
 
 
-    private DwellingType[] findOrderOfDwellingTypes(SiloDataContainer dataContainer) {
+    private DwellingType[] findOrderOfDwellingTypes (SiloDataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
         double[] prices = dataContainer.getRealEstateData().getAveragePriceByDwellingType();
