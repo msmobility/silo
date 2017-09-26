@@ -45,6 +45,5 @@ public abstract class JavaScriptCalculator<T> {
     public T calculate() throws ScriptException {
         bindings.logValues();
         return (T) compiledScript.eval(bindings);
-
     }
 }
