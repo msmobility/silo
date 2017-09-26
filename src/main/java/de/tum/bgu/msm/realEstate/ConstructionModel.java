@@ -1,25 +1,21 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.util.IndexSort;
-import de.tum.bgu.msm.SiloModel;
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.demography.LeaveParentHhJSCalculator;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.calculator.UtilityExpressionCalculator;
 
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-import java.io.File;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -33,25 +29,16 @@ public class ConstructionModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
 
-    protected static final String PROPERTIES_RealEstate_UEC_FILE = "RealEstate.UEC.FileName";
-    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET = "RealEstate.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_CONSTDEMAND = "RealEstate.UEC.ModelSheetNumber.ConsDemand";
     protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_BETA = "construct.dwelling.mn.log.model.beta";
     protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR = "construct.dwelling.mn.log.model.inflator";
     protected static final String PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE = "make.new.dwellings.partly.affordable";
     protected static final String PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE = "share.of.affordable.dwellings";
     protected static final String PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD = "level.of.affordability.setting";
 
-
     private ResourceBundle rb;
     private geoDataI geoData;
-    private String uecFileName;
-    private int dataSheetNumber;
+
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
-    private float[] sizeAdjustment;
-    private float[] shapeAdjustment;
-    private ConstructionDMU evaluateZoneDmu;
-    private UtilityExpressionCalculator zoneUtilityModel;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private ArrayList<Integer[]> plannedDwellings;
@@ -67,8 +54,6 @@ public class ConstructionModel {
         this.rb = rb;
         this.geoData = geoData;
         // read properties
-        uecFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader, false);
         setupConstructionModel();
