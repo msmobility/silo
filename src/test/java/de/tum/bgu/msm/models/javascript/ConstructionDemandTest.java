@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.data.DwellingType;
 import de.tum.bgu.msm.realEstate.ConstructionDemandJSCalculator;
@@ -23,25 +23,9 @@ public class ConstructionDemandTest {
     @Test
     public void testModelOne() throws ScriptException {
         calculator.setDwellingType(DwellingType.MF234);
-        //calculator.setVacancyByRegion(0.05);
-        //Assert.assertEquals(0.00501, calculator.calculate(), 0.00001);
+        calculator.setVacancyByRegion(0.05);
+        Assert.assertEquals(0.00501, calculator.calculate(), 0.00001);
     }
-
-
-
-
-    @Test(expected = ScriptException.class)
-    public void testModelFailures() throws ScriptException {
-        calculator.setVacancyByRegion(200);
-        calculator.calculate();
-    }
-
-    @Test(expected = ScriptException.class)
-    public void testModelFailuresTwo() throws ScriptException {
-        calculator.setVacancyByRegion(-2);
-        calculator.calculate();
-    }
-
 }
 
 
