@@ -11,11 +11,15 @@ import de.tum.bgu.msm.events.EventManager;
 import com.pb.common.util.ResourceUtil;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ResourceBundle;
 import java.io.File;
 
 import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
+
+import javax.script.ScriptException;
 
 /**
  * Simulates demolition of dwellings
@@ -25,77 +29,39 @@ import org.apache.log4j.Logger;
 
 public class DemolitionModel {
 
-    static Logger traceLogger = Logger.getLogger("trace");
-
-    protected static final String PROPERTIES_RealEstate_UEC_FILE                   = "RealEstate.UEC.FileName";
-    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET             = "RealEstate.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_DEMOLITION = "RealEstate.UEC.ModelSheetNumber.Demolition";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_DEMOLITION  = "log.util.ddDemolition";
-
-    // properties
-    private String uecFileName;
-    private int dataSheetNumber;
-    private ResourceBundle rb;
-
     private double[][] demolitionProbability;
-
 
     public DemolitionModel(ResourceBundle rb) {
         // constructor
-
-        this.rb = rb;
-        // read properties
-        uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
-
         setupDemolitionModel();
     }
 
-
     private void setupDemolitionModel() {
 
-        // read properties
-        int demolitionModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_DEMOLITION);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_DEMOLITION);
-
-        // initialize UEC
-        UtilityExpressionCalculator demolitionModel = new UtilityExpressionCalculator(new File(uecFileName),
-                demolitionModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                DemolitionDMU.class);
-        DemolitionDMU demolitionDmu = new DemolitionDMU();
-
-        // everything is available
-        int numAlts = demolitionModel.getNumberOfAlternatives();
-        int[] demolitionAvail = new int[numAlts+1];
-        for (int i=1; i < demolitionAvail.length; i++) {
-            demolitionAvail[i] = 1;
-        }
-
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
+        DemolitionJSCalculator calculator = new DemolitionJSCalculator(reader, false);
         // demolitionProbability["quality-1","vacant/occupied"]
         demolitionProbability = new double[4][2];
         for (int i = 1; i <= 4; i++) {
             for (int j = 0; j <= 1; j++) {
                 // set DMU attributes
-                demolitionDmu.setQuality(i);
-                if (j == 0) demolitionDmu.setResidentId(-1);
-                else demolitionDmu.setResidentId(1);
-                // There is only one alternative, and the utility is really the probability of being demolished
-                double util[] = demolitionModel.solve(demolitionDmu.getDmuIndexValues(), demolitionDmu, demolitionAvail);
-                demolitionProbability[i-1][j] = util[0];
-                if (logCalculation) {
-                    // log UEC values for each dwelling type
-                    if (j == 0) {
-                        demolitionModel.logAnswersArray(traceLogger, "Demolition Model for quality " + i + " (vacant)");
-                    } else {
-                        demolitionModel.logAnswersArray(traceLogger, "Demolition Model for quality " + i + " (occupied)");
-                    }
+                calculator.setDwellingQuality(i);
+                if (j == 0) {
+                    calculator.setOccupied(false);
+                } else {
+                    calculator.setOccupied(true);
                 }
+                // There is only one alternative, and the utility is really the probability of being demolished
+                double probability = 0;
+                try {
+                    probability = calculator.calculate();
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                }
+                demolitionProbability[i-1][j] = probability;
             }
         }
     }
-
 
     public void checkDemolition (int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // check if is demolished
