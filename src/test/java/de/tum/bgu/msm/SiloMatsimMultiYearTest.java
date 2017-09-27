@@ -29,7 +29,7 @@ public class SiloMatsimMultiYearTest {
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 	
-
+	@Ignore
 	@Test
 	public final void testMainMultiYear() {
 		SiloMstmTest.cleanUp();
