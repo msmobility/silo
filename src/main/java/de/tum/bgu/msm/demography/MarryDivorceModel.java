@@ -17,6 +17,8 @@
 package de.tum.bgu.msm.demography;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -33,6 +35,8 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
+
+import javax.script.ScriptException;
 
 /**
  * Simulates marriage and divorce
@@ -71,6 +75,8 @@ public class MarryDivorceModel {
     private double[] divorceProbability;
     private int ageOffset;
     private ArrayList<Integer[]> couplesToMarryThisYear;
+
+    private DivorceJSCalculator calculator;
 
     public MarryDivorceModel(ResourceBundle rb) {
 
@@ -250,40 +256,25 @@ public class MarryDivorceModel {
     private void setupDivorceModel() {
 
         // read properties
-        int divorceModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_DIVORCE);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_DIVORCE);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
+        calculator = new DivorceJSCalculator(reader, false);
 
-        // initialize UEC
-        UtilityExpressionCalculator divorceModel = new UtilityExpressionCalculator(new File(uecFileName),
-                divorceModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MarryDivorceDMU.class);
-
-        MarryDivorceDMU divorceDmu = new MarryDivorceDMU();
-
-        // everything is available
-        int numAlts = divorceModel.getNumberOfAlternatives();
-        int[] divorceAvail = new int[numAlts+1];
-        for (int i=1; i < divorceAvail.length; i++) {
-            divorceAvail[i] = 1;
-        }
-
+        // initialize results for each alternative
         PersonType[] types = PersonType.values();
         divorceProbability = new double[types.length];
-        for (int i=0; i<types.length; i++) {
 
-            // set DMU attributes
-            divorceDmu.setType(types[i]);
-
-            // There is only one alternative, and the utility is really the probability of giving birth
-            double util[] = divorceModel.solve(divorceDmu.getDmuIndexValues(), divorceDmu, divorceAvail);
-            divorceProbability[i] = util[0] / 2;     // each divorce event affects two persons
-            if (logCalculation) {
-                // log UEC values for each person type
-                divorceModel.logAnswersArray(traceLogger, "Divorce Model for Person Type " + types[i].toString());
+        //apply the calculator to each alternative
+        for (int i = 0; i < types.length; i++) {
+            // set calculator bindings
+            calculator.setPersonType(i);
+            //calculate
+            try {
+                divorceProbability[i] = calculator.calculate() / 2; // each divorce event affects two persons
+            } catch (ScriptException e) {
+                e.printStackTrace();
             }
         }
+
     }
 
 
