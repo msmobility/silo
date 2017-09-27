@@ -372,9 +372,6 @@ public class JobDataManager {
 
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
         for (Job job: Job.getJobArray()) {
-            if(job.getType() == null) {
-                System.out.println("null");
-            }
             jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
         }
 

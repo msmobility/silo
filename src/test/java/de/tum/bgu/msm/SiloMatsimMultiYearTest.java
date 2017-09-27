@@ -28,8 +28,7 @@ public class SiloMatsimMultiYearTest {
 	private static final Logger log = Logger.getLogger(SiloMatsimMultiYearTest.class);
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
-	
-	@Ignore
+
 	@Test
 	public final void testMainMultiYear() {
 		SiloMstmTest.cleanUp();
@@ -88,8 +87,8 @@ public class SiloMatsimMultiYearTest {
 		}{
 			log.info("Checking MATSim plans file ...");
 
-			final String referenceFilename = utils.getInputDirectory() + "./test_multiple_years_matsim_2002.0.plans.xml.gz";
-			final String outputFilename = utils.getOutputDirectory() + "./test_multiple_years_matsim_2002/ITERS/it.0/test_reduced_multiple_years_matsim_2002.0.plans.xml.gz";
+			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2002.0.plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "test_matsim_2002/ITERS/it.0/test_matsim_2002.0.plans.xml.gz";
 
 			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -100,8 +99,8 @@ public class SiloMatsimMultiYearTest {
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ; 
 		}{
 			log.info("Checking MATSim events file ...");
-			final String eventsFilenameReference = utils.getInputDirectory() + "./test_multiple_years_matsim_2002.0.events.xml.gz";
-			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_multiple_years_matsim_2002/ITERS/it.0/test_reduced_multiple_years_matsim_2002.0.events.xml.gz";
+			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2002.0.events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2002/ITERS/it.0/test_matsim_2002.0.events.xml.gz";
 			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 		}
 		
