@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.jobmography;
 
-public abstract class EmploymentChangeDefinition {
+import de.tum.bgu.msm.utils.concurrent.ConcurrentFunction;
+
+public abstract class EmploymentChangeDefinition implements ConcurrentFunction {
 
     protected final int zone;
     protected int changes;
@@ -11,6 +13,4 @@ public abstract class EmploymentChangeDefinition {
         this.changes = changes;
         this.jobType = jobType;
     }
-
-    public abstract void execute();
 }

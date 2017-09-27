@@ -1,18 +1,15 @@
 package de.tum.bgu.msm.jobmography;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.sawdust.calculator.Function1;
-import com.pb.sawdust.util.concurrent.ForkJoinPoolFactory;
-import com.pb.sawdust.util.concurrent.IteratorAction;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobType;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * Reads exogenous forecast for jobs and adds/removes jobs accordingly
@@ -61,14 +58,15 @@ public class UpdateJobs {
             }
         }
 
-        List<EmploymentChangeDefinition> employmentChangeList = new ArrayList<>();
+        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+
         for (int row = 1; row <= forecast.getRowCount(); row++) {
             int zone = (int) forecast.getValueAt(row, "zone");
             for (String jt : JobType.getJobTypes()) {
                 int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zone]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zone];
-                    employmentChangeList.add(new AddJobsDefinition(zone, change, jt));
+                    executor.addFunction(new AddJobsDefinition(zone, change, jt));
                 } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zone]) {
                     int change = jobsByZone[JobType.getOrdinal(jt)][zone] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);
@@ -79,24 +77,11 @@ public class UpdateJobs {
                     if(occupiedJobs == null) {
                         occupiedJobs = Collections.EMPTY_LIST;
                     }
-                    employmentChangeList.add(new RemoveJobsDefinition(zone, change, jt, vacantJobs, occupiedJobs, dataContainer.getJobData()));
+                    executor.addFunction(new RemoveJobsDefinition(zone, change, jt, vacantJobs, occupiedJobs, dataContainer.getJobData()));
                 }
             }
         }
-
-        // Multi-threading code
-        Function1<EmploymentChangeDefinition, Void> JobChangeMethod = new Function1<EmploymentChangeDefinition, Void>() {
-            public Void apply(EmploymentChangeDefinition employmentChangeDefinition) {
-                employmentChangeDefinition.execute();
-                return null;
-            }
-        };
-
-        Iterator<EmploymentChangeDefinition> jobChangeIterator = employmentChangeList.listIterator();
-        IteratorAction<EmploymentChangeDefinition> itTask = new IteratorAction(jobChangeIterator, JobChangeMethod);
-        ForkJoinPool pool = ForkJoinPoolFactory.getForkJoinPool();
-        pool.execute(itTask);
-        itTask.waitForCompletion();
+        executor.execute();
 
         // Fix job map, which for some reason keeps getting messed up
         for (int jobId : Job.getJobMapIDs()) {
