@@ -17,7 +17,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.transportModel.matsim;
 
 import java.io.File;
 import java.lang.reflect.Method;

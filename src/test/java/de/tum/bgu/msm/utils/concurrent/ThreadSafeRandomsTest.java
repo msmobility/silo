@@ -1,8 +1,6 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.utils.concurrent;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.utils.concurrent.RandomizableConcurrentFunction;
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.junit.Assert;
 import org.junit.Test;
 

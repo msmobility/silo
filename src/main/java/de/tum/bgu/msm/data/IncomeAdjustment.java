@@ -19,11 +19,11 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction{
     @Override
     public void execute() {
         // adjust income of person with ID per
-        int newIncome = selectNewIncome(person.getIncome());
+        int newIncome = selectNewIncome();
         person.setIncome(newIncome);
     }
 
-    private int selectNewIncome (int currentIncome) {
+    private int selectNewIncome () {
         // calculate new income using a normal distribution
 
         double[] prob = new double[21];
@@ -53,6 +53,6 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction{
         }
         prob[smallestAbsValuePos] = prob[smallestAbsValuePos] * 10;   // make no change most likely
         int sel = SiloUtil.select(prob, random);
-        return Math.max((currentIncome + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+        return Math.max((person.getIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
     }
 }

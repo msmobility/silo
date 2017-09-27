@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.transportModel.matsim;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Paths;
 
+import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.transportModel.mstm.SiloMstmTest;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
