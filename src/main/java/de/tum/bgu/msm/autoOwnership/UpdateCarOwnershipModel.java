@@ -7,9 +7,7 @@ import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
@@ -116,13 +114,14 @@ public class UpdateCarOwnershipModel {
     //public void run (boolean flagSkipCreationOfSPforDebugging
     public void run (){
         //main run method
-
          for (Map.Entry<Integer, int[]> pair : householdsChanged.entrySet()) {
             Household hh = Household.getHouseholdFromId(pair.getKey());
-            int[] previousAttributes = pair.getValue();
-            updateHouseholdCars(hh, previousAttributes);
-            householdsChanged.remove(hh.getId());
+             if (hh != null) {
+                 int[] previousAttributes = pair.getValue();
+                 updateHouseholdCars(hh, previousAttributes);
+             }
         }
+        householdsChanged.clear();
 
     }
 
@@ -173,9 +172,7 @@ public class UpdateCarOwnershipModel {
     public static void addHouseholdThatChanged (Household hh){
         //Add one household that probably had changed their attributes for the car updating model
 
-        if (householdsChanged.containsKey(hh.getId())) {
-
-        } else {
+        if (!householdsChanged.containsKey(hh.getId())) {
             int[] currentHouseholdAttributes = new int[4];
             currentHouseholdAttributes[0] = hh.getHhSize();
             currentHouseholdAttributes[1] = hh.getHhIncome();
