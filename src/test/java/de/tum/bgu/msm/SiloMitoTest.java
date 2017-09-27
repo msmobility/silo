@@ -52,7 +52,6 @@ public class SiloMitoTest {
         // yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
 
         cleanUp();
-
         String[] args = {"./test/scenarios/annapolis/javaFiles/siloMito.properties"};
 
         try {

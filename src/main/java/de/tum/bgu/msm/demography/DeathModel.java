@@ -97,7 +97,7 @@ public class DeathModel {
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
         if (SiloUtil.getRandomNumberAsDouble() < deathProbability[per.getType().ordinal()]) {
-            if (per.getWorkplace() > 0) per.quitJob(true, dataContainer);
+            if (per.getWorkplace() > 0) per.quitJob(true, dataContainer.getJobData());
             Household hhOfPersonToDie = Household.getHouseholdFromId(per.getHhId());
             int hhId = hhOfPersonToDie.getId();
             if (per.getRole() == PersonRole.married) {
