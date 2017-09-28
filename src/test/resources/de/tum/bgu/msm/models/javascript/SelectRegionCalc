@@ -1,0 +1,48 @@
+//Alpha and Delta
+if(nationality == 0 || nationality == 1) {
+    if(incomeGroup == 0) {
+        alpha = 0.04;
+        if(nationality == 0) {
+            delta = 0.55;
+        } else if(nationality == 1) {
+            delta = 0.25;
+        }
+    } else if(incomeGroup == 1) {
+        alpha = 0.08;
+        if(nationality == 0) {
+            delta = 0.5;
+        } else if(nationality == 1) {
+            delta = 0.2;
+        }
+    } else if(incomeGroup == 2) {
+        alpha = 0.120;
+        if(nationality == 0) {
+            delta = 0.45;
+        } else if(nationality == 1) {
+            delta = 0.15;
+        }
+    } else if(incomeGroup == 3) {
+        alpha = 0.16;
+        if(nationality == 0) {
+            delta = 0.25;
+        } else if(nationality == 1) {
+            delta = 0.1;
+        }
+    } else {
+        throw new Error("Undefined income group!")
+    }
+} else {
+    throw new Error("Undefined nationality!")
+}
+
+if(share > 1 || share < 0) {
+    throw new Error("Foreigner share must be between 0 and 1!")
+}
+
+if(nationality == 1) {
+    relevantShare = share;
+} else {
+    relevantShare = 1 - share;
+}
+
+utility = (1 - alpha - delta) * price + alpha * accessibility + delta * relevantShare;

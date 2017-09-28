@@ -269,7 +269,7 @@ public class SiloModel {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.quitJob.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    modelContainer.getChangeEmployment().quitJob(event[1], dataContainer);
+                    modelContainer.getChangeEmployment().quitJob(event[1], dataContainer.getJobData());
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.householdMove.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
@@ -511,7 +511,7 @@ public class SiloModel {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.quitJob.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                modelContainer.getChangeEmployment().quitJob(event[1], dataContainer);
+                modelContainer.getChangeEmployment().quitJob(event[1], dataContainer.getJobData());
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.householdMove.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();

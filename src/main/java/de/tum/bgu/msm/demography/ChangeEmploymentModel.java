@@ -58,12 +58,12 @@ public class ChangeEmploymentModel {
     }
 
 
-    public void quitJob (int perId, SiloDataContainer dataContainer) {
+    public void quitJob (int perId, JobDataManager jobDataManager) {
         // Let person perId quit her/his job and make this job available to others
 
         Person pp = Person.getPersonFromId(perId);
         if (pp == null) return;  // person has died or moved away
-        pp.quitJob(true, dataContainer);
+        pp.quitJob(true, jobDataManager);
         EventManager.countEvent(EventTypes.quitJob);
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }

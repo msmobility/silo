@@ -1,0 +1,24 @@
+//Alpha = max value
+alpha = 0.0;
+
+//Beta = shape adj.
+beta = 0.0;
+
+if (dwellingType=="SFD"){
+    alpha = 0.05;
+    beta = 320.;
+} else if (dwellingType=="SFA"){
+    alpha = 0.05;
+    beta = 89.;
+} else if (dwellingType=="MF234"){
+    alpha = 0.05;
+    beta = 46.;
+} else if (dwellingType=="MF5plus"){
+    alpha = 0.05;
+    beta = 61.5;
+} else if (dwellingType=="MH"){
+    alpha = 0.05;
+    beta = 89.;
+}
+//be careful with this equation, if vacancy is not a rate under 1 it may result in infinite values?
+utility = alpha / Math.exp(beta * vacancyByRegion);

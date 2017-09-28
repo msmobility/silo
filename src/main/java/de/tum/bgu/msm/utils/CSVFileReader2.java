@@ -606,25 +606,6 @@ public class CSVFileReader2 extends TableDataFileReader2 implements DataTypes {
         return tokens;
     }
 
-//    private String[] parseTokens2(String line) {
-//        //String[] tokens = this.regexPattern.split(line);
-//        String[] tokens = line.split(",",0);
-//
-//        for(int i = 0; i < tokens.length; ++i) {
-//            if(tokens[i].startsWith("\"")) {
-//                tokens[i] = tokens[i].substring(1);
-//            }
-//
-//            if(tokens[i].endsWith("\"")) {
-//                tokens[i] = tokens[i].substring(0, tokens[i].length() - 1);
-//            }
-//
-//            tokens[i] = tokens[i].replaceAll("\"\"", "\"");
-//        }
-//
-//        return tokens;
-//    }
-
 
     private int[] determineColumnTypes(String line) {
         String[] tokens = this.regexPattern.split(line);

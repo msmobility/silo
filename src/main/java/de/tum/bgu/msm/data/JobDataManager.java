@@ -161,6 +161,15 @@ public class JobDataManager {
         return highestJobIdInUse;
     }
 
+    public static List<Integer> getNextJobIds (int amount) {
+        // increase highestJobIdInUse by 1 and return value
+        List<Integer> ids = new ArrayList<>();
+        for(int i = 0; i < amount; i++) {
+            ids.add(++highestJobIdInUse);
+        }
+        return ids;
+    }
+
 
     public void updateEmploymentForecast() {
         // create yearly employment forecast files

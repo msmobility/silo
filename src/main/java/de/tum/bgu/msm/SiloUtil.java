@@ -280,7 +280,21 @@ public class SiloUtil {
     //TODO REFACTOR SELECT METHODS TO USE GENERICS
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
-        double selPos = getSum(probabilities) * getRandomNumberAsFloat();
+       return select(probabilities, getSum(probabilities), rand);
+    }
+
+    public static int select(double[] probabilities, Random random) {
+        return select(probabilities, getSum(probabilities), random);
+    }
+
+    public static int select (double[] probabilities, double sumProb) {
+        // select item based on probabilities (for zero-based double array)
+        return select(probabilities, getSum(probabilities), rand);
+    }
+
+    public static int select (double[] probabilities, double sumProb, Random random) {
+        // select item based on probabilities (for zero-based double array)
+        double selPos = sumProb * random.nextFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
             sum += probabilities[i];
@@ -290,7 +304,6 @@ public class SiloUtil {
         }
         return probabilities.length - 1;
     }
-
 
     public static int select (float[] probabilities) {
         // select item based on probabilities (for zero-based float array)
