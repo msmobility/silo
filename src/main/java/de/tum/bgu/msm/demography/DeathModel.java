@@ -36,6 +36,8 @@ public class DeathModel {
     private ResourceBundle rb;
 //    private int death2ModelSheetNumber;
 
+    static Logger logger = Logger.getLogger(DeathModel.class);
+
 	private double[] deathProbability; 
 	
 	public DeathModel(ResourceBundle rb) {
@@ -105,6 +107,7 @@ public class DeathModel {
                 Person widow = Person.getPersonFromId(widowId);
                 widow.setRole(PersonRole.single);
             }
+            hhOfPersonToDie.removePerson(per, dataContainer);
             boolean onlyChildrenLeft = checkIfOnlyChildrenRemainInHousehold(hhOfPersonToDie, per);
             if (onlyChildrenLeft) {
                 for (Person pp: hhOfPersonToDie.getPersons()) {
@@ -115,8 +118,8 @@ public class DeathModel {
                                 " to foster care as remaining child just before head of household (ID " +
                                 per.getId() + ") passed away.");
                 }
+                dataContainer.getHouseholdData().removeHousehold(hhId);
             }
-            hhOfPersonToDie.removePerson(per, dataContainer);
             Person.removePerson(per.getId());
             EventManager.countEvent(EventTypes.checkDeath);
             if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
