@@ -145,9 +145,6 @@ public class summarizeData {
             prices[dd.getZone()] += dd.getPrice();
         }
         for (Job jj: Job.getJobArray()) {
-            if (jj == null || jj.getType() == null ){
-                continue;
-            }
             jobs[jj.getZone()]++;
         }
 
@@ -207,7 +204,6 @@ public class summarizeData {
 
         int[] retailEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
-            if (jj == null) continue;
             if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
         return retailEmplByZone;
@@ -219,7 +215,6 @@ public class summarizeData {
 
         int[] officeEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
-            if (jj == null) continue;
             if (jj.getType().equals("OFF")) officeEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
         return officeEmplByZone;
@@ -231,7 +226,6 @@ public class summarizeData {
 
         int[] otherEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
-            if (jj == null) continue;
             if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
         return otherEmplByZone;
@@ -243,7 +237,6 @@ public class summarizeData {
 
         int[] totalEmplByZone = new int[geoData.getZones().length];
         for (Job jj: Job.getJobArray()) {
-            if (jj == null) continue;
             totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
         }
         return totalEmplByZone;
@@ -548,7 +541,6 @@ public class summarizeData {
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
         for (Job jj : jjs) {
-            if (jj == null) continue;
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -689,7 +681,6 @@ public class summarizeData {
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
         for (Job jj : jjs) {
-            if (jj == null) continue;
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -839,7 +830,6 @@ public class summarizeData {
         pwj.println("id,zone,personId,type");
         Job[] jjs = Job.getJobArray();
         for (Job jj : jjs) {
-            if (jj == null) continue;
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -981,7 +971,6 @@ public class summarizeData {
         Job[] jjs = Job.getJobArray();
         for (int i = 0; i < jjs.length; i = i + step) {
             Job jj = jjs[i];
-            if (jj == null) continue;
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
