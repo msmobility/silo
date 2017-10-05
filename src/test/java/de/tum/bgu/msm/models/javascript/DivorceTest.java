@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.demography.DivorceJSCalculator;
 import org.junit.Assert;
