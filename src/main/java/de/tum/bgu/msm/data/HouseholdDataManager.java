@@ -620,9 +620,6 @@ public class HouseholdDataManager {
 
         ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
         for (Person person: pps) {
-            if(person == null) {
-                System.out.println("null!");
-            }
             float desiredShift = getDesiredShift(currentIncomeDistribution, person);
             executor.addFunction(new IncomeAdjustment(person, desiredShift, meanIncomeChange));
         }
