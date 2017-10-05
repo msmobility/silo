@@ -326,7 +326,7 @@ public class SiloModel {
                         int hhId = person.getHhId();
                         if(households.containsKey(hhId)) {
                             MitoPerson mitoPerson = person.convertToMitoPp();
-                            households.get(hhId).getPersons().put(mitoPerson.getId(), mitoPerson);
+                            households.get(hhId).addPerson(mitoPerson);
                         } else {
                             logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
                                     + " and will thus NOT be considered in the transport model.");
