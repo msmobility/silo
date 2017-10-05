@@ -4,17 +4,11 @@ import de.tum.bgu.msm.SiloMstm;
 import de.tum.bgu.msm.transportModel.matsim.MatsimTestUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by Nico on 24/07/2017.
- */
 public class SiloMitoTest {
 
     private static final Logger log = Logger.getLogger(SiloMitoTest.class);
@@ -50,7 +44,7 @@ public class SiloMitoTest {
     /**
      * This test should test Silo together with Mito.
      */
-    @Ignore
+
     @Test
     public final void testMainReduced() {
         // yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
