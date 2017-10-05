@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class to hold job data
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public class Job {
 
-    private static final Map<Integer, Job> jobMap = new HashMap<>();
+    private static final Map<Integer, Job> jobMap = new ConcurrentHashMap<>();
     //Attributes that must be initialized when one job is generated
 	private int id;
     private int zone;
