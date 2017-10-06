@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.autoOwnership;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
+
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
@@ -29,17 +29,10 @@ public class CreateCarOwnershipModel {
     static Logger traceLogger = Logger.getLogger("trace");
     private ResourceBundle rb;
 
-    protected static final String PROPERTIES_CarOwnership_UEC_FILE = "CarOwnership.UEC.FileName";
-    protected static final String PROPERTIES_CarOwnership_UEC_DATA_SHEET = "CarOwnership.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_CarOwnership_UEC_CREATE_UTILITY = "CarOwnership.UEC.Create.Utility";
     protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION = "log.util.carOwnership";
     protected static final String PROPERTIES_ZONAL_DATA = "raster.cells.definition";
     protected static final String PROPERTIES_TRANSIT_ACCEESS_TIME = "transit.access.time";
 
-    private String uecFileName;
-    private int dataSheetNumber;
-    int numAltsCarOwnership;
-    private double[][][][][][] carOwnerShipUtil;   // [three probabilities][license][workers][income][logdistToTransit][areaType]
     private TableDataSet zonalData;
 
     private Reader reader;
@@ -50,15 +43,26 @@ public class CreateCarOwnershipModel {
         // Constructor
         logger.info(" Setting up probabilities for car ownership model");
         this.rb = rb;
-        setupCarOwnershipModel();
+        reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
+        calculator = new CreateCarOwnershipJSCalculator(reader, false);
         readZonalData();
     }
 
-    private void setupCarOwnershipModel() {
+    private double[] calculateCarOwnershipProb(int license, int workers, int income, int logDistanceToTransit, int areaType) {
+        // setup to calculate the car ownership probabilities from the javascript calculator
+        calculator.setLicense(license);
+        calculator.setWorkers(workers);
+        calculator.setIncome(income);
+        calculator.setLogDistanceToTransit(logDistanceToTransit);
+        calculator.setAreaType(areaType);
 
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
-        calculator = new CreateCarOwnershipJSCalculator(reader, false);
-
+        double[] result = new double[4];
+        try {
+            result = calculator.calculate();
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public void run(boolean flagSkipCreationOfSPforDebugging) {
@@ -78,32 +82,15 @@ public class CreateCarOwnershipModel {
         // simulate number of autos for household hh
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as distance to transit and areaType is dependent on where households are living
-        int license = Math.min(hh.getHHLicenseHolders(), 7);
-        int workers = Math.min(hh.getNumberOfWorkers(), 7);
-        int income = Math.min(hh.getHhIncome(), 13504);
-        int logDistanceToTransit = Math.min((int) Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit")), 10);
+        int license = hh.getHHLicenseHolders();
+        int workers = hh.getNumberOfWorkers();
+        int income = hh.getHhIncome()/12;
+        int logDistanceToTransit = (int) Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit"));
         int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
 
-        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType - 1);
+        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType);
         hh.setAutos(SiloUtil.select(prob));
     }
-
-    private double[] calculateCarOwnershipProb(int license, int workers, int income, int logDistanceToTransit, int areaType) {
-        calculator.setLicense(license);
-        calculator.setWorkers(workers);
-        calculator.setIncome(income);
-        calculator.setLogDistanceToTransit(logDistanceToTransit);
-        calculator.setAreaType(areaType);
-
-        double[] result = new double[4];
-        try {
-            result = calculator.calculate();
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
 
     public void readZonalData() {
         //method to read the zonal data not using geoData
