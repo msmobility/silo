@@ -129,7 +129,7 @@ public class SiloModel {
         // create main objects and read synthetic population
         dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData,
                 ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_READ_SMALL_SYNPOP, false));
-        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_WRITE_SMALL_SYNPOP))
+        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_WRITE_SMALL_SYNPOP, false))
             dataContainer.getHouseholdData().writeOutSmallSynPop();
         modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, implementation);
 

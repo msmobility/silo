@@ -1,0 +1,2 @@
+parameter = -0.5;
+utility = Math.exp(parameter * ddUtility);

@@ -26,6 +26,7 @@ import de.tum.bgu.msm.data.MitoPerson;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
@@ -40,6 +41,8 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
  */
 public class MatsimTransportModel implements TransportModelI {
 	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
+	
+	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
 
 	private static final String PROPERTIES_ZONES_SHAPEFILE	= "matsim.zones.shapefile";
 	private static final String PROPERTIES_ZONES_CRS 		= "matsim.zones.crs";
@@ -107,11 +110,12 @@ public class MatsimTransportModel implements TransportModelI {
 		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
 		for (SimpleFeature feature: zoneFeatures) {
 			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
+			// System.out.println("zoneId = " + zoneId);
 			zoneFeatureMap.put(zoneId,feature);
 		}
 
 		Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, zoneFeatureMap,
-				writePopulation, populationScalingFactor * workerScalingFactor);
+				writePopulation, populationScalingFactor * workerScalingFactor, random);
 
 		String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
 

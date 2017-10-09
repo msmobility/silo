@@ -20,14 +20,14 @@ public class SiloMitoTest {
     @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
 
-    public final static String filename_dd = "./test/scenarios/annapolis_reduced/microData_reduced/dd_2001.csv";
-    public final static String filename_hh = "./test/scenarios/annapolis_reduced/microData_reduced/hh_2001.csv";
-    public final static String filename_jj = "./test/scenarios/annapolis_reduced/microData_reduced/jj_2001.csv";
-    public final static String filename_pp = "./test/scenarios/annapolis_reduced/microData_reduced/pp_2001.csv";
-    public final static String filename_a0 = "./test/scenarios/annapolis_reduced/testing/accessibility_2000.csv";
-    public final static String filename_a1 = "./test/scenarios/annapolis_reduced/testing/accessibility_2001.csv";
-    public final static String filename_gi = "./test/scenarios/annapolis_reduced/testing/given_impedance_2000.csv";
-    public final static String filename_st = "./test/scenarios/annapolis_reduced/status.csv";
+    public final static String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
+    public final static String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
+    public final static String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
+    public final static String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
+    public final static String filename_a0 = "./test/scenarios/annapolis/testing/accessibility_2000.csv";
+    public final static String filename_a1 = "./test/scenarios/annapolis/testing/accessibility_2001.csv";
+    public final static String filename_gi = "./test/scenarios/annapolis/testing/given_impedance_2000.csv";
+    public final static String filename_st = "./test/scenarios/annapolis/status.csv";
 
 
     public static void cleanUp() {
@@ -53,7 +53,7 @@ public class SiloMitoTest {
 
         cleanUp();
 
-        String[] args = {"./test/scenarios/annapolis_reduced/javaFiles/siloMito_reduced.properties"};
+        String[] args = {"./test/scenarios/annapolis/javaFiles/siloMito.properties"};
 
         try {
             SiloMstm.main(args);
