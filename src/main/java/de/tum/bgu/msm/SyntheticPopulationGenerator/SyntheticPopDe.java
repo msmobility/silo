@@ -2424,7 +2424,8 @@ public class SyntheticPopDe {
             int bedrooms = guessBedrooms(size);
             int quality = (int)dwellings.getValueAt(i,"quality");
             float brw = prices.getIndexedValueAt(zone, ddtype);
-            float price = guessPrice(brw, quality, size);
+            int use = (int)dwellings.getValueAt(i,"usage");
+            float price = guessPrice(brw, quality, size, use);
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
                     (int)dwellings.getValueAt(i,"hhID"),type,bedrooms,
                     (int)dwellings.getValueAt(i,"quality"),(int) price,
@@ -2447,18 +2448,30 @@ public class SyntheticPopDe {
         logger.info("   Generated jobs");
     }
 
-    private float guessPrice(float brw, int quality, int size) {
+    private float guessPrice(float brw, int quality, int size, int use) {
 
-        float coef = 1;
+        //coefficient by quality of the dwelling
+        float qualityReduction = 1;
         if (quality == 1){
-            coef = 0.7f;
+            qualityReduction = 0.7f;
         } else if (quality == 2){
-            coef = 0.9f;
+            qualityReduction = 0.9f;
         } else if (quality == 4){
-            coef = 1.1f;
+            qualityReduction = 1.1f;
         }
+        //conversion from land price to the monthly rent
         float convertToMonth = 0.0057f;
-        float price = brw * size * coef * convertToMonth + 150;
+        //increase price for rented dwellings
+        float rentedIncrease = 1; //by default, the price is not reduced/increased
+        if (use == 2){
+            rentedIncrease = 1.2f; //rented dwelling
+        } else if (use == 3){
+            rentedIncrease = 1; //vacant dwelling
+        }
+        //extra costs for power, water, etc (Nebenkosten)
+        int nebenKost = 150;
+
+        float price = brw * size * qualityReduction * convertToMonth * rentedIncrease + nebenKost;
         return price;
     }
 
