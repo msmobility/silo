@@ -294,15 +294,16 @@ public class Household implements Serializable {
         return ahs/(float) cnt;
     }
 
-    public MitoHousehold convertToMitoHh() {
-        return new MitoHousehold(hhId, getHhIncome(), autos, homeZone);
+    public MitoHousehold convertToMitoHh(Zone zone) {
+        return new MitoHousehold(hhId, getHhIncome(), autos, zone);
     }
 
-    public static Map<Integer, MitoHousehold> convertHhs() {
+    public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, Zone> zones) {
         Map<Integer, MitoHousehold> thhs = new HashMap();
         Household[] hhSilo = getHouseholdArray();
         for (int i = 0; i < hhSilo.length; i++) {
-            MitoHousehold household = hhSilo[i].convertToMitoHh();
+            Zone zone = zones.get(hhSilo[i].homeZone);
+            MitoHousehold household = hhSilo[i].convertToMitoHh(zone);
             thhs.put(household.getHhId(), household);
         }
         return thhs;

@@ -53,11 +53,6 @@ public class MstmTransportModel implements TransportModelI {
 
     }
 
-    @Override
-    public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, Map<Integer, MitoHousehold> mitoHouseholds,
-                  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
-                         int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
-    }
 
     @Override
     public void setScenarioName(String scenarioName) {
@@ -124,6 +119,11 @@ public class MstmTransportModel implements TransportModelI {
 //            logger.info("  Generated " + SiloUtil.customFormat("###,###", SiloUtil.getSum(tripProd)) + " raw trips.");
         }
         }
+    }
+
+    @Override
+    public void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households) {
+
     }
 
 

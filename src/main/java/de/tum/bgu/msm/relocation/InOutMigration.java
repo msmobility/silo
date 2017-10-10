@@ -193,7 +193,7 @@ public class InOutMigration {
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         for (Person pp: hh.getPersons()) {
-            if (pp.getWorkplace() > 0) pp.quitJob(true, dataContainer);
+            if (pp.getWorkplace() > 0) pp.quitJob(true, dataContainer.getJobData());
             Person.removePerson(pp.getId());
             if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
         }

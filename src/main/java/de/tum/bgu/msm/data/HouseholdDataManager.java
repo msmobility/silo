@@ -16,25 +16,20 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloModel;
+import com.pb.common.util.IndexSort;
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventRules;
-import com.pb.sawdust.calculator.Function1;
-import com.pb.sawdust.util.array.ArrayUtil;
-import com.pb.sawdust.util.concurrent.ForkJoinPoolFactory;
-import com.pb.sawdust.util.concurrent.IteratorAction;
+import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.util.IndexSort;
+
+import java.io.*;
+import java.util.*;
 
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
  *
  */
@@ -61,7 +56,6 @@ public class HouseholdDataManager {
     private static float meanIncomeChange;
     public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
-    private float[][][] currentIncomeDistribution;
     private static float[] medianIncome;
     private RealEstateDataManager realEstateData;
 
@@ -621,74 +615,26 @@ public class HouseholdDataManager {
     public void adjustIncome() {
         // select who will get a raise or drop in salary
 
-        currentIncomeDistribution = calculateIncomeDistribution();   // income by gender, age and unemployed/employed
-        Integer[] personArray = new Integer[Person.getPersonCount()];
+        float[][][] currentIncomeDistribution = calculateIncomeDistribution();
         Person[] pps = Person.getPersonArray();
-        for (int per = 0; per < pps.length; per++) personArray[per] = pps[per].getId();
 
-        // Multi-threading code
-        Function1<Integer, Void> incomeChangeFunction = new Function1<Integer, Void>() {
-            public Void apply(Integer per) {
-                adjustIncomeForPerson(per);
-                return null;
-            }
-        };
-//
-        Iterator<Integer> incomeChangeIterator = ArrayUtil.getIterator(personArray);
-        IteratorAction<Integer> itTask = new IteratorAction<>(incomeChangeIterator, incomeChangeFunction);
-        ForkJoinPool pool = ForkJoinPoolFactory.getForkJoinPool();
-        pool.execute(itTask);
-        itTask.waitForCompletion();
+        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+        for (Person person: pps) {
+            float desiredShift = getDesiredShift(currentIncomeDistribution, person);
+            executor.addFunction(new IncomeAdjustment(person, desiredShift, meanIncomeChange));
+        }
+        executor.execute();
     }
 
-
-    private void adjustIncomeForPerson (int per) {
-        // adjust income of person with ID per
-
-        Person pp = Person.getPersonFromId(per);
-        int gender = pp.gender - 1;
-        int age = Math.min(99, pp.age);
+    private float getDesiredShift(float[][][] currentIncomeDistribution, Person person) {
+        int gender = person.gender - 1;
+        int age = Math.min(99, person.age);
         int occ = 0;
-        if (pp.occupation == 1) occ = 1;
-        float desiredShift = initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];
-        int newIncome = selectNewIncome(pp.getIncome(), desiredShift);
-        pp.setIncome(newIncome);
-    }
-
-
-    private int selectNewIncome (int currentIncome, float desiredShift) {
-        // calculate new income using a normal distribution
-
-        double[] prob = new double[21];
-        int lowerBound;
-        int upperBound;
-        if (Math.abs(desiredShift) < 1000) {
-            lowerBound = -5000;
-            upperBound = 5000;
-        } else if (desiredShift > 1000) {
-            lowerBound = (int) -desiredShift;
-            upperBound = (int) desiredShift * 3;
-        } else {
-            lowerBound = (int) desiredShift * 3;
-            upperBound = (int) -desiredShift;
+        if (person.occupation == 1) {
+            occ = 1;
         }
-        int smallestAbsValuePos = 0;
-        float smallestAbsValue = Float.MAX_VALUE;
-        for (int i = 0; i < prob.length; i++) {
-            int change = lowerBound + (upperBound - lowerBound) / (prob.length-1) * i;
-            if (Math.abs(change) < smallestAbsValue) {
-                smallestAbsValuePos = i;
-                smallestAbsValue = Math.abs(change);
-            }
-            // normal distribution to calculate change of income
-            prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) * Math.exp(-(Math.pow((desiredShift - change), 2) /
-                    (2 * Math.pow(meanIncomeChange, 2))));
-        }
-        prob[smallestAbsValuePos] = prob[smallestAbsValuePos] * 10;   // make no change most likely
-        int sel = SiloUtil.select(prob);
-        return Math.max((currentIncome + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+        return initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];
     }
-
 
     public static int selectIncomeForPerson (int gender, int age, int occupation) {
         // select income for household based on gender, age and occupation

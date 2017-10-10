@@ -20,6 +20,7 @@ package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.data.MitoHousehold;
+import de.tum.bgu.msm.data.Zone;
 
 import java.util.Map;
 
@@ -29,10 +30,6 @@ import java.util.Map;
  */
 public interface TransportModelI {
 
-	void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, Map<Integer, MitoHousehold> mitoHouseholds,
-				  int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
-				  int[] totalEmplByZone, float[] sizeOfZonesInAcre);
-
 	void setScenarioName(String name);
 
 	void runTransportModel(int year);
@@ -41,4 +38,5 @@ public interface TransportModelI {
 
 	void tripGeneration();
 
+	void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households);
 }
