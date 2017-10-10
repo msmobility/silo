@@ -181,10 +181,7 @@ public class SyntheticPopDe {
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing mode");
-            //readMicroData2010();
-            //checkHouseholdRelationship();
             readSyntheticPopulation();
-            //addCars(false);
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_ddPrice_");
             //readAndStoreMicroData();
         }
