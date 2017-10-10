@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -310,22 +311,29 @@ public class SiloModel {
                 int nextYearForTransportModel = year + 1;
                 if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
 
-                    Map<Integer, MitoHousehold> households = Household.convertHhs();
+                    Map<Integer, Zone> zones = new HashMap<>();
+                    for (int i = 0; i < geoData.getZones().length; i++) {
+                        Zone zone = new Zone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i]);
+                        zone.setRetailEmpl(summarizeData.getRetailEmploymentByZone(geoData)[i]);
+                        zone.setOfficeEmpl(summarizeData.getOfficeEmploymentByZone(geoData)[i]);
+                        zone.setOtherEmpl(summarizeData.getOtherEmploymentByZone(geoData)[i]);
+                        zone.setTotalEmpl(summarizeData.getTotalEmploymentByZone(geoData)[i]);
+                        zones.put(zone.getZoneId(), zone);
+                    }
+
+                    Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
                     for(Person person: Person.getPersons()) {
                         int hhId = person.getHhId();
                         if(households.containsKey(hhId)) {
-                            households.get(hhId).getPersons().add(person.convertToMitoPp());
+                            MitoPerson mitoPerson = person.convertToMitoPp();
+                            households.get(hhId).addPerson(mitoPerson);
                         } else {
                             logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
                                     + " and will thus NOT be considered in the transport model.");
                         }
                     }
 
-                    TransportModel.feedData(geoData.getZones(), Accessibility.getHwySkim(), Accessibility.getTransitSkim(),
-                            households, summarizeData.getRetailEmploymentByZone(geoData),
-                            summarizeData.getOfficeEmploymentByZone(geoData),
-                            summarizeData.getOtherEmploymentByZone(geoData),
-                            summarizeData.getTotalEmploymentByZone(geoData), geoData.getSizeOfZonesInAcres());
+                    TransportModel.feedData(zones, Accessibility.getHwySkim(), Accessibility.getTransitSkim(), households);
                     TransportModel.setScenarioName(SiloUtil.scenarioName);
                     TransportModel.runTransportModel(nextYearForTransportModel);
                     if (createMstmOutputFiles)

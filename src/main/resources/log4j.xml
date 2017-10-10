@@ -3,8 +3,8 @@
 <log4j:configuration>
 	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
-			<!-- <param name="ConversionPattern" value="%d{ISO8601} %5p %C{1}:%L %m%n"/> -->
-			<param name="ConversionPattern" value="%d{ISO8601} %5p %m%n"/>
+			<param name="ConversionPattern" value="%d{ISO8601} %5p %C{1}:%L %m%n"/>
+			<!-- <param name="ConversionPattern" value="%d{ISO8601} %5p %m%n"/> -->
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
 		  <param name="LevelMin" value="info" />
@@ -17,8 +17,10 @@
 			<param name="ConversionPattern" value="%d{ISO8601} %5p %C{1}:%L %m%n"/>
 		</layout>
 		<filter class="org.apache.log4j.varia.LevelRangeFilter">
-		  <param name="LevelMin" value="info" />
-		  <param name="LevelMax" value="info" />
+		  <!-- <param name="LevelMin" value="info" />
+		  <param name="LevelMax" value="info" /> -->
+		  <param name="LevelMin" value="warn" />
+		  <param name="LevelMax" value="fatal" />
 		</filter>
 	</appender>
 
@@ -51,6 +53,7 @@
 	<root>
 		<priority value="info"></priority>
 		<appender-ref ref="stdout"/>
+		<appender-ref ref="stderr"/>
 		<!--<appender-ref ref="stderr"/>-->
 	</root>
 
