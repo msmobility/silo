@@ -254,6 +254,9 @@ public class SiloUtil {
         // open file and return PrintWriter object
 
         File outputFile = new File(fileName);
+        if(outputFile.getParentFile() != null) {
+            outputFile.getParentFile().mkdirs();
+        }
         try {
             FileWriter fw = new FileWriter(outputFile, appendFile);
             BufferedWriter bw = new BufferedWriter(fw);
