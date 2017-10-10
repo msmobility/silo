@@ -150,7 +150,7 @@ public class SyntheticPopDe {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
+        boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
             //Read entry data from the micro data
             if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
@@ -185,7 +185,7 @@ public class SyntheticPopDe {
             //checkHouseholdRelationship();
             readSyntheticPopulation();
             //addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_ddPrice_");
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;
@@ -2376,7 +2376,8 @@ public class SyntheticPopDe {
         schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
         logger.info("   Read input data");
 
-
+        TableDataSet prices = SiloUtil.readCSVfile2("microData/interimFiles/zoneAttributes_landPrice.csv");
+        prices.buildIndex(prices.getColumnPosition("ID_cell"));
         //Generate the households, dwellings and persons
         logger.info("   Starting to generate households");
         for (int i = 1; i <= households.getRowCount(); i++) {
@@ -2417,14 +2418,19 @@ public class SyntheticPopDe {
             int buildingSize = (int) dwellings.getValueAt(i,"building");
             int zone = (int) dwellings.getValueAt(i,"zone");
             int municipality = (int) cellsMatrix.getIndexedValueAt(zone,"ID_city");
-            float ddType1Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling12");
+/*            float ddType1Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling12");
             float ddType3Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling37");
-            DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);
+            DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);*/
+            String ddtype = dwellings.getStringValueAt(i,"type");
+            DwellingType type = guessDwellingType(ddtype);
             int size = (int) dwellings.getValueAt(i,"floor");
             int bedrooms = guessBedrooms(size);
+            int quality = (int)dwellings.getValueAt(i,"quality");
+            float brw = prices.getIndexedValueAt(zone, ddtype);
+            float price = guessPrice(brw, quality, size);
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
                     (int)dwellings.getValueAt(i,"hhID"),type,bedrooms,
-                    (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),
+                    (int)dwellings.getValueAt(i,"quality"),(int) price,
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
@@ -2442,6 +2448,21 @@ public class SyntheticPopDe {
                     (int) jobs.getValueAt(i, "personId"), jobs.getStringValueAt(i, "type"));
         }
         logger.info("   Generated jobs");
+    }
+
+    private float guessPrice(float brw, int quality, int size) {
+
+        float coef = 1;
+        if (quality == 1){
+            coef = 0.7f;
+        } else if (quality == 2){
+            coef = 0.9f;
+        } else if (quality == 4){
+            coef = 1.1f;
+        }
+        float convertToMonth = 0.0057f;
+        float price = brw * size * coef * convertToMonth + 150;
+        return price;
     }
 
     private int guessBedrooms(int size) {
@@ -3069,6 +3090,24 @@ public class SyntheticPopDe {
             }
         }
 
+        return type;
+    }
+
+
+    private static DwellingType guessDwellingType(String ddType){
+        //Guess dwelling type based on the number of dwellings in the building from micro data (buildingSize, from micro data)
+        //and the probability of having 1 dwelling out of having 1 or 2 (distribution in the municipality, from census)
+        //and the probability of having 3-6 dwellings out of having 3-3+ (distribution in the municipality, from census)
+        DwellingType type = DwellingType.MF234;
+        if (ddType == "MF234"){
+
+        } else if (ddType.equals("MF5plus")){
+            type = DwellingType.MF5plus;
+        } else if (ddType.equals("SFD")) {
+            type = DwellingType.SFD;
+        } else if (ddType.equals("SFA")) {
+            type = DwellingType.SFA;
+        }
         return type;
     }
 
