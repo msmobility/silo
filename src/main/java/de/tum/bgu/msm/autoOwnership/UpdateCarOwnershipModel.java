@@ -27,7 +27,7 @@ public class UpdateCarOwnershipModel {
     private int dataSheetNumber;
     int numAltsCarUpdate;
     private double[][][] carUpdateProbability;   // [previous number of cars][difference in Expected Value][number of alternatives]
-    public geoDataI geoData;
+    public GeoData geoData;
     public CreateCarOwnershipModel createCarOwnershipModel;
 
 

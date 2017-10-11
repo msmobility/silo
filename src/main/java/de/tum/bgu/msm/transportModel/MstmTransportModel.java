@@ -40,11 +40,11 @@ public class MstmTransportModel implements TransportModelI {
 
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
-    private geoDataI geoData;
+    private GeoData geoData;
     private TripGenerationData tgData;
 
 
-    public MstmTransportModel(ResourceBundle rbLandUse, geoDataI geoData) {
+    public MstmTransportModel(ResourceBundle rbLandUse, GeoData geoData) {
         // constructor
         this.rbLandUse = rbLandUse;
         this.geoData = geoData;

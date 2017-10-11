@@ -1,9 +1,6 @@
 package de.tum.bgu.msm.SyntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
@@ -53,7 +50,7 @@ public class SyntheticPopUs {
     protected HashMap<Integer, Integer> jobErrorCounter;
 
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
 
 
     public SyntheticPopUs(ResourceBundle rb) {
@@ -235,7 +232,7 @@ public class SyntheticPopUs {
         int[] stateNumber = {24,11,10,42,51,54};      // FIPS code of String states[]
 
         jobErrorCounter = new HashMap<>();
-        //geoDataI geoData = new geoDataMstm(rb);
+        //GeoData geoData = new geoDataMstm(rb);
 
         for (int st = 0; st < states.length; st++) {
             String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +

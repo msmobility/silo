@@ -46,7 +46,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, geoDataI, String)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, GeoData, String)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -94,7 +94,7 @@ public class SiloModelContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, geoDataI geoData,
+    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, GeoData geoData,
                                                               String implementation) {
 
         logger.info("Creating UEC Models");

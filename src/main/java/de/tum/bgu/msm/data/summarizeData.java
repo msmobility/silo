@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.SiloUtil;
@@ -52,7 +51,7 @@ public class summarizeData {
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
-    //public geoDataI geoData;
+    //public GeoData geoData;
 
 
     public static void openResultFile(ResourceBundle rb) {
@@ -175,7 +174,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getPopulationByZone (geoDataI geoData) {
+    public static int[] getPopulationByZone (GeoData geoData) {
         // summarize population by zone
 
         int[] pp = new int[geoData.getHighestZonalId() + 1];
@@ -187,7 +186,7 @@ public class summarizeData {
     }
 
 
-    public int[] getHouseholdsByZone (geoDataI geoData) {
+    public int[] getHouseholdsByZone (GeoData geoData) {
         // summarize households by zone
 
         int[] householdsByZone = new int[geoData.getZones().length];
@@ -199,7 +198,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getRetailEmploymentByZone(geoDataI geoData) {
+    public static int[] getRetailEmploymentByZone(GeoData geoData) {
         // summarize retail employment by zone
 
         int[] retailEmplByZone = new int[geoData.getZones().length];
@@ -210,7 +209,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getOfficeEmploymentByZone(geoDataI geoData) {
+    public static int[] getOfficeEmploymentByZone(GeoData geoData) {
         // summarize office employment by zone
 
         int[] officeEmplByZone = new int[geoData.getZones().length];
@@ -221,7 +220,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getOtherEmploymentByZone(geoDataI geoData) {
+    public static int[] getOtherEmploymentByZone(GeoData geoData) {
         // summarize other employment by zone
 
         int[] otherEmplByZone = new int[geoData.getZones().length];
@@ -232,7 +231,7 @@ public class summarizeData {
     }
 
 
-    public static int[] getTotalEmploymentByZone(geoDataI geoData) {
+    public static int[] getTotalEmploymentByZone(GeoData geoData) {
         // summarize retail employment by zone
 
         int[] totalEmplByZone = new int[geoData.getZones().length];
@@ -1018,7 +1017,7 @@ public class summarizeData {
     }
 
 
-    public static void preparePrestoSummary (ResourceBundle rb, geoDataI geoData) {
+    public static void preparePrestoSummary (ResourceBundle rb, GeoData geoData) {
         // open PRESTO summary file
 
         String prestoZoneFile = SiloUtil.baseDirectory + rb.getString(PROPERTIES_PRESTO_REGION_DEFINITION);

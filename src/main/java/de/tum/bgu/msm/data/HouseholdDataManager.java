@@ -381,7 +381,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static void summarizePopulation (geoDataI geoData) {
+    public static void summarizePopulation (GeoData geoData) {
         // summarize population for summary file
 
         int pers[][] = new int[2][101];
@@ -749,7 +749,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByZone (geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
         // return number of households by zone
         int[] hhByZone = new int[geoData.getZones().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -759,7 +759,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByRegion(geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
         for (Household hh: Household.getHouseholdArray()) {

@@ -80,7 +80,7 @@ public class SiloModel {
     private long[][] timeCounter;
     private SiloModelContainer modelContainer;
     private SiloDataContainer dataContainer;
-    public geoDataI geoData;
+    public GeoData geoData;
     private Config matsimConfig;
     private MitoTransportModel transportModel; // ony used for MD implementation
 

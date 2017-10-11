@@ -43,7 +43,7 @@ public class JobDataManager {
     public static final String PROPERTIES_JOB_CONTROL_TOTAL    = "job.control.total";
     protected static final String PROPERTIES_JOB_CONTROL_YEARS = "job.control.total.years";
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
 
     private static int highestJobIdInUse;
     private static int[][] vacantJobsByRegion;
@@ -52,7 +52,7 @@ public class JobDataManager {
     private static float[] zonalJobDensity;
 
 
-    public JobDataManager(ResourceBundle rb, geoDataI geoData) {
+    public JobDataManager(ResourceBundle rb, GeoData geoData) {
         // constructor
         this.rb = rb;
         this.geoData = geoData;

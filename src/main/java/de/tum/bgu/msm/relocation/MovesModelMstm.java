@@ -8,7 +8,6 @@ package de.tum.bgu.msm.relocation;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -24,7 +23,7 @@ import java.util.ResourceBundle;
 public class MovesModelMstm implements MovesModelI {
     private static Logger logger = Logger.getLogger(MovesModelMstm.class);
     static Logger traceLogger = Logger.getLogger("trace");
-    private geoDataI geoData;
+    private GeoData geoData;
     protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
     protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
@@ -65,7 +64,7 @@ public class MovesModelMstm implements MovesModelI {
     private int[] householdsByRegion;
 
 
-    public MovesModelMstm(ResourceBundle rb, geoDataI geoData) {
+    public MovesModelMstm(ResourceBundle rb, GeoData geoData) {
         // constructor
         this.rb = rb;
         this.geoData = geoData;

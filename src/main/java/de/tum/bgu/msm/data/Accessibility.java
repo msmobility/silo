@@ -35,7 +35,7 @@ public class Accessibility {
 
     static Logger logger = Logger.getLogger(Accessibility.class);
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
     private static Matrix hwySkim;
     private static Matrix transitSkim;
     private static double[] autoAccessibility;
@@ -45,7 +45,7 @@ public class Accessibility {
     private static float autoOperatingCosts;
     private static Matrix travelTimeToRegion;
 
-    public Accessibility(ResourceBundle rb, int year, geoDataI geoData) {
+    public Accessibility(ResourceBundle rb, int year, GeoData geoData) {
         this.rb = rb;
         this.geoData = geoData;
         readSkim(year);

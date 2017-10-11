@@ -19,11 +19,11 @@ public class SiloDataContainer {
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;
-    private final geoDataI geoData;
+    private final GeoData geoData;
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, geoDataI, boolean)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, GeoData, boolean)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -33,7 +33,7 @@ public class SiloDataContainer {
      * @param geoData
      */
     private SiloDataContainer(HouseholdDataManager householdData, RealEstateDataManager realEstateData,
-                               JobDataManager jobData, geoDataI geoData) {
+                               JobDataManager jobData, GeoData geoData) {
         this.householdData = householdData;
         this.realEstateData = realEstateData;
         this.jobData = jobData;
@@ -46,7 +46,7 @@ public class SiloDataContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse, geoDataI geoData,
+    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse, GeoData geoData,
                                                             boolean readSmallSynPop) {
 
         // read micro data
@@ -89,7 +89,7 @@ public class SiloDataContainer {
         return jobData;
     }
 
-    public geoDataI getGeoData() {
+    public GeoData getGeoData() {
         return geoData;
     }
 }

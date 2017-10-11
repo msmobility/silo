@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 public class MovesModelMuc implements MovesModelI {
     private static Logger logger = Logger.getLogger(MovesModelMuc.class);
     static Logger traceLogger = Logger.getLogger("trace");
-    private geoDataI geoData;
+    private GeoData geoData;
     protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
     protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
@@ -58,7 +58,7 @@ public class MovesModelMuc implements MovesModelI {
     private SelectDwellingJSCalculator dwellingCalculator;
 
 
-    public MovesModelMuc(ResourceBundle rb, geoDataI geoData) {
+    public MovesModelMuc(ResourceBundle rb, GeoData geoData) {
         // constructor
         this.rb = rb;
         this.geoData = geoData;
