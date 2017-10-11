@@ -44,6 +44,8 @@ import java.util.ResourceBundle;
 public class SiloModel {
     static Logger logger = Logger.getLogger(SiloModel.class);
 
+    public enum Implementation {MUC, MSTM, CAPE_TOWWN, MSP};
+
     private ResourceBundle rbLandUse;
 
     public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
@@ -95,7 +97,7 @@ public class SiloModel {
     }
 
 
-    public void runModel(String implementation) {
+    public void runModel(Implementation implementation) {
         //Main method to run a SILO model
 
         if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO, false)) return;
@@ -109,10 +111,10 @@ public class SiloModel {
 
         // Define geoData object, which stores all geographical data (zones, zonal data, regions, etc.)
         switch (implementation) {
-            case "MSTM":
+            case MSTM:
                 geoData = new geoDataMstm(rbLandUse);
                 break;
-            case "Muc":
+            case MUC:
                 geoData = new geoDataMuc(rbLandUse);
                 break;
             default:
@@ -396,8 +398,8 @@ public class SiloModel {
         // Note: only implemented for MSTM:
         geoData = new geoDataMstm(rbLandUse);
         // Note: only implemented for MSTM:
-        String implementation = "MSTM";
-        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, implementation);
+
+        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, Implementation.MSTM);
         // read micro data
         dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData, false);
 

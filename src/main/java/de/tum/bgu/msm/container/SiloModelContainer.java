@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.*;
@@ -46,7 +47,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, GeoData, String)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, GeoData, Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -95,7 +96,7 @@ public class SiloModelContainer {
      * @return A SiloModelContainer, with each model created within
      */
     public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, GeoData geoData,
-                                                              String implementation) {
+                                                              Implementation implementation) {
 
         logger.info("Creating UEC Models");
         DeathModel death = new DeathModel(rbLandUse);
@@ -106,7 +107,7 @@ public class SiloModelContainer {
         Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), geoData);
         //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        if (implementation.equals("MSTM")) {
+        if (implementation.equals(Implementation.MSTM)) {
             move = new MovesModelMstm(rbLandUse, geoData);
         } else {
             move = new MovesModelMuc(rbLandUse, geoData);

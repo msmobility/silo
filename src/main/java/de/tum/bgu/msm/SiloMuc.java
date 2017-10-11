@@ -40,7 +40,7 @@ public class SiloMuc {
            /*ExtractDataDE de = new ExtractDataDE(rb);
             de.runSP(); */
             SiloModel model = new SiloModel(rb);
-            model.runModel("Muc");
+            model.runModel(SiloModel.Implementation.MUC);
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");

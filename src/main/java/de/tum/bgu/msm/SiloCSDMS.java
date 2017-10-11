@@ -45,7 +45,7 @@ public class SiloCSDMS {
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             model = new SiloModel(rb);
-            model.runModel("MSTM");
+            model.runModel(SiloModel.Implementation.MSTM);
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
