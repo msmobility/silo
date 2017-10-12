@@ -127,10 +127,7 @@ public class MatsimTransportModel implements TransportModelI {
 	public void writeOutSocioEconomicDataForMstm(int year) {
 		// Not doing anything
 	}
-	@Override
-	public void tripGeneration() {
-		// Not doing anything
-	}
+
 
 	@Override
 	public void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households) {

@@ -73,8 +73,8 @@ public class MstmTransportModel implements TransportModelI {
     }
 
 
-    @Override
-    public void tripGeneration () {
+    
+    private void tripGeneration () {
         // run trip generation
 
         tgData = new TripGenerationData(rbTravel);

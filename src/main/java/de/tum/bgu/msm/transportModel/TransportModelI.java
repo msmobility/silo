@@ -36,7 +36,5 @@ public interface TransportModelI {
 	
 	void writeOutSocioEconomicDataForMstm(int year) ;
 
-	void tripGeneration();
-
 	void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households);
 }

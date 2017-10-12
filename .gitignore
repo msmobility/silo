@@ -13,3 +13,5 @@ lib/
 /event.log
 /priceUpdate2000.csv
 /timeTracker.csv
+scenOutput
+status.csv
