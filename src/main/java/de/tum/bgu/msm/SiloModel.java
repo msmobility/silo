@@ -722,8 +722,7 @@ public class SiloModel {
     }
 
     private void updateCars() {
-        //method to estimate the number of cars per household
-        //it must be run after generating the population
+        //method to estimate the change in level of household car ownership
         UpdateCarOwnershipModel updateCarOwnershipModel = new UpdateCarOwnershipModel(rbLandUse);
         updateCarOwnershipModel.run();
     }
