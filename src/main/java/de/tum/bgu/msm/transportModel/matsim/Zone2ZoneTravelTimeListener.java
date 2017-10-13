@@ -11,7 +11,6 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
@@ -20,7 +19,6 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
-import org.matsim.vehicles.Vehicle;
 import org.opengis.feature.simple.SimpleFeature;
 
 /**
@@ -41,17 +39,18 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 	
 	public Zone2ZoneTravelTimeListener(Controler controler, Network network, int finalIteration,
 			Map<Integer,SimpleFeature> zoneFeatureMap, double timeOfDay, int numberOfCalcPoints,
-			Map<Tuple<Integer, Integer>, Float> travelTimesMap, Random random) {
+			Random random) {
+		
+		travelTimesMap = new HashMap<>();
+		
 		this.controler = controler;
 		this.network = network;
 		this.finalIteration = finalIteration;
 		this.zoneFeatureMap = zoneFeatureMap;
 		this.timeOfDay = timeOfDay;
 		this.numberOfCalcPoints = numberOfCalcPoints;
-		this.travelTimesMap = travelTimesMap;
 		this.random = random;
 	}
-	
 	
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent event) {
@@ -66,7 +65,10 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			
 			Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 			
+			
+			
 			for (int zoneId : zoneFeatureMap.keySet()) {
+				
 				for (int i = 0; i < numberOfCalcPoints; i++) { // Several points in a given origin zone
 					SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
 					Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature, random);
@@ -80,8 +82,11 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 				}
 			}			
 			
+			log.info("There are " + zoneFeatureMap.keySet().size() + " origin zones.");
+			int counter = 0;
 			
 			for (int originZoneId : zoneFeatureMap.keySet()) { // Going over all origin zones
+				counter++;
 				
 				for (Node originNode : zoneCalculationNodesMap.get(originZoneId)) { // Several points in a given origin zone
 					leastCoastPathTree.calculate(network, originNode, timeOfDay);
@@ -113,6 +118,10 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 						}
 					}
 				}
+				
+				if (counter % 100 == 0) {
+					log.info(counter + " origin zones done.");
+				}
 			}
 			
 			for (Tuple<Integer, Integer> originDestinationRelation : travelTimesMap.keySet()) {
@@ -122,24 +131,8 @@ public class Zone2ZoneTravelTimeListener implements IterationEndsListener {
 			}
 		}
 	}
-	
-	
-	// Inner class to use travel time as travel disutility
-	class MyTravelTimeDisutility implements TravelDisutility{
-		TravelTime travelTime;
-		
-		public MyTravelTimeDisutility(TravelTime travelTime) {
-			this.travelTime = travelTime;
-		}
-		
-		@Override
-		public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
-			return travelTime.getLinkTravelTime(link, time, person, vehicle);
-		}
 
-		@Override
-		public double getLinkMinimumTravelDisutility(Link link) {
-			return link.getLength() / link.getFreespeed(); // minimum travel time
-		}
+	public Map<Tuple<Integer, Integer>, Float> getTravelTimesMap() {
+		return this.travelTimesMap;
 	}
 }

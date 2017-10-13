@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import de.tum.bgu.msm.transportModel.mstm.SiloMstmTest;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -37,7 +38,8 @@ public class SiloMatsimTest {
 	 */
 	@Test
 	public final void testMain() {
-		SiloMstmTest.cleanUp();
+		SiloTestUtils.cleanUpMicrodataFiles();
+		SiloTestUtils.cleanUpOtherFiles();
 
 		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
 		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim.properties";
@@ -115,7 +117,8 @@ public class SiloMatsimTest {
 		if (cleanupAfterTest) {
 			File dir = new File(utils.getOutputDirectory());
 			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
-			SiloMstmTest.cleanUp();
+			SiloTestUtils.cleanUpMicrodataFiles();
+			SiloTestUtils.cleanUpOtherFiles();
 		}
 	}
 }
