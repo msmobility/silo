@@ -1,9 +1,11 @@
 package de.tum.bgu.msm.data;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.utils.collections.Tuple;
 
 import com.pb.common.datafile.TableDataSet;
@@ -11,6 +13,8 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import omx.OmxFile;
 import omx.OmxMatrix;
 
@@ -310,4 +314,12 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     public static Matrix getTransitSkim() {
         return transitSkim;
     }
+
+
+	public static Map<String, TravelTimes> getTravelTimes() {
+		Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
+		travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
+		travelTimes.put(TransportMode.pt, new MatrixTravelTimes(transitSkim));
+		return travelTimes;
+	}
 }

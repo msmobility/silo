@@ -16,29 +16,31 @@
  */
 package de.tum.bgu.msm;
 
+import java.io.File;
+import java.util.ResourceBundle;
+
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+
 import com.pb.common.util.ResourceUtil;
+
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.geoDataMstm;
+import de.tum.bgu.msm.data.geoDataMuc;
+import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.transportModel.MatsimTransportModel;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
-import de.tum.bgu.msm.utils.CblcmDiffGenerator;
-import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
-
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
- *
  */
 public class SiloModel {
 	static Logger logger = Logger.getLogger(SiloModel.class);
@@ -145,7 +147,7 @@ public class SiloModel {
 		} else {
 			logger.info("  MITO is used as the transport model");
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
-			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory);
+			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, geoData);
 		}
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
@@ -296,38 +298,8 @@ public class SiloModel {
 				}
 			}
 
-			if ( runMatsim ) {
-				logger.info("using MATSim as transport model") ;
-				int nextYearForTransportModel = year + 1;
-				if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-					transportModel.runTransportModel(nextYearForTransportModel);
-				}
-			} else if ( runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true) ) {
+			if (runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
 				if (SiloUtil.containsElement(tdmYears, year + 1)) {
-
-					Map<Integer, Zone> zones = new HashMap<>();
-					for (int i = 0; i < geoData.getZones().length; i++) {
-						Zone zone = new Zone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i]);
-						zone.setRetailEmpl(summarizeData.getRetailEmploymentByZone(geoData)[i]);
-						zone.setOfficeEmpl(summarizeData.getOfficeEmploymentByZone(geoData)[i]);
-						zone.setOtherEmpl(summarizeData.getOtherEmploymentByZone(geoData)[i]);
-						zone.setTotalEmpl(summarizeData.getTotalEmploymentByZone(geoData)[i]);
-						zones.put(zone.getZoneId(), zone);
-					}
-
-					Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
-					for(Person person: Person.getPersons()) {
-						int hhId = person.getHhId();
-						if(households.containsKey(hhId)) {
-							MitoPerson mitoPerson = person.convertToMitoPp();
-							households.get(hhId).addPerson(mitoPerson);
-						} else {
-							logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
-									+ " and will thus NOT be considered in the transport model.");
-						}
-					}
-
-					transportModel.feedData(zones, Accessibility.getHwySkim(), Accessibility.getTransitSkim(), households);
 					transportModel.runTransportModel(year + 1);
 				}
 			}

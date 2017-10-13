@@ -70,7 +70,7 @@ public class SiloModelCBLCM {
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory);
+	        transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory, geoData);
 	        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
 	            summarizeData.preparePrestoSummary(rbLandUse, geoData);
 	        SiloUtil.initializeRandomNumber();
@@ -274,7 +274,4 @@ public class SiloModelCBLCM {
 	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter, rbLandUse );
 	        logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
 	}
-
-
-
 }

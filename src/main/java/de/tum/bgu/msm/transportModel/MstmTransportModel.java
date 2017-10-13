@@ -121,11 +121,6 @@ public class MstmTransportModel implements TransportModelI {
         }
     }
 
-    @Override
-    public void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households) {
-
-    }
-
 
     private TableDataSet createHHTypeDefinition (String purpose) {
         // create household type definition file
