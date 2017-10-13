@@ -22,6 +22,7 @@ import java.util.*;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
 
@@ -303,7 +304,7 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob (int homeZone, int[] regions) {
+    public static int findVacantJob (int homeZone, int[] regions, SiloModelContainer siloModelContainer) {
         // select vacant job for person living in homeZone
 
         double[] regionProbability = new double[SiloUtil.getHighestVal(regions) + 1];
@@ -312,15 +313,15 @@ public class JobDataManager {
             // person has home location (i.e., is not inmigrating right now)
             for (int reg: regions) {
                 if (vacantJobsByRegionPos[reg] > 0) {
-                    int distance = (int) (Accessibility.getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
-                    regionProbability[reg] = Accessibility.getWorkTLFD(distance) * (double) getNumberOfVacantJobsByRegion(reg);
+                    int distance = (int) (siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
+                    regionProbability[reg] = siloModelContainer.getAcc().getWorkTLFD(distance) * (double) getNumberOfVacantJobsByRegion(reg);
                 }
             }
             if (SiloUtil.getSum(regionProbability) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (int reg: regions) {
                     if (vacantJobsByRegionPos[reg] > 0) {
-                        int distance = (int) (Accessibility.getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
+                        int distance = (int) (siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
                         regionProbability[reg] = 1f / distance;
                     }
                 }

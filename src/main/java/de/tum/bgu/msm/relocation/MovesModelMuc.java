@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 public class MovesModelMuc implements MovesModelI {
     private static Logger logger = Logger.getLogger(MovesModelMuc.class);
     static Logger traceLogger = Logger.getLogger("trace");
-    private GeoData geoData;
+    private final GeoData geoData;
     protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
     protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
     protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
@@ -211,40 +211,40 @@ public class MovesModelMuc implements MovesModelI {
     }
 
 
-    private double convertDistToWorkToUtil (Household hh, int homeZone) {
-        // convert distance to work and school to utility
-        double util = 1;
-        for (Person p: hh.getPersons()) {
-            if (p.getOccupation() == 1 && p.getWorkplace() != -2) {
-                int workZone = Job.getJobFromId(p.getWorkplace()).getZone();
-                int travelTime = (int) SiloUtil.rounder(Accessibility.getAutoTravelTime(homeZone, workZone),0);
-                util = util * Accessibility.getWorkTLFD(travelTime);
-            }
-        }
-        return util;
-    }
+//    private double convertDistToWorkToUtil (Household hh, int homeZone) {
+//        // convert distance to work and school to utility
+//        double util = 1;
+//        for (Person p: hh.getPersons()) {
+//            if (p.getOccupation() == 1 && p.getWorkplace() != -2) {
+//                int workZone = Job.getJobFromId(p.getWorkplace()).getZone();
+//                int travelTime = (int) SiloUtil.rounder(siloModelContainer.getAcc().getAutoTravelTime(homeZone, workZone),0);
+//                util = util * siloModelContainer.getAcc().getWorkTLFD(travelTime);
+//            }
+//        }
+//        return util;
+//    }
 
 
-    private double convertTravelCostsToUtility (Household hh, int homeZone) {
-        // convert travel costs to utility
-        double util = 1;
-        float workTravelCostsGasoline = 0;
-        for (Person p: hh.getPersons()) if (p.getOccupation() == 1 && p.getWorkplace() != -2) {
-            int workZone = Job.getJobFromId(p.getWorkplace()).getZone();
-            // yearly commute costs with 251 work days over 12 months, doubled to account for return trip
-            workTravelCostsGasoline += Accessibility.getTravelCosts(homeZone, workZone) * 251f * 2f;
-        }
-        // todo: Create more plausible utilities
-        // Assumptions: Transportation costs are 5.9-times higher than expenditures for gasoline (https://www.census.gov/compendia/statab/2012/tables/12s0688.xls)
-        // Households spend 19% of their income on transportation, and 70% thereof is not
-        // work-related (but HBS, HBO, NHB, etc. trips)
-        float travelCosts = workTravelCostsGasoline * 5.9f + (hh.getHhIncome() * 0.19f * 0.7f);
-        if (travelCosts > (hh.getHhIncome() * 0.19f)) util = 0.5;
-        if (travelCosts > (hh.getHhIncome() * 0.25f)) util = 0.4;
-        if (travelCosts > (hh.getHhIncome() * 0.40f)) util = 0.2;
-        if (travelCosts > (hh.getHhIncome() * 0.50f)) util = 0.0;
-        return util;
-    }
+//    private double convertTravelCostsToUtility (Household hh, int homeZone) {
+//        // convert travel costs to utility
+//        double util = 1;
+//        float workTravelCostsGasoline = 0;
+//        for (Person p: hh.getPersons()) if (p.getOccupation() == 1 && p.getWorkplace() != -2) {
+//            int workZone = Job.getJobFromId(p.getWorkplace()).getZone();
+//            // yearly commute costs with 251 work days over 12 months, doubled to account for return trip
+//            workTravelCostsGasoline += siloModelContainer.getAcc().getTravelCosts(homeZone, workZone) * 251f * 2f;
+//        }
+//        // todo: Create more plausible utilities
+//        // Assumptions: Transportation costs are 5.9-times higher than expenditures for gasoline (https://www.census.gov/compendia/statab/2012/tables/12s0688.xls)
+//        // Households spend 19% of their income on transportation, and 70% thereof is not
+//        // work-related (but HBS, HBO, NHB, etc. trips)
+//        float travelCosts = workTravelCostsGasoline * 5.9f + (hh.getHhIncome() * 0.19f * 0.7f);
+//        if (travelCosts > (hh.getHhIncome() * 0.19f)) util = 0.5;
+//        if (travelCosts > (hh.getHhIncome() * 0.25f)) util = 0.4;
+//        if (travelCosts > (hh.getHhIncome() * 0.40f)) util = 0.2;
+//        if (travelCosts > (hh.getHhIncome() * 0.50f)) util = 0.0;
+//        return util;
+//    }
 
 
     public double[] updateUtilitiesOfVacantDwelling (Dwelling dd, SiloModelContainer modelContainer) {
@@ -294,7 +294,7 @@ public class MovesModelMuc implements MovesModelI {
     }
 
 
-    public void calculateRegionalUtilities() {
+    public void calculateRegionalUtilities(SiloModelContainer siloModelContainer) {
         // everything is available
 
         int[] regions = geoData.getRegionList();
@@ -304,8 +304,8 @@ public class MovesModelMuc implements MovesModelI {
         int[] regPrice = new int[highestRegion + 1];
         float[] regAcc = new float[highestRegion + 1];
         for (int region: regions) {
-            regPrice[region] = calculateRegPrice(region);
-            regAcc[region] = (float) convertAccessToUtility(Accessibility.getRegionalAccessibility(region));
+            regPrice[geoData.getRegionIndex(region)] = calculateRegPrice(region);
+            regAcc[geoData.getRegionIndex(region)] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
         }
 
         utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][regions.length];
@@ -362,7 +362,7 @@ public class MovesModelMuc implements MovesModelI {
     }
 
 
-    private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
+    private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones, SiloModelContainer siloModelContainer) {
         // return utility of regions based on household type and based on work location of workers in household
 
         int[] regions = geoData.getRegionList();
@@ -372,8 +372,8 @@ public class MovesModelMuc implements MovesModelI {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
-                    int smallestDistInMin = (int) Accessibility.getMinDistanceFromZoneToRegion(workZone, regions[i]);
-                    workDistanceFactor[i] = workDistanceFactor[i] * Accessibility.getWorkTLFD(smallestDistInMin);
+                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(workZone, regions[i]);
+                    workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getWorkTLFD(smallestDistInMin);
                 }
             }
         }
@@ -455,7 +455,7 @@ public class MovesModelMuc implements MovesModelI {
 
         // Step 1: select region
         int[] regions = geoData.getRegionList();
-        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones);
+        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones, modelContainer);
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;

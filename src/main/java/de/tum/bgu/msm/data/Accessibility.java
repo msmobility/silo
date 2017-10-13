@@ -40,14 +40,14 @@ public class Accessibility {
     static Logger logger = Logger.getLogger(Accessibility.class);
     private ResourceBundle rb;
     private GeoData geoData;
-    private static Matrix hwySkim;
-    private static Matrix transitSkim;
-    private static double[] autoAccessibility;
-    private static double[] transitAccessibility;
-    private static double[] regionalAccessibility;
-    private static float[] workTLFD;
-    private static float autoOperatingCosts;
-    private static Matrix travelTimeToRegion;
+    private Matrix hwySkim;
+    private Matrix transitSkim;
+    private double[] autoAccessibility;
+    private double[] transitAccessibility;
+    private double[] regionalAccessibility;
+    private float[] workTLFD;
+    private float autoOperatingCosts;
+    private Matrix travelTimeToRegion;
 
     public Accessibility(ResourceBundle rb, int year, GeoData geoData) {
         this.rb = rb;
@@ -156,15 +156,15 @@ public class Accessibility {
     // end new Matsim
     
 
-    public static float getAutoTravelTime(int i, int j) {
+    public float getAutoTravelTime(int i, int j) {
         return hwySkim.getValueAt(i, j);
     }
 
-    public static float getTransitTravelTime(int i, int j) {
+    public float getTransitTravelTime(int i, int j) {
         return transitSkim.getValueAt(i, j);
     }
 
-    public static float getTravelCosts(int i, int j) {
+    public float getTravelCosts(int i, int j) {
         return (autoOperatingCosts / 100f) * hwySkim.getValueAt(i, j);
     }
 
@@ -238,12 +238,12 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
         autoAccessibility = SiloUtil.scaleArray(autoAccessibility, 100);
         transitAccessibility = SiloUtil.scaleArray(transitAccessibility, 100);
 
-        regionalAccessibility = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        regionalAccessibility = new double[geoData.getRegionList().length];
         for (int region: geoData.getRegionList()) {
             int[] zonesInThisRegion = geoData.getZonesInRegion(region);
             double sm = 0;
             for (int zone: zonesInThisRegion) sm += autoAccessibility[geoData.getZoneIndex(zone)];
-             regionalAccessibility[region] = sm / zonesInThisRegion.length;
+             regionalAccessibility[geoData.getRegionIndex(region)] = sm / zonesInThisRegion.length;
         }
     }
 
@@ -289,34 +289,24 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     }
 
 
-    public static float getWorkTLFD (int minutes) {
+    public float getWorkTLFD (int minutes) {
         // return probability to commute 'minutes'
         if (minutes < workTLFD.length) return workTLFD[minutes];
         else return 0;
     }
 
 
-    public static double getRegionalAccessibility (int region) {
-        return regionalAccessibility[region];
+    public double getRegionalAccessibility (int region) {
+        return regionalAccessibility[geoData.getRegionIndex(region)];
     }
 
 
-    public static float getMinDistanceFromZoneToRegion (int zone, int region) {
+    public float getMinDistanceFromZoneToRegion (int zone, int region) {
         return travelTimeToRegion.getValueAt(zone, region);
     }
 
 
-    public static Matrix getHwySkim() {
-        return hwySkim;
-    }
-
-
-    public static Matrix getTransitSkim() {
-        return transitSkim;
-    }
-
-
-	public static Map<String, TravelTimes> getTravelTimes() {
+	public Map<String, TravelTimes> getTravelTimes() {
 		Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 		travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
 		travelTimes.put(TransportMode.pt, new MatrixTravelTimes(transitSkim));

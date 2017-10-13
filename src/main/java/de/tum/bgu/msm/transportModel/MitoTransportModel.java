@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.container.SiloModelContainer;
 import org.apache.log4j.Logger;
 
 import de.tum.bgu.msm.MitoModel;
@@ -26,12 +27,14 @@ import de.tum.bgu.msm.io.input.InputFeed;
  */
 public class MitoTransportModel implements TransportModelI {
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-    private MitoModel mito;
+	private final SiloModelContainer modelContainer;
+	private MitoModel mito;
     private final GeoData geoData;
 
-    public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData) {
+    public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
         this.mito = new MitoModel(rb);
         this.geoData = geoData;
+        this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
     }
@@ -67,7 +70,7 @@ public class MitoTransportModel implements TransportModelI {
 			}
 		}
 		
-		Map<String, TravelTimes> travelTimes = Accessibility.getTravelTimes();
+		Map<String, TravelTimes> travelTimes = modelContainer.getAcc().getTravelTimes();
         logger.info("  SILO data being sent to MITO");
         InputFeed feed = new InputFeed(zones, travelTimes, households);
         mito.feedData(feed);

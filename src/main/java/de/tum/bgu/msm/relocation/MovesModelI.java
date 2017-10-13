@@ -17,7 +17,7 @@ public interface MovesModelI {
 
     double[] updateUtilitiesOfVacantDwelling (Dwelling dd, SiloModelContainer modelContainer);
 
-    void calculateRegionalUtilities();
+    void calculateRegionalUtilities(SiloModelContainer modelContainer);
 
     void chooseMove (int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer);
 

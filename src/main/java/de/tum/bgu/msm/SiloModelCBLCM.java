@@ -6,8 +6,6 @@ package de.tum.bgu.msm;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-import org.matsim.core.config.Config;
-
 import com.pb.common.util.ResourceUtil;
 
 import de.tum.bgu.msm.SiloModel.Implementation;
@@ -70,7 +68,7 @@ public class SiloModelCBLCM {
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory, geoData);
+	        transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory, geoData, modelContainer);
 	        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
 	            summarizeData.preparePrestoSummary(rbLandUse, geoData);
 	        SiloUtil.initializeRandomNumber();
@@ -131,7 +129,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getMove().calculateRegionalUtilities();
+	        modelContainer.getMove().calculateRegionalUtilities(modelContainer);
 	        modelContainer.getMove().calculateAverageHousingSatisfaction(modelContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
@@ -179,7 +177,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.findNewJob.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getChangeEmployment().findNewJob(event[1]);
+	                modelContainer.getChangeEmployment().findNewJob(event[1], modelContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.quitJob.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
@@ -243,7 +241,7 @@ public class SiloModelCBLCM {
 	        if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
 	            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), dataContainer);
 
-	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations();
+	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 	        if (SiloUtil.getEndYear() != 2040) {
 	            summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);

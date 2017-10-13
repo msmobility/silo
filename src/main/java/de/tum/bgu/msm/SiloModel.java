@@ -147,7 +147,7 @@ public class SiloModel {
 		} else {
 			logger.info("  MITO is used as the transport model");
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
-			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, geoData);
+			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, geoData, modelContainer);
 		}
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
@@ -213,7 +213,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 10][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			modelContainer.getMove().calculateRegionalUtilities();
+			modelContainer.getMove().calculateRegionalUtilities(modelContainer);
 			modelContainer.getMove().calculateAverageHousingSatisfaction(modelContainer);
 			if (trackTime) timeCounter[EventTypes.values().length + 6][year] += System.currentTimeMillis() - startTime;
 
@@ -271,7 +271,7 @@ public class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.findNewJob.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeEmployment().findNewJob(event[1]);
+					modelContainer.getChangeEmployment().findNewJob(event[1], modelContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.quitJob.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -327,7 +327,7 @@ public class SiloModel {
 		if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
 			summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), dataContainer);
 
-		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations();
+		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 		if (SiloUtil.getEndYear() != 2040) {
 			summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);

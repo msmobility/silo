@@ -51,6 +51,7 @@ public class SyntheticPopUs {
 
     private ResourceBundle rb;
     private GeoData geoData;
+    private Accessibility accessibility;
 
 
     public SyntheticPopUs(ResourceBundle rb) {
@@ -68,10 +69,10 @@ public class SyntheticPopUs {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        Accessibility accessibility = new Accessibility(rb, SiloUtil.getBaseYear(), geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(rb, SiloUtil.getBaseYear(), geoData);                        // read in travel times and trip length frequency distribution
         processPums();
         JobDataManager jobData = new JobDataManager(rb, geoData);
-        generateAutoOwnership(jobData, accessibility);
+        generateAutoOwnership(jobData);
         summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
         addVacantDwellings();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
@@ -549,8 +550,8 @@ public class SyntheticPopUs {
             if (vacantJobsByZone.containsKey(zones[zn])) {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zones[zn]).length;
                 if (numberOfJobsInThisZone > 0) {
-                    int distance = (int) (Accessibility.getAutoTravelTime(homeTaz, zones[zn]) + 0.5);
-                    zoneProbability[zn] = Accessibility.getWorkTLFD(distance) * (double) numberOfJobsInThisZone;
+                    int distance = (int) (accessibility.getAutoTravelTime(homeTaz, zones[zn]) + 0.5);
+                    zoneProbability[zn] = accessibility.getWorkTLFD(distance) * (double) numberOfJobsInThisZone;
                 } else {
                     zoneProbability[zn] = 0;
                 }
@@ -687,7 +688,7 @@ public class SyntheticPopUs {
     }
 
 
-    private void generateAutoOwnership (JobDataManager jobData, Accessibility accessibility) {
+    private void generateAutoOwnership (JobDataManager jobData) {
         // select number of cars for every household
 
         jobData.calculateJobDensityByZone();

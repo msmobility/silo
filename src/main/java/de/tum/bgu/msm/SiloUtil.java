@@ -995,7 +995,7 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 
 
 	summarizeData.resultFile("Year " + year, false);
-	HouseholdDataManager.summarizePopulation(geoData);
+	HouseholdDataManager.summarizePopulation(geoData, modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
 	dataContainer.getJobData().summarizeJobs(geoData.getRegionList());
 

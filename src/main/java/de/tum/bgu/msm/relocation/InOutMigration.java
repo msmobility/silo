@@ -160,7 +160,7 @@ public class InOutMigration {
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
+                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId(), modelContainer);
                 if (!success) per.setOccupation(2);
             }
         }
