@@ -261,6 +261,14 @@ public class SiloModel {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getMardiv().chooseDivorce(event[1], modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
+				} else if (event[0] == EventTypes.checkSchoolUniv.ordinal()) {
+					if (trackTime) startTime = System.currentTimeMillis();
+					modelContainer.getChangeSchoolUniv().updateSchoolUniv(event[1], dataContainer);
+					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
+				} else if (event[0] == EventTypes.checkDriversLicense.ordinal()) {
+					if (trackTime) startTime = System.currentTimeMillis();
+					modelContainer.getChangeDriversLicense().updateDriversLicense(event[1], dataContainer);
+					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.findNewJob.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getChangeEmployment().findNewJob(event[1]);

@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import org.apache.log4j.Logger;
@@ -168,7 +167,7 @@ public class Household implements Serializable {
 
     public int getHHLicenseHolders () {
         int lic = 0;
-        for (Person pp: persons) if (pp.getDriverLicense() == 1) lic++;
+        for (Person pp: persons) if (pp.hasDriverLicense()) lic++;
         return lic;
     }
 

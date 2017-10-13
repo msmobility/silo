@@ -624,7 +624,7 @@ public class summarizeData {
             pwp.print(",");
             pwp.print(pp.getJobTAZ());
             pwp.print(",");
-            pwp.print(pp.getDriverLicense());
+            pwp.print(pp.hasDriverLicense());
             pwp.print(",");
             pwp.println(pp.getSchoolType());
             if (pp.getId() == SiloUtil.trackPp) {
@@ -767,7 +767,7 @@ public class summarizeData {
             pwp.print(",");
             pwp.print(pp.getJobTAZ());
             pwp.print(",");
-            pwp.print(pp.getDriverLicense());
+            pwp.print(pp.hasDriverLicense());
             pwp.print(",");
             pwp.print(pp.getSchoolType());
             pwp.print(",");
@@ -912,7 +912,7 @@ public class summarizeData {
                 pwp.print(",");
                 pwp.print(pp.getJobTAZ());
                 pwp.print(",");
-                pwp.print(pp.getDriverLicense());
+                pwp.print(pp.hasDriverLicense());
                 pwp.print(",");
                 pwp.println(pp.getSchoolType());
                 if (pp.getId() == SiloUtil.trackPp) {
