@@ -31,6 +31,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Job;
@@ -106,7 +107,7 @@ public class SiloMatsimUtils {
 	}
 
 	public static Population createMatsimPopulation(Config config, HouseholdDataManager householdDataManager, int year,
-			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor, Random random) {
+			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
     	Collection<Person> siloPersons = householdDataManager.getPersons();
     	
@@ -114,7 +115,7 @@ public class SiloMatsimUtils {
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
     	    	
     	for (Person siloPerson : siloPersons) {
-    		if (random.nextDouble() > scalingFactor) {
+    		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
     			// continued in the next step, i.e. that the person is added to the population
     			continue;
@@ -138,7 +139,7 @@ public class SiloMatsimUtils {
     					+ " have been continued by finding that the given person is not employed!");
     		}
     		if ((double) numberOfAutos/numberOfWorkers < 1.) {
-    			if (random.nextDouble() > (double) numberOfAutos/numberOfWorkers) {
+    			if (SiloUtil.getRandomNumberAsDouble() > (double) numberOfAutos/numberOfWorkers) {
     				continue;
     			}
     		}
@@ -157,16 +158,16 @@ public class SiloMatsimUtils {
     		matsimPerson.addPlan(matsimPlan);
 
     		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
-    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature, random);
+    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
     		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
-    		activity1.setEndTime(6 * 3600 + 3 * random.nextDouble() * 3600); // TODO Potentially change later
+    		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
     		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
-    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature, random);
+    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
     		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
-    		activity2.setEndTime(15 * 3600 + 3 * random.nextDouble() * 3600); // TODO Potentially change later
+    		activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity2);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
@@ -177,20 +178,20 @@ public class SiloMatsimUtils {
     	return matsimPopulation;
     }
 	
-	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature, Random random) {
+	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature) {
 		Geometry geometry = (Geometry) feature.getDefaultGeometry();
 		Envelope envelope = geometry.getEnvelopeInternal();
 		while (true) {
-			Point point = getRandomPointInEnvelope(envelope, random);
+			Point point = getRandomPointInEnvelope(envelope);
 			if (point.within(geometry)) {
 				return new Coord(point.getX(), point.getY());
 			}
 		}
 	}
 	
-	public static final Point getRandomPointInEnvelope(Envelope envelope, Random random) {
-		double x = envelope.getMinX() + random.nextDouble() * envelope.getWidth();
-		double y = envelope.getMinY() + random.nextDouble() * envelope.getHeight();
+	public static final Point getRandomPointInEnvelope(Envelope envelope) {
+		double x = envelope.getMinX() + SiloUtil.getRandomNumberAsDouble() * envelope.getWidth();
+		double y = envelope.getMinY() + SiloUtil.getRandomNumberAsDouble() * envelope.getHeight();
 		return geometryFactory.createPoint(new Coordinate(x,y));
 	}
 	

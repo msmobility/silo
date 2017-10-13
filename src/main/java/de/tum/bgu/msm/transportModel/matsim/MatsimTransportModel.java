@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.internal.MatsimWriter;
@@ -32,10 +33,13 @@ import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
+import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.opengis.feature.simple.SimpleFeature;
 
 import de.tum.bgu.msm.SiloUtil;
@@ -102,7 +106,7 @@ public class MatsimTransportModel implements TransportModelI {
 		
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor, workerScalingFactor);
 		Population population = SiloMatsimUtils.createMatsimPopulation(config, householdData, year, zoneFeatureMap,
-				populationScalingFactor * workerScalingFactor, random);
+				populationScalingFactor * workerScalingFactor);
 		
 		if (writePopulation == true) {
     		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
@@ -119,22 +123,30 @@ public class MatsimTransportModel implements TransportModelI {
 		final Controler controler = new Controler(scenario);
 
 		// Add controller listener
-		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
-
-		double timeOfDay = 8. * 60. * 60.;
-		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-				zoneFeatureMap, timeOfDay, numberOfCalcPoints, random);
-		controler.addControlerListener(zone2zoneTravelTimeListener);
+//		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
+//
+//		double timeOfDay = 8. * 60. * 60.;
+//		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
+//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
+//				zoneFeatureMap, timeOfDay, numberOfCalcPoints, random);
+//		controler.addControlerListener(zone2zoneTravelTimeListener);
 		
 		controler.run();
 		
-		travelTimesMap = zone2zoneTravelTimeListener.getTravelTimesMap();
+//		travelTimesMap = zone2zoneTravelTimeListener.getTravelTimesMap();
 		
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
 
 		// Update skims in silo from matsim output
-		acc.updateMatsimTravelTimes(year, travelTimesMap);
+//		acc.updateMatsimTravelTimes(year, travelTimesMap);
+		
+		TravelTime travelTime = controler.getLinkTravelTimes();
+		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+		
+		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
+		
+		MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork());
+		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
 
 		// Update accessibilities in silo from matsim output
 		acc.calculateAccessibilities(year);

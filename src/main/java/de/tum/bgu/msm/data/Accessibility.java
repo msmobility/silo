@@ -1,10 +1,13 @@
 package de.tum.bgu.msm.data;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.utils.collections.Tuple;
 
@@ -40,14 +43,13 @@ public class Accessibility {
     static Logger logger = Logger.getLogger(Accessibility.class);
     private ResourceBundle rb;
     private GeoData geoData;
-    private Matrix hwySkim;
-    private Matrix transitSkim;
     private double[] autoAccessibility;
     private double[] transitAccessibility;
     private double[] regionalAccessibility;
     private float[] workTLFD;
     private float autoOperatingCosts;
     private Matrix travelTimeToRegion;
+	private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 
     public Accessibility(ResourceBundle rb, int year, GeoData geoData) {
         this.rb = rb;
@@ -72,7 +74,8 @@ public class Accessibility {
         String matrixName = "HOVTime";
         if (rb.containsKey(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME)) matrixName = rb.getString(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME);
         OmxMatrix timeOmxSkimAutos = hSkim.getMatrix(matrixName);
-        hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
+        Matrix hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
+        travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
 //        TableDataSet hwySkimTbl = SiloUtil.readCSVfile(hwyFileName);
 //        hwySkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);
 //        hwySkim.setExternalNumbersZeroBased(SiloUtil.getZones());
@@ -84,16 +87,15 @@ public class Accessibility {
 //        }
         
         
-        // new -- write matrix as csv file for testing
+        // Write out matrix as csv file for testing
 //        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
 //        new File(SiloUtil.baseDirectory + "testing").mkdirs();
 //        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
 //        matrixWriter.writeMatrix(hwySkim);
 //        Log.info("For testing: Written skim out as a csv file");
-        // end new
         
         
-        // new -- read in matrix from csv
+        // Read in matrix from csv
 //        public static Matrix convertCSVToMatrix (String fileName) {
 //        	
 //        for (int i = 0; i < dimensions[0]; i++)
@@ -102,11 +104,7 @@ public class Accessibility {
 ////        		System.out.println("i = " + i + " ; j = " + j + " ; dArray[i][j] = " + dArray[i][j]);
 //            }
 //        return mat;
-//        }
-        // end new
-        
-        
-        
+//        }        
         
         // Read transit hwySkim
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
@@ -117,7 +115,8 @@ public class Accessibility {
         if (rb.containsKey(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME)) transitMatrixName = rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME);
 
         OmxMatrix timeOmxSkimTransit = tSkim.getMatrix(transitMatrixName);
-        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
+        Matrix transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
+        travelTimes.put(TransportMode.pt, new MatrixTravelTimes(transitSkim));
 //        TableDataSet transitSkimTbl = SiloUtil.readCSVfile(transitFileName);
 //        transitSkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);
 //        transitSkim.setExternalNumbersZeroBased(SiloUtil.getZones());
@@ -131,13 +130,17 @@ public class Accessibility {
     }
     
     
+    
+    
     // new Matsim
-    public void readSkimBasedOnMatsim(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
+    public void updateMatsimTravelTimes(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
         logger.info("Reading skims based on MATSim travel times for " + year);
         
+        
+        
         // new matrix needs to have same dimension as previous matrix
-        int rowCount = hwySkim.getRowCount();
-        int columnCount = hwySkim.getColumnCount();
+//        int rowCount = hwySkim.getRowCount();
+//        int columnCount = hwySkim.getColumnCount();
         
 //        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
 //
@@ -157,15 +160,15 @@ public class Accessibility {
     
 
     public float getAutoTravelTime(int i, int j) {
-        return hwySkim.getValueAt(i, j);
+    	return (float) travelTimes.get(TransportMode.car).getTravelTimeFromTo(i, j);
     }
 
     public float getTransitTravelTime(int i, int j) {
-        return transitSkim.getValueAt(i, j);
+    	return (float) travelTimes.get(TransportMode.pt).getTravelTimeFromTo(i, j);
     }
 
     public float getTravelCosts(int i, int j) {
-        return (autoOperatingCosts / 100f) * hwySkim.getValueAt(i, j);
+        return (autoOperatingCosts / 100f) * getAutoTravelTime(i, j);
     }
 
     public void calculateAccessibilities (int year) {
@@ -307,9 +310,20 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 
 
 	public Map<String, TravelTimes> getTravelTimes() {
-		Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
-		travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
-		travelTimes.put(TransportMode.pt, new MatrixTravelTimes(transitSkim));
-		return travelTimes;
+		return Collections.unmodifiableMap(travelTimes);
+	}
+	
+	
+	public void addTravelTimeForMode(String mode, TravelTimes travelTimes) {
+		if (mode == null) {
+			logger.fatal("Mode is null. Aborting...", new RuntimeException());
+		}
+		if (travelTimes == null) {
+			logger.fatal("TravelTimes object is null. Aborting...", new RuntimeException());
+		}
+		if (this.travelTimes.containsKey(mode)) {
+			logger.info("Replace travel time for " + mode + " mode.");
+		}
+		this.travelTimes.put(mode, travelTimes);
 	}
 }
