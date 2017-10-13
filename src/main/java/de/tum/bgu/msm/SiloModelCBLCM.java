@@ -21,6 +21,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
+import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
 
 import static de.tum.bgu.msm.SiloModel.* ;
@@ -40,7 +41,7 @@ public class SiloModelCBLCM {
 	    private SiloModelContainer modelContainer;
 	    private SiloDataContainer dataContainer;
 	    public GeoData geoData;
-	    private MitoTransportModel transportModel; // ony used for MD implementation
+	    private TransportModelI transportModel; // ony used for MD implementation
 
 	public SiloModelCBLCM(ResourceBundle rb) {
 		this.rbLandUse = rb;
@@ -217,8 +218,6 @@ public class SiloModelCBLCM {
 	        if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
 	            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false))
 	                transportModel.runTransportModel(nextYearForTransportModel);
-	            if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
-	                transportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
 	        }
 
 	        if (trackTime) startTime = System.currentTimeMillis();

@@ -30,11 +30,11 @@ import java.util.Map;
  */
 public interface TransportModelI {
 
-	void setScenarioName(String name);
+//	void setScenarioName(String name);
 
 	void runTransportModel(int year);
 	
-	void writeOutSocioEconomicDataForMstm(int year) ;
+//	void writeOutSocioEconomicDataForMstm(int year) ;
 
 	void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households);
 }

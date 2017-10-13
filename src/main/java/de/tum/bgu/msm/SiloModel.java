@@ -68,7 +68,7 @@ public class SiloModel {
 	protected static final String PROPERTIES_CBLCM_MULTIPLIER_PREFIX		= "cblcm.multiplier";
 	protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
 	protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME       = "spatial.result.file.name";
-	protected static final String PROPERTIES_CREATE_MSTM_OUTPUT_FILES       = "create.mstm.socio.econ.files";
+	public static final String PROPERTIES_CREATE_MSTM_OUTPUT_FILES       = "create.mstm.socio.econ.files";
 
 	protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
 	protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
@@ -133,10 +133,7 @@ public class SiloModel {
 
 		final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
 		final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
-		final boolean createMstmOutputFiles = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true);
-
-
-		if ( runMatsim && ( runTravelDemandModel || createMstmOutputFiles ) ) {
+		if ( runMatsim && ( runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true) ) ) {
 			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
 		}
 
@@ -305,9 +302,8 @@ public class SiloModel {
 				if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
 					transportModel.runTransportModel(nextYearForTransportModel);
 				}
-			} else if ( runTravelDemandModel || createMstmOutputFiles ) {
-				int nextYearForTransportModel = year + 1;
-				if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+			} else if ( runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true) ) {
+				if (SiloUtil.containsElement(tdmYears, year + 1)) {
 
 					Map<Integer, Zone> zones = new HashMap<>();
 					for (int i = 0; i < geoData.getZones().length; i++) {
@@ -332,12 +328,7 @@ public class SiloModel {
 					}
 
 					transportModel.feedData(zones, Accessibility.getHwySkim(), Accessibility.getTransitSkim(), households);
-					transportModel.setScenarioName(SiloUtil.scenarioName);
-					transportModel.runTransportModel(nextYearForTransportModel);
-					if (createMstmOutputFiles)
-						transportModel.writeOutSocioEconomicDataForMstm(nextYearForTransportModel);
-					// yyyyyy what is this method good for?  The name of the method tells me something, but then why is it run
-					// _AFTER_ the transport model?  kai, aug'16 -it is just to pass a summary file to the cube model in maryland - rolf
+					transportModel.runTransportModel(year + 1);
 				}
 			}
 

@@ -58,13 +58,6 @@ public class MatsimTransportModel implements TransportModelI {
 		this.matsimConfig = matsimConfig;
 	}
 
-
-
-	@Override
-	public void setScenarioName(String scenarioName) {
-
-	}
-
 	@Override
 	public void runTransportModel(int year) {
 		logger.info("Running MATSim transport model for year " + year + ".");
@@ -122,12 +115,6 @@ public class MatsimTransportModel implements TransportModelI {
 		acc.calculateAccessibilities(year);
 		// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
 	}
-
-	@Override
-	public void writeOutSocioEconomicDataForMstm(int year) {
-		// Not doing anything
-	}
-
 
 	@Override
 	public void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households) {

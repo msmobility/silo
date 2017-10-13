@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.data.MitoHousehold;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
@@ -54,10 +55,6 @@ public class MstmTransportModel implements TransportModelI {
     }
 
 
-    @Override
-    public void setScenarioName(String scenarioName) {
-
-    }
 
     @Override
     public void runTransportModel (int year) {
@@ -70,6 +67,9 @@ public class MstmTransportModel implements TransportModelI {
         logger.info("Running travel demand model for the year " + year);
         tripGeneration();
         logger.info("Completed travel demand model for the year " + year);
+
+        if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
+		this.writeOutSocioEconomicDataForMstm(year + 1);
     }
 
 
@@ -182,8 +182,7 @@ public class MstmTransportModel implements TransportModelI {
     }
 
 
-    @Override
-    public void writeOutSocioEconomicDataForMstm(int year) {
+    private void writeOutSocioEconomicDataForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 
         String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +

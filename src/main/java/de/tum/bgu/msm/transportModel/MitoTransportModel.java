@@ -37,11 +37,6 @@ public class MitoTransportModel implements TransportModelI {
     }
 
 
-    public void setScenarioName (String scenarioName) {
-        mito.setScenarioName (scenarioName);
-    }
-
-
     private void setBaseDirectory (String baseDirectory) {
         mito.setBaseDirectory(baseDirectory);
     }
@@ -49,17 +44,10 @@ public class MitoTransportModel implements TransportModelI {
 
     @Override
     public void runTransportModel(int year) {
+	    MitoModel.setScenarioName (SiloUtil.scenarioName);
 
         logger.info("  Running travel demand model MITO for the year " + year);
         mito.runModel();
     }
-
-    @Override
-    public void writeOutSocioEconomicDataForMstm(int year) {
-        // not doing anything.
-    }
-
-
-
 
 }
