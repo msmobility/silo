@@ -16,12 +16,14 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package de.tum.bgu.msm.transportModel;
+package de.tum.bgu.msm.transportModel.matsim;
 
 import java.util.*;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.transportModel.TransportModelI;
+
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
@@ -109,7 +111,7 @@ public class MatsimTransportModel implements TransportModelI {
 				zoneFeatureMap, population, matsimRunId, matsimConfig, outputDirectoryRoot);
 
 		// Update skims in silo from matsim output
-		acc.readSkimBasedOnMatsim(year, travelTimesMap);
+		acc.updateMatsimTravelTimes(year, travelTimesMap);
 
 		// Update accessibilities in silo from matsim output
 		acc.calculateAccessibilities(year);

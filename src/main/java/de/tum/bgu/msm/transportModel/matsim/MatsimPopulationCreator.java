@@ -16,7 +16,7 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package de.tum.bgu.msm.transportModel;
+package de.tum.bgu.msm.transportModel.matsim;
 
 import java.io.File;
 import java.util.Collection;

@@ -34,9 +34,9 @@ import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.transportModel.MatsimTransportModel;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
+import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 
 /**
  * @author Greg Erhardt 
