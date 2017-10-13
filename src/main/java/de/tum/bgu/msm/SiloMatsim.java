@@ -22,19 +22,8 @@ import de.tum.bgu.msm.data.summarizeData;
 public final class SiloMatsim {
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
 
-//	public static void main(String[] args) {
-//		new SiloMatsim(args).run();
-//	}
-	// @dominik: see comment below.  kai, aug'16
-
 	private ResourceBundle rb;
 	private Config matsimConfig = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
-
-//	SiloMatsim(String[] args) {
-//		this( args, ConfigUtils.loadConfig(args[1]) ) ;
-//	}	    
-	// @dominik: the above constructor does not work any more after recent refactorings ... SILO now uses the second argument for itself.
-	// kai, aug'16
 
 	/**
 	 * Option to set the matsim config directly, at this point meant for tests.
@@ -53,8 +42,7 @@ public final class SiloMatsim {
 			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
-			SiloModel model = new SiloModel(rb);
-			model.setMatsimConfig(matsimConfig); // SILO-MATSim integration-specific
+			SiloModel model = new SiloModel(rb, matsimConfig );
 			model.runModel(SiloModel.Implementation.MSTM);
 			logger.info("Finished SILO.");
 		} catch (Exception e) {

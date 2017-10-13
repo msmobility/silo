@@ -15,10 +15,10 @@ import java.util.ResourceBundle;
 
 public class SiloCSDMS {
     // main class
-    static Logger logger = Logger.getLogger(SiloCSDMS.class);
-    private static SiloModel model;
-    private static long startTime;
-
+    static final Logger logger = Logger.getLogger(SiloCSDMS.class);
+    private static  SiloModelCBLCM model;
+    private static  long startTime;
+    private static  ResourceBundle rb ;
 
     public static void main (String args) {
         // main run method
@@ -33,38 +33,38 @@ public class SiloCSDMS {
     }
 
 
-    public static void mainOld(String args) {
-        // main run method
-
-        SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args);
-        startTime = System.currentTimeMillis();
-        try {
-            logger.info("Starting SILO program for MSTM with CSDMS Integration");
-            logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            SyntheticPopUs sp = new SyntheticPopUs(rb);
-            sp.runSP();
-            model = new SiloModel(rb);
-            model.runModel(SiloModel.Implementation.MSTM);
-            logger.info("Finished SILO.");
-        } catch (Exception e) {
-            logger.error("Error running SILO.");
-            throw new RuntimeException(e);
-        } finally {
-            model.closeAllFiles(startTime);
-        }
-    }
+//    public static void mainOld(String args) {
+//        // main run method
+//
+//        SiloUtil.setBaseYear(2000);
+//        ResourceBundle rb = SiloUtil.siloInitialization(args);
+//        startTime = System.currentTimeMillis();
+//        try {
+//            logger.info("Starting SILO program for MSTM with CSDMS Integration");
+//            logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
+//            SyntheticPopUs sp = new SyntheticPopUs(rb);
+//            sp.runSP();
+//            model = new SiloModel(rb);
+//            model.runModel(SiloModel.Implementation.MSTM);
+//            logger.info("Finished SILO.");
+//        } catch (Exception e) {
+//            logger.error("Error running SILO.");
+//            throw new RuntimeException(e);
+//        } finally {
+//            SiloModel.closeAllFiles( startTime, rb);
+//        }
+//    }
 
 
     public static void initialize (String configFile) {
         // initialization step for CSDMS
 
         logger.info("Starting SILO Initialization for MSTM with CSDMS Integration");
-        ResourceBundle rb = SiloUtil.siloInitialization(configFile);
+        rb = SiloUtil.siloInitialization(configFile);
         SiloUtil.setBaseYear(2000);
         logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
         startTime = System.currentTimeMillis();
-        model = new SiloModel(rb);
+        model = new SiloModelCBLCM(rb);
         model.initialize();
         logger.info("Finished Initialization.");
     }
@@ -77,7 +77,7 @@ public class SiloCSDMS {
             model.runYear(dt);
         } catch (Exception e) {
             logger.error("Error running SILO.");
-            model.closeAllFiles(startTime);
+            SiloUtil.closeAllFiles(startTime, rb);
             throw new RuntimeException(e);
         }
     }
@@ -92,7 +92,7 @@ public class SiloCSDMS {
 			e.printStackTrace();
 			//throw e;
 		}
-        model.closeAllFiles(startTime);
+    	SiloUtil.closeAllFiles(startTime,rb);
         logger.info("Finished SILO.");
     }
 }
