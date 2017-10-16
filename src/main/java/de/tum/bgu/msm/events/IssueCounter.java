@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.events;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.geoDataI;
+import de.tum.bgu.msm.data.GeoData;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,7 +35,7 @@ public class IssueCounter {
     }
 
 
-    public static void regionSpecificCounters(geoDataI geoData) {
+    public static void regionSpecificCounters(GeoData geoData) {
         exceededVacantDwellingStorage = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         exceededVacantJobStorage = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         SiloUtil.setArrayToValue(exceededVacantDwellingStorage, 0);
@@ -91,7 +91,7 @@ public class IssueCounter {
         return foundIssues;
     }
 
-    public static void logIssues (geoDataI geoData) {
+    public static void logIssues (GeoData geoData) {
         // log found issues
         if (lackOfDwellingFailedDivorce > 0) logger.warn("  Encountered " + lackOfDwellingFailedDivorce + " cases where " +
                 "couple wanted to get divorced but could not find vacant dwelling.");

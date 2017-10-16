@@ -25,6 +25,8 @@ public class EventRules {
     protected static final String PROPERTIES_event_checkLeaveParentHh = "event.checkLeaveParentHh";
     protected static final String PROPERTIES_event_checkMarriage      = "event.checkMarriage";
     protected static final String PROPERTIES_event_checkDivorce       = "event.checkDivorce";
+    protected static final String PROPERTIES_event_checkSchoolUniv    = "event.checkSchoolUniv";
+    protected static final String PROPERTIES_event_checkDriversLic    = "event.checkDriversLicense";
 
     protected static final String PROPERTIES_event_startNewJob        = "event.startJob";
     protected static final String PROPERTIES_event_quitJob            = "event.quitJob";
@@ -45,6 +47,8 @@ public class EventRules {
     private static boolean runEventCheckLeaveParentHh;
     private static boolean runEventCheckMarriage;
     private static boolean runEventCheckDivorce;
+    private static boolean runEventCheckSchoolUniv;
+    private static boolean runEventCheckDriversLicense;
     private static boolean runEventStartNewJob;
     private static boolean runEventQuitJob;
     private static boolean runEventAllHhMoves;
@@ -57,22 +61,24 @@ public class EventRules {
 
    public static void setUpEventRules (ResourceBundle rb) {
 
-       runEventAllDemography      = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDemography);
-       runEventBirthday           = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_birthday);
-       runEventCheckDeath         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDeath);
-       runEventCheckBirth         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkBirth);
-       runEventCheckLeaveParentHh = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkLeaveParentHh);
-       runEventCheckMarriage      = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkMarriage);
-       runEventCheckDivorce       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDivorce);
-       runEventStartNewJob        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_startNewJob);
-       runEventQuitJob            = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_quitJob);
-       runEventAllHhMoves         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allHhMoves);
-       runEventInmigration        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_inmigration);
-       runEventOutMigration       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_outMigration);
-       runEventAllDdDevelopments  = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDdDevelopments);
-       runEventDdChangeQual       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddChangeQual);
-       runEventDdDemolition       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddDemolition);
-       runEventDdConstruction     = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddConstruction);
+       runEventAllDemography       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDemography);
+       runEventBirthday            = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_birthday);
+       runEventCheckDeath          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDeath);
+       runEventCheckBirth          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkBirth);
+       runEventCheckLeaveParentHh  = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkLeaveParentHh);
+       runEventCheckMarriage       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkMarriage);
+       runEventCheckDivorce        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDivorce);
+       runEventCheckSchoolUniv     = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkSchoolUniv, false);
+       runEventCheckDriversLicense = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDriversLic, false);
+       runEventStartNewJob         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_startNewJob);
+       runEventQuitJob             = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_quitJob);
+       runEventAllHhMoves          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allHhMoves);
+       runEventInmigration         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_inmigration);
+       runEventOutMigration        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_outMigration);
+       runEventAllDdDevelopments   = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDdDevelopments);
+       runEventDdChangeQual        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddChangeQual);
+       runEventDdDemolition        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddDemolition);
+       runEventDdConstruction      = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddConstruction);
     }
 
 
@@ -106,6 +112,14 @@ public class EventRules {
 
     public static boolean ruleGetDivorced (Person per) {
         return (per != null && per.getRole() == PersonRole.married) && runEventCheckDivorce && runEventAllDemography;
+    }
+
+    public static boolean ruleChangeSchoolUniversity (Person per) {
+        return (per != null) && runEventCheckSchoolUniv && runEventAllDemography;
+    }
+
+    public static boolean ruleChangeDriversLicense (Person per) {
+        return (per != null) && runEventCheckDriversLicense && runEventAllDemography;
     }
 
     // Conditions for change-of-job events

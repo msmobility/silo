@@ -5,8 +5,14 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.summarizeDataCblcm;
+import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
 import omx.OmxMatrix;
@@ -254,6 +260,9 @@ public class SiloUtil {
         // open file and return PrintWriter object
 
         File outputFile = new File(fileName);
+        if(outputFile.getParentFile() != null) {
+            outputFile.getParentFile().mkdirs();
+        }
         try {
             FileWriter fw = new FileWriter(outputFile, appendFile);
             BufferedWriter bw = new BufferedWriter(fw);
@@ -932,6 +941,111 @@ public class SiloUtil {
         }
         return column;
     }
+
+
+static void closeAllFiles (long startTime, ResourceBundle rbLandUse) {
+	// run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
+	trackingFile("close");
+	summarizeData.resultFile("close");
+	summarizeData.resultFileSpatial(rbLandUse, "close");
+	float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
+	int hours = (int) (endTime / 60);
+	int min = (int) (endTime - 60 * hours);
+	SiloModel.logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
+	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_TRACK_TIME, false)) {
+		String fileName = rbLandUse.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
+		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
+			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
+			out.close();
+		} catch (IOException e) {
+			SiloModel.logger.warn("Could not add run-time statement to time-tracking file.");
+		}
+	}
+}
+
+
+static boolean modelStopper (String action) {
+	// provide option for a clean model stop after every simulation period is completed
+	String fileName = baseDirectory + "status.csv";
+	if (action.equalsIgnoreCase("initialize")) {
+		PrintWriter pw = openFileForSequentialWriting(fileName, false);
+		pw.println("Status");
+		pw.println("continue");
+		pw.close();
+	} else if (action.equalsIgnoreCase("removeFile")) {
+		deleteFile (fileName);
+	} else {
+		TableDataSet status = readCSVfile(fileName);
+		if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) return true;
+	}
+	return false;
+}
+
+
+static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
+		GeoData geoData, ResourceBundle rbLandUse ) {
+	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
+
+
+	// aggregate micro data
+
+	if (trackHh != -1 || trackPp != -1 || trackDd != -1)
+		trackWriter.println("Started simulation for year " + year);
+	SiloModel.logger.info("  Summarizing micro data for year " + year);
+
+
+	summarizeData.resultFile("Year " + year, false);
+	HouseholdDataManager.summarizePopulation(geoData, modelContainer);
+	dataContainer.getRealEstateData().summarizeDwellings();
+	dataContainer.getJobData().summarizeJobs(geoData.getRegionList());
+
+	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
+	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_CBLCM_FILES, false))
+		summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
+	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
+		summarizeData.summarizeHousing(rbLandUse, year);
+	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
+		summarizeData.summarizePrestoRegion(rbLandUse, year);
+	}
+
+}
+
+
+static void writeOutTimeTracker (long[][] timeCounter, ResourceBundle rbLandUse ) {
+	// write file summarizing run times
+
+	int startYear = getStartYear();
+	PrintWriter pw = openFileForSequentialWriting(rbLandUse.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE), startYear != getBaseYear());
+	if (startYear == getBaseYear()) {
+		pw.print("Year");
+		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
+		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
+				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,summarizeData,updateRealEstatePrices," +
+				"planIncomeChange,addOverwriteDwellings");
+		pw.println();
+	}
+	for (int year = startYear; year < getEndYear(); year += getSimulationLength()) {
+		pw.print(year);
+		for (EventTypes et: EventTypes.values()) {
+			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
+			pw.print("," + timeInMinutes);
+		}
+		pw.print("," + timeCounter[EventTypes.values().length][year] / 60000f);       // setup inmigration/outmigration
+		pw.print("," + timeCounter[EventTypes.values().length + 1][year] / 60000f);   // setup construction of new dwellings
+		pw.print("," + timeCounter[EventTypes.values().length + 2][year] / 60000f);   // update job inventory
+		pw.print("," + timeCounter[EventTypes.values().length + 3][year] / 60000f);   // setup job change model
+		pw.print("," + timeCounter[EventTypes.values().length + 4][year] / 60000f);   // setup list of events
+		pw.print("," + timeCounter[EventTypes.values().length + 5][year] / 60000f);   // fill marriage market
+		pw.print("," + timeCounter[EventTypes.values().length + 6][year] / 60000f);   // calculate average housing satisfaction
+		pw.print("," + timeCounter[EventTypes.values().length + 7][year] / 60000f);   // summarize data
+		pw.print("," + timeCounter[EventTypes.values().length + 8][year] / 60000f);   // update real estate prices
+		pw.print("," + timeCounter[EventTypes.values().length + 9][year] / 60000f);   // plan income change
+		pw.print("," + timeCounter[EventTypes.values().length + 10][year] / 60000f);  // add dwellings from overwrite
+		pw.println();
+	}
+	pw.close();
+}
 
 
 

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.demography;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventManager;
@@ -17,16 +18,16 @@ import org.apache.log4j.Logger;
 
 public class ChangeEmploymentModel {
     static Logger logger = Logger.getLogger(ChangeEmploymentModel.class);
-    private geoDataI geoData;
+    private GeoData geoData;
 
 
-    public ChangeEmploymentModel(geoDataI geoData) {
+    public ChangeEmploymentModel(GeoData geoData) {
         // constructor
         this.geoData = geoData;
     }
 
 
-    public boolean findNewJob (int perId) {
+    public boolean findNewJob (int perId, SiloModelContainer siloModelContainer) {
         // find new job for person perId
 
         Person pp = Person.getPersonFromId(perId);
@@ -39,7 +40,7 @@ public class ChangeEmploymentModel {
             return false;
         } else {
             int homeZone = pp.getHomeTaz();
-            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionList());
+            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionList(), siloModelContainer);
             if (idVacantJob == -1) {
                 IssueCounter.countMissingJob();
                 return false;

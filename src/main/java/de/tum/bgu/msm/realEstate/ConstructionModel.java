@@ -36,7 +36,7 @@ public class ConstructionModel {
     protected static final String PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD = "level.of.affordability.setting";
 
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
@@ -50,7 +50,7 @@ public class ConstructionModel {
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
 
-    public ConstructionModel(ResourceBundle rb, geoDataI geoData) {
+    public ConstructionModel(ResourceBundle rb, GeoData geoData) {
         this.rb = rb;
         this.geoData = geoData;
         // read properties

@@ -277,7 +277,7 @@
 			<artifactId>matsim</artifactId>
 			<version>${matsimVersion}</version>
 			<type>jar</type>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
@@ -340,7 +340,7 @@
 		<svnRevision>${buildNumber}</svnRevision>
 		<geotools.version>13.0</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-		<matsimVersion>0.9.0-SNAPSHOT</matsimVersion>
+		<matsimVersion>0.10.0-SNAPSHOT</matsimVersion>
 	</properties>
 </project>
 

@@ -20,6 +20,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
@@ -381,7 +382,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static void summarizePopulation (geoDataI geoData) {
+    public static void summarizePopulation (GeoData geoData, SiloModelContainer siloModelContainer) {
         // summarize population for summary file
 
         int pers[][] = new int[2][101];
@@ -451,7 +452,7 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                float ds = Accessibility.getAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
+                float ds = siloModelContainer.getAcc().getAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
                 commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
                 commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
             }
@@ -749,7 +750,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByZone (geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
         // return number of households by zone
         int[] hhByZone = new int[geoData.getZones().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -759,7 +760,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByRegion(geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -798,7 +799,7 @@ public class HouseholdDataManager {
     }
 
 
-    public void summarizeHouseholdsNearMetroStations () {
+    public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
         // summarize households in the vicinity of selected Metro stops
 
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_SUMMARIZE_METRO)) return;
@@ -824,7 +825,7 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder(Accessibility.getAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getAutoTravelTime(hh.getHomeZone(), metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;

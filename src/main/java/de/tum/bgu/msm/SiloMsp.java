@@ -46,7 +46,7 @@ public class SiloMsp {
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             SiloModel model = new SiloModel(rb);
-            model.runModel("MSP");
+            model.runModel(SiloModel.Implementation.MSP);
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");

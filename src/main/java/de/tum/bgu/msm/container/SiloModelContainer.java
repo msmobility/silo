@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.*;
@@ -40,13 +41,15 @@ public class SiloModelContainer {
     private final LeaveParentHhModel lph;
     private final MovesModelI move;
     private final ChangeEmploymentModel changeEmployment;
+    private final ChangeSchoolUnivModel changeSchoolUniv;
+    private final ChangeDriversLicense changeDriversLicense;
     private final Accessibility acc;
     private final AutoOwnershipModel aoModel;
     private final UpdateJobs updateJobs;
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, geoDataI, String)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, GeoData, Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -62,6 +65,8 @@ public class SiloModelContainer {
      * @param lph
      * @param move
      * @param changeEmployment
+     * @param changeSchoolUniv
+     * @param changeDriversLicense
      * @param acc
      * @param aoModel
      * @param updateJobs
@@ -70,6 +75,7 @@ public class SiloModelContainer {
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
+                               ChangeSchoolUnivModel changeSchoolUniv, ChangeDriversLicense changeDriversLicense,
                                Accessibility acc, AutoOwnershipModel aoModel, UpdateJobs updateJobs) {
         this.iomig = iomig;
         this.cons = cons;
@@ -83,6 +89,8 @@ public class SiloModelContainer {
         this.lph = lph;
         this.move = move;
         this.changeEmployment = changeEmployment;
+        this.changeSchoolUniv = changeSchoolUniv;
+        this.changeDriversLicense = changeDriversLicense;
         this.acc = acc;
         this.aoModel = aoModel;
         this.updateJobs = updateJobs;
@@ -94,8 +102,8 @@ public class SiloModelContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, geoDataI geoData,
-                                                              String implementation) {
+    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, GeoData geoData,
+                                                              Implementation implementation) {
 
         logger.info("Creating UEC Models");
         DeathModel death = new DeathModel(rbLandUse);
@@ -103,10 +111,12 @@ public class SiloModelContainer {
         LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
         MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(geoData);
+        ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(geoData);
+        ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
         Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), geoData);
         //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        if (implementation.equals("MSTM")) {
+        if (implementation.equals(Implementation.MSTM)) {
             move = new MovesModelMstm(rbLandUse, geoData);
         } else {
             move = new MovesModelMuc(rbLandUse, geoData);
@@ -122,7 +132,8 @@ public class SiloModelContainer {
         updateJobs = new UpdateJobs(rbLandUse);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, death, mardiv, lph, move, changeEmployment, acc, aoModel, updateJobs);
+                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,
+                aoModel, updateJobs);
     }
 
 
@@ -172,6 +183,14 @@ public class SiloModelContainer {
 
     public ChangeEmploymentModel getChangeEmployment() {
         return changeEmployment;
+    }
+
+    public ChangeSchoolUnivModel getChangeSchoolUniv() {
+        return changeSchoolUniv;
+    }
+
+    public ChangeDriversLicense getChangeDriversLicense() {
+        return changeDriversLicense;
     }
 
     public Accessibility getAcc() {

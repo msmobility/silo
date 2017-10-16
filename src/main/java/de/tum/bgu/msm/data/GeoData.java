@@ -8,7 +8,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
  * Created on 5 April 2017 in Munich
  **/
 
-public interface geoDataI {
+public interface GeoData {
 
     public void setInitialData();
 

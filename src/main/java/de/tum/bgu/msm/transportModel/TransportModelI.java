@@ -18,25 +18,10 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel;
 
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.MitoHousehold;
-import de.tum.bgu.msm.data.Zone;
-
-import java.util.Map;
-
 /**
  * @author nagel
- *
  */
 public interface TransportModelI {
 
-	void setScenarioName(String name);
-
 	void runTransportModel(int year);
-	
-	void writeOutSocioEconomicDataForMstm(int year) ;
-
-	void tripGeneration();
-
-	void feedData(Map<Integer, Zone> zones, Matrix hwySkim, Matrix transitSkim, Map<Integer, MitoHousehold> households);
 }
