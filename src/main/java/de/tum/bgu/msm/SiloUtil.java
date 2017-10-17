@@ -81,9 +81,9 @@ public class SiloUtil {
         summarizeData.openResultFile(rb);
         summarizeData.resultFileSpatial(rb, "open");
 
-        // create scenario output directory if it does not exist yet
+        // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
-        // copy properties file into scenario directory
+        // copy properties file into scenarios directory
         String[] prop = resourceBundleNames.split("/");
 
 //        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
@@ -109,7 +109,7 @@ public class SiloUtil {
         if (!file.exists()) {
             logger.info("   Creating Directory: "+directory);
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenario directory " + directory);
+            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenarios directory " + directory);
         }
     }
 
@@ -788,7 +788,7 @@ public class SiloUtil {
         try {
             Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
         } catch (Exception e) {
-            final String msg = "Unable to copy properties file " + source + " to scenario output directory.";
+            final String msg = "Unable to copy properties file " + source + " to scenarios output directory.";
 		logger.warn(msg);
             throw new RuntimeException(msg) ;
             // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16
@@ -983,7 +983,7 @@ static boolean modelStopper (String action) {
 
 
 static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
-		GeoData geoData, ResourceBundle rbLandUse ) {
+		ResourceBundle rbLandUse ) {
 	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 
@@ -995,9 +995,9 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 
 
 	summarizeData.resultFile("Year " + year, false);
-	HouseholdDataManager.summarizePopulation(geoData, modelContainer);
+	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
-	dataContainer.getJobData().summarizeJobs(geoData.getRegionList());
+	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionList());
 
 	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
 	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);

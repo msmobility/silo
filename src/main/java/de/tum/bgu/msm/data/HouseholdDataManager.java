@@ -59,6 +59,7 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
     private RealEstateDataManager realEstateData;
+    private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
 
     public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
@@ -992,4 +993,41 @@ public class HouseholdDataManager {
         //System.exit(0);
     }
 
+    public void addHouseholdThatChanged (Household hh){
+        //Add one household that probably had changed their attributes for the car updating model
+
+        if (!updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 0;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void addHouseholdThatMoved (Household hh){
+        //Add one household that moved out for the car updating model
+
+        if (updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = updatedHouseholds.get(hh.getId());
+            currentHouseholdAttributes [3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        } else {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void clearUpdatedHouseholds() {
+        updatedHouseholds.clear();
+    }
+
+    public Map<Integer, int[]> getUpdatedHouseholds() {
+        return updatedHouseholds;
+    }
 }
