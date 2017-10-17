@@ -15,6 +15,8 @@ public enum EventTypes {
     checkLeaveParentHh,
     checkMarriage,
     checkDivorce,
+    checkSchoolUniv,
+    checkDriversLicense,
     householdMove,
     inmigration,
     outMigration,

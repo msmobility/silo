@@ -1,8 +1,7 @@
 package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopDe;
-import de.tum.bgu.msm.data.geoDataMuc;
+import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopDe;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
 
@@ -40,7 +39,7 @@ public class SiloMuc {
            /*ExtractDataDE de = new ExtractDataDE(rb);
             de.runSP(); */
             SiloModel model = new SiloModel(rb);
-            model.runModel("Muc");
+            model.runModel(SiloModel.Implementation.MUC);
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");

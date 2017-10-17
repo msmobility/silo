@@ -1,13 +1,10 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
-import javafx.scene.control.Tab;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.commons.math.MathException;
@@ -16,7 +13,6 @@ import org.apache.commons.math.stat.Frequency;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
-import javax.measure.unit.SI;
 import java.io.*;
 import java.util.ResourceBundle;
 import java.util.*;
@@ -2400,7 +2396,7 @@ public class SyntheticPopDe {
             if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.single);
             else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.married);
             else pp.setRole(PersonRole.child);
-            pp.setDriverLicense((int) persons.getValueAt(i,"driversLicense"));
+            if (persons.getValueAt(i,"driversLicense") == 1) pp.setDriverLicense(true);
             int nationality = (int) persons.getValueAt(i,"nationality");
             if (nationality == 1) {
                 pp.setNationality(Nationality.german);
@@ -2706,8 +2702,7 @@ public class SyntheticPopDe {
                     pers.setTelework((int) microPersons.getValueAt(personCounter, "telework"));
                     //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
                     //pers.setJobTypeDE(selectedJobType);
-                    int license = obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense);
-                    pers.setDriverLicense(license);
+                    pers.setDriverLicense(obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense));
                     pers.setSchoolType((int) microPersons.getValueAt(personCounter, "schoolType"));
                     pers.setZone(household.getHomeZone());
                     hhPersons++;
@@ -2945,9 +2940,9 @@ public class SyntheticPopDe {
     }
 
 
-    private static int obtainDriverLicense (int gender, int age, TableDataSet prob){
+    private static boolean obtainDriverLicense (int gender, int age, TableDataSet prob){
         //assign if the person holds a driver license based on the probabilities obtained from MiD data
-        int license = 0;
+        boolean license = false;
         int finish = 0;
         int row = 1;
         int threshold = 0;
@@ -2968,7 +2963,7 @@ public class SyntheticPopDe {
                 threshold = (int) prob.getValueAt(row, "female");
             }
             if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
-                license = 1;
+                license = true;
             }
         } //if they are younger than 18, they don't hold driver license
         return license;

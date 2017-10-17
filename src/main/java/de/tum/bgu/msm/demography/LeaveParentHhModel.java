@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -104,8 +105,8 @@ public class LeaveParentHhModel {
 
             // Move new household
             modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
-            modelContainer.getAoModel().simulateAutoOwnership(hh, modelContainer, dataContainer);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson);
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                     hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has left the parental household " + hhOfThisPerson.getId() +

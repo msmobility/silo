@@ -1,21 +1,15 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.scenarios.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 import com.pb.common.util.ResourceUtil;
 
@@ -53,7 +47,8 @@ public class SyntheticPopUs {
     protected HashMap<Integer, Integer> jobErrorCounter;
 
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
+    private Accessibility accessibility;
 
 
     public SyntheticPopUs(ResourceBundle rb) {
@@ -71,10 +66,10 @@ public class SyntheticPopUs {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        Accessibility accessibility = new Accessibility(rb, SiloUtil.getBaseYear(), geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(rb, SiloUtil.getBaseYear(), geoData);                        // read in travel times and trip length frequency distribution
         processPums();
         JobDataManager jobData = new JobDataManager(rb, geoData);
-        generateAutoOwnership(jobData, accessibility);
+        generateAutoOwnership(jobData);
         summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
         addVacantDwellings();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
@@ -235,7 +230,7 @@ public class SyntheticPopUs {
         int[] stateNumber = {24,11,10,42,51,54};      // FIPS code of String states[]
 
         jobErrorCounter = new HashMap<>();
-        //geoDataI geoData = new geoDataMstm(rb);
+        //GeoData geoData = new geoDataMstm(rb);
 
         for (int st = 0; st < states.length; st++) {
             String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +
@@ -552,8 +547,8 @@ public class SyntheticPopUs {
             if (vacantJobsByZone.containsKey(zones[zn])) {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zones[zn]).length;
                 if (numberOfJobsInThisZone > 0) {
-                    int distance = (int) (Accessibility.getAutoTravelTime(homeTaz, zones[zn]) + 0.5);
-                    zoneProbability[zn] = Accessibility.getWorkTLFD(distance) * (double) numberOfJobsInThisZone;
+                    int distance = (int) (accessibility.getAutoTravelTime(homeTaz, zones[zn]) + 0.5);
+                    zoneProbability[zn] = accessibility.getWorkTLFD(distance) * (double) numberOfJobsInThisZone;
                 } else {
                     zoneProbability[zn] = 0;
                 }
@@ -690,14 +685,13 @@ public class SyntheticPopUs {
     }
 
 
-    private void generateAutoOwnership (JobDataManager jobData, Accessibility accessibility) {
+    private void generateAutoOwnership (JobDataManager jobData) {
         // select number of cars for every household
-
         jobData.calculateJobDensityByZone();
-        AutoOwnershipModel ao = new AutoOwnershipModel(rb);   // calculate auto-ownership probabilities
+        MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(rb, jobData, accessibility);   // calculate auto-ownership probabilities
+        Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int autos = ao.simulateAutoOwnership(hh, accessibility, jobData);
-            hh.setAutos(autos);
+            households.put(hh.getId(), null);
         }
     }
 

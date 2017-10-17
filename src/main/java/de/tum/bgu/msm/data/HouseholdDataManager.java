@@ -20,6 +20,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
@@ -58,6 +59,7 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
     private RealEstateDataManager realEstateData;
+    private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
 
     public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
@@ -381,7 +383,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static void summarizePopulation (geoDataI geoData) {
+    public static void summarizePopulation (GeoData geoData, SiloModelContainer siloModelContainer) {
         // summarize population for summary file
 
         int pers[][] = new int[2][101];
@@ -451,7 +453,7 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                float ds = Accessibility.getAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
+                float ds = siloModelContainer.getAcc().getAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
                 commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
                 commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
             }
@@ -620,9 +622,6 @@ public class HouseholdDataManager {
 
         ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
         for (Person person: pps) {
-            if(person == null) {
-                System.out.println("null!");
-            }
             float desiredShift = getDesiredShift(currentIncomeDistribution, person);
             executor.addFunction(new IncomeAdjustment(person, desiredShift, meanIncomeChange));
         }
@@ -752,7 +751,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByZone (geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
         // return number of households by zone
         int[] hhByZone = new int[geoData.getZones().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -762,7 +761,7 @@ public class HouseholdDataManager {
     }
 
 
-    public static int[] getNumberOfHouseholdsByRegion(geoDataI geoData) {
+    public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
         for (Household hh: Household.getHouseholdArray()) {
@@ -801,7 +800,7 @@ public class HouseholdDataManager {
     }
 
 
-    public void summarizeHouseholdsNearMetroStations () {
+    public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
         // summarize households in the vicinity of selected Metro stops
 
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_SUMMARIZE_METRO)) return;
@@ -827,7 +826,7 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder(Accessibility.getAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getAutoTravelTime(hh.getHomeZone(), metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;
@@ -994,4 +993,41 @@ public class HouseholdDataManager {
         //System.exit(0);
     }
 
+    public void addHouseholdThatChanged (Household hh){
+        //Add one household that probably had changed their attributes for the car updating model
+
+        if (!updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 0;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void addHouseholdThatMoved (Household hh){
+        //Add one household that moved out for the car updating model
+
+        if (updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = updatedHouseholds.get(hh.getId());
+            currentHouseholdAttributes [3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        } else {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void clearUpdatedHouseholds() {
+        updatedHouseholds.clear();
+    }
+
+    public Map<Integer, int[]> getUpdatedHouseholds() {
+        return updatedHouseholds;
+    }
 }

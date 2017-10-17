@@ -163,7 +163,7 @@ public class MatsimTestUtils extends TestWatchman {
 
 	/**
 	 * Initializes MatsimTestUtils without requiring the method of a class to be a JUnit test.
-	 * This should be used for "fixtures" only that provide a scenario common to several
+	 * This should be used for "fixtures" only that provide a scenarios common to several
 	 * test cases.
 	 */
 	public void initWithoutJUnitForFixture(Class fixture, Method method){

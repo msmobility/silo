@@ -25,7 +25,7 @@ public class RealEstateDataManager {
     protected static final String PROPERTIES_ACRES_BY_DD    = "developer.acres.per.dwelling.by.type";
 
     private ResourceBundle rb;
-    private geoDataI geoData;
+    private GeoData geoData;
     public static int largestNoBedrooms;
     public static int[] dwellingsByQuality;
     private static double[] initialQualityShares;
@@ -41,7 +41,7 @@ public class RealEstateDataManager {
     private static float[] medianRent;
     private HashMap<DwellingType, Float> acresByDwellingType;
 
-    public RealEstateDataManager(ResourceBundle rb, geoDataI geoData) {
+    public RealEstateDataManager(ResourceBundle rb, GeoData geoData) {
         // constructor
         this.rb = rb;
         this.geoData = geoData;

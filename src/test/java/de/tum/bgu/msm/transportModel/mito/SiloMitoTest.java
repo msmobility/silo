@@ -9,14 +9,10 @@ import org.junit.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by Nico on 24/07/2017.
- */
 public class SiloMitoTest {
 
     private static final Logger log = Logger.getLogger(SiloMitoTest.class);
+
 
     @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
@@ -48,6 +44,7 @@ public class SiloMitoTest {
     /**
      * This test should test Silo together with Mito.
      */
+
     @Test
     public final void testMainReduced() {
         // yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16

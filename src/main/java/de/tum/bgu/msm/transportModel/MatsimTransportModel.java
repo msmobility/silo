@@ -21,8 +21,7 @@ package de.tum.bgu.msm.transportModel;
 import java.util.*;
 
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.MitoHousehold;
-import de.tum.bgu.msm.data.MitoPerson;
+import de.tum.bgu.msm.data.*;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.Gbl;
@@ -33,8 +32,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import org.apache.log4j.Logger;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 
 /**
  * @author dziemke
@@ -59,18 +56,6 @@ public class MatsimTransportModel implements TransportModelI {
 		this.acc = acc;
 		this.rb = rb;
 		this.matsimConfig = matsimConfig;
-	}
-
-	@Override
-	public void feedData(int[] zones, Matrix autoTravelTimes, Matrix transitTravelTimes, Map<Integer, MitoHousehold> mitoHouseholds,
-						 int[] retailEmplByZone, int[] officeEmplByZone, int[] otherEmplByZone,
-						 int[] totalEmplByZone, float[] sizeOfZonesInAcre) {
-
-	}
-
-	@Override
-	public void setScenarioName(String scenarioName) {
-
 	}
 
 	@Override
@@ -129,14 +114,5 @@ public class MatsimTransportModel implements TransportModelI {
 		// Update accessibilities in silo from matsim output
 		acc.calculateAccessibilities(year);
 		// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
-	}
-
-	@Override
-	public void writeOutSocioEconomicDataForMstm(int year) {
-		// Not doing anything
-	}
-	@Override
-	public void tripGeneration() {
-		// Not doing anything
 	}
 }

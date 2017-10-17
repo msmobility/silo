@@ -72,6 +72,16 @@ public class EventManager {
                 events.add(new Integer[]{EventTypes.checkDivorce.ordinal(), id});
                 numEvents++;
             }
+            // Change school
+            if (EventRules.ruleChangeSchoolUniversity(per)) {
+                events.add(new Integer[]{EventTypes.checkSchoolUniv.ordinal(), id});
+                numEvents++;
+            }
+            // Change drivers license
+            if (EventRules.ruleChangeDriversLicense(per)) {
+                events.add(new Integer[]{EventTypes.checkDriversLicense.ordinal(), id});
+                numEvents++;
+            }
         }
 
 
@@ -206,6 +216,14 @@ public class EventManager {
         logger.info("  Simulated leave parental hh: " + lph + " (" +
                 SiloUtil.rounder((100f * lph / hh), 1) + "% of hh)");
         summarizeData.resultFile("LeaveParentalHH,"+lph);
+        int suc = eventCounter.get(EventTypes.checkSchoolUniv);
+        logger.info("  Simulated change of school or university: " + suc + " (" +
+                SiloUtil.rounder((100f * suc / pp), 1) + "% of pp)");
+        summarizeData.resultFile("ChangeSchoolUniv,"+suc);
+        int dlc = eventCounter.get(EventTypes.checkDriversLicense);
+        logger.info("  Simulated change of drivers license: " + dlc + " (" +
+                SiloUtil.rounder((100f * dlc / pp), 1) + "% of pp)");
+        summarizeData.resultFile("ChangeDriversLicense,"+dlc);
         int sj = eventCounter.get(EventTypes.findNewJob);
         logger.info("  Simulated start new job:     " + sj + " (" +
                 SiloUtil.rounder((100f * sj / pp), 1) + "% of pp)");

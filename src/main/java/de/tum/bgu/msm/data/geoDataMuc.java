@@ -6,8 +6,6 @@ import java.util.ResourceBundle;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import omx.OmxFile;
-import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
@@ -21,7 +19,7 @@ import de.tum.bgu.msm.SiloUtil;
  * Created on 5 April 2017 in Munich
  **/
 
-public class geoDataMuc implements geoDataI {
+public class geoDataMuc implements GeoData {
     private static final Logger logger = Logger.getLogger(geoDataMuc.class);
 
     protected static final String PROPERTIES_ZONAL_DATA_FILE  = "zonal.data.file";
