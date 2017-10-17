@@ -1,6 +1,5 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;

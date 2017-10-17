@@ -36,7 +36,7 @@ import org.matsim.core.config.Config;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 
-import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
+import de.tum.bgu.msm.autoOwnership.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.demography.BirthModel;
 import de.tum.bgu.msm.demography.ChangeEmploymentModel;
 import de.tum.bgu.msm.demography.DeathModel;
@@ -97,7 +97,7 @@ public class SiloModelBak {
     private MovesModelMstm move;
     private ChangeEmploymentModel changeEmployment;
     private Accessibility accessibility;
-    private AutoOwnershipModel aoModel;
+    private MaryLandCarOwnershipModel aoModel;
     private MstmTransportModel TransportModel;
     private UpdateJobs updateJobs;
     private int[] skimYears;
@@ -171,7 +171,7 @@ public class SiloModelBak {
         DemolitionModel demol = new DemolitionModel(rb);
         PricingModel prm = new PricingModel(rb);
         UpdateJobs updateJobs = new UpdateJobs(rb);
-        AutoOwnershipModel aoModel = new AutoOwnershipModel(rb);
+        MaryLandCarOwnershipModel aoModel = new MaryLandCarOwnershipModel(rb);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rb);
 
         boolean trackTime = ResourceUtil.getBooleanProperty(rb, PROPERTIES_TRACK_TIME, false);
@@ -406,7 +406,7 @@ public class SiloModelBak {
         demol = new DemolitionModel(rb);
         prm = new PricingModel(rb);
         updateJobs = new UpdateJobs(rb);
-        aoModel = new AutoOwnershipModel(rb);
+        aoModel = new MaryLandCarOwnershipModel(rb);
         ddOverwrite = new ConstructionOverwrite(rb);
 
         trackTime = ResourceUtil.getBooleanProperty(rb, PROPERTIES_TRACK_TIME, false);

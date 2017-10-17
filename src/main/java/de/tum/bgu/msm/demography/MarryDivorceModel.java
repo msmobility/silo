@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -374,8 +374,9 @@ public class MarryDivorceModel {
         }
         partner1.setRole(PersonRole.married);
         partner2.setRole(PersonRole.married);
-        modelContainer.getAoModel().simulateAutoOwnership(Household.getHouseholdFromId(partner1.getHhId()), modelContainer, dataContainer);
         EventManager.countEvent(EventTypes.checkMarriage);
+        dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner1);
+        dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner2);
     }
 
 
@@ -436,12 +437,13 @@ public class MarryDivorceModel {
             newHh.setHouseholdRace();
             // move divorced person into new dwelling
             modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
-            modelContainer.getAoModel().simulateAutoOwnership(newHh, modelContainer, dataContainer);
             if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
             EventManager.countEvent(EventTypes.checkDivorce);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(newHh);
         }
     }
 }

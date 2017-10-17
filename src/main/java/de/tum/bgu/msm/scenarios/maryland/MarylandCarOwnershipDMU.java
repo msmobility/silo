@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.autoOwnership;
+package de.tum.bgu.msm.scenarios.maryland;
 
 import com.pb.common.calculator.IndexValues;
 import org.apache.log4j.Logger;
@@ -10,9 +10,9 @@ import org.apache.log4j.Logger;
  **/
 
 
-public class AutoOwnershipDMU {
+public class MarylandCarOwnershipDMU {
 
-    protected transient Logger logger = Logger.getLogger(AutoOwnershipDMU.class);
+    protected transient Logger logger = Logger.getLogger(MarylandCarOwnershipDMU.class);
 
     // uec variables
     private IndexValues dmuIndex;
@@ -24,7 +24,7 @@ public class AutoOwnershipDMU {
     private int densityCategory;
 
 
-    public AutoOwnershipDMU() {
+    public MarylandCarOwnershipDMU() {
 		dmuIndex = new IndexValues();
 	}
 

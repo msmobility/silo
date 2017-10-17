@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.autoOwnership;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
 

@@ -109,7 +109,7 @@ public class CreateOneDimensionalSegmentation {
         File file = new File ("output/tripGen");
         if (!file.exists()) {
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory output/tripGen/");
+            if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenarios directory output/tripGen/");
         }
         String fileName = rb.getString("one.dim.array.combos.files") + "_" + dim + ".csv";
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
