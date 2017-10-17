@@ -40,7 +40,7 @@ import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
 public class SiloModel {
@@ -310,6 +310,7 @@ public class SiloModel {
 			}
 
             updateCars();
+
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
                 if (SiloUtil.containsElement(tdmYears,  year + 1)) {
                 transportModel.runTransportModel(year + 1);
