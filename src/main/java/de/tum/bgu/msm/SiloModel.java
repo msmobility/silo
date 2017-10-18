@@ -132,7 +132,7 @@ public class SiloModel {
 		// synthetic population for testing
 
 		boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
-		long[][] timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
+		long[][] timeCounter = new long[EventTypes.values().length + 12][SiloUtil.getEndYear() + 1];
 		long startTime = 0;
 		IssueCounter.logIssues(dataContainer.getGeoData());           // log any potential issues during initial setup
 
@@ -283,8 +283,10 @@ public class SiloModel {
 				}
 			}
 
-			modelContainer.getCarOwnershipModel().updateCarOwnership(dataContainer.getHouseholdData().getUpdatedHouseholds());
+			if (trackTime) startTime = System.currentTimeMillis();
+			int[] carChangeCounter = modelContainer.getCarOwnershipModel().updateCarOwnership(dataContainer.getHouseholdData().getUpdatedHouseholds());
 			dataContainer.getHouseholdData().clearUpdatedHouseholds();
+			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
                 if (SiloUtil.containsElement(tdmYears,  year + 1)) {
@@ -296,7 +298,7 @@ public class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices(year, dataContainer);
 			if (trackTime) timeCounter[EventTypes.values().length + 8][year] += System.currentTimeMillis() - startTime;
 
-			EventManager.logEvents();
+			EventManager.logEvents(carChangeCounter);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +

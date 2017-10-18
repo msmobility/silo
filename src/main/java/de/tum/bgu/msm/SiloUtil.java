@@ -1022,7 +1022,7 @@ static void writeOutTimeTracker (long[][] timeCounter, ResourceBundle rbLandUse 
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
 				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,summarizeData,updateRealEstatePrices," +
-				"planIncomeChange,addOverwriteDwellings");
+				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
 		pw.println();
 	}
 	for (int year = startYear; year < getEndYear(); year += getSimulationLength()) {
@@ -1042,6 +1042,7 @@ static void writeOutTimeTracker (long[][] timeCounter, ResourceBundle rbLandUse 
 		pw.print("," + timeCounter[EventTypes.values().length + 8][year] / 60000f);   // update real estate prices
 		pw.print("," + timeCounter[EventTypes.values().length + 9][year] / 60000f);   // plan income change
 		pw.print("," + timeCounter[EventTypes.values().length + 10][year] / 60000f);  // add dwellings from overwrite
+        pw.print("," + timeCounter[EventTypes.values().length + 11][year] / 60000f);  // add or relinquish cars
 		pw.println();
 	}
 	pw.close();
