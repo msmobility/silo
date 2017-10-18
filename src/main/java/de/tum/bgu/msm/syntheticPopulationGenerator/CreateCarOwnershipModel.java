@@ -48,14 +48,14 @@ public class CreateCarOwnershipModel {
     }
 
     private double[] calculateCarOwnershipProb(int license, int workers, int income, int logDistanceToTransit, int areaType) {
-        // setup to calculate the car ownership probabilities from the javascript calculator
+        // setup to calculate the car ownership probabilities for an individual household from the javascript calculator
         calculator.setLicense(license);
         calculator.setWorkers(workers);
         calculator.setIncome(income);
         calculator.setLogDistanceToTransit(logDistanceToTransit);
         calculator.setAreaType(areaType);
 
-        double[] result = new double[4];
+        double[] result = new double[4];  // probabilities for 0, 1, 2 and 3+ cars
         try {
             result = calculator.calculate();
         } catch (ScriptException e) {
@@ -83,7 +83,7 @@ public class CreateCarOwnershipModel {
         // as distance to transit and areaType is dependent on where households are living
         int license = hh.getHHLicenseHolders();
         int workers = hh.getNumberOfWorkers();
-        int income = hh.getHhIncome()/12;
+        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
         int logDistanceToTransit = (int) Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit"));
         int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
 
@@ -118,7 +118,7 @@ public class CreateCarOwnershipModel {
                 }
             }
             minDist = minDist + 1;
-            zonalData.setValueAt(i, "distanceToTransit", minDist);
+            zonalData.setIndexedValueAt(i, "distanceToTransit", minDist);
         }
     }
 }
