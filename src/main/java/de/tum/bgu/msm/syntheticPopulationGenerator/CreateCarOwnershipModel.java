@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.autoOwnership;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
 import com.pb.common.datafile.TableDataSet;
@@ -11,7 +11,6 @@ import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ResourceBundle;

@@ -1,13 +1,10 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
-import javafx.scene.control.Tab;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.commons.math.MathException;
@@ -16,7 +13,6 @@ import org.apache.commons.math.stat.Frequency;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
-import javax.measure.unit.SI;
 import java.io.*;
 import java.util.ResourceBundle;
 import java.util.*;

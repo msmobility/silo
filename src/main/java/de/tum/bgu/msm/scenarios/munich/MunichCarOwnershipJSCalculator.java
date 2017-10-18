@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.autoOwnership;
+package de.tum.bgu.msm.scenarios.munich;
 
 import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
 
@@ -7,9 +7,9 @@ import java.io.Reader;
 /**
  * Created by matthewokrah on 29/09/2017.
  */
-public class UpdateCarOwnershipJSCalculator extends JavaScriptCalculator<double[]> {
+public class MunichCarOwnershipJSCalculator extends JavaScriptCalculator<double[]> {
 
-    public UpdateCarOwnershipJSCalculator (Reader reader, boolean log){
+    public MunichCarOwnershipJSCalculator(Reader reader, boolean log){
         super(reader, log);
     }
 

@@ -21,15 +21,12 @@ import java.util.ResourceBundle;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.autoOwnership.UpdateCarOwnershipModel;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.PersonRole;
+import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.data.PersonType;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,13 +52,14 @@ public class BirthModel {
     // properties
 	private static double[] birthProbability;
     private static float propGirl;
+    private final HouseholdDataManager householdDataManager;
     private int simPeriodLength;
     private float marriedScaler;
     private float singleScaler;
     private ResourceBundle rb;
 
 
-    public BirthModel(ResourceBundle rb) {
+    public BirthModel(ResourceBundle rb, HouseholdDataManager householdDataManager) {
         // constructor
 
         this.rb = rb;
@@ -70,6 +68,7 @@ public class BirthModel {
         marriedScaler   = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_MARRIED);
         singleScaler    = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_SINGLE);
         simPeriodLength = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_SIMULATION_PERIOD_LENGTH);
+        this.householdDataManager = householdDataManager;
         setupBirthModel();
 	}
 
@@ -126,7 +125,7 @@ public class BirthModel {
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
             EventManager.countEvent(EventTypes.checkBirth);
-            UpdateCarOwnershipModel.addHouseholdThatChanged(hhOfThisWoman);
+            householdDataManager.addHouseholdThatChanged(hhOfThisWoman);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
             }

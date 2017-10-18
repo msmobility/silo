@@ -60,9 +60,9 @@ public class SiloModelCBLCM {
 	        geoData = new geoDataMstm(rbLandUse);
 	        // Note: only implemented for MSTM:
 
-	        modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, geoData, Implementation.MSTM);
-	        // read micro data
-	        dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, geoData, false);
+		// read micro data
+		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse,  false, Implementation.MSTM);
+		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
 
 	        trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -139,7 +139,7 @@ public class SiloModelCBLCM {
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear())
-	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer, geoData, rbLandUse );
+	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer, rbLandUse );
 	        if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
 	        logger.info("  Simulating events");
@@ -248,7 +248,7 @@ public class SiloModelCBLCM {
 	            geoData.writeOutDevelopmentCapacityFile(dataContainer);
 	        }
 
-	        SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, geoData, rbLandUse);
+	        SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse);
 	        SiloUtil.finish(modelContainer);
 	        SiloUtil.modelStopper("removeFile");
 	        
