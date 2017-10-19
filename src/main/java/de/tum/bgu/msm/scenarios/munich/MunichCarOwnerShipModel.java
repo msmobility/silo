@@ -46,7 +46,8 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     @Override
     public void initialize() {
-        // read properties
+        // Setting up probabilities for car update model
+
         reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
         calculator = new MunichCarOwnershipJSCalculator(reader, false);
         //set car update probabilities
@@ -67,7 +68,6 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
                                     calculator.setChangeResidence(changeRes);
                                     try {
                                         carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] = calculator.calculate();
-
                                     } catch (ScriptException e) {
                                         e.printStackTrace();
                                     }
@@ -81,8 +81,10 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
     }
 
     @Override
-    public void updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
+    public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
+        //
 
+        int[] counter = new int[2];
         for (Map.Entry<Integer, int[]> pair : updatedHouseholds.entrySet()) {
             Household hh = Household.getHouseholdFromId(pair.getKey());
             if (hh != null) {
@@ -117,13 +119,16 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
                 if (action == 1){ //add one car
                     if (hh.getAutos() < 3) { //maximum number of cars is equal to 3
                         hh.setAutos(hh.getAutos() + 1);
+                        counter[0]++;
                     }
                 } else if (action == 2) { //remove one car
                     if (hh.getAutos() > 0){ //cannot have less than zero cars
                         hh.setAutos(hh.getAutos() - 1);
+                        counter[1]++;
                     }
                 }
             }
         }
+        return counter;
     }
 }

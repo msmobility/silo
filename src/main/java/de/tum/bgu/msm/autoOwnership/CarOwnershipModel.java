@@ -4,5 +4,5 @@ import java.util.Map;
 
 public interface CarOwnershipModel {
     void initialize();
-    void updateCarOwnership(Map<Integer, int[]> updatedHouseholds);
+    int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds);
 }
