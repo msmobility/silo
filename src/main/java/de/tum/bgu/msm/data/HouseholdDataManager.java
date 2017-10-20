@@ -59,6 +59,7 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
     private RealEstateDataManager realEstateData;
+    private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
 
     public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
@@ -466,6 +467,15 @@ public class HouseholdDataManager {
         }
         summarizeData.resultFile("aveCommuteDistByRegion,miles");
         for (int i: geoData.getRegionList()) summarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+        int[] carOwnership = new int[4];
+        for (Household hh: Household.getHouseholdArray()) {
+            carOwnership[hh.getAutos()]++;
+        }
+        summarizeData.resultFile("carOwnershipLevel,households");
+        summarizeData.resultFile("0cars," + carOwnership[0]);
+        summarizeData.resultFile("1car," + carOwnership[1]);
+        summarizeData.resultFile("2cars," + carOwnership[2]);
+        summarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
 
@@ -992,4 +1002,42 @@ public class HouseholdDataManager {
         //System.exit(0);
     }
 
+    public void addHouseholdThatChanged (Household hh){
+        // Add one household that probably had changed their attributes for the car updating model
+        // Households are added to this HashMap only once, even if several changes happen to them. They are only added
+        // once, because this HashMap stores the previous socio-demographics before any change happened in a given year.
+        if (!updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 0;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void addHouseholdThatMoved (Household hh){
+        // Add one household that moved out for the car updating model
+        // Different from method addHouseholdThatChanged(), because here the hasMoved-flag is set from 0 to 1
+        if (updatedHouseholds.containsKey(hh.getId())) {
+            int[] currentHouseholdAttributes = updatedHouseholds.get(hh.getId());
+            currentHouseholdAttributes [3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        } else {
+            int[] currentHouseholdAttributes = new int[4];
+            currentHouseholdAttributes[0] = hh.getHhSize();
+            currentHouseholdAttributes[1] = hh.getHhIncome();
+            currentHouseholdAttributes[2] = hh.getHHLicenseHolders();
+            currentHouseholdAttributes[3] = 1;
+            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+        }
+    }
+
+    public void clearUpdatedHouseholds() {
+        updatedHouseholds.clear();
+    }
+
+    public Map<Integer, int[]> getUpdatedHouseholds() {
+        return updatedHouseholds;
+    }
 }

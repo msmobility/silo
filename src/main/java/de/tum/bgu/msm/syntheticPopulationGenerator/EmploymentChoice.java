@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
         import com.pb.common.datafile.TableDataSet;
         import com.pb.common.matrix.Matrix;
@@ -6,10 +6,7 @@ package de.tum.bgu.msm.SyntheticPopulationGenerator;
 
         import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 
-        import java.lang.reflect.Array;
         import java.util.*;
-
-        import static com.pb.common.model.tests.TestLogitModel.logger;
 
 
 /**

@@ -1,12 +1,10 @@
 package de.tum.bgu.msm.relocation;
 
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
+import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.demography.ChangeEmploymentModel;
 import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
 
@@ -176,7 +174,7 @@ public class InOutMigration {
             outMigrateHh(hhId, true, dataContainer);
             return;
         }
-        modelContainer.getAoModel().simulateAutoOwnership(hh, modelContainer, dataContainer);
+        dataContainer.getHouseholdData().addHouseholdThatChanged(hh);
         EventManager.countEvent(EventTypes.inmigration);
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");

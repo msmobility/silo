@@ -1,18 +1,15 @@
-package de.tum.bgu.msm.SyntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.scenarios.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.autoOwnership.AutoOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 import com.pb.common.util.ResourceUtil;
 
@@ -690,12 +687,11 @@ public class SyntheticPopUs {
 
     private void generateAutoOwnership (JobDataManager jobData) {
         // select number of cars for every household
-
         jobData.calculateJobDensityByZone();
-        AutoOwnershipModel ao = new AutoOwnershipModel(rb);   // calculate auto-ownership probabilities
+        MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(rb, jobData, accessibility);   // calculate auto-ownership probabilities
+        Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int autos = ao.simulateAutoOwnership(hh, accessibility, jobData);
-            hh.setAutos(autos);
+            households.put(hh.getId(), null);
         }
     }
 

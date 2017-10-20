@@ -16,7 +16,7 @@
  */
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.SyntheticPopulationGenerator.SyntheticPopUs;
+import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopUs;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
 

@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.container;
 
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -23,7 +25,7 @@ public class SiloDataContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, GeoData, boolean)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, boolean, de.tum.bgu.msm.SiloModel.Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -46,8 +48,24 @@ public class SiloDataContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse, GeoData geoData,
-                                                            boolean readSmallSynPop) {
+    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse,
+                                                            boolean readSmallSynPop, SiloModel.Implementation implementation) {
+        GeoData geoData;
+        switch (implementation) {
+            case MSTM:
+                geoData = new geoDataMstm(rbLandUse);
+                break;
+            case MUC:
+                geoData = new geoDataMuc(rbLandUse);
+                break;
+            default:
+                logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
+                throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
+        }
+
+        geoData.setInitialData();
+        IssueCounter.regionSpecificCounters(geoData);
+
 
         // read micro data
         RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);

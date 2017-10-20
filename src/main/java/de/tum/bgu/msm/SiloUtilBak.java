@@ -31,7 +31,7 @@ public class SiloUtilBak {
 
     protected static final String PROPERTIES_BASE_DIRECTORY                    = "base.directory";
     protected static final String PROPERTIES_RANDOM_SEED                       = "random.seed";
-    protected static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
+    protected static final String PROPERTIES_SCENARIO_NAME                     = "scenarios.name";
     protected static final String PROPERTIES_TRACKING_FILE_NAME                = "track.file.name";
     public static final String PROPERTIES_START_YEAR                        = "start.year";
     public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
@@ -74,9 +74,9 @@ public class SiloUtilBak {
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
         scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
 
-        // create scenario output directory if it does not exist yet
+        // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
-        // copy properties file into scenario directory
+        // copy properties file into scenarios directory
         String[] prop = resourceBundleName.split("/");
 //        copyFile(baseDirectory + resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
         copyFile(resourceBundleName, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
@@ -99,7 +99,7 @@ public class SiloUtilBak {
         if (!file.exists()) {
             logger.error("Creating Directory: "+directory); // TODO I would not log an error here; at most a warning or an info, dz, apr/16
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenario directory " + scenarioName);
+            if (!outputDirectorySuccessfullyCreated) logger.warn("Could not create scenarios directory " + scenarioName);
         }
     }
 
@@ -508,7 +508,7 @@ public class SiloUtilBak {
         try {
             Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
         } catch (Exception e) {
-            logger.warn("Unable to copy properties file " + source + " to scenario output directory.");
+            logger.warn("Unable to copy properties file " + source + " to scenarios output directory.");
         }
     }
 
