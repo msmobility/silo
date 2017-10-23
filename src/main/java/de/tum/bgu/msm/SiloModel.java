@@ -125,9 +125,12 @@ public class SiloModel {
 			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
+			modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
+		modelContainer.getAcc().initialize();
+		
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
 		// it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
@@ -183,9 +186,11 @@ public class SiloModel {
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
 					!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
 					year != SiloUtil.getStartYear()) {
-				// skims are always read in start year and in every year the transportation model ran. Additional
+				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
-				modelContainer.getAcc().readSkim(year);
+				if (!runMatsim) {
+					modelContainer.getAcc().readSkim(year);
+				}
 				modelContainer.getAcc().calculateAccessibilities(year);
 			}
 

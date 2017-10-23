@@ -51,16 +51,17 @@ public class Accessibility {
     private Matrix travelTimeToRegion;
 	private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 
-    public Accessibility(ResourceBundle rb, int year, GeoData geoData) {
+    public Accessibility(ResourceBundle rb, GeoData geoData) {
         this.rb = rb;
         this.geoData = geoData;
-        readSkim(year);
-        calculateAccessibilities(year);
-        readWorkTripLengthFrequencyDistribution();
-        calculateDistanceToRegions();
         autoOperatingCosts = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_AUTO_OPERATING_COSTS);
     }
 
+	public void initialize() {
+		calculateAccessibilities(SiloUtil.getStartYear());
+        readWorkTripLengthFrequencyDistribution();
+        calculateDistanceToRegions();
+	}
 
     public void readSkim(int year) {
         // Read hwySkim matrix for year
@@ -128,35 +129,6 @@ public class Accessibility {
 //        }
 //        for (int zn: SiloUtil.getZones()) transitSkim.setValueAt(zn, zn, 0);  // intrazonal distance not specified in this CUBE skim, set to 0
     }
-    
-    
-    
-    
-    // new Matsim
-    public void updateMatsimTravelTimes(int year, Map<Tuple<Integer, Integer>, Float> travelTimesMap) {
-        logger.info("Reading skims based on MATSim travel times for " + year);
-        
-        
-        
-        // new matrix needs to have same dimension as previous matrix
-//        int rowCount = hwySkim.getRowCount();
-//        int columnCount = hwySkim.getColumnCount();
-        
-//        hwySkim = SiloMatsimUtils.convertTravelTimesToImpedanceMatrix(travelTimesMap, rowCount, columnCount, year);
-//
-//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/matsim_impedance_" + year + ".csv"));
-//        matrixWriter.writeMatrix(hwySkim);
-        
-
-        // Read transit hwySkim ... unchanged... see above
-        // comment out ... as would also not be called in no-matsim version!!
-//        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
-//        OmxFile tSkim = new OmxFile(transitFileName);
-//        tSkim.openReadOnly();
-//        OmxMatrix timeOmxSkimTransit = tSkim.getMatrix("CheapJrnyTime");
-//        transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
-    }
-    // end new Matsim
     
 
     public float getAutoTravelTime(int i, int j) {

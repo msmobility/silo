@@ -63,6 +63,9 @@ public class SiloModelCBLCM {
 		// read micro data
 		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse,  false, Implementation.MSTM);
 		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
+		
+		modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
+		modelContainer.getAcc().initialize();
 
 	        trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
