@@ -6,9 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Paths;
 
-import de.tum.bgu.msm.SiloMatsim;
-import de.tum.bgu.msm.transportModel.SiloTestUtils;
-import de.tum.bgu.msm.transportModel.mstm.SiloMstmTest;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -22,6 +19,9 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
+
+import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.transportModel.SiloTestUtils;
 
 /**
  * @author dziemke, nagel
