@@ -66,7 +66,9 @@ public class SyntheticPopUs {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        accessibility = new Accessibility(rb, SiloUtil.getBaseYear(), geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(rb, geoData);                        // read in travel times and trip length frequency distribution
+        accessibility.readSkim(SiloUtil.getStartYear());
+        accessibility.initialize();
         processPums();
         JobDataManager jobData = new JobDataManager(rb, geoData);
         generateAutoOwnership(jobData);

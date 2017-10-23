@@ -114,7 +114,7 @@ public class SiloModelContainer {
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
-        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), dataContainer.getGeoData());
+        Accessibility acc = new Accessibility(rbLandUse, dataContainer.getGeoData());
         //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         if (implementation.equals(Implementation.MSTM)) {
