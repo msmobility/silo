@@ -122,6 +122,7 @@ public class SiloModel {
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
+			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
@@ -292,7 +293,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
-                if (SiloUtil.containsElement(tdmYears,  year + 1)) {
+                if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
                 }
             }
