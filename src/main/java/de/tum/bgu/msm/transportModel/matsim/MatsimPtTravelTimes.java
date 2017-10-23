@@ -7,26 +7,35 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+import org.matsim.core.router.TripRouter;
+import org.matsim.facilities.ActivityFacilitiesFactory;
+import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
+import org.matsim.facilities.ActivityFacility;
 import org.opengis.feature.simple.SimpleFeature;
 
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 
-public class MatsimTravelTimes implements TravelTimes {
-	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
+public class MatsimPtTravelTimes implements TravelTimes {
+	private final static Logger logger = Logger.getLogger(MatsimPtTravelTimes.class);
 
-	private final LeastCostPathTree leastCoastPathTree;
+	private final TripRouter tripRouter;
 	private final Map<Integer,SimpleFeature> zoneFeatureMap;
 	private final Network network;
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final static double TIME_OF_DAY = 8. * 60 * 60.; // TODO
+	private final static String mode = TransportMode.pt;
 
-	public MatsimTravelTimes(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
-		this.leastCoastPathTree = leastCoastPathTree;
+	public MatsimPtTravelTimes(TripRouter tripRouter, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
+		this.tripRouter = tripRouter;
 		this.zoneFeatureMap = zoneFeatureMap;
 		this.network = network;
 	}
@@ -55,14 +64,28 @@ public class MatsimTravelTimes implements TravelTimes {
 		double sumTravelTime_min = 0.;
 		
 		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
-			leastCoastPathTree.calculate(network, originNode, TIME_OF_DAY);
-			
 			for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
-						
-				double arrivalTime = leastCoastPathTree.getTree().get(destinationNode.getId()).getTime();
-				sumTravelTime_min += ((arrivalTime - TIME_OF_DAY) / 60.);
+				ActivityFacilitiesFactory activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
+				ActivityFacility originFacility = activityFacilitiesFactory.createActivityFacility(null, originNode.getCoord());
+				ActivityFacility destinationFacility = activityFacilitiesFactory.createActivityFacility(null, destinationNode.getCoord());
+				
+				Gbl.assertNotNull(tripRouter);
+				List<? extends PlanElement> route = tripRouter.calcRoute(mode, originFacility, destinationFacility, TIME_OF_DAY, null);
+				
+				for (PlanElement pe : route) {
+					if (pe instanceof Activity) {
+						// Activities as part of route can only be stage/dummy activities; still checking this to be sure...
+						Activity activity = (Activity) pe;
+						if (tripRouter.getStageActivityTypes().isStageActivity(activity.getType())) {
+							sumTravelTime_min += (activity.getEndTime() - activity.getStartTime()) /60.;
+						}
+					} else if (pe instanceof Leg) {
+						sumTravelTime_min += (((Leg) pe).getRoute().getTravelTime() / 60.);
+					}
+				}
 			}
 		}
+		
 		return sumTravelTime_min / NUMBER_OF_CALC_POINTS / NUMBER_OF_CALC_POINTS;
 	}
 }

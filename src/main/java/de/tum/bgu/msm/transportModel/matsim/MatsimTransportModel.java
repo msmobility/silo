@@ -121,24 +121,9 @@ public class MatsimTransportModel implements TransportModelI {
 		scenario.setPopulation(population);
 		
 		final Controler controler = new Controler(scenario);
-
-		// Add controller listener
-//		Map<Tuple<Integer, Integer>, Float> travelTimesMap = new HashMap<>();
-//
-//		double timeOfDay = 8. * 60. * 60.;
-//		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
-//				zoneFeatureMap, timeOfDay, numberOfCalcPoints, random);
-//		controler.addControlerListener(zone2zoneTravelTimeListener);
 		
 		controler.run();
-		
-//		travelTimesMap = zone2zoneTravelTimeListener.getTravelTimesMap();
-		
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
-
-		// Update skims in silo from matsim output
-//		acc.updateMatsimTravelTimes(year, travelTimesMap);
 		
 		TravelTime travelTime = controler.getLinkTravelTimes();
 		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
@@ -146,10 +131,11 @@ public class MatsimTransportModel implements TransportModelI {
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
 		
 		MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork());
+		MatsimPtTravelTimes matsimPtTravelTimes = new MatsimPtTravelTimes(controler.getTripRouterProvider().get(), zoneFeatureMap, scenario.getNetwork());
 		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
+		acc.addTravelTimeForMode(TransportMode.pt, matsimPtTravelTimes);
 
 		// Update accessibilities in silo from matsim output
 		acc.calculateAccessibilities(year);
-		// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
 	}
 }
