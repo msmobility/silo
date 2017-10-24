@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -20,46 +21,54 @@ public class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
 	private final LeastCostPathTree leastCoastPathTree;
-	private final Map<Integer,SimpleFeature> zoneFeatureMap;
 	private final Network network;
+	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final static double TIME_OF_DAY = 8. * 60 * 60.; // TODO
+	private final Map<Id<Node>, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForNode = new HashMap<>();
 
 	public MatsimTravelTimes(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
 		this.leastCoastPathTree = leastCoastPathTree;
-		this.zoneFeatureMap = zoneFeatureMap;
 		this.network = network;
+		initialize(zoneFeatureMap);
 	}
 
-	@Override
-	public double getTravelTimeFromTo(int origin, int destination) {
-		
-		Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
-		
+	private void initialize(Map<Integer,SimpleFeature> zoneFeatureMap) {
 		for (int zoneId : zoneFeatureMap.keySet()) {
-			
+
 			for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
 				SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
 				Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
 				Link originLink = NetworkUtils.getNearestLink(network, originCoord);
 				Node originNode = originLink.getToNode();
-				
+
 				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
 					zoneCalculationNodesMap.put(zoneId, new LinkedList<Node>());
 				}
 				zoneCalculationNodesMap.get(zoneId).add(originNode);
 			}
 		}
-		
-		logger.info("There are " + zoneFeatureMap.keySet().size() + " origin zones.");
+	}
+
+	@Override
+	public double getTravelTimeFromTo(int origin, int destination) {
+		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
 		
 		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
-			leastCoastPathTree.calculate(network, originNode, TIME_OF_DAY);
+			Map<Id<Node>, LeastCostPathTree.NodeData> tree;
+			if(treesForNode.containsKey(originNode.getId())) {
+				tree = treesForNode.get(originNode.getId());
+			} else {
+				leastCoastPathTree.calculate(network, originNode, TIME_OF_DAY);
+				tree = leastCoastPathTree.getTree();
+				treesForNode.put(originNode.getId(), tree);
+			}
+
 			
 			for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
 						
-				double arrivalTime = leastCoastPathTree.getTree().get(destinationNode.getId()).getTime();
+				double arrivalTime = tree.get(destinationNode.getId()).getTime();
 				sumTravelTime_min += ((arrivalTime - TIME_OF_DAY) / 60.);
 			}
 		}

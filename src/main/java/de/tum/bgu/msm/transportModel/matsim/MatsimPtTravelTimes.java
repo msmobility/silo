@@ -52,7 +52,7 @@ public class MatsimPtTravelTimes implements TravelTimes {
 				Node originNode = originLink.getToNode();
 
 				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
-					zoneCalculationNodesMap.put(zoneId, new LinkedList<Node>());
+					zoneCalculationNodesMap.put(zoneId, new LinkedList<>());
 				}
 				zoneCalculationNodesMap.get(zoneId).add(originNode);
 			}

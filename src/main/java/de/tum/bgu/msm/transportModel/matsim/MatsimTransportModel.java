@@ -131,11 +131,9 @@ public class MatsimTransportModel implements TransportModelI {
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
 		
 		MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork());
+		//TODO: Optimize pt travel time query
 		MatsimPtTravelTimes matsimPtTravelTimes = new MatsimPtTravelTimes(controler.getTripRouterProvider().get(), zoneFeatureMap, scenario.getNetwork());
 		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
-		acc.addTravelTimeForMode(TransportMode.pt, matsimPtTravelTimes);
-
-		// Update accessibilities in silo from matsim output
-		acc.calculateAccessibilities(year);
+		acc.addTravelTimeForMode(TransportMode.pt, matsimTravelTimes); // use car times for now also, as pt travel times are too slow to compute, Nico Oct 17
 	}
 }

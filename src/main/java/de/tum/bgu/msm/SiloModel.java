@@ -36,7 +36,7 @@ import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
 public class SiloModel {
@@ -130,7 +130,8 @@ public class SiloModel {
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
 		modelContainer.getAcc().initialize();
-		
+		modelContainer.getAcc().calculateAccessibilities(SiloUtil.getStartYear());
+
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
 		// it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
@@ -300,6 +301,7 @@ public class SiloModel {
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
+                    modelContainer.getAcc().calculateAccessibilities(year);
                 }
             }
 

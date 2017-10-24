@@ -58,7 +58,6 @@ public class Accessibility {
     }
 
 	public void initialize() {
-		calculateAccessibilities(SiloUtil.getStartYear());
         readWorkTripLengthFrequencyDistribution();
         calculateDistanceToRegions();
 	}
@@ -156,21 +155,27 @@ public class Accessibility {
         int[] pop = summarizeData.getPopulationByZone(geoData);
         autoAccessibility = new double[zones.length];
         transitAccessibility = new double[zones.length];
+        int counter = 0;
         for (int orig: zones) {
+            if(Math.log10(counter) / Math.log10(2.) % 1 == 0) {
+                logger.info(counter + " accessibilities calculated");
+            }
             autoAccessibility[geoData.getZoneIndex(orig)] = 0;
             transitAccessibility[geoData.getZoneIndex(orig)] = 0;
             for (int dest: zones) {
                 double autoImpedance;
-                if (getAutoTravelTime(orig, dest) == 0) {      // should never happen for auto
+                double autoTravelTime = getAutoTravelTime(orig, dest);
+                if (autoTravelTime == 0) {      // should never happen for auto
                     autoImpedance = 0;
                 } else {
-                    autoImpedance = Math.exp(betaAuto * getAutoTravelTime(orig, dest));
+                    autoImpedance = Math.exp(betaAuto * autoTravelTime);
                 }
                 double transitImpedance;
-                if (getTransitTravelTime(orig, dest) == 0) {   // zone is not connected by walk-to-transit
+                double transitTravelTime = getTransitTravelTime(orig, dest);
+                if (transitTravelTime == 0) {   // zone is not connected by walk-to-transit
                     transitImpedance = 0;
                 } else {
-                    transitImpedance = Math.exp(betaTransit * getTransitTravelTime(orig, dest));
+                    transitImpedance = Math.exp(betaTransit * transitTravelTime);
                 }
                 // dz: zone "orig" and its zoneIndex "geoDataMstm.getZoneIndex(orig)" are different!!
                 // "orig" is the ID of the zone and zoneIndex is its location in the array
@@ -178,6 +183,7 @@ public class Accessibility {
                 autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
                 transitAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaTransit) * transitImpedance;
             }
+            counter++;
         }
         
         
