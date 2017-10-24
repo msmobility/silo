@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -28,48 +29,50 @@ public class MatsimPtTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimPtTravelTimes.class);
 
 	private final TripRouter tripRouter;
-	private final Map<Integer,SimpleFeature> zoneFeatureMap;
+	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final Network network;
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final static double TIME_OF_DAY = 8. * 60 * 60.; // TODO
 	private final static String mode = TransportMode.pt;
+	private final ActivityFacilitiesFactory activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
 
 	public MatsimPtTravelTimes(TripRouter tripRouter, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
 		this.tripRouter = tripRouter;
-		this.zoneFeatureMap = zoneFeatureMap;
 		this.network = network;
+		initialize(zoneFeatureMap);
 	}
 
-	@Override
-	public double getTravelTimeFromTo(int origin, int destination) {
-		
-		Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
-		
+	private void initialize(Map<Integer,SimpleFeature> zoneFeatureMap) {
 		for (int zoneId : zoneFeatureMap.keySet()) {
-			
+
 			for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
 				SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
 				Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
 				Link originLink = NetworkUtils.getNearestLink(network, originCoord);
 				Node originNode = originLink.getToNode();
-				
+
 				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
 					zoneCalculationNodesMap.put(zoneId, new LinkedList<Node>());
 				}
 				zoneCalculationNodesMap.get(zoneId).add(originNode);
 			}
 		}
+	}
+
+	@Override
+	public double getTravelTimeFromTo(int origin, int destination) {
 		
-		logger.info("There are " + zoneFeatureMap.keySet().size() + " origin zones.");
+		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
-		
+
 		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
+			Id<Link> originLink = originNode.getInLinks().values().iterator().next().getId();
+			ActivityFacility originFacility = activityFacilitiesFactory.createActivityFacility(null, originNode.getCoord(), originLink);
 			for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
-				ActivityFacilitiesFactory activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
-				ActivityFacility originFacility = activityFacilitiesFactory.createActivityFacility(null, originNode.getCoord());
-				ActivityFacility destinationFacility = activityFacilitiesFactory.createActivityFacility(null, destinationNode.getCoord());
+				Id<Link> destinationLink = destinationNode.getInLinks().values().iterator().next().getId();
+				ActivityFacility destinationFacility = activityFacilitiesFactory.createActivityFacility(null, destinationNode.getCoord(), destinationLink);
 				
-				Gbl.assertNotNull(tripRouter);
+//				Gbl.assertNotNull(tripRouter);
 				List<? extends PlanElement> route = tripRouter.calcRoute(mode, originFacility, destinationFacility, TIME_OF_DAY, null);
 				
 				for (PlanElement pe : route) {
