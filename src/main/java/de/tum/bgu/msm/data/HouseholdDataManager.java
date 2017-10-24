@@ -465,7 +465,8 @@ public class HouseholdDataManager {
             f.format("%s,%f,%f", grp[ag], labP[1][0][ag]/(labP[0][0][ag]+labP[1][0][ag]), labP[1][1][ag]/(labP[0][1][ag]+labP[1][1][ag]));
             summarizeData.resultFile(f.toString());
         }
-        summarizeData.resultFile("aveCommuteDistByRegion,miles");
+        // todo: Add distance in kilometers to this summary
+        summarizeData.resultFile("aveCommuteDistByRegion,minutes");
         for (int i: geoData.getRegionList()) summarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
         for (Household hh: Household.getHouseholdArray()) {
