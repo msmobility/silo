@@ -113,7 +113,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
     }
 
     @Override
-    public void updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
+    public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
@@ -134,5 +134,6 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
             prob[0] = 1 - SiloUtil.getSum(prob);
             household.setAutos(SiloUtil.select(prob));
         }
+        return new int[]{0,0};
     }
 }

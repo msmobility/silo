@@ -63,6 +63,9 @@ public class SiloModelCBLCM {
 		// read micro data
 		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse,  false, Implementation.MSTM);
 		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
+		
+		modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
+		modelContainer.getAcc().initialize();
 
 	        trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
@@ -222,7 +225,7 @@ public class SiloModelCBLCM {
 	        modelContainer.getPrm().updatedRealEstatePrices(currentYear, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
 
-	        EventManager.logEvents();
+	        EventManager.logEvents(new int[] {0,0});
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
 	        logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +

@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package de.tum.bgu.msm.transportModel;
+package de.tum.bgu.msm.transportModel.matsim;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +101,7 @@ public class SiloMatsimController {
 
 		// Add controller listener
 //		Zone2ZoneTravelTimeListener zone2zoneTravelTimeListener = new Zone2ZoneTravelTimeListener(
-//				controler, scenarios.getNetwork(), config.controler().getLastIteration(),
+//				controler, scenario.getNetwork(), config.controler().getLastIteration(),
 //				zoneFeatureMap, timeOfDay, numberOfCalcPoints, travelTimesMap);
 //		controler.addControlerListener(zone2zoneTravelTimeListener);
 		// feedback will not work without the above. kai, apr'16

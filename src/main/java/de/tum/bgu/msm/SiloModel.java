@@ -16,24 +16,27 @@
  */
 package de.tum.bgu.msm;
 
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.transportModel.MatsimTransportModel;
-import de.tum.bgu.msm.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.transportModel.TransportModelI;
-import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
-
 import java.io.File;
 import java.util.ResourceBundle;
 
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+
+import com.pb.common.util.ResourceUtil;
+
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.transportModel.MitoTransportModel;
+import de.tum.bgu.msm.transportModel.TransportModelI;
+import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
+
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
 public class SiloModel {
@@ -119,11 +122,16 @@ public class SiloModel {
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
+			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
+			modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
+		modelContainer.getAcc().initialize();
+		modelContainer.getAcc().calculateAccessibilities(SiloUtil.getStartYear());
+
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
 		// it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
@@ -179,9 +187,11 @@ public class SiloModel {
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
 					!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
 					year != SiloUtil.getStartYear()) {
-				// skims are always read in start year and in every year the transportation model ran. Additional
+				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
-				modelContainer.getAcc().readSkim(year);
+				if (!runMatsim) {
+					modelContainer.getAcc().readSkim(year);
+				}
 				modelContainer.getAcc().calculateAccessibilities(year);
 			}
 
@@ -289,8 +299,9 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
-                if (SiloUtil.containsElement(tdmYears,  year + 1)) {
+                if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
+                    modelContainer.getAcc().calculateAccessibilities(year);
                 }
             }
 

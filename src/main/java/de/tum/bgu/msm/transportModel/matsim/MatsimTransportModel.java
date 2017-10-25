@@ -16,28 +16,42 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package de.tum.bgu.msm.transportModel;
+package de.tum.bgu.msm.transportModel.matsim;
 
-import java.util.*;
-
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.*;
-import org.matsim.api.core.v01.population.Population;
-import org.matsim.core.config.Config;
-import org.matsim.core.gbl.Gbl;
-import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.utils.collections.Tuple;
-import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.api.core.v01.population.PopulationWriter;
+import org.matsim.core.api.internal.MatsimWriter;
+import org.matsim.core.config.Config;
+import org.matsim.core.controler.Controler;
+import org.matsim.core.gbl.Gbl;
+import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.scenario.MutableScenario;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.gis.ShapeFileReader;
+import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+import org.opengis.feature.simple.SimpleFeature;
+
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.transportModel.TransportModelI;
 
 /**
  * @author dziemke
  */
 public class MatsimTransportModel implements TransportModelI {
-	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
+	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
 
@@ -47,7 +61,7 @@ public class MatsimTransportModel implements TransportModelI {
 	private HouseholdDataManager householdData;
 	private Accessibility acc;
 	private ResourceBundle rb;
-	private Config matsimConfig;
+	private Config initialMatsimConfig;
 
 
 	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
@@ -55,17 +69,16 @@ public class MatsimTransportModel implements TransportModelI {
 		this.householdData = householdData;
 		this.acc = acc;
 		this.rb = rb;
-		this.matsimConfig = matsimConfig;
+		this.initialMatsimConfig = matsimConfig;
 	}
 
 	@Override
 	public void runTransportModel(int year) {
-		logger.info("Running MATSim transport model for year " + year + ".");
+		LOG.warn("Running MATSim transport model for year " + year + ".");
 
 		String scenarioName = rb.getString(SiloUtil.PROPERTIES_SCENARIO_NAME);
 
-		String crs = rb.getString(PROPERTIES_ZONES_CRS);
-		matsimConfig.global().setCoordinateSystem(crs);
+		initialMatsimConfig.global().setCoordinateSystem(rb.getString(PROPERTIES_ZONES_CRS));
 		String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
 		
 		// In the current implementation, MATSim is used to reflect the functionality that was previously
@@ -75,44 +88,52 @@ public class MatsimTransportModel implements TransportModelI {
 		// in case multiple points are used; the average of all travel times of a given relation is used.
 		int numberOfCalcPoints = 1;
 		boolean writePopulation = false;
+
 //		double populationScalingFactor = 0.01;
 		double populationScalingFactor = 1.; // For test
 		
 		// people working at non-peak times (only peak traffic is simulated), and people going by a mode other
 		// than car in case a car is still available to them
 		double workerScalingFactor = 0.66;
-		double flowCapacityFactor = populationScalingFactor;
-		matsimConfig.qsim().setFlowCapFactor(flowCapacityFactor);
 		
-		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
-		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-		double storageCapacityFactor = Math.round((flowCapacityFactor / (Math.pow(flowCapacityFactor, 0.25)) * 100)) / 100.;
-		matsimConfig.qsim().setStorageCapFactor(storageCapacityFactor);
-
-		String matsimRunId = scenarioName + "_" + year;
-		Collection<SimpleFeature> zoneFeatures = ShapeFileReader.getAllFeatures(zoneShapeFile);
-
 		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
-		for (SimpleFeature feature: zoneFeatures) {
+		for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
 			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-			// System.out.println("zoneId = " + zoneId);
 			zoneFeatureMap.put(zoneId,feature);
 		}
-
-		Population population = MatsimPopulationCreator.createMatsimPopulation(householdData, year, zoneFeatureMap,
-				writePopulation, populationScalingFactor * workerScalingFactor, random);
-
-		String outputDirectoryRoot = matsimConfig.controler().getOutputDirectory();
+		
+		String matsimRunId = scenarioName + "_" + year;
+		
+		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor, workerScalingFactor);
+		Population population = SiloMatsimUtils.createMatsimPopulation(config, householdData, year, zoneFeatureMap,
+				populationScalingFactor * workerScalingFactor);
+		
+		if (writePopulation == true) {
+    		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
+    		MatsimWriter populationWriter = new PopulationWriter(population);
+    		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
+    	}
 
 		// Get travel Times from MATSim
-		Map<Tuple<Integer, Integer>, Float> travelTimesMap = SiloMatsimController.runMatsimToCreateTravelTimes(numberOfCalcPoints,
-				zoneFeatureMap, population, matsimRunId, matsimConfig, outputDirectoryRoot);
-
-		// Update skims in silo from matsim output
-		acc.readSkimBasedOnMatsim(year, travelTimesMap);
-
-		// Update accessibilities in silo from matsim output
-		acc.calculateAccessibilities(year);
-		// TODO calculate accessibility directly from MATSim instead of from skims. Current version is computationally very inefficient
+		LOG.warn("Using MATSim to compute travel times from zone to zone.");
+		
+		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
+		scenario.setPopulation(population);
+		
+		final Controler controler = new Controler(scenario);
+		
+		controler.run();
+		LOG.warn("Running MATSim transport model for year " + year + " finished.");
+		
+		TravelTime travelTime = controler.getLinkTravelTimes();
+		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+		
+		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
+		
+		MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork());
+		//TODO: Optimize pt travel time query
+		MatsimPtTravelTimes matsimPtTravelTimes = new MatsimPtTravelTimes(controler.getTripRouterProvider().get(), zoneFeatureMap, scenario.getNetwork());
+		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
+		acc.addTravelTimeForMode(TransportMode.pt, matsimTravelTimes); // use car times for now also, as pt travel times are too slow to compute, Nico Oct 17
 	}
 }
