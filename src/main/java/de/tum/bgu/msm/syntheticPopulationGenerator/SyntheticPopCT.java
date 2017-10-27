@@ -9,7 +9,6 @@ import java.util.*;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
-import javafx.scene.control.Tab;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
@@ -87,10 +86,8 @@ public class SyntheticPopCT {
     protected String[] attributesCounty;
     protected String[] attributesMunicipality;
     protected int[] ageBracketsPerson;
-    protected int[] ageBracketsPersonQuarter;
     protected int[] sizeBracketsDwelling;
     protected int[] yearBracketsDwelling;
-    protected int[] householdSizes;
     protected int numberofQualityLevels;
     protected TableDataSet counterMunicipality;
     protected TableDataSet errorMunicipality;
@@ -264,15 +261,24 @@ public class SyntheticPopCT {
         microPersonAttributes = new String[attributeCodeToMicroPerson.size()];
 
         attributesMunicipality = new String[atCount];
-        attributesCounty = new String[atCount + 2];
+        attributesCounty = new String[10];
         int k = 0;
         for (int j = 1; j <= atCount; j++){
             String label = attributeOrder.get(j);
-            attributesCounty[atCount - j] = label;
+            //attributesCounty[atCount - j] = label;
             attributesMunicipality[atCount - j] = label;
         }
-        attributesCounty[atCount] = "population";
-        attributesCounty[atCount + 1] = "hhTotal";
+        attributesCounty[0] = "hhSize5";
+        attributesCounty[1] = "hhSize4";
+        attributesCounty[2] = "hhSize3";
+        attributesCounty[3] = "hhSize2";
+        attributesCounty[4] = "hhSize1";
+        attributesCounty[5] = "occupation1";
+        attributesCounty[6] = "gender1";
+        attributesCounty[7] = "gender0";
+        attributesCounty[8] = "population";
+        attributesCounty[9] = "hhTotal";
+
 
 
         int i = 0;
@@ -617,12 +623,12 @@ public class SyntheticPopCT {
         logger.info("   Creating frequency matrix and converting micro data to code values");
 
         initializeMicroData(personCount);
-
         for (Map.Entry<Integer, HashMap<String, Integer>> householdEntry : households.entrySet()){
             Integer hhId = householdEntry.getKey();
             updateMicroHouseholds(hhId);
             updateMicroPersons(hhId);
         }
+        substituteZeros();
 
         String fileName = "input/syntheticPopulation/householdsMicroCode.csv";
         SiloUtil.writeTableDataSet(microDataHousehold, fileName);
@@ -630,6 +636,36 @@ public class SyntheticPopCT {
         SiloUtil.writeTableDataSet(microDataPerson, personName);
         String freqName = "input/syntheticPopulation/frequencyMatrix.csv";
         SiloUtil.writeTableDataSet(frequencyMatrix, freqName);
+
+    }
+
+    private void substituteZeros() {
+        //method to substitute zeros on the frequency matrix by very little number
+        //required for IPU division by zeros
+
+        for (int i = 1; i <= frequencyMatrix.getRowCount(); i++) {
+            for (int j = 1; j <= frequencyMatrix.getColumnCount(); j++) {
+                if (frequencyMatrix.getValueAt(i, j) == 0) {
+                    frequencyMatrix.setValueAt(i, j, 0.0000001f);
+                }
+            }
+        }
+
+        for (int i = 1; i <= marginalsCounty.getRowCount(); i++){
+            for (int j = 1; j <= marginalsCounty.getColumnCount(); j++){
+                if (marginalsCounty.getValueAt(i, j) == 0){
+                    marginalsCounty.setValueAt(i, j, 0.000001f);
+                }
+            }
+        }
+
+        for (int i = 1; i <= marginalsMunicipality.getRowCount(); i++){
+            for (int j = 1; j <= marginalsMunicipality.getColumnCount(); j++){
+                if (marginalsMunicipality.getValueAt(i, j) == 0){
+                    marginalsMunicipality.setValueAt(i, j, 0.000001f);
+                }
+            }
+        }
 
     }
 
