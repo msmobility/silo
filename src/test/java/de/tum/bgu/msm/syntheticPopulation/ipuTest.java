@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.realEstate.ConstructionDemandJSCalculator;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.script.ScriptException;
@@ -68,7 +69,7 @@ public class ipuTest {
 
     }
 
-    @Test
+    @Ignore("not provided input data")@Test
     public void testModelOne() throws ScriptException {
 
         long startTime = System.nanoTime();

@@ -7,6 +7,7 @@ import de.tum.bgu.msm.realEstate.ConstructionDemandJSCalculator;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunction;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.measure.unit.SI;
@@ -80,7 +81,8 @@ public class ipuTestOpt {
 
     }
 
-    @Test
+
+    @Ignore("not provided input data")@Test
     public void testModelOne() throws ScriptException {
 
         long startTime = System.nanoTime();
