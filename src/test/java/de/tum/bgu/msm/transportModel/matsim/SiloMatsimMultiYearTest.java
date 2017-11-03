@@ -58,8 +58,7 @@ public class SiloMatsimMultiYearTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail("Something did not work") ;
-		}
-		{
+		}{
 			log.info("Checking dwellings file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2000.csv");
 			final String filename = "./test/scenarios/annapolis/microData_reduced/dd_2000.csv";
@@ -115,8 +114,7 @@ public class SiloMatsimMultiYearTest {
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
 			assertEquals("Population files are different", checksum_ref, checksum_run);
 			if (cleanupAfterTest) new File(filename).delete();
-		}
-		{
+		}{
 			log.info("Checking MATSim plans file for 2000 ...");
 
 			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2000.output_plans.xml.gz";
@@ -129,22 +127,20 @@ public class SiloMatsimMultiYearTest {
 			new PopulationReader(scOut).readFile(outputFilename);
 			
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ;
-		}
-//		{
-//			log.info("Checking MATSim plans file for 2001 ...");
-//
-//			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2001.output_plans.xml.gz";
-//			final String outputFilename = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
-//			
-//			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
-//			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
-//			
-//			new PopulationReader(scRef).readFile(referenceFilename);
-//			new PopulationReader(scOut).readFile(outputFilename);
-//			
-//			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ;
-//		}
-		{
+		}{
+			log.info("Checking MATSim plans file for 2001 ...");
+
+			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2001.output_plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
+			
+			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
+			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
+			
+			new PopulationReader(scRef).readFile(referenceFilename);
+			new PopulationReader(scOut).readFile(outputFilename);
+			
+			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ;
+		}{
 			log.info("Checking MATSim plans file for 2002 ...");
 
 			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2002.output_plans.xml.gz";
@@ -157,20 +153,17 @@ public class SiloMatsimMultiYearTest {
 			new PopulationReader(scOut).readFile(outputFilename);
 			
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ;
-		}
-		{
+		}{
 			log.info("Checking MATSim events file for 2000 ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2000.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2000/test_matsim_2000.output_events.xml.gz";
 			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
-		}
-//		{
-//			log.info("Checking MATSim events file for 2001 ...");
-//			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
-//			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_events.xml.gz";
-//			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
-//		}
-		{
+		}{
+			log.info("Checking MATSim events file for 2001 ...");
+			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_events.xml.gz";
+			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+		}{
 			log.info("Checking MATSim events file for 2002 ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2002.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2002/test_matsim_2002.output_events.xml.gz";
