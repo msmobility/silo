@@ -64,7 +64,8 @@ public class SiloModelCBLCM {
 		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse,  false, Implementation.MSTM);
 		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
 		
-		modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
+		modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
+		modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 		modelContainer.getAcc().initialize();
 
 	        trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
@@ -122,7 +123,8 @@ public class SiloModelCBLCM {
 	            if (currentYear != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, currentYear)) {
 	                // skims are always read in start year and in every year the transportation model ran. Additional
 	                // years to read skims may be provided in skimYears
-	                modelContainer.getAcc().readSkim(currentYear);
+	                modelContainer.getAcc().readCarSkim(currentYear);
+	                modelContainer.getAcc().readPtSkim(currentYear);
 	                modelContainer.getAcc().calculateAccessibilities(currentYear);
 	            }
 	        }

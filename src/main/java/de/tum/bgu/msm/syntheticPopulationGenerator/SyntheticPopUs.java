@@ -67,7 +67,8 @@ public class SyntheticPopUs {
         readControlTotals();
         createJobs();
         accessibility = new Accessibility(rb, geoData);                        // read in travel times and trip length frequency distribution
-        accessibility.readSkim(SiloUtil.getStartYear());
+        accessibility.readCarSkim(SiloUtil.getStartYear());
+        accessibility.readPtSkim(SiloUtil.getStartYear());
         accessibility.initialize();
         processPums();
         JobDataManager jobData = new JobDataManager(rb, geoData);
