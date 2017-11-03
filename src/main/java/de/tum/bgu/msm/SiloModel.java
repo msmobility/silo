@@ -301,7 +301,7 @@ public class SiloModel {
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
-                    modelContainer.getAcc().calculateAccessibilities(year);
+                    modelContainer.getAcc().calculateAccessibilities(year + 1);
                 }
             }
 
