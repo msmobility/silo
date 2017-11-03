@@ -61,6 +61,34 @@ public class SiloMatsimMultiYearTest {
 		}
 		{
 			log.info("Checking dwellings file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2000.csv");
+			final String filename = "./test/scenarios/annapolis/microData_reduced/dd_2000.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
+			assertEquals("Dwelling files are different", checksum_ref, checksum_run);
+			if (cleanupAfterTest) new File(filename).delete();
+		}{
+			log.info("Checking households file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./hh_2000.csv");
+			final String filename = "./test/scenarios/annapolis/microData_reduced/hh_2000.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
+			assertEquals("Household files are different", checksum_ref, checksum_run);
+			if (cleanupAfterTest) new File(filename).delete();
+		}{
+			log.info("Checking jobs file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./jj_2000.csv");
+			final String filename = "./test/scenarios/annapolis/microData_reduced/jj_2000.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
+			assertEquals("Job files are different", checksum_ref, checksum_run);
+			if (cleanupAfterTest) new File(filename).delete();
+		}{
+			log.info("checking SILO population file ...");
+			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./pp_2000.csv");
+			final String filename = "./test/scenarios/annapolis/microData_reduced/pp_2000.csv";
+			long checksum_run = CRCChecksum.getCRCFromFile(filename);
+			assertEquals("Population files are different", checksum_ref, checksum_run);
+			if (cleanupAfterTest) new File(filename).delete();
+		}{
+			log.info("Checking dwellings file ...");
 			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2002.csv");
 			final String filename = "./test/scenarios/annapolis/microData_reduced/dd_2002.csv";
 			long checksum_run = CRCChecksum.getCRCFromFile(filename);
