@@ -122,6 +122,7 @@ public class SiloModel {
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
+			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
