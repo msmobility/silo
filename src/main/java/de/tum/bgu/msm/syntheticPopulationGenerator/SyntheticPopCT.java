@@ -408,6 +408,7 @@ public class SyntheticPopCT {
         marginalsMunicipality = new TableDataSet();
         marginalsMunicipality.appendColumn(controlTotals.getColumnAsInt("ID_city"),"ID_city");
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
+
         marginalsCounty = new TableDataSet();
         marginalsCounty.appendColumn(controlTotalsCounty.getColumnAsInt("ID_county"),"ID_county");
         marginalsCounty.buildIndex(marginalsCounty.getColumnPosition("ID_county"));
@@ -442,12 +443,12 @@ public class SyntheticPopCT {
                 String labelControlTotal = attributeControlTotal + pairAttribute.getKey();
                 if (pairAttribute.getValue() > -1) {
                     String labelCode = attribute + pairAttribute.getValue();
-                    for (int i = 1; i < controlTotals.getRowCount(); i++) {
+                    for (int i = 1; i <= controlTotals.getRowCount(); i++) {
                         int value = (int) marginalsMunicipality.getValueAt(i, labelCode);
                         int newValue = value + (int) controlTotals.getValueAt(i, labelControlTotal);
                         marginalsMunicipality.setValueAt(i, labelCode, newValue);
                     }
-                    for (int i = 1; i < controlTotalsCounty.getRowCount(); i++) {
+                    for (int i = 1; i <= controlTotalsCounty.getRowCount(); i++) {
                         int value = (int) marginalsCounty.getValueAt(i, labelCode);
                         int newValue = value + (int) controlTotalsCounty.getValueAt(i, labelControlTotal);
                         marginalsCounty.setValueAt(i, labelCode, newValue);
@@ -658,7 +659,7 @@ public class SyntheticPopCT {
         for (int i = 1; i <= marginalsCounty.getRowCount(); i++){
             for (int j = 1; j <= marginalsCounty.getColumnCount(); j++){
                 if (marginalsCounty.getValueAt(i, j) == 0){
-                    marginalsCounty.setValueAt(i, j, 0.000001f);
+                    marginalsCounty.setValueAt(i, j, 0.1f);
                 }
             }
         }
@@ -666,7 +667,7 @@ public class SyntheticPopCT {
         for (int i = 1; i <= marginalsMunicipality.getRowCount(); i++){
             for (int j = 1; j <= marginalsMunicipality.getColumnCount(); j++){
                 if (marginalsMunicipality.getValueAt(i, j) == 0){
-                    marginalsMunicipality.setValueAt(i, j, 0.000001f);
+                    marginalsMunicipality.setValueAt(i, j, 0.1f);
                 }
             }
         }
@@ -1116,7 +1117,7 @@ public class SyntheticPopCT {
                     executor.addFunction(() -> {
                         for (String attribute : attributesMunicipality) {
                             double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
-                            if (weightedSumMunicipality > 0.000001) {
+                            if (weightedSumMunicipality > 0.001) {
                                 double factor = totalMunicipality.get(municipality).get(attribute) / weightedSumMunicipality;
                                 double[] m1 = weightsByMun.get(municipality);
                                 int[] m2 = valuesByHousehold.get(attribute);
@@ -1138,15 +1139,17 @@ public class SyntheticPopCT {
                         Integer municipality = iterator1.next();
                         weightedSumRegion = weightedSumRegion + SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                     }
-                    double factor = totalCounty.get(attribute) / weightedSumRegion;
-                    Iterator<Integer> iterator2 = municipalities.iterator();
-                    while (iterator2.hasNext()) {
-                        Integer municipality = iterator2.next();
-                        double[] m1 = weightsByMun.get(municipality);
-                        int[] m2 = valuesByHousehold.get(attribute);
-                        double[] m3 = new double[m1.length];
-                        IntStream.range(0, m1.length).parallel().forEach(id -> m3[id] = multiplyIfNotZero(m1[id], m2[id], factor));
-                        weightsByMun.put(municipality, m3);
+                    if (weightedSumRegion > 0.001) {
+                        double factor = totalCounty.get(attribute) / weightedSumRegion;
+                        Iterator<Integer> iterator2 = municipalities.iterator();
+                        while (iterator2.hasNext()) {
+                            Integer municipality = iterator2.next();
+                            double[] m1 = weightsByMun.get(municipality);
+                            int[] m2 = valuesByHousehold.get(attribute);
+                            double[] m3 = new double[m1.length];
+                            IntStream.range(0, m1.length).parallel().forEach(id -> m3[id] = multiplyIfNotZero(m1[id], m2[id], factor));
+                            weightsByMun.put(municipality, m3);
+                        }
                     }
                     //logger.info("Attribute " + attribute + ": sum is " + weightedSumRegion);
                     weightedSumRegion = 0;
@@ -1183,16 +1186,18 @@ public class SyntheticPopCT {
                 for (String attributeC : attributesCounty) {
                     double errorC = 0.;
                     double weightedSumCounty = 0.;
-                    Iterator<Integer> iterator3 = municipalities.iterator();
-                    while (iterator3.hasNext()) {
-                        Integer municipality = iterator3.next();
-                        double weightedSum = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attributeC));
-                        weightedSumCounty += weightedSum;
+                    if (totalCounty.get(attributeC) > 0) {
+                        Iterator<Integer> iterator3 = municipalities.iterator();
+                        while (iterator3.hasNext()) {
+                            Integer municipality = iterator3.next();
+                            double weightedSum = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attributeC));
+                            weightedSumCounty += weightedSum;
+                        }
+                        errorC = errorC + Math.abs((weightedSumCounty - totalCounty.get(attributeC)) / totalCounty.get(attributeC));
+                        errorByRegion.put(attributeC, errorC);
+                        averageErrorIteration += errorC;
+                        counter++;
                     }
-                    errorC = errorC + Math.abs((weightedSumCounty - totalCounty.get(attributeC)) / totalCounty.get(attributeC));
-                    errorByRegion.put(attributeC, errorC);
-                    averageErrorIteration += errorC;
-                    counter++;
                 }
 
                 averageErrorIteration = averageErrorIteration / counter;
