@@ -12,7 +12,7 @@ import org.matsim.core.config.ConfigUtils;
 
 import com.pb.common.util.ResourceUtil;
 
-import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopUs;
+import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import de.tum.bgu.msm.data.summarizeData;
 
 /**

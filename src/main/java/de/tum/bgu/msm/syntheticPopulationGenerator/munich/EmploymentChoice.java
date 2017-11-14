@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
         import com.pb.common.datafile.TableDataSet;
         import com.pb.common.matrix.Matrix;

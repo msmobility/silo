@@ -1,9 +1,10 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.scenarios.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -20,7 +21,7 @@ import com.pb.common.util.ResourceUtil;
  *
  */
 
-public class SyntheticPopUs {
+public class SyntheticPopUs implements SyntheticPopI {
 
     protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
     protected static final String PROPERTIES_PUMS_FILES              = "pums.records";
