@@ -42,7 +42,7 @@ import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 public class SiloModel {
 	static Logger logger = Logger.getLogger(SiloModel.class);
 
-	public enum Implementation {MUC, MSTM, CAPE_TOWWN, MSP};
+	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP};
 
 	private final ResourceBundle rbLandUse;
 
