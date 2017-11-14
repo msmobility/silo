@@ -173,14 +173,14 @@ public class SyntheticPopDe {
             generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             assignJobs(); //Workplace allocation
             assignSchools(); //School allocation
-            addCars(false);
+            addCars();
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing mode");
             //readMicroData2010();
             //checkHouseholdRelationship();
             readSyntheticPopulation();
-            //addCars(false);
+            //addCars( );
             summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
             //readAndStoreMicroData();
         }
@@ -3758,11 +3758,11 @@ public class SyntheticPopDe {
 
     }
 
-    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
+    private void addCars() {
         //method to estimate the number of cars per household
         //it must be run after generating the population
         CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
-        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
+        createCarOwnershipModel.run();
     }
 
 

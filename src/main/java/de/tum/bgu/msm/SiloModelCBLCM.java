@@ -222,7 +222,7 @@ public class SiloModelCBLCM {
 	        modelContainer.getPrm().updatedRealEstatePrices(currentYear, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
 
-	        EventManager.logEvents();
+	        //EventManager.logEvents();
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
 	        logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +

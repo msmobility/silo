@@ -25,7 +25,7 @@ public class CreateCarOwnershipJSCalculator extends JavaScriptCalculator<double[
         this.bindings.put("income", income);
     }
 
-    public void setLogDistanceToTransit (int logDistanceToTransit) {
+    public void setLogDistanceToTransit (double logDistanceToTransit) {
         this.bindings.put("logDistanceToTransit", logDistanceToTransit);
     }
 

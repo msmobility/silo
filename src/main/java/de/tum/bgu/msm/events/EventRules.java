@@ -69,7 +69,8 @@ public class EventRules {
        runEventCheckMarriage       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkMarriage);
        runEventCheckDivorce        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDivorce);
        runEventCheckSchoolUniv     = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkSchoolUniv, false);
-       runEventCheckDriversLicense = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDriversLic, false);
+       //runEventCheckDriversLicense = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDriversLic, false);
+       runEventCheckDriversLicense = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDriversLic);
        runEventStartNewJob         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_startNewJob);
        runEventQuitJob             = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_quitJob);
        runEventAllHhMoves          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allHhMoves);

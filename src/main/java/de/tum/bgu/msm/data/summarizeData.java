@@ -1163,8 +1163,7 @@ public class summarizeData {
         }
         pw.close();
 
-        logger.info("Summarized auto ownership and quit.");
-        //System.exit(0);
+        logger.info("Summarized initial auto ownership");
 
     }
 }

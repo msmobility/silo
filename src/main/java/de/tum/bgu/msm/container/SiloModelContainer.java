@@ -14,6 +14,7 @@ import de.tum.bgu.msm.relocation.MovesModelMstm;
 import de.tum.bgu.msm.relocation.MovesModelI;
 import de.tum.bgu.msm.relocation.MovesModelMuc;
 import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -48,6 +49,7 @@ public class SiloModelContainer {
     private final Accessibility acc;
     private final CarOwnershipModel carOwnershipModel;
     private final UpdateJobs updateJobs;
+    private final CreateCarOwnershipModel createCarOwnershipModel;
 
     /**
      *
@@ -72,13 +74,14 @@ public class SiloModelContainer {
      * @param acc
      * @param carOwnershipModel
      * @param updateJobs
+     * @param createCarOwnershipModel
      */
     private SiloModelContainer(InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, ChangeDriversLicense changeDriversLicense,
-                               Accessibility acc, CarOwnershipModel carOwnershipModel, UpdateJobs updateJobs) {
+                               Accessibility acc, CarOwnershipModel carOwnershipModel, UpdateJobs updateJobs, CreateCarOwnershipModel createCarOwnershipModel) {
         this.iomig = iomig;
         this.cons = cons;
         this.ddOverwrite = ddOverwrite;
@@ -96,6 +99,7 @@ public class SiloModelContainer {
         this.acc = acc;
         this.carOwnershipModel = carOwnershipModel;
         this.updateJobs = updateJobs;
+        this.createCarOwnershipModel = createCarOwnershipModel;
     }
 
     /**
@@ -134,11 +138,12 @@ public class SiloModelContainer {
         }  else {
             carOwnershipModel = new MunichCarOwnerShipModel(rbLandUse);
         }
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rbLandUse);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,
-                carOwnershipModel, updateJobs);
+                carOwnershipModel, updateJobs, createCarOwnershipModel);
     }
 
 
@@ -208,6 +213,10 @@ public class SiloModelContainer {
 
     public UpdateJobs getUpdateJobs() {
         return updateJobs;
+    }
+
+    public CreateCarOwnershipModel getCreateCarOwnershipModel(){
+        return createCarOwnershipModel;
     }
 
 }

@@ -25,6 +25,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
@@ -103,10 +104,12 @@ public class LeaveParentHhModel {
             hh.setHouseholdRace();
             per.setRole(PersonRole.single);
 
+
             // Move new household
             modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
+            modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                     hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has left the parental household " + hhOfThisPerson.getId() +

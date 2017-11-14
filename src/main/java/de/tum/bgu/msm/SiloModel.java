@@ -244,7 +244,7 @@ public class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkDriversLicense.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeDriversLicense().updateDriversLicense(event[1], dataContainer);
+					modelContainer.getChangeDriversLicense().changeDriversLicense(event[1], dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.findNewJob.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

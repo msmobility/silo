@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.relocation;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -161,6 +160,10 @@ public class InOutMigration {
                 boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId(), modelContainer);
                 if (!success) per.setOccupation(2);
             }
+            if (per.getAge() > 17){
+               boolean license = modelContainer.getChangeDriversLicense().createDriversLicense(per.getId());
+               if (license) per.setDriverLicense(true);
+            }
         }
         hh.setType();
         hh.setHouseholdRace();
@@ -174,8 +177,9 @@ public class InOutMigration {
             outMigrateHh(hhId, true, dataContainer);
             return;
         }
-        dataContainer.getHouseholdData().addHouseholdThatChanged(hh);
+
         EventManager.countEvent(EventTypes.inmigration);
+        modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
         for (Person pp: Household.getHouseholdFromId(hhId).getPersons())

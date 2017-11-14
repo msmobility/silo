@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -47,7 +48,38 @@ public class CreateCarOwnershipModel {
         readZonalData();
     }
 
-    private double[] calculateCarOwnershipProb(int license, int workers, int income, int logDistanceToTransit, int areaType) {
+    public void run() {
+        // main run method
+
+        for (Household hh : Household.getHouseholdArray()) {
+            simulateCarOwnership(hh);
+        }
+        boolean tokenForTestingCarOwnership = false;
+        if (tokenForTestingCarOwnership) {
+            summarizeData.summarizeCarOwnershipByMunicipality(zonalData);
+            logger.info("Finished car ownership model");
+            System.exit(0);
+        }
+    }
+
+    public void simulateCarOwnership(Household hh) {
+        // simulate number of autos for household hh
+        // Note: This method can only be executed after all households have been generated and allocated to zones,
+        // as distance to transit and areaType is dependent on where households are living
+        int license = hh.getHHLicenseHolders();
+        int workers = hh.getNumberOfWorkers();
+        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
+        // add 1 to the value of distance to transit before taking log to avoid situations of log 0
+        double logDistanceToTransit = Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit") + 1);
+        int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
+
+        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType);
+        hh.setAutos(SiloUtil.select(prob));
+        //logger.info("Finished car ownership model");
+        //logger.info(hh.getAutos()+"cars " + hh.getNumberOfWorkers()+"workers " + hh.getHHLicenseHolders()+"license " + hh.getHhIncome()+"income ");
+    }
+
+    private double[] calculateCarOwnershipProb(int license, int workers, int income, double logDistanceToTransit, int areaType) {
         // setup to calculate the car ownership probabilities for an individual household from the javascript calculator
         calculator.setLicense(license);
         calculator.setWorkers(workers);
@@ -64,61 +96,35 @@ public class CreateCarOwnershipModel {
         return result;
     }
 
-    public void run(boolean flagSkipCreationOfSPforDebugging) {
-        // main run method
-
-        for (Household hh : Household.getHouseholdArray()) {
-            simulateCarOwnership(hh);
-        }
-        summarizeData.summarizeCarOwnershipByMunicipality(zonalData);
-        if (flagSkipCreationOfSPforDebugging) {
-            logger.info("Finished car ownership model");
-            System.exit(0);
-        }
-    }
-
-    public void simulateCarOwnership(Household hh) {
-        // simulate number of autos for household hh
-        // Note: This method can only be executed after all households have been generated and allocated to zones,
-        // as distance to transit and areaType is dependent on where households are living
-        int license = hh.getHHLicenseHolders();
-        int workers = hh.getNumberOfWorkers();
-        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
-        int logDistanceToTransit = (int) Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit"));
-        int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
-
-        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType);
-        hh.setAutos(SiloUtil.select(prob));
-    }
-
     public void readZonalData() {
         //method to read the zonal data not using geoData
 
         zonalData = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ZONAL_DATA));
         zonalData.buildIndex(zonalData.getColumnPosition("ID_cell"));
 
-        //get minimum distance to transit from OMX matrix and append to zonal data
+        //add a column to store distance to transit pre-populated with 0s
         float[] minDistance = SiloUtil.createArrayWithValue(zonalData.getRowCount(), 0f);
         zonalData.appendColumn(minDistance, "distanceToTransit");
 
+        //convert transit access time matrix from omx to java matrix
         String omxFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_TRANSIT_ACCEESS_TIME);
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
-        Matrix accessDistanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
+        Matrix accessTimeMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
 
+        //get minimum time to transit, convert to distance and append to zonal data
         for (int i = 1; i <= zonalData.getRowCount(); i++) {
-            float minDist = 9999;
+            float minDist = 9999; // upper limit for distance (in meters) to transit, default for places with no access to transit
             int origin = (int) zonalData.getValueAt(i, "ID_cell");
             for (int j = 1; j <= zonalData.getRowCount(); j++) {
                 int dest = (int) zonalData.getValueAt(j, "ID_cell");
-                float distance = accessDistanceMatrix.getValueAt(origin, dest) * 83.33f;
+                // convert time in minutes to distance in meters using a speed of 5 km/h
+                float distance = accessTimeMatrix.getValueAt(origin, dest) * 83.33f;
                 if (distance > 0 & distance < minDist) {
                     minDist = distance;
                 }
             }
-            minDist = minDist + 1;
-            zonalData.setIndexedValueAt(i, "distanceToTransit", minDist);
+            zonalData.setValueAt(i, "distanceToTransit", minDist);
         }
     }
 }

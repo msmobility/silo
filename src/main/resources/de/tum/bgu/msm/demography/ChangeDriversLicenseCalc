@@ -1,0 +1,87 @@
+//Porbability of having drivers license
+
+//Alpha
+alpha = 0.;
+
+if (personType > 43){
+    throw new Error("Undefined person type!")
+} else if (personType < 0){
+    throw new Error("Undefined person type!")
+}
+
+if (personType.name() == "menAge15to19"){
+    alpha = 0.86;
+} else if (personType.name() == "menAge20to24"){
+    alpha = 0.86;
+} else if (personType.name() == "menAge25to29"){
+     alpha = 0.86;
+} else if (personType.name() == "menAge30to34"){
+     alpha = 0.95;
+} else if (personType.name() == "menAge35to39"){
+     alpha = 0.50;
+} else if (personType.name() == "menAge40to44"){
+     alpha = 0.30;
+} else if (personType.name() == "menAge45to49"){
+     alpha = 0.20;
+} else if (personType.name() == "menAge50to54"){
+     alpha = 0.15;
+} else if (personType.name() == "menAge55to59"){
+     alpha = 0.15;
+} else if (personType.name() == "menAge60to64"){
+     alpha = 0.15;
+} else if (personType.name() == "menAge65to69"){
+     alpha = 0.05;
+} else if (personType.name() == "menAge70to74"){
+     alpha = 0.05;
+} else if (personType.name() == "menAge75to79"){
+     alpha = 0.00;
+} else if (personType.name() == "menAge80to84"){
+     alpha = 0.00;
+} else if (personType.name() == "menAge85to89"){
+     alpha = 0.00;
+} else if (personType.name() == "menAge90to94"){
+     alpha = 0.00;
+} else if (personType.name() == "menAge95to99"){
+     alpha = 0.00;
+} else if (personType.name() == "menAge100plus"){
+     alpha = 0.00;
+} else if (personType.name() == "womenAge15to19"){
+     alpha = 0.87;
+} else if (personType.name() == "womenAge20to24"){
+    alpha = 0.87;
+} else if (personType.name() == "womenAge25to29"){
+    alpha = 0.87;
+} else if (personType.name() == "womenAge30to34"){
+    alpha = 0.94;
+} else if (personType.name() == "womenAge35to39"){
+    alpha = 0.50;
+} else if (personType.name() == "womenAge40to44"){
+    alpha = 0.30;
+} else if (personType.name() == "womenAge45to49"){
+    alpha = 0.20;
+} else if (personType.name() == "womenAge50to54"){
+    alpha = 0.15;
+} else if (personType.name() == "womenAge55to59"){
+    alpha = 0.15;
+} else if (personType.name() == "womenAge60to64"){
+    alpha = 0.15;
+} else if (personType.name() == "womenAge65to69"){
+    alpha = 0.05;
+} else if (personType.name() == "womenAge70to74"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge75to79"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge80to84"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge85to89"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge90to94"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge95to99"){
+    alpha = 0.00;
+} else if (personType.name() == "womenAge100plus"){
+    alpha = 0.00;
+}
+
+
+utility = alpha;
