@@ -16,14 +16,13 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.resources.Gender;
-import de.tum.bgu.msm.resources.Occupation;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.*;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Greg Erhardt 

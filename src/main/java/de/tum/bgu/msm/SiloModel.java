@@ -344,9 +344,6 @@ public class SiloModel {
 	//        pw.close();
 	//    }
 
-
-
-
 	//*************************************************************************
 	//*** Special implementation of same SILO Model for integration with    ***
 	//*** CBLCM Framework (http://csdms.colorado.edu/wiki/Main_Page). Used  ***
