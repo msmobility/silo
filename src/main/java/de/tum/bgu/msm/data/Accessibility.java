@@ -62,7 +62,7 @@ public class Accessibility {
         calculateDistanceToRegions();
 	}
 
-    public void readSkim(int year) {
+    public void readCarSkim(int year) {
         // Read hwySkim matrix for year
         logger.info("Reading skims for " + year);
 
@@ -105,7 +105,9 @@ public class Accessibility {
 //            }
 //        return mat;
 //        }        
-        
+    }
+    
+    public void readPtSkim(int year) {    
         // Read transit hwySkim
         String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
         OmxFile tSkim = new OmxFile(transitFileName);

@@ -773,6 +773,15 @@ public class SiloUtil {
         return found;
     }
 
+    public static double sumProduct(double[] a, int[] b){
+        double sum = 0;
+        for (int i = 0; i < a.length; i++){
+            sum = sum + a[i]*b[i];
+        }
+
+
+        return sum;
+    }
 
     public static void deleteFile (String fileName) {
         // delete file with name fileName

@@ -1,8 +1,8 @@
 package de.tum.bgu.msm;
 
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopDe;
 import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopulationGenerator;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -34,10 +34,8 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
-            SyntheticPopDe sp = new SyntheticPopDe(rb);
-            sp.runSP();
-           /*ExtractDataDE de = new ExtractDataDE(rb);
-            de.runSP(); */
+            SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
+            sp.run();
             SiloModel model = new SiloModel(rb);
             model.runModel(SiloModel.Implementation.MUC);
             logger.info("Finished SILO.");

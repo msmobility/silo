@@ -42,7 +42,7 @@ import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 public class SiloModel {
 	static Logger logger = Logger.getLogger(SiloModel.class);
 
-	public enum Implementation {MUC, MSTM, CAPE_TOWWN, MSP};
+	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP};
 
 	private final ResourceBundle rbLandUse;
 
@@ -122,10 +122,12 @@ public class SiloModel {
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
+			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
-			modelContainer.getAcc().readSkim(SiloUtil.getStartYear());
+			modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
+			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
@@ -190,8 +192,9 @@ public class SiloModel {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
 				if (!runMatsim) {
-					modelContainer.getAcc().readSkim(year);
+					modelContainer.getAcc().readCarSkim(year);
 				}
+				modelContainer.getAcc().readPtSkim(year);
 				modelContainer.getAcc().calculateAccessibilities(year);
 			}
 
@@ -301,7 +304,7 @@ public class SiloModel {
 			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
-                    modelContainer.getAcc().calculateAccessibilities(year);
+                    modelContainer.getAcc().calculateAccessibilities(year + 1);
                 }
             }
 
