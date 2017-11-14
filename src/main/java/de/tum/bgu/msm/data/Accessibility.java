@@ -1,25 +1,20 @@
 package de.tum.bgu.msm.data;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import org.apache.log4j.Logger;
-import org.jfree.util.Log;
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.core.utils.collections.Tuple;
-
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import omx.OmxFile;
 import omx.OmxMatrix;
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Calculates and stores accessibilities
