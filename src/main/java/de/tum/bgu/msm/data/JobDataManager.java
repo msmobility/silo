@@ -225,7 +225,7 @@ public class JobDataManager {
         SiloUtil.createDirectoryIfNotExistingYet(dir);
         for (int yr = Integer.parseInt(yearsGiven[0]); yr <= highestYear; yr++) {
             String forecastFileName;
-            forecastFileName = dir + properties.getJobDataProperties().getJobControlTotalsFileName() + (2000 + yr) + ".csv";
+            forecastFileName = dir + properties.getJobDataProperties().getEmploymentForeCastFile() + (2000 + yr) + ".csv";
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
             pw.print("zone");
             for (String ind: JobType.getJobTypes()) pw.print("," + ind);
