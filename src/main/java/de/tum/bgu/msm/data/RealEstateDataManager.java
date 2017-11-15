@@ -285,7 +285,7 @@ public class RealEstateDataManager {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Dwelling dd: Dwelling.getDwellingArray()) {
-            int dwellingMSA = geoDataMstm.getMSAOfZone(dd.getZone());
+            int dwellingMSA = GeoDataMstm.getMSAOfZone(dd.getZone());
             if (rentHashMap.containsKey(dwellingMSA)) {
                 ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
                 rents.add(dd.getPrice());

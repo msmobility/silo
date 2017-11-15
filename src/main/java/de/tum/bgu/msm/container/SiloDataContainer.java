@@ -53,10 +53,10 @@ public class SiloDataContainer {
         GeoData geoData;
         switch (implementation) {
             case MSTM:
-                geoData = new geoDataMstm(rbLandUse);
+                geoData = new GeoDataMstm(rbLandUse);
                 break;
             case MUC:
-                geoData = new geoDataMuc(rbLandUse);
+                geoData = new GeoDataMuc(rbLandUse);
                 break;
             default:
                 logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");

@@ -18,8 +18,8 @@ import de.tum.bgu.msm.SiloUtil;
  * Created on 20 April 2015 in College Park
  **/
 
-public class geoDataMstm implements GeoData {
-    private static final Logger logger = Logger.getLogger(geoDataMstm.class);
+public class GeoDataMstm implements GeoData {
+    private static final Logger logger = Logger.getLogger(GeoDataMstm.class);
 
     protected static final String PROPERTIES_ZONAL_DATA_FILE            = "zonal.data.file";
     protected static final String PROPERTIES_ZONAL_SCHOOL_QUALITY_INDEX = "school.quality.index";
@@ -51,7 +51,7 @@ public class geoDataMstm implements GeoData {
     private boolean useCapacityAsNumberOfDwellings;
 
 
-    public geoDataMstm(ResourceBundle rb) {
+    public GeoDataMstm(ResourceBundle rb) {
         this.rb = rb;
     }
 

@@ -174,7 +174,7 @@ public class Accessibility {
                 } else {
                     transitImpedance = Math.exp(betaTransit * transitTravelTime);
                 }
-                // dz: zone "orig" and its zoneIndex "geoDataMstm.getZoneIndex(orig)" are different!!
+                // dz: zone "orig" and its zoneIndex "GeoDataMstm.getZoneIndex(orig)" are different!!
                 // "orig" is the ID of the zone and zoneIndex is its location in the array
                 // zoneIndex is "indexArray for array" zones
                 autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
@@ -185,8 +185,8 @@ public class Accessibility {
         
         
         // new -- write output
-//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[geoDataMstm.getZoneIndex(orig)]);
-//      System.out.println("zone = " + orig + " has zoneIndex = " + geoDataMstm.getZoneIndex(orig))
+//      System.out.println("zone = " + orig + " has autoAccessibility = " + autoAccessibility[GeoDataMstm.getZoneIndex(orig)]);
+//      System.out.println("zone = " + orig + " has zoneIndex = " + GeoDataMstm.getZoneIndex(orig))
 
 
 /*  RM: Had to comment out this part because model fails when CSVFileWriter is called. Seems to be an issue within MATSim:
@@ -203,7 +203,7 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 
 		for (int i = 0; i < zones.length; i++) {
 				accessibilityFileWriter.writeField(zones[i]);
-				accessibilityFileWriter.writeField(autoAccessibility[geoDataMstm.getZoneIndex(i)]);
+				accessibilityFileWriter.writeField(autoAccessibility[GeoDataMstm.getZoneIndex(i)]);
 				accessibilityFileWriter.writeNewLine();    
 		}
 		

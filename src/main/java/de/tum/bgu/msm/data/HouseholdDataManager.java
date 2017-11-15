@@ -788,7 +788,7 @@ public class HouseholdDataManager {
 
         HashMap<Integer, ArrayList<Integer>> incomeHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int homeMSA = geoDataMstm.getMSAOfZone(hh.getHomeZone());
+            int homeMSA = GeoDataMstm.getMSAOfZone(hh.getHomeZone());
             if (incomeHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = incomeHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());

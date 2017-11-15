@@ -19,8 +19,8 @@ import de.tum.bgu.msm.SiloUtil;
  * Created on 5 April 2017 in Munich
  **/
 
-public class geoDataMuc implements GeoData {
-    private static final Logger logger = Logger.getLogger(geoDataMuc.class);
+public class GeoDataMuc implements GeoData {
+    private static final Logger logger = Logger.getLogger(GeoDataMuc.class);
 
     protected static final String PROPERTIES_ZONAL_DATA_FILE  = "zonal.data.file";
     protected static final String PROPERTIES_REGION_DEF_FILE  = "region.definition.file";
@@ -46,7 +46,7 @@ public class geoDataMuc implements GeoData {
     private static TableDataSet developmentRestrictions;
     private static TableDataSet distanceToTransit;
 
-    public geoDataMuc(ResourceBundle rb) {
+    public GeoDataMuc(ResourceBundle rb) {
         this.rb = rb;
     }
     protected Matrix accessDistanceMatrix;

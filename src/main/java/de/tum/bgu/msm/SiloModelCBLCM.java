@@ -6,14 +6,12 @@ package de.tum.bgu.msm;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.geoDataMstm;
+import de.tum.bgu.msm.data.GeoDataMstm;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
@@ -61,7 +59,7 @@ public class SiloModelCBLCM {
 	        tdmYears = properties.getTransportModelProperties().getModelYears();
 	        skimYears = properties.getTransportModelProperties().getSkimYears();
 	        // Note: only implemented for MSTM:
-	        geoData = new geoDataMstm(rbLandUse);
+	        geoData = new GeoDataMstm(rbLandUse);
 	        // Note: only implemented for MSTM:
 
 		// read micro data

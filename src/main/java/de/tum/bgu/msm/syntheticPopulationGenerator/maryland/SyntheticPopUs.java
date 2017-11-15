@@ -157,7 +157,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         for (int row = 1; row <= jobs.getRowCount(); row++) {
             int taz = (int) jobs.getValueAt(row, "SMZ");
-            int pumaOfWorkZone = geoDataMstm.getSimplifiedPUMAofZone(taz);
+            int pumaOfWorkZone = GeoDataMstm.getSimplifiedPUMAofZone(taz);
             if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
                 int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
                 int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
@@ -234,7 +234,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         int[] stateNumber = {24,11,10,42,51,54};      // FIPS code of String states[]
 
         jobErrorCounter = new HashMap<>();
-        //GeoData geoData = new geoDataMstm(rb);
+        //GeoData geoData = new GeoDataMstm(rb);
 
         for (int st = 0; st < states.length; st++) {
             String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +
@@ -733,7 +733,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         for (int taz: geoData.getZones()) {
             float vacRateCountyTarget;
             try {
-                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(geoDataMstm.getCountyOfZone(taz), "VacancyRate");
+                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(GeoDataMstm.getCountyOfZone(taz), "VacancyRate");
             } catch (Exception e) {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
             }
@@ -856,7 +856,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
         for (int zone: geoData.getZones()) {
-            if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[geoDataMstm.getPUMAofZone(zone)] +=
+            if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[GeoDataMstm.getPUMAofZone(zone)] +=
                     vacantJobsByZone.get(zone).length;
         }
         for (int i = 0; i < 9999999; i++)

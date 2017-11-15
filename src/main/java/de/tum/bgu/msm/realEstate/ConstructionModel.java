@@ -166,7 +166,7 @@ public class ConstructionModel {
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoDataMstm.getMSAOfZone(zone);
+                        int msa = GeoDataMstm.getMSAOfZone(zone);
                         attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 
