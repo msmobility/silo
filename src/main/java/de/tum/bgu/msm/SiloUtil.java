@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
@@ -952,7 +953,7 @@ public class SiloUtil {
     }
 
 
-static void closeAllFiles (long startTime, ResourceBundle rbLandUse) {
+static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties properties) {
 	// run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
 	trackingFile("close");
 	summarizeData.resultFile("close");
@@ -961,8 +962,8 @@ static void closeAllFiles (long startTime, ResourceBundle rbLandUse) {
 	int hours = (int) (endTime / 60);
 	int min = (int) (endTime - 60 * hours);
 	SiloModel.logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_TRACK_TIME, false)) {
-		String fileName = rbLandUse.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
+	if (properties.getMainProperties().isTrackTime()) {
+		String fileName = properties.getMainProperties().getTrackTimeFile();
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 			out.close();
@@ -992,7 +993,7 @@ static boolean modelStopper (String action) {
 
 
 static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
-		ResourceBundle rbLandUse ) {
+		ResourceBundle rbLandUse, Properties properties ) {
 	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 
@@ -1010,22 +1011,24 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 
 	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
 	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);
-	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_CBLCM_FILES, false))
-		summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
-	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
-		summarizeData.summarizeHousing(rbLandUse, year);
-	if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
+	if (properties.getCblcmProperties().isCreateCblcmFiles()) {
+        summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
+    }
+	if (properties.getMainProperties().isCreateHousingEnvironmentImpactFile()) {
+        summarizeData.summarizeHousing(rbLandUse, year);
+    }
+	if (properties.getMainProperties().isCreatePrestoSummary()) {
 		summarizeData.summarizePrestoRegion(rbLandUse, year);
 	}
 
 }
 
 
-static void writeOutTimeTracker (long[][] timeCounter, ResourceBundle rbLandUse ) {
+static void writeOutTimeTracker (long[][] timeCounter, Properties properties) {
 	// write file summarizing run times
 
 	int startYear = getStartYear();
-	PrintWriter pw = openFileForSequentialWriting(rbLandUse.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE), startYear != getBaseYear());
+	PrintWriter pw = openFileForSequentialWriting(properties.getMainProperties().getTrackTimeFile(), startYear != getBaseYear());
 	if (startYear == getBaseYear()) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
@@ -1056,7 +1059,4 @@ static void writeOutTimeTracker (long[][] timeCounter, ResourceBundle rbLandUse 
 	}
 	pw.close();
 }
-
-
-
 }

@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm;
 
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import de.tum.bgu.msm.data.summarizeData;
 import org.apache.log4j.Logger;
@@ -39,13 +40,14 @@ public class SiloMsp {
     public static void main(String[] args) {
 
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
+        Properties properties = new Properties(rb);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");
             logger.info("Scenario: " + SiloUtil.scenarioName);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(rb);
+            SiloModel model = new SiloModel(rb, properties);
             model.runModel(SiloModel.Implementation.MSP);
             logger.info("Finished SILO.");
         } catch (Exception e) {

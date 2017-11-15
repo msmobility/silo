@@ -1,13 +1,11 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.MitoHousehold;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.transportModel.tripGeneration.TripGenerationData;
 import de.tum.bgu.msm.transportModel.tripGeneration.tripPurposes;
 import org.apache.log4j.Logger;
@@ -15,10 +13,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 /**
  * Controls transportation model
@@ -39,6 +35,8 @@ public class MstmTransportModel implements TransportModelI {
     private static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
     private static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 
+    private final Properties properties;
+
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
     private GeoData geoData;
@@ -48,8 +46,9 @@ public class MstmTransportModel implements TransportModelI {
     public MstmTransportModel(ResourceBundle rbLandUse, GeoData geoData) {
         // constructor
         this.rbLandUse = rbLandUse;
+        properties = new Properties(rbLandUse);
         this.geoData = geoData;
-        String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
+        String fileName = properties.getTransportModelProperties().getDemandModelPropertiesPath();
         rbTravel = ResourceUtil.getPropertyBundle(new File(fileName));
 
     }
@@ -68,8 +67,9 @@ public class MstmTransportModel implements TransportModelI {
         tripGeneration();
         logger.info("Completed travel demand model for the year " + year);
 
-        if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
-		this.writeOutSocioEconomicDataForMstm(year + 1);
+        if (properties.getMainProperties().isCreateMstmOutput()) {
+            this.writeOutSocioEconomicDataForMstm(year + 1);
+        }
     }
 
 

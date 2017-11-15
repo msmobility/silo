@@ -19,6 +19,7 @@ package de.tum.bgu.msm;
 import java.io.File;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
@@ -45,32 +46,7 @@ public class SiloModel {
 	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP};
 
 	private final ResourceBundle rbLandUse;
-
-	public static final String PROPERTIES_RUN_SILO                          = "run.silo.model";
-	protected static final String PROPERTIES_SCALING_YEARS                  = "scaling.years";
-
-	protected static final String PROPERTIES_READ_SMALL_SYNPOP              = "read.small.syn.pop";
-	protected static final String PROPERTIES_WRITE_SMALL_SYNPOP             = "write.small.syn.pop";
-
-	protected static final String PROPERTIES_TRANSPORT_MODEL_YEARS          = "transport.model.years";
-	protected static final String PROPERTIES_TRANSPORT_SKIM_YEARS           = "skim.years";
-	protected static final String PROPERTIES_RUN_TRAVEL_DEMAND_MODEL        = "mito.run.travel.model";
-	public static final String PROPERTIES_FILE_DEMAND_MODEL                 = "mito.properties.file";
-	public static final String PROPERTIES_RUN_TRAVEL_MODEL_MATSIM           = "matsim.run.travel.model";
-
-	public static final String PROPERTIES_TRACK_TIME                        = "track.time";
-	public static final String PROPERTIES_TRACK_TIME_FILE                   = "track.time.file";
-
-	protected static final String PROPERTIES_CREATE_CBLCM_FILES             = "create.cblcm.files";
-	protected static final String PROPERTIES_CBLCM_BASE_YEAR				= "cblcm.base.year";
-	protected static final String PROPERTIES_CBLCM_BASE_FILE				= "cblcm.base.file";
-	protected static final String PROPERTIES_CBLCM_MULTIPLIER_PREFIX		= "cblcm.multiplier";
-	protected static final String PROPERTIES_CBLCM_MAND_ZONES_FILE			= "cblcm.mandatory.zonal.base.file";
-	protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME       = "spatial.result.file.name";
-	public static final String PROPERTIES_CREATE_MSTM_OUTPUT_FILES       = "create.mstm.socio.econ.files";
-
-	protected static final String PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
-	protected static final String PROPERTIES_CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
+	private final Properties properties;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
@@ -80,12 +56,13 @@ public class SiloModel {
 	 * Constructor to set up a SILO model
 	 * @param rbLandUse ResourceBundle
 	 */
-	public SiloModel(ResourceBundle rbLandUse) {
-		this( rbLandUse, null ) ;
+	public SiloModel(ResourceBundle rbLandUse, Properties properties) {
+		this( rbLandUse, null, properties ) ;
 	}
 
-	public SiloModel( ResourceBundle rbLandUse, Config matsimConfig ) {
+	public SiloModel( ResourceBundle rbLandUse, Config matsimConfig, Properties properties ) {
 		this.rbLandUse = rbLandUse;
+		this.properties = properties;
 		IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
@@ -95,25 +72,27 @@ public class SiloModel {
 	public void runModel(Implementation implementation) {
 		//Main method to run a SILO model
 
-		if (!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_SILO, false)) return;
+		if (!properties.getMainProperties().isRunSilo()) {
+			return;
+		}
 		logger.info("Start SILO Model (Implementation " + implementation + ")");
 
 		// define years to simulate
-		int[] scalingYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_SCALING_YEARS);
+		int[] scalingYears = properties.getMainProperties().getScalingYears();
 		if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
-		int[] tdmYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_MODEL_YEARS);
-		int[] skimYears = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_TRANSPORT_SKIM_YEARS);
+		int[] tdmYears = properties.getTransportModelProperties().getModelYears();
+		int[] skimYears = properties.getTransportModelProperties().getSkimYears();
 
 		// create main objects and read synthetic population
-		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, ResourceUtil.getBooleanProperty(rbLandUse,
-				PROPERTIES_READ_SMALL_SYNPOP, false), implementation);
-		if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_WRITE_SMALL_SYNPOP, false))
+		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, properties.getMainProperties().isReadSmallSynpop(), implementation);
+		if (properties.getMainProperties().isWriteSmallSynpop()) {
 			dataContainer.getHouseholdData().writeOutSmallSynPop();
+		}
 		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, implementation, dataContainer);
 
-		final boolean runMatsim = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_MODEL_MATSIM, false );
-		final boolean runTravelDemandModel = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false);
-		if ( runMatsim && ( runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true) ) ) {
+		final boolean runMatsim = properties.getTransportModelProperties().isRunMatsim();
+		final boolean runTravelDemandModel = properties.getTransportModelProperties().isRunTravelDemandModel();
+		if ( runMatsim && ( runTravelDemandModel || properties.getMainProperties().isCreateMstmOutput() ) ) {
 			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
 		}
 
@@ -128,7 +107,7 @@ public class SiloModel {
 			logger.info("  MITO is used as the transport model");
 			modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
 			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
-			File rbFile = new File(ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL));
+			File rbFile = new File(properties.getTransportModelProperties().getDemandModelPropertiesPath());
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
 		modelContainer.getAcc().initialize();
@@ -141,15 +120,16 @@ public class SiloModel {
 		// Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
 		// synthetic population for testing
 
-		boolean trackTime = ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_TRACK_TIME, false);
+		boolean trackTime = properties.getMainProperties().isTrackTime();
 		long[][] timeCounter = new long[EventTypes.values().length + 12][SiloUtil.getEndYear() + 1];
 		long startTime = 0;
 		IssueCounter.logIssues(dataContainer.getGeoData());           // log any potential issues during initial setup
 
         modelContainer.getCarOwnershipModel().initialize();
 
-        if (ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rbLandUse, dataContainer.getGeoData());
+        if (properties.getMainProperties().isCreatePrestoSummary()) {
+			summarizeData.preparePrestoSummary(rbLandUse, dataContainer.getGeoData());
+		}
 
 		for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
 			if (SiloUtil.containsElement(scalingYears, year))
@@ -187,7 +167,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
-					!ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_RUN_TRAVEL_DEMAND_MODEL, false) &&
+					!properties.getTransportModelProperties().isRunTravelDemandModel() &&
 					year != SiloUtil.getStartYear()) {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
@@ -213,7 +193,7 @@ public class SiloModel {
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear())
-				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer, rbLandUse);
+				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer, rbLandUse, properties);
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
 			logger.info("  Simulating events");
@@ -301,7 +281,7 @@ public class SiloModel {
 			dataContainer.getHouseholdData().clearUpdatedHouseholds();
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
-			if ( runMatsim || runTravelDemandModel || ResourceUtil.getBooleanProperty(rbLandUse, PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true)) {
+			if ( runMatsim || runTravelDemandModel || properties.getMainProperties().isCreateMstmOutput()) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
                     modelContainer.getAcc().calculateAccessibilities(year + 1);
@@ -330,10 +310,10 @@ public class SiloModel {
 			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
 		}
 
-		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse );
+		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse, properties );
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
-		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter, rbLandUse);
+		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter, properties);
 		logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
 	}
 

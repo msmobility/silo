@@ -1,8 +1,8 @@
 package de.tum.bgu.msm;
 
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -28,13 +28,14 @@ public class SiloMstm {
 
         SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
+        Properties properties = new Properties(rb);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(rb);
+            SiloModel model = new SiloModel(rb, properties);
             model.runModel(SiloModel.Implementation.MSTM);
             logger.info("Finished SILO.");
         } catch (Exception e) {
@@ -48,8 +49,8 @@ public class SiloMstm {
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);
             logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-            if (ResourceUtil.getBooleanProperty(rb, SiloModel.PROPERTIES_TRACK_TIME, false)) {
-                String fileName = rb.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
+            if (properties.getMainProperties().isTrackTime()) {
+                String fileName = properties.getMainProperties().getTrackTimeFile();
                 try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                     out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                     out.close();

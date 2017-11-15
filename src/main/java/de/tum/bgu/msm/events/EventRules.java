@@ -99,6 +99,9 @@ public class EventRules {
     public static boolean ruleLeaveParHousehold (Person per) {
         if (per == null) return false;
         Household hh = Household.getHouseholdFromId(per.getHhId());
+        if(hh == null) {
+            System.out.println("null!");
+        }
         return (hh.getHhSize() >= 2 && per.getRole() == PersonRole.child) &&
                 runEventCheckLeaveParentHh && runEventAllDemography;
     }
