@@ -56,7 +56,7 @@ public class SiloModelCBLCM {
 
 	        // define years to simulate
 	        scalingYears = properties.getMainProperties().getScalingYears();
-	        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
+	        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(properties);
 	        currentYear = SiloUtil.getStartYear();
 	        tdmYears = properties.getTransportModelProperties().getModelYears();
 	        skimYears = properties.getTransportModelProperties().getSkimYears();

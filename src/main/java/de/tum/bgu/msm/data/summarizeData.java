@@ -5,6 +5,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -23,7 +24,7 @@ public class summarizeData {
 
     protected static final String PROPERTIES_RESULT_FILE_NAME             = "result.file.name";
     protected static final String PROPERTIES_SPATIAL_RESULT_FILE_NAME     = "spatial.result.file.name";
-    protected static final String PROPERTIES_SCALING_YEARS_CONTROL_TOTALS = "scaling.years.control.totals";
+
     protected static final String PROPERTIES_SCALED_MICRO_DATA_HH         = "scaled.micro.data.hh";
     protected static final String PROPERTIES_SCALED_MICRO_DATA_PP         = "scaled.micro.data.pp";
     protected static final String PROPERTIES_HOUSING_SUMMARY              = "housing.environment.impact.file.name";
@@ -66,10 +67,10 @@ public class summarizeData {
     }
 
 
-    public static void readScalingYearControlTotals (ResourceBundle rb) {
+    public static void readScalingYearControlTotals (Properties properties) {
         // read file with control totals to scale synthetic population to exogenous assumptions for selected output years
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_SCALING_YEARS_CONTROL_TOTALS);
+        String fileName = SiloUtil.baseDirectory + properties.getMainProperties().getScalingControlTotals();
         scalingControlTotals = SiloUtil.readCSVfile(fileName);
         scalingControlTotals.buildIndex(scalingControlTotals.getColumnPosition("Zone"));
     }

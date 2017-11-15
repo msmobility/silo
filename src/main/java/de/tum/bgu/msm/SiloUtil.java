@@ -5,10 +5,8 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
@@ -21,10 +19,11 @@ import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import static java.nio.file.StandardCopyOption.*;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Utilities used by the SILO Model
@@ -36,7 +35,6 @@ public class SiloUtil {
 
     protected static final String PROPERTIES_BASE_DIRECTORY                 = "base.directory";
     protected static final String PROPERTIES_RANDOM_SEED                    = "random.seed";
-    public static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
     protected static final String PROPERTIES_TRACKING_FILE_NAME             = "track.file.name";
     public static final String PROPERTIES_START_YEAR                        = "start.year";
     public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
@@ -77,7 +75,7 @@ public class SiloUtil {
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
-        scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
+        scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
         startYear = ResourceUtil.getIntegerProperty(rb, PROPERTIES_START_YEAR);
         summarizeData.openResultFile(rb);
         summarizeData.resultFileSpatial(rb, "open");

@@ -79,7 +79,9 @@ public class SiloModel {
 
 		// define years to simulate
 		int[] scalingYears = properties.getMainProperties().getScalingYears();
-		if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
+		if (scalingYears[0] != -1) {
+			summarizeData.readScalingYearControlTotals(properties);
+		}
 		int[] tdmYears = properties.getTransportModelProperties().getModelYears();
 		int[] skimYears = properties.getTransportModelProperties().getSkimYears();
 
@@ -100,7 +102,7 @@ public class SiloModel {
 
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
-			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), rbLandUse, matsimConfig);
+			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), properties, matsimConfig);
 			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {

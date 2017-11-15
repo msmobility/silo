@@ -7,11 +7,13 @@ import java.util.ResourceBundle;
 public class MainPropertiesModuleImpl implements MainPropertiesModule {
 
     private static final String RUN_SILO = "run.silo.model";
+    private static final String SCENARIO_NAME = "scenario.name";
 
     private static final String TRACK_TIME = "track.time";
     private static final String TRACK_TIME_FILE = "track.time.file";
 
     private static final String SCALING_YEARS = "scaling.years";
+    private static final String SCALING_YEARS_CONTROL_TOTALS = "scaling.years.control.totals";
 
     private static final String READ_SMALL_SYNPOP = "read.small.syn.pop";
     private static final String WRITE_SMALL_SYNPOP = "write.small.syn.pop";
@@ -22,8 +24,8 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
     private static final String CREATE_HOUSING_ENV_IMPACT_FILE = "create.housing.environm.impact.files";
     private static final String CREATE_PRESTO_SUMMARY_FILE     = "create.presto.summary.file";
 
-
     private final boolean runSilo;
+    private final String scenarioName;
 
     private final boolean trackTime;
     private final String trackTimeFile;
@@ -38,6 +40,7 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
     private final boolean createMstmOutput;
     private final boolean createHousingEnvironmentImpactFile;
     private final boolean createPrestoSummary;
+    private final String scalingControlTotals;
 
     public MainPropertiesModuleImpl(ResourceBundle bundle) {
         runSilo = ResourceUtil.getBooleanProperty(bundle, RUN_SILO, true);
@@ -50,6 +53,8 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
         createMstmOutput = ResourceUtil.getBooleanProperty(bundle, CREATE_MSTM_OUTPUT_FILES, false);
         createHousingEnvironmentImpactFile = ResourceUtil.getBooleanProperty(bundle, CREATE_HOUSING_ENV_IMPACT_FILE, false);
         createPrestoSummary = ResourceUtil.getBooleanProperty(bundle, CREATE_PRESTO_SUMMARY_FILE, false);
+        scalingControlTotals = ResourceUtil.getProperty(bundle, SCALING_YEARS_CONTROL_TOTALS);
+        scenarioName = ResourceUtil.getProperty(bundle, SCENARIO_NAME);
     }
 
     @Override
@@ -100,5 +105,15 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
     @Override
     public boolean isRunSilo() {
         return runSilo;
+    }
+
+    @Override
+    public String getScalingControlTotals() {
+        return scalingControlTotals;
+    }
+
+    @Override
+    public String getScenarioName() {
+        return scenarioName;
     }
 }

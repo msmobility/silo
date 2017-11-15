@@ -20,4 +20,8 @@ public interface MainPropertiesModule {
     boolean isCreatePrestoSummary();
 
     boolean isRunSilo();
+
+    String getScalingControlTotals();
+
+    String getScenarioName();
 }

@@ -18,12 +18,11 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel.matsim;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.ResourceBundle;
-
+import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.transportModel.TransportModelI;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Population;
@@ -37,15 +36,14 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.opengis.feature.simple.SimpleFeature;
 
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.transportModel.TransportModelI;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * @author dziemke
@@ -55,20 +53,17 @@ public class MatsimTransportModel implements TransportModelI {
 	
 	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
 
-	private static final String PROPERTIES_ZONES_SHAPEFILE	= "matsim.zones.shapefile";
-	private static final String PROPERTIES_ZONES_CRS 		= "matsim.zones.crs";
-
-	private HouseholdDataManager householdData;
-	private Accessibility acc;
-	private ResourceBundle rb;
-	private Config initialMatsimConfig;
+	private final HouseholdDataManager householdData;
+	private final Accessibility acc;
+	private final Properties properties;
+	private final Config initialMatsimConfig;
 
 
-	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, ResourceBundle rb, Config matsimConfig) {
+	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, Properties properties, Config matsimConfig) {
 		Gbl.assertNotNull(householdData);
 		this.householdData = householdData;
 		this.acc = acc;
-		this.rb = rb;
+		this.properties = properties;
 		this.initialMatsimConfig = matsimConfig;
 	}
 
@@ -76,10 +71,10 @@ public class MatsimTransportModel implements TransportModelI {
 	public void runTransportModel(int year) {
 		LOG.warn("Running MATSim transport model for year " + year + ".");
 
-		String scenarioName = rb.getString(SiloUtil.PROPERTIES_SCENARIO_NAME);
+		String scenarioName = properties.getMainProperties().getScenarioName();
 
-		initialMatsimConfig.global().setCoordinateSystem(rb.getString(PROPERTIES_ZONES_CRS));
-		String zoneShapeFile = SiloUtil.baseDirectory + "/" + rb.getString(PROPERTIES_ZONES_SHAPEFILE);
+		initialMatsimConfig.global().setCoordinateSystem(properties.getTransportModelProperties().getMatsimZoneCRS());
+		String zoneShapeFile = SiloUtil.baseDirectory + "/" + properties.getTransportModelProperties().getMatsimZoneShapeFile();
 		
 		// In the current implementation, MATSim is used to reflect the functionality that was previously
 		// covered by MSTM. As such, based on the MATSim transport simulation, a travel time matrix (skim)

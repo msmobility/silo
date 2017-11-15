@@ -9,10 +9,10 @@ public class CblcmPropertiesModule {
     private final ResourceBundle bundle;
 
     private static final String CBLCM_FILES = "create.cblcm.files";
-    private static final String BASE_YEAR= "cblcm.base.year";
+    private static final String BASE_YEAR = "cblcm.base.year";
     private static final String BASE_FILE = "cblcm.base.file";
-    private static final String MULTIPLIER_PREFIX  = "cblcm.multiplier";
-    private static final String MAND_ZONES_FILE	= "cblcm.mandatory.zonal.base.file";
+    private static final String MULTIPLIER_PREFIX = "cblcm.multiplier";
+    private static final String MAND_ZONES_FILE = "cblcm.mandatory.zonal.base.file";
 
     private final boolean createCblcmFiles;
     private final String baseYear;
@@ -23,7 +23,6 @@ public class CblcmPropertiesModule {
         createCblcmFiles = ResourceUtil.getBooleanProperty(bundle, CBLCM_FILES, false);
         baseYear = ResourceUtil.getProperty(bundle, BASE_YEAR);
         baseFile = ResourceUtil.getProperty(bundle, BASE_FILE);
-
     }
 
     public boolean isCreateCblcmFiles() {
@@ -39,6 +38,6 @@ public class CblcmPropertiesModule {
     }
 
     public double getMultiplierPrefix(String column) {
-        return ResourceUtil.getDoubleProperty(bundle, MULTIPLIER_PREFIX+"."+column);
+        return ResourceUtil.getDoubleProperty(bundle, MULTIPLIER_PREFIX + "." + column);
     }
 }
