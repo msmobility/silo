@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.munich;
+package de.tum.bgu.msm.autoOwnership.munich;
 
 import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
 

@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.maryland;
+package de.tum.bgu.msm.autoOwnership.maryland;
 
 import com.pb.common.calculator.IndexValues;
 import org.apache.log4j.Logger;

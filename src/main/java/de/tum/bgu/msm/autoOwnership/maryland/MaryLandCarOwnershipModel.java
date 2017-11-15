@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.maryland;
+package de.tum.bgu.msm.autoOwnership.maryland;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
@@ -6,7 +6,6 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import org.apache.log4j.Logger;
 

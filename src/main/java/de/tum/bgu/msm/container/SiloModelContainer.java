@@ -2,9 +2,8 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloModel.Implementation;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
-import de.tum.bgu.msm.scenarios.maryland.MaryLandCarOwnershipModel;
+import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
@@ -13,7 +12,7 @@ import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.MovesModelMstm;
 import de.tum.bgu.msm.relocation.MovesModelI;
 import de.tum.bgu.msm.relocation.MovesModelMuc;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
+import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnerShipModel;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;

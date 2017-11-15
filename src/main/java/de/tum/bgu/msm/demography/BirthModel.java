@@ -22,7 +22,6 @@ import java.util.ResourceBundle;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
