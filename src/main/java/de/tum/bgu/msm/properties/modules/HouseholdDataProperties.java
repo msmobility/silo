@@ -10,7 +10,6 @@ public final class HouseholdDataProperties {
     private static final String PP_FILE_ASCII     = "person.file.ascii";
     private static final String DD_FILE_ASCII     = "dwelling.file.ascii";
     private static final String JJ_FILE_ASCII     = "job.file.ascii";
-    private static final String SIZE_SMALL_SYNPOP = "size.small.syn.pop";
     private static final String READ_BIN_FILE     = "read.binary.pop.files";
     private static final String POP_FILE_BIN      = "population.file.bin";
     private static final String INCOME_CHANGE     = "mean.change.of.yearly.income";
@@ -26,7 +25,6 @@ public final class HouseholdDataProperties {
     private final boolean summarizeMetro;
     private final String selectedMetroStopsFile;
     private final String householdsNearMetroFile;
-    private final int smallSynPopSize;
     private final String jobsFileName;
     private final String dwellingsFileName;
 
@@ -39,8 +37,6 @@ public final class HouseholdDataProperties {
         summarizeMetro = ResourceUtil.getBooleanProperty(bundle, SUMMARIZE_METRO);
         selectedMetroStopsFile = ResourceUtil.getProperty(bundle,SELECTED_METRO);
         householdsNearMetroFile = ResourceUtil.getProperty(bundle,HH_NEAR_METRO);
-        
-        smallSynPopSize = ResourceUtil.getIntegerProperty(bundle, SIZE_SMALL_SYNPOP);
 
         householdFileName = ResourceUtil.getProperty(bundle, HH_FILE_ASCII);
         personFileName =  ResourceUtil.getProperty(bundle, PP_FILE_ASCII);
@@ -78,10 +74,6 @@ public final class HouseholdDataProperties {
 
     public String getHouseholdsNearMetroFile() {
         return householdsNearMetroFile;
-    }
-
-    public int getSmallSynPopSize() {
-        return smallSynPopSize;
     }
 
     public String getJobsFileName() {

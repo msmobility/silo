@@ -865,7 +865,7 @@ public class HouseholdDataManager {
     public void writeOutSmallSynPop() {
         // write out numberOfHh number of households to have small file for running tests
 
-        int numberOfHh = properties.getHouseholdDataProperties().getSmallSynPopSize();
+        int numberOfHh = properties.getMainProperties().getSmallSynPopSize();
         logger.info("  Writing out smaller files of synthetic population with " + numberOfHh + " households only");
         String filehh = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getHouseholdFileName() + "_" +
                 numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";

@@ -32,7 +32,11 @@ public final class JobDataProperties {
         jobsFileName = ResourceUtil.getProperty(bundle, JJ_FILE_ASCII);
         binaryJobsFileName = ResourceUtil.getProperty(bundle, JJ_FILE_BIN);
         hasControlYears = bundle.containsKey(JOB_CONTROL_YEARS);
-        controlYears = ResourceUtil.getIntegerArray(bundle, JOB_CONTROL_YEARS);
+        if(hasControlYears) {
+            controlYears = ResourceUtil.getIntegerArray(bundle, JOB_CONTROL_YEARS);
+        } else {
+            controlYears = new int[]{};
+        }
         jobControlTotalsFileName = ResourceUtil.getProperty(bundle, JOB_CONTROL_TOTAL);
         employmentForeCastFile = ResourceUtil.getProperty(bundle, EMPLOYMENT_FORECAST);
     }

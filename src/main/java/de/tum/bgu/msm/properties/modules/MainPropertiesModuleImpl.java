@@ -86,9 +86,9 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
         gregorianIterator = ResourceUtil.getIntegerProperty(bundle, GREGORIAN_ITERATOR);
         incomeBrackets = ResourceUtil.getIntegerArray(bundle, INCOME_BRACKETS);
         qualityLevels = ResourceUtil.getIntegerProperty(bundle, NUMBER_OF_DWELLING_QUALITY_LEVELS);
-        randomSeed = ResourceUtil.getIntegerProperty(bundle, RANDOM_SEED);
-        runSynPop = ResourceUtil.getBooleanProperty(bundle, RUN_SYN_POP);
-        smallSynPopSize = ResourceUtil.getIntegerProperty(bundle, SIZE_SMALL_SYNPOP);
+        randomSeed = ResourceUtil.getIntegerProperty(bundle, RANDOM_SEED, 42);
+        runSynPop = ResourceUtil.getBooleanProperty(bundle, RUN_SYN_POP, false);
+        smallSynPopSize = ResourceUtil.getIntegerProperty(bundle, SIZE_SMALL_SYNPOP, 0);
     }
 
     @Override
