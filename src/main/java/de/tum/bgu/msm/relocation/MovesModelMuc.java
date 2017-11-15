@@ -425,7 +425,7 @@ public class MovesModelMuc implements MovesModelI {
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
         if (dd.getRestriction() <= 0) return true;   // Dwelling is not income restricted
-        int msa = geoDataMstm.getMSAOfZone(dd.getZone());
+        int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 

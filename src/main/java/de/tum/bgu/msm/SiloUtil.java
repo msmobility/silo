@@ -33,16 +33,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class SiloUtil {
 
-    protected static final String PROPERTIES_BASE_DIRECTORY                 = "base.directory";
-    protected static final String PROPERTIES_RANDOM_SEED                    = "random.seed";
-    protected static final String PROPERTIES_TRACKING_FILE_NAME             = "track.file.name";
-    public static final String PROPERTIES_START_YEAR                        = "start.year";
-    public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
-    public static final String PROPERTIES_END_YEAR                          = "end.year";
-    public static final String PROPERTIES_GREGORIAN_ITERATOR                = "this.gregorian.iterator";
-    public static final String PROPERTIES_INCOME_BRACKETS                   = "income.brackets.hh.types";
-    public static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
-
     private static Random rand;
     public static String baseDirectory;
     public static String scenarioName;
@@ -74,9 +64,9 @@ public class SiloUtil {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
+        baseDirectory = ResourceUtil.getProperty(rb, "base.directory");
         scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
-        startYear = ResourceUtil.getIntegerProperty(rb, PROPERTIES_START_YEAR);
+        startYear = ResourceUtil.getIntegerProperty(rb, "start.year");
         summarizeData.openResultFile(rb);
         summarizeData.resultFileSpatial(rb, "open");
 
@@ -91,7 +81,7 @@ public class SiloUtil {
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
         copyFile(resourceBundleNames, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
-        initializeRandomNumber();
+        initializeRandomNumber(ResourceUtil.getIntegerProperty(rb, "random.seed"));
         trackingFile("open");
         return rb;
     }
@@ -113,9 +103,7 @@ public class SiloUtil {
     }
 
 
-    public static void initializeRandomNumber() {
-        // initialize random number generator
-        int seed = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_RANDOM_SEED);
+    public static void initializeRandomNumber(int seed) {
         if (seed == -1)
             rand = new Random();
         else
@@ -238,7 +226,7 @@ public class SiloUtil {
                 trackDd = ResourceUtil.getIntegerProperty(rb, "track.dwelling");
                 trackJj = ResourceUtil.getIntegerProperty(rb, "track.job");
                 if (trackHh == -1 && trackPp == -1 && trackDd == -1 && trackJj == -1) return;
-                String fileName = ResourceUtil.getProperty(rb, PROPERTIES_TRACKING_FILE_NAME);
+                String fileName = ResourceUtil.getProperty(rb, "track.file.name");
                 trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != baseYear);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);

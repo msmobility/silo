@@ -22,12 +22,12 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
-
 
 /**
  * @author Greg Erhardt
@@ -37,21 +37,12 @@ import java.util.*;
 public class HouseholdDataManager {
     static Logger logger = Logger.getLogger(HouseholdDataManager.class);
 
-    protected static final String PROPERTIES_HH_FILE_ASCII     = "household.file.ascii";
-    protected static final String PROPERTIES_PP_FILE_ASCII     = "person.file.ascii";
-    protected static final String PROPERTIES_DD_FILE_ASCII     = "dwelling.file.ascii";
-    protected static final String PROPERTIES_JJ_FILE_ASCII     = "job.file.ascii";
-    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP = "size.small.syn.pop";
-    protected static final String PROPERTIES_READ_BIN_FILE     = "read.binary.pop.files";
-    protected static final String PROPERTIES_POP_FILE_BIN      = "population.file.bin";
-    protected static final String PROPERTIES_INCOME_CHANGE     = "mean.change.of.yearly.income";
-    protected static final String PROPERTIES_SUMMARIZE_METRO   = "summarize.hh.near.selected.metro.stp";
-    protected static final String PROPERTIES_SELECTED_METRO    = "selected.metro.stops";
-    protected static final String PROPERTIES_HH_NEAR_METRO     = "hh.near.selected.metro.stops.summary";
-    private ResourceBundle rb;
+//    private ResourceBundle rb;
+    private final Properties properties;
 
     private static int highestHouseholdIdInUse;
     private static int highestPersonIdInUse;
+
     private float[][] laborParticipationShares;
     private static float[][][] initialIncomeDistribution;              // income by age, gender and occupation
     private static float meanIncomeChange;
@@ -62,17 +53,16 @@ public class HouseholdDataManager {
     private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
 
-    public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
-        // constructor
-        this.rb = rb;
+    public HouseholdDataManager(Properties properties, RealEstateDataManager realEstateData) {
+        this.properties = properties;
         this.realEstateData = realEstateData;
-        meanIncomeChange = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_INCOME_CHANGE);
+        meanIncomeChange = properties.getHouseholdDataProperties().getMeanIncomeChange();
     }
 
 
     public void readPopulation (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
+        boolean readBin = properties.getHouseholdDataProperties().isReadBinaryPopulation();
         if (readBin) {
             readBinaryPopulationDataObjects();
         } else {
@@ -86,7 +76,7 @@ public class HouseholdDataManager {
         logger.info("Reading household micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII);
+        String fileName = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getHouseholdFileName();
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -130,7 +120,7 @@ public class HouseholdDataManager {
 
     public static void writeBinaryPopulationDataObjects(ResourceBundle appRb) {
         // Store population object data in binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, PROPERTIES_POP_FILE_BIN);
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, "population.file.bin");
         logger.info("  Writing population data to binary file.");
         Object[] data = {Household.getHouseholds().toArray(new Household[Household.getHouseholdCount()]),
                 Person.getPersons().toArray(new Person[Person.getPersonCount()])};
@@ -147,7 +137,7 @@ public class HouseholdDataManager {
 
     private void readBinaryPopulationDataObjects() {
         // read households and persons from binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_POP_FILE_BIN);
+        String fileName = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getBinaryPopulationFile();
         logger.info("Reading population data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -167,7 +157,7 @@ public class HouseholdDataManager {
         logger.info("Reading person micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII);
+        String fileName = SiloUtil.baseDirectory +  properties.getHouseholdDataProperties().getPersonFileName();
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -788,7 +778,7 @@ public class HouseholdDataManager {
 
         HashMap<Integer, ArrayList<Integer>> incomeHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int homeMSA = geoDataMstm.getMSAOfZone(hh.getHomeZone());
+            int homeMSA = GeoDataMstm.getMSAOfZone(hh.getHomeZone());
             if (incomeHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = incomeHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());
@@ -813,12 +803,14 @@ public class HouseholdDataManager {
     public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
         // summarize households in the vicinity of selected Metro stops
 
-        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_SUMMARIZE_METRO)) return;
-        TableDataSet selectedMetro = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_METRO));
+        if (!properties.getHouseholdDataProperties().isSummarizeMetro()){
+            return;
+        }
+        TableDataSet selectedMetro = SiloUtil.readCSVfile(properties.getHouseholdDataProperties().getSelectedMetroStopsFile());
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String fileName = (directory + "/" + rb.getString(PROPERTIES_HH_NEAR_METRO) + "_" +
+        String fileName = (directory + "/" + properties.getHouseholdDataProperties().getHouseholdsNearMetroFile() + "_" +
                 SiloUtil.gregorianIterator + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
         pw.print("income,dist");
@@ -873,15 +865,15 @@ public class HouseholdDataManager {
     public void writeOutSmallSynPop() {
         // write out numberOfHh number of households to have small file for running tests
 
-        int numberOfHh = ResourceUtil.getIntegerProperty(rb, PROPERTIES_SIZE_SMALL_SYNPOP);
+        int numberOfHh = properties.getHouseholdDataProperties().getSmallSynPopSize();
         logger.info("  Writing out smaller files of synthetic population with " + numberOfHh + " households only");
-        String filehh = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII) + "_" +
+        String filehh = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getHouseholdFileName() + "_" +
                 numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filepp = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII) + "_" +
+        String filepp = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getPersonFileName() + "_" +
                 numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filedd = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII) + "_" +
+        String filedd = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getDwellingsFileName() + "_" +
                 numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filejj = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII) + "_" +
+        String filejj = SiloUtil.baseDirectory + properties.getHouseholdDataProperties().getJobsFileName() + "_" +
                 numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);

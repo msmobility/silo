@@ -24,6 +24,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 
@@ -36,15 +37,9 @@ import org.apache.log4j.Logger;
 public class JobDataManager {
     static Logger logger = Logger.getLogger(JobDataManager.class);
 
-    protected static final String PROPERTIES_JJ_FILE_BIN       = "job.file.bin";
-    protected static final String PROPERTIES_JJ_FILE_ASCII     = "job.file.ascii";
-    protected static final String PROPERTIES_READ_BIN_FILE     = "read.binary.jj.file";
-    protected static final String PROPERTIES_MAX_NUM_VAC_JOB   = "vacant.job.by.reg.array";
-    public static final String PROPERTIES_EMPLOYMENT_FORECAST  = "interpol.empl.forecast";
-    public static final String PROPERTIES_JOB_CONTROL_TOTAL    = "job.control.total";
-    protected static final String PROPERTIES_JOB_CONTROL_YEARS = "job.control.total.years";
-    private ResourceBundle rb;
-    private GeoData geoData;
+    private final Properties properties;
+
+    private final GeoData geoData;
 
     private static int highestJobIdInUse;
     private static int[][] vacantJobsByRegion;
@@ -53,18 +48,18 @@ public class JobDataManager {
     private static float[] zonalJobDensity;
 
 
-    public JobDataManager(ResourceBundle rb, GeoData geoData) {
+    public JobDataManager(Properties properties, GeoData geoData) {
         // constructor
-        this.rb = rb;
+        this.properties = properties;
         this.geoData = geoData;
-        numberOfStoredVacantJobs = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MAX_NUM_VAC_JOB);
+        numberOfStoredVacantJobs = properties.getJobDataProperties().getMaxStorageOfvacantJobs();
     }
 
 
     public void readJobs (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        new JobType(rb);
-        boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
+        new JobType(properties.getJobDataProperties().getJobTypes());
+        boolean readBin = properties.getJobDataProperties().isReadBinaryJobFile();
         if (readBin) {
             readBinaryJobDataObjects();
         } else {
@@ -78,7 +73,7 @@ public class JobDataManager {
         logger.info("Reading job micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII);
+        String fileName = SiloUtil.baseDirectory + properties.getJobDataProperties().getJobsFileName();
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -120,7 +115,7 @@ public class JobDataManager {
     public static void writeBinaryJobDataObjects(ResourceBundle appRb) {
         // Store job object data in binary file
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, PROPERTIES_JJ_FILE_BIN);
+        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, "job.file.bin");
         logger.info("  Writing job data to binary file.");
         Object[] data = Job.getJobs().toArray(new Job[Job.getJobCount()]);
         try {
@@ -136,7 +131,7 @@ public class JobDataManager {
 
     private void readBinaryJobDataObjects() {
         // read jobs from binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_BIN);
+        String fileName = SiloUtil.baseDirectory + properties.getJobDataProperties().getBinaryJobsFileName();
         logger.info("Reading job data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -177,8 +172,8 @@ public class JobDataManager {
 
     	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
         String[] yearsGiven;
-        if (rb.containsKey(PROPERTIES_JOB_CONTROL_YEARS)) {
-            int[] yearsInt = ResourceUtil.getIntegerArray(rb, PROPERTIES_JOB_CONTROL_YEARS);
+        if (properties.getJobDataProperties().hasControlYears()) {
+            int[] yearsInt = properties.getJobDataProperties().getControlYears();
             yearsGiven = new String[yearsInt.length];
             for (int i = 0; i < yearsInt.length; i++) yearsGiven[i] = String.valueOf(yearsInt[i]);
         } else {
@@ -191,12 +186,12 @@ public class JobDataManager {
                 (2000 + highestYear));
         TableDataSet jobs ;
         try {
-      	  final String filename = SiloUtil.baseDirectory + "/" + ResourceUtil.getProperty(rb, PROPERTIES_JOB_CONTROL_TOTAL);
+      	  final String filename = SiloUtil.baseDirectory + "/" + properties.getJobDataProperties().getJobControlTotalsFileName();
 		jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
       	  throw new RuntimeException(ee) ;
         }
-        new JobType(rb);
+        new JobType(properties.getJobDataProperties().getJobTypes());
 
         // jobInventory by [industry][year][tazIndex]
         float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getZones().length];
@@ -230,7 +225,7 @@ public class JobDataManager {
         SiloUtil.createDirectoryIfNotExistingYet(dir);
         for (int yr = Integer.parseInt(yearsGiven[0]); yr <= highestYear; yr++) {
             String forecastFileName;
-            forecastFileName = dir + rb.getString(PROPERTIES_EMPLOYMENT_FORECAST) + (2000 + yr) + ".csv";
+            forecastFileName = dir + properties.getJobDataProperties().getJobControlTotalsFileName() + (2000 + yr) + ".csv";
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
             pw.print("zone");
             for (String ind: JobType.getJobTypes()) pw.print("," + ind);

@@ -4,8 +4,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
-import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import com.pb.common.datafile.TableDataSet;
@@ -14,23 +14,16 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 
 /**
- * Interface to store zonal, county and regional data used by the SILO Model
- * @author Ana Moreno and Rolf Moeckel, Technical University of Munich
- * Created on 5 April 2017 in Munich
+ * Zonal, county and regional data used by the SILO Model
+ * Author: Rolf Moeckel, University of Maryland
+ * Created on 20 April 2015 in College Park
  **/
 
-public class geoDataMuc implements GeoData {
-    private static final Logger logger = Logger.getLogger(geoDataMuc.class);
+public class GeoDataMstm implements GeoData {
+    private static final Logger logger = Logger.getLogger(GeoDataMstm.class);
 
-    protected static final String PROPERTIES_ZONAL_DATA_FILE  = "zonal.data.file";
-    protected static final String PROPERTIES_REGION_DEF_FILE  = "region.definition.file";
-    protected static final String PROPERTIES_LAND_USE_AREA    = "land.use.area.by.taz";
-    protected static final String PROPERTIES_DEVELOPABLE      = "developable.lu.category";
-    protected static final String PROPERTIES_DEVELOPM_RESTR   = "development.restrictions";
-    protected static final String PROPERTIES_USE_CAPACITY     = "use.growth.capacity.data";
-    protected static final String PROPERTIES_CAPACITY_FILE    = "growth.capacity.file";
 
-    private ResourceBundle rb;
+    private final Properties properties;
     private static int[] zoneIndex;
     private static int highestZonalId;
     private static HashMap<Integer, int[]> regionDefinition;
@@ -39,25 +32,29 @@ public class geoDataMuc implements GeoData {
     private static TableDataSet regDef;
     private static int[] counties;
     private static int[] countyIndex;
+    private static float[] zonalSchoolQuality;
+    private static float[] regionalSchoolQuality;
+    private static float[] countyCrimeRate;
+    private static float[] regionalCrimeRate;
     private static TableDataSet landUse;
+
     private int[] developableLUtypes;
-    private boolean useCapacityAsNumberOfDwellings;
-    private TableDataSet developmentCapacity;
     private static TableDataSet developmentRestrictions;
-    private static TableDataSet distanceToTransit;
+    private TableDataSet developmentCapacity;
+    private boolean useCapacityAsNumberOfDwellings;
 
-    public geoDataMuc(ResourceBundle rb) {
-        this.rb = rb;
+
+    public GeoDataMstm(Properties properties) {
+        this.properties = properties;
     }
-    protected Matrix accessDistanceMatrix;
-
 
     public void setInitialData () {
-        SiloUtil.endYear = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_END_YEAR);
-        SiloUtil.simulationLength = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_SIMULATION_PERIOD_LENGTH);
-        SiloUtil.gregorianIterator = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_GREGORIAN_ITERATOR);
-        SiloUtil.incBrackets = ResourceUtil.getIntegerArray(rb, SiloUtil.PROPERTIES_INCOME_BRACKETS);
-        SiloUtil.numberOfQualityLevels = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
+        SiloUtil.startYear = properties.getMainProperties().getStartYear();
+        SiloUtil.endYear = properties.getMainProperties().getEndYear();
+        SiloUtil.simulationLength = properties.getMainProperties().getSimulationLength();
+        SiloUtil.gregorianIterator = properties.getMainProperties().getGregorianIterator();
+        SiloUtil.incBrackets = properties.getMainProperties().getIncomeBrackets();
+        SiloUtil.numberOfQualityLevels = properties.getMainProperties().getQualityLevels();
         readZones();
         readLandUse();
     }
@@ -65,20 +62,20 @@ public class geoDataMuc implements GeoData {
 
     private void readZones() {
         // read zonal data
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ZONAL_DATA_FILE);
+        String fileName = SiloUtil.baseDirectory + properties.getGeoProperties().getZonalDataFile();
         SiloUtil.zonalData = SiloUtil.readCSVfile(fileName);
-        highestZonalId = SiloUtil.getHighestVal(SiloUtil.zonalData.getColumnAsInt("Zone"));
-        SiloUtil.zonalData.buildIndex(SiloUtil.zonalData.getColumnPosition("Zone"));
+        highestZonalId = SiloUtil.getHighestVal(SiloUtil.zonalData.getColumnAsInt("ZoneId"));
+        SiloUtil.zonalData.buildIndex(SiloUtil.zonalData.getColumnPosition("ZoneId"));
 
         int[] zones = getZones();
         zoneIndex = SiloUtil.createIndexArray(zones);
 
         // read region definition
-        String regFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_REGION_DEF_FILE);
+        String regFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getRegionDefinitionFile();
         regDef = SiloUtil.readCSVfile(regFileName);
         regionDefinition = new HashMap<>();
         for (int row = 1; row <= regDef.getRowCount(); row++) {
-            int taz = (int) regDef.getValueAt(row, "Zone");
+            int taz = (int) regDef.getValueAt(row, "ZoneId");
             int reg = (int) regDef.getValueAt(row, "Region");
             if (regionDefinition.containsKey(reg)) {
                 int[] zoneInThisRegion = regionDefinition.get(reg);
@@ -90,12 +87,46 @@ public class geoDataMuc implements GeoData {
         }
         regionList = SiloUtil.idendifyUniqueValues(regDef.getColumnAsInt("Region"));
         regionIndex = SiloUtil.createIndexArray(regionList);
-        regDef.buildIndex(regDef.getColumnPosition("Zone"));
+        regDef.buildIndex(regDef.getColumnPosition("ZoneId"));
 
+        // read school quality
+        String sqFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getZonalSchoolQualityFile();
+        TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
+        zonalSchoolQuality = new float[zones.length];
+        for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
+            int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
+            zonalSchoolQuality[zoneIndex[taz]] = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
+        }
+        regionalSchoolQuality = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            regionalSchoolQuality[reg] += getZonalSchoolQuality(zone);
+        }
+        for (int region: regionList)
+            regionalSchoolQuality[region] = regionalSchoolQuality[region] / regionDefinition.get(region).length;
 
         // create list of county FIPS codes
-        counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("ID_county"));
+        counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("COUNTYFIPS"));
         countyIndex = SiloUtil.createIndexArray(counties);
+
+        // read county-level crime data
+        countyCrimeRate = new float[counties.length];
+        String crimeFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getCountyCrimeFile();
+        TableDataSet tblCrimeIndex = SiloUtil.readCSVfile(crimeFileName);
+        for (int row = 1; row <= tblCrimeIndex.getRowCount(); row++) {
+            int county = (int) tblCrimeIndex.getValueAt(row, "FIPS");
+            countyCrimeRate[countyIndex[county]] = tblCrimeIndex.getValueAt(row, "CrimeIndicator");
+        }
+        regionalCrimeRate = new float[SiloUtil.getHighestVal(regionList) + 1];
+        float[] regionalArea = new float[SiloUtil.getHighestVal(regionList) + 1];
+        for (int zone: zones) {
+            int reg = getRegionOfZone(zone);
+            int fips = getCountyOfZone(zone);
+            regionalCrimeRate[reg] += countyCrimeRate[countyIndex[fips]] * getSizeOfZoneInAcres(zone);  // weight by bedrooms
+            regionalArea[reg] += getSizeOfZoneInAcres(zone);
+        }
+        for (int region: regionList)
+            regionalCrimeRate[region] = regionalCrimeRate[region] / regionalArea[region];
     }
 
 
@@ -104,34 +135,35 @@ public class geoDataMuc implements GeoData {
         logger.info("Reading land use data");
         String fileName;
         if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-            fileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + ".csv";
+            fileName = SiloUtil.baseDirectory + "input/" + properties.getGeoProperties().getLandUseAreaFile() + ".csv";
         } else {                                             // start in different year (continue previous run)
             fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.startYear + ".csv";
+                    properties.getGeoProperties().getLandUseAreaFile() + "_" + SiloUtil.startYear + ".csv";
         }
         landUse = SiloUtil.readCSVfile(fileName);
         landUse.buildIndex(landUse.getColumnPosition("Zone"));
 
         // read developers data
-        developableLUtypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_DEVELOPABLE);
+        developableLUtypes = properties.getGeoProperties().getDevelopableLandUseTypes();
 
-        String restrictionsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEVELOPM_RESTR);
+        String restrictionsFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getDevelopmentRestrictionsFile();
         developmentRestrictions = SiloUtil.readCSVfile(restrictionsFileName);
         developmentRestrictions.buildIndex(developmentRestrictions.getColumnPosition("Zone"));
 
-        useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
+        useCapacityAsNumberOfDwellings = properties.getGeoProperties().isUseCapacityForDwellings();
         if (useCapacityAsNumberOfDwellings) {
             String capacityFileName;
             if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-                capacityFileName = SiloUtil.baseDirectory + "input/" + ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + ".csv";
+                capacityFileName = SiloUtil.baseDirectory + "input/" + properties.getGeoProperties().getCapacityFile() + ".csv";
             } else {                                             // start in different year (continue previous run)
                 capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                        ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.startYear + ".csv";
+                        properties.getGeoProperties().getCapacityFile() + "_" + SiloUtil.startYear + ".csv";
             }
             developmentCapacity = SiloUtil.readCSVfile(capacityFileName);
             developmentCapacity.buildIndex(developmentCapacity.getColumnPosition("Zone"));
         }
     }
+
 
     public boolean useNumberOfDwellingsAsCapacity () {
         return useCapacityAsNumberOfDwellings;
@@ -163,13 +195,18 @@ public class geoDataMuc implements GeoData {
         }
     }
 
+
+    public int[] getDevelopableLandUseTypes() {
+        return developableLUtypes;
+    }
+
     public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer) {
         // write out development capacity file to allow model run to be continued from this point later
 
-        boolean useCapacityAsNumberOfDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_CAPACITY, false);
+        boolean useCapacityAsNumberOfDwellings = properties.getGeoProperties().isUseCapacityForDwellings();
         if(useCapacityAsNumberOfDwellings)	{
             String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    ResourceUtil.getProperty(rb, PROPERTIES_CAPACITY_FILE) + "_" + SiloUtil.getEndYear() + ".csv";
+                    properties.getGeoProperties().getCapacityFile() + "_" + SiloUtil.getEndYear() + ".csv";
             PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
             pwc.println("Zone,DevCapacity");
             for (int zone: getZones()) pwc.println(zone + "," + getDevelopmentCapacity(zone));
@@ -177,20 +214,16 @@ public class geoDataMuc implements GeoData {
         }
 
         String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                ResourceUtil.getProperty(rb, PROPERTIES_LAND_USE_AREA) + "_" + SiloUtil.getEndYear() + ".csv";
+               properties.getGeoProperties().getLandUseAreaFile() + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
         pwl.println("Zone,lu41");
         for (int zone: getZones()) pwl.println(zone + "," + dataContainer.getRealEstateData().getDevelopableLand(zone));
         pwl.close();
     }
 
+
     public float getAreaOfLandUse (String landUseType, int zone) {
         return landUse.getIndexedValueAt(zone, landUseType);
-    }
-
-
-    public int[] getDevelopableLandUseTypes() {
-        return developableLUtypes;
     }
 
     public boolean isThisDwellingTypeAllowed (String dwellingType, int zone) {
@@ -206,7 +239,6 @@ public class geoDataMuc implements GeoData {
         return (developmentRestrictions.getIndexedValueAt(zone, col) == 1);
     }
 
-
     public int getHighestZonalId () {
         // return highest zone ID
         return highestZonalId;
@@ -214,7 +246,7 @@ public class geoDataMuc implements GeoData {
 
     public int[] getZones () {
         // return array with zone IDs
-        return SiloUtil.zonalData.getColumnAsInt("Zone");
+        return SiloUtil.zonalData.getColumnAsInt("ZoneId");
     }
 
     public float getSizeOfZoneInAcres(int zone) {
@@ -265,6 +297,22 @@ public class geoDataMuc implements GeoData {
     public static int getSimplifiedPUMAofZone (int taz) {
         // return PUMA in which taz is located (less geographic detail, last digit is rounded to 1)
         return (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
+    }
+
+    public static float getZonalSchoolQuality (int zone) {
+        return zonalSchoolQuality[zoneIndex[zone]];
+    }
+
+    public static float getRegionalSchoolQuality (int region) {
+        return regionalSchoolQuality[region];
+    }
+
+    public static float getCountyCrimeRate (int fips) {
+        return countyCrimeRate[countyIndex[fips]];
+    }
+
+    public static float getRegionalCrimeRate (int region) {
+        return regionalCrimeRate[region];
     }
 
 }

@@ -216,11 +216,11 @@ public class summarizeDataCblcm {
         int[] hhByCounty = new int[countyOrder.length];
         int[] jobsByCounty = new int[countyOrder.length];
         for (Household hh: Household.getHouseholdArray()) {
-            int homeFips = geoDataMstm.getCountyOfZone(hh.getHomeZone());
+            int homeFips = GeoDataMstm.getCountyOfZone(hh.getHomeZone());
             if (SiloUtil.containsElement(countyOrder, homeFips)) hhByCounty[countyOrderIndex[homeFips]]++;
         }
         for (Job jj: Job.getJobArray()) {
-            int jobFips = geoDataMstm.getCountyOfZone(jj.getZone());
+            int jobFips = GeoDataMstm.getCountyOfZone(jj.getZone());
             if (SiloUtil.containsElement(countyOrder, jobFips)) jobsByCounty[countyOrderIndex[jobFips]]++;
         }
 

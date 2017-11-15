@@ -86,7 +86,7 @@ public class SiloModel {
 		int[] skimYears = properties.getTransportModelProperties().getSkimYears();
 
 		// create main objects and read synthetic population
-		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse, properties.getMainProperties().isReadSmallSynpop(), implementation);
+		dataContainer = SiloDataContainer.createSiloDataContainer(properties, properties.getMainProperties().isReadSmallSynpop(), implementation);
 		if (properties.getMainProperties().isWriteSmallSynpop()) {
 			dataContainer.getHouseholdData().writeOutSmallSynPop();
 		}

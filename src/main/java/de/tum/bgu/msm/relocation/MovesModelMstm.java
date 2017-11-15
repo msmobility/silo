@@ -335,8 +335,8 @@ public class MovesModelMstm implements MovesModelI {
         for (int region: regions) {
             regPrice[region] = calculateRegPrice(region);
             regAcc[region] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
-            regSchQu[region] = geoDataMstm.getRegionalSchoolQuality(region);
-            regCrime[region] = 1f - geoDataMstm.getRegionalCrimeRate(region);  // invert utility, as lower crime rate has higher utility
+            regSchQu[region] = GeoDataMstm.getRegionalSchoolQuality(region);
+            regCrime[region] = 1f - GeoDataMstm.getRegionalCrimeRate(region);  // invert utility, as lower crime rate has higher utility
         }
         selectRegionDmu.setRegionalAccessibility(regAcc);
         selectRegionDmu.setRegionalSchoolQuality(regSchQu);
@@ -472,7 +472,7 @@ public class MovesModelMstm implements MovesModelI {
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
         if (dd.getRestriction() <= 0) return true;   // Dwelling is not income restricted
-        int msa = geoDataMstm.getMSAOfZone(dd.getZone());
+        int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 
@@ -537,7 +537,7 @@ public class MovesModelMstm implements MovesModelI {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
-            int msa = geoDataMstm.getMSAOfZone(dd.getZone());
+            int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
             float racialShare = 1;
@@ -586,13 +586,13 @@ public class MovesModelMstm implements MovesModelI {
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
         evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibility(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibility(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(geoDataMstm.getZonalSchoolQuality(dd.getZone()));
-        evaluateDwellingDmu.setUtilityDwellingCrimeRate(geoDataMstm.getCountyCrimeRate(geoDataMstm.getCountyOfZone(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(GeoDataMstm.getZonalSchoolQuality(dd.getZone()));
+        evaluateDwellingDmu.setUtilityDwellingCrimeRate(GeoDataMstm.getCountyCrimeRate(GeoDataMstm.getCountyOfZone(dd.getZone())));
 
         int price = dd.getPrice();
         if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
             // housing subsidy program in place
-            int msa = geoDataMstm.getMSAOfZone(dd.getZone());
+            int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
             if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                 float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
                 float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;
@@ -614,7 +614,7 @@ public class MovesModelMstm implements MovesModelI {
         // check if households qualifies for subsidy
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
         return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * HouseholdDataManager.getMedianIncome(geoDataMstm.getMSAOfZone(zone))) &&
+                income <= (0.5f * HouseholdDataManager.getMedianIncome(GeoDataMstm.getMSAOfZone(zone))) &&
                 price <= (0.4f * assumedIncome);
     }
 }

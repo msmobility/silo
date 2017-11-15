@@ -123,8 +123,8 @@ public class SiloModelContainer {
         }
         InOutMigration iomig = new InOutMigration(rbLandUse);
         ConstructionModel cons = new ConstructionModel(rbLandUse, dataContainer.getGeoData());
-        RenovationModel renov = new RenovationModel(rbLandUse);
-        DemolitionModel demol = new DemolitionModel(rbLandUse);
+        RenovationModel renov = new RenovationModel();
+        DemolitionModel demol = new DemolitionModel();
         PricingModel prm = new PricingModel(rbLandUse);
         UpdateJobs updateJobs = new UpdateJobs(rbLandUse);
         CarOwnershipModel carOwnershipModel;

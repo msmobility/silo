@@ -24,4 +24,24 @@ public interface MainPropertiesModule {
     String getScalingControlTotals();
 
     String getScenarioName();
+
+    String getBaseDirectory();
+
+    int getStartYear();
+
+    int getEndYear();
+
+    int getSimulationLength();
+
+    int getGregorianIterator();
+
+    int[] getIncomeBrackets();
+
+    int getQualityLevels();
+
+    int getRandomSeed();
+
+    boolean isRunSynPop();
+
+    int getSmallSynPopSize();
 }

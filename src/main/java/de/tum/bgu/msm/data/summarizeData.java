@@ -998,7 +998,7 @@ public class summarizeData {
         for (Household hh: Household.getHouseholdArray()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
-            int county = geoDataMstm.getCountyOfZone(zone);
+            int county = GeoDataMstm.getCountyOfZone(zone);
             autos[autoOwnership][county]++;
             pwa.println(hh.getHhSize()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
                     accessibility.getTransitAccessibility(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
@@ -1029,7 +1029,7 @@ public class summarizeData {
         for (int zone: geoData.getZones()) {
             try {
                 prestoRegionByTaz[zone] =
-                        (int) regionDefinition.getIndexedValueAt(geoDataMstm.getCountyOfZone(zone), "presto");
+                        (int) regionDefinition.getIndexedValueAt(GeoDataMstm.getCountyOfZone(zone), "presto");
             } catch (Exception e) {
                 prestoRegionByTaz[zone] = -1;
             }

@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.container;
 
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
  */
 public class SiloDataContainer {
     private static Logger logger = Logger.getLogger(SiloDataContainer.class);
-    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP              = "size.small.syn.pop";
+
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;
@@ -45,18 +45,18 @@ public class SiloDataContainer {
     /**
      * This factory method is used to create all the data objects needed for SILO from the Configuration file, loaded as a ResourceBundle
      * Each data object is created sequentially, before being passed as parameters to the private constructor.
-     * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
+     * @param properties The properties file, as a @see {@link Properties}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse,
+    public static SiloDataContainer createSiloDataContainer(Properties properties,
                                                             boolean readSmallSynPop, SiloModel.Implementation implementation) {
         GeoData geoData;
         switch (implementation) {
             case MSTM:
-                geoData = new geoDataMstm(rbLandUse);
+                geoData = new GeoDataMstm(properties);
                 break;
             case MUC:
-                geoData = new geoDataMuc(rbLandUse);
+                geoData = new GeoDataMuc(properties);
                 break;
             default:
                 logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
@@ -68,12 +68,14 @@ public class SiloDataContainer {
 
 
         // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
-        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
-        JobDataManager jobData = new JobDataManager(rbLandUse, geoData);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
+        RealEstateDataManager realEstateData = new RealEstateDataManager(properties, geoData);
+        HouseholdDataManager householdData = new HouseholdDataManager(properties, realEstateData);
+        JobDataManager jobData = new JobDataManager(properties, geoData);
+        if (!properties.getMainProperties().isRunSynPop()) {   // read data only if synth. pop. generator did not run
             int smallSize = 0;
-            if (readSmallSynPop) smallSize = ResourceUtil.getIntegerProperty(rbLandUse, PROPERTIES_SIZE_SMALL_SYNPOP);
+            if (readSmallSynPop) {
+                smallSize = properties.getMainProperties().getSmallSynPopSize();
+            }
             householdData.readPopulation(readSmallSynPop, smallSize);
             realEstateData.readDwellings(readSmallSynPop, smallSize);
             jobData.readJobs( readSmallSynPop, smallSize);
