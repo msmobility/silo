@@ -57,7 +57,6 @@ public class SiloUtil {
     public SiloUtil() {
     }
 
-
     public static ResourceBundle siloInitialization(String resourceBundleNames) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
