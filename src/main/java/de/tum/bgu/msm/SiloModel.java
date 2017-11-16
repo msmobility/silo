@@ -90,7 +90,7 @@ public class SiloModel {
 		if (properties.getMainProperties().isWriteSmallSynpop()) {
 			dataContainer.getHouseholdData().writeOutSmallSynPop();
 		}
-		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, implementation, dataContainer);
+		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, properties, implementation, dataContainer);
 
 		final boolean runMatsim = properties.getTransportModelProperties().isRunMatsim();
 		final boolean runTravelDemandModel = properties.getTransportModelProperties().isRunTravelDemandModel();
@@ -139,7 +139,7 @@ public class SiloModel {
 			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
 			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-			EventManager em = new EventManager(rbLandUse, dataContainer);
+			EventManager em = new EventManager(properties, dataContainer);
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			modelContainer.getIomig().setupInOutMigration(year);

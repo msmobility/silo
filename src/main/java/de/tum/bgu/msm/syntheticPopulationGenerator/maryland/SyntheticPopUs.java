@@ -68,7 +68,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        accessibility = new Accessibility(rb, geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(new Properties(rb), geoData);                        // read in travel times and trip length frequency distribution
         accessibility.readCarSkim(SiloUtil.getStartYear());
         accessibility.readPtSkim(SiloUtil.getStartYear());
         accessibility.initialize();

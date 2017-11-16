@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.properties.modules;
 
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloUtil;
 
 import java.util.ResourceBundle;
 
-public class MainPropertiesModuleImpl implements MainPropertiesModule {
+public class MainPropertiesImpl implements MainProperties {
 
     private static final String RUN_SILO = "run.silo.model";
     private static final String SCENARIO_NAME = "scenario.name";
@@ -66,7 +65,7 @@ public class MainPropertiesModuleImpl implements MainPropertiesModule {
     private final boolean runSynPop;
     private final int smallSynPopSize;
 
-    public MainPropertiesModuleImpl(ResourceBundle bundle) {
+    public MainPropertiesImpl(ResourceBundle bundle) {
         runSilo = ResourceUtil.getBooleanProperty(bundle, RUN_SILO, true);
         trackTime = ResourceUtil.getBooleanProperty(bundle, TRACK_TIME, false);
         trackTimeFile = bundle.getString(TRACK_TIME_FILE);

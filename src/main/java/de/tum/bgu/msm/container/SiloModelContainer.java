@@ -7,6 +7,7 @@ import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.MovesModelMstm;
@@ -50,7 +51,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, Implementation, SiloDataContainer)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, Properties, Implementation, SiloDataContainer)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -103,17 +104,17 @@ public class SiloModelContainer {
      * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, Implementation implementation, SiloDataContainer dataContainer) {
+    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, Properties properties, Implementation implementation, SiloDataContainer dataContainer) {
 
         logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(rbLandUse, dataContainer.getHouseholdData());
-        BirthModel birth = new BirthModel(rbLandUse, dataContainer.getHouseholdData());
-        LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
-        MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
+        DeathModel death = new DeathModel(properties, dataContainer.getHouseholdData());
+        BirthModel birth = new BirthModel(properties, dataContainer.getHouseholdData());
+        LeaveParentHhModel lph = new LeaveParentHhModel();
+        MarryDivorceModel mardiv = new MarryDivorceModel(properties);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
-        Accessibility acc = new Accessibility(rbLandUse, dataContainer.getGeoData());
+        Accessibility acc = new Accessibility(properties, dataContainer.getGeoData());
         //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         if (implementation.equals(Implementation.MSTM)) {

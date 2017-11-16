@@ -6,49 +6,40 @@ import java.util.ResourceBundle;
 
 public final class Properties {
 
-    private final MainPropertiesModule mainProperties;
-    private final CblcmPropertiesModule cblcmProperties;
-    private final TransportModelPropertiesModule transportModelProperties;
-    private final GeoProperties geoProperties;
-    private final RealEstateProperties realEstatePrperties;
-    private final HouseholdDataProperties householdDataProperties;
-    private final JobDataProperties jobDataProperties;
+    private static Properties instance;
 
-    public Properties(ResourceBundle bundle) {
-        mainProperties = new MainPropertiesModuleImpl(bundle);
-        cblcmProperties = new CblcmPropertiesModule(bundle);
-        transportModelProperties = new TransportModelPropertiesModule(bundle);
-        geoProperties = new GeoProperties(bundle);
-        realEstatePrperties = new RealEstateProperties(bundle);
-        householdDataProperties = new HouseholdDataProperties(bundle);
-        jobDataProperties = new JobDataProperties(bundle);
+    public static Properties get() {
+        if(instance == null) {
+            throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
+        }
+        return instance;
     }
 
-    public MainPropertiesModule getMainProperties() {
-        return mainProperties;
+    public static void initializeProperties(ResourceBundle bundle) {
+        instance = new Properties(bundle);
     }
 
-    public CblcmPropertiesModule getCblcmProperties() {
-        return cblcmProperties;
-    }
+    public final MainProperties main;
+    public final CblcmProperties cblcm;
+    public final TransportModelPropertiesModule transportModel;
+    public final GeoProperties geo;
+    public final RealEstateProperties realEstate;
+    public final HouseholdDataProperties householdData;
+    public final JobDataProperties jobData;
+    public final EventRulesProperties eventRules;
+    public final DemographicsProperties demographics;
+    public final AccessibilityProperties accessibility;
 
-    public TransportModelPropertiesModule getTransportModelProperties() {
-        return transportModelProperties;
-    }
-
-    public GeoProperties getGeoProperties() {
-        return geoProperties;
-    }
-
-    public RealEstateProperties getRealEstateProperties() {
-        return realEstatePrperties;
-    }
-
-    public HouseholdDataProperties getHouseholdDataProperties() {
-        return householdDataProperties;
-    }
-
-    public JobDataProperties getJobDataProperties() {
-        return jobDataProperties;
+    private Properties(ResourceBundle bundle) {
+        main = new MainPropertiesImpl(bundle);
+        cblcm = new CblcmProperties(bundle);
+        transportModel = new TransportModelPropertiesModule(bundle);
+        geo = new GeoProperties(bundle);
+        realEstate = new RealEstateProperties(bundle);
+        householdData = new HouseholdDataProperties(bundle);
+        jobData = new JobDataProperties(bundle);
+        eventRules = new EventRulesProperties(bundle);
+        demographics = new DemographicsProperties(bundle);
+        accessibility = new AccessibilityProperties(bundle);
     }
 }

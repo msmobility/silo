@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.realEstate.ConstructionModel;
 import org.apache.log4j.Logger;
@@ -30,10 +31,10 @@ public class EventManager {
     private int posInArray;
     private static HashMap<EventTypes, Integer> eventCounter;
 
-    public EventManager (ResourceBundle rb, SiloDataContainer dataContainer) {
+    public EventManager (Properties properties, SiloDataContainer dataContainer) {
         // Constructor of EventManager
         this.dataContainer = dataContainer;
-        EventRules.setUpEventRules(rb);
+        EventRules.setUpEventRules(properties);
     }
 
 

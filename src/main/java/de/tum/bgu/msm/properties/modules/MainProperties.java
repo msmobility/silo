@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-public interface MainPropertiesModule {
+public interface MainProperties {
     boolean isTrackTime();
 
     String getTrackTimeFile();

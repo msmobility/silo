@@ -64,7 +64,7 @@ public class SiloModelCBLCM {
 
 		// read micro data
 		dataContainer = SiloDataContainer.createSiloDataContainer(properties,  false, Implementation.MSTM);
-		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
+		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, properties, Implementation.MSTM, dataContainer);
 		
 		modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
 		modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
@@ -93,7 +93,7 @@ public class SiloModelCBLCM {
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-	        EventManager em = new EventManager(rbLandUse, dataContainer);
+	        EventManager em = new EventManager(properties, dataContainer);
 	        long startTime = 0;
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getIomig().setupInOutMigration(currentYear);

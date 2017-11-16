@@ -6,6 +6,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.properties.Properties;
 import omx.OmxFile;
 import omx.OmxMatrix;
 import org.apache.log4j.Logger;
@@ -14,7 +15,6 @@ import org.matsim.api.core.v01.TransportMode;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Calculates and stores accessibilities
@@ -24,19 +24,8 @@ import java.util.ResourceBundle;
 
 public class Accessibility {
 
-    protected static final String PROPERTIES_AUTO_PEAK_SKIM                  = "auto.peak.sov.skim.";
-    protected static final String PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME      = "auto.peak.sov.skim.matrix.name";
-    protected static final String PROPERTIES_TRANSIT_PEAK_SKIM               = "transit.peak.time.";
-    protected static final String PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME   = "transit.peak.time.matrix.name";
-    protected static final String PROPERTIES_AUTO_ACCESSIBILITY_ALPHA        = "auto.accessibility.alpha";
-    protected static final String PROPERTIES_AUTO_ACCESSIBILITY_BETA         = "auto.accessibility.beta";
-    protected static final String PROPERTIES_TRANSIT_ACCESSIBILITY_ALPHA     = "transit.accessibility.a";
-    protected static final String PROPERTIES_TRANSIT_ACCESSIBILITY_BETA      = "transit.accessibility.b";
-    protected static final String PROPERTIES_HTS_WORK_TLFD                   = "hts.work.tlfd";
-    protected static final String PROPERTIES_AUTO_OPERATING_COSTS            = "auto.operating.costs";
-
     static Logger logger = Logger.getLogger(Accessibility.class);
-    private ResourceBundle rb;
+    private final Properties properties;
     private GeoData geoData;
     private double[] autoAccessibility;
     private double[] transitAccessibility;
@@ -46,10 +35,10 @@ public class Accessibility {
     private Matrix travelTimeToRegion;
 	private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 
-    public Accessibility(ResourceBundle rb, GeoData geoData) {
-        this.rb = rb;
+    public Accessibility(Properties properties, GeoData geoData) {
+        this.properties = properties;
         this.geoData = geoData;
-        autoOperatingCosts = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_AUTO_OPERATING_COSTS);
+        autoOperatingCosts = properties.getAccessibilityProperties().getAutoOperatingCosts();
     }
 
 	public void initialize() {
@@ -61,13 +50,13 @@ public class Accessibility {
         // Read hwySkim matrix for year
         logger.info("Reading skims for " + year);
 
-        String hwyFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_AUTO_PEAK_SKIM + year);
+        String hwyFileName = SiloUtil.baseDirectory + "skims/" + properties.getAccessibilityProperties().getAutoSkimFile(year);
         // Read highway hwySkim
         OmxFile hSkim = new OmxFile(hwyFileName);
         hSkim.openReadOnly();
         // Work-around to make sure that existing code does not break
         String matrixName = "HOVTime";
-        if (rb.containsKey(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME)) matrixName = rb.getString(PROPERTIES_AUTO_PEAK_SKIM_MATRIX_NAME);
+        if (properties.getAccessibilityProperties().isUsingAutoPeakSkim()) matrixName = properties.getAccessibilityProperties().getAutoPeakSkim();
         OmxMatrix timeOmxSkimAutos = hSkim.getMatrix(matrixName);
         Matrix hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
         travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
@@ -104,12 +93,12 @@ public class Accessibility {
     
     public void readPtSkim(int year) {    
         // Read transit hwySkim
-        String transitFileName = SiloUtil.baseDirectory + "skims/" + rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM + year);
+        String transitFileName = SiloUtil.baseDirectory + "skims/" + properties.getAccessibilityProperties().getTransitSkimFile(year);
         OmxFile tSkim = new OmxFile(transitFileName);
         tSkim.openReadOnly();
         // Work-around to make sure that existing code does not break
         String transitMatrixName = "CheapJrnyTime";
-        if (rb.containsKey(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME)) transitMatrixName = rb.getString(PROPERTIES_TRANSIT_PEAK_SKIM_MATRIX_NAME);
+        if (properties.getAccessibilityProperties().isUsingTransitPeakSkim()) transitMatrixName = properties.getAccessibilityProperties().getTransitPeakSkim();
 
         OmxMatrix timeOmxSkimTransit = tSkim.getMatrix(transitMatrixName);
         Matrix transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
@@ -143,10 +132,10 @@ public class Accessibility {
         // Calculate Hansen TripGenAccessibility (recalculated every year)
 
         logger.info("  Calculating accessibilities for " + year);
-        float alphaAuto = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_AUTO_ACCESSIBILITY_ALPHA);
-        float betaAuto = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_AUTO_ACCESSIBILITY_BETA);
-        float alphaTransit = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_TRANSIT_ACCESSIBILITY_ALPHA);
-        float betaTransit = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_TRANSIT_ACCESSIBILITY_BETA);
+        float alphaAuto = properties.getAccessibilityProperties().getAlphaAuto();
+        float betaAuto = properties.getAccessibilityProperties().getBetaAuto();
+        float alphaTransit = properties.getAccessibilityProperties().getAlphaTransit();
+        float betaTransit = properties.getAccessibilityProperties().getBetaTransit();
 
         int[] zones = geoData.getZones();
         int[] pop = summarizeData.getPopulationByZone(geoData);
@@ -229,13 +218,13 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     private void readWorkTripLengthFrequencyDistribution () {
         // read HTS trip length frequency distribution for work trips
 
-        String fileName = SiloUtil.baseDirectory + rb.getString(PROPERTIES_HTS_WORK_TLFD);
+        String fileName = SiloUtil.baseDirectory + properties.getAccessibilityProperties().getHtsWorkTLFD();
         TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
         workTLFD = new float[tlfd.getRowCount() + 1];
         for (int row = 1; row <= tlfd.getRowCount(); row++) {
             int tt = (int) tlfd.getValueAt(row, "TravelTime");
             if (tt > workTLFD.length) logger.error("Inconsistent trip length frequency in " + SiloUtil.baseDirectory +
-                    rb.getString(PROPERTIES_HTS_WORK_TLFD) + ": " + tt + ". Provide data in 1-min increments.");
+                    properties.getAccessibilityProperties().getHtsWorkTLFD() + ": " + tt + ". Provide data in 1-min increments.");
             workTLFD[tt] = tlfd.getValueAt(row, "utility");
         }
     }
