@@ -1,6 +1,6 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopulationGenerator;
 import org.apache.log4j.Logger;
@@ -37,7 +37,7 @@ public class SiloMuc {
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
             sp.run();
-            SiloModel model = new SiloModel(rb);
+            SiloModel model = new SiloModel();
             model.runModel(SiloModel.Implementation.MUC);
             logger.info("Finished SILO.");
         } catch (Exception e) {
@@ -45,8 +45,8 @@ public class SiloMuc {
             throw new RuntimeException(e);
         } finally {
             SiloUtil.trackingFile("close");
-            summarizeData.resultFile("close");
-            summarizeData.resultFileSpatial(rb, "close");
+            SummarizeData.resultFile("close");
+            SummarizeData.resultFileSpatial("close");
             float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);

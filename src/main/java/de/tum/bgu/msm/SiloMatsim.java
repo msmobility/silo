@@ -6,15 +6,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
-import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
-import de.tum.bgu.msm.data.summarizeData;
 
 /**
  * @author dziemke
@@ -33,7 +31,6 @@ public final class SiloMatsim {
 		SiloUtil.setBaseYear(2000);
 		rb = SiloUtil.siloInitialization(args);
 		matsimConfig = config ;
-		Properties.initializeProperties(rb);
 	}	    
 
 	public final void run() {
@@ -44,7 +41,7 @@ public final class SiloMatsim {
 			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
-			SiloModel model = new SiloModel(rb, matsimConfig);
+			SiloModel model = new SiloModel(matsimConfig);
 			model.runModel(SiloModel.Implementation.MSTM);
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
@@ -52,8 +49,8 @@ public final class SiloMatsim {
 			throw new RuntimeException(e);
 		} finally {
 			SiloUtil.trackingFile("close");
-			summarizeData.resultFile("close");
-			summarizeData.resultFileSpatial(rb, "close");
+			SummarizeData.resultFile("close");
+			SummarizeData.resultFileSpatial("close");
 			float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
 			int hours = (int) (endTime / 60);
 			int min = (int) (endTime - 60 * hours);

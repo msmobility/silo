@@ -114,9 +114,9 @@ public class HouseholdDataManager {
     }
 
 
-    public static void writeBinaryPopulationDataObjects(ResourceBundle appRb) {
+    public static void writeBinaryPopulationDataObjects() {
         // Store population object data in binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, "population.file.bin");
+        String fileName = SiloUtil.baseDirectory + Properties.get().householdData.binaryPopulationFile;
         logger.info("  Writing population data to binary file.");
         Object[] data = {Household.getHouseholds().toArray(new Household[Household.getHouseholdCount()]),
                 Person.getPersons().toArray(new Person[Person.getPersonCount()])};
@@ -386,16 +386,16 @@ public class HouseholdDataManager {
         int[] hhIncome = new int[Household.getHouseholdCount()];
         int hhIncomePos = 0;
         int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        summarizeData.resultFile("Age,Men,Women");
+        SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
             String row = i + "," + pers[0][i] + "," + pers[1][i];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
-        summarizeData.resultFile("ppByRace,hh");
-        summarizeData.resultFile("white," + ppRace[0]);
-        summarizeData.resultFile("black," + ppRace[1]);
-        summarizeData.resultFile("hispanic," + ppRace[2]);
-        summarizeData.resultFile("other," + ppRace[3]);
+        SummarizeData.resultFile("ppByRace,hh");
+        SummarizeData.resultFile("white," + ppRace[0]);
+        SummarizeData.resultFile("black," + ppRace[1]);
+        SummarizeData.resultFile("hispanic," + ppRace[2]);
+        SummarizeData.resultFile("other," + ppRace[3]);
         for (Household hh: Household.getHouseholdArray()) {
             int hhSize = Math.min(hh.getHhSize(), 10);
             hhs[hhSize - 1]++;
@@ -406,24 +406,24 @@ public class HouseholdDataManager {
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             hhByRegion[region]++;
         }
-                summarizeData.resultFile("hhByType,hh");
+                SummarizeData.resultFile("hhByType,hh");
         for (HouseholdType ht: HouseholdType.values()) {
             String row = ht + "," + hht[ht.ordinal()];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
-        summarizeData.resultFile("hhByRace,hh");
-        summarizeData.resultFile("white," + hhRace[0]);
-        summarizeData.resultFile("black," + hhRace[1]);
-        summarizeData.resultFile("hispanic," + hhRace[2]);
-        summarizeData.resultFile("other," + hhRace[3]);
+        SummarizeData.resultFile("hhByRace,hh");
+        SummarizeData.resultFile("white," + hhRace[0]);
+        SummarizeData.resultFile("black," + hhRace[1]);
+        SummarizeData.resultFile("hispanic," + hhRace[2]);
+        SummarizeData.resultFile("other," + hhRace[3]);
         String row = "hhBySize";
         for (int i: hhs) row = row + "," + i;
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         row = "AveHHSize," + Household.getAverageHouseholdSize();
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         double aveHHincome = SiloUtil.getSum(hhIncome) / Household.getHouseholdCount();
         row = "AveHHInc," + aveHHincome + ",MedianHHInc," + SiloUtil.getMedian(hhIncome);
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
         float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
@@ -445,24 +445,24 @@ public class HouseholdDataManager {
             }
         }
         String[] grp = {"<18","18-29","30-49","50-64",">=65"};
-        summarizeData.resultFile("laborParticipationRateByAge,male,female");
+        SummarizeData.resultFile("laborParticipationRateByAge,male,female");
         for (int ag = 0; ag < 5; ag++) {
             Formatter f = new Formatter();
             f.format("%s,%f,%f", grp[ag], labP[1][0][ag]/(labP[0][0][ag]+labP[1][0][ag]), labP[1][1][ag]/(labP[0][1][ag]+labP[1][1][ag]));
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
         // todo: Add distance in kilometers to this summary
-        summarizeData.resultFile("aveCommuteDistByRegion,minutes");
-        for (int i: geoData.getRegionList()) summarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+        SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
+        for (int i: geoData.getRegionList()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
         for (Household hh: Household.getHouseholdArray()) {
             carOwnership[hh.getAutos()]++;
         }
-        summarizeData.resultFile("carOwnershipLevel,households");
-        summarizeData.resultFile("0cars," + carOwnership[0]);
-        summarizeData.resultFile("1car," + carOwnership[1]);
-        summarizeData.resultFile("2cars," + carOwnership[2]);
-        summarizeData.resultFile("3+cars," + carOwnership[3]);
+        SummarizeData.resultFile("carOwnershipLevel,households");
+        SummarizeData.resultFile("0cars," + carOwnership[0]);
+        SummarizeData.resultFile("1car," + carOwnership[1]);
+        SummarizeData.resultFile("2cars," + carOwnership[2]);
+        SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
 

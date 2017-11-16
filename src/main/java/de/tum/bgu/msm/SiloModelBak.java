@@ -114,8 +114,8 @@ public class SiloModelBak {
 
     public SiloModelBak(ResourceBundle rb) {
         this.rb = rb;
-        summarizeData.openResultFile(rb);
-        summarizeData.resultFileSpatial(rb, "open");
+        SummarizeData.openResultFile(rb);
+        SummarizeData.resultFileSpatial(rb, "open");
         IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
         modelStopper("initialize");
     }
@@ -130,7 +130,7 @@ public class SiloModelBak {
 
         // define years to simulate
         int[] scalingYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCALING_YEARS);
-        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rb);
+        if (scalingYears[0] != -1) SummarizeData.readScalingYearControlTotals(rb);
         int[] tdmYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_MODEL_YEARS);
         int[] skimYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_SKIM_YEARS);
 
@@ -162,7 +162,7 @@ public class SiloModelBak {
         MarryDivorceModel mardiv = new MarryDivorceModel(rb);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(geoData);
         Accessibility accessibility = new Accessibility(rb, SiloUtil.getStartYear(), geoData);
-        //summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
+        //SummarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
 
         MovesModelMstm move = new MovesModelMstm(rb, geoData);
         InOutMigration iomig = new InOutMigration(rb);
@@ -181,11 +181,11 @@ public class SiloModelBak {
 
         TransportModelI TransportModel;
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rb, geoData);
+            SummarizeData.preparePrestoSummary(rb, geoData);
 
         for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
             if (SiloUtil.containsElement(scalingYears, year))
-                summarizeData.scaleMicroDataToExogenousForecast(rb, year, householdData, geoData);
+                SummarizeData.scaleMicroDataToExogenousForecast(rb, year, householdData, geoData);
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
@@ -345,11 +345,11 @@ public class SiloModelBak {
             if (modelStopper("check")) break;
         }
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData, geoData);
+            SummarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData, geoData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
-        if (SiloUtil.getEndYear() != 2040) summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
+        if (SiloUtil.getEndYear() != 2040) SummarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData, jobData);
         SiloUtil.finish(ddOverwrite);
@@ -364,7 +364,7 @@ public class SiloModelBak {
 
         // define years to simulate
         scalingYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCALING_YEARS);
-        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rb);
+        if (scalingYears[0] != -1) SummarizeData.readScalingYearControlTotals(rb);
         currentYear = SiloUtil.getStartYear();
         tdmYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_MODEL_YEARS);
         skimYears = ResourceUtil.getIntegerArray(rb, PROPERTIES_TRANSPORT_SKIM_YEARS);
@@ -397,7 +397,7 @@ public class SiloModelBak {
         mardiv = new MarryDivorceModel(rb);
         changeEmployment = new ChangeEmploymentModel(geoData);
         accessibility = new Accessibility(rb, SiloUtil.getStartYear(), geoData);
-        //summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
+        //SummarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
 
         move = new MovesModelMstm(rb, geoData);
         iomig = new InOutMigration(rb);
@@ -415,7 +415,7 @@ public class SiloModelBak {
 
         TransportModel = new MstmTransportModel(rb, geoData);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false))
-            summarizeData.preparePrestoSummary(rb, geoData);
+            SummarizeData.preparePrestoSummary(rb, geoData);
 
     }
 
@@ -428,7 +428,7 @@ public class SiloModelBak {
             System.exit(1);
         }
         if (SiloUtil.containsElement(scalingYears, currentYear))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, currentYear, householdData, geoData);
+            SummarizeData.scaleMicroDataToExogenousForecast(rb, currentYear, householdData, geoData);
         logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
         IssueCounter.setUpCounter();    // setup issue counter for this simulation period
         SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
@@ -585,14 +585,14 @@ public class SiloModelBak {
         // close model run
 
         //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data
-        summarizeData.resultWriterReplicate = true;
+        SummarizeData.resultWriterReplicate = true;
 
         if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-            summarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData, geoData);
+            SummarizeData.scaleMicroDataToExogenousForecast(rb, SiloUtil.getEndYear(), householdData, geoData);
 
         householdData.summarizeHouseholdsNearMetroStations();
 
-        if (SiloUtil.getEndYear() != 2040) summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
+        if (SiloUtil.getEndYear() != 2040) SummarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getEndYear());
 
         summarizeMicroData(SiloUtil.getEndYear(), move, realEstateData, jobData);
         SiloUtil.finish(ddOverwrite);
@@ -605,8 +605,8 @@ public class SiloModelBak {
     public void closeAllFiles (long startTime) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         SiloUtil.trackingFile("close");
-        summarizeData.resultFile("close");
-        summarizeData.resultFileSpatial(rb, "close");
+        SummarizeData.resultFile("close");
+        SummarizeData.resultFileSpatial(rb, "close");
         float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
@@ -650,19 +650,19 @@ public class SiloModelBak {
         logger.info("  Summarizing micro data for year " + year);
 
 
-        summarizeData.resultFile("Year " + year, false);
+        SummarizeData.resultFile("Year " + year, false);
         HouseholdDataManager.summarizePopulation(geoData);
         realEstateData.summarizeDwellings();
         jobData.summarizeJobs(geoData.getRegionList());
 
-        summarizeData.resultFileSpatial(rb, "Year " + year, false);
-        summarizeData.summarizeSpatially(year, move, realEstateData, geoData, accessibility);
+        SummarizeData.resultFileSpatial(rb, "Year " + year, false);
+        SummarizeData.summarizeSpatially(year, move, realEstateData, geoData, accessibility);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_CBLCM_FILES, false))
             summarizeDataCblcm.createCblcmSummaries(rb, year, geoData, accessibility);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_HOUSING_ENV_IMPACT_FILE, false))
-            summarizeData.summarizeHousing(rb, year);
+            SummarizeData.summarizeHousing(rb, year);
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CREATE_PRESTO_SUMMARY_FILE, false)) {
-            summarizeData.summarizePrestoRegion(rb, year);
+            SummarizeData.summarizePrestoRegion(rb, year);
         }
 
     }
@@ -677,7 +677,7 @@ public class SiloModelBak {
             pw.print("Year");
             for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
             pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
-                    "setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,summarizeData,updateRealEstatePrices," +
+                    "setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
                     "planIncomeChange,addOverwriteDwellings");
             pw.println();
         }

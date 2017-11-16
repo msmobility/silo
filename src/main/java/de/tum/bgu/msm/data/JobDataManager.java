@@ -108,10 +108,10 @@ public class JobDataManager {
     }
 
 
-    public static void writeBinaryJobDataObjects(ResourceBundle appRb) {
+    public static void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, "job.file.bin");
+        String fileName = SiloUtil.baseDirectory + Properties.get().householdData.binaryJobFile;
         logger.info("  Writing job data to binary file.");
         Object[] data = Job.getJobs().toArray(new Job[Job.getJobCount()]);
         try {
@@ -360,7 +360,7 @@ public class JobDataManager {
 
         String txt = "jobByRegion";
         for (String empType: JobType.getJobTypes()) txt += "," + empType;
-        summarizeData.resultFile(txt + ",total");
+        SummarizeData.resultFile(txt + ",total");
 
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
         for (Job job: Job.getJobArray()) {
@@ -374,7 +374,7 @@ public class JobDataManager {
                 line.append(",").append(jobsByTypeAndRegion[JobType.getOrdinal(empType)][region]);
                 regionSum += jobsByTypeAndRegion[JobType.getOrdinal(empType)][region];
             }
-            summarizeData.resultFile(line + "," + regionSum);
+            SummarizeData.resultFile(line + "," + regionSum);
         }
     }
 

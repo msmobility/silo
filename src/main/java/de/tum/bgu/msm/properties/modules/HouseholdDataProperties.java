@@ -16,6 +16,11 @@ public final class HouseholdDataProperties {
     public final String householdsNearMetroFile;
     public final String jobsFileName;
     public final String dwellingsFileName;
+    public final boolean writeBinPopFile;
+    public final boolean writeBinDwellingsFile;
+    public final boolean writeBinJobFile;
+    public final String binaryDwellingsFile;
+    public final String binaryJobFile;
 
     public HouseholdDataProperties(ResourceBundle bundle) {
         meanIncomeChange = (float) ResourceUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income");
@@ -31,5 +36,10 @@ public final class HouseholdDataProperties {
         personFileName =  ResourceUtil.getProperty(bundle, "person.file.ascii");
         jobsFileName = ResourceUtil.getProperty(bundle, "job.file.ascii");
         dwellingsFileName = ResourceUtil.getProperty(bundle, "dwelling.file.ascii");
+        writeBinPopFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.pop.files");
+        writeBinDwellingsFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.dd.file");
+        writeBinJobFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.jj.file");
+        binaryDwellingsFile = ResourceUtil.getProperty(bundle, "dwellings.file.bin");
+        binaryJobFile = ResourceUtil.getProperty(bundle, "job.file.bin");
     }
 }

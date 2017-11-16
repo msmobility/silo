@@ -50,7 +50,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, Implementation, SiloDataContainer)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(Implementation, SiloDataContainer)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -113,26 +113,26 @@ public class SiloModelContainer {
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
         Accessibility acc = new Accessibility(dataContainer.getGeoData());
-        //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
+        //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         if (implementation.equals(Implementation.MSTM)) {
             move = new MovesModelMstm(dataContainer.getGeoData());
         } else {
             move = new MovesModelMuc(dataContainer.getGeoData());
         }
-        InOutMigration iomig = new InOutMigration(rbLandUse);
-        ConstructionModel cons = new ConstructionModel(rbLandUse, dataContainer.getGeoData());
+        InOutMigration iomig = new InOutMigration();
+        ConstructionModel cons = new ConstructionModel(dataContainer.getGeoData());
         RenovationModel renov = new RenovationModel();
         DemolitionModel demol = new DemolitionModel();
-        PricingModel prm = new PricingModel(rbLandUse);
-        UpdateJobs updateJobs = new UpdateJobs(rbLandUse);
+        PricingModel prm = new PricingModel();
+        UpdateJobs updateJobs = new UpdateJobs();
         CarOwnershipModel carOwnershipModel;
         if(implementation.equals(Implementation.MSTM)) {
-            carOwnershipModel = new MaryLandCarOwnershipModel(rbLandUse,  dataContainer.getJobData(), acc);
+            carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
         }  else {
             carOwnershipModel = new MunichCarOwnerShipModel();
         }
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite();
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,

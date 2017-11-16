@@ -29,6 +29,10 @@ public class DemographicsProperties {
     public final double marryAbsAgeDiff;
     public final double marryAgeSpreadFac;
     public final float interracialMarriageShare;
+    public final String autoOwnerShipUecFile;
+    public final int autoOwnershipDataSheet;
+    public final boolean logAutoOwnership;
+    public final int autoOwnershipUecUtility;
 
     public DemographicsProperties(ResourceBundle bundle) {
         uecFileName = ResourceUtil.getProperty(bundle, "Demographics.UEC.FileName");
@@ -53,5 +57,9 @@ public class DemographicsProperties {
         marryAbsAgeDiff = ResourceUtil.getDoubleProperty(bundle, "demographics.age.diff.of.partners.absolute");
         marryAgeSpreadFac = ResourceUtil.getDoubleProperty(bundle, "demographics.age.diff.of.partners.spreadfc");
         interracialMarriageShare = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.interracial.marriage.share");
+        autoOwnerShipUecFile = ResourceUtil.getProperty(bundle, "AutoOwnership.UEC.FileName");
+        autoOwnershipDataSheet = ResourceUtil.getIntegerProperty(bundle, "AutoOwnership.UEC.DataSheetNumber");
+        logAutoOwnership = ResourceUtil.getBooleanProperty(bundle, "log.util.autoOwnership");
+        autoOwnershipUecUtility = ResourceUtil.getIntegerProperty(bundle, "AutoOwnership.UEC.Ownership.Utility");
     }
 }

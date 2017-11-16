@@ -33,6 +33,12 @@ public class MainProperties {
     public final int randomSeed;
     public final boolean runSynPop;
     public final int smallSynPopSize;
+    public final String prestoZoneFile;
+    public final String scaledMicroDataHh;
+    public final String scaledMicroDataPp;
+    public final int[] bemModelYears;
+    public final String housingEnvironmentImpactFile;
+    public final String prestoSummaryFile;
 
     public MainProperties(ResourceBundle bundle) {
         runSilo = ResourceUtil.getBooleanProperty(bundle, "run.silo.model", true);
@@ -57,5 +63,11 @@ public class MainProperties {
         randomSeed = ResourceUtil.getIntegerProperty(bundle, "random.seed", 42);
         runSynPop = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         smallSynPopSize = ResourceUtil.getIntegerProperty(bundle, "size.small.syn.pop", 0);
+        prestoZoneFile = bundle.getString("presto.regions");
+        scaledMicroDataHh = bundle.getString("scaled.micro.data.hh");
+        scaledMicroDataPp = bundle.getString("scaled.micro.data.pp");
+        bemModelYears = ResourceUtil.getIntegerArray(bundle, "bem.model.years");
+        housingEnvironmentImpactFile = ResourceUtil.getProperty(bundle, "housing.environment.impact.file.name");
+        prestoSummaryFile = ResourceUtil.getProperty(bundle, "presto.summary.file");
     }
 }

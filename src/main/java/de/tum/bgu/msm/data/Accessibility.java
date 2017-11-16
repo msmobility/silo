@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -136,7 +135,7 @@ public class Accessibility {
         float betaTransit = Properties.get().accessibility.betaTransit;
 
         int[] zones = geoData.getZones();
-        int[] pop = summarizeData.getPopulationByZone(geoData);
+        int[] pop = SummarizeData.getPopulationByZone(geoData);
         autoAccessibility = new double[zones.length];
         transitAccessibility = new double[zones.length];
         int counter = 0;

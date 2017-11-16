@@ -8,7 +8,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -59,16 +59,15 @@ public class SiloUtil {
 
 
     public static ResourceBundle siloInitialization(String resourceBundleNames) {
-        // initializes Silo
-
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
+        Properties.initializeProperties(rb);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         baseDirectory = ResourceUtil.getProperty(rb, "base.directory");
         scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
         startYear = ResourceUtil.getIntegerProperty(rb, "start.year");
-        summarizeData.openResultFile(rb);
-        summarizeData.resultFileSpatial(rb, "open");
+        SummarizeData.openResultFile(rb);
+        SummarizeData.resultFileSpatial("open");
 
         // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
@@ -503,7 +502,7 @@ public class SiloUtil {
 
 
     public static void finish (SiloModelContainer modelContainer) {
-        summarizeData.resultFile("close");
+        SummarizeData.resultFile("close");
         trackingFile("close");
         if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
         if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
@@ -942,8 +941,8 @@ public class SiloUtil {
 static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties properties) {
 	// run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
 	trackingFile("close");
-	summarizeData.resultFile("close");
-	summarizeData.resultFileSpatial(rbLandUse, "close");
+	SummarizeData.resultFile("close");
+	SummarizeData.resultFileSpatial("close");
 	float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
 	int hours = (int) (endTime / 60);
 	int min = (int) (endTime - 60 * hours);
@@ -978,8 +977,7 @@ static boolean modelStopper (String action) {
 }
 
 
-static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
-		ResourceBundle rbLandUse) {
+static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
 	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 
@@ -990,23 +988,22 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 	SiloModel.logger.info("  Summarizing micro data for year " + year);
 
 
-	summarizeData.resultFile("Year " + year, false);
+	SummarizeData.resultFile("Year " + year, false);
 	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
 	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionList());
 
-	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
-	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+	SummarizeData.resultFileSpatial("Year " + year, false);
+	SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
 	if (Properties.get().cblcm.createCblcmFiles) {
-        summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
+        summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
     }
 	if (Properties.get().main.createHousingEnvironmentImpactFile) {
-        summarizeData.summarizeHousing(rbLandUse, year);
+        SummarizeData.summarizeHousing(year);
     }
 	if (Properties.get().main.createPrestoSummary) {
-		summarizeData.summarizePrestoRegion(rbLandUse, year);
+		SummarizeData.summarizePrestoRegion(year);
 	}
-
 }
 
 
@@ -1019,7 +1016,7 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
-				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,summarizeData,updateRealEstatePrices," +
+				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
 				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
 		pw.println();
 	}

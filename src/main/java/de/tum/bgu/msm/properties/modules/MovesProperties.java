@@ -18,6 +18,9 @@ public class MovesProperties {
     public final int selectRegionModelSheet;
     public final int selectDwellingSheet;
     public final double selectDwellingParameter;
+    public final String populationControlTotal;
+    public final String populationCOntrolTotalFile;
+    public final String migrationFile;
 
     public MovesProperties(ResourceBundle bundle) {
         uecFileName =  ResourceUtil.getProperty(bundle, "HH.Moves.UEC.FileName");
@@ -33,5 +36,8 @@ public class MovesProperties {
         selectRegionModelSheet = ResourceUtil.getIntegerProperty(bundle, "HH.Moves.UEC.ModelSheetNumber.selectRegion");
         selectDwellingSheet = ResourceUtil.getIntegerProperty(bundle, "HH.Moves.UEC.ModelSheetNumber.selDwelling");
         selectDwellingParameter = ResourceUtil.getDoubleProperty(bundle, "select.dwelling.mn.log.model.parameter");
+        populationControlTotal = ResourceUtil.getProperty(bundle, "population.control.total");
+        populationCOntrolTotalFile = ResourceUtil.getProperty(bundle, "total.population.control.total.file");
+        migrationFile = ResourceUtil.getProperty(bundle, "inmigration.outmigration.file");
     }
 }

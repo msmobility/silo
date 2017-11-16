@@ -17,8 +17,8 @@
 package de.tum.bgu.msm;
 
 import java.io.File;
-import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -28,7 +28,6 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.summarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -45,22 +44,18 @@ public class SiloModel {
 
 	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP};
 
-//	private final ResourceBundle rbLandUse;
-
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	private final Config matsimConfig;
 
 	/**
 	 * Constructor to set up a SILO model
-	 * @param rbLandUse ResourceBundle
 	 */
-	public SiloModel(ResourceBundle rbLandUse) {
-		this( rbLandUse, null) ;
+	public SiloModel() {
+		this(null) ;
 	}
 
-	public SiloModel( ResourceBundle rbLandUse, Config matsimConfig) {
-		this.rbLandUse = rbLandUse;
+	public SiloModel( Config matsimConfig) {
 		IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
@@ -78,7 +73,7 @@ public class SiloModel {
 		// define years to simulate
 		int[] scalingYears = Properties.get().main.scalingYears;
 		if (scalingYears[0] != -1) {
-			summarizeData.readScalingYearControlTotals();
+			SummarizeData.readScalingYearControlTotals();
 		}
 		int[] tdmYears = Properties.get().transportModel.modelYears;
 		int[] skimYears = Properties.get().transportModel.skimYears;
@@ -128,12 +123,12 @@ public class SiloModel {
         modelContainer.getCarOwnershipModel().initialize();
 
         if (Properties.get().main.createPrestoSummary) {
-			summarizeData.preparePrestoSummary(rbLandUse, dataContainer.getGeoData());
+			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
 		}
 
 		for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
 			if (SiloUtil.containsElement(scalingYears, year))
-				summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, year, dataContainer);
+				SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
 			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
 			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
@@ -193,7 +188,7 @@ public class SiloModel {
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear())
-				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer, rbLandUse);
+				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
 			logger.info("  Simulating events");
@@ -301,16 +296,16 @@ public class SiloModel {
 			if (SiloUtil.modelStopper("check")) break;
 		}
 		if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-			summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), dataContainer);
+			SummarizeData.scaleMicroDataToExogenousForecast(SiloUtil.getEndYear(), dataContainer);
 
 		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 		if (SiloUtil.getEndYear() != 2040) {
-			summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
+			SummarizeData.writeOutSyntheticPopulation(SiloUtil.endYear);
 			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
 		}
 
-		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse);
+		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
 		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
@@ -338,7 +333,7 @@ public class SiloModel {
 	private SiloModelCBLCM cblcm ;
 	@Deprecated // use SiloModelCBLCM directly
 	public void initialize() {
-		cblcm = new SiloModelCBLCM(rbLandUse) ;
+		cblcm = new SiloModelCBLCM() ;
 		cblcm.initialize();
 	}
 	@Deprecated // use SiloModelCBLCM directly

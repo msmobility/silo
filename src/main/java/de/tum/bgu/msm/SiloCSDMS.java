@@ -66,7 +66,7 @@ public class SiloCSDMS {
         SiloUtil.setBaseYear(2000);
         logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
         startTime = System.currentTimeMillis();
-        model = new SiloModelCBLCM(rb);
+        model = new SiloModelCBLCM();
         model.initialize();
         logger.info("Finished Initialization.");
     }

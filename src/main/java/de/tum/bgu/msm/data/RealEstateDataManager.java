@@ -158,10 +158,10 @@ public class RealEstateDataManager {
     }
 
 
-    public static void writeBinaryDwellingDataObjects(ResourceBundle appRb) {
+    public static void writeBinaryDwellingDataObjects() {
         // Store dwelling object data in binary file
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, "dwellings.file.bin");
+        String fileName = SiloUtil.baseDirectory + Properties.get().householdData.binaryDwellingsFile;
         logger.info("  Writing dwelling data to binary file.");
         Object[] data = Dwelling.getDwellings().toArray(new Dwelling[Dwelling.getDwellingCount()]);
         try {
@@ -305,43 +305,43 @@ public class RealEstateDataManager {
     public void summarizeDwellings () {
         // aggregate dwellings
 
-        summarizeData.resultFile("QualityLevel,Dwellings");
+        SummarizeData.resultFile("QualityLevel,Dwellings");
         for (int qual = 1; qual <= SiloUtil.numberOfQualityLevels; qual++) {
             String row = qual + "," + dwellingsByQuality[qual - 1];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
         int[] ddByType = new int[DwellingType.values().length];
         for (Dwelling dd: Dwelling.getDwellingArray()) ddByType[dd.getType().ordinal()]++;
         for (DwellingType dt: DwellingType.values()) {
-            summarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
+            SummarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
         }
         for (DwellingType dt: DwellingType.values()) {
             double avePrice = getAveragePriceByDwellingType()[dt.ordinal()];
-            summarizeData.resultFile("AveMonthlyPrice,"+dt.toString()+","+avePrice);
+            SummarizeData.resultFile("AveMonthlyPrice,"+dt.toString()+","+avePrice);
         }
         for (DwellingType dt: DwellingType.values()) {
             double aveVac = getAverageVacancyByDwellingType()[dt.ordinal()];
             Formatter f = new Formatter();
             f.format("AveVacancy,%s,%f", dt.toString(), aveVac);
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
         // aggregate developable land
-        summarizeData.resultFile("Available land for construction by region");
+        SummarizeData.resultFile("Available land for construction by region");
         double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         for (int zone: geoData.getZones()) availLand[geoData.getRegionOfZone(zone)] +=
                 getAvailableLandForConstruction(zone);
         for (int region: geoData.getRegionList()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
 
         // summarize housing costs by income group
-        summarizeData.resultFile("Housing costs by income group");
+        SummarizeData.resultFile("Housing costs by income group");
         String header = "Income";
         for (int i = 0; i < 10; i++) header = header.concat(",rent_" + ((i+1) * 250));
         header = header.concat(",averageRent");
-        summarizeData.resultFile(header);
+        SummarizeData.resultFile(header);
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
         for (Household hh: Household.getHouseholdArray()) {
@@ -363,7 +363,7 @@ public class RealEstateDataManager {
             	// TODO check what happens by leaving this out... the error is avoided
             	line = line.concat("," + rents[i] / countThisIncome);
             }
-            summarizeData.resultFile(line);
+            SummarizeData.resultFile(line);
         }
     }
 

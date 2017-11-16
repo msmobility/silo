@@ -42,7 +42,7 @@ public class CblcmDiffGenerator {
 		int baseYear = 2010;
 		int finalYear = 2030;
 
-		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear,null);
+		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear);
 
 	}
 
@@ -51,7 +51,7 @@ public class CblcmDiffGenerator {
 	 * 
 	 * @throws IOException
 	 */
-	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear, ResourceBundle rb)
+	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear)
 			throws IOException {
 		logger.info("Calculating Spatial Diff for Cblcm Compatible output");
 		logger.info("baseYear : " + baseYear);
@@ -80,10 +80,9 @@ public class CblcmDiffGenerator {
 			double temp;
 			int columnNumber = 0;
 			for(String column:columns){
-				if(rb!=null)
+
 					temp = Properties.get().cblcm.multiplierPrefix(column);
-				else
-					temp = 1;
+
 				if(temp!=0)
 					multipliers.put(columnNumber, temp);
 				columnNumber++;

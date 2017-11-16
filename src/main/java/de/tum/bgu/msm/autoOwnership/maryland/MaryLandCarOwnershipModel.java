@@ -7,6 +7,7 @@ import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -23,25 +24,19 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
     static Logger logger = Logger.getLogger(MaryLandCarOwnershipModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_AutoOwnership_UEC_FILE = "AutoOwnership.UEC.FileName";
-    protected static final String PROPERTIES_AutoOwnership_UEC_DATA_SHEET = "AutoOwnership.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_AutoOwnership_UEC_OWNERSHIP_UTILITY = "AutoOwnership.UEC.Ownership.Utility";
-    protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION = "log.util.autoOwnership";
     private final JobDataManager jobDataManager;
     private final Accessibility accessibility;
-    private ResourceBundle rb;
     private String uecFileName;
     private int dataSheetNumber;
     int numAltsAutoOwnership;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
-    public MaryLandCarOwnershipModel(ResourceBundle rb, JobDataManager jobDataManager, Accessibility accessibility) {
+    public MaryLandCarOwnershipModel(JobDataManager jobDataManager, Accessibility accessibility) {
         // constructor
         logger.info("  Setting up probabilities for auto-ownership model");
-        this.rb = rb;
-        uecFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_AutoOwnership_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_AutoOwnership_UEC_DATA_SHEET);
+        uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;
+        dataSheetNumber = Properties.get().demographics.autoOwnershipDataSheet;
         this.jobDataManager = jobDataManager;
         this.accessibility = accessibility;
     }
@@ -58,8 +53,8 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
 
     @Override
     public void initialize() {
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION);
-        int aoModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_AutoOwnership_UEC_OWNERSHIP_UTILITY);
+        boolean logCalculation = Properties.get().demographics.logAutoOwnership;
+        int aoModelSheetNumber = Properties.get().demographics.autoOwnershipUecUtility;
         UtilityExpressionCalculator aoModelUtility = new UtilityExpressionCalculator(new File(uecFileName),
                 aoModelSheetNumber,
                 dataSheetNumber,
