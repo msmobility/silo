@@ -7,7 +7,6 @@ import java.util.ResourceBundle;
 public final class Properties {
 
     private static Properties instance;
-
     public static Properties get() {
         if(instance == null) {
             throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
@@ -19,6 +18,7 @@ public final class Properties {
         instance = new Properties(bundle);
     }
 
+
     public final MainProperties main;
     public final CblcmProperties cblcm;
     public final TransportModelPropertiesModule transportModel;
@@ -29,9 +29,10 @@ public final class Properties {
     public final EventRulesProperties eventRules;
     public final DemographicsProperties demographics;
     public final AccessibilityProperties accessibility;
+    public final MovesProperties moves;
 
     private Properties(ResourceBundle bundle) {
-        main = new MainPropertiesImpl(bundle);
+        main = new MainProperties(bundle);
         cblcm = new CblcmProperties(bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
         geo = new GeoProperties(bundle);
@@ -41,5 +42,6 @@ public final class Properties {
         eventRules = new EventRulesProperties(bundle);
         demographics = new DemographicsProperties(bundle);
         accessibility = new AccessibilityProperties(bundle);
+        moves = new MovesProperties(bundle);
     }
 }

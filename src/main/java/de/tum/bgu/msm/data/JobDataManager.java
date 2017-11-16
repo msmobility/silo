@@ -37,8 +37,6 @@ import org.apache.log4j.Logger;
 public class JobDataManager {
     static Logger logger = Logger.getLogger(JobDataManager.class);
 
-    private final Properties properties;
-
     private final GeoData geoData;
 
     private static int highestJobIdInUse;
@@ -48,18 +46,16 @@ public class JobDataManager {
     private static float[] zonalJobDensity;
 
 
-    public JobDataManager(Properties properties, GeoData geoData) {
-        // constructor
-        this.properties = properties;
+    public JobDataManager(GeoData geoData) {
         this.geoData = geoData;
-        numberOfStoredVacantJobs = properties.getJobDataProperties().getMaxStorageOfvacantJobs();
+        numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
 
     public void readJobs (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        new JobType(properties.getJobDataProperties().getJobTypes());
-        boolean readBin = properties.getJobDataProperties().isReadBinaryJobFile();
+        new JobType(Properties.get().jobData.jobTypes);
+        boolean readBin = Properties.get().jobData.readBinaryJobFile;
         if (readBin) {
             readBinaryJobDataObjects();
         } else {
@@ -73,7 +69,7 @@ public class JobDataManager {
         logger.info("Reading job micro data from ascii file");
 
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + properties.getJobDataProperties().getJobsFileName();
+        String fileName = SiloUtil.baseDirectory + Properties.get().jobData.jobsFileName;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -131,7 +127,7 @@ public class JobDataManager {
 
     private void readBinaryJobDataObjects() {
         // read jobs from binary file
-        String fileName = SiloUtil.baseDirectory + properties.getJobDataProperties().getBinaryJobsFileName();
+        String fileName = SiloUtil.baseDirectory + Properties.get().jobData.binaryJobsFileName;
         logger.info("Reading job data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -172,8 +168,8 @@ public class JobDataManager {
 
     	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
         String[] yearsGiven;
-        if (properties.getJobDataProperties().hasControlYears()) {
-            int[] yearsInt = properties.getJobDataProperties().getControlYears();
+        if (Properties.get().jobData.hasControlYears) {
+            int[] yearsInt = Properties.get().jobData.controlYears;
             yearsGiven = new String[yearsInt.length];
             for (int i = 0; i < yearsInt.length; i++) yearsGiven[i] = String.valueOf(yearsInt[i]);
         } else {
@@ -186,12 +182,12 @@ public class JobDataManager {
                 (2000 + highestYear));
         TableDataSet jobs ;
         try {
-      	  final String filename = SiloUtil.baseDirectory + "/" + properties.getJobDataProperties().getJobControlTotalsFileName();
+      	  final String filename = SiloUtil.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
 		jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
       	  throw new RuntimeException(ee) ;
         }
-        new JobType(properties.getJobDataProperties().getJobTypes());
+        new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][year][tazIndex]
         float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getZones().length];
@@ -225,7 +221,7 @@ public class JobDataManager {
         SiloUtil.createDirectoryIfNotExistingYet(dir);
         for (int yr = Integer.parseInt(yearsGiven[0]); yr <= highestYear; yr++) {
             String forecastFileName;
-            forecastFileName = dir + properties.getJobDataProperties().getEmploymentForeCastFile() + (2000 + yr) + ".csv";
+            forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + yr) + ".csv";
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
             pw.print("zone");
             for (String ind: JobType.getJobTypes()) pw.print("," + ind);

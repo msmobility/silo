@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.CblcmProperties;
 import org.apache.log4j.Logger;
 
@@ -41,7 +42,7 @@ public class CblcmDiffGenerator {
 		int baseYear = 2010;
 		int finalYear = 2030;
 
-		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear,null,null);
+		CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, baseYear, finalYear,null);
 
 	}
 
@@ -50,7 +51,7 @@ public class CblcmDiffGenerator {
 	 * 
 	 * @throws IOException
 	 */
-	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear, ResourceBundle rb, CblcmProperties cblcmProperties)
+	public static boolean generateCblcmDiff(String[] inputFiles, String outputFile, int baseYear, int finalYear, ResourceBundle rb)
 			throws IOException {
 		logger.info("Calculating Spatial Diff for Cblcm Compatible output");
 		logger.info("baseYear : " + baseYear);
@@ -80,7 +81,7 @@ public class CblcmDiffGenerator {
 			int columnNumber = 0;
 			for(String column:columns){
 				if(rb!=null)
-					temp = cblcmProperties.multiplierPrefix(column);
+					temp = Properties.get().cblcm.multiplierPrefix(column);
 				else
 					temp = 1;
 				if(temp!=0)

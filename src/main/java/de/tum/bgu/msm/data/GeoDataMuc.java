@@ -23,11 +23,6 @@ import de.tum.bgu.msm.SiloUtil;
 public class GeoDataMuc implements GeoData {
     private static final Logger logger = Logger.getLogger(GeoDataMuc.class);
 
-    protected static final String PROPERTIES_DEVELOPM_RESTR   = "development.restrictions";
-    protected static final String PROPERTIES_USE_CAPACITY     = "use.growth.capacity.data";
-    protected static final String PROPERTIES_CAPACITY_FILE    = "growth.capacity.file";
-
-    private final Properties properties;
     private static int[] zoneIndex;
     private static int highestZonalId;
     private static HashMap<Integer, int[]> regionDefinition;
@@ -43,18 +38,16 @@ public class GeoDataMuc implements GeoData {
     private static TableDataSet developmentRestrictions;
     private static TableDataSet distanceToTransit;
 
-    public GeoDataMuc(Properties properties) {
-        this.properties = properties;
-    }
+
     protected Matrix accessDistanceMatrix;
 
 
     public void setInitialData () {
-        SiloUtil.endYear = properties.getMainProperties().getEndYear();
-        SiloUtil.simulationLength = properties.getMainProperties().getSimulationLength();
-        SiloUtil.gregorianIterator = properties.getMainProperties().getGregorianIterator();
-        SiloUtil.incBrackets = properties.getMainProperties().getIncomeBrackets();
-        SiloUtil.numberOfQualityLevels = properties.getMainProperties().getQualityLevels();
+        SiloUtil.endYear = Properties.get().main.endYear;
+        SiloUtil.simulationLength = Properties.get().main.simulationLength;
+        SiloUtil.gregorianIterator = Properties.get().main.gregorianIterator;
+        SiloUtil.incBrackets = Properties.get().main.incomeBrackets;
+        SiloUtil.numberOfQualityLevels = Properties.get().main.qualityLevels;
         readZones();
         readLandUse();
     }
@@ -62,7 +55,7 @@ public class GeoDataMuc implements GeoData {
 
     private void readZones() {
         // read zonal data
-        String fileName = SiloUtil.baseDirectory + properties.getGeoProperties().getZonalDataFile();
+        String fileName = SiloUtil.baseDirectory + Properties.get().geo.zonalDataFile;
         SiloUtil.zonalData = SiloUtil.readCSVfile(fileName);
         highestZonalId = SiloUtil.getHighestVal(SiloUtil.zonalData.getColumnAsInt("Zone"));
         SiloUtil.zonalData.buildIndex(SiloUtil.zonalData.getColumnPosition("Zone"));
@@ -71,7 +64,7 @@ public class GeoDataMuc implements GeoData {
         zoneIndex = SiloUtil.createIndexArray(zones);
 
         // read region definition
-        String regFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getRegionDefinitionFile();
+        String regFileName = SiloUtil.baseDirectory + Properties.get().geo.regionDefinitionFile;
         regDef = SiloUtil.readCSVfile(regFileName);
         regionDefinition = new HashMap<>();
         for (int row = 1; row <= regDef.getRowCount(); row++) {
@@ -101,29 +94,29 @@ public class GeoDataMuc implements GeoData {
         logger.info("Reading land use data");
         String fileName;
         if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-            fileName = SiloUtil.baseDirectory + "input/" + properties.getGeoProperties().getLandUseAreaFile() + ".csv";
+            fileName = SiloUtil.baseDirectory + "input/" + Properties.get().geo.landUseAreaFile + ".csv";
         } else {                                             // start in different year (continue previous run)
             fileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    properties.getGeoProperties().getLandUseAreaFile() + "_" + SiloUtil.startYear + ".csv";
+                    Properties.get().geo.landUseAreaFile + "_" + SiloUtil.startYear + ".csv";
         }
         landUse = SiloUtil.readCSVfile(fileName);
         landUse.buildIndex(landUse.getColumnPosition("Zone"));
 
         // read developers data
-        developableLUtypes = properties.getGeoProperties().getDevelopableLandUseTypes();
+        developableLUtypes = Properties.get().geo.developableLandUseTypes;
 
-        String restrictionsFileName = SiloUtil.baseDirectory + properties.getGeoProperties().getDevelopmentRestrictionsFile();
+        String restrictionsFileName = SiloUtil.baseDirectory + Properties.get().geo.developmentRestrictionsFile;
         developmentRestrictions = SiloUtil.readCSVfile(restrictionsFileName);
         developmentRestrictions.buildIndex(developmentRestrictions.getColumnPosition("Zone"));
 
-        useCapacityAsNumberOfDwellings = properties.getGeoProperties().isUseCapacityForDwellings();
+        useCapacityAsNumberOfDwellings = Properties.get().geo.useCapacityForDwellings;
         if (useCapacityAsNumberOfDwellings) {
             String capacityFileName;
             if (SiloUtil.startYear == SiloUtil.getBaseYear()) {  // start in year 2000
-                capacityFileName = SiloUtil.baseDirectory + "input/" + properties.getGeoProperties().getCapacityFile() + ".csv";
+                capacityFileName = SiloUtil.baseDirectory + "input/" + Properties.get().geo.capacityFile + ".csv";
             } else {                                             // start in different year (continue previous run)
                 capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                        properties.getGeoProperties().getCapacityFile() + "_" + SiloUtil.startYear + ".csv";
+                        Properties.get().geo.capacityFile + "_" + SiloUtil.startYear + ".csv";
             }
             developmentCapacity = SiloUtil.readCSVfile(capacityFileName);
             developmentCapacity.buildIndex(developmentCapacity.getColumnPosition("Zone"));
@@ -163,10 +156,10 @@ public class GeoDataMuc implements GeoData {
     public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer) {
         // write out development capacity file to allow model run to be continued from this point later
 
-        boolean useCapacityAsNumberOfDwellings = properties.getGeoProperties().isUseCapacityForDwellings();
+        boolean useCapacityAsNumberOfDwellings = Properties.get().geo.useCapacityForDwellings;
         if(useCapacityAsNumberOfDwellings)	{
             String capacityFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                    properties.getGeoProperties().getCapacityFile() + "_" + SiloUtil.getEndYear() + ".csv";
+                    Properties.get().geo.capacityFile + "_" + SiloUtil.getEndYear() + ".csv";
             PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
             pwc.println("Zone,DevCapacity");
             for (int zone: getZones()) pwc.println(zone + "," + getDevelopmentCapacity(zone));
@@ -174,7 +167,7 @@ public class GeoDataMuc implements GeoData {
         }
 
         String landUseFileName = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
-                properties.getGeoProperties().getLandUseAreaFile() + "_" + SiloUtil.getEndYear() + ".csv";
+                Properties.get().geo.landUseAreaFile + "_" + SiloUtil.getEndYear() + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
         pwl.println("Zone,lu41");
         for (int zone: getZones()) pwl.println(zone + "," + dataContainer.getRealEstateData().getDevelopableLand(zone));

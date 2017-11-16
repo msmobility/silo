@@ -18,9 +18,8 @@ import java.util.*;
 
 public class RealEstateDataManager {
     static Logger logger = Logger.getLogger(RealEstateDataManager.class);
-    private final de.tum.bgu.msm.properties.Properties properties;
-
-    private GeoData geoData;
+   
+    private final GeoData geoData;
     public static int largestNoBedrooms;
     public static int[] dwellingsByQuality;
     private static double[] initialQualityShares;
@@ -36,16 +35,14 @@ public class RealEstateDataManager {
     private static float[] medianRent;
     private HashMap<DwellingType, Float> acresByDwellingType;
 
-    public RealEstateDataManager(Properties properties, GeoData geoData) {
-        // constructor
-        this.properties = properties;
+    public RealEstateDataManager(GeoData geoData) {
         this.geoData = geoData;
     }
 
 
     public void readDwellings (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        boolean readBin = properties.getRealEstateProperties().isReadBinaryDwellingFile();
+        boolean readBin = Properties.get().realEstate.readBinaryDwellingFile;
         if (readBin) {
             readBinaryDwellingDataObjects();
         } else {
@@ -60,7 +57,7 @@ public class RealEstateDataManager {
 
         logger.info("Reading dwelling micro data from ascii file");
         int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + properties.getRealEstateProperties().getDwellingsFile();
+        String fileName = SiloUtil.baseDirectory + Properties.get().realEstate.dwellingsFile;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -113,7 +110,7 @@ public class RealEstateDataManager {
     private void readAcresNeededByDwellingType () {
         // read in the area needed to build a dwelling
 
-        String fileNameAcres = SiloUtil.baseDirectory + properties.getRealEstateProperties().getDwellingTypeAcresFile();
+        String fileNameAcres = SiloUtil.baseDirectory + Properties.get().realEstate.dwellingTypeAcresFile;
         TableDataSet tblAcresByDwellingType =  SiloUtil.readCSVfile(fileNameAcres);
         acresByDwellingType = new HashMap<>();
         for (int row = 1; row <= tblAcresByDwellingType.getRowCount(); row++) {
@@ -135,7 +132,7 @@ public class RealEstateDataManager {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
 
         int highestRegion = SiloUtil.getHighestVal(geoData.getRegionList());
-        numberOfStoredVacantDD = properties.getRealEstateProperties().getMaxStorageOfVacantDwellings();
+        numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
         vacDwellingsByRegion = SiloUtil.setArrayToValue(vacDwellingsByRegion, 0);
@@ -181,7 +178,7 @@ public class RealEstateDataManager {
     private void readBinaryDwellingDataObjects() {
         // read dwellings from binary file
 
-        String fileName = SiloUtil.baseDirectory + properties.getRealEstateProperties().getBinaryDwellingsFile();
+        String fileName = SiloUtil.baseDirectory + Properties.get().realEstate.binaryDwellingsFile;
         logger.info("  Reading dwelling data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));

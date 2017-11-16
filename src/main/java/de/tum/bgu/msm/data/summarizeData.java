@@ -67,10 +67,10 @@ public class summarizeData {
     }
 
 
-    public static void readScalingYearControlTotals (Properties properties) {
+    public static void readScalingYearControlTotals () {
         // read file with control totals to scale synthetic population to exogenous assumptions for selected output years
 
-        String fileName = SiloUtil.baseDirectory + properties.getMainProperties().getScalingControlTotals();
+        String fileName = SiloUtil.baseDirectory + Properties.get().main.scalingControlTotals;
         scalingControlTotals = SiloUtil.readCSVfile(fileName);
         scalingControlTotals.buildIndex(scalingControlTotals.getColumnPosition("Zone"));
     }

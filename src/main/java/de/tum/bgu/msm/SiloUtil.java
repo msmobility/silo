@@ -948,8 +948,8 @@ static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties 
 	int hours = (int) (endTime / 60);
 	int min = (int) (endTime - 60 * hours);
 	SiloModel.logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-	if (properties.getMainProperties().isTrackTime()) {
-		String fileName = properties.getMainProperties().getTrackTimeFile();
+	if (Properties.get().main.trackTime) {
+		String fileName = Properties.get().main.trackTimeFile;
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 			out.close();
@@ -979,7 +979,7 @@ static boolean modelStopper (String action) {
 
 
 static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
-		ResourceBundle rbLandUse, Properties properties ) {
+		ResourceBundle rbLandUse) {
 	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 
@@ -997,24 +997,24 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 
 	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
 	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);
-	if (properties.getCblcmProperties().isCreateCblcmFiles()) {
+	if (Properties.get().cblcm.createCblcmFiles) {
         summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
     }
-	if (properties.getMainProperties().isCreateHousingEnvironmentImpactFile()) {
+	if (Properties.get().main.createHousingEnvironmentImpactFile) {
         summarizeData.summarizeHousing(rbLandUse, year);
     }
-	if (properties.getMainProperties().isCreatePrestoSummary()) {
+	if (Properties.get().main.createPrestoSummary) {
 		summarizeData.summarizePrestoRegion(rbLandUse, year);
 	}
 
 }
 
 
-static void writeOutTimeTracker (long[][] timeCounter, Properties properties) {
+static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
 	int startYear = getStartYear();
-	PrintWriter pw = openFileForSequentialWriting(properties.getMainProperties().getTrackTimeFile(), startYear != getBaseYear());
+	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != getBaseYear());
 	if (startYear == getBaseYear()) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());

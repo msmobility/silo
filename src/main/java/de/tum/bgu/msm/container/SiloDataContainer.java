@@ -25,7 +25,7 @@ public class SiloDataContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, boolean, de.tum.bgu.msm.SiloModel.Implementation)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(de.tum.bgu.msm.SiloModel.Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -45,18 +45,16 @@ public class SiloDataContainer {
     /**
      * This factory method is used to create all the data objects needed for SILO from the Configuration file, loaded as a ResourceBundle
      * Each data object is created sequentially, before being passed as parameters to the private constructor.
-     * @param properties The properties file, as a @see {@link Properties}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(Properties properties,
-                                                            boolean readSmallSynPop, SiloModel.Implementation implementation) {
+    public static SiloDataContainer createSiloDataContainer(SiloModel.Implementation implementation) {
         GeoData geoData;
         switch (implementation) {
             case MSTM:
-                geoData = new GeoDataMstm(properties);
+                geoData = new GeoDataMstm();
                 break;
             case MUC:
-                geoData = new GeoDataMuc(properties);
+                geoData = new GeoDataMuc();
                 break;
             default:
                 logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
@@ -68,13 +66,14 @@ public class SiloDataContainer {
 
 
         // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(properties, geoData);
-        HouseholdDataManager householdData = new HouseholdDataManager(properties, realEstateData);
-        JobDataManager jobData = new JobDataManager(properties, geoData);
-        if (!properties.getMainProperties().isRunSynPop()) {   // read data only if synth. pop. generator did not run
+        RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
+        HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);
+        JobDataManager jobData = new JobDataManager(geoData);
+        if (!Properties.get().main.runSynPop) {   // read data only if synth. pop. generator did not run
             int smallSize = 0;
+            boolean readSmallSynPop = Properties.get().main.readSmallSynpop;
             if (readSmallSynPop) {
-                smallSize = properties.getMainProperties().getSmallSynPopSize();
+                smallSize = Properties.get().main.smallSynPopSize;
             }
             householdData.readPopulation(readSmallSynPop, smallSize);
             realEstateData.readDwellings(readSmallSynPop, smallSize);

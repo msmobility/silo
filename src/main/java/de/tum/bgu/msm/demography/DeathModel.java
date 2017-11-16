@@ -23,12 +23,9 @@ public class DeathModel {
     private static Logger traceLogger = Logger.getLogger("trace");
 
     private final HouseholdDataManager householdDataManager;
-    private final Properties properties;
-
 	private double[] deathProbability;
 
-    public DeathModel(Properties properties, HouseholdDataManager householdDataManager) {
-        this.properties = properties;
+    public DeathModel(HouseholdDataManager householdDataManager) {
         this.householdDataManager = householdDataManager;
 		setupDeathModel();
 	}
@@ -36,13 +33,13 @@ public class DeathModel {
 	private void setupDeathModel() {
 
 		// read properties
-		int deathModelSheetNumber = properties.getDemographicsProperties().getDeathModelSheet();
-        boolean logCalculation = properties.getDemographicsProperties().isLogDeathCalculation();
+		int deathModelSheetNumber = Properties.get().demographics.deathModelSheet;
+        boolean logCalculation = Properties.get().demographics.logDeathCalculation;
 
 		// initialize UEC
-        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(SiloUtil.baseDirectory + properties.getDemographicsProperties().getUecFileName()),
+        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(SiloUtil.baseDirectory + Properties.get().demographics.uecFileName),
         		deathModelSheetNumber,
-                properties.getDemographicsProperties().getDataSheet(),
+                Properties.get().demographics.dataSheet,
         		SiloUtil.getRbHashMap(),
         		DeathDMU.class);
         

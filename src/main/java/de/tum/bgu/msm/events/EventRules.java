@@ -19,8 +19,6 @@ import java.util.ResourceBundle;
 
 public class EventRules {
 
-
-
     private static boolean runEventAllDemography;
     private static boolean runEventBirthday;
     private static boolean runEventCheckDeath;
@@ -40,28 +38,26 @@ public class EventRules {
     private static boolean runEventDdDemolition;
     private static boolean runEventDdConstruction;
 
-   public static void setUpEventRules (Properties properties) {
-
-       runEventAllDemography       = properties.getEventRulesProperties().isAllDemography();
-       runEventBirthday            = properties.getEventRulesProperties().isBirthday();
-       runEventCheckDeath          = properties.getEventRulesProperties().isDeath();
-       runEventCheckBirth          = properties.getEventRulesProperties().isBirth();
-       runEventCheckLeaveParentHh  = properties.getEventRulesProperties().isLeaveParentHh();
-       runEventCheckMarriage       = properties.getEventRulesProperties().isMarriage();
-       runEventCheckDivorce        = properties.getEventRulesProperties().isDivorce();
-       runEventCheckSchoolUniv     = properties.getEventRulesProperties().isSchoolUniversity();
-       runEventCheckDriversLicense = properties.getEventRulesProperties().isDriversLicense();
-       runEventStartNewJob         = properties.getEventRulesProperties().isStartNewJob();
-       runEventQuitJob             = properties.getEventRulesProperties().isQuitJob();
-       runEventAllHhMoves          = properties.getEventRulesProperties().isAllHhMoves();
-       runEventInmigration         = properties.getEventRulesProperties().isInmigration();
-       runEventOutMigration        = properties.getEventRulesProperties().isOutMigration();
-       runEventAllDdDevelopments   = properties.getEventRulesProperties().isAllDwellingDevelopments();
-       runEventDdChangeQual        = properties.getEventRulesProperties().isDwellingChangeQuality();
-       runEventDdDemolition        = properties.getEventRulesProperties().isDwellingDemolition();
-       runEventDdConstruction      = properties.getEventRulesProperties().isDwellingConstruction();
+   public static void setUpEventRules () {
+       runEventAllDemography       = Properties.get().eventRules.allDemography;
+       runEventBirthday            = Properties.get().eventRules.birthday;
+       runEventCheckDeath          = Properties.get().eventRules.death;
+       runEventCheckBirth          = Properties.get().eventRules.birth;
+       runEventCheckLeaveParentHh  = Properties.get().eventRules.leaveParentHh;
+       runEventCheckMarriage       = Properties.get().eventRules.marriage;
+       runEventCheckDivorce        = Properties.get().eventRules.divorce;
+       runEventCheckSchoolUniv     = Properties.get().eventRules.schoolUniversity;
+       runEventCheckDriversLicense = Properties.get().eventRules.driversLicense;
+       runEventStartNewJob         = Properties.get().eventRules.startNewJob;
+       runEventQuitJob             = Properties.get().eventRules.quitJob;
+       runEventAllHhMoves          = Properties.get().eventRules.allHhMoves;
+       runEventInmigration         = Properties.get().eventRules.inmigration;
+       runEventOutMigration        = Properties.get().eventRules.outMigration;
+       runEventAllDdDevelopments   = Properties.get().eventRules.allDwellingDevelopments;
+       runEventDdChangeQual        = Properties.get().eventRules.dwellingChangeQuality;
+       runEventDdDemolition        = Properties.get().eventRules.dwellingDemolition;
+       runEventDdConstruction      = Properties.get().eventRules.dwellingConstruction;
     }
-
 
     // Conditions for person events
     public static boolean ruleBirthday (Person per) {

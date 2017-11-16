@@ -55,15 +55,13 @@ public class MatsimTransportModel implements TransportModelI {
 
 	private final HouseholdDataManager householdData;
 	private final Accessibility acc;
-	private final Properties properties;
 	private final Config initialMatsimConfig;
 
 
-	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, Properties properties, Config matsimConfig) {
+	public MatsimTransportModel(HouseholdDataManager householdData, Accessibility acc, Config matsimConfig) {
 		Gbl.assertNotNull(householdData);
 		this.householdData = householdData;
 		this.acc = acc;
-		this.properties = properties;
 		this.initialMatsimConfig = matsimConfig;
 	}
 
@@ -71,10 +69,10 @@ public class MatsimTransportModel implements TransportModelI {
 	public void runTransportModel(int year) {
 		LOG.warn("Running MATSim transport model for year " + year + ".");
 
-		String scenarioName = properties.getMainProperties().getScenarioName();
+		String scenarioName = Properties.get().main.scenarioName;
 
-		initialMatsimConfig.global().setCoordinateSystem(properties.getTransportModelProperties().getMatsimZoneCRS());
-		String zoneShapeFile = SiloUtil.baseDirectory + "/" + properties.getTransportModelProperties().getMatsimZoneShapeFile();
+		initialMatsimConfig.global().setCoordinateSystem(Properties.get().transportModel.matsimZoneCRS);
+		String zoneShapeFile = SiloUtil.baseDirectory + "/" + Properties.get().transportModel.matsimZoneShapeFile;
 		
 		// In the current implementation, MATSim is used to reflect the functionality that was previously
 		// covered by MSTM. As such, based on the MATSim transport simulation, a travel time matrix (skim)

@@ -24,7 +24,6 @@ public final class SiloMatsim {
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
 
 	private ResourceBundle rb;
-	private final Properties properties;
 	private Config matsimConfig = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
 
 	/**
@@ -34,7 +33,7 @@ public final class SiloMatsim {
 		SiloUtil.setBaseYear(2000);
 		rb = SiloUtil.siloInitialization(args);
 		matsimConfig = config ;
-		properties = new Properties(rb);
+		Properties.initializeProperties(rb);
 	}	    
 
 	public final void run() {
@@ -45,7 +44,7 @@ public final class SiloMatsim {
 			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
-			SiloModel model = new SiloModel(rb, matsimConfig, properties );
+			SiloModel model = new SiloModel(rb, matsimConfig);
 			model.runModel(SiloModel.Implementation.MSTM);
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
@@ -59,8 +58,8 @@ public final class SiloMatsim {
 			int hours = (int) (endTime / 60);
 			int min = (int) (endTime - 60 * hours);
 			logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-			if (properties.getMainProperties().isTrackTime()) {
-				String fileName = properties.getMainProperties().getTrackTimeFile();
+			if (Properties.get().main.trackTime) {
+				String fileName = Properties.get().main.trackTimeFile;
 				try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 					out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 					out.close();

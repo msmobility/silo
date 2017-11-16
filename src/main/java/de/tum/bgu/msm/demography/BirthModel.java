@@ -42,11 +42,9 @@ public class BirthModel {
 	private static double[] birthProbability;
     private static float propGirl;
     private final HouseholdDataManager householdDataManager;
-    private final Properties properties;
 
-    public BirthModel(Properties properties, HouseholdDataManager householdDataManager) {
-        this.properties = properties;
-        propGirl        = properties.getDemographicsProperties().getPropabilityForGirl();
+    public BirthModel(HouseholdDataManager householdDataManager) {
+        propGirl        = Properties.get().demographics.propabilityForGirl;
         this.householdDataManager = householdDataManager;
         setupBirthModel();
 	}
@@ -56,11 +54,11 @@ public class BirthModel {
 
 		// read properties
 		int birthModelSheetNumber =
-                properties.getDemographicsProperties().getBirthModelSheet();
-        String uecFileName = SiloUtil.baseDirectory + properties.getDemographicsProperties().getUecFileName();
-        int dataSheetNumber = properties.getDemographicsProperties().getDataSheet();
-        boolean logCalculation = properties.getDemographicsProperties().isLogBirthCalculation();
-        float localScaler = properties.getDemographicsProperties().getLocalScaler();
+                Properties.get().demographics.birthModelSheet;
+        String uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.uecFileName;
+        int dataSheetNumber = Properties.get().demographics.dataSheet;
+        boolean logCalculation = Properties.get().demographics.logBirthCalculation;
+        float localScaler = Properties.get().demographics.localScaler;
 
         // initialize UEC
         UtilityExpressionCalculator birthModel = new UtilityExpressionCalculator(new File(uecFileName),
@@ -98,8 +96,8 @@ public class BirthModel {
         if (!EventRules.ruleGiveBirth(per)) return;  // Person has died or moved away
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb;
-        if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * properties.getDemographicsProperties().getMarriedScaler();
-        else birthProb = birthProbability[per.getType().ordinal()] * properties.getDemographicsProperties().getSingleScaler();;
+        if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.marriedScaler;
+        else birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.singleScaler;
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
@@ -126,7 +124,7 @@ public class BirthModel {
         // increase age of this person by number of years in simulation period
         Person per = Person.getPersonFromId(personId);
         if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
-        int age = per.getAge() + properties.getDemographicsProperties().getSimulationPeriodLength();
+        int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
         per.setAge(age);
         per.setType(age, per.getGender());
         EventManager.countEvent(EventTypes.birthday);

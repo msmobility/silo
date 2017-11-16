@@ -56,6 +56,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     public SyntheticPopUs(ResourceBundle rb) {
         // constructor
         this.rb = rb;
+        Properties.initializeProperties(rb);
     }
 
 
@@ -68,12 +69,12 @@ public class SyntheticPopUs implements SyntheticPopI {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        accessibility = new Accessibility(new Properties(rb), geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(geoData);                        // read in travel times and trip length frequency distribution
         accessibility.readCarSkim(SiloUtil.getStartYear());
         accessibility.readPtSkim(SiloUtil.getStartYear());
         accessibility.initialize();
         processPums();
-        JobDataManager jobData = new JobDataManager(new Properties(rb), geoData);
+        JobDataManager jobData = new JobDataManager(geoData);
         generateAutoOwnership(jobData);
         summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
         addVacantDwellings();
@@ -145,10 +146,8 @@ public class SyntheticPopUs implements SyntheticPopI {
         // method to generate synthetic jobs
 
         logger.info("  Generating base year jobs");
-
-        Properties properties = new Properties(rb);
-        TableDataSet jobs = SiloUtil.readCSVfile(properties.getJobDataProperties().getJobControlTotalsFileName());
-        new JobType(properties.getJobDataProperties().getJobTypes());
+        TableDataSet jobs = SiloUtil.readCSVfile(Properties.get().jobData.jobControlTotalsFileName);
+        new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][taz]
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][geoData.getHighestZonalId() + 1];

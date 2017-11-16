@@ -31,10 +31,10 @@ public class EventManager {
     private int posInArray;
     private static HashMap<EventTypes, Integer> eventCounter;
 
-    public EventManager (Properties properties, SiloDataContainer dataContainer) {
+    public EventManager (SiloDataContainer dataContainer) {
         // Constructor of EventManager
         this.dataContainer = dataContainer;
-        EventRules.setUpEventRules(properties);
+        EventRules.setUpEventRules();
     }
 
 

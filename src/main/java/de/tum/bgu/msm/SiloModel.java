@@ -45,8 +45,7 @@ public class SiloModel {
 
 	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP};
 
-	private final ResourceBundle rbLandUse;
-	private final Properties properties;
+//	private final ResourceBundle rbLandUse;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
@@ -56,13 +55,12 @@ public class SiloModel {
 	 * Constructor to set up a SILO model
 	 * @param rbLandUse ResourceBundle
 	 */
-	public SiloModel(ResourceBundle rbLandUse, Properties properties) {
-		this( rbLandUse, null, properties ) ;
+	public SiloModel(ResourceBundle rbLandUse) {
+		this( rbLandUse, null) ;
 	}
 
-	public SiloModel( ResourceBundle rbLandUse, Config matsimConfig, Properties properties ) {
+	public SiloModel( ResourceBundle rbLandUse, Config matsimConfig) {
 		this.rbLandUse = rbLandUse;
-		this.properties = properties;
 		IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
@@ -72,29 +70,29 @@ public class SiloModel {
 	public void runModel(Implementation implementation) {
 		//Main method to run a SILO model
 
-		if (!properties.getMainProperties().isRunSilo()) {
+		if (!Properties.get().main.runSilo) {
 			return;
 		}
 		logger.info("Start SILO Model (Implementation " + implementation + ")");
 
 		// define years to simulate
-		int[] scalingYears = properties.getMainProperties().getScalingYears();
+		int[] scalingYears = Properties.get().main.scalingYears;
 		if (scalingYears[0] != -1) {
-			summarizeData.readScalingYearControlTotals(properties);
+			summarizeData.readScalingYearControlTotals();
 		}
-		int[] tdmYears = properties.getTransportModelProperties().getModelYears();
-		int[] skimYears = properties.getTransportModelProperties().getSkimYears();
+		int[] tdmYears = Properties.get().transportModel.modelYears;
+		int[] skimYears = Properties.get().transportModel.skimYears;
 
 		// create main objects and read synthetic population
-		dataContainer = SiloDataContainer.createSiloDataContainer(properties, properties.getMainProperties().isReadSmallSynpop(), implementation);
-		if (properties.getMainProperties().isWriteSmallSynpop()) {
+		dataContainer = SiloDataContainer.createSiloDataContainer(implementation);
+		if (Properties.get().main.writeSmallSynpop) {
 			dataContainer.getHouseholdData().writeOutSmallSynPop();
 		}
-		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, properties, implementation, dataContainer);
+		modelContainer = SiloModelContainer.createSiloModelContainer(implementation, dataContainer);
 
-		final boolean runMatsim = properties.getTransportModelProperties().isRunMatsim();
-		final boolean runTravelDemandModel = properties.getTransportModelProperties().isRunTravelDemandModel();
-		if ( runMatsim && ( runTravelDemandModel || properties.getMainProperties().isCreateMstmOutput() ) ) {
+		final boolean runMatsim = Properties.get().transportModel.runMatsim;
+		final boolean runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
+		if ( runMatsim && ( runTravelDemandModel || Properties.get().main.createMstmOutput)) {
 			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
 		}
 
@@ -102,14 +100,14 @@ public class SiloModel {
 
 		if ( runMatsim ) {
 			logger.info("  MATSim is used as the transport model");
-			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), properties, matsimConfig);
+			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), matsimConfig);
 			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 			transportModel.runTransportModel(SiloUtil.getStartYear());
 		} else {
 			logger.info("  MITO is used as the transport model");
 			modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
 			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
-			File rbFile = new File(properties.getTransportModelProperties().getDemandModelPropertiesPath());
+			File rbFile = new File(Properties.get().transportModel.demandModelPropertiesPath);
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
 		modelContainer.getAcc().initialize();
@@ -122,14 +120,14 @@ public class SiloModel {
 		// Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
 		// synthetic population for testing
 
-		boolean trackTime = properties.getMainProperties().isTrackTime();
+		boolean trackTime = Properties.get().main.trackTime;
 		long[][] timeCounter = new long[EventTypes.values().length + 12][SiloUtil.getEndYear() + 1];
 		long startTime = 0;
 		IssueCounter.logIssues(dataContainer.getGeoData());           // log any potential issues during initial setup
 
         modelContainer.getCarOwnershipModel().initialize();
 
-        if (properties.getMainProperties().isCreatePrestoSummary()) {
+        if (Properties.get().main.createPrestoSummary) {
 			summarizeData.preparePrestoSummary(rbLandUse, dataContainer.getGeoData());
 		}
 
@@ -139,7 +137,7 @@ public class SiloModel {
 			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
 			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-			EventManager em = new EventManager(properties, dataContainer);
+			EventManager em = new EventManager(dataContainer);
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			modelContainer.getIomig().setupInOutMigration(year);
@@ -169,7 +167,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
-					!properties.getTransportModelProperties().isRunTravelDemandModel() &&
+					!Properties.get().transportModel.runTravelDemandModel &&
 					year != SiloUtil.getStartYear()) {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
@@ -195,7 +193,7 @@ public class SiloModel {
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear())
-				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer, rbLandUse, properties);
+				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer, rbLandUse);
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
 			logger.info("  Simulating events");
@@ -283,7 +281,7 @@ public class SiloModel {
 			dataContainer.getHouseholdData().clearUpdatedHouseholds();
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
-			if ( runMatsim || runTravelDemandModel || properties.getMainProperties().isCreateMstmOutput()) {
+			if ( runMatsim || runTravelDemandModel || Properties.get().main.createMstmOutput) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
                     modelContainer.getAcc().calculateAccessibilities(year + 1);
@@ -312,10 +310,10 @@ public class SiloModel {
 			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
 		}
 
-		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse, properties );
+		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
-		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter, properties);
+		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
 		logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
 	}
 

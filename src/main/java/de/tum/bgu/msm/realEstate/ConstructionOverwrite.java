@@ -33,7 +33,6 @@ public class ConstructionOverwrite {
     private HashMap<Integer, ArrayList> plannedDwellings;
 
     public ConstructionOverwrite(ResourceBundle rb) {
-        // constructor
         this.rb = rb;
         useOverwrite = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_DWELLING_OVERWRITE);
         if (!useOverwrite) return;
