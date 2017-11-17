@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.demography.BirthModel;
 import de.tum.bgu.msm.demography.MarryDivorceModel;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.util.ResourceBundle;
 
@@ -17,28 +18,6 @@ import java.util.ResourceBundle;
  **/
 
 public class EventRules {
-
-    protected static final String PROPERTIES_event_allDemography      = "event.all.demography";
-    protected static final String PROPERTIES_event_birthday           = "event.birthday";
-    protected static final String PROPERTIES_event_checkDeath         = "event.checkDeath";
-    protected static final String PROPERTIES_event_checkBirth         = "event.checkBirth";
-    protected static final String PROPERTIES_event_checkLeaveParentHh = "event.checkLeaveParentHh";
-    protected static final String PROPERTIES_event_checkMarriage      = "event.checkMarriage";
-    protected static final String PROPERTIES_event_checkDivorce       = "event.checkDivorce";
-    protected static final String PROPERTIES_event_checkSchoolUniv    = "event.checkSchoolUniv";
-    protected static final String PROPERTIES_event_checkDriversLic    = "event.checkDriversLicense";
-
-    protected static final String PROPERTIES_event_startNewJob        = "event.startJob";
-    protected static final String PROPERTIES_event_quitJob            = "event.quitJob";
-
-    protected static final String PROPERTIES_event_allHhMoves         = "event.all.hhMoves";
-    protected static final String PROPERTIES_event_inmigration        = "event.inmigration";
-    protected static final String PROPERTIES_event_outMigration       = "event.outMigration";
-
-    protected static final String PROPERTIES_event_allDdDevelopments  = "event.all.developers";
-    protected static final String PROPERTIES_event_ddChangeQual       = "event.ddChangeQual";
-    protected static final String PROPERTIES_event_ddDemolition       = "event.ddDemolition";
-    protected static final String PROPERTIES_event_ddConstruction     = "event.ddConstruction";
 
     private static boolean runEventAllDemography;
     private static boolean runEventBirthday;
@@ -59,28 +38,26 @@ public class EventRules {
     private static boolean runEventDdDemolition;
     private static boolean runEventDdConstruction;
 
-   public static void setUpEventRules (ResourceBundle rb) {
-
-       runEventAllDemography       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDemography);
-       runEventBirthday            = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_birthday);
-       runEventCheckDeath          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDeath);
-       runEventCheckBirth          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkBirth);
-       runEventCheckLeaveParentHh  = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkLeaveParentHh);
-       runEventCheckMarriage       = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkMarriage);
-       runEventCheckDivorce        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDivorce);
-       runEventCheckSchoolUniv     = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkSchoolUniv, false);
-       runEventCheckDriversLicense = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_checkDriversLic, false);
-       runEventStartNewJob         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_startNewJob);
-       runEventQuitJob             = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_quitJob);
-       runEventAllHhMoves          = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allHhMoves);
-       runEventInmigration         = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_inmigration);
-       runEventOutMigration        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_outMigration);
-       runEventAllDdDevelopments   = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_allDdDevelopments);
-       runEventDdChangeQual        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddChangeQual);
-       runEventDdDemolition        = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddDemolition);
-       runEventDdConstruction      = ResourceUtil.getBooleanProperty(rb, PROPERTIES_event_ddConstruction);
+   public static void setUpEventRules () {
+       runEventAllDemography       = Properties.get().eventRules.allDemography;
+       runEventBirthday            = Properties.get().eventRules.birthday;
+       runEventCheckDeath          = Properties.get().eventRules.death;
+       runEventCheckBirth          = Properties.get().eventRules.birth;
+       runEventCheckLeaveParentHh  = Properties.get().eventRules.leaveParentHh;
+       runEventCheckMarriage       = Properties.get().eventRules.marriage;
+       runEventCheckDivorce        = Properties.get().eventRules.divorce;
+       runEventCheckSchoolUniv     = Properties.get().eventRules.schoolUniversity;
+       runEventCheckDriversLicense = Properties.get().eventRules.driversLicense;
+       runEventStartNewJob         = Properties.get().eventRules.startNewJob;
+       runEventQuitJob             = Properties.get().eventRules.quitJob;
+       runEventAllHhMoves          = Properties.get().eventRules.allHhMoves;
+       runEventInmigration         = Properties.get().eventRules.inmigration;
+       runEventOutMigration        = Properties.get().eventRules.outMigration;
+       runEventAllDdDevelopments   = Properties.get().eventRules.allDwellingDevelopments;
+       runEventDdChangeQual        = Properties.get().eventRules.dwellingChangeQuality;
+       runEventDdDemolition        = Properties.get().eventRules.dwellingDemolition;
+       runEventDdConstruction      = Properties.get().eventRules.dwellingConstruction;
     }
-
 
     // Conditions for person events
     public static boolean ruleBirthday (Person per) {

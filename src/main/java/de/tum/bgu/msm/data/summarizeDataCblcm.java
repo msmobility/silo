@@ -1,13 +1,12 @@
 package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 
 /**
  * Summarizes SILO model output for the Chesapeake Bay Land Change Model
@@ -18,36 +17,27 @@ import java.util.ResourceBundle;
 
 public class summarizeDataCblcm {
 
-    protected static final String PROPERTIES_CBLCM_YEARS                = "cblcm.years";
-    protected static final String PROPERTIES_CBLCM_POPULATION_FILE      = "cblcm.population.file.name";
-    protected static final String PROPERTIES_CBLCM_EMPLOYMENT_FILE      = "cblcm.employment.file.name";
-    protected static final String PROPERTIES_CBLCM_DWELLING_FILE        = "cblcm.dwellings.file.name";
-    protected static final String PROPERTIES_CBLCM_ACCESSIBILITIES_FILE = "cblcm.accessibilities.file.name";
-    protected static final String PROPERTIES_CBLCM_COUNTY_ORDER_FILE    = "cblcm.county.order.list";
-    protected static final String PROPERTIES_CBLCM_COUNTY_POPULATION    = "cblcm.county.population.file.name";
-    protected static final String PROPERTIES_CBLCM_COUNTY_EMPLOYMENT    = "cblcm.county.employment.file.name";
 
-
-    public static void createCblcmSummaries(ResourceBundle rb, int year, SiloModelContainer modelContainer,
+    public static void createCblcmSummaries(int year, SiloModelContainer modelContainer,
                                             SiloDataContainer dataContainer) {
         // create summary files for Chesapeake Bay Land Change Model
 
-        if (!SiloUtil.containsElement(ResourceUtil.getIntegerArray(rb, PROPERTIES_CBLCM_YEARS), year)) return;
+        if (!SiloUtil.containsElement(Properties.get().cblcm.years, year)) return;
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/cblcm";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        summarizePopulation(rb, year, dataContainer);
-        summarizeEmployment(rb, year, dataContainer);
-        summarizeDwellings(rb, year, dataContainer);
-        summarizeAccessibilities(rb, year, modelContainer, dataContainer);
-        summarizeByCounty(rb, year);
+        summarizePopulation(year, dataContainer);
+        summarizeEmployment(year, dataContainer);
+        summarizeDwellings(year, dataContainer);
+        summarizeAccessibilities(year, modelContainer, dataContainer);
+        summarizeByCounty(year);
     }
 
 
-    private static void summarizePopulation (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizePopulation (int year, SiloDataContainer dataContainer) {
         // summarize households by type and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String popFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_POPULATION_FILE) +
+        String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 SiloUtil.gregorianIterator + ".csv");
         int[][] households = new int[dataContainer.getGeoData().getZones().length][SiloUtil.incBrackets.length + 1];
         for (Household hh : Household.getHouseholdArray()) {
@@ -91,11 +81,11 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeEmployment (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizeEmployment (int year, SiloDataContainer dataContainer) {
         // summarize employment by type for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String emplFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_EMPLOYMENT_FILE) +
+        String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
                 SiloUtil.gregorianIterator + ".csv");
         int[][] jobs = new int[dataContainer.getGeoData().getZones().length][JobType.getNumberOfJobTypes()];
         for (Job jj : Job.getJobArray()) {
@@ -131,11 +121,11 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeDwellings (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizeDwellings (int year, SiloDataContainer dataContainer) {
         // summarize dwellings by type and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String ddFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_DWELLING_FILE) +
+        String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
                 SiloUtil.gregorianIterator + ".csv");
         int[][] dwellings = new int[dataContainer.getGeoData().getZones().length][DwellingType.values().length];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
@@ -170,12 +160,12 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeAccessibilities (ResourceBundle rb, int year, SiloModelContainer modelContainer,
+    private static void summarizeAccessibilities (int year, SiloModelContainer modelContainer,
                                                   SiloDataContainer dataContainer) {
         // summarize accessibilities by type (transit/highway) and zone for selected years
 
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String accFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_ACCESSIBILITIES_FILE) +
+        String accFileName = (directory + "/cblcm/" + Properties.get().cblcm.accessibilityFile +
                 SiloUtil.gregorianIterator + ".csv");
 
         if (SiloUtil.checkIfFileExists(accFileName) && year != SiloUtil.getBaseYear()) {
@@ -201,16 +191,16 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeByCounty (ResourceBundle rb, int year) {
+    private static void summarizeByCounty (int year) {
         // summarize population and employment data by county
 
-        String countyOrderFile = rb.getString(PROPERTIES_CBLCM_COUNTY_ORDER_FILE);
+        String countyOrderFile = Properties.get().cblcm.countyOrderFile;
         int[] countyOrder = SiloUtil.readCSVfile(countyOrderFile).getColumnAsInt("fips");
         int[] countyOrderIndex = SiloUtil.createIndexArray(countyOrder);
         String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String hhFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_COUNTY_POPULATION) +
+        String hhFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyPopulationFile +
                 SiloUtil.gregorianIterator + ".txt");
-        String jobFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_COUNTY_EMPLOYMENT) +
+        String jobFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyEmployMentFile +
                 SiloUtil.gregorianIterator + ".txt");
 
         int[] hhByCounty = new int[countyOrder.length];

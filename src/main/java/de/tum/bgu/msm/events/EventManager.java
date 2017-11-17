@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.events;
 
 import com.pb.common.util.IndexSort;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -12,7 +11,6 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.ResourceBundle;
 
 /**
  * Generates a series of events in random order
@@ -30,10 +28,10 @@ public class EventManager {
     private int posInArray;
     private static HashMap<EventTypes, Integer> eventCounter;
 
-    public EventManager (ResourceBundle rb, SiloDataContainer dataContainer) {
+    public EventManager (SiloDataContainer dataContainer) {
         // Constructor of EventManager
         this.dataContainer = dataContainer;
-        EventRules.setUpEventRules(rb);
+        EventRules.setUpEventRules();
     }
 
 
@@ -191,79 +189,79 @@ public class EventManager {
         float pp = Person.getPersonCount();
         float hh = Household.getHouseholdCount();
         float dd = Dwelling.getDwellingCount();
-        summarizeData.resultFile("Count of simulated events");
+        SummarizeData.resultFile("Count of simulated events");
         int birthday = eventCounter.get(EventTypes.birthday);
         logger.info("  Simulated birthdays:         " + birthday + " (" +
                 SiloUtil.rounder((100f * birthday / pp), 1) + "% of pp)");
-        summarizeData.resultFile("Birthdays,"+birthday);
+        SummarizeData.resultFile("Birthdays,"+birthday);
         int births = eventCounter.get(EventTypes.checkBirth);
         logger.info("  Simulated births:            " + births + " (" +
                 SiloUtil.rounder((100f * births / pp), 1) + "% of pp)");
-        summarizeData.resultFile("Births,"+births);
+        SummarizeData.resultFile("Births,"+births);
         int deaths = eventCounter.get(EventTypes.checkDeath);
         logger.info("  Simulated deaths:            " + deaths + " (" +
                 SiloUtil.rounder((100f * deaths / pp), 1) + "% of pp)");
-        summarizeData.resultFile("Deaths,"+deaths);
+        SummarizeData.resultFile("Deaths,"+deaths);
         int marriages = eventCounter.get(EventTypes.checkMarriage);
         logger.info("  Simulated marriages          " + marriages + " (" +
                 SiloUtil.rounder((100f * marriages / hh), 1) + "% of hh)");
-        summarizeData.resultFile("Marriages,"+marriages);
+        SummarizeData.resultFile("Marriages,"+marriages);
         int divorces = eventCounter.get(EventTypes.checkDivorce);
         logger.info("  Simulated divorces:          " + divorces + " (" +
                 SiloUtil.rounder((100f * divorces / hh), 1) + "% of hh)");
-        summarizeData.resultFile("Divorces,"+divorces);
+        SummarizeData.resultFile("Divorces,"+divorces);
         int lph = eventCounter.get(EventTypes.checkLeaveParentHh);
         logger.info("  Simulated leave parental hh: " + lph + " (" +
                 SiloUtil.rounder((100f * lph / hh), 1) + "% of hh)");
-        summarizeData.resultFile("LeaveParentalHH,"+lph);
+        SummarizeData.resultFile("LeaveParentalHH,"+lph);
         int suc = eventCounter.get(EventTypes.checkSchoolUniv);
         logger.info("  Simulated change of school or university: " + suc + " (" +
                 SiloUtil.rounder((100f * suc / pp), 1) + "% of pp)");
-        summarizeData.resultFile("ChangeSchoolUniv,"+suc);
+        SummarizeData.resultFile("ChangeSchoolUniv,"+suc);
         int dlc = eventCounter.get(EventTypes.checkDriversLicense);
         logger.info("  Simulated change of drivers license: " + dlc + " (" +
                 SiloUtil.rounder((100f * dlc / pp), 1) + "% of pp)");
-        summarizeData.resultFile("ChangeDriversLicense,"+dlc);
+        SummarizeData.resultFile("ChangeDriversLicense,"+dlc);
         int sj = eventCounter.get(EventTypes.findNewJob);
         logger.info("  Simulated start new job:     " + sj + " (" +
                 SiloUtil.rounder((100f * sj / pp), 1) + "% of pp)");
-        summarizeData.resultFile("StartNewJob,"+sj);
+        SummarizeData.resultFile("StartNewJob,"+sj);
         int qj = eventCounter.get(EventTypes.quitJob);
         logger.info("  Simulated leaving jobs:      " + qj + " (" +
                 SiloUtil.rounder((100f * qj / pp), 1) + "% of pp)");
-        summarizeData.resultFile("QuitJob,"+qj);
+        SummarizeData.resultFile("QuitJob,"+qj);
         int moves = eventCounter.get(EventTypes.householdMove);
         logger.info("  Simulated household moves:   " + moves + " (" +
                 SiloUtil.rounder((100f * moves / hh), 0) + "% of hh)");
-        summarizeData.resultFile("Moves,"+moves);
+        SummarizeData.resultFile("Moves,"+moves);
         logger.info("  Simulated household added a car" + carChangeCounter[0] + " (" +
                 SiloUtil.rounder((100f * carChangeCounter[0] / hh), 0) + "% of hh)");
-        summarizeData.resultFile("AddedCar,"+carChangeCounter[0]);
+        SummarizeData.resultFile("AddedCar,"+carChangeCounter[0]);
         logger.info("  Simulated household relinquished a car" + carChangeCounter[1] + " (" +
                 SiloUtil.rounder((100f * carChangeCounter[1] / hh), 0) + "% of hh)");
-        summarizeData.resultFile("RelinquishedCar,"+carChangeCounter[1]);
+        SummarizeData.resultFile("RelinquishedCar,"+carChangeCounter[1]);
         int inmigration = eventCounter.get(EventTypes.inmigration);
         logger.info("  Simulated inmigrated hh:     " + inmigration + " (" +
                 SiloUtil.rounder((100f * inmigration / hh), 0) + "% of hh)");
-        summarizeData.resultFile("InmigrantsHH," + inmigration);
-        summarizeData.resultFile("InmigrantsPP," + InOutMigration.inMigrationPPCounter);
+        SummarizeData.resultFile("InmigrantsHH," + inmigration);
+        SummarizeData.resultFile("InmigrantsPP," + InOutMigration.inMigrationPPCounter);
         int outmigration = eventCounter.get(EventTypes.outMigration);
         logger.info("  Simulated outmigrated hh:    " + outmigration + " (" +
                 SiloUtil.rounder((100f * outmigration / hh), 0) + "% of hh)");
-        summarizeData.resultFile("OutmigrantsHH," + outmigration);
-        summarizeData.resultFile("OutmigrantsPP," + InOutMigration.outMigrationPPCounter);
+        SummarizeData.resultFile("OutmigrantsHH," + outmigration);
+        SummarizeData.resultFile("OutmigrantsPP," + InOutMigration.outMigrationPPCounter);
         int renovate = eventCounter.get(EventTypes.ddChangeQual);
         logger.info("  Simulated up-/downgrade dd:  " + renovate + " (" +
                 SiloUtil.rounder((100f * renovate / dd), 0) + "% of dd)");
-        summarizeData.resultFile("UpDowngradeDD,"+renovate);
+        SummarizeData.resultFile("UpDowngradeDD,"+renovate);
         int demolitions = eventCounter.get(EventTypes.ddDemolition);
         logger.info("  Simulated demolition of dd:  " + demolitions + " (" +
                 SiloUtil.rounder((100f * demolitions / dd), 0) + "% of dd)");
-        summarizeData.resultFile("Demolition,"+demolitions);
+        SummarizeData.resultFile("Demolition,"+demolitions);
         int construction = eventCounter.get(EventTypes.ddConstruction);
         logger.info("  Simulated construction of dd:  " + construction + " (" +
                 SiloUtil.rounder((100f * construction / dd), 0) + "% of dd)");
-        summarizeData.resultFile("Construction,"+construction);
+        SummarizeData.resultFile("Construction,"+construction);
     }
 
 

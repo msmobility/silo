@@ -12,7 +12,7 @@ import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.GeoDataMstm;
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -28,7 +28,6 @@ import static de.tum.bgu.msm.SiloModel.* ;
  *
  */
 public class SiloModelCBLCM {
-	private ResourceBundle rbLandUse;
 	private int[] scalingYears;
 	private int currentYear;
 	private int[] skimYears;
@@ -40,11 +39,8 @@ public class SiloModelCBLCM {
 	public GeoData geoData;
 	private TransportModelI transportModel; // ony used for MD implementation
 
-	private final Properties properties;
 
-	public SiloModelCBLCM(ResourceBundle rb) {
-		this.rbLandUse = rb;
-		properties = new Properties(rb);
+	public SiloModelCBLCM() {
 		IssueCounter.setUpCounter();   // set up counter for any issues during initial setup
 		SiloUtil.modelStopper("initialize");
 	}
@@ -53,32 +49,32 @@ public class SiloModelCBLCM {
 		// initial steps that only need to performed once to set up the model
 
 	        // define years to simulate
-	        scalingYears = properties.getMainProperties().getScalingYears();
-	        if (scalingYears[0] != -1) summarizeData.readScalingYearControlTotals(rbLandUse);
+	        scalingYears = Properties.get().main.scalingYears;
+	        if (scalingYears[0] != -1) SummarizeData.readScalingYearControlTotals();
 	        currentYear = SiloUtil.getStartYear();
-	        tdmYears = properties.getTransportModelProperties().getModelYears();
-	        skimYears = properties.getTransportModelProperties().getSkimYears();
+	        tdmYears = Properties.get().transportModel.modelYears;
+	        skimYears = Properties.get().transportModel.skimYears;
 	        // Note: only implemented for MSTM:
-	        geoData = new GeoDataMstm(rbLandUse);
+	        geoData = new GeoDataMstm();
 	        // Note: only implemented for MSTM:
 
 		// read micro data
-		dataContainer = SiloDataContainer.createSiloDataContainer(rbLandUse,  false, Implementation.MSTM);
-		modelContainer = SiloModelContainer.createSiloModelContainer(rbLandUse, Implementation.MSTM, dataContainer);
+		dataContainer = SiloDataContainer.createSiloDataContainer(Implementation.MSTM);
+		modelContainer = SiloModelContainer.createSiloModelContainer(Implementation.MSTM, dataContainer);
 		
 		modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
 		modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
 		modelContainer.getAcc().initialize();
 
-	        trackTime = properties.getMainProperties().isTrackTime();
+	        trackTime = Properties.get().main.trackTime;
 	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(rbLandUse, SiloUtil.baseDirectory, geoData, modelContainer);
-	        if (properties.getMainProperties().isCreatePrestoSummary()) {
-				summarizeData.preparePrestoSummary(rbLandUse, geoData);
+	        transportModel = new MitoTransportModel(null, SiloUtil.baseDirectory, geoData, modelContainer);
+	        if (Properties.get().main.createPrestoSummary) {
+				SummarizeData.preparePrestoSummary(geoData);
 			}
-	        SiloUtil.initializeRandomNumber();
+	        SiloUtil.initializeRandomNumber(Properties.get().main.randomSeed);
 	}
 	
 	void runYear(double year) {
@@ -89,11 +85,11 @@ public class SiloModelCBLCM {
 	            System.exit(1);
 	        }
 	        if (SiloUtil.containsElement(scalingYears, currentYear))
-	            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, currentYear, dataContainer);
+	            SummarizeData.scaleMicroDataToExogenousForecast(currentYear, dataContainer);
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-	        EventManager em = new EventManager(rbLandUse, dataContainer);
+	        EventManager em = new EventManager(dataContainer);
 	        long startTime = 0;
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getIomig().setupInOutMigration(currentYear);
@@ -147,7 +143,7 @@ public class SiloModelCBLCM {
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear())
-	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer, rbLandUse, properties );
+	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
 	        logger.info("  Simulating events");
@@ -222,7 +218,7 @@ public class SiloModelCBLCM {
 
 	        int nextYearForTransportModel = currentYear + 1;
 	        if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
-	            if (properties.getTransportModelProperties().isRunTravelDemandModel())
+	            if (Properties.get().transportModel.runTravelDemandModel)
 	                transportModel.runTransportModel(nextYearForTransportModel);
 	        }
 
@@ -244,32 +240,32 @@ public class SiloModelCBLCM {
 		// close model run
 
 	        //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data
-	        summarizeData.resultWriterReplicate = true;
+	        SummarizeData.resultWriterReplicate = true;
 
 	        if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-	            summarizeData.scaleMicroDataToExogenousForecast(rbLandUse, SiloUtil.getEndYear(), dataContainer);
+	            SummarizeData.scaleMicroDataToExogenousForecast(SiloUtil.getEndYear(), dataContainer);
 
 	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 	        if (SiloUtil.getEndYear() != 2040) {
-	            summarizeData.writeOutSyntheticPopulation(rbLandUse, SiloUtil.endYear);
+	            SummarizeData.writeOutSyntheticPopulation(SiloUtil.endYear);
 	            geoData.writeOutDevelopmentCapacityFile(dataContainer);
 	        }
 
-	        SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer, rbLandUse, properties);
+	        SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer);
 	        SiloUtil.finish(modelContainer);
 	        SiloUtil.modelStopper("removeFile");
 	        
-	        if(properties.getCblcmProperties().isCreateCblcmFiles()){
+	        if(Properties.get().cblcm.createCblcmFiles){
 	        	 String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
 	             SiloUtil.createDirectoryIfNotExistingYet(directory);
-	             String outputFile = (directory + "/" + properties.getMainProperties().getSpatialResultFileName() + "_" + SiloUtil.getEndYear() + "VS" + properties.getCblcmProperties().getBaseYear() + ".csv");
+	             String outputFile = (directory + "/" + Properties.get().main.spatialResultFileName + "_" + SiloUtil.getEndYear() + "VS" + Properties.get().cblcm.baseYear + ".csv");
 	             String[] inputFiles = new String[2];
-	             inputFiles[0] = (directory + "/" + properties.getMainProperties().getSpatialResultFileName() + SiloUtil.gregorianIterator + ".csv");
-	             inputFiles[1] = (SiloUtil.baseDirectory+ properties.getCblcmProperties().getBaseFile());
+	             inputFiles[0] = (directory + "/" + Properties.get().main.spatialResultFileName + SiloUtil.gregorianIterator + ".csv");
+	             inputFiles[1] = (SiloUtil.baseDirectory+ Properties.get().cblcm.baseFile);
 
 	             try {
-					CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(properties.getCblcmProperties().getBaseYear()) , SiloUtil.getEndYear(), rbLandUse, properties.getCblcmProperties());
+					CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(Properties.get().cblcm.baseYear) , SiloUtil.getEndYear());
 				} catch (NumberFormatException e) {
 					logger.error(e);
 				} catch (IOException e) {
@@ -277,7 +273,7 @@ public class SiloModelCBLCM {
 				}
 	        }
 	        
-	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter, properties);
+	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
 	        logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
 	}
 }

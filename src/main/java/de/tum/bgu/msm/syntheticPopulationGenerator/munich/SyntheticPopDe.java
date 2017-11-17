@@ -176,14 +176,14 @@ public class SyntheticPopDe implements SyntheticPopI {
             assignJobs(); //Workplace allocation
             assignSchools(); //School allocation
             addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
+            SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
         } else { //read the synthetic population  // todo: this part will be removed after testing is completed
             logger.info("Testing mode");
             //readMicroData2010();
             //checkHouseholdRelationship();
             readSyntheticPopulation();
             //addCars(false);
-            summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_ddPrice_");
+            SummarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_ddPrice_");
             //readAndStoreMicroData();
         }
         long estimatedTime = System.nanoTime() - startTime;

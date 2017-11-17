@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
 
@@ -55,6 +56,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     public SyntheticPopUs(ResourceBundle rb) {
         // constructor
         this.rb = rb;
+        Properties.initializeProperties(rb);
     }
 
 
@@ -67,14 +69,14 @@ public class SyntheticPopUs implements SyntheticPopI {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
-        accessibility = new Accessibility(rb, geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(geoData);                        // read in travel times and trip length frequency distribution
         accessibility.readCarSkim(SiloUtil.getStartYear());
         accessibility.readPtSkim(SiloUtil.getStartYear());
         accessibility.initialize();
         processPums();
-        JobDataManager jobData = new JobDataManager(rb, geoData);
+        JobDataManager jobData = new JobDataManager(geoData);
         generateAutoOwnership(jobData);
-        summarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
+        SummarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
         addVacantDwellings();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
         logger.info ("  Total number of households created " + Household.getHouseholdCount());
@@ -92,7 +94,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
-        summarizeData.writeOutSyntheticPopulation(rb, SiloUtil.getBaseYear());
+        SummarizeData.writeOutSyntheticPopulation(SiloUtil.getBaseYear());
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
@@ -144,8 +146,8 @@ public class SyntheticPopUs implements SyntheticPopI {
         // method to generate synthetic jobs
 
         logger.info("  Generating base year jobs");
-        TableDataSet jobs = SiloUtil.readCSVfile(ResourceUtil.getProperty(rb, JobDataManager.PROPERTIES_JOB_CONTROL_TOTAL));
-        new JobType(rb);
+        TableDataSet jobs = SiloUtil.readCSVfile(Properties.get().jobData.jobControlTotalsFileName);
+        new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][taz]
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][geoData.getHighestZonalId() + 1];
@@ -692,7 +694,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void generateAutoOwnership (JobDataManager jobData) {
         // select number of cars for every household
         jobData.calculateJobDensityByZone();
-        MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(rb, jobData, accessibility);   // calculate auto-ownership probabilities
+        MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(jobData, accessibility);   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
             households.put(hh.getId(), null);

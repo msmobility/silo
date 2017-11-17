@@ -70,7 +70,7 @@ public class CreateCarOwnershipModel {
         for (Household hh : Household.getHouseholdArray()) {
             simulateCarOwnership(hh);
         }
-        summarizeData.summarizeCarOwnershipByMunicipality(zonalData);
+        SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
         if (flagSkipCreationOfSPforDebugging) {
             logger.info("Finished car ownership model");
             System.exit(0);

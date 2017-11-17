@@ -1,6 +1,6 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import org.apache.log4j.Logger;
@@ -28,14 +28,14 @@ public class SiloMstm {
 
         SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
-        Properties properties = new Properties(rb);
+        Properties.initializeProperties(rb);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(rb, properties);
+            SiloModel model = new SiloModel();
             model.runModel(SiloModel.Implementation.MSTM);
             logger.info("Finished SILO.");
         } catch (Exception e) {
@@ -43,14 +43,14 @@ public class SiloMstm {
             throw new RuntimeException(e);
         } finally {
             SiloUtil.trackingFile("close");
-            summarizeData.resultFile("close");
-            summarizeData.resultFileSpatial(rb, "close");
+            SummarizeData.resultFile("close");
+            SummarizeData.resultFileSpatial("close");
             float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);
             logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-            if (properties.getMainProperties().isTrackTime()) {
-                String fileName = properties.getMainProperties().getTrackTimeFile();
+            if (Properties.get().main.trackTime) {
+                String fileName = Properties.get().main.trackTimeFile;
                 try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                     out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                     out.close();

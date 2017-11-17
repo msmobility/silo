@@ -33,6 +33,7 @@ import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import javax.script.ScriptException;
@@ -49,23 +50,8 @@ public class MarryDivorceModel {
     static Logger logger = Logger.getLogger(MarryDivorceModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_FILE                 = "Demographics.UEC.FileName";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET           = "Demographics.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_MARRIAGE = "Demographics.UEC.ModelSheetNumber.Marriage";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_DIVORCE  = "Demographics.UEC.ModelSheetNumber.Divorce";
-    protected static final String PROPERTIES_DEMOGRAPHICS_AGE_DIFF_ABS             = "demographics.age.diff.of.partners.absolute";
-    protected static final String PROPERTIES_DEMOGRAPHICS_AGE_DIFF_SPREADING_FAC   = "demographics.age.diff.of.partners.spreadfc";
-    protected static final String PROPERTIES_DEMOGRAPHICS_MIN_LEGAL_MARRIGAGE_AGE  = "demographics.min.age.for.legal.marriage";
-    protected static final String PROPERTIES_DEMOGRAPHICS_INTERRACIAL_MARRIAGE_SHR = "demographics.interracial.marriage.share";
-    protected static final String PROPERTIES_DEMOGRAPHICS_MARRIAGE_1PER_HH_BIAS    = "demographics.single.pers.hh.marriage.bias";
-    protected static final String PROPERTIES_DEMOGRAPHICS_MARRIAGE_PROB_SCALER     = "demographics.local.marriage.rate.adjuster";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_MARRIAGE    = "log.util.marriage";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_DIVORCE     = "log.util.divorce";
-
-    // properties
     private String uecFileName;
     private int dataSheetNumber;
-    private ResourceBundle rb;
 
     private double[][] ageDependentMarryProb;
     public double[] marriageProbability;
@@ -77,13 +63,9 @@ public class MarryDivorceModel {
 
     private DivorceJSCalculator calculator;
 
-    public MarryDivorceModel(ResourceBundle rb) {
-
-        this.rb = rb;
-
-        // read properties
-        uecFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET);
+    public MarryDivorceModel() {
+        uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.uecFileName;
+        dataSheetNumber = Properties.get().demographics.dataSheet;
 
         setupMarriageModel();
         setupDivorceModel();
@@ -93,12 +75,12 @@ public class MarryDivorceModel {
     private void setupMarriageModel() {
 
         // read properties
-        int marriageModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_MARRIAGE);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_MARRIAGE);
-        minMarryAge = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_MIN_LEGAL_MARRIGAGE_AGE);
+        int marriageModelSheetNumber = Properties.get().demographics.marriageModelSheet;
+        boolean logCalculation = Properties.get().demographics.logMarriageCalculation;
+        minMarryAge = Properties.get().demographics.minMarryAge;
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
-        float localMarriageAdjuster = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_MARRIAGE_PROB_SCALER);
-        onePersonHhMarriageBias = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_MARRIAGE_1PER_HH_BIAS);
+        float localMarriageAdjuster = Properties.get().demographics.localMarriageAdjuster;
+        onePersonHhMarriageBias = Properties.get().demographics.onePersonHhMarriageBias;
 
         // initialize UEC
         UtilityExpressionCalculator marriageModel = new UtilityExpressionCalculator(new File(uecFileName),
@@ -130,8 +112,8 @@ public class MarryDivorceModel {
             }
         }
         // set up probability to pick a partner by age difference
-        double marryAbsAgeDiff = ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_AGE_DIFF_ABS);
-        double marryAgeSpreadFac = ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_AGE_DIFF_SPREADING_FAC);
+        double marryAbsAgeDiff = Properties.get().demographics.marryAbsAgeDiff;
+        double marryAgeSpreadFac = Properties.get().demographics.marryAgeSpreadFac;
         ageOffset = 10;  // ageOffset is the range of ages above and below a persons age that are considered for marriage
         // needs to cover -9 to +9 to reach one person type above and one person type below
         // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
@@ -177,7 +159,7 @@ public class MarryDivorceModel {
         // create couples
         int highestId = HouseholdDataManager.getHighestPersonIdInUse();
         boolean[] personSelectedForMarriage = SiloUtil.createArrayWithValue(highestId + 1, false);
-        float interRacialMarriageShare = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_INTERRACIAL_MARRIAGE_SHR);
+        float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
         for (Person pp: Person.getPersonArray()) {
             if (EventRules.ruleGetMarried(pp) && pp.getAge() < 100 && !personSelectedForMarriage[pp.getId()]) {
                 double marryProb = marriageProbability[pp.getType().ordinal()];   // raw marriage probability for this age/gender group

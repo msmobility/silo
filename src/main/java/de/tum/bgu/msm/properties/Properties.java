@@ -1,33 +1,47 @@
 package de.tum.bgu.msm.properties;
 
-import de.tum.bgu.msm.properties.modules.CblcmPropertiesModule;
-import de.tum.bgu.msm.properties.modules.MainPropertiesModule;
-import de.tum.bgu.msm.properties.modules.MainPropertiesModuleImpl;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
+import de.tum.bgu.msm.properties.modules.*;
 
 import java.util.ResourceBundle;
 
 public final class Properties {
 
-    private final MainPropertiesModule mainProperties;
-    private final CblcmPropertiesModule cblcmProperties;
-    private final TransportModelPropertiesModule transportModelProperties;
-
-    public Properties(ResourceBundle bundle) {
-        mainProperties = new MainPropertiesModuleImpl(bundle);
-        cblcmProperties = new CblcmPropertiesModule(bundle);
-        transportModelProperties = new TransportModelPropertiesModule(bundle);
+    private static Properties instance;
+    public static Properties get() {
+        if(instance == null) {
+            throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
+        }
+        return instance;
     }
 
-    public MainPropertiesModule getMainProperties() {
-        return mainProperties;
+    public static void initializeProperties(ResourceBundle bundle) {
+        instance = new Properties(bundle);
     }
 
-    public CblcmPropertiesModule getCblcmProperties() {
-        return cblcmProperties;
-    }
 
-    public TransportModelPropertiesModule getTransportModelProperties() {
-        return transportModelProperties;
+    public final MainProperties main;
+    public final CblcmProperties cblcm;
+    public final TransportModelPropertiesModule transportModel;
+    public final GeoProperties geo;
+    public final RealEstateProperties realEstate;
+    public final HouseholdDataProperties householdData;
+    public final JobDataProperties jobData;
+    public final EventRulesProperties eventRules;
+    public final DemographicsProperties demographics;
+    public final AccessibilityProperties accessibility;
+    public final MovesProperties moves;
+
+    private Properties(ResourceBundle bundle) {
+        main = new MainProperties(bundle);
+        cblcm = new CblcmProperties(bundle);
+        transportModel = new TransportModelPropertiesModule(bundle);
+        geo = new GeoProperties(bundle);
+        realEstate = new RealEstateProperties(bundle);
+        householdData = new HouseholdDataProperties(bundle);
+        jobData = new JobDataProperties(bundle);
+        eventRules = new EventRulesProperties(bundle);
+        demographics = new DemographicsProperties(bundle);
+        accessibility = new AccessibilityProperties(bundle);
+        moves = new MovesProperties(bundle);
     }
 }

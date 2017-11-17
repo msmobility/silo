@@ -28,12 +28,9 @@ public class RenovationModel {
 
     // properties
 	private double[][] renovationProbability;
-    private ResourceBundle rb;
     private RenovationJSCalculator renovationCalculator;
 
-    public RenovationModel(ResourceBundle rb) {
-        // constructor
-        this.rb = rb;
+    public RenovationModel() {
         setupRenovationModel();
 	}
 

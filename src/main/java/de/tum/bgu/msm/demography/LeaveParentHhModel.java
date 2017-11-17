@@ -44,13 +44,13 @@ public class LeaveParentHhModel {
     private LeaveParentHhJSCalculator calculator;
 
 
-    public LeaveParentHhModel(ResourceBundle rb) {
+    public LeaveParentHhModel() {
         // constructor
-        setupLPHModel(rb);
+        setupLPHModel();
     }
 
 
-    private void setupLPHModel(ResourceBundle rb) {
+    private void setupLPHModel() {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));

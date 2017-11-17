@@ -35,8 +35,6 @@ public class MstmTransportModel implements TransportModelI {
     private static final String PROPERTIES_MSTM_HH_SIZE_DATA_FILE = "mstm.households.by.size.file";
     private static final String PROPERTIES_MSTM_INCOME_BRACKETS   = "mstm.income.brackets";
 
-    private final Properties properties;
-
     private ResourceBundle rbLandUse;
     private ResourceBundle rbTravel;
     private GeoData geoData;
@@ -46,11 +44,9 @@ public class MstmTransportModel implements TransportModelI {
     public MstmTransportModel(ResourceBundle rbLandUse, GeoData geoData) {
         // constructor
         this.rbLandUse = rbLandUse;
-        properties = new Properties(rbLandUse);
         this.geoData = geoData;
-        String fileName = properties.getTransportModelProperties().getDemandModelPropertiesPath();
+        String fileName = Properties.get().transportModel.demandModelPropertiesPath;
         rbTravel = ResourceUtil.getPropertyBundle(new File(fileName));
-
     }
 
 
@@ -67,7 +63,7 @@ public class MstmTransportModel implements TransportModelI {
         tripGeneration();
         logger.info("Completed travel demand model for the year " + year);
 
-        if (properties.getMainProperties().isCreateMstmOutput()) {
+        if (Properties.get().main.createMstmOutput) {
             this.writeOutSocioEconomicDataForMstm(year + 1);
         }
     }
@@ -84,8 +80,8 @@ public class MstmTransportModel implements TransportModelI {
         tdd.readData();
         if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
-            RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
-            HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
+            RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
+            HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);
             householdData.readPopulation(false, 0);
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();

@@ -19,17 +19,11 @@ import java.util.*;
 public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     static Logger logger = Logger.getLogger(MunichCarOwnerShipModel.class);
-    private ResourceBundle rb;
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
     private Reader reader;
     private MunichCarOwnershipJSCalculator calculator;
-
-    public MunichCarOwnerShipModel(ResourceBundle rb){
-        logger.info(" Setting up probabilities for car update model");
-        this.rb = rb;
-    }
 
     public static void summarizeCarUpdate() {
         // This function summarizes household car ownership update and quits
@@ -82,7 +76,6 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     @Override
     public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
-        //
 
         int[] counter = new int[2];
         for (Map.Entry<Integer, int[]> pair : updatedHouseholds.entrySet()) {

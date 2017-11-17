@@ -62,11 +62,11 @@ public class SiloCSDMS {
 
         logger.info("Starting SILO Initialization for MSTM with CSDMS Integration");
         rb = SiloUtil.siloInitialization(configFile);
-        properties = new Properties(rb);
+        Properties.initializeProperties(rb);
         SiloUtil.setBaseYear(2000);
         logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
         startTime = System.currentTimeMillis();
-        model = new SiloModelCBLCM(rb);
+        model = new SiloModelCBLCM();
         model.initialize();
         logger.info("Finished Initialization.");
     }

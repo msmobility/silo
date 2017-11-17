@@ -5,12 +5,10 @@ import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -21,10 +19,11 @@ import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import static java.nio.file.StandardCopyOption.*;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.*;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Utilities used by the SILO Model
@@ -33,17 +32,6 @@ import java.util.*;
  **/
 
 public class SiloUtil {
-
-    protected static final String PROPERTIES_BASE_DIRECTORY                 = "base.directory";
-    protected static final String PROPERTIES_RANDOM_SEED                    = "random.seed";
-    public static final String PROPERTIES_SCENARIO_NAME                     = "scenario.name";
-    protected static final String PROPERTIES_TRACKING_FILE_NAME             = "track.file.name";
-    public static final String PROPERTIES_START_YEAR                        = "start.year";
-    public static final String PROPERTIES_SIMULATION_PERIOD_LENGTH          = "simulation.period.length";
-    public static final String PROPERTIES_END_YEAR                          = "end.year";
-    public static final String PROPERTIES_GREGORIAN_ITERATOR                = "this.gregorian.iterator";
-    public static final String PROPERTIES_INCOME_BRACKETS                   = "income.brackets.hh.types";
-    public static final String PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS = "dwelling.quality.levels.distinguished";
 
     private static Random rand;
     public static String baseDirectory;
@@ -69,18 +57,16 @@ public class SiloUtil {
     public SiloUtil() {
     }
 
-
     public static ResourceBundle siloInitialization(String resourceBundleNames) {
-        // initializes Silo
-
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
+        Properties.initializeProperties(rb);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        baseDirectory = ResourceUtil.getProperty(rb, PROPERTIES_BASE_DIRECTORY);
-        scenarioName = ResourceUtil.getProperty(rb, PROPERTIES_SCENARIO_NAME);
-        startYear = ResourceUtil.getIntegerProperty(rb, PROPERTIES_START_YEAR);
-        summarizeData.openResultFile(rb);
-        summarizeData.resultFileSpatial(rb, "open");
+        baseDirectory = ResourceUtil.getProperty(rb, "base.directory");
+        scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
+        startYear = ResourceUtil.getIntegerProperty(rb, "start.year");
+        SummarizeData.openResultFile(rb);
+        SummarizeData.resultFileSpatial("open");
 
         // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
@@ -93,7 +79,7 @@ public class SiloUtil {
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
         copyFile(resourceBundleNames, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
 
-        initializeRandomNumber();
+        initializeRandomNumber(ResourceUtil.getIntegerProperty(rb, "random.seed"));
         trackingFile("open");
         return rb;
     }
@@ -115,9 +101,7 @@ public class SiloUtil {
     }
 
 
-    public static void initializeRandomNumber() {
-        // initialize random number generator
-        int seed = ResourceUtil.getIntegerProperty(rb, SiloUtil.PROPERTIES_RANDOM_SEED);
+    public static void initializeRandomNumber(int seed) {
         if (seed == -1)
             rand = new Random();
         else
@@ -240,7 +224,7 @@ public class SiloUtil {
                 trackDd = ResourceUtil.getIntegerProperty(rb, "track.dwelling");
                 trackJj = ResourceUtil.getIntegerProperty(rb, "track.job");
                 if (trackHh == -1 && trackPp == -1 && trackDd == -1 && trackJj == -1) return;
-                String fileName = ResourceUtil.getProperty(rb, PROPERTIES_TRACKING_FILE_NAME);
+                String fileName = ResourceUtil.getProperty(rb, "track.file.name");
                 trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != baseYear);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
@@ -517,7 +501,7 @@ public class SiloUtil {
 
 
     public static void finish (SiloModelContainer modelContainer) {
-        summarizeData.resultFile("close");
+        SummarizeData.resultFile("close");
         trackingFile("close");
         if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
         if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
@@ -956,14 +940,14 @@ public class SiloUtil {
 static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties properties) {
 	// run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
 	trackingFile("close");
-	summarizeData.resultFile("close");
-	summarizeData.resultFileSpatial(rbLandUse, "close");
+	SummarizeData.resultFile("close");
+	SummarizeData.resultFileSpatial("close");
 	float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
 	int hours = (int) (endTime / 60);
 	int min = (int) (endTime - 60 * hours);
 	SiloModel.logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-	if (properties.getMainProperties().isTrackTime()) {
-		String fileName = properties.getMainProperties().getTrackTimeFile();
+	if (Properties.get().main.trackTime) {
+		String fileName = Properties.get().main.trackTimeFile;
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 			out.close();
@@ -992,8 +976,7 @@ static boolean modelStopper (String action) {
 }
 
 
-static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer,
-		ResourceBundle rbLandUse, Properties properties ) {
+static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
 	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 
@@ -1004,36 +987,35 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 	SiloModel.logger.info("  Summarizing micro data for year " + year);
 
 
-	summarizeData.resultFile("Year " + year, false);
+	SummarizeData.resultFile("Year " + year, false);
 	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
 	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionList());
 
-	summarizeData.resultFileSpatial(rbLandUse, "Year " + year, false);
-	summarizeData.summarizeSpatially(year, modelContainer, dataContainer);
-	if (properties.getCblcmProperties().isCreateCblcmFiles()) {
-        summarizeDataCblcm.createCblcmSummaries(rbLandUse, year, modelContainer, dataContainer);
+	SummarizeData.resultFileSpatial("Year " + year, false);
+	SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+	if (Properties.get().cblcm.createCblcmFiles) {
+        summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
     }
-	if (properties.getMainProperties().isCreateHousingEnvironmentImpactFile()) {
-        summarizeData.summarizeHousing(rbLandUse, year);
+	if (Properties.get().main.createHousingEnvironmentImpactFile) {
+        SummarizeData.summarizeHousing(year);
     }
-	if (properties.getMainProperties().isCreatePrestoSummary()) {
-		summarizeData.summarizePrestoRegion(rbLandUse, year);
+	if (Properties.get().main.createPrestoSummary) {
+		SummarizeData.summarizePrestoRegion(year);
 	}
-
 }
 
 
-static void writeOutTimeTracker (long[][] timeCounter, Properties properties) {
+static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
 	int startYear = getStartYear();
-	PrintWriter pw = openFileForSequentialWriting(properties.getMainProperties().getTrackTimeFile(), startYear != getBaseYear());
+	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != getBaseYear());
 	if (startYear == getBaseYear()) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
-				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,summarizeData,updateRealEstatePrices," +
+				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
 				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
 		pw.println();
 	}

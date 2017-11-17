@@ -1,13 +1,12 @@
-package de.tum.bgu.msm.relocation;
+package de.tum.bgu.msm.relocation.munich;
 
 /*
-* @author Rolf Moeckel (PB Albuquerque)
-* Created on Apr 4, 2011 in Albuquerque, NM
-* Revised on Apr 24, 2014 in College Park, MD
+ * Implementation of the MovesModelI Interface for the Munich implementation
+ * @author Rolf Moeckel
+ * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
 */
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -15,81 +14,64 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.relocation.MovesDMU;
+import de.tum.bgu.msm.relocation.MovesModelI;
+import de.tum.bgu.msm.relocation.SelectDwellingJSCalculator;
+import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
 import org.apache.log4j.Logger;
 
+import javax.script.ScriptException;
 import java.io.File;
-import java.util.ResourceBundle;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
-public class MovesModelMstm implements MovesModelI {
-    private static Logger logger = Logger.getLogger(MovesModelMstm.class);
+public class MovesModelMuc implements MovesModelI {
+    private static Logger logger = Logger.getLogger(MovesModelMuc.class);
     static Logger traceLogger = Logger.getLogger("trace");
-    private GeoData geoData;
-    protected static final String PROPERTIES_MOVES_UEC_FILE                  = "HH.Moves.UEC.FileName";
-    protected static final String PROPERTIES_MOVES_UEC_DATA_SHEET            = "HH.Moves.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL   = "HH.Moves.UEC.Dwelling.Utility";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_MOVEORNOT = "HH.Moves.UEC.ModelSheetNumber.moveOrNot";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_REGION    = "HH.Moves.UEC.ModelSheetNumber.selectRegion";
-    protected static final String PROPERTIES_MOVES_UEC_MODEL_SHEET_DWELLING  = "HH.Moves.UEC.ModelSheetNumber.selDwelling";
-    protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_D = "log.util.hhRelocation.dd";
-    protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_R = "log.util.hhRelocation.rg";
-    protected static final String PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_MODEL  = "move.or.not.binomial.log.model.parameter";
-    protected static final String PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_SHIFT  = "move.or.not.binomial.log.shift.parameter";
-    protected static final String PROPERTIES_SELECT_DWELLING_MN_LOG_MODEL    = "select.dwelling.mn.log.model.parameter";
-    protected static final String PROPERTIES_SELECT_DWELLING_RACE_FACTOR     = "relevance.of.race.in.zone.of.dwelling";
-    protected static final String PROPERTIES_RUN_SCENARIO_HOUSING_SUBSIDY    = "provide.housing.subsidy.to.low.inc";
+    private final GeoData geoData;
+
 
     // properties
     private String uecFileName;
     private int dataSheetNumber;
     private boolean logCalculationDwelling;
-    private boolean logCalculationRegion;
-    private ResourceBundle rb;
     private int numAltsMoveOrNot;
-    private int numAltsSelReg;
     private double[][][] utilityRegion;
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
-    private double parameter_SelectDD;
     int[] evalDwellingAvail;
     int numAltsEvalDwelling;
     private UtilityExpressionCalculator ddUtilityModel;
-    private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU evaluateDwellingDmu;
-    private MovesDMU selectRegionDmu;
     private double[] averageHousingSatisfaction;
-    private float[][] zonalRacialComposition;
-    private float[][] regionalRacialComposition;
-    private double selectDwellingRaceRelevance;
-    private boolean provideRentSubsidyToLowIncomeHh;
+    private float[] zonalShareForeigners;
+    private float[] regionalShareForeigners;
     private int[] householdsByRegion;
+    private SelectRegionJSCalculator regionCalculator;
+    private SelectDwellingJSCalculator dwellingCalculator;
 
 
-    public MovesModelMstm(ResourceBundle rb, GeoData geoData) {
-        // constructor
-        this.rb = rb;
+    public MovesModelMuc(GeoData geoData) {
         this.geoData = geoData;
 
         // read properties
-        uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MOVES_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_DATA_SHEET);
-        logCalculationDwelling = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_D);
-        logCalculationRegion = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILITY_CALCULATION_MOVES_R);
-        selectDwellingRaceRelevance = ResourceUtil.getDoubleProperty(rb, PROPERTIES_SELECT_DWELLING_RACE_FACTOR);
+        uecFileName     = SiloUtil.baseDirectory + Properties.get().moves.uecFileName;
+        dataSheetNumber = Properties.get().moves.dataSheet;
+        logCalculationDwelling = Properties.get().moves.logHhRelocation;
         evaluateDwellingDmu = new MovesDMU();
 
         setupEvaluateDwellings();
         setupMoveOrNotMove();
         setupSelectRegionModel();
         setupSelectDwellingModel();
-        provideRentSubsidyToLowIncomeHh = ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SCENARIO_HOUSING_SUBSIDY, false);
-        if (provideRentSubsidyToLowIncomeHh) RealEstateDataManager.calculateMedianRentByMSA();
     }
 
 
     private void setupEvaluateDwellings() {
         // set up model to evaluate dwellings
 
-        int ddUtilityModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_DD_UTIL);
+        int ddUtilityModelSheetNumber = Properties.get().moves.dwellingUtilSheet;
         // initialize UEC
         ddUtilityModel = new UtilityExpressionCalculator(new File(uecFileName),
                 ddUtilityModelSheetNumber,
@@ -116,44 +98,37 @@ public class MovesModelMstm implements MovesModelI {
     }
 
 
-    private void calculateRacialCompositionByZoneAndRegion() {
-        // Calculate share of races by zone and region
+    private void calculateShareOfForeignersByZoneAndRegion() {
+        // Calculate share of foreigners by zone and region
 
-        zonalRacialComposition = new float[geoData.getZones().length][4];
-        regionalRacialComposition = new float[geoData.getRegionList().length][4];
-        SiloUtil.setArrayToValue(zonalRacialComposition, 0f);
+        zonalShareForeigners = new float[geoData.getZones().length];
+        regionalShareForeigners = new float[geoData.getRegionList().length];
+        SiloUtil.setArrayToValue(zonalShareForeigners, 0f);
         for (Household hh: Household.getHouseholdArray()) {
-            zonalRacialComposition[geoData.getZoneIndex(hh.getHomeZone())][hh.getRace().ordinal()]++;
             int region = geoData.getRegionOfZone(hh.getHomeZone());
-            regionalRacialComposition[geoData.getRegionIndex(region)][hh.getRace().ordinal()]++;
+            if (hh.getNationality() != Nationality.german) {
+                zonalShareForeigners[geoData.getZoneIndex(hh.getHomeZone())]++;
+                regionalShareForeigners[geoData.getRegionIndex(region)]++;
+            }
         }
+        int[] hhByZone = HouseholdDataManager.getNumberOfHouseholdsByZone(geoData);
         for (int zone: geoData.getZones()) {
-            int zonalSum = 0;
-            for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                zonalSum += zonalRacialComposition[geoData.getZoneIndex(zone)][raceType];
-            }
-            if (zonalSum > 0) {
-                for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                    zonalRacialComposition[geoData.getZoneIndex(zone)][raceType] /= zonalSum;
-                }
+            if (hhByZone[geoData.getZoneIndex(zone)] > 0) {
+                zonalShareForeigners[geoData.getZoneIndex(zone)] =
+                        zonalShareForeigners[geoData.getZoneIndex(zone)] / hhByZone[geoData.getZoneIndex(zone)];
+            } else {
+                zonalShareForeigners[geoData.getZoneIndex(zone)] = 0;  // should not be necessary, but implemented for safety
             }
         }
+        int[] hhByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
         for (int region: geoData.getRegionList()) {
-            int regSum = 0;
-            for (int raceType = 0; raceType < regionalRacialComposition[0].length; raceType++) {
-                regSum += regionalRacialComposition[geoData.getRegionIndex(region)][raceType];
-            }
-            if (regSum > 0) {
-                for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                    regionalRacialComposition[geoData.getRegionIndex(region)][raceType] /= regSum;
-                }
+            if (hhByRegion[geoData.getRegionIndex(region)] > 0) {
+                regionalShareForeigners[geoData.getRegionIndex(region)] =
+                        regionalShareForeigners[geoData.getRegionIndex(region)] / hhByRegion[geoData.getRegionIndex(region)];
+            } else {
+                regionalShareForeigners[geoData.getRegionIndex(region)] = 0;  // should not be necessary, but implemented for safety
             }
         }
-    }
-
-
-    public float getZonalRacialShare(int zone, Race race) {
-        return zonalRacialComposition[geoData.getZoneIndex(zone)][race.ordinal()];
     }
 
 
@@ -175,7 +150,7 @@ public class MovesModelMstm implements MovesModelI {
             } else {
                 // dwelling is occupied, evaluate for the current household
                 Household hh = Household.getHouseholdFromId(dd.getResidentId());
-                double util = calculateUtility(hh.getHouseholdType(), hh.getHhIncome(), dd, modelContainer);
+                double util = calculateUtility(hh.getHouseholdType(), dd, modelContainer);
                 dd.setUtilOfResident(util);
                 // log UEC values for each household
                 if (logCalculationDwelling)
@@ -269,7 +244,7 @@ public class MovesModelMstm implements MovesModelI {
 
         double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht: HouseholdType.values()) {
-            utilByHhType[ht.ordinal()] = calculateUtility(ht, -1, dd, modelContainer);
+            utilByHhType[ht.ordinal()] = calculateUtility(ht, dd, modelContainer);
             // log UEC values for each household type
             if (logCalculationDwelling) ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
         }
@@ -280,7 +255,7 @@ public class MovesModelMstm implements MovesModelI {
     private void setupMoveOrNotMove() {
         // set up model for choice move or stay
 
-        int moveOrNotModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_MOVEORNOT);
+        int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
         // initialize UEC
         UtilityExpressionCalculator moveOrNotModel = new UtilityExpressionCalculator(new File(uecFileName),
                 moveOrNotModelSheetNumber,
@@ -295,8 +270,8 @@ public class MovesModelMstm implements MovesModelI {
         // set DMU attributes
         moveOrNotModel.solve(moveOrNotDmu.getDmuIndexValues(), moveOrNotDmu, moveOrNotAvail);
         // todo: looks wrong, parameter should be read from UEC file, not from properties file
-        parameter_MoveOrNotSlope = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_MODEL);
-        parameter_MoveOrNotShift = ResourceUtil.getDoubleProperty(rb, PROPERTIES_MOVE_OR_NOT_BINOMIAL_LOG_SHIFT);
+        parameter_MoveOrNotSlope = Properties.get().moves.moveOrNotSlope;
+        parameter_MoveOrNotShift = Properties.get().moves.moveOrNotShift;
         if (logCalculationDwelling) {
             // log UEC values for each household type
             moveOrNotModel.logAnswersArray(traceLogger, "Move-Or-Not Model");
@@ -306,62 +281,49 @@ public class MovesModelMstm implements MovesModelI {
 
     private void setupSelectRegionModel() {
         // set up model for selection of region
-
-        int selRegModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_REGION);
-        // initialize UEC
-        selectRegionModel = new UtilityExpressionCalculator(new File(uecFileName),
-                selRegModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MovesDMU.class);
-        selectRegionDmu = new MovesDMU();
-        numAltsSelReg = selectRegionModel.getNumberOfAlternatives();
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+        regionCalculator = new SelectRegionJSCalculator(reader, false);
     }
 
 
     public void calculateRegionalUtilities(SiloModelContainer siloModelContainer) {
         // everything is available
 
-        calculateRacialCompositionByZoneAndRegion();
-        int[] selRegAvail = new int[numAltsSelReg + 1];
-        for (int i = 1; i < selRegAvail.length; i++) selRegAvail[i] = 1;
-
         int[] regions = geoData.getRegionList();
+        calculateShareOfForeignersByZoneAndRegion();
+
         int highestRegion = SiloUtil.getHighestVal(regions);
         int[] regPrice = new int[highestRegion + 1];
         float[] regAcc = new float[highestRegion + 1];
-        float[] regSchQu = new float[highestRegion + 1];
-        float[] regCrime = new float[highestRegion + 1];
         for (int region: regions) {
-            regPrice[region] = calculateRegPrice(region);
-            regAcc[region] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
-            regSchQu[region] = GeoDataMstm.getRegionalSchoolQuality(region);
-            regCrime[region] = 1f - GeoDataMstm.getRegionalCrimeRate(region);  // invert utility, as lower crime rate has higher utility
+            regPrice[geoData.getRegionIndex(region)] = calculateRegPrice(region);
+            regAcc[geoData.getRegionIndex(region)] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
         }
-        selectRegionDmu.setRegionalAccessibility(regAcc);
-        selectRegionDmu.setRegionalSchoolQuality(regSchQu);
-        selectRegionDmu.setRegionalCrimeRate(regCrime);
-        for (Race race: Race.values()) {
-            float[] regionalRacialShare = new float[highestRegion + 1];
-            for (int region: regions) regionalRacialShare[region] = regionalRacialComposition[geoData.getRegionIndex(region)][race.ordinal()];
-            selectRegionDmu.setRegionalRace(race, regionalRacialShare);
-        }
-        utilityRegion = new double[SiloUtil.incBrackets.length + 1][Race.values().length][numAltsSelReg];
+
+        utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][regions.length];
         for (int income = 1; income <= SiloUtil.incBrackets.length + 1; income++) {
-            // set DMU attributes
+
             float[] priceUtil = new float[highestRegion + 1];
-            for (int region: regions) priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
-            selectRegionDmu.setMedianRegionPrice(priceUtil);
-            selectRegionDmu.setIncomeGroup(income - 1);
-            for (Race race: Race.values()) {
-                selectRegionDmu.setRace(race);
-                double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
-                for (int alternative = 0; alternative < numAltsSelReg; alternative++)
-                    utilityRegion[income - 1][race.ordinal()][alternative] = util[alternative];
-                // log UEC values for each household type
-                if (logCalculationRegion)
-                    selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
-                            income + " with race " + race);
+
+            for (int region: regions) {
+                priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
+            }
+
+            for (Nationality nationality: Nationality.values()) {
+                for (int region: regions) {
+                    regionCalculator.setIncomeGroup(income - 1);
+                    regionCalculator.setNationality(nationality);
+                    regionCalculator.setMedianPrice(priceUtil[region]);
+                    regionCalculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
+                    regionCalculator.setAccessibility(regAcc[region]);
+                    double utility = 0;
+                    try {
+                        utility = regionCalculator.calculate();
+                        utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
+                    } catch (ScriptException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         householdsByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
@@ -387,26 +349,8 @@ public class MovesModelMstm implements MovesModelI {
     private void setupSelectDwellingModel() {
         // set up model for choice of dwelling
 
-        int selectDwellingSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MOVES_UEC_MODEL_SHEET_DWELLING);
-        // initialize UEC
-        UtilityExpressionCalculator selectDwellingModel = new UtilityExpressionCalculator(new File(uecFileName),
-                selectDwellingSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MovesDMU.class);
-        MovesDMU selectDwellingDmu = new MovesDMU();
-        // everything is available
-        numAltsMoveOrNot = selectDwellingModel.getNumberOfAlternatives();
-        int[] selectDwellingAvail = new int[numAltsMoveOrNot + 1];
-        for (int i = 1; i < selectDwellingAvail.length; i++) selectDwellingAvail[i] = 1;
-        // set DMU attributes
-        selectDwellingModel.solve(selectDwellingDmu.getDmuIndexValues(), selectDwellingDmu, selectDwellingAvail);
-        // todo: looks wrong, parameter should be read from UEC file, not from properties file
-        parameter_SelectDD = ResourceUtil.getDoubleProperty(rb, PROPERTIES_SELECT_DWELLING_MN_LOG_MODEL);
-        if (logCalculationDwelling) {
-            // log UEC values for each household type
-            selectDwellingModel.logAnswersArray(traceLogger, "Select-Dwelling Model");
-        }
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        dwellingCalculator = new SelectDwellingJSCalculator(reader, false);
     }
 
 
@@ -414,9 +358,9 @@ public class MovesModelMstm implements MovesModelI {
         // return utility of regions based on household type and based on work location of workers in household
 
         int[] regions = geoData.getRegionList();
-        double[] util = new double[numAltsSelReg];
-        double[] workDistanceFactor = new double[numAltsSelReg];
-        for (int i = 0; i < numAltsSelReg; i++) {
+        double[] util = new double[regions.length];
+        double[] workDistanceFactor = new double[regions.length];
+        for (int i = 0; i < regions.length; i++) {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
@@ -426,7 +370,7 @@ public class MovesModelMstm implements MovesModelI {
             }
         }
         int incomeCat = HouseholdType.convertHouseholdTypeToIncomeCategory(ht);
-        for (int i = 0; i < numAltsSelReg; i++) {
+        for (int i = 0; i < regions.length; i++) {
             util[i] = utilityRegion[incomeCat - 1][race.ordinal()][i] * workDistanceFactor[i];
         }
         return util;
@@ -437,12 +381,13 @@ public class MovesModelMstm implements MovesModelI {
         // simulates (a) if this household moves and (b) where this household moves
 
         if (!EventRules.ruleHouseholdMove(Household.getHouseholdFromId(hhId))) return;  // Household does not exist anymore
-        if (!moveOrNot(hhId)) return;                            // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+        if (!moveOrNot(hhId)) return;                                         // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
         Household hh = Household.getHouseholdFromId(hhId);
-        int idNewDD = searchForNewDwelling(hh.getPersons(), modelContainer);     // Step 2: Choose new dwelling
+        int idNewDD = searchForNewDwelling(hh.getPersons(), modelContainer);  // Step 2: Choose new dwelling
         if (idNewDD > 0) {
-            moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);      // Step 3: Move household
+            moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
             EventManager.countEvent(EventTypes.householdMove);
+            dataContainer.getHouseholdData().addHouseholdThatMoved(hh);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                     Household.getHouseholdFromId(hhId).getDwellingId());
         } else {
@@ -477,7 +422,7 @@ public class MovesModelMstm implements MovesModelI {
     }
 
 
-    public int searchForNewDwelling(Person[] persons, SiloModelContainer siloModelContainer) {
+    public int searchForNewDwelling(Person[] persons, SiloModelContainer modelContainer) {
         // search alternative dwellings
 
         // data preparation
@@ -491,14 +436,19 @@ public class MovesModelMstm implements MovesModelI {
             workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
             pos++;
             householdIncome += pp.getIncome();
-            if (pp.getRace() != householdRace) householdRace = Race.other;
+            if (pp.getRace() != householdRace) householdRace = Race.black; //changed this so race is a proxy of nationality
+        }
+        if (householdRace == Race.other){
+            householdRace = Race.black;
+        } else if (householdRace == Race.hispanic){
+            householdRace = Race.black;
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
         HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.length, incomeBracket);
 
         // Step 1: select region
         int[] regions = geoData.getRegionList();
-        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones, siloModelContainer);
+        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones, modelContainer);
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
@@ -532,31 +482,23 @@ public class MovesModelMstm implements MovesModelI {
         // Step 2: select vacant dwelling in selected region
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(regions[selectedRegion]);
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
+        double sumProbs = 0.;
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
-            int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
-            if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
-                    householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
-            float racialShare = 1;
-            if (householdRace != Race.other) {
-                racialShare = getZonalRacialShare(dd.getZone(), householdRace);
+            double util = calculateUtility(ht, dd, modelContainer);
+            dwellingCalculator.setDwellingUtility(util);
+            try {
+                expProbs[i] = dwellingCalculator.calculate();
+            } catch (ScriptException e) {
+                e.printStackTrace();
             }
-            // multiply by racial share to make zones with higher own racial share more attractive
-            double adjProb;
-            if (householdQualifiesForSubsidy(householdIncome, dd.getZone(), dd.getPrice())) {
-                adjProb = Math.pow(calculateUtility(ht, householdIncome, dd, siloModelContainer), (1 - selectDwellingRaceRelevance)) *
-                        Math.pow(racialShare, selectDwellingRaceRelevance);
-            } else {
-                adjProb = Math.pow(dd.getUtilByHhType()[ht.ordinal()], (1 - selectDwellingRaceRelevance)) *
-                        Math.pow(racialShare, selectDwellingRaceRelevance);
-            }
-            expProbs[i] = Math.exp(parameter_SelectDD * adjProb);
+            sumProbs =+ expProbs[i];
         }
-        if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs);
+        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
+        int selected = SiloUtil.select(expProbs, sumProbs);
         return vacantDwellings[selected];
     }
 
@@ -579,27 +521,15 @@ public class MovesModelMstm implements MovesModelI {
     }
 
 
-    private double calculateUtility (HouseholdType ht, int income, Dwelling dd, SiloModelContainer modelContainer) {
+    private double calculateUtility (HouseholdType ht, Dwelling dd, SiloModelContainer modelContainer) {
         // calculate utility for household hh in dwelling dd
 
         evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
         evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibility(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibility(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(GeoDataMstm.getZonalSchoolQuality(dd.getZone()));
-        evaluateDwellingDmu.setUtilityDwellingCrimeRate(GeoDataMstm.getCountyCrimeRate(GeoDataMstm.getCountyOfZone(dd.getZone())));
 
         int price = dd.getPrice();
-        if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
-            // housing subsidy program in place
-            int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
-            if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
-                float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
-                float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;
-                price = Math.max(0, price - (int) (subsidy + 0.5));
-            }
-        }
-
         evaluateDwellingDmu.setUtilityDwellingPrice(convertPriceToUtility(price, ht));
         evaluateDwellingDmu.setType(ht);
         double util[] = ddUtilityModel.solve(evaluateDwellingDmu.getDmuIndexValues(), evaluateDwellingDmu, evalDwellingAvail);
@@ -609,12 +539,4 @@ public class MovesModelMstm implements MovesModelI {
         return util[0];
     }
 
-
-    private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
-        // check if households qualifies for subsidy
-        int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
-        return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * HouseholdDataManager.getMedianIncome(GeoDataMstm.getMSAOfZone(zone))) &&
-                price <= (0.4f * assumedIncome);
-    }
 }
