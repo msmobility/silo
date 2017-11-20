@@ -567,7 +567,6 @@ public class RealEstateDataManager {
 
         if (useDwellingCapacityForThisZone(zone)) {
             geoData.reduceDevelopmentCapacityByOneDwelling(zone);
-            return;
         } else {
             geoData.reduceDevelopmentCapacityByDevelopableAcres(zone, acres);
         }

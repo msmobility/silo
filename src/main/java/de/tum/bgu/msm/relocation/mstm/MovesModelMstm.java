@@ -165,9 +165,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             for (Race race: Race.values()) {
                 selectRegionDmu.setRace(race);
                 double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
-                for (int alternative = 0; alternative < numAltsSelReg; alternative++)
+                for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
                     utilityRegion[income - 1][race.ordinal()][alternative] = util[alternative];
-                // log UEC values for each household type
+                }
                 if (logCalculationRegion)
                     selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
                             income + " with race " + race);

@@ -34,7 +34,6 @@ public class CreateCarOwnershipModel {
 
     private TableDataSet zonalData;
 
-    private Reader reader;
     private CreateCarOwnershipJSCalculator calculator;
 
 
@@ -42,7 +41,7 @@ public class CreateCarOwnershipModel {
         // Constructor
         logger.info(" Setting up probabilities for car ownership model");
         this.rb = rb;
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator(reader, false);
         readZonalData();
     }

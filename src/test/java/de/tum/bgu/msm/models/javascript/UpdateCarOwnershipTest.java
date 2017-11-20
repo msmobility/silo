@@ -14,12 +14,11 @@ import java.io.Reader;
  */
 public class UpdateCarOwnershipTest {
 
-    private Reader reader;
     private MunichCarOwnershipJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
         calculator = new MunichCarOwnershipJSCalculator(reader, true);
     }
 

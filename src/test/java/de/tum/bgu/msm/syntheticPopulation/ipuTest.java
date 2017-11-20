@@ -42,8 +42,8 @@ public class ipuTest {
         String[] attributesCounty1 = controlTotalsCount.getColumnLabels();
         attributesMunicipality = new String[attributesMunicipality1.length - 1];
         attributesCounty = new String[attributesCounty1.length - 1];
-        for (int i = 0; i < attributesMunicipality.length; i++){attributesMunicipality[i] = attributesMunicipality1[i+1];}
-        for (int i = 0; i < attributesCounty.length; i++){attributesCounty[i] = attributesCounty1[i+1];}
+        System.arraycopy(attributesMunicipality1, 1, attributesMunicipality, 0, attributesMunicipality.length);
+        System.arraycopy(attributesCounty1, 1, attributesCounty, 0, attributesCounty.length);
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
         municipalitiesByCounty = new HashMap<>();

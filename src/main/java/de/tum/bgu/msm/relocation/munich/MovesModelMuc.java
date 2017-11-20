@@ -23,7 +23,6 @@ import java.io.Reader;
 
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
-    private float[] zonalShareForeigners;
     private float[] regionalShareForeigners;
     private SelectRegionJSCalculator regionCalculator;
     private SelectDwellingJSCalculator dwellingCalculator;
@@ -34,7 +33,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private void calculateShareOfForeignersByZoneAndRegion() {
 
-        zonalShareForeigners = new float[geoData.getZones().length];
+        float[] zonalShareForeigners = new float[geoData.getZones().length];
         regionalShareForeigners = new float[geoData.getRegionList().length];
         SiloUtil.setArrayToValue(zonalShareForeigners, 0f);
         for (Household hh: Household.getHouseholdArray()) {

@@ -101,7 +101,7 @@ public class MatsimTransportModel implements TransportModelI {
 		Population population = SiloMatsimUtils.createMatsimPopulation(config, householdData, year, zoneFeatureMap,
 				populationScalingFactor * workerScalingFactor);
 		
-		if (writePopulation == true) {
+		if (writePopulation) {
     		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
     		MatsimWriter populationWriter = new PopulationWriter(population);
     		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");

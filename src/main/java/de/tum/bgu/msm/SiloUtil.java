@@ -430,8 +430,8 @@ public class SiloUtil {
         // The two sets of arrays are complete, but only some cells are different than zero.
         // The third array indicates the location of the cells different than zero.
         float ws = 0;
-        for (int i = 0; i < positions.length; i++) {
-            ws += weights[positions[i]-1]*values[positions[i]-1];
+        for (int position : positions) {
+            ws += weights[position - 1] * values[position - 1];
         }
         return ws;
     }

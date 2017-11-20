@@ -38,23 +38,18 @@ import java.util.ResourceBundle;
 
 public class LeaveParentHhModel {
 
-
-    // properties
     private double[] lphProbability;
-    private LeaveParentHhJSCalculator calculator;
-
 
     public LeaveParentHhModel() {
         // constructor
         setupLPHModel();
     }
 
-
     private void setupLPHModel() {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-        calculator = new LeaveParentHhJSCalculator(reader, false);
+        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader, false);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();

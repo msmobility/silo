@@ -28,7 +28,6 @@ public class GeoDataMstm implements GeoData {
     private static int[] regionList;
     private static int[] regionIndex;
     private static TableDataSet regDef;
-    private static int[] counties;
     private static int[] countyIndex;
     private static float[] zonalSchoolQuality;
     private static float[] regionalSchoolQuality;
@@ -99,7 +98,7 @@ public class GeoDataMstm implements GeoData {
             regionalSchoolQuality[region] = regionalSchoolQuality[region] / regionDefinition.get(region).length;
 
         // create list of county FIPS codes
-        counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("COUNTYFIPS"));
+        int[] counties = SiloUtil.idendifyUniqueValues(SiloUtil.zonalData.getColumnAsInt("COUNTYFIPS"));
         countyIndex = SiloUtil.createIndexArray(counties);
 
         // read county-level crime data

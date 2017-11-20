@@ -10,12 +10,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class LeaveParentHhTest {
-    private Reader reader;
     private LeaveParentHhJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
         calculator = new LeaveParentHhJSCalculator (reader, true);
     }
 

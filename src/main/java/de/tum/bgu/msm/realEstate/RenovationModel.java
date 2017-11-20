@@ -28,7 +28,6 @@ public class RenovationModel {
 
     // properties
 	private double[][] renovationProbability;
-    private RenovationJSCalculator renovationCalculator;
 
     public RenovationModel() {
         setupRenovationModel();
@@ -39,7 +38,7 @@ public class RenovationModel {
 
 		// read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
-        renovationCalculator = new RenovationJSCalculator(reader, false);
+        RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader, false);
 
         //set renovation probabilities
         renovationProbability = new double[SiloUtil.numberOfQualityLevels][5];

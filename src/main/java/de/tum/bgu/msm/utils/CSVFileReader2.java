@@ -187,11 +187,7 @@ public class CSVFileReader2 extends TableDataFileReader2 implements DataTypes {
 
             int c;
             for(c = 0; c < count; ++c) {
-                if(columnsToRead != null) {
-                    readColumnFlag[c] = false;
-                } else {
-                    readColumnFlag[c] = true;
-                }
+                readColumnFlag[c] = (columnsToRead == null);
             }
 
             c = 0;
@@ -531,7 +527,6 @@ public class CSVFileReader2 extends TableDataFileReader2 implements DataTypes {
         try {
             BufferedReader stream;
             for(stream = new BufferedReader(new FileReader(file)); stream.readLine() != null; ++numberOfRows) {
-                ;
             }
 
             stream.close();
@@ -551,7 +546,6 @@ public class CSVFileReader2 extends TableDataFileReader2 implements DataTypes {
 
             BufferedReader stream;
             for(stream = new BufferedReader(new InputStreamReader(dis)); stream.readLine() != null; ++numberOfRows) {
-                ;
             }
 
             stream.close();

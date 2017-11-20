@@ -242,7 +242,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
                         attributeCodeToMicroHousehold.put(labelCode, labelMicroData);
                     }
                 }
-                if (ipu == true) {
+                if (ipu) {
                     if (valueCode > -1) {
                         updateInnerMap(attributeCodeValues, labelCode, valueCode, valueCode);
                     }
@@ -1686,8 +1686,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
             coef = 1.1f;
         }
         float convertToMonth = 0.0057f;
-        float price = brw * size * coef * convertToMonth + 150;
-        return price;
+        return brw * size * coef * convertToMonth + 150;
     }
 
     private int guessBedrooms(int size) {
@@ -2911,8 +2910,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
             probabilities[job] = probabilitiesJob.getStringIndexedValueAt(jobStringTypes[job],name);
         }
         //}
-        int selected = new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
-        return selected;
+        return new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
 
     }
 
@@ -2983,8 +2981,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
             probabilities[j] = impedanceMatrix.getValueAt(home, zoneJobKeys[j] / 100) * vacantJobsByZoneByType.get(zoneJobKeys[j]);
             //probability = impedance * number of vacant jobs. Impedance is calculated in advance as exp(utility)
         }
-        int[] work = select(probabilities,zoneJobKeys);
-        return work;
+        return select(probabilities,zoneJobKeys);
     }
 
 

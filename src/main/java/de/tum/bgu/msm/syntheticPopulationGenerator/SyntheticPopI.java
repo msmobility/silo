@@ -9,6 +9,6 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 public interface SyntheticPopI {
 
-    public void runSP();
+    void runSP();
 
 }

@@ -22,9 +22,6 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
-    private Reader reader;
-    private MunichCarOwnershipJSCalculator calculator;
-
     public static void summarizeCarUpdate() {
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
@@ -42,8 +39,8 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
     public void initialize() {
         // Setting up probabilities for car update model
 
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
-        calculator = new MunichCarOwnershipJSCalculator(reader, false);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
+        MunichCarOwnershipJSCalculator calculator = new MunichCarOwnershipJSCalculator(reader, false);
         //set car update probabilities
         carUpdateProb = new double[4][2][2][2][2][2][2][3];
         for (int prevCar = 0; prevCar < 4; prevCar++){

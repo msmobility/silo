@@ -162,8 +162,8 @@ public class SyntheticPopDe implements SyntheticPopI {
             }
             checkHouseholdRelationship();
             //Run fitting procedure
-            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
-                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY) == true) {
+            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU)) {
+                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY)) {
                     runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
                 } else {
                     runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
@@ -2459,8 +2459,7 @@ public class SyntheticPopDe implements SyntheticPopI {
             coef = 1.1f;
         }
         float convertToMonth = 0.0057f;
-        float price = brw * size * coef * convertToMonth + 150;
-        return price;
+        return brw * size * coef * convertToMonth + 150;
     }
 
     private int guessBedrooms(int size) {
@@ -3703,8 +3702,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 probabilities[job] = probabilitiesJob.getStringIndexedValueAt(jobStringTypes[job],name);
             }
         //}
-        int selected = new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
-        return selected;
+        return new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
 
     }
 

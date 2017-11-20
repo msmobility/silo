@@ -15,8 +15,6 @@ public class ThreadSafeRandomsTest {
 
     @Test
     public void test() {
-
-        List<RandomizableConcurrentFunction> functions = new ArrayList<>();
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();

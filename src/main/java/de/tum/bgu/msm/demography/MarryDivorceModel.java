@@ -61,8 +61,6 @@ public class MarryDivorceModel {
     private int ageOffset;
     private ArrayList<Integer[]> couplesToMarryThisYear;
 
-    private DivorceJSCalculator calculator;
-
     public MarryDivorceModel() {
         uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.uecFileName;
         dataSheetNumber = Properties.get().demographics.dataSheet;
@@ -238,7 +236,7 @@ public class MarryDivorceModel {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
-        calculator = new DivorceJSCalculator(reader, false);
+        DivorceJSCalculator calculator = new DivorceJSCalculator(reader, false);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();

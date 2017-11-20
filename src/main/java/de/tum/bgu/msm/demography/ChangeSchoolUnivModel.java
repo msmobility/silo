@@ -20,7 +20,6 @@ public class ChangeSchoolUnivModel {
 
 
     public ChangeSchoolUnivModel(GeoData geoData) {
-        // constructor
         this.geoData = geoData;
     }
 

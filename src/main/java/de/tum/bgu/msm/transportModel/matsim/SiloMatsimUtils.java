@@ -48,12 +48,11 @@ public class SiloMatsimUtils {
 	public static Config createMatsimConfig(Config initialConfig, String runId, double populationScalingFactor, double workerScalingFactor) {
 		LOG.info("Stating creating a MATSim config.");
 		Config config = ConfigUtils.loadConfig(initialConfig.getContext());
-		double flowCapacityFactor = populationScalingFactor;
-		config.qsim().setFlowCapFactor(flowCapacityFactor);
+		config.qsim().setFlowCapFactor(populationScalingFactor);
 		
 		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
 		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-		double storageCapacityFactor = Math.round((flowCapacityFactor / (Math.pow(flowCapacityFactor, 0.25)) * 100)) / 100.;
+		double storageCapacityFactor = Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.;
 		config.qsim().setStorageCapFactor(storageCapacityFactor);
 		
 		String outputDirectoryRoot = initialConfig.controler().getOutputDirectory();
@@ -200,9 +199,8 @@ public class SiloMatsimUtils {
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int rowCount, int columnCount, int year) {
 		LOG.info("Converting MATSim travel times to impedance matrix for " + year + ".");
 		String name = "travelTimeMatrix";
-		String description = name;
-		
-		Matrix matrix = new Matrix(name, description, rowCount, columnCount);
+
+		Matrix matrix = new Matrix(name, name, rowCount, columnCount);
 
 		// Do not just increment by 1! Some values are missing. So, do not confuse the array index with the array entry!
 		for (int i = 1; i <= rowCount; i++) {
@@ -211,11 +209,7 @@ public class SiloMatsimUtils {
 //				matrix.setValueAt(zones[i], zones[j], travelTimesMap.get(zone2Zone));
 				
 				Tuple<Integer, Integer> zone2Zone = new Tuple<Integer, Integer>(i, j);
-				if (travelTimesMap.containsKey(zone2Zone)) {
-					matrix.setValueAt(i, j, travelTimesMap.get(zone2Zone));
-				} else {
-					matrix.setValueAt(i, j, 0.f);
-				}
+				matrix.setValueAt(i, j, travelTimesMap.getOrDefault(zone2Zone, 0.f));
 			}
 		}	
 		return matrix;

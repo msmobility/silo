@@ -12,12 +12,11 @@ import java.io.Reader;
 
 public class SelectRegionTest {
 
-    private Reader reader;
     private SelectRegionJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
         calculator = new SelectRegionJSCalculator(reader, true);
     }
 

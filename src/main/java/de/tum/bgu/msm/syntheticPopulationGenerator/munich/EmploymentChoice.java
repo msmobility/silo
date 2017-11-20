@@ -45,9 +45,8 @@ public class EmploymentChoice {
                 probabilities[job] = probabilitiesJobTable.getValueAt(jobTypes[job],name);
             }
         }
-        int selected = new EnumeratedIntegerDistribution(jobTypes,probabilities).sample();
 
-        return selected;
+        return new EnumeratedIntegerDistribution(jobTypes,probabilities).sample();
 
     }
 
@@ -64,9 +63,7 @@ public class EmploymentChoice {
             //probability = exp(utility) * number of vacant jobs
         }
 
-        int[] work = select(probabilities,zoneJobKeys);
-
-        return work;
+        return select(probabilities,zoneJobKeys);
     }
 
 
@@ -82,9 +79,7 @@ public class EmploymentChoice {
             //probability = impedance * number of vacant jobs. Impedance is calculated in advance as exp(utility)
         }
 
-        int[] work = select(probabilities,zoneJobKeys);
-
-        return work;
+        return select(probabilities,zoneJobKeys);
     }
 
 
@@ -127,9 +122,8 @@ public class EmploymentChoice {
         double[] probabilitiesJob = Arrays.stream(utilitiesJob).map(u -> u/probabilityJob_denominator).toArray();
 
         //select the job type according to probabilities
-        int selectedJobType = new EnumeratedIntegerDistribution(jobTypes,probabilitiesJob).sample();
 
-        return selectedJobType;
+        return new EnumeratedIntegerDistribution(jobTypes,probabilitiesJob).sample();
     }
 
 
@@ -148,9 +142,8 @@ public class EmploymentChoice {
         name = name + education;
 
         //Utility for that job is proportional to the percentages on the base year
-        double adequacy = probabilitiesJob.getValueAt(jobTypeDE, name);
 
-        return adequacy;
+        return (double) probabilitiesJob.getValueAt(jobTypeDE, name);
     }
 
 
@@ -168,9 +161,7 @@ public class EmploymentChoice {
 
         //Utility for that job is proportional to the percentages on the base year
 
-        double adequacy[] = probabilitiesJob.getColumnAsDouble(name);
-
-        return adequacy;
+        return probabilitiesJob.getColumnAsDouble(name);
     }
 
 
@@ -183,9 +174,8 @@ public class EmploymentChoice {
         double travelTime = timesMatrix.getValueAt(origin, destination);
 
         //Calculate utility
-        double u = a * Math.exp(g * travelTime);
 
-        return u;
+        return a * Math.exp(g * travelTime);
     }
 
 
