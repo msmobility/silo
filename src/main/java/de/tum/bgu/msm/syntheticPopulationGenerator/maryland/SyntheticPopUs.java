@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
@@ -49,7 +50,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     protected HashMap<Integer, Integer> jobErrorCounter;
 
     private ResourceBundle rb;
-    private GeoData geoData;
+    private GeoDataMstm geoData;
     private Accessibility accessibility;
 
 
@@ -69,14 +70,16 @@ public class SyntheticPopUs implements SyntheticPopI {
         identifyUniquePUMAzones();
         readControlTotals();
         createJobs();
+        GeoDataMstm geoData = new GeoDataMstm();
+        geoData.setInitialData();
         accessibility = new Accessibility(geoData);                        // read in travel times and trip length frequency distribution
-        accessibility.readCarSkim(SiloUtil.getStartYear());
-        accessibility.readPtSkim(SiloUtil.getStartYear());
+        accessibility.readCarSkim(Properties.get().main.startYear);
+        accessibility.readPtSkim(Properties.get().main.startYear);
         accessibility.initialize();
         processPums();
         JobDataManager jobData = new JobDataManager(geoData);
         generateAutoOwnership(jobData);
-        SummarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData);
+        SummarizeData.summarizeAutoOwnershipByCounty(accessibility, jobData, geoData);
         addVacantDwellings();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
         logger.info ("  Total number of households created " + Household.getHouseholdCount());
@@ -107,8 +110,8 @@ public class SyntheticPopUs implements SyntheticPopI {
         ArrayList<Integer> alHomePuma = new ArrayList<>();
         ArrayList<Integer> alWorkPuma = new ArrayList<>();
         for (int taz: geoData.getZones()) {
-            int homePuma = (int) SiloUtil.zonalData.getIndexedValueAt(taz, "PUMA");
-            int workPuma = (int) SiloUtil.zonalData.getIndexedValueAt(taz, "simplifiedPuma");
+            int homePuma = geoData.getPUMAofZone(taz);
+            int workPuma = geoData.getSimplifiedPUMAofZone(taz);
             if (!alHomePuma.contains(homePuma)) alHomePuma.add(homePuma);
             if (!alWorkPuma.contains(workPuma)) alWorkPuma.add(workPuma);
             if (tazByPuma.containsKey(homePuma)) {
@@ -129,14 +132,14 @@ public class SyntheticPopUs implements SyntheticPopI {
         // read control totals of households by size and dwellings
 
         logger.info("  Reading control total data for households and dwellings");
-        TableDataSet pop = SiloUtil.readCSVfile(SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
+        TableDataSet pop = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
         householdTarget = new HashMap<>();
         for (int row = 1; row <= pop.getRowCount(); row++) {
             String fips = String.valueOf(pop.getValueAt(row, "Fips"));
             // note: doesn't make much sense to store these data in a HashMap. It's legacy code.
             householdTarget.put(fips, (int) pop.getValueAt(row, "TotalHouseholds"));
         }
-        hhDistribution = SiloUtil.readCSVfile(SiloUtil.baseDirectory +
+        hhDistribution = SiloUtil.readCSVfile(Properties.get().main.baseDirectory +
                 ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
         hhDistribution.buildIndex(hhDistribution.getColumnPosition(";SMZ_N"));
     }
@@ -159,7 +162,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         for (int row = 1; row <= jobs.getRowCount(); row++) {
             int taz = (int) jobs.getValueAt(row, "SMZ");
-            int pumaOfWorkZone = GeoDataMstm.getSimplifiedPUMAofZone(taz);
+            int pumaOfWorkZone = geoData.getSimplifiedPUMAofZone(taz);
             if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
                 int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
                 int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
@@ -218,7 +221,8 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info ("  Reading PUMS data");
 
-        String partlyCovered = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PARTLY_COVERED_PUMAS);
+        String baseDirectory = Properties.get().main.baseDirectory;
+        String partlyCovered = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PARTLY_COVERED_PUMAS);
         TableDataSet partlyCoveredPumas = SiloUtil.readCSVfile(partlyCovered);
         int highestPUMA = 5500000;
         float[] pumaScaler = SiloUtil.createArrayWithValue((highestPUMA), 1f);
@@ -227,7 +231,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     partlyCoveredPumas.getValueAt(row, "mstmPop2000") / partlyCoveredPumas.getValueAt(row, "fullPop2000");
         }
 
-        String age90plusFile = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_AGE_DISTRIBUTION_90PLUS);
+        String age90plusFile = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_AGE_DISTRIBUTION_90PLUS);
         TableDataSet age90plus = SiloUtil.readCSVfile(age90plusFile);
         float[] probAge90plusMale = age90plus.getColumnAsFloat("male");
         float[] probAge90plusFemale = age90plus.getColumnAsFloat("female");
@@ -239,7 +243,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         //GeoData geoData = new GeoDataMstm(rb);
 
         for (int st = 0; st < states.length; st++) {
-            String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +
+            String pumsFileName = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +
                     states[st] + "/REVISEDPUMS5_" + stateNumber[st] + ".TXT";
             logger.info ("  Creating synthetic population for " + states[st]);
             String recString = "";
@@ -361,7 +365,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
     private int guessQuality(int completePlumbing, int completeKitchen, int yearBuilt) {
         // guess quality of dwelling based on plumbing and kitchen
-        int quality = SiloUtil.numberOfQualityLevels;
+        int quality = Properties.get().main.qualityLevels;
         if (completeKitchen == 2) quality--;
         if (completePlumbing == 2) quality--;
         if (yearBuilt > 0) {
@@ -735,7 +739,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         for (int taz: geoData.getZones()) {
             float vacRateCountyTarget;
             try {
-                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(GeoDataMstm.getCountyOfZone(taz), "VacancyRate");
+                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(geoData.getCountyOfZone(taz), "VacancyRate");
             } catch (Exception e) {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
             }
@@ -776,7 +780,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
     private void validateHHandDD () {
         // compare number of generated households and dwellings with target data
-        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/validation/";
+        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/validation/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
 //        String hhFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_HH_VALIDATION);
 //        String ddFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_DD_VALIDATION);
@@ -858,7 +862,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
         for (int zone: geoData.getZones()) {
-            if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[GeoDataMstm.getPUMAofZone(zone)] +=
+            if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[geoData.getPUMAofZone(zone)] +=
                     vacantJobsByZone.get(zone).length;
         }
         for (int i = 0; i < 9999999; i++)

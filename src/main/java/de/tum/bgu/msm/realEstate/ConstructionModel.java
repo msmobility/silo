@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -16,7 +16,6 @@ import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -75,7 +74,7 @@ public class ConstructionModel {
     public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
 
-        HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
+        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
         dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
         if (!EventRules.ruleBuildDwelling()) return;
         logger.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
@@ -142,7 +141,7 @@ public class ConstructionModel {
                     attributes[0] = zone;
                     attributes[1] = dto;
                     attributes[2] = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    attributes[3] = SiloUtil.numberOfQualityLevels;  // set all new dwellings to highest quality level
+                    attributes[3] = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
                     attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
                     if (makeSomeNewDdAffordable) {
                         if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
@@ -158,7 +157,7 @@ public class ConstructionModel {
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = GeoDataMstm.getMSAOfZone(zone);
+                        int msa = geoData.getMSAOfZone(zone);
                         attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 

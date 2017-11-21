@@ -35,7 +35,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
     public MaryLandCarOwnershipModel(JobDataManager jobDataManager, Accessibility accessibility) {
         // constructor
         logger.info("  Setting up probabilities for auto-ownership model");
-        uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;
+        uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;
         dataSheetNumber = Properties.get().demographics.autoOwnershipDataSheet;
         this.jobDataManager = jobDataManager;
         this.accessibility = accessibility;

@@ -41,11 +41,11 @@ public class InOutMigration {
 
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
-            String fileName = SiloUtil.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
+            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
         } else if (populationControlMethod.equalsIgnoreCase("migration")) {
-            String fileName = SiloUtil.baseDirectory + Properties.get().moves.migrationFile;
+            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
         } else {

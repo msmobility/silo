@@ -34,42 +34,28 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class SiloUtil {
 
     private static Random rand;
-    public static String baseDirectory;
-    public static String scenarioName;
-    public static TableDataSet zonalData;
     public static int trackHh;
     public static int trackPp;
     public static int trackDd;
     public static int trackJj;
     public static PrintWriter trackWriter;
-    public static int gregorianIterator;
-    public static int[] incBrackets;
-    public static int numberOfQualityLevels;
     private static ResourceBundle rb;
     private static HashMap rbHashMap;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
     private static int baseYear;
-    public static int startYear;
-    public static int simulationLength;
-    public static int endYear;
 
-    public SiloUtil() {
-    }
 
     public static ResourceBundle siloInitialization(String resourceBundleNames) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
         Properties.initializeProperties(rb);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        baseDirectory = ResourceUtil.getProperty(rb, "base.directory");
-        scenarioName = ResourceUtil.getProperty(rb, "scenario.name");
-        startYear = ResourceUtil.getIntegerProperty(rb, "start.year");
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");
 
         // create scenarios output directory if it does not exist yet
-        createDirectoryIfNotExistingYet(baseDirectory + "scenOutput/" + scenarioName);
+        createDirectoryIfNotExistingYet(Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName);
         // copy properties file into scenarios directory
         String[] prop = resourceBundleNames.split("/");
 
@@ -77,9 +63,9 @@ public class SiloUtil {
         // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
         // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
-        copyFile(resourceBundleNames, baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        copyFile(resourceBundleNames, Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + prop[prop.length-1]);
 
-        initializeRandomNumber(ResourceUtil.getIntegerProperty(rb, "random.seed"));
+        initializeRandomNumber(Properties.get().main.randomSeed);
         trackingFile("open");
         return rb;
     }
@@ -91,7 +77,6 @@ public class SiloUtil {
 
 
     public static void createDirectoryIfNotExistingYet (String directory) {
-        // create directory if is does not yet exist
         File file = new File (directory);
         if (!file.exists()) {
             logger.info("   Creating Directory: "+directory);
@@ -225,6 +210,8 @@ public class SiloUtil {
                 trackJj = ResourceUtil.getIntegerProperty(rb, "track.job");
                 if (trackHh == -1 && trackPp == -1 && trackDd == -1 && trackJj == -1) return;
                 String fileName = ResourceUtil.getProperty(rb, "track.file.name");
+                String baseDirectory = Properties.get().main.baseDirectory;
+                int startYear = Properties.get().main.startYear;
                 trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != baseYear);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
@@ -905,19 +892,6 @@ public class SiloUtil {
         return baseYear;
     }
 
-    public static int getStartYear() {
-        return startYear;
-    }
-
-    public static int getSimulationLength() {
-        return simulationLength;
-    }
-
-    public static int getEndYear() {
-        return endYear;
-    }
-
-
     static public String customFormat(String pattern, double value ) {
         // function copied from: http://docs.oracle.com/javase/tutorial/java/data/numberformat.html
         // 123456.789 ###,###.###  123,456.789 The pound sign (#) denotes a digit, the comma is a placeholder for the grouping separator, and the period is a placeholder for the decimal separator.
@@ -960,7 +934,7 @@ static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties 
 
 static boolean modelStopper (String action) {
 	// provide option for a clean model stop after every simulation period is completed
-	String fileName = baseDirectory + "status.csv";
+	String fileName = Properties.get().main.baseDirectory + "status.csv";
 	if (action.equalsIgnoreCase("initialize")) {
 		PrintWriter pw = openFileForSequentialWriting(fileName, false);
 		pw.println("Status");
@@ -1009,7 +983,7 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
-	int startYear = getStartYear();
+	int startYear = Properties.get().main.startYear;
 	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != getBaseYear());
 	if (startYear == getBaseYear()) {
 		pw.print("Year");
@@ -1019,7 +993,7 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
 		pw.println();
 	}
-	for (int year = startYear; year < getEndYear(); year += getSimulationLength()) {
+	for (int year = startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
 		pw.print(year);
 		for (EventTypes et: EventTypes.values()) {
 			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;

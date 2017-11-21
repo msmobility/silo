@@ -62,7 +62,7 @@ public class MarryDivorceModel {
     private ArrayList<Integer[]> couplesToMarryThisYear;
 
     public MarryDivorceModel() {
-        uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.uecFileName;
+        uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName;
         dataSheetNumber = Properties.get().demographics.dataSheet;
 
         setupMarriageModel();

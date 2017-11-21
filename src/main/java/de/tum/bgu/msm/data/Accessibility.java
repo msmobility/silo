@@ -47,7 +47,7 @@ public class Accessibility {
         // Read hwySkim matrix for year
         logger.info("Reading skims for " + year);
 
-        String hwyFileName = SiloUtil.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
+        String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
         // Read highway hwySkim
         OmxFile hSkim = new OmxFile(hwyFileName);
         hSkim.openReadOnly();
@@ -70,8 +70,8 @@ public class Accessibility {
         
         // Write out matrix as csv file for testing
 //        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File("./info/given_impedance_" + year + ".csv"));
-//        new File(SiloUtil.baseDirectory + "testing").mkdirs();
-//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(SiloUtil.baseDirectory + "testing/given_impedance_" + year + ".csv"));
+//        new File(Properties.get().main.baseDirectory + "testing").mkdirs();
+//        MatrixWriter matrixWriter = MatrixWriter.createWriter(MatrixType.CSV, new File(Properties.get().main.baseDirectory + "testing/given_impedance_" + year + ".csv"));
 //        matrixWriter.writeMatrix(hwySkim);
 //        Log.info("For testing: Written skim out as a csv file");
         
@@ -90,7 +90,7 @@ public class Accessibility {
     
     public void readPtSkim(int year) {    
         // Read transit hwySkim
-        String transitFileName = SiloUtil.baseDirectory + "skims/" + Properties.get().accessibility.transitSkimFile(year);
+        String transitFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.transitSkimFile(year);
         OmxFile tSkim = new OmxFile(transitFileName);
         tSkim.openReadOnly();
         // Work-around to make sure that existing code does not break
@@ -180,8 +180,8 @@ Exception in thread "main" java.lang.NoClassDefFoundError: org/matsim/core/utils
 at de.tum.bgu.msm.transportModel.CSVFileWriter.<init>(CSVFileWriter.java:29)
 at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java:204)
 
-        new File(SiloUtil.baseDirectory + "testing").mkdirs();
-        CSVFileWriter accessibilityFileWriter = new CSVFileWriter(SiloUtil.baseDirectory + "testing/accessibility_" + year +".csv", ",");
+        new File(Properties.get().main.baseDirectory + "testing").mkdirs();
+        CSVFileWriter accessibilityFileWriter = new CSVFileWriter(Properties.get().main.baseDirectory + "testing/accessibility_" + year +".csv", ",");
 		
 		accessibilityFileWriter.writeField("zoneId");
 		accessibilityFileWriter.writeField("autoAccessibility");
@@ -215,12 +215,12 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     private void readWorkTripLengthFrequencyDistribution () {
         // read HTS trip length frequency distribution for work trips
 
-        String fileName = SiloUtil.baseDirectory + Properties.get().accessibility.htsWorkTLFD;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().accessibility.htsWorkTLFD;
         TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
         workTLFD = new float[tlfd.getRowCount() + 1];
         for (int row = 1; row <= tlfd.getRowCount(); row++) {
             int tt = (int) tlfd.getValueAt(row, "TravelTime");
-            if (tt > workTLFD.length) logger.error("Inconsistent trip length frequency in " + SiloUtil.baseDirectory +
+            if (tt > workTLFD.length) logger.error("Inconsistent trip length frequency in " + Properties.get().main.baseDirectory +
                     Properties.get().accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
             workTLFD[tt] = tlfd.getValueAt(row, "utility");
         }

@@ -44,7 +44,7 @@ public class SiloMsp {
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");
-            logger.info("Scenario: " + SiloUtil.scenarioName);
+            logger.info("Scenario: " + Properties.get().main.scenarioName);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
             SiloModel model = new SiloModel(SiloModel.Implementation.MSP);

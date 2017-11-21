@@ -68,8 +68,8 @@ public class JobDataManager {
     private void readJobData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading job micro data from ascii file");
 
-        int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + Properties.get().jobData.jobsFileName;
+        int year = Properties.get().main.startYear;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -111,7 +111,7 @@ public class JobDataManager {
     public static void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
-        String fileName = SiloUtil.baseDirectory + Properties.get().householdData.binaryJobFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryJobFile;
         logger.info("  Writing job data to binary file.");
         Object[] data = Job.getJobs().toArray(new Job[Job.getJobCount()]);
         try {
@@ -127,7 +127,7 @@ public class JobDataManager {
 
     private void readBinaryJobDataObjects() {
         // read jobs from binary file
-        String fileName = SiloUtil.baseDirectory + Properties.get().jobData.binaryJobsFileName;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
         logger.info("Reading job data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -182,7 +182,7 @@ public class JobDataManager {
                 (2000 + highestYear));
         TableDataSet jobs ;
         try {
-      	  final String filename = SiloUtil.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
+      	  final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
 		jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
       	  throw new RuntimeException(ee) ;
@@ -217,7 +217,7 @@ public class JobDataManager {
             }
         }
 
-        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/employmentForecast/";
+        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
         for (int yr = Integer.parseInt(yearsGiven[0]); yr <= highestYear; yr++) {
             String forecastFileName;

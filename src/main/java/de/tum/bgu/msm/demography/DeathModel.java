@@ -37,7 +37,7 @@ public class DeathModel {
         boolean logCalculation = Properties.get().demographics.logDeathCalculation;
 
 		// initialize UEC
-        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(SiloUtil.baseDirectory + Properties.get().demographics.uecFileName),
+        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName),
         		deathModelSheetNumber,
                 Properties.get().demographics.dataSheet,
         		SiloUtil.getRbHashMap(),

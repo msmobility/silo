@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
@@ -121,8 +122,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             regAcc[geoData.getRegionIndex(region)] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
         }
 
-        utilityRegion = new double[SiloUtil.incBrackets.length + 1][Nationality.values().length][regions.length];
-        for (int income = 1; income <= SiloUtil.incBrackets.length + 1; income++) {
+        utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Nationality.values().length][regions.length];
+        for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
 
             float[] priceUtil = new float[highestRegion + 1];
 

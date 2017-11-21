@@ -176,7 +176,7 @@ public class MstmTransportModel implements TransportModelI {
     private void writeOutSocioEconomicDataForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 
-        String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileName = (Properties.get().main.baseDirectory+ "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_SE_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing socio-economic data for MSTM to file " + fileName);
         // summarize micro data
@@ -218,7 +218,7 @@ public class MstmTransportModel implements TransportModelI {
         }
         pw.close();
 
-        String fileNameWrk = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileNameWrk = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_HH_WRK_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing households by number of workers for MSTM to file " + fileNameWrk);
         int[] mstmIncCategories = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_MSTM_INCOME_BRACKETS);
@@ -252,7 +252,7 @@ public class MstmTransportModel implements TransportModelI {
         }
         pwWrk.close();
 
-        String fileNameSize = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileNameSize = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_HH_SIZE_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing households by size for MSTM to file " + fileNameSize);
 

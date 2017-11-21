@@ -38,7 +38,7 @@ public final class SiloMatsim {
 		long startTime = System.currentTimeMillis();
 		try {
 			logger.info("Starting SILO program for MATSim");
-			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
+			logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
 			SiloModel model = new SiloModel(matsimConfig, SiloModel.Implementation.MSTM);

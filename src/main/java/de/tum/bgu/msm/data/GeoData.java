@@ -34,6 +34,8 @@ public interface GeoData {
 
     float getDevelopmentCapacity(int zone);
 
+    int getMSAOfZone(int zone);
+
     void reduceDevelopmentCapacityByOneDwelling(int zone);
 
     void reduceDevelopmentCapacityByDevelopableAcres(int zone, float acres);
