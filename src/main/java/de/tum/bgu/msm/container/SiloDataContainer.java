@@ -64,7 +64,6 @@ public class SiloDataContainer {
         geoData.setInitialData();
         IssueCounter.regionSpecificCounters(geoData);
 
-
         // read micro data
         RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
         HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);

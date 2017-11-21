@@ -41,8 +41,8 @@ public final class SiloMatsim {
 			logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
-			SiloModel model = new SiloModel(matsimConfig);
-			model.runModel(SiloModel.Implementation.MSTM);
+			SiloModel model = new SiloModel(matsimConfig, SiloModel.Implementation.MSTM);
+			model.runModel();
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
 			logger.error("Error running SILO.");

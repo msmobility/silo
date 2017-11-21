@@ -37,8 +37,8 @@ public class SiloMuc {
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
             sp.run();
-            SiloModel model = new SiloModel();
-            model.runModel(SiloModel.Implementation.MUC);
+            SiloModel model = new SiloModel(SiloModel.Implementation.MUC);
+            model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");

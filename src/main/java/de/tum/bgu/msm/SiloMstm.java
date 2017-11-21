@@ -35,8 +35,8 @@ public class SiloMstm {
             logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel();
-            model.runModel(SiloModel.Implementation.MSTM);
+            SiloModel model = new SiloModel(SiloModel.Implementation.MSTM);
+            model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
