@@ -216,10 +216,6 @@ public class SiloModel {
 			logger.info("  Simulating events");
 			// walk through all events
 			for (int i = 1; i <= em.getNumberOfEvents(); i++) {
-
-				//if (i > 5) continue;
-				//	    if (i%500000==0) logger.info("Processing event " + i);
-				// event[] stores event id in position [0] and person id in position [1]
 				Integer[] event = em.selectNextEvent();
 				if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
 					SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +

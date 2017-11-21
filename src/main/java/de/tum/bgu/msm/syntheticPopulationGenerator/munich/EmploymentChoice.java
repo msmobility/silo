@@ -170,7 +170,7 @@ public class EmploymentChoice {
 
         //Person and workplace values
         int origin = person.getZone();
-        int destination = Math.round(zoneJob / 100);
+        int destination = Math.round(zoneJob / 100.f);
         double travelTime = timesMatrix.getValueAt(origin, destination);
 
         //Calculate utility
