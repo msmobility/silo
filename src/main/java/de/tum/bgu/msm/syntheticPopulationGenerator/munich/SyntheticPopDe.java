@@ -16,7 +16,6 @@ import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.ResourceBundle;
 import java.util.*;
 
 
@@ -280,7 +279,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to read the micro data");
 
         //Scanning the file to obtain the number of households and persons in Bavaria
-        String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2000_PATH);
+        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2000_PATH);
         String recString = "";
         int recCount = 0;
         int hhCountTotal = 0;
@@ -642,7 +641,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to read the micro data");
 
         //Scanning the file to obtain the number of households and persons in Bavaria
-        String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
+        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
         String recString = "";
         int recCount = 0;
         int hhCountTotal = 0;
@@ -3546,7 +3545,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
         double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
         GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
-        String pumsFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
+        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
         String recString = "";
         int recCount = 0;
         int hhCountTotal = 0;

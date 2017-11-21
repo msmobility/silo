@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.realEstate.*;
@@ -116,7 +117,7 @@ public class SiloModelContainer {
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         if (implementation.equals(Implementation.MSTM)) {
-            move = new MovesModelMstm(dataContainer.getGeoData());
+            move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
         } else {
             move = new MovesModelMuc(dataContainer.getGeoData());
         }

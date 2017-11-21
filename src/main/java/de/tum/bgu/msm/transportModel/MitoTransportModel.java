@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import de.tum.bgu.msm.MitoModel;
@@ -34,7 +35,7 @@ public class MitoTransportModel implements TransportModelI {
 
     @Override
     public void runTransportModel(int year) {
-    	MitoModel.setScenarioName (SiloUtil.scenarioName);
+    	MitoModel.setScenarioName (Properties.get().main.scenarioName);
     	updateData();
     	logger.info("  Running travel demand model MITO for the year " + year);
     	mito.runModel();

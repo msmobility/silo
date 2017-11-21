@@ -4,14 +4,13 @@ package de.tum.bgu.msm;
  */
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 
 import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
@@ -51,7 +50,7 @@ public class SiloModelCBLCM {
 	        // define years to simulate
 	        scalingYears = Properties.get().main.scalingYears;
 	        if (scalingYears[0] != -1) SummarizeData.readScalingYearControlTotals();
-	        currentYear = SiloUtil.getStartYear();
+	        currentYear = Properties.get().main.startYear;
 	        tdmYears = Properties.get().transportModel.modelYears;
 	        skimYears = Properties.get().transportModel.skimYears;
 	        // Note: only implemented for MSTM:
@@ -62,15 +61,15 @@ public class SiloModelCBLCM {
 		dataContainer = SiloDataContainer.createSiloDataContainer(Implementation.MSTM);
 		modelContainer = SiloModelContainer.createSiloModelContainer(Implementation.MSTM, dataContainer);
 		
-		modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
-		modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
+		modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
+		modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
 		modelContainer.getAcc().initialize();
 
 	        trackTime = Properties.get().main.trackTime;
-	        timeCounter = new long[EventTypes.values().length + 11][SiloUtil.getEndYear() + 1];
+	        timeCounter = new long[EventTypes.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(null, SiloUtil.baseDirectory, geoData, modelContainer);
+	        transportModel = new MitoTransportModel(null, Properties.get().main.baseDirectory, geoData, modelContainer);
 	        if (Properties.get().main.createPrestoSummary) {
 				SummarizeData.preparePrestoSummary(geoData);
 			}
@@ -119,7 +118,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 4][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (SiloUtil.containsElement(skimYears, currentYear)) {
-	            if (currentYear != SiloUtil.getStartYear() && !SiloUtil.containsElement(tdmYears, currentYear)) {
+	            if (currentYear != Properties.get().main.startYear && !SiloUtil.containsElement(tdmYears, currentYear)) {
 	                // skims are always read in start year and in every year the transportation model ran. Additional
 	                // years to read skims may be provided in skimYears
 	                modelContainer.getAcc().readCarSkim(currentYear);
@@ -142,7 +141,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear == SiloUtil.getBaseYear() || currentYear != SiloUtil.getStartYear())
+	        if (currentYear == SiloUtil.getBaseYear() || currentYear != Properties.get().main.startYear)
 	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
@@ -242,30 +241,30 @@ public class SiloModelCBLCM {
 	        //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data
 	        SummarizeData.resultWriterReplicate = true;
 
-	        if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-	            SummarizeData.scaleMicroDataToExogenousForecast(SiloUtil.getEndYear(), dataContainer);
+	        if (SiloUtil.containsElement(scalingYears, Properties.get().main.endYear))
+	            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
 
 	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
-	        if (SiloUtil.getEndYear() != 2040) {
-	            SummarizeData.writeOutSyntheticPopulation(SiloUtil.endYear);
+	        if (Properties.get().main.endYear != 2040) {
+	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear);
 	            geoData.writeOutDevelopmentCapacityFile(dataContainer);
 	        }
 
-	        SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer);
+	        SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, dataContainer);
 	        SiloUtil.finish(modelContainer);
 	        SiloUtil.modelStopper("removeFile");
 	        
 	        if(Properties.get().cblcm.createCblcmFiles){
-	        	 String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
+	        	 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
 	             SiloUtil.createDirectoryIfNotExistingYet(directory);
-	             String outputFile = (directory + "/" + Properties.get().main.spatialResultFileName + "_" + SiloUtil.getEndYear() + "VS" + Properties.get().cblcm.baseYear + ".csv");
+	             String outputFile = (directory + "/" + Properties.get().main.spatialResultFileName + "_" + Properties.get().main.endYear + "VS" + Properties.get().cblcm.baseYear + ".csv");
 	             String[] inputFiles = new String[2];
-	             inputFiles[0] = (directory + "/" + Properties.get().main.spatialResultFileName + SiloUtil.gregorianIterator + ".csv");
-	             inputFiles[1] = (SiloUtil.baseDirectory+ Properties.get().cblcm.baseFile);
+	             inputFiles[0] = (directory + "/" + Properties.get().main.spatialResultFileName + Properties.get().main.gregorianIterator + ".csv");
+	             inputFiles[1] = (Properties.get().main.baseDirectory+ Properties.get().cblcm.baseFile);
 
 	             try {
-					CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(Properties.get().cblcm.baseYear) , SiloUtil.getEndYear());
+					CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(Properties.get().cblcm.baseYear) , Properties.get().main.endYear);
 				} catch (NumberFormatException e) {
 					logger.error(e);
 				} catch (IOException e) {
@@ -274,6 +273,6 @@ public class SiloModelCBLCM {
 	        }
 	        
 	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
-	        logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
+	        logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
 }

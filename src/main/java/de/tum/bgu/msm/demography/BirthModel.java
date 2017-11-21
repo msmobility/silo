@@ -55,7 +55,7 @@ public class BirthModel {
 		// read properties
 		int birthModelSheetNumber =
                 Properties.get().demographics.birthModelSheet;
-        String uecFileName = SiloUtil.baseDirectory + Properties.get().demographics.uecFileName;
+        String uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName;
         int dataSheetNumber = Properties.get().demographics.dataSheet;
         boolean logCalculation = Properties.get().demographics.logBirthCalculation;
         float localScaler = Properties.get().demographics.localScaler;

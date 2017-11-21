@@ -34,7 +34,7 @@ public class SiloMuc {
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-            logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
+            logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
             SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
             sp.run();
             SiloModel model = new SiloModel(SiloModel.Implementation.MUC);

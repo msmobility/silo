@@ -14,6 +14,7 @@ import java.io.Reader;
 import java.util.ResourceBundle;
 import java.io.File;
 
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import javax.script.ScriptException;
@@ -41,8 +42,8 @@ public class RenovationModel {
         RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader, false);
 
         //set renovation probabilities
-        renovationProbability = new double[SiloUtil.numberOfQualityLevels][5];
-        for (int oldQual = 0; oldQual < SiloUtil.numberOfQualityLevels; oldQual++) {
+        renovationProbability = new double[Properties.get().main.qualityLevels][5];
+        for (int oldQual = 0; oldQual < Properties.get().main.qualityLevels; oldQual++) {
             renovationCalculator.setQuality(oldQual + 1);
             for (int alternative = 0; alternative < 5; alternative++){
                 renovationCalculator.setAlternative(alternative + 1);

@@ -93,7 +93,7 @@ public class SiloModel {
 
 		setupTransport();
 		modelContainer.getAcc().initialize();
-		modelContainer.getAcc().calculateAccessibilities(SiloUtil.getStartYear());
+		modelContainer.getAcc().calculateAccessibilities(Properties.get().main.startYear);
 
 		//        setOldLocalModelVariables();
 		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
@@ -111,7 +111,7 @@ public class SiloModel {
 
 	private void setupTimeTracker() {
 		trackTime = Properties.get().main.trackTime;
-		timeCounter = new long[EventTypes.values().length + 12][SiloUtil.getEndYear() + 1];
+		timeCounter = new long[EventTypes.values().length + 12][Properties.get().main.endYear + 1];
 		startTime = 0;
 		IssueCounter.logIssues(dataContainer.getGeoData());
 	}
@@ -126,14 +126,14 @@ public class SiloModel {
 		if (runMatsim) {
 			logger.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), matsimConfig);
-			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
-			transportModel.runTransportModel(SiloUtil.getStartYear());
+			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
+			transportModel.runTransportModel(Properties.get().main.startYear);
 		} else {
 			logger.info("  MITO is used as the transport model");
-			modelContainer.getAcc().readCarSkim(SiloUtil.getStartYear());
-			modelContainer.getAcc().readPtSkim(SiloUtil.getStartYear());
+			modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
+			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
 			File rbFile = new File(Properties.get().transportModel.demandModelPropertiesPath);
-			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), SiloUtil.baseDirectory, dataContainer.getGeoData(), modelContainer);
+			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		}
 	}
 
@@ -147,7 +147,7 @@ public class SiloModel {
 	}
 
 	private void runYearByYear() {
-		for (int year = SiloUtil.getStartYear(); year < SiloUtil.getEndYear(); year += SiloUtil.getSimulationLength()) {
+		for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
 			if (SiloUtil.containsElement(scalingYears, year)) {
 				SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
 			}
@@ -185,7 +185,7 @@ public class SiloModel {
 
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
 					!Properties.get().transportModel.runTravelDemandModel &&
-					year != SiloUtil.getStartYear()) {
+					year != Properties.get().main.startYear) {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
 				if (!runMatsim) {
@@ -209,7 +209,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 9][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			if (year == SiloUtil.getBaseYear() || year != SiloUtil.getStartYear())
+			if (year == SiloUtil.getBaseYear() || year != Properties.get().main.startYear)
 				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
@@ -320,21 +320,21 @@ public class SiloModel {
 	}
 
 	private void endSimulation() {
-		if (SiloUtil.containsElement(scalingYears, SiloUtil.getEndYear()))
-			SummarizeData.scaleMicroDataToExogenousForecast(SiloUtil.getEndYear(), dataContainer);
+		if (SiloUtil.containsElement(scalingYears, Properties.get().main.endYear))
+			SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
 
 		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
-		if (SiloUtil.getEndYear() != 2040) {
-			SummarizeData.writeOutSyntheticPopulation(SiloUtil.endYear);
+		if (Properties.get().main.endYear != 2040) {
+			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear);
 			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
 		}
 
-		SiloUtil.summarizeMicroData(SiloUtil.getEndYear(), modelContainer, dataContainer);
+		SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, dataContainer);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
 		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
-		logger.info("Scenario results can be found in the directory scenOutput/" + SiloUtil.scenarioName + ".");
+		logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
 
 

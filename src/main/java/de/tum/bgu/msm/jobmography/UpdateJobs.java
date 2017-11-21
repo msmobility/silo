@@ -37,7 +37,7 @@ public class UpdateJobs {
             jobsByZone[jobTypeId][jj.getZone()]++;
         }
 
-        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/employmentForecast/";
+        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         String forecastFileName = dir + Properties.get().jobData.interpolatedEmploymentForecast + year + ".csv";
         TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 

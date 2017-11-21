@@ -35,7 +35,7 @@ public class PricingModel {
 
 
     public PricingModel () {
-        uecFileName     = SiloUtil.baseDirectory + Properties.get().realEstate.uecFile;
+        uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
         dataSheetNumber = Properties.get().realEstate.dataSheet;
         setupPricingModel();
     }

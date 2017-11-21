@@ -6,6 +6,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.log4j.Logger;
@@ -100,7 +101,7 @@ public class CreateCarOwnershipModel {
         float[] minDistance = SiloUtil.createArrayWithValue(zonalData.getRowCount(), 0f);
         zonalData.appendColumn(minDistance, "distanceToTransit");
 
-        String omxFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_TRANSIT_ACCEESS_TIME);
+        String omxFileName = Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_TRANSIT_ACCEESS_TIME);
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         Matrix accessDistanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));

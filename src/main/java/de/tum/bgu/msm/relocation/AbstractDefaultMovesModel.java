@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -40,7 +41,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
     public AbstractDefaultMovesModel(GeoData geoData) {
         this.geoData = geoData;
-        uecFileName     = SiloUtil.baseDirectory + Properties.get().moves.uecFileName;
+        uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
         dataSheetNumber = Properties.get().moves.dataSheet;
         logCalculationDwelling = Properties.get().moves.logHhRelocation;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
@@ -181,7 +182,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     }
 
     protected double convertQualityToUtility(int quality) {
-        return (float) quality / (float) SiloUtil.numberOfQualityLevels;
+        return (float) quality / (float) Properties.get().main.qualityLevels;
     }
 
     protected double convertAreaToUtility(int area) {
@@ -224,7 +225,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
         if (dd.getRestriction() <= 0) return true;   // Dwelling is not income restricted
-        int msa = GeoDataMstm.getMSAOfZone(dd.getZone());
+        int msa = geoData.getMSAOfZone(dd.getZone());
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 
