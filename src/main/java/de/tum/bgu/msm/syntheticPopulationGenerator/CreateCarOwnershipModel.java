@@ -28,21 +28,16 @@ public class CreateCarOwnershipModel {
 
     static Logger logger = Logger.getLogger(CreateCarOwnershipModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
-    private ResourceBundle rb;
 
-    protected static final String PROPERTIES_LOG_UTILITY_CALCULATION_CONSTRUCTION = "log.util.carOwnership";
-    protected static final String PROPERTIES_ZONAL_DATA = "raster.cells.definition";
-    protected static final String PROPERTIES_TRANSIT_ACCEESS_TIME = "transit.access.time";
 
     private TableDataSet zonalData;
 
     private CreateCarOwnershipJSCalculator calculator;
 
 
-    public CreateCarOwnershipModel(ResourceBundle rb) {
+    public CreateCarOwnershipModel() {
         // Constructor
         logger.info(" Setting up probabilities for car ownership model");
-        this.rb = rb;
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator(reader, false);
         readZonalData();
@@ -99,7 +94,7 @@ public class CreateCarOwnershipModel {
     public void readZonalData() {
         //method to read the zonal data not using geoData
 
-        zonalData = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ZONAL_DATA));
+        zonalData = SiloUtil.readCSVfile(Properties.get().geo.zonalAttributesFile);
         zonalData.buildIndex(zonalData.getColumnPosition("ID_cell"));
 
         //add a column to store distance to transit pre-populated with 0s
@@ -107,7 +102,7 @@ public class CreateCarOwnershipModel {
         zonalData.appendColumn(minDistance, "distanceToTransit");
 
         //convert transit access time matrix from omx to java matrix
-        String omxFileName = Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_TRANSIT_ACCEESS_TIME);
+        String omxFileName = Properties.get().main.baseDirectory + Properties.get().geo.transitAccessTime;
         OmxFile travelTimeOmx = new OmxFile(omxFileName);
         travelTimeOmx.openReadOnly();
         Matrix accessTimeMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
