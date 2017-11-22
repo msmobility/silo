@@ -1,16 +1,16 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 /**
  * This method allows to add dwellings as an overwrite. New dwellings are given exogenously and added in a given year,
@@ -22,27 +22,20 @@ import java.util.ResourceBundle;
 
 public class ConstructionOverwrite {
     static Logger logger = Logger.getLogger(ConstructionModel.class);
-    protected static final String PROPERTIES_USE_DWELLING_OVERWRITE    = "construct.dwelling.use.overwrite";
-    protected static final String PROPERTIES_DWELLING_OVERWRITE        = "construct.dwelling.overwrite";
-    protected static final String PROPERTIES_TRACE_OVERWRITE_DWELLINGS = "trace.use.of.overwrite.dwellings";
-    protected static final String PROPERTIES_TRACE_OVERWRITE_DD_FILE   = "trace.file.for.overwrite.dwellings";
 
-    private ResourceBundle rb;
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
     private HashMap<Integer, ArrayList> plannedDwellings;
 
-    public ConstructionOverwrite(ResourceBundle rb) {
-        // constructor
-        this.rb = rb;
-        useOverwrite = ResourceUtil.getBooleanProperty(rb, PROPERTIES_USE_DWELLING_OVERWRITE);
+    public ConstructionOverwrite() {
+        useOverwrite = Properties.get().realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) return;
-        traceOverwriteDwellings = ResourceUtil.getBooleanProperty(rb, PROPERTIES_TRACE_OVERWRITE_DWELLINGS);
+        traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
         if (traceOverwriteDwellings) {
-            String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
+            String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
             SiloUtil.createDirectoryIfNotExistingYet(directory);
-            String fileName = (directory + "/" + rb.getString(PROPERTIES_TRACE_OVERWRITE_DD_FILE) + "_" +
-                    SiloUtil.gregorianIterator + ".csv");
+            String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
+                    Properties.get().main.gregorianIterator + ".csv");
             PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, false);
             traceFile.println("dwellingID,zone,type,size,quality,initialPrice,restriction,yearBuilt");
             traceFile.close();
@@ -56,13 +49,13 @@ public class ConstructionOverwrite {
 
         logger.info("  Reading dwelling overwrite file");
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DWELLING_OVERWRITE);
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.constructionOverwriteDwellingFile;
         TableDataSet overwrite = SiloUtil.readCSVfile(fileName);
         plannedDwellings = new HashMap<>();
 
         for (int row = 1; row <= overwrite.getRowCount(); row++) {
             int year = (int) overwrite.getValueAt(row, "year");
-            if (year > SiloUtil.getEndYear() || year < 0) continue;   // if year > endYear, this row is not relevant for current run
+            if (year > Properties.get().main.endYear || year < 0) continue;   // if year > endYear, this row is not relevant for current run
             Integer[] data = new Integer[6];
             int zone = (int) overwrite.getValueAt(row, "zone");
             String type = overwrite.getStringValueAt(row, "type");
@@ -102,9 +95,9 @@ public class ConstructionOverwrite {
         if (!plannedDwellings.containsKey(year)) return;
         logger.info("  Adding dwellings that are given exogenously as an overwrite for the year " + year);
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String fileName = (directory + "/" + rb.getString(PROPERTIES_TRACE_OVERWRITE_DD_FILE) + "_" +
-                SiloUtil.gregorianIterator + ".csv");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
+                Properties.get().main.gregorianIterator + ".csv");
         PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, true);
         ArrayList<Integer[]> list = plannedDwellings.get(year);
         for (Integer[] data: list) {
@@ -118,7 +111,7 @@ public class ConstructionOverwrite {
             if (restriction != 0) {
                 // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                 // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                int msa = geoDataMstm.getMSAOfZone(zone);
+                int msa = dataContainer.getGeoData().getMSAOfZone(zone);
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
             Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
@@ -143,9 +136,9 @@ public class ConstructionOverwrite {
         // Read Tracer File and write out current conditions at end of simulation
 
         if (!useOverwrite) return;  // if overwrite is not used, now overwrite dwellings can be traced
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String fileName = (directory + "/" + rb.getString(PROPERTIES_TRACE_OVERWRITE_DD_FILE) + "_" +
-                SiloUtil.gregorianIterator + ".csv");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
+                Properties.get().main.gregorianIterator + ".csv");
         TableDataSet overwriteDwellings = SiloUtil.readCSVfile(fileName);
         int[] householdId   = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);
         int[] householdSize = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);
@@ -166,7 +159,7 @@ public class ConstructionOverwrite {
                 householdAuto[row-1] = hh.getAutos();
             }
         }
-        int yr = SiloUtil.getEndYear();
+        int yr = Properties.get().main.endYear;
         overwriteDwellings.appendColumn(householdId, ("resident_" + yr));
         overwriteDwellings.appendColumn(householdSize, ("hhSize_" + yr));
         overwriteDwellings.appendColumn(householdInc, ("hhIncome_" + yr));

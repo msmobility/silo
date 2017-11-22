@@ -1,13 +1,11 @@
 package de.tum.bgu.msm.transportModel;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.MitoHousehold;
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.transportModel.tripGeneration.TripGenerationData;
 import de.tum.bgu.msm.transportModel.tripGeneration.tripPurposes;
 import org.apache.log4j.Logger;
@@ -15,10 +13,8 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import static de.tum.bgu.msm.SiloModel.PROPERTIES_FILE_DEMAND_MODEL;
 
 /**
  * Controls transportation model
@@ -49,9 +45,8 @@ public class MstmTransportModel implements TransportModelI {
         // constructor
         this.rbLandUse = rbLandUse;
         this.geoData = geoData;
-        String fileName = ResourceUtil.getProperty(rbLandUse, PROPERTIES_FILE_DEMAND_MODEL);
+        String fileName = Properties.get().transportModel.demandModelPropertiesPath;
         rbTravel = ResourceUtil.getPropertyBundle(new File(fileName));
-
     }
 
 
@@ -68,8 +63,9 @@ public class MstmTransportModel implements TransportModelI {
         tripGeneration();
         logger.info("Completed travel demand model for the year " + year);
 
-        if (ResourceUtil.getBooleanProperty(rbLandUse, SiloModel.PROPERTIES_CREATE_MSTM_OUTPUT_FILES, true))
-		this.writeOutSocioEconomicDataForMstm(year + 1);
+        if (Properties.get().main.createMstmOutput) {
+            this.writeOutSocioEconomicDataForMstm(year + 1);
+        }
     }
 
 
@@ -84,8 +80,8 @@ public class MstmTransportModel implements TransportModelI {
         tdd.readData();
         if (!ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SILO) &&
                 !ResourceUtil.getBooleanProperty(rbLandUse, SiloMuc.PROPERTIES_RUN_SYNTHETIC_POPULATION)) {
-            RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
-            HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
+            RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
+            HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);
             householdData.readPopulation(false, 0);
             householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
@@ -180,7 +176,7 @@ public class MstmTransportModel implements TransportModelI {
     private void writeOutSocioEconomicDataForMstm(int year) {
         // write out file with socio-economic data for MSTM transportation model
 
-        String fileName = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileName = (Properties.get().main.baseDirectory+ "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_SE_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing socio-economic data for MSTM to file " + fileName);
         // summarize micro data
@@ -222,7 +218,7 @@ public class MstmTransportModel implements TransportModelI {
         }
         pw.close();
 
-        String fileNameWrk = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileNameWrk = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_HH_WRK_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing households by number of workers for MSTM to file " + fileNameWrk);
         int[] mstmIncCategories = ResourceUtil.getIntegerArray(rbLandUse, PROPERTIES_MSTM_INCOME_BRACKETS);
@@ -256,7 +252,7 @@ public class MstmTransportModel implements TransportModelI {
         }
         pwWrk.close();
 
-        String fileNameSize = (SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/" +
+        String fileNameSize = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 rbLandUse.getString(PROPERTIES_MSTM_HH_SIZE_DATA_FILE) + "_" + year + ".csv");
         logger.info("  Summarizing households by size for MSTM to file " + fileNameSize);
 

@@ -1,21 +1,21 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -29,13 +29,6 @@ public class ConstructionModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
 
-    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_BETA = "construct.dwelling.mn.log.model.beta";
-    protected static final String PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR = "construct.dwelling.mn.log.model.inflator";
-    protected static final String PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE = "make.new.dwellings.partly.affordable";
-    protected static final String PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE = "share.of.affordable.dwellings";
-    protected static final String PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD = "level.of.affordability.setting";
-
-    private ResourceBundle rb;
     private GeoData geoData;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
@@ -50,10 +43,8 @@ public class ConstructionModel {
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
 
-    public ConstructionModel(ResourceBundle rb, GeoData geoData) {
-        this.rb = rb;
+    public ConstructionModel(GeoData geoData) {
         this.geoData = geoData;
-        // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader, false);
         setupConstructionModel();
@@ -65,25 +56,25 @@ public class ConstructionModel {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader, false);
 
-        makeSomeNewDdAffordable = ResourceUtil.getBooleanProperty(rb, PROPERTIES_FLAG_TO_MAKE_NEW_DD_AFFORDABLE, false);
+        makeSomeNewDdAffordable = Properties.get().realEstate.makeSOmeNewDdAffordable;
         if (makeSomeNewDdAffordable) {
-            shareOfAffordableDd = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_SHARE_OF_DD_TO_BE_MADE_AFFORDABLE);
-            restrictionForAffordableDd = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_RESTRICTION_SETTING_FOR_AFFORDABLE_DD);
+            shareOfAffordableDd = Properties.get().realEstate.affordableDwellingsShare;
+            restrictionForAffordableDd = Properties.get().realEstate.levelOfAffordability;
         }
     }
 
 
     private void setupEvaluationOfZones() {
         // set up model to evaluate zones for construction of new dwellings
-        betaForZoneChoice = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_RealEstate_ZONE_UTILITY_BETA);
-        priceIncreaseForNewDwelling = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_RealEstate_ZONE_UTILITY_INFLATOR);
+        betaForZoneChoice = Properties.get().realEstate.constructionLogModelBeta;
+        priceIncreaseForNewDwelling = Properties.get().realEstate.constructionLogModelInflator;
     }
 
 
     public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
 
-        HouseholdDataManager.calculateMedianHouseholdIncomeByMSA();  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
+        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
         dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
         if (!EventRules.ruleBuildDwelling()) return;
         logger.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
@@ -150,7 +141,7 @@ public class ConstructionModel {
                     attributes[0] = zone;
                     attributes[1] = dto;
                     attributes[2] = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    attributes[3] = SiloUtil.numberOfQualityLevels;  // set all new dwellings to highest quality level
+                    attributes[3] = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
                     attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
                     if (makeSomeNewDdAffordable) {
                         if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
@@ -166,7 +157,7 @@ public class ConstructionModel {
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoDataMstm.getMSAOfZone(zone);
+                        int msa = geoData.getMSAOfZone(zone);
                         attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 

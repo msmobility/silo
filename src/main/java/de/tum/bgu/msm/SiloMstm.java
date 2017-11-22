@@ -1,8 +1,8 @@
 package de.tum.bgu.msm;
 
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopUs;
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -28,28 +28,29 @@ public class SiloMstm {
 
         SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
+        Properties.initializeProperties(rb);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
-            logger.info("Scenario: " + SiloUtil.scenarioName + ", Simulation start year: " + SiloUtil.getStartYear());
+            logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(rb);
-            model.runModel(SiloModel.Implementation.MSTM);
+            SiloModel model = new SiloModel(SiloModel.Implementation.MSTM);
+            model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
             throw new RuntimeException(e);
         } finally {
             SiloUtil.trackingFile("close");
-            summarizeData.resultFile("close");
-            summarizeData.resultFileSpatial(rb, "close");
+            SummarizeData.resultFile("close");
+            SummarizeData.resultFileSpatial("close");
             float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);
             logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-            if (ResourceUtil.getBooleanProperty(rb, SiloModel.PROPERTIES_TRACK_TIME, false)) {
-                String fileName = rb.getString(SiloModel.PROPERTIES_TRACK_TIME_FILE);
+            if (Properties.get().main.trackTime) {
+                String fileName = Properties.get().main.trackTimeFile;
                 try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                     out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                     out.close();

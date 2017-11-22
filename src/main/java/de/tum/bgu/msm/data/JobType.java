@@ -13,13 +13,13 @@ import java.util.ResourceBundle;
 
 public class JobType {
 
-    protected static final String PROPERTIES_EMPLOYMENT_TYPE                  = "employment.types";
+
     private static String[] jobTypes;
     private static HashMap<String,Integer> ordinal;
 
 
-    public JobType(ResourceBundle rb) {
-        jobTypes = ResourceUtil.getArray(rb, PROPERTIES_EMPLOYMENT_TYPE);
+    public JobType(String[] jobTypesArg) {
+        jobTypes = jobTypesArg;
         ordinal = new HashMap<>();
         for (int i = 0; i < jobTypes.length; i++) {
             ordinal.put(jobTypes[i], i);

@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.container;
 
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 /**
  * @author moeckel
@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
  */
 public class SiloDataContainer {
     private static Logger logger = Logger.getLogger(SiloDataContainer.class);
-    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP              = "size.small.syn.pop";
+
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;
@@ -25,7 +25,7 @@ public class SiloDataContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(ResourceBundle, boolean, de.tum.bgu.msm.SiloModel.Implementation)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(de.tum.bgu.msm.SiloModel.Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -45,18 +45,16 @@ public class SiloDataContainer {
     /**
      * This factory method is used to create all the data objects needed for SILO from the Configuration file, loaded as a ResourceBundle
      * Each data object is created sequentially, before being passed as parameters to the private constructor.
-     * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(ResourceBundle rbLandUse,
-                                                            boolean readSmallSynPop, SiloModel.Implementation implementation) {
+    public static SiloDataContainer createSiloDataContainer(SiloModel.Implementation implementation) {
         GeoData geoData;
         switch (implementation) {
             case MSTM:
-                geoData = new geoDataMstm(rbLandUse);
+                geoData = new GeoDataMstm();
                 break;
             case MUC:
-                geoData = new geoDataMuc(rbLandUse);
+                geoData = new GeoDataMuc();
                 break;
             default:
                 logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
@@ -66,14 +64,16 @@ public class SiloDataContainer {
         geoData.setInitialData();
         IssueCounter.regionSpecificCounters(geoData);
 
-
         // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(rbLandUse, geoData);
-        HouseholdDataManager householdData = new HouseholdDataManager(rbLandUse, realEstateData);
-        JobDataManager jobData = new JobDataManager(rbLandUse, geoData);
-        if (!ResourceUtil.getBooleanProperty(rbLandUse, "run.synth.pop.generator")) {   // read data only if synth. pop. generator did not run
+        RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
+        HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);
+        JobDataManager jobData = new JobDataManager(geoData);
+        if (!Properties.get().main.runSynPop) {   // read data only if synth. pop. generator did not run
             int smallSize = 0;
-            if (readSmallSynPop) smallSize = ResourceUtil.getIntegerProperty(rbLandUse, PROPERTIES_SIZE_SMALL_SYNPOP);
+            boolean readSmallSynPop = Properties.get().main.readSmallSynpop;
+            if (readSmallSynPop) {
+                smallSize = Properties.get().main.smallSynPopSize;
+            }
             householdData.readPopulation(readSmallSynPop, smallSize);
             realEstateData.readDwellings(readSmallSynPop, smallSize);
             jobData.readJobs( readSmallSynPop, smallSize);

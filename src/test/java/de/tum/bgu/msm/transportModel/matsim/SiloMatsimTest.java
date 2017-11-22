@@ -6,8 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Paths;
 
-import de.tum.bgu.msm.SiloMatsim;
-import de.tum.bgu.msm.transportModel.mstm.SiloMstmTest;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -21,6 +19,9 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
+
+import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.transportModel.SiloTestUtils;
 
 /**
  * @author dziemke, nagel
@@ -37,7 +38,8 @@ public class SiloMatsimTest {
 	 */
 	@Test
 	public final void testMain() {
-		SiloMstmTest.cleanUp();
+		SiloTestUtils.cleanUpMicrodataFiles();
+		SiloTestUtils.cleanUpOtherFiles();
 
 		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
 		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim.properties";
@@ -93,8 +95,8 @@ public class SiloMatsimTest {
 		}{
 			log.info("Checking MATSim plans file ...");
 
-			final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2001.0.plans.xml.gz";
-			final String outputFilename = utils.getOutputDirectory() + "./test_matsim_2001/ITERS/it.0/test_matsim_2001.0.plans.xml.gz";
+			final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2001.output_plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "./test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
 
 			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -105,8 +107,8 @@ public class SiloMatsimTest {
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ; 
 		}{
 			log.info("Checking MATSim events file ...");
-			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.0.events.xml.gz";
-			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001/ITERS/it.0/test_matsim_2001.0.events.xml.gz";
+			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.output_events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001//test_matsim_2001.output_events.xml.gz";
 			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
 		}
 		
@@ -115,7 +117,8 @@ public class SiloMatsimTest {
 		if (cleanupAfterTest) {
 			File dir = new File(utils.getOutputDirectory());
 			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
-			SiloMstmTest.cleanUp();
+			SiloTestUtils.cleanUpMicrodataFiles();
+			SiloTestUtils.cleanUpOtherFiles();
 		}
 	}
 }

@@ -16,8 +16,9 @@
  */
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopUs;
-import de.tum.bgu.msm.data.summarizeData;
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -39,22 +40,23 @@ public class SiloMsp {
     public static void main(String[] args) {
 
         ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
+        Properties.initializeProperties(rb);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");
-            logger.info("Scenario: " + SiloUtil.scenarioName);
+            logger.info("Scenario: " + Properties.get().main.scenarioName);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(rb);
-            model.runModel(SiloModel.Implementation.MSP);
+            SiloModel model = new SiloModel(SiloModel.Implementation.MSP);
+            model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
             logger.error("Error running SILO.");
             throw new RuntimeException(e);
         } finally {
             SiloUtil.trackingFile("close");
-            summarizeData.resultFile("close");
-            summarizeData.resultFileSpatial(rb, "close");
+            SummarizeData.resultFile("close");
+            SummarizeData.resultFileSpatial("close");
             float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);

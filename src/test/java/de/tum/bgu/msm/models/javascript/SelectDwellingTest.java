@@ -11,12 +11,11 @@ import java.io.Reader;
 
 public class SelectDwellingTest {
 
-    private Reader reader;
     private SelectDwellingJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
         calculator = new SelectDwellingJSCalculator (reader, true);
     }
 

@@ -1,13 +1,13 @@
 package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 
 /**
  * Summarizes SILO model output for the Chesapeake Bay Land Change Model
@@ -18,38 +18,29 @@ import java.util.ResourceBundle;
 
 public class summarizeDataCblcm {
 
-    protected static final String PROPERTIES_CBLCM_YEARS                = "cblcm.years";
-    protected static final String PROPERTIES_CBLCM_POPULATION_FILE      = "cblcm.population.file.name";
-    protected static final String PROPERTIES_CBLCM_EMPLOYMENT_FILE      = "cblcm.employment.file.name";
-    protected static final String PROPERTIES_CBLCM_DWELLING_FILE        = "cblcm.dwellings.file.name";
-    protected static final String PROPERTIES_CBLCM_ACCESSIBILITIES_FILE = "cblcm.accessibilities.file.name";
-    protected static final String PROPERTIES_CBLCM_COUNTY_ORDER_FILE    = "cblcm.county.order.list";
-    protected static final String PROPERTIES_CBLCM_COUNTY_POPULATION    = "cblcm.county.population.file.name";
-    protected static final String PROPERTIES_CBLCM_COUNTY_EMPLOYMENT    = "cblcm.county.employment.file.name";
 
-
-    public static void createCblcmSummaries(ResourceBundle rb, int year, SiloModelContainer modelContainer,
+    public static void createCblcmSummaries(int year, SiloModelContainer modelContainer,
                                             SiloDataContainer dataContainer) {
         // create summary files for Chesapeake Bay Land Change Model
 
-        if (!SiloUtil.containsElement(ResourceUtil.getIntegerArray(rb, PROPERTIES_CBLCM_YEARS), year)) return;
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/cblcm";
+        if (!SiloUtil.containsElement(Properties.get().cblcm.years, year)) return;
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/cblcm";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        summarizePopulation(rb, year, dataContainer);
-        summarizeEmployment(rb, year, dataContainer);
-        summarizeDwellings(rb, year, dataContainer);
-        summarizeAccessibilities(rb, year, modelContainer, dataContainer);
-        summarizeByCounty(rb, year);
+        summarizePopulation(year, dataContainer);
+        summarizeEmployment(year, dataContainer);
+        summarizeDwellings(year, dataContainer);
+        summarizeAccessibilities(year, modelContainer, dataContainer);
+        summarizeByCounty(year, (GeoDataMstm) dataContainer.getGeoData());
     }
 
 
-    private static void summarizePopulation (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizePopulation (int year, SiloDataContainer dataContainer) {
         // summarize households by type and zone for selected years
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String popFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_POPULATION_FILE) +
-                SiloUtil.gregorianIterator + ".csv");
-        int[][] households = new int[dataContainer.getGeoData().getZones().length][SiloUtil.incBrackets.length + 1];
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
+                Properties.get().main.gregorianIterator + ".csv");
+        int[][] households = new int[dataContainer.getGeoData().getZones().length][Properties.get().main.incomeBrackets.length + 1];
         for (Household hh : Household.getHouseholdArray()) {
             int hhIncomeGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
             households[dataContainer.getGeoData().getZoneIndex(hh.getHomeZone())][hhIncomeGroup - 1]++;
@@ -57,16 +48,16 @@ public class summarizeDataCblcm {
 
         if (SiloUtil.checkIfFileExists(popFileName) && year != SiloUtil.getBaseYear()) {
             TableDataSet pop = SiloUtil.readCSVfile(popFileName);
-            for (int income = 0; income <= SiloUtil.incBrackets.length; income++) {
+            for (int income = 0; income <= Properties.get().main.incomeBrackets.length; income++) {
                 int[] hh = new int[dataContainer.getGeoData().getZones().length];
                 for (int i = 0; i < dataContainer.getGeoData().getZones().length; i++) hh[i] = households[i][income];
                 String columnName;
                 if (income == 0) {
-                    columnName = "hh" + year + "_i_0-" + SiloUtil.incBrackets[income];
-                } else if (income == SiloUtil.incBrackets.length) {
-                    columnName = "hh" + year + "_i_above" + SiloUtil.incBrackets[income - 1];
+                    columnName = "hh" + year + "_i_0-" + Properties.get().main.incomeBrackets[income];
+                } else if (income == Properties.get().main.incomeBrackets.length) {
+                    columnName = "hh" + year + "_i_above" + Properties.get().main.incomeBrackets[income - 1];
                 } else {
-                    columnName = "hh" + year + "_i_" + SiloUtil.incBrackets[income - 1] + "-" + SiloUtil.incBrackets[income];
+                    columnName = "hh" + year + "_i_" + Properties.get().main.incomeBrackets[income - 1] + "-" + Properties.get().main.incomeBrackets[income];
                 }
                 pop.appendColumn(hh, columnName);
             }
@@ -74,16 +65,16 @@ public class summarizeDataCblcm {
         } else {
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(popFileName, false);
             pw.print("zone");
-            pw.print(",hh" + year + "_i_0-" + SiloUtil.incBrackets[0]);
-            for (int i = 1; i < SiloUtil.incBrackets.length; i++)
-                pw.print(",hh" + year + "_i_" + SiloUtil.incBrackets[i - 1] +
-                        "-" + SiloUtil.incBrackets[i]);
-            pw.print(",hh" + year + "_i_above" + SiloUtil.incBrackets[SiloUtil.incBrackets.length-1]);
+            pw.print(",hh" + year + "_i_0-" + Properties.get().main.incomeBrackets[0]);
+            for (int i = 1; i < Properties.get().main.incomeBrackets.length; i++)
+                pw.print(",hh" + year + "_i_" + Properties.get().main.incomeBrackets[i - 1] +
+                        "-" + Properties.get().main.incomeBrackets[i]);
+            pw.print(",hh" + year + "_i_above" + Properties.get().main.incomeBrackets[Properties.get().main.incomeBrackets.length-1]);
             pw.println();
             int[] zones = dataContainer.getGeoData().getZones();
             for (int zn = 0; zn < zones.length; zn++) {
                 pw.print(zones[zn]);
-                for (int i = 0; i <= SiloUtil.incBrackets.length; i++) pw.print("," + households[zn][i]);
+                for (int i = 0; i <= Properties.get().main.incomeBrackets.length; i++) pw.print("," + households[zn][i]);
                 pw.println();
             }
             pw.close();
@@ -91,12 +82,12 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeEmployment (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizeEmployment (int year, SiloDataContainer dataContainer) {
         // summarize employment by type for selected years
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String emplFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_EMPLOYMENT_FILE) +
-                SiloUtil.gregorianIterator + ".csv");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
+                Properties.get().main.gregorianIterator + ".csv");
         int[][] jobs = new int[dataContainer.getGeoData().getZones().length][JobType.getNumberOfJobTypes()];
         for (Job jj : Job.getJobArray()) {
             int jobType = JobType.getOrdinal(jj.getType());
@@ -131,12 +122,12 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeDwellings (ResourceBundle rb, int year, SiloDataContainer dataContainer) {
+    private static void summarizeDwellings (int year, SiloDataContainer dataContainer) {
         // summarize dwellings by type and zone for selected years
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String ddFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_DWELLING_FILE) +
-                SiloUtil.gregorianIterator + ".csv");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
+                Properties.get().main.gregorianIterator + ".csv");
         int[][] dwellings = new int[dataContainer.getGeoData().getZones().length][DwellingType.values().length];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
             int ddType = dd.getType().ordinal();
@@ -170,13 +161,13 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeAccessibilities (ResourceBundle rb, int year, SiloModelContainer modelContainer,
+    private static void summarizeAccessibilities (int year, SiloModelContainer modelContainer,
                                                   SiloDataContainer dataContainer) {
         // summarize accessibilities by type (transit/highway) and zone for selected years
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String accFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_ACCESSIBILITIES_FILE) +
-                SiloUtil.gregorianIterator + ".csv");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String accFileName = (directory + "/cblcm/" + Properties.get().cblcm.accessibilityFile +
+                Properties.get().main.gregorianIterator + ".csv");
 
         if (SiloUtil.checkIfFileExists(accFileName) && year != SiloUtil.getBaseYear()) {
             TableDataSet accTable = SiloUtil.readCSVfile(accFileName);
@@ -201,26 +192,26 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeByCounty (ResourceBundle rb, int year) {
+    private static void summarizeByCounty (int year, GeoDataMstm geoData) {
         // summarize population and employment data by county
 
-        String countyOrderFile = rb.getString(PROPERTIES_CBLCM_COUNTY_ORDER_FILE);
+        String countyOrderFile = Properties.get().cblcm.countyOrderFile;
         int[] countyOrder = SiloUtil.readCSVfile(countyOrderFile).getColumnAsInt("fips");
         int[] countyOrderIndex = SiloUtil.createIndexArray(countyOrder);
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
-        String hhFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_COUNTY_POPULATION) +
-                SiloUtil.gregorianIterator + ".txt");
-        String jobFileName = (directory + "/cblcm/" + rb.getString(PROPERTIES_CBLCM_COUNTY_EMPLOYMENT) +
-                SiloUtil.gregorianIterator + ".txt");
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String hhFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyPopulationFile +
+                Properties.get().main.gregorianIterator + ".txt");
+        String jobFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyEmployMentFile +
+                Properties.get().main.gregorianIterator + ".txt");
 
         int[] hhByCounty = new int[countyOrder.length];
         int[] jobsByCounty = new int[countyOrder.length];
         for (Household hh: Household.getHouseholdArray()) {
-            int homeFips = geoDataMstm.getCountyOfZone(hh.getHomeZone());
+            int homeFips = geoData.getCountyOfZone(hh.getHomeZone());
             if (SiloUtil.containsElement(countyOrder, homeFips)) hhByCounty[countyOrderIndex[homeFips]]++;
         }
         for (Job jj: Job.getJobArray()) {
-            int jobFips = geoDataMstm.getCountyOfZone(jj.getZone());
+            int jobFips = geoData.getCountyOfZone(jj.getZone());
             if (SiloUtil.containsElement(countyOrder, jobFips)) jobsByCounty[countyOrderIndex[jobFips]]++;
         }
 

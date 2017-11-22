@@ -15,13 +15,11 @@ import java.util.Random;
  */
 public class CreateCarOwnershipTest {
 
-    private Reader reader;
     private CreateCarOwnershipJSCalculator calculator;
-    private static Random rand;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator (reader, true);
     }
 
@@ -73,7 +71,7 @@ public class CreateCarOwnershipTest {
     }
 
     public static float getRandomNumberAsFloat() {
-        rand = new Random();
+        Random rand = new Random();
         return rand.nextFloat();
     }
 

@@ -11,12 +11,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class ConstructionDemandTest {
-    private Reader reader;
     private ConstructionDemandJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
         calculator = new ConstructionDemandJSCalculator(reader, true);
     }
 

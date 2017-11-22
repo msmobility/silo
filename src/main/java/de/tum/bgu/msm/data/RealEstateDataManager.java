@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import com.pb.common.util.ResourceUtil;
 import com.pb.common.datafile.TableDataSet;
 
 import java.io.*;
@@ -17,15 +18,8 @@ import java.util.*;
 
 public class RealEstateDataManager {
     static Logger logger = Logger.getLogger(RealEstateDataManager.class);
-
-    protected static final String PROPERTIES_DD_FILE_ASCII  = "dwelling.file.ascii";
-    protected static final String PROPERTIES_READ_BIN_FILE  = "read.binary.dd.file";
-    protected static final String PROPERTIES_DD_FILE_BIN    = "dwellings.file.bin";
-    protected static final String PROPERTIES_MAX_NUM_VAC_DD = "vacant.dd.by.reg.array";
-    protected static final String PROPERTIES_ACRES_BY_DD    = "developer.acres.per.dwelling.by.type";
-
-    private ResourceBundle rb;
-    private GeoData geoData;
+   
+    private final GeoData geoData;
     public static int largestNoBedrooms;
     public static int[] dwellingsByQuality;
     private static double[] initialQualityShares;
@@ -41,16 +35,14 @@ public class RealEstateDataManager {
     private static float[] medianRent;
     private HashMap<DwellingType, Float> acresByDwellingType;
 
-    public RealEstateDataManager(ResourceBundle rb, GeoData geoData) {
-        // constructor
-        this.rb = rb;
+    public RealEstateDataManager(GeoData geoData) {
         this.geoData = geoData;
     }
 
 
     public void readDwellings (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
+        boolean readBin = Properties.get().realEstate.readBinaryDwellingFile;
         if (readBin) {
             readBinaryDwellingDataObjects();
         } else {
@@ -64,8 +56,8 @@ public class RealEstateDataManager {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
-        int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII);
+        int year = Properties.get().main.startYear;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -118,7 +110,7 @@ public class RealEstateDataManager {
     private void readAcresNeededByDwellingType () {
         // read in the area needed to build a dwelling
 
-        String fileNameAcres = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_ACRES_BY_DD);
+        String fileNameAcres = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingTypeAcresFile;
         TableDataSet tblAcresByDwellingType =  SiloUtil.readCSVfile(fileNameAcres);
         acresByDwellingType = new HashMap<>();
         for (int row = 1; row <= tblAcresByDwellingType.getRowCount(); row++) {
@@ -140,7 +132,7 @@ public class RealEstateDataManager {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
 
         int highestRegion = SiloUtil.getHighestVal(geoData.getRegionList());
-        numberOfStoredVacantDD = ResourceUtil.getIntegerProperty(rb, PROPERTIES_MAX_NUM_VAC_DD);
+        numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
         vacDwellingsByRegion = SiloUtil.setArrayToValue(vacDwellingsByRegion, 0);
@@ -166,10 +158,9 @@ public class RealEstateDataManager {
     }
 
 
-    public static void writeBinaryDwellingDataObjects(ResourceBundle appRb) {
-        // Store dwelling object data in binary file
+    public static void writeBinaryDwellingDataObjects() {
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, PROPERTIES_DD_FILE_BIN);
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryDwellingsFile;
         logger.info("  Writing dwelling data to binary file.");
         Object[] data = Dwelling.getDwellings().toArray(new Dwelling[Dwelling.getDwellingCount()]);
         try {
@@ -184,9 +175,8 @@ public class RealEstateDataManager {
 
 
     private void readBinaryDwellingDataObjects() {
-        // read dwellings from binary file
 
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_BIN);
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.binaryDwellingsFile;
         logger.info("  Reading dwelling data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -206,12 +196,16 @@ public class RealEstateDataManager {
 
     public void fillQualityDistribution () {
         // count number of dwellings by quality and calculate average quality
-        dwellingsByQuality = new int[SiloUtil.numberOfQualityLevels];
-        initialQualityShares = new double[SiloUtil.numberOfQualityLevels];
-        for (Dwelling dd: getDwellings()) dwellingsByQuality[dd.getQuality() - 1]++;
-        for (int qual = 1; qual <= SiloUtil.numberOfQualityLevels; qual++)
+        int numberOfQualityLevels = Properties.get().main.qualityLevels;
+        dwellingsByQuality = new int[numberOfQualityLevels];
+        initialQualityShares = new double[numberOfQualityLevels];
+        for (Dwelling dd: getDwellings()) {
+            dwellingsByQuality[dd.getQuality() - 1]++;
+        }
+        for (int qual = 1; qual <= numberOfQualityLevels; qual++) {
             initialQualityShares[qual - 1] = (double) dwellingsByQuality[qual - 1] /
                     (double) SiloUtil.getSum(dwellingsByQuality);
+        }
     }
 
 
@@ -224,7 +218,8 @@ public class RealEstateDataManager {
 
         // identify how much rent (specified by 25 rent categories) is paid by households of each income category
         rentCategories = 25;
-        float[][] priceByIncome = new float[SiloUtil.incBrackets.length + 1][rentCategories + 1];
+        int[] incBrackets = Properties.get().main.incomeBrackets;
+        float[][] priceByIncome = new float[incBrackets.length + 1][rentCategories + 1];
         for (Dwelling dd: Dwelling.getDwellingArray()) {
             highestDwellingIdInUse = Math.max(highestDwellingIdInUse, dd.getId());
             largestNoBedrooms = Math.max(largestNoBedrooms, dd.getBedrooms());
@@ -237,9 +232,9 @@ public class RealEstateDataManager {
                 priceByIncome[incomeCategory - 1][rentCategory]++;
             }
         }
-        priceByIncome[SiloUtil.incBrackets.length][rentCategories]++;  // make sure that most expensive category can be afforded by richest households
+        priceByIncome[incBrackets.length][rentCategories]++;  // make sure that most expensive category can be afforded by richest households
         ddPriceByHhType = new HashMap<>();
-        for (int incomeCategory = 1; incomeCategory <= SiloUtil.incBrackets.length + 1; incomeCategory++) {
+        for (int incomeCategory = 1; incomeCategory <= incBrackets.length + 1; incomeCategory++) {
             float[] vector = new float[rentCategories + 1];
             System.arraycopy(priceByIncome[incomeCategory - 1], 0, vector, 0, vector.length);
             float sum = SiloUtil.getSum(vector);
@@ -273,19 +268,18 @@ public class RealEstateDataManager {
 
 
     public static double[] getCurrentQualShares() {
-        double[] currentQualityShares = new double[SiloUtil.numberOfQualityLevels];
-        for (int qual = 1; qual <= SiloUtil.numberOfQualityLevels; qual++) currentQualityShares[qual - 1] =
+        double[] currentQualityShares = new double[Properties.get().main.qualityLevels];
+        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) currentQualityShares[qual - 1] =
                 (double) dwellingsByQuality[qual - 1] / (double) SiloUtil.getSum(dwellingsByQuality);
         return currentQualityShares;
     }
 
 
-    public static void calculateMedianRentByMSA() {
-        // calculate median rent by MSA
+    public void calculateMedianRentByMSA(GeoData geoData) {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Dwelling dd: Dwelling.getDwellingArray()) {
-            int dwellingMSA = geoDataMstm.getMSAOfZone(dd.getZone());
+            int dwellingMSA = geoData.getMSAOfZone(dd.getZone());
             if (rentHashMap.containsKey(dwellingMSA)) {
                 ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
                 rents.add(dd.getPrice());
@@ -310,43 +304,43 @@ public class RealEstateDataManager {
     public void summarizeDwellings () {
         // aggregate dwellings
 
-        summarizeData.resultFile("QualityLevel,Dwellings");
-        for (int qual = 1; qual <= SiloUtil.numberOfQualityLevels; qual++) {
+        SummarizeData.resultFile("QualityLevel,Dwellings");
+        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
             String row = qual + "," + dwellingsByQuality[qual - 1];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
         int[] ddByType = new int[DwellingType.values().length];
         for (Dwelling dd: Dwelling.getDwellingArray()) ddByType[dd.getType().ordinal()]++;
         for (DwellingType dt: DwellingType.values()) {
-            summarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
+            SummarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
         }
         for (DwellingType dt: DwellingType.values()) {
             double avePrice = getAveragePriceByDwellingType()[dt.ordinal()];
-            summarizeData.resultFile("AveMonthlyPrice,"+dt.toString()+","+avePrice);
+            SummarizeData.resultFile("AveMonthlyPrice,"+dt.toString()+","+avePrice);
         }
         for (DwellingType dt: DwellingType.values()) {
             double aveVac = getAverageVacancyByDwellingType()[dt.ordinal()];
             Formatter f = new Formatter();
             f.format("AveVacancy,%s,%f", dt.toString(), aveVac);
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
         // aggregate developable land
-        summarizeData.resultFile("Available land for construction by region");
+        SummarizeData.resultFile("Available land for construction by region");
         double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
         for (int zone: geoData.getZones()) availLand[geoData.getRegionOfZone(zone)] +=
                 getAvailableLandForConstruction(zone);
         for (int region: geoData.getRegionList()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
 
         // summarize housing costs by income group
-        summarizeData.resultFile("Housing costs by income group");
+        SummarizeData.resultFile("Housing costs by income group");
         String header = "Income";
         for (int i = 0; i < 10; i++) header = header.concat(",rent_" + ((i+1) * 250));
         header = header.concat(",averageRent");
-        summarizeData.resultFile(header);
+        SummarizeData.resultFile(header);
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
         for (Household hh: Household.getHouseholdArray()) {
@@ -368,7 +362,7 @@ public class RealEstateDataManager {
             	// TODO check what happens by leaving this out... the error is avoided
             	line = line.concat("," + rents[i] / countThisIncome);
             }
-            summarizeData.resultFile(line);
+            SummarizeData.resultFile(line);
         }
     }
 
@@ -572,7 +566,6 @@ public class RealEstateDataManager {
 
         if (useDwellingCapacityForThisZone(zone)) {
             geoData.reduceDevelopmentCapacityByOneDwelling(zone);
-            return;
         } else {
             geoData.reduceDevelopmentCapacityByDevelopableAcres(zone, acres);
         }

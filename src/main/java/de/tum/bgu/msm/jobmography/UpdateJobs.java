@@ -6,6 +6,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobType;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
@@ -21,11 +22,8 @@ import java.util.*;
 public class UpdateJobs {
 
     protected transient Logger logger = Logger.getLogger(UpdateJobs.class);
-    protected static final String PROPERTIES_EMPLOYMENT_FORECAST = "interpol.empl.forecast";
-    private ResourceBundle rb;
 
-    public UpdateJobs(ResourceBundle rb) {
-        this.rb = rb;
+    public UpdateJobs() {
     }
 
     public void updateJobInventoryMultiThreadedThisYear(int year, SiloDataContainer dataContainer) {
@@ -39,8 +37,8 @@ public class UpdateJobs {
             jobsByZone[jobTypeId][jj.getZone()]++;
         }
 
-        String dir = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName + "/employmentForecast/";
-        String forecastFileName = dir + rb.getString(PROPERTIES_EMPLOYMENT_FORECAST) + year + ".csv";
+        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
+        String forecastFileName = dir + Properties.get().jobData.interpolatedEmploymentForecast + year + ".csv";
         TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 

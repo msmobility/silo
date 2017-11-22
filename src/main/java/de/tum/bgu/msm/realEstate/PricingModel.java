@@ -1,16 +1,17 @@
 package de.tum.bgu.msm.realEstate;
 
+import com.pb.common.calculator.UtilityExpressionCalculator;
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.calculator.UtilityExpressionCalculator;
 
-import java.io.PrintWriter;
+import java.io.File;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import java.io.File;
 
 /**
  * Updates prices of dwellings based on current demand
@@ -21,11 +22,6 @@ import java.io.File;
 public class PricingModel {
 
     static Logger logger = Logger.getLogger(PricingModel.class);
-
-    protected static final String PROPERTIES_RealEstate_UEC_FILE                = "RealEstate.UEC.FileName";
-    protected static final String PROPERTIES_RealEstate_UEC_DATA_SHEET          = "RealEstate.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_RealEstate_UEC_MODEL_SHEET_PRICING = "RealEstate.UEC.ModelSheetNumber.Pricing";
-    protected static final String PROPERTIES_RealEstate_STRUCTURAL_VACANCY      = "vacancy.rate.by.type";
 
     private String uecFileName;
     private int dataSheetNumber;
@@ -38,19 +34,16 @@ public class PricingModel {
     private double[] structuralVacancy;
 
 
-    public PricingModel (ResourceBundle rb) {
-
-        // read properties
-        uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_RealEstate_UEC_FILE);
-        dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_DATA_SHEET);
-        setupPricingModel(rb);
+    public PricingModel () {
+        uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
+        dataSheetNumber = Properties.get().realEstate.dataSheet;
+        setupPricingModel();
     }
 
 
-    private void setupPricingModel(ResourceBundle rb) {
+    private void setupPricingModel() {
 
-        // read properties
-        int pricingModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_RealEstate_UEC_MODEL_SHEET_PRICING);
+        int pricingModelSheetNumber = Properties.get().realEstate.modelSheet;
 
         // initialize UEC
         UtilityExpressionCalculator pricingModel = new UtilityExpressionCalculator(new File(uecFileName),
@@ -79,7 +72,7 @@ public class PricingModel {
         pricingDmu.setToken(6);
         double utild[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
         maxDelta = utild[0];
-        structuralVacancy = ResourceUtil.getDoubleArray(rb, PROPERTIES_RealEstate_STRUCTURAL_VACANCY);
+        structuralVacancy = Properties.get().realEstate.structuralVacancy;
     }
 
 

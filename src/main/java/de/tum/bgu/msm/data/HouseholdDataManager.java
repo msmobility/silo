@@ -18,16 +18,18 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
 
+import static de.tum.bgu.msm.SiloUtil.openFileForSequentialWriting;
 
 /**
  * @author Greg Erhardt
@@ -37,21 +39,9 @@ import java.util.*;
 public class HouseholdDataManager {
     static Logger logger = Logger.getLogger(HouseholdDataManager.class);
 
-    protected static final String PROPERTIES_HH_FILE_ASCII     = "household.file.ascii";
-    protected static final String PROPERTIES_PP_FILE_ASCII     = "person.file.ascii";
-    protected static final String PROPERTIES_DD_FILE_ASCII     = "dwelling.file.ascii";
-    protected static final String PROPERTIES_JJ_FILE_ASCII     = "job.file.ascii";
-    protected static final String PROPERTIES_SIZE_SMALL_SYNPOP = "size.small.syn.pop";
-    protected static final String PROPERTIES_READ_BIN_FILE     = "read.binary.pop.files";
-    protected static final String PROPERTIES_POP_FILE_BIN      = "population.file.bin";
-    protected static final String PROPERTIES_INCOME_CHANGE     = "mean.change.of.yearly.income";
-    protected static final String PROPERTIES_SUMMARIZE_METRO   = "summarize.hh.near.selected.metro.stp";
-    protected static final String PROPERTIES_SELECTED_METRO    = "selected.metro.stops";
-    protected static final String PROPERTIES_HH_NEAR_METRO     = "hh.near.selected.metro.stops.summary";
-    private ResourceBundle rb;
-
     private static int highestHouseholdIdInUse;
     private static int highestPersonIdInUse;
+
     private float[][] laborParticipationShares;
     private static float[][][] initialIncomeDistribution;              // income by age, gender and occupation
     private static float meanIncomeChange;
@@ -62,17 +52,15 @@ public class HouseholdDataManager {
     private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
 
-    public HouseholdDataManager(ResourceBundle rb, RealEstateDataManager realEstateData) {
-        // constructor
-        this.rb = rb;
+    public HouseholdDataManager(RealEstateDataManager realEstateData) {
         this.realEstateData = realEstateData;
-        meanIncomeChange = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_INCOME_CHANGE);
+        meanIncomeChange = Properties.get().householdData.meanIncomeChange;
     }
 
 
     public void readPopulation (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
-        boolean readBin = ResourceUtil.getBooleanProperty(rb, PROPERTIES_READ_BIN_FILE, false);
+        boolean readBin = Properties.get().householdData.readBinaryPopulation;
         if (readBin) {
             readBinaryPopulationDataObjects();
         } else {
@@ -85,8 +73,8 @@ public class HouseholdDataManager {
     private void readHouseholdData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading household micro data from ascii file");
 
-        int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII);
+        int year = Properties.get().main.startYear;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -128,9 +116,9 @@ public class HouseholdDataManager {
     }
 
 
-    public static void writeBinaryPopulationDataObjects(ResourceBundle appRb) {
+    public static void writeBinaryPopulationDataObjects() {
         // Store population object data in binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(appRb, PROPERTIES_POP_FILE_BIN);
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryPopulationFile;
         logger.info("  Writing population data to binary file.");
         Object[] data = {Household.getHouseholds().toArray(new Household[Household.getHouseholdCount()]),
                 Person.getPersons().toArray(new Person[Person.getPersonCount()])};
@@ -147,7 +135,7 @@ public class HouseholdDataManager {
 
     private void readBinaryPopulationDataObjects() {
         // read households and persons from binary file
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_POP_FILE_BIN);
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryPopulationFile;
         logger.info("Reading population data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -166,8 +154,8 @@ public class HouseholdDataManager {
     private void readPersonData(boolean readSmallSynPop, int sizeSmallSynPop) {
         logger.info("Reading person micro data from ascii file");
 
-        int year = SiloUtil.getStartYear();
-        String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII);
+        int year = Properties.get().main.startYear;
+        String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
         if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
         fileName += "_" + year + ".csv";
 
@@ -278,10 +266,10 @@ public class HouseholdDataManager {
     public static int getIncomeCategoryForIncome(int hhInc) {
         // return income category defined exogenously
 
-        for (int category = 1; category <= SiloUtil.incBrackets.length; category++) {
-            if (hhInc <= SiloUtil.incBrackets[category - 1]) return category;
+        for (int category = 1; category <= Properties.get().main.incomeBrackets.length; category++) {
+            if (hhInc <= Properties.get().main.incomeBrackets[category - 1]) return category;
         }
-        return SiloUtil.incBrackets.length + 1;  // if income is larger than highest category
+        return Properties.get().main.incomeBrackets.length + 1;  // if income is larger than highest category
     }
 
 
@@ -406,16 +394,16 @@ public class HouseholdDataManager {
         int[] hhIncome = new int[Household.getHouseholdCount()];
         int hhIncomePos = 0;
         int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        summarizeData.resultFile("Age,Men,Women");
+        SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
             String row = i + "," + pers[0][i] + "," + pers[1][i];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
-        summarizeData.resultFile("ppByRace,hh");
-        summarizeData.resultFile("white," + ppRace[0]);
-        summarizeData.resultFile("black," + ppRace[1]);
-        summarizeData.resultFile("hispanic," + ppRace[2]);
-        summarizeData.resultFile("other," + ppRace[3]);
+        SummarizeData.resultFile("ppByRace,hh");
+        SummarizeData.resultFile("white," + ppRace[0]);
+        SummarizeData.resultFile("black," + ppRace[1]);
+        SummarizeData.resultFile("hispanic," + ppRace[2]);
+        SummarizeData.resultFile("other," + ppRace[3]);
         for (Household hh: Household.getHouseholdArray()) {
             int hhSize = Math.min(hh.getHhSize(), 10);
             hhs[hhSize - 1]++;
@@ -426,24 +414,24 @@ public class HouseholdDataManager {
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             hhByRegion[region]++;
         }
-                summarizeData.resultFile("hhByType,hh");
+                SummarizeData.resultFile("hhByType,hh");
         for (HouseholdType ht: HouseholdType.values()) {
             String row = ht + "," + hht[ht.ordinal()];
-            summarizeData.resultFile(row);
+            SummarizeData.resultFile(row);
         }
-        summarizeData.resultFile("hhByRace,hh");
-        summarizeData.resultFile("white," + hhRace[0]);
-        summarizeData.resultFile("black," + hhRace[1]);
-        summarizeData.resultFile("hispanic," + hhRace[2]);
-        summarizeData.resultFile("other," + hhRace[3]);
+        SummarizeData.resultFile("hhByRace,hh");
+        SummarizeData.resultFile("white," + hhRace[0]);
+        SummarizeData.resultFile("black," + hhRace[1]);
+        SummarizeData.resultFile("hispanic," + hhRace[2]);
+        SummarizeData.resultFile("other," + hhRace[3]);
         String row = "hhBySize";
         for (int i: hhs) row = row + "," + i;
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         row = "AveHHSize," + Household.getAverageHouseholdSize();
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         double aveHHincome = SiloUtil.getSum(hhIncome) / Household.getHouseholdCount();
         row = "AveHHInc," + aveHHincome + ",MedianHHInc," + SiloUtil.getMedian(hhIncome);
-        summarizeData.resultFile(row);
+        SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
         float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
@@ -465,23 +453,24 @@ public class HouseholdDataManager {
             }
         }
         String[] grp = {"<18","18-29","30-49","50-64",">=65"};
-        summarizeData.resultFile("laborParticipationRateByAge,male,female");
+        SummarizeData.resultFile("laborParticipationRateByAge,male,female");
         for (int ag = 0; ag < 5; ag++) {
             Formatter f = new Formatter();
             f.format("%s,%f,%f", grp[ag], labP[1][0][ag]/(labP[0][0][ag]+labP[1][0][ag]), labP[1][1][ag]/(labP[0][1][ag]+labP[1][1][ag]));
-            summarizeData.resultFile(f.toString());
+            SummarizeData.resultFile(f.toString());
         }
-        summarizeData.resultFile("aveCommuteDistByRegion,miles");
-        for (int i: geoData.getRegionList()) summarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+        // todo: Add distance in kilometers to this summary
+        SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
+        for (int i: geoData.getRegionList()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
         for (Household hh: Household.getHouseholdArray()) {
             carOwnership[hh.getAutos()]++;
         }
-        summarizeData.resultFile("carOwnershipLevel,households");
-        summarizeData.resultFile("0cars," + carOwnership[0]);
-        summarizeData.resultFile("1car," + carOwnership[1]);
-        summarizeData.resultFile("2cars," + carOwnership[2]);
-        summarizeData.resultFile("3+cars," + carOwnership[3]);
+        SummarizeData.resultFile("carOwnershipLevel,households");
+        SummarizeData.resultFile("0cars," + carOwnership[0]);
+        SummarizeData.resultFile("1car," + carOwnership[1]);
+        SummarizeData.resultFile("2cars," + carOwnership[2]);
+        SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
 
@@ -788,24 +777,23 @@ public class HouseholdDataManager {
     }
 
 
-    public static void calculateMedianHouseholdIncomeByMSA() {
-        // calculate median income for each MSA
+    public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
 
-        HashMap<Integer, ArrayList<Integer>> incomeHashMap = new HashMap<>();
+        HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholdArray()) {
-            int homeMSA = geoDataMstm.getMSAOfZone(hh.getHomeZone());
-            if (incomeHashMap.containsKey(homeMSA)) {
-                ArrayList<Integer> inc = incomeHashMap.get(homeMSA);
+            int homeMSA = geoData.getMSAOfZone(hh.getHomeZone());
+            if (rentHashMap.containsKey(homeMSA)) {
+                ArrayList<Integer> inc = rentHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());
             } else {
                 ArrayList<Integer> inc = new ArrayList<>();
                 inc.add(hh.getHhIncome());
-                incomeHashMap.put(homeMSA, inc);
+                rentHashMap.put(homeMSA, inc);
             }
         }
         medianIncome = new float[99999];
-        for (Integer thisMsa: incomeHashMap.keySet()) {
-            medianIncome[thisMsa] = SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(incomeHashMap.get(thisMsa)));
+        for (Integer thisMsa: rentHashMap.keySet()) {
+            medianIncome[thisMsa] = SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(rentHashMap.get(thisMsa)));
         }
     }
 
@@ -818,14 +806,16 @@ public class HouseholdDataManager {
     public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
         // summarize households in the vicinity of selected Metro stops
 
-        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_SUMMARIZE_METRO)) return;
-        TableDataSet selectedMetro = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_METRO));
+        if (!Properties.get().householdData.summarizeMetro){
+            return;
+        }
+        TableDataSet selectedMetro = SiloUtil.readCSVfile(Properties.get().householdData.selectedMetroStopsFile);
 
-        String directory = SiloUtil.baseDirectory + "scenOutput/" + SiloUtil.scenarioName;
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String fileName = (directory + "/" + rb.getString(PROPERTIES_HH_NEAR_METRO) + "_" +
-                SiloUtil.gregorianIterator + ".csv");
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
+        String fileName = (directory + "/" + Properties.get().householdData.householdsNearMetroFile + "_" +
+                Properties.get().main.gregorianIterator + ".csv");
+        PrintWriter pw = openFileForSequentialWriting(fileName, false);
         pw.print("income,dist");
         for (int row = 1; row <= selectedMetro.getRowCount(); row++) pw.print("," +
                 selectedMetro.getStringValueAt(row, "MetroStation") + " (" + (int) selectedMetro.getValueAt(row, "Zone") + ")");
@@ -877,21 +867,23 @@ public class HouseholdDataManager {
 
     public void writeOutSmallSynPop() {
         // write out numberOfHh number of households to have small file for running tests
+        String baseDirectory = Properties.get().main.baseDirectory;
+        int startYear = Properties.get().main.startYear;
 
-        int numberOfHh = ResourceUtil.getIntegerProperty(rb, PROPERTIES_SIZE_SMALL_SYNPOP);
+        int numberOfHh = Properties.get().main.smallSynPopSize;
         logger.info("  Writing out smaller files of synthetic population with " + numberOfHh + " households only");
-        String filehh = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HH_FILE_ASCII) + "_" +
-                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filepp = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PP_FILE_ASCII) + "_" +
-                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filedd = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DD_FILE_ASCII) + "_" +
-                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        String filejj = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_JJ_FILE_ASCII) + "_" +
-                numberOfHh + "_" + SiloUtil.getStartYear() + ".csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        String filehh = baseDirectory + Properties.get().householdData.householdFileName + "_" +
+                numberOfHh + "_" + startYear + ".csv";
+        String filepp = baseDirectory + Properties.get().householdData.personFileName + "_" +
+                numberOfHh + "_" + startYear + ".csv";
+        String filedd = baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
+                numberOfHh + "_" + startYear + ".csv";
+        String filejj = baseDirectory + Properties.get().householdData.jobsFileName + "_" +
+                numberOfHh + "_" + startYear + ".csv";
+        PrintWriter pwh = openFileForSequentialWriting(filehh, false);
+        PrintWriter pwp = openFileForSequentialWriting(filepp, false);
+        PrintWriter pwd = openFileForSequentialWriting(filedd, false);
+        PrintWriter pwj = openFileForSequentialWriting(filejj, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
@@ -901,7 +893,7 @@ public class HouseholdDataManager {
         for (Household hh : hhs) {
             counter++;
             if (counter > numberOfHh) break;
-            // write out household attributes
+
             pwh.print(hh.getId());
             pwh.print(",");
             pwh.print(hh.getDwellingId());

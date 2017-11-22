@@ -13,12 +13,11 @@ import java.io.Reader;
  * Created by matthewokrah on 26/09/2017.
  */
 public class DivorceTest {
-    private Reader reader;
     private DivorceJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
         calculator = new DivorceJSCalculator (reader, true);
     }
 

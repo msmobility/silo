@@ -11,12 +11,11 @@ import java.io.Reader;
 
 public class RenovationTest {
 
-    private Reader reader;
     private RenovationJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
         calculator = new RenovationJSCalculator(reader, true);
     }
 

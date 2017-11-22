@@ -10,41 +10,43 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 
 public interface GeoData {
 
-    public void setInitialData();
+    void setInitialData();
 
-    public int[] getZones ();
+    int[] getZones();
 
-    public int[] getRegionList();
+    int[] getRegionList();
 
-    public int getRegionOfZone (int zone);
+    int getRegionOfZone(int zone);
 
-    public int getRegionIndex(int region);
+    int getRegionIndex(int region);
 
-    public int getZoneIndex(int zone);
+    int getZoneIndex(int zone);
 
-    public float[] getSizeOfZonesInAcres();
+    float[] getSizeOfZonesInAcres();
 
-    public float getSizeOfZoneInAcres(int zone);
+    float getSizeOfZoneInAcres(int zone);
 
-    public int getHighestZonalId ();
+    int getHighestZonalId();
 
-    public int[] getZonesInRegion (int region);
+    int[] getZonesInRegion(int region);
 
-    public boolean useNumberOfDwellingsAsCapacity ();
+    boolean useNumberOfDwellingsAsCapacity();
 
-    public float getDevelopmentCapacity (int zone);
+    float getDevelopmentCapacity(int zone);
 
-    public void reduceDevelopmentCapacityByOneDwelling (int zone);
+    int getMSAOfZone(int zone);
 
-    public void reduceDevelopmentCapacityByDevelopableAcres (int zone, float acres);
+    void reduceDevelopmentCapacityByOneDwelling(int zone);
 
-    public int[] getDevelopableLandUseTypes();
+    void reduceDevelopmentCapacityByDevelopableAcres(int zone, float acres);
 
-    public float getAreaOfLandUse (String landUseType, int zone);
+    int[] getDevelopableLandUseTypes();
 
-    public boolean isThisDwellingTypeAllowed (String dwellingType, int zone);
+    float getAreaOfLandUse(String landUseType, int zone);
 
-    public void writeOutDevelopmentCapacityFile (SiloDataContainer dataContainer);
+    boolean isThisDwellingTypeAllowed(String dwellingType, int zone);
+
+    void writeOutDevelopmentCapacityFile(SiloDataContainer dataContainer);
 
 
 }

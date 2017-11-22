@@ -22,11 +22,11 @@ import java.util.ResourceBundle;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 /**
@@ -36,38 +36,15 @@ import org.apache.log4j.Logger;
  **/
 
 public class BirthModel {
-//    static Logger logger = Logger.getLogger(BirthModel.class);
+
     static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_FILE                 = "Demographics.UEC.FileName";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET           = "Demographics.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_BIRTH    = "Demographics.UEC.ModelSheetNumber.Birth";
-    protected static final String PROPERTIES_DEMOGRAPHICS_PROP_GIRL                = "demographics.proability.girl";
-    protected static final String PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_MARRIED     = "demographics.birth.scaler.married";
-    protected static final String PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_SINGLE      = "demographics.birth.scaler.single";
-    protected static final String PROPERTIES_DEMOGRAPHICS_BIRTH_LOCAL_SCALER       = "demographics.local.birth.rate.adjuster";
-    protected static final String PROPERTIES_DEMOGRAPHICS_SIMULATION_PERIOD_LENGTH = "simulation.period.length";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_BIRTH       = "log.util.birth";
-
-    // properties
 	private static double[] birthProbability;
     private static float propGirl;
     private final HouseholdDataManager householdDataManager;
-    private int simPeriodLength;
-    private float marriedScaler;
-    private float singleScaler;
-    private ResourceBundle rb;
 
-
-    public BirthModel(ResourceBundle rb, HouseholdDataManager householdDataManager) {
-        // constructor
-
-        this.rb = rb;
-        // read properties
-        propGirl        = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_PROP_GIRL);
-        marriedScaler   = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_MARRIED);
-        singleScaler    = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_BIRTH_SCALER_SINGLE);
-        simPeriodLength = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_SIMULATION_PERIOD_LENGTH);
+    public BirthModel(HouseholdDataManager householdDataManager) {
+        propGirl        = Properties.get().demographics.propabilityForGirl;
         this.householdDataManager = householdDataManager;
         setupBirthModel();
 	}
@@ -77,11 +54,11 @@ public class BirthModel {
 
 		// read properties
 		int birthModelSheetNumber =
-                ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_BIRTH);
-        String uecFileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_FILE);
-        int dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_BIRTH);
-        float localScaler = (float) ResourceUtil.getDoubleProperty(rb, PROPERTIES_DEMOGRAPHICS_BIRTH_LOCAL_SCALER);
+                Properties.get().demographics.birthModelSheet;
+        String uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName;
+        int dataSheetNumber = Properties.get().demographics.dataSheet;
+        boolean logCalculation = Properties.get().demographics.logBirthCalculation;
+        float localScaler = Properties.get().demographics.localScaler;
 
         // initialize UEC
         UtilityExpressionCalculator birthModel = new UtilityExpressionCalculator(new File(uecFileName),
@@ -119,8 +96,8 @@ public class BirthModel {
         if (!EventRules.ruleGiveBirth(per)) return;  // Person has died or moved away
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb;
-        if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * marriedScaler;
-        else birthProb = birthProbability[per.getType().ordinal()] * singleScaler;
+        if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.marriedScaler;
+        else birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.singleScaler;
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
@@ -147,7 +124,7 @@ public class BirthModel {
         // increase age of this person by number of years in simulation period
         Person per = Person.getPersonFromId(personId);
         if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
-        int age = per.getAge() + simPeriodLength;
+        int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
         per.setAge(age);
         per.setType(age, per.getGender());
         EventManager.countEvent(EventTypes.birthday);

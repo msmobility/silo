@@ -2,18 +2,18 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloModel.Implementation;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
-import de.tum.bgu.msm.scenarios.maryland.MaryLandCarOwnershipModel;
+import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.MovesModelMstm;
+import de.tum.bgu.msm.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.relocation.MovesModelI;
-import de.tum.bgu.msm.relocation.MovesModelMuc;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
+import de.tum.bgu.msm.relocation.munich.MovesModelMuc;
+import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
@@ -53,7 +53,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(ResourceBundle, Implementation, SiloDataContainer)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(Implementation, SiloDataContainer)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -105,41 +105,40 @@ public class SiloModelContainer {
     /**
      * This factory method is used to create all the models needed for SILO from the Configuration file, loaded as a ResourceBundle
      * Each model is created sequentially, before being passed as parameters to the private constructor.
-     * @param rbLandUse The configuration file, as a @see {@link ResourceBundle}
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(ResourceBundle rbLandUse, Implementation implementation, SiloDataContainer dataContainer) {
+    public static SiloModelContainer createSiloModelContainer(Implementation implementation, SiloDataContainer dataContainer) {
 
         logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(rbLandUse, dataContainer.getHouseholdData());
-        BirthModel birth = new BirthModel(rbLandUse, dataContainer.getHouseholdData());
-        LeaveParentHhModel lph = new LeaveParentHhModel(rbLandUse);
-        MarryDivorceModel mardiv = new MarryDivorceModel(rbLandUse);
+        DeathModel death = new DeathModel(dataContainer.getHouseholdData());
+        BirthModel birth = new BirthModel(dataContainer.getHouseholdData());
+        LeaveParentHhModel lph = new LeaveParentHhModel();
+        MarryDivorceModel mardiv = new MarryDivorceModel();
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
-        Accessibility acc = new Accessibility(rbLandUse, SiloUtil.getStartYear(), dataContainer.getGeoData());
-        //summarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
+        Accessibility acc = new Accessibility(dataContainer.getGeoData());
+        //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         if (implementation.equals(Implementation.MSTM)) {
-            move = new MovesModelMstm(rbLandUse, dataContainer.getGeoData());
+            move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
         } else {
-            move = new MovesModelMuc(rbLandUse, dataContainer.getGeoData());
+            move = new MovesModelMuc(dataContainer.getGeoData());
         }
-        InOutMigration iomig = new InOutMigration(rbLandUse);
-        ConstructionModel cons = new ConstructionModel(rbLandUse, dataContainer.getGeoData());
-        RenovationModel renov = new RenovationModel(rbLandUse);
-        DemolitionModel demol = new DemolitionModel(rbLandUse);
-        PricingModel prm = new PricingModel(rbLandUse);
-        UpdateJobs updateJobs = new UpdateJobs(rbLandUse);
+        InOutMigration iomig = new InOutMigration();
+        ConstructionModel cons = new ConstructionModel(dataContainer.getGeoData());
+        RenovationModel renov = new RenovationModel();
+        DemolitionModel demol = new DemolitionModel();
+        PricingModel prm = new PricingModel();
+        UpdateJobs updateJobs = new UpdateJobs();
         CarOwnershipModel carOwnershipModel;
         if(implementation.equals(Implementation.MSTM)) {
-            carOwnershipModel = new MaryLandCarOwnershipModel(rbLandUse,  dataContainer.getJobData(), acc);
+            carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
         }  else {
-            carOwnershipModel = new MunichCarOwnerShipModel(rbLandUse);
+            carOwnershipModel = new MunichCarOwnerShipModel();
         }
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rbLandUse);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(rbLandUse);
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite();
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,

@@ -11,12 +11,11 @@ import java.io.Reader;
 
 public class DemolitionTest {
 
-    private Reader reader;
     private DemolitionJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader, true);
     }
 

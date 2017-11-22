@@ -12,12 +12,11 @@ import java.io.Reader;
 
 public class ConstructionLocationTest {
 
-    private Reader reader;
     private ConstructionLocationJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
         calculator = new ConstructionLocationJSCalculator(reader, true);
     }
 

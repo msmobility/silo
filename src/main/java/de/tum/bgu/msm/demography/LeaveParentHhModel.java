@@ -17,7 +17,6 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -40,23 +39,18 @@ import java.util.ResourceBundle;
 
 public class LeaveParentHhModel {
 
-
-    // properties
     private double[] lphProbability;
-    private LeaveParentHhJSCalculator calculator;
 
-
-    public LeaveParentHhModel(ResourceBundle rb) {
+    public LeaveParentHhModel() {
         // constructor
-        setupLPHModel(rb);
+        setupLPHModel();
     }
 
-
-    private void setupLPHModel(ResourceBundle rb) {
+    private void setupLPHModel() {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-        calculator = new LeaveParentHhJSCalculator(reader, false);
+        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader, false);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();

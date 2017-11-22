@@ -25,7 +25,7 @@ public abstract class JavaScriptCalculator<T> {
         try {
             String line = bufferedReader.readLine();
             while (line != null) {
-                scriptBuilder.append(line + "\n");
+                scriptBuilder.append(line).append("\n");
                 line = bufferedReader.readLine();
             }
         } catch (IOException e) {

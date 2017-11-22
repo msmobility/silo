@@ -1,9 +1,7 @@
 package de.tum.bgu.msm.demography;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
@@ -11,8 +9,8 @@ import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
 
 import java.io.File;
-import java.util.ResourceBundle;
 
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 /**
@@ -24,43 +22,24 @@ public class DeathModel {
 
     private static Logger traceLogger = Logger.getLogger("trace");
 
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_FILE              = "Demographics.UEC.FileName";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET        = "Demographics.UEC.DataSheetNumber";
-    protected static final String PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_DEATH = "Demographics.UEC.ModelSheetNumber.Death";
-    protected static final String PROPERTIES_LOG_UTILILITY_CALCULATION_DEATH    = "log.util.death";
     private final HouseholdDataManager householdDataManager;
-
-    // properties
-    private String uecFileName;
-    private int dataSheetNumber;
-    private ResourceBundle rb;
-
-    static Logger logger = Logger.getLogger(DeathModel.class);
-
 	private double[] deathProbability;
 
-    public DeathModel(ResourceBundle rb, HouseholdDataManager householdDataManager) {
-        // constructor
-        this.rb = rb;
-
-        // read properties
-		uecFileName     = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_FILE);
-		dataSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_DATA_SHEET);
+    public DeathModel(HouseholdDataManager householdDataManager) {
         this.householdDataManager = householdDataManager;
 		setupDeathModel();
 	}
-	
 
 	private void setupDeathModel() {
 
 		// read properties
-		int deathModelSheetNumber = ResourceUtil.getIntegerProperty(rb, PROPERTIES_DEMOGRAPHICS_UEC_MODEL_SHEET_DEATH);
-        boolean logCalculation = ResourceUtil.getBooleanProperty(rb, PROPERTIES_LOG_UTILILITY_CALCULATION_DEATH);
+		int deathModelSheetNumber = Properties.get().demographics.deathModelSheet;
+        boolean logCalculation = Properties.get().demographics.logDeathCalculation;
 
 		// initialize UEC
-        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(uecFileName),
+        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName),
         		deathModelSheetNumber,
-        		dataSheetNumber, 
+                Properties.get().demographics.dataSheet,
         		SiloUtil.getRbHashMap(),
         		DeathDMU.class);
         

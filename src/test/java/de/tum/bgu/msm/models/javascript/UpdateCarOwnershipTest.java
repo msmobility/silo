@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.scenarios.munich.MunichCarOwnershipJSCalculator;
+import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnershipJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,12 +14,11 @@ import java.io.Reader;
  */
 public class UpdateCarOwnershipTest {
 
-    private Reader reader;
     private MunichCarOwnershipJSCalculator calculator;
 
     @Before
     public void setup() {
-        reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
         calculator = new MunichCarOwnershipJSCalculator(reader, true);
     }
 

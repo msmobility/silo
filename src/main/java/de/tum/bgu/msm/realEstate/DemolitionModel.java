@@ -31,8 +31,7 @@ public class DemolitionModel {
 
     private double[][] demolitionProbability;
 
-    public DemolitionModel(ResourceBundle rb) {
-        // constructor
+    public DemolitionModel() {
         setupDemolitionModel();
     }
 

@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -26,9 +27,6 @@ import com.pb.common.datafile.TableDataSet;
 public class InOutMigration {
 
     static Logger logger = Logger.getLogger(InOutMigration.class);
-    protected static final String PROPERTIES_POPULATION_CONTROL_METHOD     = "population.control.total";
-    protected static final String PROPERTIES_POPULATION_CONTROL_TOTAL_FILE = "total.population.control.total.file";
-    protected static final String PROPERTIES_INMIGRATION_OUTMIGRATION_FILE = "inmigration.outmigration.file";
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
@@ -39,16 +37,15 @@ public class InOutMigration {
     public static int inMigrationPPCounter;
 
 
-    public InOutMigration(ResourceBundle rb) {
-        // Constructor
+    public InOutMigration() {
 
-        populationControlMethod = rb.getString(PROPERTIES_POPULATION_CONTROL_METHOD);
+        populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
-            String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_POPULATION_CONTROL_TOTAL_FILE);
+            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
         } else if (populationControlMethod.equalsIgnoreCase("migration")) {
-            String fileName = SiloUtil.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_INMIGRATION_OUTMIGRATION_FILE);
+            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
         } else {
