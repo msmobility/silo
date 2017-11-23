@@ -51,6 +51,30 @@ public class JobDataManager {
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
+    public static void fillZoneEmployees(Map<Integer, Zone> zones) {
+
+        zones.get(1).setRetailEmpl(zones.get(2).getRetailEmpl()+1);
+        for (Job jj: Job.getJobs()) {
+            final Zone zone = zones.get(jj.getZone());
+            final String type = jj.getType();
+            if ("RET".equals(type)) {
+                zone.setRetailEmpl(zone.getRetailEmpl() + 1);
+            } else if("OFF".equals(type)) {
+                zone.setOfficeEmpl(zone.getOfficeEmpl() +1);
+            } else if("OTH".equals(type)) {
+                zone.setOtherEmpl(zone.getOtherEmpl() +1);
+            } else if("IND".equals(type)) {
+                zone.setIndEmpl(zone.getIndustrialEmpl() + 1);
+            } else {
+                logger.warn("Job " + jj + " of type " + jj.getType() +
+                        " cannot be fed to MITO, as it only uses types \"RET\" (retail), " +
+                        "\"OFF\" (office), \"OTH\" (other) and \"IND\" at this stage.");
+                continue;
+            }
+            zone.setTotalEmpl(zone.getTotalEmpl() + 1);
+        }
+    }
+
 
     public void readJobs (boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population

@@ -186,50 +186,6 @@ public class SummarizeData {
     }
 
 
-    public static int[] getRetailEmploymentByZone(GeoData geoData) {
-        // summarize retail employment by zone
-
-        int[] retailEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return retailEmplByZone;
-    }
-
-
-    public static int[] getOfficeEmploymentByZone(GeoData geoData) {
-        // summarize office employment by zone
-
-        int[] officeEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("OFF")) officeEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return officeEmplByZone;
-    }
-
-
-    public static int[] getOtherEmploymentByZone(GeoData geoData) {
-        // summarize other employment by zone
-
-        int[] otherEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return otherEmplByZone;
-    }
-
-
-    public static int[] getTotalEmploymentByZone(GeoData geoData) {
-        // summarize retail employment by zone
-
-        int[] totalEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return totalEmplByZone;
-    }
-
-
     public static void scaleMicroDataToExogenousForecast (int year, SiloDataContainer dataContainer) {
         //TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)

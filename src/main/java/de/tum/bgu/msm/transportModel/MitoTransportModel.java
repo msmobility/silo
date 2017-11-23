@@ -46,12 +46,9 @@ public class MitoTransportModel implements TransportModelI {
 		for (int i = 0; i < geoData.getZones().length; i++) {
 			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
 			Zone zone = new Zone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i], areaType);
-			zone.setRetailEmpl(SummarizeData.getRetailEmploymentByZone(geoData)[i]);
-			zone.setOfficeEmpl(SummarizeData.getOfficeEmploymentByZone(geoData)[i]);
-			zone.setOtherEmpl(SummarizeData.getOtherEmploymentByZone(geoData)[i]);
-			zone.setTotalEmpl(SummarizeData.getTotalEmploymentByZone(geoData)[i]);
 			zones.put(zone.getZoneId(), zone);
 		}
+		JobDataManager.fillZoneEmployees(zones);
 
 		Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
 		for(Person person: Person.getPersons()) {
