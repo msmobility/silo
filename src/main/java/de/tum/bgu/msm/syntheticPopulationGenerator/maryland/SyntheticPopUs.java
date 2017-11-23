@@ -199,7 +199,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Identifying vacant jobs by zone");
         vacantJobsByZone = new HashMap<>();
-        Job[] jobs = Job.getJobArray();
+        Collection<Job> jobs = Job.getJobs();
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
                 int id = jj.getId();

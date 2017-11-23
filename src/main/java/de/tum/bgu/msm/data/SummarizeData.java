@@ -131,7 +131,7 @@ public class SummarizeData {
             dds[dd.getType().ordinal()][dd.getZone()]++;
             prices[dd.getZone()] += dd.getPrice();
         }
-        for (Job jj: Job.getJobArray()) {
+        for (Job jj: Job.getJobs()) {
             jobs[jj.getZone()]++;
         }
 
@@ -482,8 +482,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -622,8 +621,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -771,8 +769,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -911,9 +908,7 @@ public class SummarizeData {
         String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + fileEnding;
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (int i = 0; i < jjs.length; i = i + step) {
-            Job jj = jjs[i];
+        for (Job jj: Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -927,8 +922,6 @@ public class SummarizeData {
             }
         }
         pwj.close();
-
-
     }
 
     public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, JobDataManager jobData, GeoDataMstm geoData) {

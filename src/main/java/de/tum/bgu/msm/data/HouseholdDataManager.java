@@ -974,7 +974,7 @@ public class HouseholdDataManager {
             }
         }
         // add a few empty jobs
-        for (Job jj: Job.getJobArray()) {
+        for (Job jj: Job.getJobs()) {
             if (jj.getWorkerId() == -1 && SiloUtil.select(100) > 90) {
                 pwj.print(jj.getId());
                 pwj.print(",");

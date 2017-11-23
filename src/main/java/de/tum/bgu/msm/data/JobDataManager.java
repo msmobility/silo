@@ -167,7 +167,7 @@ public class JobDataManager {
     public void setHighestJobId () {
         // identify highest job ID in use
         highestJobIdInUse = 0;
-        for (Job jj: Job.getJobArray()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
+        for (Job jj: Job.getJobs()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
     }
 
 
@@ -270,7 +270,7 @@ public class JobDataManager {
         vacantJobsByRegionPos = SiloUtil.setArrayToValue(vacantJobsByRegionPos, 0);
 
         logger.info("  Identifying vacant jobs");
-        for (Job jj : Job.getJobArray()) {
+        for (Job jj : Job.getJobs()) {
         	if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
@@ -387,7 +387,7 @@ public class JobDataManager {
         SummarizeData.resultFile(txt + ",total");
 
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
-        for (Job job: Job.getJobArray()) {
+        for (Job job: Job.getJobs()) {
             jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
         }
 
@@ -405,7 +405,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         zonalJobDensity = new float[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
+        for (Job jj: Job.getJobs()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
         for (int zone: geoData.getZones())
             zonalJobDensity[geoData.getZoneIndex(zone)] /= geoData.getSizeOfZoneInAcres(zone);
     }

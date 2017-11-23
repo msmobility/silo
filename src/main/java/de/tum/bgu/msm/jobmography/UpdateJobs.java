@@ -32,7 +32,7 @@ public class UpdateJobs {
         if (!EventRules.ruleStartNewJob() && !EventRules.ruleQuitJob()) return;
         logger.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
         int[][] jobsByZone = new int[JobType.getNumberOfJobTypes()][dataContainer.getGeoData().getHighestZonalId() + 1];
-        for (Job jj : Job.getJobArray()) {
+        for (Job jj : Job.getJobs()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
             jobsByZone[jobTypeId][jj.getZone()]++;
         }
@@ -43,7 +43,7 @@ public class UpdateJobs {
 
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
-        for (Job jj : Job.getJobArray()) {
+        for (Job jj : Job.getJobs()) {
             String token = jj.getType() + "." + jj.getZone() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {
                 List<Integer> jobList = jobsAvailableForRemoval.get(token);

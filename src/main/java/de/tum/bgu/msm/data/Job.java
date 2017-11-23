@@ -32,16 +32,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Job {
 
     private static final Map<Integer, Job> jobMap = new ConcurrentHashMap<>();
-    //Attributes that must be initialized when one job is generated
-	private int id;
-    private int zone;
-    private int workerId;
-    private String type;
 
-    
+	private final int id;
+    private final int zone;
+    private int workerId;
+    private final String type;
 
     public Job (int id, int zone, int workerId, String type) {
-        // Create new job object
         this.id = id;
         this.zone = zone;
         this.workerId = workerId;
@@ -49,30 +46,21 @@ public class Job {
         jobMap.put(id, this);
     }
 
-
     public static void saveJobs (Job[] jjs) {
         for (Job jj: jjs) jobMap.put(jj.getId(), jj);
     }
 
-
     public static Job getJobFromId(int jobId) {
         return jobMap.get(jobId);
     }
-
 
     public static int getJobCount() {
         return jobMap.size();
     }
 
     public static Collection<Job> getJobs() {
-        // return collection of jobs
             return jobMap.values();
     }
-
-    public static Job[] getJobArray() {
-        return jobMap.values().toArray(new Job[jobMap.size()]);
-    }
-
 
     public static Set<Integer> getJobMapIDs () {
         return jobMap.keySet();
@@ -82,14 +70,12 @@ public class Job {
         jobMap.remove(id);
     }
 
-
     public void logAttributes (PrintWriter pw) {
         pw.println ("Attributes of job       " + id);
         pw.println ("Located in zone         " + zone);
         pw.println ("Filled by person        " + workerId);
         pw.println ("Job type                " + type);
     }
-
 
     public int getId () {
         return id;

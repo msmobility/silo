@@ -2321,7 +2321,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
         // adapted from SyntheticPopUS
 
         logger.info("  Identifying vacant jobs by zone");
-        Job[] jobs = Job.getJobArray();
+        Collection<Job> jobs = Job.getJobs();
 
         idVacantJobsByZoneType = new HashMap<>();
         numberVacantJobsByType = new HashMap<>();
