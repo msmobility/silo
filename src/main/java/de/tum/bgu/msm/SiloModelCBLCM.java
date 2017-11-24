@@ -58,8 +58,8 @@ public class SiloModelCBLCM {
 	        // Note: only implemented for MSTM:
 
 		// read micro data
-		dataContainer = SiloDataContainer.createSiloDataContainer(Implementation.MSTM);
-		modelContainer = SiloModelContainer.createSiloModelContainer(Implementation.MSTM, dataContainer);
+		dataContainer = SiloDataContainer.createSiloDataContainer();
+		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
 		
 		modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
 		modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);

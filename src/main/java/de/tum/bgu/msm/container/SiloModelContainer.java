@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.relocation.mstm.MovesModelMstm;
@@ -15,8 +16,6 @@ import de.tum.bgu.msm.relocation.MovesModelI;
 import de.tum.bgu.msm.relocation.munich.MovesModelMuc;
 import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnerShipModel;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 /**
  * @author joemolloy
@@ -51,7 +50,7 @@ public class SiloModelContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(Implementation, SiloDataContainer)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(SiloDataContainer)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -103,7 +102,7 @@ public class SiloModelContainer {
      * Each model is created sequentially, before being passed as parameters to the private constructor.
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(Implementation implementation, SiloDataContainer dataContainer) {
+    public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer) {
 
         logger.info("Creating UEC Models");
         DeathModel death = new DeathModel(dataContainer.getHouseholdData());
@@ -116,7 +115,7 @@ public class SiloModelContainer {
         Accessibility acc = new Accessibility(dataContainer.getGeoData());
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        if (implementation.equals(Implementation.MSTM)) {
+        if (Properties.get().main.implementation.equals(Implementation.MARYLAND)) {
             move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
         } else {
             move = new MovesModelMuc(dataContainer.getGeoData());
@@ -128,7 +127,7 @@ public class SiloModelContainer {
         PricingModel prm = new PricingModel();
         UpdateJobs updateJobs = new UpdateJobs();
         CarOwnershipModel carOwnershipModel;
-        if(implementation.equals(Implementation.MSTM)) {
+        if(Properties.get().main.implementation.equals(Implementation.MARYLAND)) {
             carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
         }  else {
             carOwnershipModel = new MunichCarOwnerShipModel();

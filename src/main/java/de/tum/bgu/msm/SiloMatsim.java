@@ -29,7 +29,8 @@ public final class SiloMatsim {
 	 */
 	public SiloMatsim(String args, Config config) {
 		SiloUtil.setBaseYear(2000);
-		rb = SiloUtil.siloInitialization(args);
+		rb = SiloUtil.siloInitialization(args, SiloModel.Implementation.MARYLAND);
+
 		matsimConfig = config ;
 	}	    
 
@@ -41,7 +42,7 @@ public final class SiloMatsim {
 			logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
 			SyntheticPopUs sp = new SyntheticPopUs(rb);
 			sp.runSP();
-			SiloModel model = new SiloModel(matsimConfig, SiloModel.Implementation.MSTM);
+			SiloModel model = new SiloModel(matsimConfig);
 			model.runModel();
 			logger.info("Finished SILO.");
 		} catch (Exception e) {

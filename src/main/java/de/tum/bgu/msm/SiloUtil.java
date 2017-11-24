@@ -46,10 +46,10 @@ public class SiloUtil {
     private static int baseYear;
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleNames) {
+    public static ResourceBundle siloInitialization(String resourceBundleNames, SiloModel.Implementation implementation) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
-        Properties.initializeProperties(rb);
+        Properties.initializeProperties(rb, implementation);
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");

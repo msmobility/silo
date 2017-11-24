@@ -27,15 +27,14 @@ public class SiloMstm {
         // main run method
 
         SiloUtil.setBaseYear(2000);
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
-        Properties.initializeProperties(rb);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0], SiloModel.Implementation.MARYLAND);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
             logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(SiloModel.Implementation.MSTM);
+            SiloModel model = new SiloModel();
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {

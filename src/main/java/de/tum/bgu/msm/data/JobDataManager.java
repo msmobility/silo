@@ -20,9 +20,10 @@ import java.io.*;
 import java.util.*;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
+import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -51,27 +52,27 @@ public class JobDataManager {
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
-    public static void fillZoneEmployees(Map<Integer, Zone> zones) {
+    public static void fillMitoZoneEmployees(Map<Integer, Zone> zones) {
 
-        zones.get(1).setRetailEmpl(zones.get(2).getRetailEmpl()+1);
         for (Job jj: Job.getJobs()) {
             final Zone zone = zones.get(jj.getZone());
-            final String type = jj.getType();
-            if ("RET".equals(type)) {
-                zone.setRetailEmpl(zone.getRetailEmpl() + 1);
-            } else if("OFF".equals(type)) {
-                zone.setOfficeEmpl(zone.getOfficeEmpl() +1);
-            } else if("OTH".equals(type)) {
-                zone.setOtherEmpl(zone.getOtherEmpl() +1);
-            } else if("IND".equals(type)) {
-                zone.setIndEmpl(zone.getIndustrialEmpl() + 1);
-            } else {
-                logger.warn("Job " + jj + " of type " + jj.getType() +
-                        " cannot be fed to MITO, as it only uses types \"RET\" (retail), " +
-                        "\"OFF\" (office), \"OTH\" (other) and \"IND\" at this stage.");
-                continue;
+            final String type = jj.getType().toUpperCase();
+            try {
+                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
+                switch (Properties.get().main.implementation) {
+                    case MARYLAND:
+                        mitoJobType = MarylandJobType.valueOf(type);
+                        break;
+                    case MUNICH:
+                        mitoJobType = MunichJobType.valueOf(type);
+                        break;
+                    default:
+                        logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
+                }
+                zone.addEmployeeForType(mitoJobType);
+            } catch(IllegalArgumentException e) {
+                logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
             }
-            zone.setTotalEmpl(zone.getTotalEmpl() + 1);
         }
     }
 

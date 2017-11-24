@@ -52,22 +52,21 @@ public class SiloModel {
 	private boolean runMatsim;
 	private boolean runTravelDemandModel;
 
-	public enum Implementation {MUC, MSTM, CAPE_TOWN, MSP}
+	public enum Implementation {MUNICH, MARYLAND, CAPE_TOWN, MSP}
 	private Implementation implementation;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	private final Config matsimConfig;
 
-	public SiloModel(Implementation implementation) {
-		this(null, implementation) ;
+	public SiloModel() {
+		this(null) ;
 	}
 
-	public SiloModel(Config matsimConfig, Implementation implementation) {
+	public SiloModel(Config matsimConfig) {
 		IssueCounter.setUpCounter();
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
-		this.implementation = implementation;
 	}
 
 	public void runModel() {
@@ -84,11 +83,11 @@ public class SiloModel {
 		setupYears();
 
 		// create main objects and read synthetic population
-		dataContainer = SiloDataContainer.createSiloDataContainer(implementation);
+		dataContainer = SiloDataContainer.createSiloDataContainer();
 		if (Properties.get().main.writeSmallSynpop) {
 			dataContainer.getHouseholdData().writeOutSmallSynPop();
 		}
-		modelContainer = SiloModelContainer.createSiloModelContainer(implementation, dataContainer);
+		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
 		modelContainer.getCarOwnershipModel().initialize();
 
 		setupTransport();
