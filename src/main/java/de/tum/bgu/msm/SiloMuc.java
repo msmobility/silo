@@ -19,12 +19,8 @@ import java.util.ResourceBundle;
  */
 public class SiloMuc {
 
-    // main class
-    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
-    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
     static Logger logger = Logger.getLogger(SiloMuc.class);
-
-
+    
     public static void main(String[] args) {
 
         SiloUtil.setBaseYear(2011);  // Base year is defined by available input data for synthetic population
