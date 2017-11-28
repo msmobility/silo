@@ -5,6 +5,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import omx.OmxFile;
@@ -28,10 +29,8 @@ import java.util.*;
 public class SyntheticPopDe implements SyntheticPopI {
     private ResourceBundle rb;
     //Options to run de synthetic population
-    protected static final String PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY  = "run.ipu.city.and.county";
-    protected static final String PROPERTIES_RUN_IPU                      = "run.ipu.synthetic.pop";
-    protected static final String PROPERTIES_RUN_SYNTHETIC_POPULATION     = "run.synth.pop.generator";
-    protected static final String PROPERTIES_YEAR_MICRODATA               = "year.micro.data";
+
+
     //Routes of the input data
     protected static final String PROPERTIES_MICRODATA_2000_PATH          = "micro.data.2000";
     protected static final String PROPERTIES_MICRODATA_2010_PATH          = "micro.data.2010";
@@ -142,7 +141,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
     public void runSP(){
         //method to create the synthetic population
-        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
+        if (!PropertiesSynPop.get().main.runSyntheticPopulation) return;
         logger.info("   Starting to create the synthetic population.");
         readInputData();
         createDirectoryForOutput();
@@ -150,9 +149,9 @@ public class SyntheticPopDe implements SyntheticPopI {
         boolean temporaryTokenForTesting = true;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
             //Read entry data from the micro data
-            if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2000) {
+            if (PropertiesSynPop.get().main.yearMicroData == 2000) {
                 readMicroData2000();
-            } else if (ResourceUtil.getIntegerProperty(rb, PROPERTIES_YEAR_MICRODATA) == 2010) {
+            } else if (PropertiesSynPop.get().main.yearMicroData == 2010) {
                 readMicroData2010();
             } else {
                 logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
@@ -161,8 +160,8 @@ public class SyntheticPopDe implements SyntheticPopI {
             }
             checkHouseholdRelationship();
             //Run fitting procedure
-            if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU)) {
-                if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_CONSTRAINT_BY_CITY_AND_CNTY)) {
+            if (PropertiesSynPop.get().main.runIPU) {
+                if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
                     runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
                 } else {
                     runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
