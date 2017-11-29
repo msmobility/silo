@@ -15,9 +15,11 @@ public class SyntheticPopulationGenerator {
 
     static Logger logger = Logger.getLogger(SyntheticPopulationGenerator.class);
     private final ResourceBundle rb;
+    private final DataSetSynPop dataSetSynPop;
 
     public SyntheticPopulationGenerator( ResourceBundle rb) {
         this.rb = rb;// set up counter for any issues during initial setup
+        this.dataSetSynPop = new DataSetSynPop();
     }
 
     public void run(){
@@ -26,7 +28,7 @@ public class SyntheticPopulationGenerator {
         SiloModel.Implementation imp = Properties.get().main.implementation;
         switch (imp){
             case MUNICH:
-                syntheticPop = new SyntheticPopDe(rb);
+                syntheticPop = new SyntheticPopDe(dataSetSynPop);
                 break;
             case MARYLAND:
                 syntheticPop = new SyntheticPopUs(rb);
@@ -40,6 +42,8 @@ public class SyntheticPopulationGenerator {
             default:
                 throw new RuntimeException("Synthetic population implementation not set");
         }
+
+
         syntheticPop.runSP();
 
     }

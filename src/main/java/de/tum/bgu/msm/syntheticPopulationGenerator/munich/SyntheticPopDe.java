@@ -4,10 +4,11 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization.Optimization;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.commons.math.MathException;
@@ -35,7 +36,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
     protected int[] cityID;
     protected int[] countyID;
-    protected HashMap<Integer, int[]> municipalitiesByCounty;
+    protected HashMap<Integer, ArrayList> municipalitiesByCounty;
     protected HashMap<Integer, int[]> cityTAZ;
 
     protected TableDataSet counterMunicipality;
@@ -61,12 +62,14 @@ public class SyntheticPopDe implements SyntheticPopI {
     protected TableDataSet odMunicipalityFlow;
     protected TableDataSet odCountyFlow;
 
-    static Logger logger = Logger.getLogger(SyntheticPopDe.class);
+    public static final Logger logger = Logger.getLogger(SyntheticPopDe.class);
+    private final DataSetSynPop dataSetSynPop;
 
     private ResourceBundle rb;
-    public SyntheticPopDe(ResourceBundle rb) {
-        // Constructor
+
+    public SyntheticPopDe(DataSetSynPop dataSetSynPop) {
         this.rb = rb;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
 
@@ -77,44 +80,39 @@ public class SyntheticPopDe implements SyntheticPopI {
         readInputData();
         createDirectoryForOutput();
         long startTime = System.nanoTime();
-        boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
-        if (!temporaryTokenForTesting) {           // todo:  after testing is completed
-            //Read entry data from the micro data
-            if (PropertiesSynPop.get().main.yearMicroData == 2000) {
-                readMicroData2000();
-            } else if (PropertiesSynPop.get().main.yearMicroData == 2010) {
-                readMicroData2010();
-            } else {
-                logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
-                        "year.micro.data in properties file.");
-                System.exit(0);
-            }
-            checkHouseholdRelationship();
-            //Run fitting procedure
-            if (PropertiesSynPop.get().main.runIPU) {
-                if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
-                    runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
-                } else {
-                    runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-                }
-            } else {
-                readIPU(); //Read the weights to select the household
-            }
-            generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-            assignJobs(); //Workplace allocation
-            assignSchools(); //School allocation
-            addCars(false);
-            SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
-        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
-            logger.info("Testing mode");
-            //readMicroData2010();
-            //checkHouseholdRelationship();
-            readSyntheticPopulation();
-            //addCars(false);
-            SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear(),"_ddPrice_");
-            //readAndStoreMicroData();
+        //Read entry data from the micro data
+        if (PropertiesSynPop.get().main.yearMicroData == 2000) {
+            readMicroData2000();
+        } else if (PropertiesSynPop.get().main.yearMicroData == 2010) {
+            readMicroData2010();
+        } else {
+            logger.error("Read methods for micro data are currently implemented for 2000 and 2010. Adjust token " +
+                    "year.micro.data in properties file.");
+            System.exit(0);
         }
+        checkHouseholdRelationship();
+
+        logger.info("Running Module: Optimization IPU");
+        Optimization optimization = new Optimization(dataSetSynPop);
+        optimization.run();
+
+
+        if (PropertiesSynPop.get().main.runIPU) {
+            if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
+                runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
+            } else {
+                runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            }
+        } else {
+            readIPU(); //Read the weights to select the household
+        }
+        generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+        generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        assignJobs(); //Workplace allocation
+        assignSchools(); //School allocation
+        addCars(false);
+        SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
+
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -135,16 +133,23 @@ public class SyntheticPopDe implements SyntheticPopI {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
-                    int[] citiesInThisCounty = municipalitiesByCounty.get(county);
-                    int[] expandedCityList = SiloUtil.expandArrayByOneElement(citiesInThisCounty, city);
-                    municipalitiesByCounty.put(county, expandedCityList);
+                    ArrayList<Integer> citiesInThisCounty = municipalitiesByCounty.get(county);
+                    citiesInThisCounty.add(city);
+                    municipalitiesByCounty.put(county, citiesInThisCounty);
                 } else {
-                    municipalitiesByCounty.put(county, new int[]{city});
+                    ArrayList<Integer> citiesInThisCounty = new ArrayList<>();
+                    citiesInThisCounty.add(city);
+                    municipalitiesByCounty.put(county, citiesInThisCounty);
                 }
             }
         }
         cityID = SiloUtil.convertArrayListToIntArray(municipalities);
         countyID = SiloUtil.convertArrayListToIntArray(counties);
+        dataSetSynPop.setCityIDs(cityID);
+        dataSetSynPop.setCountyIDs(countyID);
+        dataSetSynPop.setMunicipalities(municipalities);
+        dataSetSynPop.setCounties(counties);
+        dataSetSynPop.setMunicipalitiesByCounty(municipalitiesByCounty);
 
 
         //TAZ attributes
@@ -1098,6 +1103,8 @@ public class SyntheticPopDe implements SyntheticPopI {
         microRecords1.appendColumn(dwMedium,"mediumDwellings");
         frequencyMatrix = microRecords1;
 
+        dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
+
 
         String hhFileName = ("microData/interimFiles/microHouseholds.csv");
         SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
@@ -1659,7 +1666,8 @@ public class SyntheticPopDe implements SyntheticPopI {
 
             //-----------***** Data preparation *****-------------------------------------------------------------------
             //Create local variables to avoid accessing to the same variable on the parallel processing
-            int [] municipalitiesID = municipalitiesByCounty.get(countyID[county]);
+            ArrayList<Integer> municipalitiesIDar = municipalitiesByCounty.get(countyID[county]);
+            int[]  municipalitiesID = municipalitiesIDar.stream().mapToInt(i->i).toArray();
             int regionID = countyID[county];
             String[] attributesHouseholdList = PropertiesSynPop.get().main.attributesMunicipality; //List of attributes at the household level (Gemeinden).
             String[] attributesRegionList = PropertiesSynPop.get().main.attributesCounty; //List of attributes at the region level (Landkreise).

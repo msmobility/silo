@@ -884,6 +884,17 @@ public class SiloUtil {
     }
 
 
+    public static TableDataSet initializeTableDataSet(TableDataSet tableDataSet, String[] labels, int[] ids) {
+        //method to initialize the error matrix
+        tableDataSet.appendColumn(ids, "ID");
+        for (String attribute : labels){
+            float[] dummy = SiloUtil.createArrayWithValue(tableDataSet.getRowCount(), 0f);
+            tableDataSet.appendColumn(dummy, attribute);
+        }
+        tableDataSet.buildIndex(tableDataSet.getColumnPosition("ID"));
+        return tableDataSet;
+    }
+
     public static void setBaseYear(int year) {
         // base year is the year for which the initial synthetic population has been generated. Start year is the year
         // the current model run starts with. For example, SILO may run from 2000 to 2007 (base year == 2000 and start
