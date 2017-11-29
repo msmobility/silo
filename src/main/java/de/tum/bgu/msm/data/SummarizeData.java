@@ -649,7 +649,7 @@ public class SummarizeData {
 
 
 
-    public static void writeOutSyntheticPopulationDE (ResourceBundle rb, int year, String file) {
+    public static void writeOutSyntheticPopulationDE (int year, String file) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
