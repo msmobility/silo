@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.container;
 
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
@@ -47,13 +46,13 @@ public class SiloDataContainer {
      * Each data object is created sequentially, before being passed as parameters to the private constructor.
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer(SiloModel.Implementation implementation) {
+    public static SiloDataContainer createSiloDataContainer() {
         GeoData geoData;
-        switch (implementation) {
-            case MSTM:
+        switch (Properties.get().main.implementation) {
+            case MARYLAND:
                 geoData = new GeoDataMstm();
                 break;
-            case MUC:
+            case MUNICH:
                 geoData = new GeoDataMuc();
                 break;
             default:

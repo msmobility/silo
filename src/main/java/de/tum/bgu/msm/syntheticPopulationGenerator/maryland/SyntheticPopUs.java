@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
@@ -57,7 +58,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     public SyntheticPopUs(ResourceBundle rb) {
         // constructor
         this.rb = rb;
-        Properties.initializeProperties(rb);
+        Properties.initializeProperties(rb, SiloModel.Implementation.MARYLAND);
     }
 
 
@@ -199,7 +200,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Identifying vacant jobs by zone");
         vacantJobsByZone = new HashMap<>();
-        Job[] jobs = Job.getJobArray();
+        Collection<Job> jobs = Job.getJobs();
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
                 int id = jj.getId();

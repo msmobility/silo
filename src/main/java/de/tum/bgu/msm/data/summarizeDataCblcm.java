@@ -89,7 +89,7 @@ public class summarizeDataCblcm {
         String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] jobs = new int[dataContainer.getGeoData().getZones().length][JobType.getNumberOfJobTypes()];
-        for (Job jj : Job.getJobArray()) {
+        for (Job jj : Job.getJobs()) {
             int jobType = JobType.getOrdinal(jj.getType());
             jobs[dataContainer.getGeoData().getZoneIndex(jj.getZone())][jobType]++;
         }
@@ -210,7 +210,7 @@ public class summarizeDataCblcm {
             int homeFips = geoData.getCountyOfZone(hh.getHomeZone());
             if (SiloUtil.containsElement(countyOrder, homeFips)) hhByCounty[countyOrderIndex[homeFips]]++;
         }
-        for (Job jj: Job.getJobArray()) {
+        for (Job jj: Job.getJobs()) {
             int jobFips = geoData.getCountyOfZone(jj.getZone());
             if (SiloUtil.containsElement(countyOrder, jobFips)) jobsByCounty[countyOrderIndex[jobFips]]++;
         }

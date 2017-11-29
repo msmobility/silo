@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
@@ -46,10 +47,13 @@ public class SiloUtil {
     private static int baseYear;
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleNames) {
+    public static ResourceBundle siloInitialization(String resourceBundleNames, SiloModel.Implementation implementation) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
-        Properties.initializeProperties(rb);
+        Properties.initializeProperties(rb, implementation);
+        if (Properties.get().main.runSynPop){
+            PropertiesSynPop.initializePropertiesSynPop(rb, implementation);
+        }
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");

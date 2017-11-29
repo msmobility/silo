@@ -131,7 +131,7 @@ public class SummarizeData {
             dds[dd.getType().ordinal()][dd.getZone()]++;
             prices[dd.getZone()] += dd.getPrice();
         }
-        for (Job jj: Job.getJobArray()) {
+        for (Job jj: Job.getJobs()) {
             jobs[jj.getZone()]++;
         }
 
@@ -183,50 +183,6 @@ public class SummarizeData {
             householdsByZone[geoData.getZoneIndex(zone)]++;
         }
         return householdsByZone;
-    }
-
-
-    public static int[] getRetailEmploymentByZone(GeoData geoData) {
-        // summarize retail employment by zone
-
-        int[] retailEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("RET")) retailEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return retailEmplByZone;
-    }
-
-
-    public static int[] getOfficeEmploymentByZone(GeoData geoData) {
-        // summarize office employment by zone
-
-        int[] officeEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("OFF")) officeEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return officeEmplByZone;
-    }
-
-
-    public static int[] getOtherEmploymentByZone(GeoData geoData) {
-        // summarize other employment by zone
-
-        int[] otherEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            if (jj.getType().equals("OTH")) otherEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return otherEmplByZone;
-    }
-
-
-    public static int[] getTotalEmploymentByZone(GeoData geoData) {
-        // summarize retail employment by zone
-
-        int[] totalEmplByZone = new int[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) {
-            totalEmplByZone[geoData.getZoneIndex(jj.getZone())]++;
-        }
-        return totalEmplByZone;
     }
 
 
@@ -526,8 +482,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -666,8 +621,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -695,7 +649,7 @@ public class SummarizeData {
 
 
 
-    public static void writeOutSyntheticPopulationDE (ResourceBundle rb, int year, String file) {
+    public static void writeOutSyntheticPopulationDE (int year, String file) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
@@ -815,8 +769,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (Job jj : jjs) {
+        for (Job jj : Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -955,9 +908,7 @@ public class SummarizeData {
         String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + fileEnding;
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
-        Job[] jjs = Job.getJobArray();
-        for (int i = 0; i < jjs.length; i = i + step) {
-            Job jj = jjs[i];
+        for (Job jj: Job.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZone());
@@ -971,8 +922,6 @@ public class SummarizeData {
             }
         }
         pwj.close();
-
-
     }
 
     public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, JobDataManager jobData, GeoDataMstm geoData) {

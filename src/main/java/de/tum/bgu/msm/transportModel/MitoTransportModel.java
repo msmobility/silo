@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.resources.Implementation;
 import org.apache.log4j.Logger;
 
 import de.tum.bgu.msm.MitoModel;
@@ -26,7 +27,7 @@ public class MitoTransportModel implements TransportModelI {
     private final GeoData geoData;
 
     public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
-        this.mito = new MitoModel(rb);
+        this.mito = new MitoModel(rb, Implementation.valueOf(Properties.get().main.implementation.name()));
         this.geoData = geoData;
         this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
@@ -46,12 +47,9 @@ public class MitoTransportModel implements TransportModelI {
 		for (int i = 0; i < geoData.getZones().length; i++) {
 			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
 			Zone zone = new Zone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i], areaType);
-			zone.setRetailEmpl(SummarizeData.getRetailEmploymentByZone(geoData)[i]);
-			zone.setOfficeEmpl(SummarizeData.getOfficeEmploymentByZone(geoData)[i]);
-			zone.setOtherEmpl(SummarizeData.getOtherEmploymentByZone(geoData)[i]);
-			zone.setTotalEmpl(SummarizeData.getTotalEmploymentByZone(geoData)[i]);
 			zones.put(zone.getZoneId(), zone);
 		}
+		JobDataManager.fillMitoZoneEmployees(zones);
 
 		Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
 		for(Person person: Person.getPersons()) {

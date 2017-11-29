@@ -39,15 +39,14 @@ public class SiloMsp {
 
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0]);
-        Properties.initializeProperties(rb);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0], SiloModel.Implementation.MSP);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");
             logger.info("Scenario: " + Properties.get().main.scenarioName);
             SyntheticPopUs sp = new SyntheticPopUs(rb);
             sp.runSP();
-            SiloModel model = new SiloModel(SiloModel.Implementation.MSP);
+            SiloModel model = new SiloModel();
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {

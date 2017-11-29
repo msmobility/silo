@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.properties;
 
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.properties.modules.*;
 
 import java.util.ResourceBundle;
@@ -14,8 +15,8 @@ public final class Properties {
         return instance;
     }
 
-    public static void initializeProperties(ResourceBundle bundle) {
-        instance = new Properties(bundle);
+    public static void initializeProperties(ResourceBundle bundle, SiloModel.Implementation implementation) {
+        instance = new Properties(bundle, implementation);
     }
 
 
@@ -31,8 +32,8 @@ public final class Properties {
     public final AccessibilityProperties accessibility;
     public final MovesProperties moves;
 
-    private Properties(ResourceBundle bundle) {
-        main = new MainProperties(bundle);
+    private Properties(ResourceBundle bundle, SiloModel.Implementation implementation) {
+        main = new MainProperties(bundle, implementation);
         cblcm = new CblcmProperties(bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
         geo = new GeoProperties(bundle);

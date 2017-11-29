@@ -20,9 +20,10 @@ import java.io.*;
 import java.util.*;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
+import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -49,6 +50,30 @@ public class JobDataManager {
     public JobDataManager(GeoData geoData) {
         this.geoData = geoData;
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
+    }
+
+    public static void fillMitoZoneEmployees(Map<Integer, Zone> zones) {
+
+        for (Job jj: Job.getJobs()) {
+            final Zone zone = zones.get(jj.getZone());
+            final String type = jj.getType().toUpperCase();
+            try {
+                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
+                switch (Properties.get().main.implementation) {
+                    case MARYLAND:
+                        mitoJobType = MarylandJobType.valueOf(type);
+                        break;
+                    case MUNICH:
+                        mitoJobType = MunichJobType.valueOf(type);
+                        break;
+                    default:
+                        logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
+                }
+                zone.addEmployeeForType(mitoJobType);
+            } catch(IllegalArgumentException e) {
+                logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
+            }
+        }
     }
 
 
@@ -143,7 +168,7 @@ public class JobDataManager {
     public void setHighestJobId () {
         // identify highest job ID in use
         highestJobIdInUse = 0;
-        for (Job jj: Job.getJobArray()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
+        for (Job jj: Job.getJobs()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
     }
 
 
@@ -246,7 +271,7 @@ public class JobDataManager {
         vacantJobsByRegionPos = SiloUtil.setArrayToValue(vacantJobsByRegionPos, 0);
 
         logger.info("  Identifying vacant jobs");
-        for (Job jj : Job.getJobArray()) {
+        for (Job jj : Job.getJobs()) {
         	if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
@@ -363,7 +388,7 @@ public class JobDataManager {
         SummarizeData.resultFile(txt + ",total");
 
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
-        for (Job job: Job.getJobArray()) {
+        for (Job job: Job.getJobs()) {
             jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
         }
 
@@ -381,7 +406,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         zonalJobDensity = new float[geoData.getZones().length];
-        for (Job jj: Job.getJobArray()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
+        for (Job jj: Job.getJobs()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
         for (int zone: geoData.getZones())
             zonalJobDensity[geoData.getZoneIndex(zone)] /= geoData.getSizeOfZoneInAcres(zone);
     }
