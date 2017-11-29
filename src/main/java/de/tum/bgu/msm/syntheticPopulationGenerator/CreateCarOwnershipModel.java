@@ -118,7 +118,7 @@ public class CreateCarOwnershipModel {
                 }
             }
             minDist = minDist + 1;
-            zonalData.setIndexedValueAt(i, "distanceToTransit", minDist);
+            zonalData.setIndexedValueAt(origin, "distanceToTransit", minDist);
         }
     }
 }
