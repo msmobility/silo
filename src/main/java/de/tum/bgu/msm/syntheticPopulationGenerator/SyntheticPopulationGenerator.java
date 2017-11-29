@@ -25,9 +25,8 @@ public class SyntheticPopulationGenerator {
     public void run(){
 
         SyntheticPopI syntheticPop;
-        String implementation = ResourceUtil.getProperty(rb, PROPERTIES_IMPLEMENTATION_SYNTHETIC_POPULATION);
-
-        if (implementation.equals("MUC")){
+        String implementation ="MUNICH";
+        if (implementation.equals("MUNICH")){
             syntheticPop = new SyntheticPopDe(rb);
         } else if (implementation.equals("CAPE_TOWN")){
             syntheticPop = new SyntheticPopCT(rb);

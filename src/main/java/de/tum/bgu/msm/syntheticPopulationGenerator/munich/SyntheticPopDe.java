@@ -181,7 +181,7 @@ public class SyntheticPopDe implements SyntheticPopI {
             //readMicroData2010();
             //checkHouseholdRelationship();
             readSyntheticPopulation();
-            //addCars();
+            addCars();
             SummarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear(),"_ddPrice_");
             //readAndStoreMicroData();
         }
@@ -2373,8 +2373,8 @@ public class SyntheticPopDe implements SyntheticPopI {
         schoolLevelTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SCHOOL_DESCRIPTION));
         logger.info("   Read input data");
 
-        TableDataSet prices = SiloUtil.readCSVfile2("microData/interimFiles/zoneAttributes_landPrice.csv");
-        prices.buildIndex(prices.getColumnPosition("ID_cell"));
+        //TableDataSet prices = SiloUtil.readCSVfile2("microData/interimFiles/zoneAttributes_landPrice.csv");
+        //prices.buildIndex(prices.getColumnPosition("ID_cell"));
         //Generate the households, dwellings and persons
         logger.info("   Starting to generate households");
         for (int i = 1; i <= households.getRowCount(); i++) {
@@ -2423,11 +2423,11 @@ public class SyntheticPopDe implements SyntheticPopI {
             int size = (int) dwellings.getValueAt(i,"floor");
             int bedrooms = guessBedrooms(size);
             int quality = (int)dwellings.getValueAt(i,"quality");
-            float brw = prices.getIndexedValueAt(zone, ddtype);
-            float price = guessPrice(brw, quality, size);
+            //float brw = prices.getIndexedValueAt(zone, ddtype);
+            //float price = guessPrice(brw, quality, size);
             Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
                     (int)dwellings.getValueAt(i,"hhID"),type,bedrooms,
-                    (int)dwellings.getValueAt(i,"quality"),(int) price,
+                    (int)dwellings.getValueAt(i,"quality"),(int) 0,
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
@@ -3799,7 +3799,7 @@ public class SyntheticPopDe implements SyntheticPopI {
     private void addCars() {
         //method to estimate the number of cars per household
         //it must be run after generating the population
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
         createCarOwnershipModel.run();
     }
 
