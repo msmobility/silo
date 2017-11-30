@@ -55,6 +55,7 @@ public class MainPropertiesSynPop {
     public final String attributesPersonFileName;
     public final String attributesHouseholdFileName;
     public final boolean extractMicroData;
+    public final String errorsSummaryFileName;
 
 
     public MainPropertiesSynPop(ResourceBundle bundle) {
@@ -120,6 +121,7 @@ public class MainPropertiesSynPop {
         weightsFileName = ResourceUtil.getProperty(bundle,"weights.matrix");
         errorsMunicipalityFileName = ResourceUtil.getProperty(bundle, "errors.IPU.Municipality.matrix");
         errorsCountyFileName = ResourceUtil.getProperty(bundle, "errors.IPU.County.matrix");
+        errorsSummaryFileName = ResourceUtil.getProperty(bundle, "errors.IPU.summary.matrix");
 
         householdsFileName = ResourceUtil.getProperty(bundle,"household.file.ascii");
         personsFileName = ResourceUtil.getProperty(bundle,"person.file.ascii");

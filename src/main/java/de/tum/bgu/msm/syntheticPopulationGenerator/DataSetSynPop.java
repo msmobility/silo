@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Ana Moreno on 29.11.2017. Adapted from MITO
@@ -23,6 +24,10 @@ public class DataSetSynPop {
 
     private TableDataSet weights;
     private TableDataSet frequencyMatrix;
+    private TableDataSet errorsCounty;
+    private TableDataSet errorsMunicipality;
+    private TableDataSet errorsSummary;
+    private Map<String, int[]> valuesByHousehold;
 
     private HashMap<Integer, ArrayList> municipalitiesByCounty;
     private HashMap<Integer, int[]> tazByMunicipality;
@@ -130,5 +135,37 @@ public class DataSetSynPop {
 
     public void setCounties(ArrayList<Integer> counties) {
         this.counties = counties;
+    }
+
+    public TableDataSet getErrorsCounty() {
+        return errorsCounty;
+    }
+
+    public void setErrorsCounty(TableDataSet errorsCounty) {
+        this.errorsCounty = errorsCounty;
+    }
+
+    public TableDataSet getErrorsMunicipality() {
+        return errorsMunicipality;
+    }
+
+    public void setErrorsMunicipality(TableDataSet errorsMunicipality) {
+        this.errorsMunicipality = errorsMunicipality;
+    }
+
+    public TableDataSet getErrorsSummary() {
+        return errorsSummary;
+    }
+
+    public void setErrorsSummary(TableDataSet errorsSummary) {
+        this.errorsSummary = errorsSummary;
+    }
+
+    public Map<String, int[]> getValuesByHousehold() {
+        return valuesByHousehold;
+    }
+
+    public void setValuesByHousehold(Map<String, int[]> valuesByHousehold) {
+        this.valuesByHousehold = valuesByHousehold;
     }
 }

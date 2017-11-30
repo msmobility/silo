@@ -95,17 +95,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("Running Module: Optimization IPU");
         Optimization optimization = new Optimization(dataSetSynPop);
         optimization.run();
-
-
-        if (PropertiesSynPop.get().main.runIPU) {
-            if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
-                runIPUbyCityAndCounty(); //IPU fitting with constraints at two geographical resolutions
-            } else {
-                runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-            }
-        } else {
-            readIPU(); //Read the weights to select the household
-        }
+        logger.info("Running Module: Allocation");
         generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
         generateJobs(); //Generate the jobs by type. Allocated to TAZ level
         assignJobs(); //Workplace allocation
@@ -2494,7 +2484,7 @@ public class SyntheticPopDe implements SyntheticPopI {
             microDwellings.buildIndex(microDwellings.getColumnPosition("dwellingID"));
             int totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipalityID,"hhTotal");
             int totalQuarters = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipalityID,"privateQuarters");
-            double[] probability = weightsTable.getColumnAsDouble(Integer.toString(municipalityID));
+            double[] probability = dataSetSynPop.getWeights().getColumnAsDouble(Integer.toString(municipalityID));
             int[] agePerson = PropertiesSynPop.get().main.ageBracketsPerson;
             int[] sizeBuilding = PropertiesSynPop.get().main.sizeBracketsDwelling;
             int[] yearBuilding = PropertiesSynPop.get().main.yearBracketsDwelling;

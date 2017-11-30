@@ -7,6 +7,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
+import javax.measure.unit.SI;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -15,11 +16,6 @@ public class IPUbyCountyAndCity {
     private static final Logger logger = Logger.getLogger(IPUbyCountyAndCity.class);
 
     private final DataSetSynPop dataSetSynPop;
-
-    private TableDataSet errorsCounty;
-    private TableDataSet errorsMunicipality;
-    private TableDataSet errorsSummary;
-
     private Map<Integer, double[]> weightsByMun;
     private Map<Integer, double[]> minWeightsByMun;
     private Map<String, int[]> valuesByHousehold;
@@ -28,25 +24,28 @@ public class IPUbyCountyAndCity {
     private Map<Integer, Map<String, Double>> errorByMun;
     private Map<String, Double> errorByRegion;
 
+    private double initialError;
+    private double minError;
+    private long startTime;
+    private int finish;
+    private int iteration;
+    private double averageError;
+
     public IPUbyCountyAndCity(DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
     }
 
     public void run(){
-        createWeights();
-        createErrors();
+
         for (int county : dataSetSynPop.getCountyIDs()){
             initializeErrorsandTotals(county);
-            int finish = 0;
-            int iteration = 0;
-            double initialError = PropertiesSynPop.get().main.initialError;
-            double minError = initialError;
             while (finish == 0 & iteration < PropertiesSynPop.get().main.maxIterations) {
                 calculateWeights(county);
                 averageError = calculateErrors(county);
-                logger.info("   County " + county + ". Iteration " + iteration + ". Average error: " + averageErrorIteration * 100 + " %.");
-
+                finish = checkStoppingCriteria(county, averageError, iteration);
+                iteration++;
             }
+            summarizeErrorsAndWeights(county, iteration);
             resetErrorsandTotals();
         }
     }
@@ -54,28 +53,41 @@ public class IPUbyCountyAndCity {
 
     public void calculateWeights(int county){
 
-        ArrayList<Integer> mun = dataSetSynPop.getMunicipalitiesByCounty().get(county);
-        int[] municipalities = mun.stream().mapToInt(i->i).toArray();
-        //for each iteration
-        int finish = 0;
-        int iteration = 0;
-        double initialError = PropertiesSynPop.get().main.initialError;
-        double minError = initialError;
-        while (finish == 0 & iteration < PropertiesSynPop.get().main.maxIterations) {
-
-            //For each attribute at the region level (landkreise), we obtain the weights
-            double weightedSumRegion = 0;
-            for (String attribute : PropertiesSynPop.get().main.attributesCounty) {
-                Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-                while (iterator1.hasNext()) {
-                    Integer municipality = iterator1.next();
-                    weightedSumRegion = weightedSumRegion + SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
+        //For each attribute at the region level (landkreise), we obtain the weights
+        double weightedSumRegion = 0;
+        for (String attribute : PropertiesSynPop.get().main.attributesCounty) {
+            Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+            while (iterator1.hasNext()) {
+                Integer municipality = iterator1.next();
+                weightedSumRegion = weightedSumRegion + SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
+            }
+            if (weightedSumRegion > 0.001) {
+                double updatingFactor = totalCounty.get(attribute) / weightedSumRegion;
+                Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+                while (iterator2.hasNext()) {
+                    Integer municipality = iterator2.next();
+                    double[] previousWeights = weightsByMun.get(municipality);
+                    int[] values = valuesByHousehold.get(attribute);
+                    double[] updatedWeights = new double[previousWeights.length];
+                    IntStream.range(0, previousWeights.length).parallel().forEach(id -> updatedWeights[id] = multiplyIfNotZero(previousWeights[id], values[id], updatingFactor));
+                    weightsByMun.put(municipality, updatedWeights);
                 }
-                if (weightedSumRegion > 0.001) {
-                    double updatingFactor = totalCounty.get(attribute) / weightedSumRegion;
-                    Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-                    while (iterator2.hasNext()) {
-                        Integer municipality = iterator2.next();
+            }
+            //logger.info("Attribute " + attribute + ": sum is " + weightedSumRegion);
+            weightedSumRegion = 0;
+        }
+
+
+        //For each municipality, obtain the weight matching each attribute
+        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+        Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+        while (iterator.hasNext()) {
+            Integer municipality = iterator.next();
+            executor.addFunction(() -> {
+                for (String attribute : PropertiesSynPop.get().main.attributesMunicipality) {
+                    double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
+                    if (weightedSumMunicipality > 0.001) {
+                        double updatingFactor = totalMunicipality.get(municipality).get(attribute) / weightedSumMunicipality;
                         double[] previousWeights = weightsByMun.get(municipality);
                         int[] values = valuesByHousehold.get(attribute);
                         double[] updatedWeights = new double[previousWeights.length];
@@ -83,51 +95,14 @@ public class IPUbyCountyAndCity {
                         weightsByMun.put(municipality, updatedWeights);
                     }
                 }
-                //logger.info("Attribute " + attribute + ": sum is " + weightedSumRegion);
-                weightedSumRegion = 0;
-            }
-
-
-            //For each municipality, obtain the weight matching each attribute
-            ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
-            Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-            while (iterator.hasNext()) {
-                Integer municipality = iterator.next();
-                executor.addFunction(() -> {
-                    for (String attribute : PropertiesSynPop.get().main.attributesMunicipality) {
-                        double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
-                        if (weightedSumMunicipality > 0.001) {
-                            double updatingFactor = totalMunicipality.get(municipality).get(attribute) / weightedSumMunicipality;
-                            double[] previousWeights = weightsByMun.get(municipality);
-                            int[] values = valuesByHousehold.get(attribute);
-                            double[] updatedWeights = new double[previousWeights.length];
-                            IntStream.range(0, previousWeights.length).parallel().forEach(id -> updatedWeights[id] = multiplyIfNotZero(previousWeights[id], values[id], updatingFactor));
-                            weightsByMun.put(municipality, updatedWeights);
-                        }
-                    }
-                });
-            }
-            executor.execute();
-
-
-
+            });
         }
-
-        //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
-        for (int municipality : municipalities) {
-            dataSetSynPop.getWeights().appendColumn(minWeightsByMun.get(municipality), Integer.toString(municipality));
-        }
-
-        SiloUtil.writeTableDataSet(dataSetSynPop.getWeights(), "input/syntheticPopulation/weights1.csv");
-
-
+        executor.execute();
     }
 
 
     public double calculateErrors(int county){
 
-        ArrayList<Integer> mun = dataSetSynPop.getMunicipalitiesByCounty().get(county);
-        int[] municipalities = mun.stream().mapToInt(i->i).toArray();
         double averageErrorIteration = 0.;
         int counter = 0;
         //obtain errors by county
@@ -135,9 +110,9 @@ public class IPUbyCountyAndCity {
             double errorByCounty = 0.;
             double weightedSumCounty = 0.;
             if (totalCounty.get(attributeC) > 0) {
-                Iterator<Integer> iterator3 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-                while (iterator3.hasNext()) {
-                    Integer municipality = iterator3.next();
+                Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+                while (iterator1.hasNext()) {
+                    Integer municipality = iterator1.next();
                     double weightedSum = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attributeC));
                     weightedSumCounty += weightedSum;
                 }
@@ -150,9 +125,9 @@ public class IPUbyCountyAndCity {
 
         //obtain the errors by municipality
         ConcurrentFunctionExecutor executor1 = new ConcurrentFunctionExecutor();
-        Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-        while (iterator1.hasNext()){
-            Integer municipality = iterator1.next();
+        Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+        while (iterator2.hasNext()){
+            Integer municipality = iterator2.next();
             Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
             executor1.addFunction(() ->{
                 for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
@@ -167,22 +142,27 @@ public class IPUbyCountyAndCity {
             errorByMun.put(municipality, errorsByMunicipality);
         }
         executor1.execute();
-        for (int municipality : municipalities) {
+
+        Iterator<Integer> iterator3 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+        while (iterator3.hasNext()){
+            Integer municipality = iterator3.next();
             averageErrorIteration = averageErrorIteration + errorByMun.get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
             counter = counter + errorByMun.get(municipality).entrySet().size();
         }
 
         averageErrorIteration = averageErrorIteration / counter;
+        //logger.info("   County " + county + ". Iteration " + iteration + ". Average error: " + averageErrorIteration * 100 + " %.");
         return averageErrorIteration;
     }
 
 
-    public void stoppingCriteria(){
+    public int checkStoppingCriteria(int county, double averageErrorIteration, int iteration){
+
         //Stopping criteria: exceeds the maximum number of iterations or the maximum error is lower than the threshold
+        int finish = 0;
         if (averageErrorIteration < PropertiesSynPop.get().main.maxError) {
             finish = 1;
             logger.info("   IPU finished after :" + iteration + " iterations with a minimum average error of: " + minError * 100 + " %.");
-            iteration =PropertiesSynPop.get().main. maxIterations + 1;
         } else if ((iteration / PropertiesSynPop.get().main.iterationError) % 1 == 0) {
             if (Math.abs((initialError - averageErrorIteration) / initialError) < PropertiesSynPop.get().main.improvementError) {
                 finish = 1;
@@ -192,27 +172,55 @@ public class IPUbyCountyAndCity {
                 logger.info("   IPU finished after " + iteration + " iterations because the error starts increasing. The minimum average error is: " + minError * 100 + " %.");
             } else {
                 initialError = averageErrorIteration;
-                iteration = iteration + 1;
             }
         } else if (iteration == PropertiesSynPop.get().main.maxIterations) {
             finish = 1;
             logger.info("   IPU finished after the total number of iterations. The minimum average error is: " + minError * 100 + " %.");
         } else {
-            iteration = iteration + 1;
+
         }
 
         if (averageErrorIteration < minError) {
-            for (int municipality : municipalities) {
+            Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+            while (iterator.hasNext()){
+                Integer municipality = iterator.next();
                 double[] minW = weightsByMun.get(municipality);
                 minWeightsByMun.put(municipality, minW);
             }
             minError = averageErrorIteration;
         }
-        //long estimatedTime = (System.nanoTime() - startTime) / 1000000000;
-        errorsSummary.setIndexedValueAt(county, "error", (float) minError);
-        errorsSummary.setIndexedValueAt(county, "iterations", iteration);
-        //errorsSummary.setIndexedValueAt(county, "time", estimatedTime);
+        return finish;
     }
+
+
+    public void summarizeErrorsAndWeights(int county, int iteration){
+
+        //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
+        long estimatedTime = (System.nanoTime() - startTime) / 1000000000;
+        dataSetSynPop.getErrorsSummary().setIndexedValueAt(county, "error", (float) minError);
+        dataSetSynPop.getErrorsSummary().setIndexedValueAt(county, "iterations", iteration);
+        dataSetSynPop.getErrorsSummary().setIndexedValueAt(county, "time", estimatedTime);
+
+        Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
+        while (iterator.hasNext()){
+            Integer municipality = iterator.next();
+            dataSetSynPop.getWeights().appendColumn(minWeightsByMun.get(municipality), Integer.toString(municipality));
+            for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
+                float value = errorByMun.get(municipality).get(attribute).floatValue();
+                dataSetSynPop.getErrorsMunicipality().setIndexedValueAt(municipality, attribute, value);
+            }
+        }
+        for (String attribute : PropertiesSynPop.get().main.attributesCounty){
+            float value = errorByRegion.get(attribute).floatValue();
+            dataSetSynPop.getErrorsCounty().setIndexedValueAt(county, attribute, value);
+        }
+
+        SiloUtil.writeTableDataSet(dataSetSynPop.getWeights(), PropertiesSynPop.get().main.weightsFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getErrorsMunicipality(), PropertiesSynPop.get().main.errorsMunicipalityFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getErrorsCounty(), PropertiesSynPop.get().main.errorsCountyFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getErrorsSummary(), PropertiesSynPop.get().main.errorsSummaryFileName);
+    }
+
 
     public double multiplyIfNotZero(double x, double y, double f){
         if (y == 0){
@@ -223,27 +231,9 @@ public class IPUbyCountyAndCity {
     }
 
 
-    public void createWeights(){
-        int[] microDataIds = dataSetSynPop.getFrequencyMatrix().getColumnAsInt("ID");
-        dataSetSynPop.getFrequencyMatrix().buildIndex(dataSetSynPop.getFrequencyMatrix().getColumnPosition("ID"));
-        dataSetSynPop.setWeights(new TableDataSet());
-        dataSetSynPop.getWeights().appendColumn(microDataIds, "ID");
-    }
-
-
-    public void createErrors(){
-        errorsCounty = new TableDataSet();
-        errorsMunicipality = new TableDataSet();
-        errorsSummary = new TableDataSet();
-        String[] labels = new String[]{"error", "iterations","time"};
-        errorsCounty = SiloUtil.initializeTableDataSet(errorsCounty,
-                PropertiesSynPop.get().main.attributesCounty, dataSetSynPop.getCountyIDs());
-        errorsMunicipality =  SiloUtil.initializeTableDataSet(errorsMunicipality,
-                PropertiesSynPop.get().main.attributesMunicipality, dataSetSynPop.getCityIDs());
-        errorsSummary =  SiloUtil.initializeTableDataSet(errorsSummary, labels, dataSetSynPop.getCountyIDs());
-    }
-
     public void initializeErrorsandTotals(int county){
+
+        startTime = System.nanoTime();
 
         //weights, values, control totals
         weightsByMun = Collections.synchronizedMap(new HashMap<>());
@@ -254,6 +244,10 @@ public class IPUbyCountyAndCity {
         errorByMun = Collections.synchronizedMap(new HashMap<>());
         errorByRegion = Collections.synchronizedMap(new HashMap<>());
 
+        finish = 0;
+        iteration = 0;
+        initialError = PropertiesSynPop.get().main.initialError;
+        minError = PropertiesSynPop.get().main.initialError;
         double weightedSum0 = 0f;
 
         //initialize errors
@@ -301,6 +295,7 @@ public class IPUbyCountyAndCity {
                 }
             }
         }
+        dataSetSynPop.setValuesByHousehold(valuesByHousehold);
     }
 
     public void resetErrorsandTotals(){
