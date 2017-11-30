@@ -94,7 +94,6 @@ public class IPUbyCity {
 
 
         averageErrorIteration = averageErrorIteration / counter;
-        logger.info("   County " + municipality + ". Iteration " + iteration + ". Average error: " + averageErrorIteration * 100 + " %.");
         return averageErrorIteration;
     }
 
