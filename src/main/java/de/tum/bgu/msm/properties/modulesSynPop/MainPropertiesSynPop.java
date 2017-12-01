@@ -56,7 +56,14 @@ public class MainPropertiesSynPop {
     public final String attributesHouseholdFileName;
     public final boolean extractMicroData;
     public final String errorsSummaryFileName;
-
+    public final String microPersonsFileName;
+    public final String microHouseholdsFileName;
+    public final String microDwellingsFileName;
+    public final int[] ageBracketsBorough;
+    public final String[] attributesBorough;
+    public final TableDataSet marginalsBorough;
+    public final boolean boroughIPU;
+    public final TableDataSet selectedBoroughs;
 
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
@@ -65,6 +72,7 @@ public class MainPropertiesSynPop {
         yearMicroData = ResourceUtil.getIntegerProperty(bundle, "year.micro.data");
         runIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop");
         twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
+
         extractMicroData = ResourceUtil.getBooleanProperty(bundle, "only.extract.microdata", false);
 
         attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.household");
@@ -128,6 +136,23 @@ public class MainPropertiesSynPop {
         dwellingsFileName = ResourceUtil.getProperty(bundle,"dwelling.file.ascii");
         jobsFileName = ResourceUtil.getProperty(bundle,"job.file.ascii");
 
+        microPersonsFileName = ResourceUtil.getProperty(bundle,"micro.persons");
+        microHouseholdsFileName = ResourceUtil.getProperty(bundle,"micro.households");
+        microDwellingsFileName = ResourceUtil.getProperty(bundle,"micro.dwellings");
+
+        boroughIPU = ResourceUtil.getBooleanProperty(bundle,"run.ipu.borough", false);
+        if (boroughIPU){
+            selectedBoroughs = SiloUtil.readCSVfile(bundle.getString("municipalities.list.borough"));
+            attributesBorough = ResourceUtil.getArray(bundle, "attributes.borough");
+            marginalsBorough = SiloUtil.readCSVfile(bundle.getString("marginals.borough"));
+            marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
+            ageBracketsBorough = ResourceUtil.getIntegerArray(bundle, "age.brackets.borough");
+        } else {
+            selectedBoroughs = new TableDataSet();
+            attributesBorough = new String[0];
+            marginalsBorough = new TableDataSet();
+            ageBracketsBorough = new int[0];
+        }
 
     }
 

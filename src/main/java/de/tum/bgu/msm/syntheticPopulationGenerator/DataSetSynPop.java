@@ -27,16 +27,21 @@ public class DataSetSynPop {
     private TableDataSet errorsCounty;
     private TableDataSet errorsMunicipality;
     private TableDataSet errorsSummary;
+    private TableDataSet errorsBorough;
     private Map<String, int[]> valuesByHousehold;
 
     private HashMap<Integer, ArrayList> municipalitiesByCounty;
     private HashMap<Integer, int[]> tazByMunicipality;
     private ArrayList<Integer> municipalities;
+    private ArrayList<Integer> boroughs;
     private ArrayList<Integer> counties;
     private int[] cityIDs;
     private int[] countyIDs;
+    private Map<Integer, Map<Integer, Float>> probabilityZone;
 
     private Matrix distanceTazToTaz;
+
+    private HashMap<Integer, ArrayList> boroughsByCity;
 
 
 
@@ -167,5 +172,37 @@ public class DataSetSynPop {
 
     public void setValuesByHousehold(Map<String, int[]> valuesByHousehold) {
         this.valuesByHousehold = valuesByHousehold;
+    }
+
+    public Map<Integer, Map<Integer, Float>> getProbabilityZone() {
+        return probabilityZone;
+    }
+
+    public void setProbabilityZone(Map<Integer, Map<Integer, Float>> probabilityZone) {
+        this.probabilityZone = probabilityZone;
+    }
+
+    public HashMap<Integer, ArrayList> getBoroughsByCity() {
+        return boroughsByCity;
+    }
+
+    public void setBoroughsByCity(HashMap<Integer, ArrayList> boroughsByCity) {
+        this.boroughsByCity = boroughsByCity;
+    }
+
+    public TableDataSet getErrorsBorough() {
+        return errorsBorough;
+    }
+
+    public void setErrorsBorough(TableDataSet errorsBorough) {
+        this.errorsBorough = errorsBorough;
+    }
+
+    public ArrayList<Integer> getBoroughs() {
+        return boroughs;
+    }
+
+    public void setBoroughs(ArrayList<Integer> boroughs) {
+        this.boroughs = boroughs;
     }
 }

@@ -1,13 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
-
-import javax.measure.unit.SI;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -36,7 +33,6 @@ public class IPUbyCountyAndCity {
     }
 
     public void run(){
-
         for (int county : dataSetSynPop.getCountyIDs()){
             initializeErrorsandTotals(county);
             while (finish == 0 & iteration < PropertiesSynPop.get().main.maxIterations) {
@@ -166,7 +162,7 @@ public class IPUbyCountyAndCity {
         } else if ((iteration / PropertiesSynPop.get().main.iterationError) % 1 == 0) {
             if (Math.abs((initialError - averageErrorIteration) / initialError) < PropertiesSynPop.get().main.improvementError) {
                 finish = 1;
-                logger.info("   IPU finished after " + iteration + " iterations because the error does not improve. The minimum average error is: " + minError * 100 + " %.");
+                logger.info("   County " + county + ". IPU finished after " + iteration + " iterations because the error does not improve. The minimum average error is: " + minError * 100 + " %.");
             } else if (averageErrorIteration == 0) {
                 finish = 1;
                 logger.info("   IPU finished after " + iteration + " iterations because the error starts increasing. The minimum average error is: " + minError * 100 + " %.");
