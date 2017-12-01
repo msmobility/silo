@@ -24,23 +24,25 @@ public class SyntheticPopulationGenerator {
 
         SyntheticPopI syntheticPop;
         SiloModel.Implementation imp = Properties.get().main.implementation;
-        switch (imp){
-            case MUNICH:
-                syntheticPop = new SyntheticPopDe(rb);
-                break;
-            case MARYLAND:
-                syntheticPop = new SyntheticPopUs(rb);
-                break;
-            case CAPE_TOWN:
-                syntheticPop = new SyntheticPopCT(rb);
-                break;
-            case MSP:
-                syntheticPop = new SyntheticPopUs(rb);
-                break;
-            default:
-                throw new RuntimeException("Synthetic population implementation not set");
+        if (Properties.get().main.runSynPop) {
+            switch (imp) {
+                case MUNICH:
+                    syntheticPop = new SyntheticPopDe(rb);
+                    break;
+                case MARYLAND:
+                    syntheticPop = new SyntheticPopUs(rb);
+                    break;
+                case CAPE_TOWN:
+                    syntheticPop = new SyntheticPopCT(rb);
+                    break;
+                case MSP:
+                    syntheticPop = new SyntheticPopUs(rb);
+                    break;
+                default:
+                    throw new RuntimeException("Synthetic population implementation not set");
+            }
+            syntheticPop.runSP();
         }
-        syntheticPop.runSP();
 
     }
 
