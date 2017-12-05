@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.data.DwellingType;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -38,11 +39,15 @@ public class DataSetSynPop {
     private int[] cityIDs;
     private int[] countyIDs;
     private Map<Integer, Map<Integer, Float>> probabilityZone;
+    private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
 
     private Matrix distanceTazToTaz;
 
     private HashMap<Integer, ArrayList> boroughsByCity;
 
+    private Map<Integer, Map<String, Integer>> households;
+    private Map<Integer, Map<String, Integer>> persons;
+    private Map<Integer, Map<String, Integer>> dwellings;
 
 
 
@@ -204,5 +209,37 @@ public class DataSetSynPop {
 
     public void setBoroughs(ArrayList<Integer> boroughs) {
         this.boroughs = boroughs;
+    }
+
+    public Map<Integer, Map<String, Integer>> getHouseholds() {
+        return households;
+    }
+
+    public void setHouseholds(Map<Integer, Map<String, Integer>> households) {
+        this.households = households;
+    }
+
+    public Map<Integer, Map<String, Integer>> getPersons() {
+        return persons;
+    }
+
+    public void setPersons(Map<Integer, Map<String, Integer>> persons) {
+        this.persons = persons;
+    }
+
+    public Map<Integer, Map<String, Integer>> getDwellings() {
+        return dwellings;
+    }
+
+    public void setDwellings(Map<Integer, Map<String, Integer>> dwellings) {
+        this.dwellings = dwellings;
+    }
+
+    public Map<Integer, Map<DwellingType, Integer>> getDwellingPriceByTypeAndZone() {
+        return dwellingPriceByTypeAndZone;
+    }
+
+    public void setDwellingPriceByTypeAndZone(Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone) {
+        this.dwellingPriceByTypeAndZone = dwellingPriceByTypeAndZone;
     }
 }

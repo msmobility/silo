@@ -3,6 +3,8 @@ package de.tum.bgu.msm.properties.modulesSynPop;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
+import org.apache.commons.math.distribution.GammaDistributionImpl;
 
 import java.util.ResourceBundle;
 
@@ -64,6 +66,7 @@ public class MainPropertiesSynPop {
     public final TableDataSet marginalsBorough;
     public final boolean boroughIPU;
     public final TableDataSet selectedBoroughs;
+    public final GammaDistributionImpl incomeGammaDistribution;
 
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
@@ -125,6 +128,7 @@ public class MainPropertiesSynPop {
         incomeShape = ResourceUtil.getDoubleProperty(bundle, "income.gamma.shape", 1.0737036186);
         incomeRate = ResourceUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
         incomeProbability = ResourceUtil.getDoubleArray(bundle, "income.probability");
+        incomeGammaDistribution = new GammaDistributionImpl(incomeShape,1 / incomeRate);
 
         weightsFileName = ResourceUtil.getProperty(bundle,"weights.matrix");
         errorsMunicipalityFileName = ResourceUtil.getProperty(bundle, "errors.IPU.Municipality.matrix");

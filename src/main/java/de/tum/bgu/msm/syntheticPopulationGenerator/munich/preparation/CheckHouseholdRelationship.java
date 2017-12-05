@@ -29,7 +29,7 @@ public class CheckHouseholdRelationship {
         initialize();
         for (int household = 1; household <= microDataHousehold.getRowCount(); household++){
             int hhSize = (int) microDataHousehold.getValueAt(household, "hhSize");
-            int firstMember = (int) microDataHousehold.getValueAt(hhSize, "personCount");
+            int firstMember = (int) microDataHousehold.getValueAt(household, "personCount");
             if (hhSize == 1){
                 setPersonAsSingle(firstMember);
             } else {
@@ -103,6 +103,7 @@ public class CheckHouseholdRelationship {
             for (Map.Entry<Integer, Integer> pair : childrenInHousehold.entrySet()){
                 int row = pair.getKey();
                 microDataPerson.setValueAt(row, "personRole", 3);
+                dataSetSynPop.getPersons().get(row).put("personRole", 3);
             }
         }
         //set singles and married in the household
@@ -114,6 +115,7 @@ public class CheckHouseholdRelationship {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
                     microDataPerson.setValueAt(row, "personRole", 1);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 1);
                 }
             }
             inner = married.get(key);
@@ -121,6 +123,7 @@ public class CheckHouseholdRelationship {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
                     microDataPerson.setValueAt(row, "personRole", 2);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 2);
                 }
             }
             inner = noClass.get(key);
@@ -128,6 +131,7 @@ public class CheckHouseholdRelationship {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
                     microDataPerson.setValueAt(row, "rearrangedRole", 1);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 1);
                 }
             }
         }
@@ -136,6 +140,7 @@ public class CheckHouseholdRelationship {
 
     private void setPersonAsSingle(int ppID){
         microDataPerson.setValueAt(ppID, "personRole", 1);
+        dataSetSynPop.getPersons().get(ppID).put("personRole", 1);
     }
 
 

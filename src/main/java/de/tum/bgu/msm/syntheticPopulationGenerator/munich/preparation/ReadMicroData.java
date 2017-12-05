@@ -27,6 +27,9 @@ public class ReadMicroData {
     private Map<String, Map<String, Integer>> attributesPersonMicroData = new HashMap<>();
     private Map<String, Map<String, Integer>> attributesHouseholdMicroData = new HashMap<>();
     private Map<String, Map<String, Integer>> attributesDwellingMicroData = new HashMap<>();
+    private Map<Integer, Map<String, Integer>> households = new HashMap<>();
+    private Map<Integer, Map<String, Integer>> persons = new HashMap<>();
+    private Map<Integer, Map<String, Integer>> dwellings = new HashMap<>();
 
     public ReadMicroData(DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -42,6 +45,7 @@ public class ReadMicroData {
         attributesPersonMicroData = microDataManager.attributesPersonMicroData();
         attributesHouseholdMicroData = microDataManager.attributesHouseholdMicroData();
         attributesDwellingMicroData = microDataManager.attributesDwellingMicroData();
+
 
         //Scanning the file to obtain the number of households and persons in Bavaria
         String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + PropertiesSynPop.get().main.microDataFile;
@@ -108,6 +112,10 @@ public class ReadMicroData {
         dataSetSynPop.setMicroDataHouseholds(microHouseholds);
         dataSetSynPop.setMicroDataDwellings(microDwellings);
 
+        dataSetSynPop.setHouseholds(households);
+        dataSetSynPop.setPersons(persons);
+        dataSetSynPop.setDwellings(dwellings);
+
     }
 
 
@@ -166,6 +174,16 @@ public class ReadMicroData {
             int finish = pair.getValue().get("end");
             microPersons.setValueAt(personCount,pair.getKey(),convertToInteger(recString.substring(start,finish)));
         }
+        Map<String, Integer> attributes = new HashMap<>();
+        attributes.put("id", personCount);
+        attributes.put("idHh",hhCount);
+        attributes.put("recordHh",householdNumber);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesPersonMicroData.entrySet()){
+            int start = pair.getValue().get("initial");
+            int finish = pair.getValue().get("end");
+            attributes.put(pair.getKey(),convertToInteger(recString.substring(start,finish)));
+        }
+        persons.put(personCount, attributes);
     }
 
 
@@ -180,6 +198,17 @@ public class ReadMicroData {
             int finish = pair.getValue().get("end");
             microHouseholds.setValueAt(hhCount,pair.getKey(),convertToInteger(recString.substring(start,finish)));
         }
+        Map<String, Integer> attributes = new HashMap<>();
+        attributes.put("id", hhCount);
+        attributes.put("recordHh", householdNumber);
+        attributes.put("personCount", personCount);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesHouseholdMicroData.entrySet()){
+            int start = pair.getValue().get("initial");
+            int finish = pair.getValue().get("end");
+            attributes.put(pair.getKey(),convertToInteger(recString.substring(start,finish)));
+            //microHouseholds.setValueAt(hhCount,pair.getKey(),convertToInteger(recString.substring(start,finish)));
+        }
+        households.put(hhCount, attributes);
     }
 
 
@@ -192,6 +221,15 @@ public class ReadMicroData {
             int finish = pair.getValue().get("end");
             microDwellings.setValueAt(hhCount,pair.getKey(),convertToInteger(recString.substring(start,finish)));
         }
+        Map<String, Integer> attributes = new HashMap<>();
+        attributes.put("id", hhCount);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesDwellingMicroData.entrySet()){
+            int start = pair.getValue().get("initial");
+            int finish = pair.getValue().get("end");
+            attributes.put(pair.getKey(),convertToInteger(recString.substring(start,finish)));
+        }
+        dwellings.put(hhCount, attributes);
+
     }
 
 

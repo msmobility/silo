@@ -1,7 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
+import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import org.apache.commons.math.MathException;
 import org.apache.log4j.Logger;
 
 public class TranslateMicroDataToCode {
@@ -335,5 +338,128 @@ public class TranslateMicroDataToCode {
         dataSetSynPop.getMicroDataDwellings().setValueAt(ddCount,"ddHeatingType",valueCode);
     }
 
+    public int translateIncome(int valueMicroData){
+        int valueCode = 0;
+        double low = 0;
+        double high = 1;
+        double income = 0;
+        switch (valueMicroData){
+            case 90: // kein Einkommen
+                valueCode = 0;
+                break;
+            case 50: //Selbständige/r Landwirt/in in der Haupttätigkeit
+                low = 0; //give them a random income following the distribution
+                high = 1;
+                break;
+            case 99: ///keine Angabe
+                low = 0; //give them a random income following the distribution
+                high = 1;
+                break;
+            case 1: //income class
+                low = 0;
+                high = 0.07998391;
+                break;
+            case 2: //income class
+                low = 0.07998391;
+                high = 0.15981282;
+                break;
+            case 3: //income class
+                low = 0.15981282;
+                high = 0.25837521;
+                break;
+            case 4: //income class
+                low = 0.25837521;
+                high = 0.34694010;
+                break;
+            case 5: //income class
+                low = 0.34694010;
+                high = 0.42580696;
+                break;
+            case 6: //income class
+                low = 0.42580696;
+                high = 0.49569720;
+                break;
+            case 7: //income class
+                low = 0.49569720;
+                high = 0.55744375;
+                break;
+            case 8: //income class
+                low = 0.55744375;
+                high = 0.61188119;
+                break;
+            case 9: //income class
+                low = 0.61188119;
+                high = 0.65980123;
+                break;
+            case 10: //income class
+                low = 0.65980123;
+                high = 0.72104215;
+                break;
+            case 11: //income class
+                low = 0.72104215;
+                high = 0.77143538;
+                break;
+            case 12: //income class
+                low = 0.77143538;
+                high = 0.81284178;
+                break;
+            case 13: //income class
+                low = 0.81284178;
+                high = 0.84682585;
+                break;
+            case 14: //income class
+                low = 0.84682585;
+                high = 0.87469331;
+                break;
+            case 15: //income class
+                low = 0.87469331;
+                high = 0.90418202;
+                break;
+            case 16: //income class
+                low = 0.90418202;
+                high = 0.92677087;
+                break;
+            case 17: //income class
+                low = 0.92677087;
+                high = 0.94770566;
+                break;
+            case 18: //income class
+                low = 0.94770566;
+                high = 0.96267752;
+                break;
+            case 19: //income class
+                low = 0.96267752;
+                high = 0.97337602;
+                break;
+            case 20: //income class
+                low = 0.97337602;
+                high = 0.98101572;
+                break;
+            case 21: //income class
+                low = 0.98101572;
+                high = 0.99313092;
+                break;
+            case 22: //income class
+                low = 0.99313092;
+                high = 0.99874378;
+                break;
+            case 23: //income class
+                low = 0.99874378;
+                high = 0.99999464;
+                break;
+            case 24: //income class
+                low = 0.99999464;
+                high = 1;
+                break;
+        }
+        double cummulativeProb = SiloUtil.getRandomNumberAsDouble()*(high - low) + low;
+        try {
+            income = PropertiesSynPop.get().main.incomeGammaDistribution.inverseCumulativeProbability(cummulativeProb);
+            valueCode = (int) income;
+        } catch (MathException e) {
+            e.printStackTrace();
+        }
+        return valueCode;
+    }
 
 }

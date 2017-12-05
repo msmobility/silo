@@ -1,7 +1,15 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
+import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.data.Nationality;
+import de.tum.bgu.msm.data.PersonRole;
+import de.tum.bgu.msm.data.Race;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import org.apache.commons.math.MathException;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -255,4 +263,339 @@ public class MicroDataManager {
     }
 
 
+    public int translateIncome(int valueMicroData){
+        int valueCode = 0;
+        double low = 0;
+        double high = 1;
+        double income = 0;
+        switch (valueMicroData){
+            case 90: // kein Einkommen
+                valueCode = 0;
+                break;
+            case 50: //Selbständige/r Landwirt/in in der Haupttätigkeit
+                low = 0; //give them a random income following the distribution
+                high = 1;
+                break;
+            case 99: ///keine Angabe
+                low = 0; //give them a random income following the distribution
+                high = 1;
+                break;
+            case 1: //income class
+                low = 0;
+                high = 0.07998391;
+                break;
+            case 2: //income class
+                low = 0.07998391;
+                high = 0.15981282;
+                break;
+            case 3: //income class
+                low = 0.15981282;
+                high = 0.25837521;
+                break;
+            case 4: //income class
+                low = 0.25837521;
+                high = 0.34694010;
+                break;
+            case 5: //income class
+                low = 0.34694010;
+                high = 0.42580696;
+                break;
+            case 6: //income class
+                low = 0.42580696;
+                high = 0.49569720;
+                break;
+            case 7: //income class
+                low = 0.49569720;
+                high = 0.55744375;
+                break;
+            case 8: //income class
+                low = 0.55744375;
+                high = 0.61188119;
+                break;
+            case 9: //income class
+                low = 0.61188119;
+                high = 0.65980123;
+                break;
+            case 10: //income class
+                low = 0.65980123;
+                high = 0.72104215;
+                break;
+            case 11: //income class
+                low = 0.72104215;
+                high = 0.77143538;
+                break;
+            case 12: //income class
+                low = 0.77143538;
+                high = 0.81284178;
+                break;
+            case 13: //income class
+                low = 0.81284178;
+                high = 0.84682585;
+                break;
+            case 14: //income class
+                low = 0.84682585;
+                high = 0.87469331;
+                break;
+            case 15: //income class
+                low = 0.87469331;
+                high = 0.90418202;
+                break;
+            case 16: //income class
+                low = 0.90418202;
+                high = 0.92677087;
+                break;
+            case 17: //income class
+                low = 0.92677087;
+                high = 0.94770566;
+                break;
+            case 18: //income class
+                low = 0.94770566;
+                high = 0.96267752;
+                break;
+            case 19: //income class
+                low = 0.96267752;
+                high = 0.97337602;
+                break;
+            case 20: //income class
+                low = 0.97337602;
+                high = 0.98101572;
+                break;
+            case 21: //income class
+                low = 0.98101572;
+                high = 0.99313092;
+                break;
+            case 22: //income class
+                low = 0.99313092;
+                high = 0.99874378;
+                break;
+            case 23: //income class
+                low = 0.99874378;
+                high = 0.99999464;
+                break;
+            case 24: //income class
+                low = 0.99999464;
+                high = 1;
+                break;
+        }
+        double cummulativeProb = SiloUtil.getRandomNumberAsDouble()*(high - low) + low;
+        try {
+            income = PropertiesSynPop.get().main.incomeGammaDistribution.inverseCumulativeProbability(cummulativeProb);
+            valueCode = (int) income;
+        } catch (MathException e) {
+            e.printStackTrace();
+        }
+        return valueCode;
+    }
+
+
+    public Race translateRace(int nationality){
+        Race race = Race.white;
+        if (nationality == 8){
+            race = Race.black;
+        }
+        return race;
+    }
+
+
+    public Nationality translateNationality (int nationality){
+        Nationality nationality1 = Nationality.german;
+        if (nationality == 8){
+            nationality1 = Nationality.other;
+        }
+        return nationality1;
+    }
+
+
+    public PersonRole translatePersonRole (int role){
+        PersonRole personRole = PersonRole.single;
+        if (role == 2) {
+            personRole = PersonRole.married;
+        } else if (role == 3) {
+            personRole = PersonRole.child;
+        }
+        return personRole;
+    }
+
+    public boolean obtainLicense(int gender, int age){
+        boolean license = false;
+        int row = 1;
+        int threshold = 0;
+        if (age > 17) {
+            if (age < 29) {
+                if (gender == 0) {
+                    threshold = 86;
+                } else {
+                    threshold = 87;
+                }
+            } else if (age < 39) {
+                if (gender == 1) {
+                    threshold = 95;
+                } else {
+                    threshold = 94;
+                }
+            } else if (age < 49) {
+                if (gender == 1) {
+                    threshold = 97;
+                } else {
+                    threshold = 95;
+                }
+            } else if (age < 59) {
+                if (gender == 1) {
+                    threshold = 96;
+                } else {
+                    threshold = 89;
+                }
+            } else if (age < 64) {
+                if (gender == 1) {
+                    threshold = 95;
+                } else {
+                    threshold = 86;
+                }
+            } else if (age < 74) {
+                if (gender == 1) {
+                    threshold = 95;
+                } else {
+                    threshold = 71;
+                }
+            } else {
+                if (gender == 1) {
+                    threshold = 88;
+                } else {
+                    threshold = 44;
+                }
+            }
+            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
+                license = true;
+            }
+        }
+        return license;
+    }
+
+
+    public int guessDwellingQuality(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt){
+        //guess quality of dwelling based on construction year and heating characteristics.
+        //kitchen and bathroom quality are not coded on the micro data
+        int quality = PropertiesSynPop.get().main.numberofQualityLevels;
+        if (heatingType > 2) quality--; //reduce quality if not central or district heating
+        if (heatingEnergy > 4) quality--; //reduce quality if energy is not gas, electricity or heating oil (i.e. coal, wood, biomass, solar energy)
+        if (additionalHeating == 0) quality++; //increase quality if there is additional heating in the house (regardless the used energy)
+        if (yearBuilt > 0){
+            //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+            float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
+            float prob = deteriorationProbability[yearBuilt - 1];
+            //attempt to drop quality by age two times (to get some spreading of quality levels)
+            quality = quality - SiloUtil.select(new double[]{1 - prob ,prob});
+            quality = quality - SiloUtil.select(new double[]{1 - prob, prob});
+        }
+        quality = Math.max(quality, 1);      // ensure that quality never drops below 1
+        quality = Math.min(quality, PropertiesSynPop.get().main.numberofQualityLevels);      // ensure that quality never excess the number of quality levels
+        return quality;
+    }
+
+
+    public DwellingType translateDwellingType (int buildingSize, float ddType1Prob, float ddType3Prob){
+        DwellingType type = DwellingType.MF234;
+        if (buildingSize < 3){
+            if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
+                type = DwellingType.SFD;
+            } else {
+                type = DwellingType.SFA;
+            }
+        } else {
+            if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
+                type = DwellingType.MF5plus;
+            }
+        }
+
+        return type;
+    }
+
+
+    public int guessBedrooms (int floorSpace){
+        int bedrooms = 0;
+        if (floorSpace < 40){
+            bedrooms = 0;
+        } else if (floorSpace < 60){
+            bedrooms = 1;
+        } else if (floorSpace < 80){
+            bedrooms = 2;
+        } else if (floorSpace < 100){
+            bedrooms = 3;
+        } else if (floorSpace < 120){
+            bedrooms = 4;
+        } else {
+            bedrooms = 5;
+        }
+
+        return bedrooms;
+    }
+
+
+    public int guessPrice(float brw, int quality, int size, int use) {
+
+        //coefficient by quality of the dwelling
+        float qualityReduction = 1;
+        if (quality == 1){
+            qualityReduction = 0.7f;
+        } else if (quality == 2){
+            qualityReduction = 0.9f;
+        } else if (quality == 4){
+            qualityReduction = 1.1f;
+        }
+        //conversion from land price to the monthly rent
+        float convertToMonth = 0.0057f;
+        //increase price for rented dwellings
+        float rentedIncrease = 1; //by default, the price is not reduced/increased
+        if (use == 2){
+            rentedIncrease = 1.2f; //rented dwelling
+        } else if (use == 3){
+            rentedIncrease = 1; //vacant dwelling
+        }
+        //extra costs for power, water, etc (Nebenkosten)
+        int nebenKost = 150;
+
+        float price = brw * size * qualityReduction * convertToMonth * rentedIncrease + nebenKost;
+        return (int) price;
+    }
+
+
+    public int guessFloorSpace(int floorSpace){
+        //provide the size of the building
+        int floorSpaceDwelling = 0;
+        switch (floorSpace){
+            case 60:
+                floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 40);
+                break;
+            case 80:
+                floorSpaceDwelling = (int) (60 + SiloUtil.getRandomNumberAsFloat() * 20);
+                break;
+            case 100:
+                floorSpaceDwelling = (int) (80 + SiloUtil.getRandomNumberAsFloat() * 20);
+                break;
+            case 120:
+                floorSpaceDwelling = (int) (100 + SiloUtil.getRandomNumberAsFloat() * 20);
+                break;
+            case 2000:
+                floorSpaceDwelling = (int) (120 + SiloUtil.getRandomNumberAsFloat() * 50);
+                break;
+        }
+        return floorSpaceDwelling;
+    }
+
+
+    public int dwellingYearBracket(int year){
+
+        int yearBracket = 0;
+        if (year < 1949){
+            yearBracket = 2;
+        } else if (year < 1991){
+            yearBracket = 5;
+        } else if (year < 2001){
+            yearBracket = 6;
+        } else {
+            yearBracket = 9;
+        }
+
+        return yearBracket;
+    }
 }
