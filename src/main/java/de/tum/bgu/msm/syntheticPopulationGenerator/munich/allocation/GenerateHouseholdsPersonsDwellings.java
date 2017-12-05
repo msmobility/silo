@@ -45,7 +45,7 @@ public class GenerateHouseholdsPersonsDwellings {
             initializeMunicipalityData(municipality);
             double logging = 2;
             int it = 1;
-            for (int draw = 0; draw < totalHouseholds; draw++){
+            for (int draw = 0; draw < Math.round(totalHouseholds / 1000); draw++){
                 int hhSelected = selectMicroHouseholdWithReplacement();
                 int tazSelected = selectTAZwithoutReplacement(hhSelected);
                 int idHousehold = generateHousehold(hhSelected, tazSelected);
@@ -96,6 +96,7 @@ public class GenerateHouseholdsPersonsDwellings {
             pers.setEducationLevel(educationDegree);
             pers.setSchoolType(school);
             pers.setTelework(telework);
+            pers.setZone(Household.getHouseholdFromId(idHousehold).getHomeZone());
             personCounter++;
         }
     }

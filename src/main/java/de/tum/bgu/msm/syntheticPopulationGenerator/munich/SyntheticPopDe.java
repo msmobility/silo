@@ -288,9 +288,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         //The location of the school is stored under "schoolplace location"
         //Students from Berufschule are considered to be working full-time and therefore they don't attend class
         //If there are no more school places for the student, they are sent outside the area (schoolplace = -2)
-        //For the following years, we school transition should be accomplished
-
-            logger.info("   Started assigning schools");
+        //For the following years, we school transition should be accomplishedlogger.info("   Started assigning schools");
         int count = 0;
 
         //Calculate distance impedance for students
