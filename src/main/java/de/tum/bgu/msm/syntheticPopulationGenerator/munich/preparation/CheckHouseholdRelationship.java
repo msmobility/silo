@@ -15,8 +15,8 @@ public class CheckHouseholdRelationship {
     private static final Logger logger = Logger.getLogger(CheckHouseholdRelationship.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private TableDataSet microDataHousehold;
-    private TableDataSet microDataPerson;
+/*    private TableDataSet microDataHousehold;
+    private TableDataSet microDataPerson;*/
 
     private HashMap<Integer, Integer> childrenInHousehold;
     private HashMap<String, HashMap<Integer, Integer>> noClass;
@@ -27,9 +27,9 @@ public class CheckHouseholdRelationship {
 
     public void run(){
         initialize();
-        for (int household = 1; household <= microDataHousehold.getRowCount(); household++){
-            int hhSize = (int) microDataHousehold.getValueAt(household, "hhSize");
-            int firstMember = (int) microDataHousehold.getValueAt(household, "personCount");
+        for (int household = 1; household <= dataSetSynPop.getHouseholdTable().rowKeySet().size(); household++){
+            int hhSize = dataSetSynPop.getHouseholdTable().get(household, "hhSize");
+            int firstMember = dataSetSynPop.getHouseholdTable().get(household, "personCount");
             if (hhSize == 1){
                 setPersonAsSingle(firstMember);
             } else {
@@ -46,11 +46,11 @@ public class CheckHouseholdRelationship {
     private void obtainRolesInHousehold(int firstMember, int hhSize){
         for (int person = 0; person < hhSize; person++){
             int row = firstMember + person;
-            int spouseInHousehold = (int) microDataPerson.getValueAt(row, "spouseInHousehold");
-            int relationToHead = (int) microDataPerson.getValueAt(row, "relationship");
-            int maritalStatus = (int) microDataPerson.getValueAt(row, "marriage");
-            int age = (int) microDataPerson.getValueAt(row, "age");
-            int gender = (int) microDataPerson.getValueAt(row, "gender");
+            int spouseInHousehold = dataSetSynPop.getPersonTable().get(row, "spouseInHousehold");
+            int relationToHead = dataSetSynPop.getPersonTable().get(row, "relationship");
+            int maritalStatus = dataSetSynPop.getPersonTable().get(row, "marriage");
+            int age = dataSetSynPop.getPersonTable().get(row, "age");
+            int gender = dataSetSynPop.getPersonTable().get(row, "gender");
             if (relationToHead == 3) {
                 childrenInHousehold.put(row, age); //children -> children
             } else if (maritalStatus == 2) {
@@ -102,8 +102,9 @@ public class CheckHouseholdRelationship {
         if (childrenInHousehold != null){
             for (Map.Entry<Integer, Integer> pair : childrenInHousehold.entrySet()){
                 int row = pair.getKey();
-                microDataPerson.setValueAt(row, "personRole", 3);
-                dataSetSynPop.getPersons().get(row).put("personRole", 3);
+/*                microDataPerson.setValueAt(row, "personRole", 3);
+                dataSetSynPop.getPersons().get(row).put("personRole", 3);*/
+                dataSetSynPop.getPersonTable().put(row, "personRole", 3);
             }
         }
         //set singles and married in the household
@@ -114,24 +115,27 @@ public class CheckHouseholdRelationship {
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "personRole", 1);
-                    dataSetSynPop.getPersons().get(row).put("personRole", 1);
+/*                    microDataPerson.setValueAt(row, "personRole", 1);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
                 }
             }
             inner = married.get(key);
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "personRole", 2);
-                    dataSetSynPop.getPersons().get(row).put("personRole", 2);
+/*                    microDataPerson.setValueAt(row, "personRole", 2);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 2);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 2);
                 }
             }
             inner = noClass.get(key);
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "rearrangedRole", 1);
-                    dataSetSynPop.getPersons().get(row).put("personRole", 1);
+/*                    microDataPerson.setValueAt(row, "rearrangedRole", 1);
+                    dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
                 }
             }
         }
@@ -139,8 +143,9 @@ public class CheckHouseholdRelationship {
 
 
     private void setPersonAsSingle(int ppID){
-        microDataPerson.setValueAt(ppID, "personRole", 1);
-        dataSetSynPop.getPersons().get(ppID).put("personRole", 1);
+/*        microDataPerson.setValueAt(ppID, "personRole", 1);
+        dataSetSynPop.getPersons().get(ppID).put("personRole", 1);*/
+        dataSetSynPop.getPersonTable().put(ppID, "personRole", 1);
     }
 
 
@@ -302,12 +307,12 @@ public class CheckHouseholdRelationship {
 
 
     private void initialize(){
-        microDataPerson = dataSetSynPop.getMicroDataPersons();
+/*        microDataPerson = dataSetSynPop.getMicroDataPersons();
         microDataHousehold = dataSetSynPop.getMicroDataHouseholds();
         SiloUtil.addIntegerColumnToTableDataSet(microDataPerson,"personRole");
         SiloUtil.addIntegerColumnToTableDataSet(microDataPerson, "rearrangedRole");
         SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold,"nonClassifiedMales");
-        SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold, "nonClassifiedFemales");
+        SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold, "nonClassifiedFemales"*//*);*/
         childrenInHousehold = new HashMap<>();
         noClass = new HashMap<>();
         singles = new HashMap<>();

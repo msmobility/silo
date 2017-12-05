@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
+import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.data.DwellingType;
@@ -18,10 +19,6 @@ import java.util.Map;
 public class DataSetSynPop {
 
     private static final Logger logger = Logger.getLogger(DataSetSynPop.class);
-
-    private TableDataSet microDataPersons;
-    private TableDataSet microDataHouseholds;
-    private TableDataSet microDataDwellings;
 
     private TableDataSet weights;
     private TableDataSet frequencyMatrix;
@@ -45,35 +42,10 @@ public class DataSetSynPop {
 
     private HashMap<Integer, ArrayList> boroughsByCity;
 
-    private Map<Integer, Map<String, Integer>> households;
-    private Map<Integer, Map<String, Integer>> persons;
-    private Map<Integer, Map<String, Integer>> dwellings;
+    private Table<Integer, String, Integer> householdTable;
+    private Table<Integer, String, Integer> personTable;
+    private Table<Integer, String, Integer> dwellingTable;
 
-
-
-    public TableDataSet getMicroDataPersons() {
-        return microDataPersons;
-    }
-
-    public void setMicroDataPersons(TableDataSet microDataPersons) {
-        this.microDataPersons = microDataPersons;
-    }
-
-    public TableDataSet getMicroDataHouseholds() {
-        return microDataHouseholds;
-    }
-
-    public void setMicroDataHouseholds(TableDataSet microDataHouseholds) {
-        this.microDataHouseholds = microDataHouseholds;
-    }
-
-    public TableDataSet getMicroDataDwellings() {
-        return microDataDwellings;
-    }
-
-    public void setMicroDataDwellings(TableDataSet microDataDwellings) {
-        this.microDataDwellings = microDataDwellings;
-    }
 
     public TableDataSet getWeights() {
         return weights;
@@ -211,35 +183,35 @@ public class DataSetSynPop {
         this.boroughs = boroughs;
     }
 
-    public Map<Integer, Map<String, Integer>> getHouseholds() {
-        return households;
-    }
-
-    public void setHouseholds(Map<Integer, Map<String, Integer>> households) {
-        this.households = households;
-    }
-
-    public Map<Integer, Map<String, Integer>> getPersons() {
-        return persons;
-    }
-
-    public void setPersons(Map<Integer, Map<String, Integer>> persons) {
-        this.persons = persons;
-    }
-
-    public Map<Integer, Map<String, Integer>> getDwellings() {
-        return dwellings;
-    }
-
-    public void setDwellings(Map<Integer, Map<String, Integer>> dwellings) {
-        this.dwellings = dwellings;
-    }
-
     public Map<Integer, Map<DwellingType, Integer>> getDwellingPriceByTypeAndZone() {
         return dwellingPriceByTypeAndZone;
     }
 
     public void setDwellingPriceByTypeAndZone(Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone) {
         this.dwellingPriceByTypeAndZone = dwellingPriceByTypeAndZone;
+    }
+
+    public Table<Integer, String, Integer> getHouseholdTable() {
+        return householdTable;
+    }
+
+    public void setHouseholdTable(Table<Integer, String, Integer> householdTable) {
+        this.householdTable = householdTable;
+    }
+
+    public Table<Integer, String, Integer> getPersonTable() {
+        return personTable;
+    }
+
+    public void setPersonTable(Table<Integer, String, Integer> personTable) {
+        this.personTable = personTable;
+    }
+
+    public Table<Integer, String, Integer> getDwellingTable() {
+        return dwellingTable;
+    }
+
+    public void setDwellingTable(Table<Integer, String, Integer> dwellingTable) {
+        this.dwellingTable = dwellingTable;
     }
 }

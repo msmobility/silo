@@ -63,9 +63,9 @@ public class Preparation extends ModuleSynPop {
 
 
     private void writeMicroData(){
-        SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataPersons(), PropertiesSynPop.get().main.microPersonsFileName);
+        /*SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataPersons(), PropertiesSynPop.get().main.microPersonsFileName);
         SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataHouseholds(), PropertiesSynPop.get().main.microHouseholdsFileName);
-        SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataDwellings(), PropertiesSynPop.get().main.microDwellingsFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataDwellings(), PropertiesSynPop.get().main.microDwellingsFileName);*/
     }
 
 }

@@ -24,14 +24,14 @@ public class TranslateMicroDataToCode {
         logger.info("   Starting to translate the micro data");
 
         //convert one by one the records from microPersons
-        for (int personCount = 1; personCount <= dataSetSynPop.getMicroDataPersons().getRowCount(); personCount++){
+        for (int personCount = 1; personCount <= dataSetSynPop.getPersonTable().rowKeySet().size(); personCount++){
             boolean attendingSchool = translateSchoolAttendance(personCount);
             translateHighestEducationalDegree(personCount);
             translateOccupation(personCount, attendingSchool);
             translateRelationshipToHouseholdHead(personCount);
         }
         //convert one by one the records from microDwellings
-        for (int ddCount = 1; ddCount <= dataSetSynPop.getMicroDataDwellings().getRowCount(); ddCount++){
+        for (int ddCount = 1; ddCount <= dataSetSynPop.getDwellingTable().rowKeySet().size(); ddCount++){
             translateDwellingUsage(ddCount);
             translateDwellingHeatingEnergy(ddCount);
             translateDwellingHeatingType(ddCount);
@@ -41,12 +41,13 @@ public class TranslateMicroDataToCode {
 
 
     private void translateOccupation(int personCount, boolean attendingSchool) {
-        int occupation = (int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount,"occupation");
+        int occupation = (int) dataSetSynPop.getPersonTable().get(personCount,"occupation");
         if (occupation > 1){
             if (attendingSchool){
-                dataSetSynPop.getMicroDataPersons().setValueAt(personCount,"occupation",3);
+                dataSetSynPop.getPersonTable().put(personCount,"occupation",3);
+
             } else {
-                dataSetSynPop.getMicroDataPersons().setValueAt(personCount,"occupation",2);
+                dataSetSynPop.getPersonTable().put(personCount,"occupation",2);
             }
         }
     }
@@ -54,7 +55,7 @@ public class TranslateMicroDataToCode {
 
     private void translateRelationshipToHouseholdHead(int personCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount,"relationship");
+        int valueMicroData = (int) dataSetSynPop.getPersonTable().get(personCount,"relationship");
         switch (valueMicroData){
             case 1: //Household head (hHH)
                 valueCode = 1;
@@ -78,26 +79,26 @@ public class TranslateMicroDataToCode {
                 valueCode = 4;
                 break;
             case 8: //other relationship with hHH
-                if ((int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount, "age") < 16) {
+                if ((int) dataSetSynPop.getPersonTable().get(personCount, "age") < 16) {
                     valueCode = 3;
                 } else {
                     valueCode = 4;
                 }
                 break;
             case 9: //not related with hHH
-                if ((int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount, "age") < 16) {
+                if ((int) dataSetSynPop.getPersonTable().get(personCount, "age") < 16) {
                     valueCode = 3;
                 } else {
                     valueCode = 4;
                 }
                 break;
         }
-        dataSetSynPop.getMicroDataPersons().setValueAt(personCount,"relationship", valueCode);
+        dataSetSynPop.getPersonTable().put(personCount,"relationship", valueCode);
     }
 
     private boolean translateSchoolAttendance(int personCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount,"school");
+        int valueMicroData = (int) dataSetSynPop.getPersonTable().get(personCount,"school");
         switch (valueMicroData){
             case -5:
                 valueCode = 0;
@@ -169,7 +170,7 @@ public class TranslateMicroDataToCode {
                 valueCode = 0;
                 break;
         }
-        dataSetSynPop.getMicroDataPersons().setValueAt(personCount,"school", valueCode);
+        dataSetSynPop.getPersonTable().put(personCount,"school", valueCode);
         boolean schoolAttendance = false;
         if (valueCode > 0){
             schoolAttendance = true;
@@ -180,7 +181,7 @@ public class TranslateMicroDataToCode {
 
     private void translateHighestEducationalDegree(int personCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataPersons().getValueAt(personCount,"educationDegree");
+        int valueMicroData = (int) dataSetSynPop.getPersonTable().get(personCount,"educationDegree");
         switch (valueMicroData) {
             case -3: //Younger than 15 years old
                 valueCode = 1;
@@ -228,12 +229,12 @@ public class TranslateMicroDataToCode {
                 valueCode = 0;
                 break;
         }
-        dataSetSynPop.getMicroDataPersons().setValueAt(personCount,"educationDegree", valueCode);
+        dataSetSynPop.getPersonTable().put(personCount,"educationDegree", valueCode);
     }
 
     private void translateDwellingUsage(int ddCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataDwellings().getValueAt(ddCount,"ddUse");
+        int valueMicroData = (int) dataSetSynPop.getDwellingTable().get(ddCount,"ddUse");
         switch (valueMicroData){
             case -1: //Group quarter
                 valueCode = 0;
@@ -257,13 +258,13 @@ public class TranslateMicroDataToCode {
                 valueCode = 0;
                 break;
         }
-        dataSetSynPop.getMicroDataDwellings().setValueAt(ddCount,"ddUse",valueCode);
+        dataSetSynPop.getDwellingTable().put(ddCount,"ddUse",valueCode);
     }
 
 
     private void translateDwellingHeatingEnergy(int ddCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataDwellings().getValueAt(ddCount,"ddHeatingEnergy");
+        int valueMicroData = (int) dataSetSynPop.getDwellingTable().get(ddCount,"ddHeatingEnergy");
         switch (valueMicroData){
             case -1: //Group quarter
                 valueCode = 0;
@@ -305,13 +306,13 @@ public class TranslateMicroDataToCode {
                 valueCode = 0;
                 break;
         }
-        dataSetSynPop.getMicroDataDwellings().setValueAt(ddCount,"ddHeatingEnergy",valueCode);
+        dataSetSynPop.getDwellingTable().put(ddCount,"ddHeatingEnergy",valueCode);
     }
 
 
     private void translateDwellingHeatingType(int ddCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getMicroDataDwellings().getValueAt(ddCount,"ddHeatingType");
+        int valueMicroData = (int) dataSetSynPop.getDwellingTable().get(ddCount,"ddHeatingType");
         switch (valueMicroData){
             case -1: //Group quarter
                 valueCode = 0;
@@ -335,7 +336,7 @@ public class TranslateMicroDataToCode {
                 valueCode = 0;
                 break;
         }
-        dataSetSynPop.getMicroDataDwellings().setValueAt(ddCount,"ddHeatingType",valueCode);
+        dataSetSynPop.getDwellingTable().put(ddCount,"ddHeatingType",valueCode);
     }
 
     public int translateIncome(int valueMicroData){

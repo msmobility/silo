@@ -95,8 +95,8 @@ public class SyntheticPopDe implements SyntheticPopI {
         Allocation allocation = new Allocation(dataSetSynPop);
         allocation.run();
 
-        generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-        generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        //generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+        //generateJobs(); //Generate the jobs by type. Allocated to TAZ level
         assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
         addCars(false);

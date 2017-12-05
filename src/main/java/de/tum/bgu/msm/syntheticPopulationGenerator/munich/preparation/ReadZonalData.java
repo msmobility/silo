@@ -125,6 +125,7 @@ public class ReadZonalData {
         }
         dataSetSynPop.setProbabilityZone(probabilityZone);
         dataSetSynPop.setDwellingPriceByTypeAndZone(dwellingPriceByTypeAndZone);
+        dataSetSynPop.setTazByMunicipality(cityTAZ);
     }
 
     private void readDistanceMatrix(){

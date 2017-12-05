@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
+import com.google.common.primitives.Ints;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
@@ -18,9 +19,6 @@ public class PrepareFrequencyMatrix {
 
     private DataSetSynPop dataSetSynPop;
     private TableDataSet frequencyMatrix;
-    private TableDataSet microHouseholds;
-    private TableDataSet microPersons;
-    private TableDataSet microDwellings;
 
     public PrepareFrequencyMatrix(DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -30,24 +28,22 @@ public class PrepareFrequencyMatrix {
         //create the frequency matrix with all the attributes aggregated at the household level
         logger.info("   Starting to create the frequency matrix");
 
-        //Read the attributes to match and initialize frequency matrix
         initializeAttributesMunicipality();
 
-        //Update the frequency matrix with the microdata
         for (int i = 1; i <= frequencyMatrix.getRowCount(); i++){
             //checkContainsAndUpdate(attributesMunicipality[i],);
             frequencyMatrix.setValueAt(i,"hhTotal",1);
-            int hhSize = (int) microHouseholds.getValueAt(i,"hhSize");
+            int hhSize = dataSetSynPop.getHouseholdTable().get(i,"hhSize");
             updateHhSize(hhSize, i);
-            updateDdUse((int) microDwellings.getValueAt(i,"ddUse"), i);
-            updateDdYear((int) microDwellings.getValueAt(i,"ddYear"), (int) microDwellings.getValueAt(i,"ddSize"), i);
-            updateDdFloor((int) microDwellings.getValueAt(i,"ddFloor"), i);
+            updateDdUse(dataSetSynPop.getDwellingTable().get(i,"ddUse"), i);
+            updateDdYear(dataSetSynPop.getDwellingTable().get(i,"ddYear"), dataSetSynPop.getDwellingTable().get(i,"ddSize"), i);
+            updateDdFloor(dataSetSynPop.getDwellingTable().get(i,"ddFloor"), i);
             for (int j = 0; j < hhSize; j++){
-                int row = (int) microHouseholds.getValueAt(i,"personCount") + j;
-                int age = (int) microPersons.getValueAt(row,"age");
-                int gender = (int) microPersons.getValueAt(row,"gender");
-                int occupation = (int) microPersons.getValueAt(row,"occupation");
-                int nationality = (int) microPersons.getValueAt(row,"nationality");
+                int row = dataSetSynPop.getHouseholdTable().get(i,"personCount") + j;
+                int age = dataSetSynPop.getPersonTable().get(row,"age");
+                int gender = dataSetSynPop.getPersonTable().get(row,"gender");
+                int occupation = dataSetSynPop.getPersonTable().get(row,"occupation");
+                int nationality = dataSetSynPop.getPersonTable().get(row,"nationality");
                 updateHhAgeGender(age, gender, i);
                 updateHhWorkers(gender,occupation, i);
                 updateHhForeigners(nationality, i);
@@ -60,7 +56,6 @@ public class PrepareFrequencyMatrix {
         }
 
         dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
-        //SiloUtil.writeTableDataSet(frequencyMatrix,PropertiesSynPop.get().main.fil);
 
         logger.info("   Finished creating the frequency matrix");
 
@@ -184,7 +179,7 @@ public class PrepareFrequencyMatrix {
         //Method to create the list of attributes given the generic names and the brackets
 
         frequencyMatrix = new TableDataSet();
-        frequencyMatrix.appendColumn(dataSetSynPop.getMicroDataHouseholds().getColumnAsInt("id"),"id");
+        frequencyMatrix.appendColumn(Ints.toArray(dataSetSynPop.getHouseholdTable().rowKeySet()),"id");
         for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
             addIntegerColumnToTableDataSet(frequencyMatrix, attribute);
         }
@@ -198,9 +193,6 @@ public class PrepareFrequencyMatrix {
                 addIntegerColumnToTableDataSet(frequencyMatrix, attribute);
             }
         }
-        microHouseholds = dataSetSynPop.getMicroDataHouseholds();
-        microPersons = dataSetSynPop.getMicroDataPersons();
-        microDwellings = dataSetSynPop.getMicroDataDwellings();
     }
 
     private void checkContainsAndAdd(String key, int[] brackets, Map<String, Integer> map) {
