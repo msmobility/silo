@@ -64,7 +64,7 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private int generateHousehold(int hhSelected, int tazSelected){
 
-        int hhSize = dataSetSynPop.getHouseholds().get(hhSelected).get("hhSize");
+        int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
         int id = HouseholdDataManager.getNextHouseholdId();
         Household household = new Household(id, id, tazSelected, hhSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
         householdCounter++;
@@ -76,18 +76,18 @@ public class GenerateHouseholdsPersonsDwellings {
 
         for (int person = 0; person < Household.getHouseholdFromId(idHousehold).getHhSize(); person++) {
             int id = HouseholdDataManager.getNextPersonId();
-            int personSelected = dataSetSynPop.getHouseholds().get(hhSelected).get("personCount") + person;
-            int age = dataSetSynPop.getPersons().get(personSelected).get("age");
-            int gender = dataSetSynPop.getPersons().get(personSelected).get("gender");
-            int occupation = dataSetSynPop.getPersons().get(personSelected).get("occupation");
-            Race race = microDataManager.translateRace(dataSetSynPop.getPersons().get(personSelected).get("nationality"));
-            Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersons().get(personSelected).get("nationality"));
-            int income = microDataManager.translateIncome(dataSetSynPop.getPersons().get(personSelected).get("income"));
+            int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
+            int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
+            int gender = dataSetSynPop.getPersonTable().get(personSelected, "gender");
+            int occupation = dataSetSynPop.getPersonTable().get(personSelected, "occupation");
+            Race race = microDataManager.translateRace(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
+            Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
+            int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
             boolean license = microDataManager.obtainLicense(gender, age);
-            int telework = dataSetSynPop.getPersons().get(personSelected).get("telework");
-            int educationDegree = dataSetSynPop.getPersons().get(personSelected).get("educationDegree");
-            PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersons().get(personSelected).get("personRole"));
-            int school = dataSetSynPop.getPersons().get(personSelected).get("school");
+            int telework = dataSetSynPop.getPersonTable().get(personSelected, "telework");
+            int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
+            PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
+            int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
             Person pers = new Person(id, idHousehold, age, gender, race, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
             Household.getHouseholdFromId(idHousehold).addPersonForInitialSetup(pers);
             pers.setRole(personRole);
@@ -104,13 +104,13 @@ public class GenerateHouseholdsPersonsDwellings {
     private void generateDwelling(int hhSelected, int idHousehold, int tazSelected, int municipality){
 
         int newDdId = RealEstateDataManager.getNextDwellingId();
-        int year = dataSetSynPop.getDwellings().get(hhSelected).get("ddYear");
-        int floorSpace = dataSetSynPop.getDwellings().get(hhSelected).get("ddFloor");
-        int usage = dataSetSynPop.getDwellings().get(hhSelected).get("ddUse");
-        int buildingSize = dataSetSynPop.getDwellings().get(hhSelected).get("ddSize");
-        int ddHeatingEnergy = dataSetSynPop.getDwellings().get(hhSelected).get("ddHeatingEnergy");
-        int ddHeatingType = dataSetSynPop.getDwellings().get(hhSelected).get("ddHeatingType");
-        int ddAdHeating = dataSetSynPop.getDwellings().get(hhSelected).get("ddAdHeating");
+        int year = dataSetSynPop.getDwellingTable().get(hhSelected, "ddYear");
+        int floorSpace = dataSetSynPop.getDwellingTable().get(hhSelected, "ddFloor");
+        int usage = dataSetSynPop.getDwellingTable().get(hhSelected, "ddUse");
+        int buildingSize = dataSetSynPop.getDwellingTable().get(hhSelected, "ddSize");
+        int ddHeatingEnergy = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingEnergy");
+        int ddHeatingType = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingType");
+        int ddAdHeating = dataSetSynPop.getDwellingTable().get(hhSelected, "ddAdHeating");
         int quality = microDataManager.guessDwellingQuality(ddHeatingType, ddHeatingEnergy, ddAdHeating, year);
         DwellingType type = microDataManager.translateDwellingType(buildingSize, ddTypeProbOfSFAorSFD, ddTypeProbOfMF234orMF5plus);
         int bedRooms = microDataManager.guessBedrooms(floorSpace);
@@ -157,7 +157,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private int selectMicroHouseholdWithReplacement() {
 
         int hhSelected = SiloUtil.select(probMicroData);
-        if (probMicroData.get(hhSelected) > 0){
+        if (probMicroData.get(hhSelected) > 1){
             probMicroData.put(hhSelected, probMicroData.get(hhSelected) - 1);
         } else {
             probMicroData.remove(hhSelected);
