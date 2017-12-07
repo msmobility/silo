@@ -36,7 +36,7 @@ public class Allocation extends ModuleSynPop{
     public void generateJobs(){
         GenerateJobs generate = new GenerateJobs(dataSetSynPop);
         generate.run();
-        SummarizeData.writeOutSyntheticPopulationDE(1999);
+        //SummarizeData.writeOutSyntheticPopulationDE(1999);
     }
 
     public void assignJobs(){

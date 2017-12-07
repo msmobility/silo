@@ -2,10 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.data.Nationality;
-import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.data.Race;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -597,5 +594,57 @@ public class MicroDataManager {
         }
 
         return yearBracket;
+    }
+
+
+    public int guessjobType(Person pp){
+        int jobType = 0;
+        double[] probability;
+        switch (pp.getGender()){
+            case 1:
+                switch ((pp.getEducationLevel())) {
+                    case 0:
+                        probability = new double[]{0.018525903,0.247279377,0.013645804,0.102589096,0.209383272,0.111790907,0.015157988,0.074155564,0.042772461,0.164699627};
+                        break;
+                    case 1:
+                        probability = new double[]{0.018525903,0.247279377,0.013645804,0.102589096,0.209383272,0.111790907,0.015157988,0.074155564,0.042772461,0.164699627};
+                        break;
+                    case 2:
+                        probability = new double[]{0.025005413,0.306936861,0.023240014,0.131612602,0.161132838,0.100584686,0.030611236,0.059327951,0.062117484,0.099430916};
+                        break;
+                    case 3:
+                        probability = new double[]{0.008533151,0.249164089,0.020626395,0.04534431,0.067841835,0.111582213,0.048438001,0.036971695,0.207231818,0.204266493};
+                        break;
+                    case 4:
+                        probability = new double[]{0.004152555,0.150044116,0.014863438,0.023979707,0.053767274,0.100617138,0.040040495,0.031044385,0.069906374,0.511584519};
+                        break;
+                    default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                }
+                break;
+            case 2:
+                switch ((pp.getEducationLevel())) {
+                    case 0:
+                        probability = new double[]{0.012755482,0.141039813,0.005312882,0.015392634,0.273558614,0.049521016,0.019501401,0.099264435,0.038971953,0.34468177};
+                        break;
+                    case 1:
+                        probability = new double[]{0.012755482,0.141039813,0.005312882,0.015392634,0.273558614,0.049521016,0.019501401,0.099264435,0.038971953,0.34468177};
+                        break;
+                    case 2:
+                        probability = new double[]{0.013754169,0.124100786,0.00727449,0.02178542,0.222367369,0.046812291,0.043632331,0.058141381,0.065290076,0.396841686};
+                        break;
+                    case 3:
+                        probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                        break;
+                    case 4:
+                        probability = new double[]{0.002848241,0.058853003,0.007342596,0.007007503,0.066280334,0.05505006,0.026564225,0.029730278,0.073777412,0.672546348};
+                        break;
+                    default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                }
+                break;
+                default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+        }
+        jobType = SiloUtil.select(probability, 1);
+
+        return jobType;
     }
 }

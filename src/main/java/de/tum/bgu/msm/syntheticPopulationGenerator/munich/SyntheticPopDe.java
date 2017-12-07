@@ -97,7 +97,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         //generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
         //generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-        assignJobs(); //Workplace allocation
+        //assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
         addCars(false);
         SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
