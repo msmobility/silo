@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.DwellingType;
@@ -95,6 +97,7 @@ public class ReadZonalData {
         HashMap<Integer, int[]> cityTAZ = new HashMap<>();
         Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
         Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new HashMap<>();
+        Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         for (int i = 1; i <= PropertiesSynPop.get().main.cellsMatrix.getRowCount(); i++){
             int city = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_city");
             int taz = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_cell");
@@ -103,6 +106,9 @@ public class ReadZonalData {
             int priceSFD = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"SFD");
             int priceMF234 = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"MF234");
             int priceMF5plus = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"MF5plus");
+            int capacityPrimary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityPrimary");
+            int capacitySecondary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacitySecondary");
+            int capacityTertiary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityTertiary");
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
                 previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
@@ -122,10 +128,14 @@ public class ReadZonalData {
             prices.put(DwellingType.MF234, priceMF234);
             prices.put(DwellingType.MF5plus, priceMF5plus);
             dwellingPriceByTypeAndZone.put(taz,prices);
+            schoolCapacity.put(taz,1,capacityPrimary);
+            schoolCapacity.put(taz, 2, capacitySecondary);
+            schoolCapacity.put(taz, 3, capacityTertiary);
         }
         dataSetSynPop.setProbabilityZone(probabilityZone);
         dataSetSynPop.setDwellingPriceByTypeAndZone(dwellingPriceByTypeAndZone);
         dataSetSynPop.setTazByMunicipality(cityTAZ);
+        dataSetSynPop.setSchoolCapacity(schoolCapacity);
     }
 
     private void readDistanceMatrix(){

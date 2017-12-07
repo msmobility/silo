@@ -31,12 +31,13 @@ public class Allocation extends ModuleSynPop{
     public void generateHouseholdsPersonsDwellings(){
         GenerateHouseholdsPersonsDwellings generate = new GenerateHouseholdsPersonsDwellings(dataSetSynPop);
         generate.run();
+        //SummarizeData.writeOutSyntheticPopulationDE(1990);
     }
 
     public void generateJobs(){
         GenerateJobs generate = new GenerateJobs(dataSetSynPop);
         generate.run();
-        //SummarizeData.writeOutSyntheticPopulationDE(1999);
+        //SummarizeData.writeOutSyntheticPopulationDE(1991);
     }
 
     public void assignJobs(){
@@ -47,6 +48,7 @@ public class Allocation extends ModuleSynPop{
     public void assignSchools(){
         AssignSchools assignSchools = new AssignSchools(dataSetSynPop);
         assignSchools.run();
+        SummarizeData.writeOutSyntheticPopulationDE(1992);
     }
 
 }

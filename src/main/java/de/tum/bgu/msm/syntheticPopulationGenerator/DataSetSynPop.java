@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
@@ -37,6 +38,7 @@ public class DataSetSynPop {
     private int[] countyIDs;
     private Map<Integer, Map<Integer, Float>> probabilityZone;
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
+    private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
 
     private Matrix distanceTazToTaz;
 
@@ -213,5 +215,13 @@ public class DataSetSynPop {
 
     public void setDwellingTable(Table<Integer, String, Integer> dwellingTable) {
         this.dwellingTable = dwellingTable;
+    }
+
+    public Table<Integer, Integer, Integer> getSchoolCapacity() {
+        return schoolCapacity;
+    }
+
+    public void setSchoolCapacity(Table<Integer, Integer, Integer> schoolCapacity) {
+        this.schoolCapacity = schoolCapacity;
     }
 }

@@ -44,8 +44,8 @@ public class GenerateHouseholdsPersonsDwellings {
         for (int municipality : dataSetSynPop.getMunicipalities()){
             initializeMunicipalityData(municipality);
             double logging = 2;
-            int it = 1;
-            for (int draw = 0; draw < Math.round(totalHouseholds / 1000); draw++){
+            int it = 11;
+            for (int draw = 0; draw < Math.round(totalHouseholds/1000); draw++){
                 int hhSelected = selectMicroHouseholdWithReplacement();
                 int tazSelected = selectTAZwithoutReplacement(hhSelected);
                 int idHousehold = generateHousehold(hhSelected, tazSelected);
