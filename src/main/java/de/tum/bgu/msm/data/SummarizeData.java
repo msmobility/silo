@@ -538,7 +538,7 @@ public class SummarizeData {
         String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + "_" +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ");
         Person[] pps = Person.getPersonArray();
         for (Person pp : pps) {
             pwp.print(pp.getId());
@@ -569,7 +569,9 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.hasDriverLicense());
             pwp.print(",");
-            pwp.println(pp.getSchoolType());
+            pwp.print(pp.getSchoolType());
+            pwp.print(",");
+            pwp.println(pp.getSchoolPlace());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 pp.logAttributes(SiloUtil.trackWriter);

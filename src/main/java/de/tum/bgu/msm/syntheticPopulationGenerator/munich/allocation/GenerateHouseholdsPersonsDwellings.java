@@ -42,19 +42,21 @@ public class GenerateHouseholdsPersonsDwellings {
         previousPersons = 0;
         //initializeQualityAndIncomeDistributions();
         for (int municipality : dataSetSynPop.getMunicipalities()){
-            initializeMunicipalityData(municipality);
-            double logging = 2;
-            int it = 11;
-            for (int draw = 0; draw < Math.round(totalHouseholds/1000); draw++){
-                int hhSelected = selectMicroHouseholdWithReplacement();
-                int tazSelected = selectTAZwithoutReplacement(hhSelected);
-                int idHousehold = generateHousehold(hhSelected, tazSelected);
-                generatePersons(hhSelected, idHousehold);
-                generateDwelling(hhSelected, idHousehold, tazSelected, municipality);
-                if (draw == logging){
-                    logger.info("   Municipality " + municipality + ". Generated household " + draw);
-                    it++;
-                    logging = Math.pow(2, it);
+            if (municipality != 9162000){
+                initializeMunicipalityData(municipality);
+                double logging = 2;
+                int it = 11;
+                for (int draw = 0; draw < Math.round(totalHouseholds); draw++) {
+                    int hhSelected = selectMicroHouseholdWithReplacement();
+                    int tazSelected = selectTAZwithoutReplacement(hhSelected);
+                    int idHousehold = generateHousehold(hhSelected, tazSelected);
+                    generatePersons(hhSelected, idHousehold);
+                    generateDwelling(hhSelected, idHousehold, tazSelected, municipality);
+                    if (draw == logging) {
+                        logger.info("   Municipality " + municipality + ". Generated household " + draw);
+                        it++;
+                        logging = Math.pow(2, it);
+                    }
                 }
             }
         }

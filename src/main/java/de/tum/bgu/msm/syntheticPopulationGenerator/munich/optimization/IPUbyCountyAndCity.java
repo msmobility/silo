@@ -202,7 +202,12 @@ public class IPUbyCountyAndCity {
             Integer municipality = iterator.next();
             dataSetSynPop.getWeights().appendColumn(minWeightsByMun.get(municipality), Integer.toString(municipality));
             for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
-                float value = errorByMun.get(municipality).get(attribute).floatValue();
+                float value;
+                if (errorByMun.get(municipality).get(attribute) == null) {
+                    value = 0;
+                } else {
+                    value = errorByMun.get(municipality).get(attribute).floatValue();
+                }
                 dataSetSynPop.getErrorsMunicipality().setIndexedValueAt(municipality, attribute, value);
             }
         }
