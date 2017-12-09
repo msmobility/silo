@@ -73,7 +73,8 @@ public class CreateCarOwnershipModel {
         SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
         if (flagSkipCreationOfSPforDebugging) {
             logger.info("Finished car ownership model");
-            System.exit(0);
+            //TODO: please try to avoid system.exit
+            //System.exit(0);
         }
     }
 
