@@ -16,12 +16,11 @@ public class SelectDwellingTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
-        calculator = new SelectDwellingJSCalculator (reader, true);
+        calculator = new SelectDwellingJSCalculator (reader);
     }
 
     @Test
     public void testModelOne() throws ScriptException {
-        calculator.setDwellingUtility(3);
-        Assert.assertEquals(0.22313016014842982, calculator.calculate(), 0.);
+        Assert.assertEquals(0.22313016014842982, calculator.calculateSelectDwellingProbability(3), 0.);
     }
 }

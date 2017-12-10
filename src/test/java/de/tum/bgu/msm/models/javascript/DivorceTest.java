@@ -18,25 +18,22 @@ public class DivorceTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
-        calculator = new DivorceJSCalculator (reader, true);
+        calculator = new DivorceJSCalculator (reader);
     }
 
     @Test
-    public void testModelOne() throws ScriptException {
-        calculator.setPersonType(31);
-        Assert.assertEquals(0.02156, calculator.calculate(), 0.);
+    public void testModelOne() {
+        Assert.assertEquals(0.02156, calculator.calculateDivorceProbability(31), 0.);
     }
 
-    @Test(expected = ScriptException.class)
-    public void testModelFailures() throws ScriptException {
-        calculator.setPersonType(200);
-        calculator.calculate();
+    @Test(expected = RuntimeException.class)
+    public void testModelFailures() {
+        calculator.calculateDivorceProbability(200);
     }
 
-    @Test(expected = ScriptException.class)
-    public void testModelFailuresTwo() throws ScriptException {
-        calculator.setPersonType(-2);
-        calculator.calculate();
+    @Test(expected = RuntimeException.class)
+    public void testModelFailuresTwo() {
+        calculator.calculateDivorceProbability(-2);
     }
 
 }

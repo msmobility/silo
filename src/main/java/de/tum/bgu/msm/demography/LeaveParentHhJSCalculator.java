@@ -1,17 +1,17 @@
 package de.tum.bgu.msm.demography;
 
-import  de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
-public class LeaveParentHhJSCalculator extends JavaScriptCalculator <Double> {
+public class LeaveParentHhJSCalculator extends JavaScriptCalculator<Double> {
 
-    public LeaveParentHhJSCalculator (Reader reader, boolean log) {
-        super(reader, log);
+    public LeaveParentHhJSCalculator (Reader reader) {
+        super(reader);
     }
 
-    public void setPersonType (int personType) {
-        this.bindings.put("personType", personType);
+    public double calculateLeaveParentsProbability(int personType) {
+        return super.calculate("calculateLeaveParentsProbability", personType);
     }
 
 }
