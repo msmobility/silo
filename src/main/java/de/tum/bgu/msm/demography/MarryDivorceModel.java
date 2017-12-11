@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -343,6 +344,9 @@ public class MarryDivorceModel {
                 return;
             }
             modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
+            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+            }
         }
         partner1.setRole(PersonRole.married);
         partner2.setRole(PersonRole.married);
@@ -414,8 +418,10 @@ public class MarryDivorceModel {
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
             EventManager.countEvent(EventTypes.checkDivorce);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(newHh);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
+            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+            }
         }
     }
 }

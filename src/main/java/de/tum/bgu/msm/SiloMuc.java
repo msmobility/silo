@@ -29,8 +29,10 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-            SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
-            sp.run();
+            if(Properties.get().main.runSynPop) {
+                SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
+                sp.run();
+            }
             SiloModel model = new SiloModel();
             model.runModel();
             logger.info("Finished SILO.");
