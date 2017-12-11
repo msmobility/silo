@@ -122,14 +122,9 @@ public class Household implements Serializable {
     }
 
     public int getHhIncome () {
-        // return annual household income
         int hhInc = 0;
-        try {
-            for (Person pp : persons) hhInc += pp.getIncome();
-        } catch (Exception e) {
-            logger.info("While attempting to calculate the income of household " + hhId + ", an error occurred.");
-            logger.info("Error: " + e);
-            System.exit(1);
+        for (Person pp : persons) {
+            hhInc += pp.getIncome();
         }
         return hhInc;
     }
