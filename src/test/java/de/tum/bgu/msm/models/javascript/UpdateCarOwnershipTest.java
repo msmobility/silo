@@ -19,39 +19,15 @@ public class UpdateCarOwnershipTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
-        calculator = new MunichCarOwnershipJSCalculator(reader, true);
+        calculator = new MunichCarOwnershipJSCalculator(reader);
     }
 
     @Test
     public void testModelOne() throws ScriptException {
-        calculator.setPreviousCars(2);
-        calculator.setHHSizePlus(1);
-        calculator.setHHSizeMinus(0);
-        calculator.setHHIncomePlus(1);
-        calculator.setHHIncomeMinus(0);
-        calculator.setLicensePlus(0);
-        calculator.setChangeResidence(0);
         double[] expected = new double[]{0.801, 0.1574, 0.0415};
-        double[] result = calculator.calculate();
+        double[] result = calculator.calculateCarOwnerShipProbabilities(2, 1, 0, 1, 0, 0, 0);
         for (int i = 0; i < expected.length; i++){
-            System.out.println(result[i]);
             Assert.assertEquals(expected[i], result[i], 0.01);
-        }
-    }
-
-
-    @Test(expected = ScriptException.class)
-    public void testModelFailures() throws ScriptException {
-        calculator.setPreviousCars(2);
-        calculator.setHHSizePlus(1);
-        calculator.setHHSizeMinus(0);
-        calculator.setHHIncomePlus(1);
-        calculator.setHHIncomeMinus(0);
-        //calculator.setLicensePlus(0);
-        calculator.setChangeResidence(0);
-        double[] result = calculator.calculate();
-        for (int i = 0; i < 3; i++){
-            System.out.println(result[i]);
         }
     }
 }

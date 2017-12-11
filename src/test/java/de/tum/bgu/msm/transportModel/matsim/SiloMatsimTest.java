@@ -109,7 +109,7 @@ public class SiloMatsimTest {
 			log.info("Checking MATSim events file ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001//test_matsim_2001.output_events.xml.gz";
-			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+			assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}
 		
 		// TODO Consider checking accessibilities (currently stored in "testing" directory)

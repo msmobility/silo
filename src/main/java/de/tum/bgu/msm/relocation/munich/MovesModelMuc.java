@@ -104,7 +104,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     @Override
     protected void setupSelectRegionModel() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
-        regionCalculator = new SelectRegionJSCalculator(reader, false);
+        regionCalculator = new SelectRegionJSCalculator(reader);
     }
 
     @Override
@@ -133,18 +133,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
             for (Nationality nationality: Nationality.values()) {
                 for (int region: regions) {
-                    regionCalculator.setIncomeGroup(income - 1);
-                    regionCalculator.setNationality(nationality);
-                    regionCalculator.setMedianPrice(priceUtil[region]);
-                    regionCalculator.setForeignersShare(regionalShareForeigners[geoData.getRegionIndex(region)]);
-                    regionCalculator.setAccessibility(regAcc[region]);
-                    double utility = 0;
-                    try {
-                        utility = regionCalculator.calculate();
-                        utilityRegion[income - 1][nationality.ordinal()][region-1] = utility;
-                    } catch (ScriptException e) {
-                        e.printStackTrace();
-                    }
+                    utilityRegion[income - 1][nationality.ordinal()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
+                            nationality, priceUtil[region], regAcc[region], regionalShareForeigners[geoData.getRegionIndex(region)]);
                 }
             }
         }
@@ -154,7 +144,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     @Override
     protected void setupSelectDwellingModel() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
-        dwellingCalculator = new SelectDwellingJSCalculator(reader, false);
+        dwellingCalculator = new SelectDwellingJSCalculator(reader);
     }
 
 
@@ -249,12 +239,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
             double util = calculateDwellingUtilityOfHousehold(ht, householdIncome, dd, modelContainer);
-            dwellingCalculator.setDwellingUtility(util);
-            try {
-                expProbs[i] = dwellingCalculator.calculate();
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
         if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions

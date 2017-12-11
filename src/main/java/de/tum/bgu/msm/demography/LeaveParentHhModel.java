@@ -42,15 +42,13 @@ public class LeaveParentHhModel {
     private double[] lphProbability;
 
     public LeaveParentHhModel() {
-        // constructor
         setupLPHModel();
     }
 
     private void setupLPHModel() {
 
-        // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader, false);
+        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -58,14 +56,7 @@ public class LeaveParentHhModel {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculator.setPersonType(i);
-            //calculate
-            try {
-                lphProbability[i] = calculator.calculate();
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            lphProbability[i] = calculator.calculateLeaveParentsProbability(i);
         }
     }
 

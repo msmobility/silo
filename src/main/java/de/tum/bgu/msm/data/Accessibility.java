@@ -114,11 +114,11 @@ public class Accessibility {
     
 
     public float getAutoTravelTime(int i, int j) {
-    	return (float) travelTimes.get(TransportMode.car).getTravelTimeFromTo(i, j);
+    	return (float) travelTimes.get(TransportMode.car).getTravelTime(i, j);
     }
 
     public float getTransitTravelTime(int i, int j) {
-    	return (float) travelTimes.get(TransportMode.pt).getTravelTimeFromTo(i, j);
+    	return (float) travelTimes.get(TransportMode.pt).getTravelTime(i, j);
     }
 
     public float getTravelCosts(int i, int j) {

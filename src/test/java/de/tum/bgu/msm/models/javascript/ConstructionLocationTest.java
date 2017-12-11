@@ -16,15 +16,12 @@ public class ConstructionLocationTest {
 
     @Before
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionCalc"));
-        calculator = new ConstructionLocationJSCalculator(reader, true);
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
+        calculator = new ConstructionLocationJSCalculator(reader);
     }
 
     @Test
-    public void testModel() throws ScriptException {
-        calculator.setDwellingType(DwellingType.SFD);
-        calculator.setPrice(100);
-        calculator.setAccessibility(100);
-        Assert.assertEquals(100, calculator.calculate(), 0.);
+    public void testModel() {
+        Assert.assertEquals(100, calculator.calculateConstructionProbability(DwellingType.SFD, 100, 100), 0.);
     }
 }

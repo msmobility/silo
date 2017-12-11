@@ -1,0 +1,25 @@
+var calculateConstructionUtility = function(dwellingType, price, accessibility) {
+
+    if(dwellingType.name() == "SFD") {
+        alpha = 0.5;
+        gamma = 0.5;
+    } else if(dwellingType.name() == "SFA") {
+        alpha = 0.4;
+        gamma = 0.6;
+    } else if(dwellingType.name() == "MF234") {
+        alpha = 0.3;
+        gamma = 0.7;
+    } else if(dwellingType.name() == "MF5plus") {
+        alpha = 0.25;
+        gamma = 0.75;
+    } else if(dwellingType.name() == "MH") {
+        alpha = 0.2;
+        gamma = 0.8;
+    } else {
+        throw new Error("Undefined dwelling type " + dwellingType + " provided!")
+    }
+
+    priceUtility = price * alpha;
+    accessibilityUtility = accessibility * gamma;
+    return priceUtility + accessibilityUtility;
+}

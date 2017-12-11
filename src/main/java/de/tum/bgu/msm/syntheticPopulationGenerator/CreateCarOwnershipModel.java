@@ -3,19 +3,14 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import omx.OmxFile;
-import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Implements car ownership of initial synthetic population (base year) for the Munich Metropolitan Area
@@ -36,25 +31,17 @@ public class CreateCarOwnershipModel {
 
 
     public CreateCarOwnershipModel() {
-        // Constructor
         logger.info(" Setting up probabilities for car ownership model");
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
-        calculator = new CreateCarOwnershipJSCalculator(reader, false);
+        calculator = new CreateCarOwnershipJSCalculator(reader);
         readZonalData();
     }
 
     public void run() {
-        // main run method
-
         for (Household hh : Household.getHouseholdArray()) {
             simulateCarOwnership(hh);
         }
-        boolean tokenForTestingCarOwnership = false;
-        if (tokenForTestingCarOwnership) {
-            SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
-            logger.info("Finished car ownership model");
-            System.exit(0);
-        }
+        SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
     }
 
     public void simulateCarOwnership(Household hh) {
@@ -68,27 +55,8 @@ public class CreateCarOwnershipModel {
         double logDistanceToTransit = Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit") + 1);
         int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
 
-        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType);
+        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
         hh.setAutos(SiloUtil.select(prob));
-        //logger.info("Finished car ownership model");
-        //logger.info(hh.getAutos()+"cars " + hh.getNumberOfWorkers()+"workers " + hh.getHHLicenseHolders()+"license " + hh.getHhIncome()+"income ");
-    }
-
-    private double[] calculateCarOwnershipProb(int license, int workers, int income, double logDistanceToTransit, int areaType) {
-        // setup to calculate the car ownership probabilities for an individual household from the javascript calculator
-        calculator.setLicense(license);
-        calculator.setWorkers(workers);
-        calculator.setIncome(income);
-        calculator.setLogDistanceToTransit(logDistanceToTransit);
-        calculator.setAreaType(areaType);
-
-        double[] result = new double[4];  // probabilities for 0, 1, 2 and 3+ cars
-        try {
-            result = calculator.calculate();
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
     public void readZonalData() {
