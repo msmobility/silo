@@ -176,6 +176,7 @@ public class HouseholdDataManager {
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
+            int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -192,8 +193,13 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
+                boolean license = true;
+                if (Integer.parseInt(lineElements[posDriver]) == 0){
+                    license = false;
+                }
                 Person pp = new Person(id, hhid, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
                 pp.setRole(pr);
+                pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     Person.getPersonFromId(id).logAttributes(SiloUtil.trackWriter);
@@ -1032,4 +1038,5 @@ public class HouseholdDataManager {
     public Map<Integer, int[]> getUpdatedHouseholds() {
         return updatedHouseholds;
     }
+
 }

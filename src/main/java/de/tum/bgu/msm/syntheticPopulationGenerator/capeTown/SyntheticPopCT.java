@@ -3030,8 +3030,8 @@ public class SyntheticPopCT implements SyntheticPopI {
     private void addCars(boolean flagSkipCreationOfSPforDebugging) {
         //method to estimate the number of cars per household
         //it must be run after generating the population
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
-        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
+        createCarOwnershipModel.run( );
     }
 
 

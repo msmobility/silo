@@ -36,7 +36,7 @@ public final class Properties {
         main = new MainProperties(bundle, implementation);
         cblcm = new CblcmProperties(bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
-        geo = new GeoProperties(bundle);
+        geo = new GeoProperties(bundle, implementation);
         realEstate = new RealEstateProperties(bundle);
         householdData = new HouseholdDataProperties(bundle);
         jobData = new JobDataProperties(bundle);
