@@ -701,7 +701,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         jobData.calculateJobDensityByZone();
         MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(jobData, accessibility);   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             households.put(hh.getId(), null);
         }
     }

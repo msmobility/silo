@@ -41,7 +41,7 @@ public class summarizeDataCblcm {
         String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] households = new int[dataContainer.getGeoData().getZones().length][Properties.get().main.incomeBrackets.length + 1];
-        for (Household hh : Household.getHouseholdArray()) {
+        for (Household hh : Household.getHouseholds()) {
             int hhIncomeGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
             households[dataContainer.getGeoData().getZoneIndex(hh.getHomeZone())][hhIncomeGroup - 1]++;
         }
@@ -206,13 +206,17 @@ public class summarizeDataCblcm {
 
         int[] hhByCounty = new int[countyOrder.length];
         int[] jobsByCounty = new int[countyOrder.length];
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int homeFips = geoData.getCountyOfZone(hh.getHomeZone());
-            if (SiloUtil.containsElement(countyOrder, homeFips)) hhByCounty[countyOrderIndex[homeFips]]++;
+            if (SiloUtil.containsElement(countyOrder, homeFips)) {
+                hhByCounty[countyOrderIndex[homeFips]]++;
+            }
         }
         for (Job jj: Job.getJobs()) {
             int jobFips = geoData.getCountyOfZone(jj.getZone());
-            if (SiloUtil.containsElement(countyOrder, jobFips)) jobsByCounty[countyOrderIndex[jobFips]]++;
+            if (SiloUtil.containsElement(countyOrder, jobFips)) {
+                jobsByCounty[countyOrderIndex[jobFips]]++;
+            }
         }
 
         PrintWriter pwp;

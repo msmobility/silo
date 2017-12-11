@@ -5,7 +5,6 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -234,7 +233,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         evaluateAllDwellingUtilities(modelContainer);
         averageHousingSatisfaction = new double[HouseholdType.values().length];
         int[] hhCountyByType = new int[HouseholdType.values().length];
-        for (Household hh : Household.getHouseholdArray()) {
+        for (Household hh : Household.getHouseholds()) {
             double util = Dwelling.getDwellingFromId(hh.getDwellingId()).getUtilOfResident();
             int count = hh.getHouseholdType().ordinal();
             averageHousingSatisfaction[count] += util;

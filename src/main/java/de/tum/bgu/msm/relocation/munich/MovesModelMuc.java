@@ -7,18 +7,13 @@ package de.tum.bgu.msm.relocation.munich;
 */
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -37,7 +32,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         float[] zonalShareForeigners = new float[geoData.getZones().length];
         regionalShareForeigners = new float[geoData.getRegionList().length];
         SiloUtil.setArrayToValue(zonalShareForeigners, 0f);
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             if (hh.getNationality() != Nationality.german) {
                 zonalShareForeigners[geoData.getZoneIndex(hh.getHomeZone())]++;

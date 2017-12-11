@@ -5,7 +5,6 @@ import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -26,7 +25,7 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
         pwa.println("id, dwelling, zone, license, income, size, autos");
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + hh.getHomeZone() + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
         }
         pwa.close();

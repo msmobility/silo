@@ -20,7 +20,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
@@ -227,7 +226,7 @@ public class HouseholdDataManager {
 
     public void setTypeOfAllHouseholds () {
         // define household types
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             hh.setType();
             hh.setHouseholdRace();
         }
@@ -404,7 +403,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("black," + ppRace[1]);
         SummarizeData.resultFile("hispanic," + ppRace[2]);
         SummarizeData.resultFile("other," + ppRace[3]);
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int hhSize = Math.min(hh.getHhSize(), 10);
             hhs[hhSize - 1]++;
             hht[hh.getHouseholdType().ordinal()]++;
@@ -463,7 +462,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
         for (int i: geoData.getRegionList()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             carOwnership[hh.getAutos()]++;
         }
         SummarizeData.resultFile("carOwnershipLevel,households");
@@ -477,7 +476,9 @@ public class HouseholdDataManager {
     public void setHighestHouseholdAndPersonId () {
         // identify highest household ID and highest person ID in use
         highestHouseholdIdInUse = 0;
-        for (Household hh: Household.getHouseholdArray()) highestHouseholdIdInUse = Math.max(highestHouseholdIdInUse, hh.getId());
+        for (Household hh: Household.getHouseholds()) {
+            highestHouseholdIdInUse = Math.max(highestHouseholdIdInUse, hh.getId());
+        }
         highestPersonIdInUse = 0;
         for (Person pp: Person.getPersonArray()) highestPersonIdInUse = Math.max(highestPersonIdInUse, pp.getId());
     }
@@ -740,7 +741,7 @@ public class HouseholdDataManager {
         // return HashMap<Zone, ArrayOfHouseholdIds>
 
         HashMap<Integer, int[]> hhByZone = new HashMap<>();
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int zone = hh.getHomeZone();
             if (hhByZone.containsKey(zone)) {
                 int[] oldList = hhByZone.get(zone);
@@ -758,7 +759,7 @@ public class HouseholdDataManager {
     public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
         // return number of households by zone
         int[] hhByZone = new int[geoData.getZones().length];
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             hhByZone[geoData.getZoneIndex(hh.getHomeZone())]++;
         }
         return hhByZone;
@@ -768,7 +769,7 @@ public class HouseholdDataManager {
     public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
         // return number of households by region
         int[] hhByRegion = new int[geoData.getRegionList().length];
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             if (hh.getHomeZone() == -1) continue;  // unclear why this is needed
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             hhByRegion[geoData.getRegionIndex(region)]++;
@@ -780,7 +781,7 @@ public class HouseholdDataManager {
     public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int homeMSA = geoData.getMSAOfZone(hh.getHomeZone());
             if (rentHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = rentHashMap.get(homeMSA);
@@ -826,7 +827,7 @@ public class HouseholdDataManager {
         HashMap<Integer, ArrayList> hhByDistToMetro = new HashMap<>();
         for (Integer dist = 0; dist <= 20; dist++) hhByDistToMetro.put(dist, new ArrayList<Integer>());
 
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int incCat = getIncomeCategoryForIncome(hh.getHhIncome());
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
@@ -888,9 +889,8 @@ public class HouseholdDataManager {
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         pwj.println("id,zone,personId,type");
-        Household[] hhs = Household.getHouseholdArray();
         int counter = 0;
-        for (Household hh : hhs) {
+        for (Household hh : Household.getHouseholds()) {
             counter++;
             if (counter > numberOfHh) break;
 

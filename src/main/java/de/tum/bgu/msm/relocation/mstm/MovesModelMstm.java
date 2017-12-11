@@ -44,7 +44,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         zonalRacialComposition = new float[geoData.getZones().length][4];
         regionalRacialComposition = new float[geoData.getRegionList().length][4];
         SiloUtil.setArrayToValue(zonalRacialComposition, 0f);
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             zonalRacialComposition[geoData.getZoneIndex(hh.getHomeZone())][hh.getRace().ordinal()]++;
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             regionalRacialComposition[geoData.getRegionIndex(region)][hh.getRace().ordinal()]++;

@@ -107,7 +107,7 @@ public class EventManager {
 
 
         // create household events
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             if (EventRules.ruleHouseholdMove(hh)) {
                 int id = hh.getId();
                 events.add(new Integer[]{EventTypes.householdMove.ordinal(), id});

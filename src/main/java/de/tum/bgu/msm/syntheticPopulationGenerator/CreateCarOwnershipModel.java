@@ -66,7 +66,7 @@ public class CreateCarOwnershipModel {
     }
 
     public void run() {
-        for (Household hh : Household.getHouseholdArray()) {
+        for (Household hh : Household.getHouseholds()) {
             simulateCarOwnership(hh);
         }
         SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);

@@ -71,7 +71,9 @@ public class Dwelling {
 
 
     public static void saveDwellings (Dwelling[] dds) {
-        for (Dwelling dd: dds) dwellingMap.put(dd.getId(), dd);
+        for (Dwelling dd: dds) {
+            dwellingMap.put(dd.getId(), dd);
+        }
     }
 
 
@@ -85,8 +87,7 @@ public class Dwelling {
     }
 
     public static Collection<Dwelling> getDwellings() {
-        // return collection of dwellings
-            return dwellingMap.values();
+        return dwellingMap.values();
     }
 
     public static Dwelling[] getDwellingArray() {
