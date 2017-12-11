@@ -1,25 +1,18 @@
 package de.tum.bgu.msm.realEstate;
 
 import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
 public class ConstructionDemandJSCalculator extends JavaScriptCalculator<Double> {
 
-
-    public ConstructionDemandJSCalculator(Reader reader, boolean log) {
-        super(reader, log);
+    public ConstructionDemandJSCalculator(Reader reader) {
+        super(reader);
     }
 
-
-    public void setDwellingType (DwellingType dwellingType) {
-        this.bindings.put("dwellingType", dwellingType.toString());
+    public double calculateConstructionDemand(double vacancyByRegion, DwellingType dwellingType) {
+        return super.calculate("calculateConstructionDemand", vacancyByRegion, dwellingType);
     }
-
-    public void setVacancyByRegion(double vacancyByRegion) {
-        this.bindings.put("vacancyByRegion", vacancyByRegion);
-    }
-
 
 }

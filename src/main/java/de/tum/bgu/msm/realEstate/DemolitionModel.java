@@ -38,27 +38,12 @@ public class DemolitionModel {
     private void setupDemolitionModel() {
 
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-        DemolitionJSCalculator calculator = new DemolitionJSCalculator(reader, false);
+        DemolitionJSCalculator calculator = new DemolitionJSCalculator(reader);
         // demolitionProbability["quality-1","vacant/occupied"]
         demolitionProbability = new double[4][2];
         for (int i = 1; i <= 4; i++) {
-            for (int j = 0; j <= 1; j++) {
-                // set DMU attributes
-                calculator.setDwellingQuality(i);
-                if (j == 0) {
-                    calculator.setOccupied(false);
-                } else {
-                    calculator.setOccupied(true);
-                }
-                // There is only one alternative, and the utility is really the probability of being demolished
-                double probability = 0;
-                try {
-                    probability = calculator.calculate();
-                } catch (ScriptException e) {
-                    e.printStackTrace();
-                }
-                demolitionProbability[i-1][j] = probability;
-            }
+            demolitionProbability[i-1][0] = calculator.calculateDemolitionProbability(false, i);
+            demolitionProbability[i-1][0] = calculator.calculateDemolitionProbability(true, i);
         }
     }
 

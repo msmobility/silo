@@ -40,28 +40,17 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
         // Setting up probabilities for car update model
 
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
-        MunichCarOwnershipJSCalculator calculator = new MunichCarOwnershipJSCalculator(reader, false);
+        MunichCarOwnershipJSCalculator calculator = new MunichCarOwnershipJSCalculator(reader);
         //set car update probabilities
         carUpdateProb = new double[4][2][2][2][2][2][2][3];
         for (int prevCar = 0; prevCar < 4; prevCar++){
-            calculator.setPreviousCars(prevCar);
             for (int sizePlus = 0; sizePlus < 2; sizePlus++){
-                calculator.setHHSizePlus(sizePlus);
                 for (int sizeMinus = 0; sizeMinus < 2; sizeMinus++){
-                    calculator.setHHSizeMinus(sizeMinus);
                     for (int incPlus = 0; incPlus < 2; incPlus++){
-                        calculator.setHHIncomePlus(incPlus);
                         for (int incMinus = 0; incMinus < 2; incMinus++){
-                            calculator.setHHIncomeMinus(incMinus);
                             for (int licPlus = 0; licPlus < 2; licPlus++){
-                                calculator.setLicensePlus(licPlus);
                                 for (int changeRes = 0; changeRes < 2; changeRes++){
-                                    calculator.setChangeResidence(changeRes);
-                                    try {
-                                        carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] = calculator.calculate();
-                                    } catch (ScriptException e) {
-                                        e.printStackTrace();
-                                    }
+                                    carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] = calculator.calculateCarOwnerShipProbabilities(prevCar, sizePlus, sizeMinus, incPlus, incMinus, licPlus, changeRes);
                                 }
                             }
                         }

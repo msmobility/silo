@@ -17,36 +17,18 @@ public class SelectRegionTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
-        calculator = new SelectRegionJSCalculator(reader, true);
+        calculator = new SelectRegionJSCalculator(reader);
     }
 
     @Test
     public void testMovesModelOne() throws ScriptException {
-        calculator.setIncomeGroup(2);
-        calculator.setNationality(Nationality.german);
-        calculator.setAccessibility(100);
-        calculator.setForeignersShare(0.5f);
-        calculator.setMedianPrice(500);
-        Assert.assertEquals(227.225, calculator.calculate(), 0.);
+        Assert.assertEquals(227.225, calculator.calculateSelectRegionProbability(2,
+                Nationality.german, 500, 100, 0.5f), 0.);
     }
 
     @Test
     public void testMovesModelTwo() throws ScriptException {
-        calculator.setIncomeGroup(0);
-        calculator.setNationality(Nationality.other);
-        calculator.setAccessibility(100);
-        calculator.setForeignersShare(0.5f);
-        calculator.setMedianPrice(500);
-        Assert.assertEquals(359.125, calculator.calculate(), 0.);
-    }
-
-    @Test(expected = ScriptException.class)
-    public void testMovesModelFailures() throws ScriptException {
-        calculator.setIncomeGroup(5);
-        calculator.setNationality(Nationality.other);
-        calculator.setAccessibility(100);
-        calculator.setForeignersShare(0.5f);
-        calculator.setMedianPrice(500);
-        calculator.calculate();
+        Assert.assertEquals(359.125, calculator.calculateSelectRegionProbability(0,
+                Nationality.other, 500, 100, 0.5f), 0.);
     }
 }

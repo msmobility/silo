@@ -39,19 +39,13 @@ public class RenovationModel {
 
 		// read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
-        RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader, false);
+        RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader);
 
         //set renovation probabilities
         renovationProbability = new double[Properties.get().main.qualityLevels][5];
         for (int oldQual = 0; oldQual < Properties.get().main.qualityLevels; oldQual++) {
-            renovationCalculator.setQuality(oldQual + 1);
             for (int alternative = 0; alternative < 5; alternative++){
-                renovationCalculator.setAlternative(alternative + 1);
-                try {
-                    renovationProbability[oldQual][alternative] = renovationCalculator.calculate();
-                } catch (ScriptException e) {
-                    e.printStackTrace();
-                }
+                renovationProbability[oldQual][alternative] = renovationCalculator.calculateRenovationProbability(oldQual+1, alternative+1);
             }
         }
 	}
@@ -111,7 +105,7 @@ public class RenovationModel {
                 probs[i] = renovationProbability[currentQual - 1][i] * ratio;
             } else if (i == 2) {
                 probs[i] = renovationProbability[currentQual - 1][i];
-            } else if (i >= 3) probs[i] = renovationProbability[currentQual - 1][i] * ratio;
+            } else probs[i] = renovationProbability[currentQual - 1][i] * ratio;
         }
         return probs;
     }

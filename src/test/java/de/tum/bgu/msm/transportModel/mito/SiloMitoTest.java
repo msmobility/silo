@@ -5,6 +5,7 @@ import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import de.tum.bgu.msm.transportModel.matsim.MatsimTestUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -23,6 +24,7 @@ public class SiloMitoTest {
      * This test should test Silo together with Mito.
      */
 
+    @Ignore
     @Test
     public final void testMainReduced() {
 

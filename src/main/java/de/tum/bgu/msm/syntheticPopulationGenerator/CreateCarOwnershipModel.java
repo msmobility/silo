@@ -39,29 +39,11 @@ public class CreateCarOwnershipModel {
 
 
     public CreateCarOwnershipModel(ResourceBundle rb) {
-        // Constructor
         logger.info(" Setting up probabilities for car ownership model");
         this.rb = rb;
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
-        calculator = new CreateCarOwnershipJSCalculator(reader, false);
+        calculator = new CreateCarOwnershipJSCalculator(reader);
         readZonalData();
-    }
-
-    private double[] calculateCarOwnershipProb(int license, int workers, int income, int logDistanceToTransit, int areaType) {
-        // setup to calculate the car ownership probabilities for an individual household from the javascript calculator
-        calculator.setLicense(license);
-        calculator.setWorkers(workers);
-        calculator.setIncome(income);
-        calculator.setLogDistanceToTransit(logDistanceToTransit);
-        calculator.setAreaType(areaType);
-
-        double[] result = new double[4];  // probabilities for 0, 1, 2 and 3+ cars
-        try {
-            result = calculator.calculate();
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 
     public void run(boolean flagSkipCreationOfSPforDebugging) {
@@ -73,7 +55,8 @@ public class CreateCarOwnershipModel {
         SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
         if (flagSkipCreationOfSPforDebugging) {
             logger.info("Finished car ownership model");
-            System.exit(0);
+            //TODO: please try to avoid system.exit
+            //System.exit(0);
         }
     }
 
@@ -87,7 +70,7 @@ public class CreateCarOwnershipModel {
         int logDistanceToTransit = (int) Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit"));
         int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
 
-        double[] prob = calculateCarOwnershipProb(license, workers, income, logDistanceToTransit, areaType);
+        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
         hh.setAutos(SiloUtil.select(prob));
     }
 
@@ -118,7 +101,7 @@ public class CreateCarOwnershipModel {
                 }
             }
             minDist = minDist + 1;
-            zonalData.setIndexedValueAt(i, "distanceToTransit", minDist);
+            zonalData.setIndexedValueAt(origin, "distanceToTransit", minDist);
         }
     }
 }

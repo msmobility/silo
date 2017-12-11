@@ -236,7 +236,7 @@ public class MarryDivorceModel {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
-        DivorceJSCalculator calculator = new DivorceJSCalculator(reader, false);
+        DivorceJSCalculator calculator = new DivorceJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -244,14 +244,7 @@ public class MarryDivorceModel {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculator.setPersonType(i);
-            //calculate
-            try {
-                divorceProbability[i] = calculator.calculate() / 2; // each divorce event affects two persons
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            divorceProbability[i] = calculator.calculateDivorceProbability(i) / 2; // each divorce event affects two persons
         }
 
     }

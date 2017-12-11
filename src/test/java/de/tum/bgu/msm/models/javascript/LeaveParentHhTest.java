@@ -15,25 +15,22 @@ public class LeaveParentHhTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-        calculator = new LeaveParentHhJSCalculator (reader, true);
+        calculator = new LeaveParentHhJSCalculator (reader);
     }
 
     @Test
-    public void testModelOne() throws ScriptException {
-        calculator.setPersonType(31);
-        Assert.assertEquals(0.0003, calculator.calculate(), 0.);
+    public void testModelOne() {
+        Assert.assertEquals(0.0003, calculator.calculateLeaveParentsProbability(31), 0.);
     }
 
-    @Test(expected = ScriptException.class)
-    public void testModelFailures() throws ScriptException {
-        calculator.setPersonType(200);
-        calculator.calculate();
+    @Test(expected = RuntimeException.class)
+    public void testModelFailures() {
+        calculator.calculateLeaveParentsProbability(200);
     }
 
-    @Test(expected = ScriptException.class)
-    public void testModelFailuresTwo() throws ScriptException {
-        calculator.setPersonType(-2);
-        calculator.calculate();
+    @Test(expected = RuntimeException.class)
+    public void testModelFailuresTwo() {
+        calculator.calculateLeaveParentsProbability(-2);
     }
 
 }
