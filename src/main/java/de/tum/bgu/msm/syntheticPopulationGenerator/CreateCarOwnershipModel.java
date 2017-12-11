@@ -22,41 +22,15 @@ import java.io.Reader;
 public class CreateCarOwnershipModel {
 
     static Logger logger = Logger.getLogger(CreateCarOwnershipModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
-
 
     private TableDataSet zonalData;
-
-    private CreateCarOwnershipJSCalculator calculator;
-
+    private final CreateCarOwnershipJSCalculator calculator;
 
     public CreateCarOwnershipModel() {
         logger.info(" Setting up probabilities for car ownership model");
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator(reader);
         readZonalData();
-    }
-
-    public void run() {
-        for (Household hh : Household.getHouseholdArray()) {
-            simulateCarOwnership(hh);
-        }
-        SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
-    }
-
-    public void simulateCarOwnership(Household hh) {
-        // simulate number of autos for household hh
-        // Note: This method can only be executed after all households have been generated and allocated to zones,
-        // as distance to transit and areaType is dependent on where households are living
-        int license = hh.getHHLicenseHolders();
-        int workers = hh.getNumberOfWorkers();
-        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
-        // add 1 to the value of distance to transit before taking log to avoid situations of log 0
-        double logDistanceToTransit = Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit") + 1);
-        int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
-
-        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
-        hh.setAutos(SiloUtil.select(prob));
     }
 
     public void readZonalData() {
@@ -89,6 +63,28 @@ public class CreateCarOwnershipModel {
             }
             zonalData.setIndexedValueAt(origin, "distanceToTransit", minDist);
         }
+    }
+
+    public void run() {
+        for (Household hh : Household.getHouseholdArray()) {
+            simulateCarOwnership(hh);
+        }
+        SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
+    }
+
+    public void simulateCarOwnership(Household hh) {
+        // simulate number of autos for household hh
+        // Note: This method can only be executed after all households have been generated and allocated to zones,
+        // as distance to transit and areaType is dependent on where households are living
+        int license = hh.getHHLicenseHolders();
+        int workers = hh.getNumberOfWorkers();
+        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
+        // add 1 to the value of distance to transit before taking log to avoid situations of log 0
+        double logDistanceToTransit = Math.log(zonalData.getIndexedValueAt(hh.getHomeZone(), "distanceToTransit") + 1);
+        int areaType = (int) zonalData.getIndexedValueAt(hh.getHomeZone(), "BBSR");
+
+        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
+        hh.setAutos(SiloUtil.select(prob));
     }
 }
 

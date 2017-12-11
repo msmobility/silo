@@ -119,25 +119,29 @@ public class SiloModelContainer {
         Accessibility acc = new Accessibility(dataContainer.getGeoData());
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        if (Properties.get().main.implementation.equals(Implementation.MARYLAND)) {
-            move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
-        } else {
-            move = new MovesModelMuc(dataContainer.getGeoData());
-        }
         InOutMigration iomig = new InOutMigration();
         ConstructionModel cons = new ConstructionModel(dataContainer.getGeoData());
         RenovationModel renov = new RenovationModel();
         DemolitionModel demol = new DemolitionModel();
         PricingModel prm = new PricingModel();
         UpdateJobs updateJobs = new UpdateJobs();
-        CarOwnershipModel carOwnershipModel;
-        if(Properties.get().main.implementation.equals(Implementation.MARYLAND)) {
-            carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
-        }  else {
-            carOwnershipModel = new MunichCarOwnerShipModel();
-        }
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite();
+
+        CarOwnershipModel carOwnershipModel;
+        CreateCarOwnershipModel createCarOwnershipModel = null;
+        switch(Properties.get().main.implementation) {
+            case MARYLAND:
+                move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
+                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
+                break;
+            case MUNICH:
+                createCarOwnershipModel = new CreateCarOwnershipModel();
+                carOwnershipModel = new MunichCarOwnerShipModel();
+                move = new MovesModelMuc(dataContainer.getGeoData());
+                break;
+            default:
+                throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
+        }
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,
@@ -214,7 +218,11 @@ public class SiloModelContainer {
     }
 
     public CreateCarOwnershipModel getCreateCarOwnershipModel(){
-        return createCarOwnershipModel;
+        if(createCarOwnershipModel != null) {
+            return createCarOwnershipModel;
+        } else {
+            throw new NullPointerException("Create car ownership model not available. Check implementation!");
+        }
     }
 
 }

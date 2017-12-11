@@ -13,7 +13,7 @@ public class CreateCarOwnershipJSCalculator extends JavaScriptCalculator<double[
         super(reader);
     }
 
-    public double[] calculate(int license, int workers, int income, int logDIstanceToTransit, int areaType ) {
-        return super.calculate("calculate", license, workers, income, logDIstanceToTransit, areaType);
+    public double[] calculate(int license, int workers, int income, double logDistanceToTransit, int areaType) {
+        return super.calculate("calculate", license, workers, income, logDistanceToTransit, areaType);
     }
 }

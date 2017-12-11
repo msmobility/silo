@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.relocation;
 
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -176,7 +177,9 @@ public class InOutMigration {
         }
 
         EventManager.countEvent(EventTypes.inmigration);
-        modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
+        if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+            modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
+        }
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
         for (Person pp: Household.getHouseholdFromId(hhId).getPersons())

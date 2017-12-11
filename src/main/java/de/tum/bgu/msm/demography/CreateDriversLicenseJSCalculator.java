@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.data.PersonType;
-import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
@@ -10,12 +10,11 @@ import java.io.Reader;
  */
 public class CreateDriversLicenseJSCalculator extends JavaScriptCalculator<Double> {
 
-    public CreateDriversLicenseJSCalculator (Reader reader, boolean log) {
-        super(reader, log);
+    public CreateDriversLicenseJSCalculator (Reader reader) {
+        super(reader);
     }
 
-    public void setPersonType (PersonType type) {
-        this.bindings.put("personType", type);
+    public double calculateCreateDriversLicenseProbability(PersonType type) {
+        return super.calculate("calculateCreateDriversLicenseProbability", type);
     }
-
 }

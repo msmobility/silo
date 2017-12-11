@@ -34,7 +34,7 @@ public class ChangeDriversLicense {
 
     private void setupCreateDriversLicense() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateDriversLicenseCalc"));
-        calculatorCreate = new CreateDriversLicenseJSCalculator(reader, false);
+        calculatorCreate = new CreateDriversLicenseJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -42,21 +42,14 @@ public class ChangeDriversLicense {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculatorCreate.setPersonType(types[i]);
-            //calculate
-            try {
-                createDriversLicenseProbability[i] = calculatorCreate.calculate();
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            createDriversLicenseProbability[i] = calculatorCreate.calculateCreateDriversLicenseProbability(types[i]);
         }
 
     }
 
     private void setupChangeDriversLicense(){
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ChangeDriversLicenseCalc"));
-        calculator = new ChangeDriversLicenseJSCalculator(reader, false);
+        calculator = new ChangeDriversLicenseJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -64,20 +57,13 @@ public class ChangeDriversLicense {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculator.setPersonType(types[i]);
-            //calculate
-            try {
-                changeDriversLicenseProbability[i] = calculator.calculate();
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            changeDriversLicenseProbability[i] = calculator.calculateChangeDriversLicenseProbability(types[i]);
         }
     }
 
 
 
-    public boolean changeDriversLicense (int perId, SiloDataContainer dataContainer) {
+    public boolean changeDriversLicense (int perId) {
         // check if person obtains a drivers license
 
         Person pp = Person.getPersonFromId(perId);

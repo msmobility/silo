@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.properties.modules;
 
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 
 import java.util.ResourceBundle;
 
@@ -18,7 +19,7 @@ public class GeoProperties {
     public final String zonalAttributesFile;
     public final String capacityFile;
 
-    public GeoProperties(ResourceBundle bundle) {
+    public GeoProperties(ResourceBundle bundle, SiloModel.Implementation implementation) {
         zonalDataFile = ResourceUtil.getProperty(bundle, "zonal.data.file");
         regionDefinitionFile = ResourceUtil.getProperty(bundle, "region.definition.file");
         zonalSchoolQualityFile = ResourceUtil.getProperty(bundle, "school.quality.index");
@@ -28,7 +29,11 @@ public class GeoProperties {
         developmentRestrictionsFile = ResourceUtil.getProperty(bundle, "development.restrictions");
         useCapacityForDwellings = ResourceUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
         capacityFile = ResourceUtil.getProperty(bundle, "growth.capacity.file");
-        zonalAttributesFile = bundle.getString("raster.cells.definition");
+        if(implementation == SiloModel.Implementation.MUNICH) {
+            zonalAttributesFile = ResourceUtil.getProperty(bundle, "raster.cells.definition");
+        } else {
+            zonalAttributesFile = null;
+        }
         transitAccessTime = ResourceUtil.getProperty(bundle, "transit.access.time");
     }
 }
