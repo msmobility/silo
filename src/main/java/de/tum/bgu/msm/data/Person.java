@@ -29,7 +29,7 @@ import java.util.Map;
  * Created on Dec 2, 2009
  *
  */
-public class Person implements Serializable {
+public class Person {
 
     static Logger logger = Logger.getLogger(Person.class);
 

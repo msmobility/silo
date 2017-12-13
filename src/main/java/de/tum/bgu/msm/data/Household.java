@@ -33,7 +33,7 @@ import de.tum.bgu.msm.demography.BirthModel;
  * Created on Dec 2, 2009
  *
  */
-public class Household implements Serializable {
+public class Household {
 
     static Logger logger = Logger.getLogger(Household.class);
 
@@ -271,7 +271,7 @@ public class Household implements Serializable {
         hhSize++;
         per.setHhId(hhId);
         setType();
-        if (id == SiloUtil.trackPp || hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("A child named "
+        if (id == SiloUtil.trackPp || hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("For unto us a child was born... A child named "
                 + id + " was born and added to household " + hhId + ".");
     }
 
