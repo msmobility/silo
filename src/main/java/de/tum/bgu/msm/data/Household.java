@@ -49,7 +49,6 @@ public class Household {
     private HouseholdType type;
     private Person[] persons;
 
-
     public Household(int id, int dwellingID, int homeZone, int hhSize, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
@@ -60,39 +59,25 @@ public class Household {
         householdMap.put(id,this);
     }
 
-
-    public static Household[] getHouseholdArray() {
-        return householdMap.values().toArray(new Household[householdMap.size()]);
-    }
-
-
     public static Household getHouseholdFromId(int householdId) {
         return householdMap.get(householdId);
     }
-
 
     public static int getHouseholdCount() {
         return householdMap.size();
     }
 
-
     public static Collection<Household> getHouseholds() {
-//        Collection<Household> households = null;
-//        for (Household household: households) {
-//        }
         return householdMap.values();
     }
-
 
     public static void saveHouseholds (Household[] hhs) {
         for (Household hh: hhs) householdMap.put(hh.getId(), hh);
     }
 
-
     public static void remove (int hhID) {
         householdMap.remove(hhID);
     }
-
 
     public void logAttributes () {
         logger.info("Attributes of household " + hhId);
@@ -137,14 +122,9 @@ public class Household {
     }
 
     public int getHhIncome () {
-        // return annual household income
         int hhInc = 0;
-        try {
-            for (Person pp : persons) hhInc += pp.getIncome();
-        } catch (Exception e) {
-            logger.info("While attempting to calculate the income of household " + hhId + ", an error occurred.");
-            logger.info("Error: " + e);
-            System.exit(1);
+        for (Person pp : persons) {
+            hhInc += pp.getIncome();
         }
         return hhInc;
     }
@@ -278,7 +258,9 @@ public class Household {
 
     public static int getTotalPopulation () {
         int tp = 0;
-        for (Household hh: getHouseholdArray()) tp += hh.getHhSize();
+        for (Household hh: getHouseholds()) {
+            tp += hh.getHhSize();
+        }
         return tp;
     }
 
@@ -286,7 +268,7 @@ public class Household {
     public static float getAverageHouseholdSize () {
         float ahs = 0;
         int cnt = 0;
-        for (Household hh: getHouseholdArray()) {
+        for (Household hh: getHouseholds()) {
             ahs += hh.getHhSize();
             cnt++;
         }
@@ -299,8 +281,7 @@ public class Household {
 
     public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, Zone> zones) {
         Map<Integer, MitoHousehold> thhs = new HashMap<>();
-        Household[] siloHouseholds = getHouseholdArray();
-        for (Household siloHousehold : siloHouseholds) {
+        for (Household siloHousehold : getHouseholds()) {
             Zone zone = zones.get(siloHousehold.homeZone);
             MitoHousehold household = siloHousehold.convertToMitoHh(zone);
             thhs.put(household.getHhId(), household);

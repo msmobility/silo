@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.demography;
 
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -24,6 +25,8 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 
 import javax.script.ScriptException;
 import java.io.InputStreamReader;
@@ -41,15 +44,13 @@ public class LeaveParentHhModel {
     private double[] lphProbability;
 
     public LeaveParentHhModel() {
-        // constructor
         setupLPHModel();
     }
 
     private void setupLPHModel() {
 
-        // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader, false);
+        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -57,14 +58,7 @@ public class LeaveParentHhModel {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculator.setPersonType(i);
-            //calculate
-            try {
-                lphProbability[i] = calculator.calculate();
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            lphProbability[i] = calculator.calculateLeaveParentsProbability(i);
         }
     }
 
@@ -97,14 +91,20 @@ public class LeaveParentHhModel {
             hh.setHouseholdRace();
             per.setRole(PersonRole.single);
 
+
             // Move new household
             modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
             EventManager.countEvent(EventTypes.checkLeaveParentHh);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
+            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
+            }
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
-                    hh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
-                    " has left the parental household " + hhOfThisPerson.getId() +
-                    " and established the new household " + newHhId + ".");
+                    hh.getId() == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Person " + perId +
+                        " has left the parental household " + hhOfThisPerson.getId() +
+                        " and established the new household " + newHhId + ".");
+            }
         }
     }
 }

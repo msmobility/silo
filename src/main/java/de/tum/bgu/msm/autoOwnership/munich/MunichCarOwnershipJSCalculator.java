@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.autoOwnership.munich;
 
-import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
@@ -9,40 +9,15 @@ import java.io.Reader;
  */
 public class MunichCarOwnershipJSCalculator extends JavaScriptCalculator<double[]> {
 
-    public MunichCarOwnershipJSCalculator(Reader reader, boolean log){
-        super(reader, log);
+    public MunichCarOwnershipJSCalculator(Reader reader){
+        super(reader);
     }
 
-    public void setPreviousCars (int previousCars) {
-        this.bindings.put("previousCars", previousCars);
-    }
-
-    public void setHHSizePlus (int hhSizePlus) {
-        this.bindings.put("hhSizePlus", hhSizePlus);
-    }
-
-    public void setHHSizeMinus (int hhSizeMinus) {
-        this.bindings.put("hhSizeMinus", hhSizeMinus);
-    }
-
-    public void setHHIncomePlus (int hhIncomePlus) {
-        this.bindings.put("hhIncomePlus", hhIncomePlus);
-    }
-
-    public void setHHIncomeMinus (int hhIncomeMinus) {
-        this.bindings.put("hhIncomeMinus", hhIncomeMinus);
-    }
-
-    public void setLicensePlus (int licensePlus) {
-        this.bindings.put("licensePlus", licensePlus);
-    }
-
-    public void setChangeResidence (int changeResidence) {
-        this.bindings.put("changeResidence", changeResidence);
-    }
-
-    public void setAlternative (int alternative) {
-        this.bindings.put("alternative", alternative);
+    public double[] calculateCarOwnerShipProbabilities(int previousCars, int hhSizePlus, int hhSizeMinus,
+                                                       int hhIncomePlus, int hhIncomeMinus, int licensePlus,
+                                                       int changeResidence) {
+        return super.calculate("calculateCarOwnerShipProbabilities", previousCars, hhSizePlus, hhSizeMinus,
+                hhIncomePlus, hhIncomeMinus, licensePlus, changeResidence);
     }
 
 }

@@ -16,14 +16,12 @@ public class ConstructionDemandTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
-        calculator = new ConstructionDemandJSCalculator(reader, true);
+        calculator = new ConstructionDemandJSCalculator(reader);
     }
 
     @Test
     public void testModelOne() throws ScriptException {
-        calculator.setDwellingType(DwellingType.MF234);
-        calculator.setVacancyByRegion(0.05);
-        Assert.assertEquals(0.00501, calculator.calculate(), 0.00001);
+        Assert.assertEquals(0.00501, calculator.calculateConstructionDemand(0.05, DwellingType.MF234), 0.00001);
     }
 }
 

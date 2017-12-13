@@ -16,20 +16,16 @@ public class DemolitionTest {
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-        calculator = new DemolitionJSCalculator(reader, true);
+        calculator = new DemolitionJSCalculator(reader);
     }
 
     @Test
-    public void testModel() throws ScriptException {
-        calculator.setDwellingQuality(1);
-        calculator.setOccupied(true);
-        Assert.assertEquals(0.0001, calculator.calculate(), 0.);
+    public void testModel() {
+        Assert.assertEquals(0.0001, calculator.calculateDemolitionProbability(true, 1), 0.);
     }
 
-    @Test (expected = ScriptException.class)
-    public void testModelFailure() throws ScriptException {
-        calculator.setDwellingQuality(5);
-        calculator.setOccupied(true);
-        calculator.calculate();
+    @Test (expected = RuntimeException.class)
+    public void testModelFailure() {
+        calculator.calculateDemolitionProbability(true, 5);
     }
 }

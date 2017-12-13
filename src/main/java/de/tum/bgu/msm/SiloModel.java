@@ -127,12 +127,16 @@ public class SiloModel {
 			transportModel = new MatsimTransportModel(dataContainer.getHouseholdData(), modelContainer.getAcc(), matsimConfig);
 			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
 			transportModel.runTransportModel(Properties.get().main.startYear);
-		} else {
+		} else if(runTravelDemandModel){
 			logger.info("  MITO is used as the transport model");
 			modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
 			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
 			File rbFile = new File(Properties.get().transportModel.demandModelPropertiesPath);
 			transportModel = new MitoTransportModel(ResourceUtil.getPropertyBundle(rbFile), Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
+		} else {
+			modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
+			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
+			logger.info(" No transport model is used");
 		}
 	}
 
@@ -249,7 +253,7 @@ public class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkDriversLicense.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeDriversLicense().updateDriversLicense(event[1], dataContainer);
+					modelContainer.getChangeDriversLicense().changeDriversLicense(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.findNewJob.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -365,4 +369,3 @@ public class SiloModel {
 		cblcm.finishModel();
 	}
 }
-

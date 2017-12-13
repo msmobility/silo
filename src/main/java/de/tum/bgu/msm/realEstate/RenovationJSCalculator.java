@@ -1,18 +1,15 @@
 package de.tum.bgu.msm.realEstate;
 
-import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
-public class RenovationJSCalculator extends JavaScriptCalculator <Double> {
+public class RenovationJSCalculator extends JavaScriptCalculator<Double> {
 
-    public RenovationJSCalculator (Reader reader, boolean log) {super(reader, log);}
+    public RenovationJSCalculator (Reader reader) {super(reader);}
 
-    public void setQuality (int quality) {
-        this.bindings.put("quality", quality);
-    }
-
-    public void setAlternative (int alt){
-        this.bindings.put("alternative", alt);
+    public double calculateRenovationProbability(int quality, int alternative) {
+        return super.calculate("calculateRenovationProbability", quality, alternative);
     }
 }

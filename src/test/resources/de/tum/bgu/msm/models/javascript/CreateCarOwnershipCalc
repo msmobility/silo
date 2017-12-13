@@ -1,3 +1,4 @@
+var calculate = function(license, workers, income, logDistanceToTransit, areaType) {
 intercept = [-4.69730, -10.98800, -17.00200];
 betaLicense = [3.11410, 4.65460, 5.71850];
 betaWorkers = [0.22840, 0.76420, 1.13260];
@@ -27,4 +28,5 @@ for(i = 0; i < 3; i++) {
 }
 
 results[0] = 1 - sum;
-javaResults = Java.to(results, "double[]");
+return Java.to(results, "double[]");
+}

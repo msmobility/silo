@@ -157,17 +157,17 @@ public class SiloMatsimMultiYearTest {
 			log.info("Checking MATSim events file for 2000 ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2000.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2000/test_matsim_2000.output_events.xml.gz";
-			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+			assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}{
 			log.info("Checking MATSim events file for 2001 ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_events.xml.gz";
-			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+			assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}{
 			log.info("Checking MATSim events file for 2002 ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2002.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2002/test_matsim_2002.output_events.xml.gz";
-			assertEquals("Different event files.", EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew), 0);
+			assertEquals("Different event files.",EventsFileComparator.Result.FILES_ARE_EQUAL,  EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}
 		
 		if (cleanupAfterTest) {

@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -343,7 +342,7 @@ public class RealEstateDataManager {
         SummarizeData.resultFile(header);
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
-        for (Household hh: Household.getHouseholdArray()) {
+        for (Household hh: Household.getHouseholds()) {
             int hhInc = hh.getHhIncome();
             int rent = Dwelling.getDwellingFromId(hh.getDwellingId()).getPrice();
             int incCat = Math.min((hhInc / 10000), 9);

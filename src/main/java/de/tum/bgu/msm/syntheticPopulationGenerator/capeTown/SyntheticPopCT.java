@@ -11,7 +11,6 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.EmploymentChoice;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
 import org.apache.commons.math.MathException;
@@ -1524,7 +1523,6 @@ public class SyntheticPopCT implements SyntheticPopI {
 
         //Start the selection of schools in random order to avoid geographical bias
         logger.info("   Started assigning schools");
-        EmploymentChoice ec = new EmploymentChoice(rb);
         int assignedSchools = 0;
         int[] studentsOutside = new int[schoolTypes.length];
         int[] studentsByType = new int[schoolTypes.length];
@@ -1540,11 +1538,11 @@ public class SyntheticPopCT implements SyntheticPopI {
                 //Select the school location (which raster cell) for that person given his/her job type
                 int[] schoolPlace = new int[2];
                 if (schoolType == 3) {
-                    schoolPlace = ec.selectWorkplace2(pp.getZone(), numberVacantSchoolsByZoneByType,
+                    schoolPlace = selectWorkplace(pp.getZone(), numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, universityDistanceImpedance);
                     travelUniversity.addValue((int) distanceMatrix.getValueAt(pp.getZone(), schoolPlace[0] / 100));
                 } else {
-                    schoolPlace = ec.selectWorkplace3(pp.getZone(), numberVacantSchoolsByZoneByType,
+                    schoolPlace = selectClosestSchool(pp.getZone(), numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, schoolDistanceImpedance);
                     if (schoolType == 1){
                         travelPrimary.addValue((int) distanceMatrix.getValueAt(pp.getZone(),schoolPlace[0] / 100));
@@ -2988,6 +2986,27 @@ public class SyntheticPopCT implements SyntheticPopI {
         return select(probabilities,zoneJobKeys);
     }
 
+    public int[] selectClosestSchool(int home, HashMap<Integer, Integer> vacantJobsByZoneByType,
+                                     int[] zoneJobKeys, int lengthZoneKeys, Matrix impedanceMatrix) {
+        //given a person and job type, select the workplace location (raster cell)
+        //it is based on the utility of that job type and each location, multiplied by the number of jobs that remain vacant
+        //it can be directly used for schools, since the utility only checks the distance between the person home and destination
+
+
+        int[] min = new int[2];
+        min[0] = zoneJobKeys[0];
+        min[1] = 0;
+        double minDist = impedanceMatrix.getValueAt(home, zoneJobKeys[0] / 100);
+        for (int j = 1; j < lengthZoneKeys; j++) {
+            if (impedanceMatrix.getValueAt(home, zoneJobKeys[j] / 100) < minDist) {
+                min[0] = zoneJobKeys[j];
+                min[1] = j;
+                minDist = impedanceMatrix.getValueAt(home, zoneJobKeys[j] / 100);
+            }
+        }
+        return min;
+    }
+
 
     private void generateCountersForValidation(){
         //method to obtain the errors from the generated synthetic population
@@ -3011,8 +3030,8 @@ public class SyntheticPopCT implements SyntheticPopI {
     private void addCars(boolean flagSkipCreationOfSPforDebugging) {
         //method to estimate the number of cars per household
         //it must be run after generating the population
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(rb);
-        createCarOwnershipModel.run(flagSkipCreationOfSPforDebugging);
+        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
+        createCarOwnershipModel.run( );
     }
 
 

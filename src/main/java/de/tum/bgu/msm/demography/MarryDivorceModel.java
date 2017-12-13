@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
@@ -236,7 +237,7 @@ public class MarryDivorceModel {
 
         // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
-        DivorceJSCalculator calculator = new DivorceJSCalculator(reader, false);
+        DivorceJSCalculator calculator = new DivorceJSCalculator(reader);
 
         // initialize results for each alternative
         PersonType[] types = PersonType.values();
@@ -244,14 +245,7 @@ public class MarryDivorceModel {
 
         //apply the calculator to each alternative
         for (int i = 0; i < types.length; i++) {
-            // set calculator bindings
-            calculator.setPersonType(i);
-            //calculate
-            try {
-                divorceProbability[i] = calculator.calculate() / 2; // each divorce event affects two persons
-            } catch (ScriptException e) {
-                e.printStackTrace();
-            }
+            divorceProbability[i] = calculator.calculateDivorceProbability(i) / 2; // each divorce event affects two persons
         }
 
     }
@@ -350,6 +344,9 @@ public class MarryDivorceModel {
                 return;
             }
             modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
+            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+            }
         }
         partner1.setRole(PersonRole.married);
         partner2.setRole(PersonRole.married);
@@ -421,8 +418,10 @@ public class MarryDivorceModel {
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
             EventManager.countEvent(EventTypes.checkDivorce);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(newHh);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
+            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+            }
         }
     }
 }

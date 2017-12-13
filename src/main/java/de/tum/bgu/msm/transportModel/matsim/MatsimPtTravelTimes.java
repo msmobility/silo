@@ -60,7 +60,7 @@ public class MatsimPtTravelTimes implements TravelTimes {
 	}
 
 	@Override
-	public double getTravelTimeFromTo(int origin, int destination) {
+	public double getTravelTime(int origin, int destination) {
 		
 		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;

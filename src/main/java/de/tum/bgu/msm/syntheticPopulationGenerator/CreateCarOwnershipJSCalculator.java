@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
-import de.tum.bgu.msm.utils.javaScript.JavaScriptCalculator;
+import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
 
@@ -9,32 +9,11 @@ import java.io.Reader;
  */
 public class CreateCarOwnershipJSCalculator extends JavaScriptCalculator<double[]> {
 
-    public CreateCarOwnershipJSCalculator (Reader reader, boolean log){
-        super(reader, log);
+    public CreateCarOwnershipJSCalculator (Reader reader){
+        super(reader);
     }
 
-    public void setLicense (int license) {
-        this.bindings.put("license", license);
+    public double[] calculate(int license, int workers, int income, double logDistanceToTransit, int areaType) {
+        return super.calculate("calculate", license, workers, income, logDistanceToTransit, areaType);
     }
-
-    public void setWorkers (int workers) {
-        this.bindings.put("workers", workers);
-    }
-
-    public void setIncome (int income) {
-        this.bindings.put("income", income);
-    }
-
-    public void setLogDistanceToTransit (int logDistanceToTransit) {
-        this.bindings.put("logDistanceToTransit", logDistanceToTransit);
-    }
-
-    public void setAreaType (int areaType) {
-        this.bindings.put("areaType", areaType);
-    }
-
-    public void setAlternative (int alternative) {
-        this.bindings.put("alternative", alternative);
-    }
-
 }

@@ -19,12 +19,8 @@ import java.util.ResourceBundle;
  */
 public class SiloMuc {
 
-    // main class
-    public static final String PROPERTIES_RUN_SILO                 = "run.silo.model";
-    public static final String PROPERTIES_RUN_SYNTHETIC_POPULATION = "run.synth.pop.generator";
     static Logger logger = Logger.getLogger(SiloMuc.class);
-
-
+    
     public static void main(String[] args) {
 
         SiloUtil.setBaseYear(2011);  // Base year is defined by available input data for synthetic population
@@ -33,8 +29,10 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-            SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
-            sp.run();
+            if(Properties.get().main.runSynPop) {
+                SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
+                sp.run();
+            }
             SiloModel model = new SiloModel();
             model.runModel();
             logger.info("Finished SILO.");
