@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 public final class Properties {
 
     private static Properties instance;
+
     public static Properties get() {
         if(instance == null) {
             throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
@@ -16,9 +17,11 @@ public final class Properties {
     }
 
     public static void initializeProperties(ResourceBundle bundle, SiloModel.Implementation implementation) {
+        if(instance != null) {
+            throw new RuntimeException("Already initialized properties!");
+        }
         instance = new Properties(bundle, implementation);
     }
-
 
     public final MainProperties main;
     public final CblcmProperties cblcm;

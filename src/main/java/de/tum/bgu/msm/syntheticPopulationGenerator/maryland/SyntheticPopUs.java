@@ -58,7 +58,6 @@ public class SyntheticPopUs implements SyntheticPopI {
     public SyntheticPopUs(ResourceBundle rb) {
         // constructor
         this.rb = rb;
-        Properties.initializeProperties(rb, SiloModel.Implementation.MARYLAND);
     }
 
 
