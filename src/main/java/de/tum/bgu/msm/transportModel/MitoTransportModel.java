@@ -27,7 +27,7 @@ public class MitoTransportModel implements TransportModelI {
     private final GeoData geoData;
 
     public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
-        this.mito = new MitoModel(rb, Implementation.valueOf(Properties.get().main.implementation.name()));
+        this.mito = MitoModel.standAloneModel(rb, Implementation.valueOf(Properties.get().main.implementation.name()));
         this.geoData = geoData;
         this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
