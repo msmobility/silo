@@ -130,5 +130,10 @@ public class MatsimTransportModel implements TransportModelI {
 //		MatsimPtTravelTimes matsimPtTravelTimes = new MatsimPtTravelTimes(controler.getTripRouterProvider().get(), zoneFeatureMap, scenario.getNetwork());
 		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
 //		acc.addTravelTimeForMode(TransportMode.pt, matsimTravelTimes); // use car times for now also, as pt travel times are too slow to compute, Nico Oct 17
+		
+		if (config.transit().isUseTransit()) {
+			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario);
+			acc.setPTDistances(matsimPTDistances);
+		}
 	}
 }
