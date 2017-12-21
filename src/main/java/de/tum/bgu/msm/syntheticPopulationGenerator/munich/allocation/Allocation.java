@@ -20,10 +20,12 @@ public class Allocation extends ModuleSynPop{
     @Override
     public void run(){
         logger.info("   Started allocation model.");
-        generateHouseholdsPersonsDwellings();
-        generateJobs();
+        //generateHouseholdsPersonsDwellings();
+        //generateJobs();
+        readPopulation();
         assignJobs();
         assignSchools();
+        validateTripLengths();
         logger.info("   Completed allocation model.");
 
     }
@@ -49,6 +51,16 @@ public class Allocation extends ModuleSynPop{
         AssignSchools assignSchools = new AssignSchools(dataSetSynPop);
         assignSchools.run();
         SummarizeData.writeOutSyntheticPopulationDE(1992);
+    }
+
+    public void readPopulation(){
+        ReadPopulation readPopulation = new ReadPopulation();
+        readPopulation.run();
+    }
+
+    public void validateTripLengths(){
+        ValidateTripLengthDistribution validateTripLengthDistribution = new ValidateTripLengthDistribution(dataSetSynPop);
+        validateTripLengthDistribution.run();
     }
 
 }

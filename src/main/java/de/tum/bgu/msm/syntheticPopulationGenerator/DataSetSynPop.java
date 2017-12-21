@@ -34,11 +34,14 @@ public class DataSetSynPop {
     private ArrayList<Integer> municipalities;
     private ArrayList<Integer> boroughs;
     private ArrayList<Integer> counties;
+    private ArrayList<Integer> tazs;
     private int[] cityIDs;
     private int[] countyIDs;
+    private int[] tazIDs;
     private Map<Integer, Map<Integer, Float>> probabilityZone;
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
+    private Map<Integer, Map<String, Float>> jobProbability;
 
     private Matrix distanceTazToTaz;
 
@@ -223,5 +226,29 @@ public class DataSetSynPop {
 
     public void setSchoolCapacity(Table<Integer, Integer, Integer> schoolCapacity) {
         this.schoolCapacity = schoolCapacity;
+    }
+
+    public ArrayList<Integer> getTazs() {
+        return tazs;
+    }
+
+    public void setTazs(ArrayList<Integer> tazs) {
+        this.tazs = tazs;
+    }
+
+    public Map<Integer, Map<String, Float>> getJobProbability() {
+        return jobProbability;
+    }
+
+    public void setJobProbability(Map<Integer, Map<String, Float>> jobProbability) {
+        this.jobProbability = jobProbability;
+    }
+
+    public int[] getTazIDs() {
+        return tazIDs;
+    }
+
+    public void setTazIDs(int[] tazIDs) {
+        this.tazIDs = tazIDs;
     }
 }

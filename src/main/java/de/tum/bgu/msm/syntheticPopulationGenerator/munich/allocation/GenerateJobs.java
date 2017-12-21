@@ -23,7 +23,7 @@ public class GenerateJobs {
     }
 
     public void run(){
-
+        logger.info("   Running module: job generation");
         for (int municipality : dataSetSynPop.getMunicipalities()){
             logger.info("   Municipality " + municipality + ". Starting to generate jobs");
             for (String jobType : PropertiesSynPop.get().main.jobStringType) {

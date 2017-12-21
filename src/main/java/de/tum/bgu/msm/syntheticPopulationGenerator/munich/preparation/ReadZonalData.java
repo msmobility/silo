@@ -98,6 +98,7 @@ public class ReadZonalData {
         Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
         Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new HashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
+        ArrayList<Integer> tazs = new ArrayList<>();
         for (int i = 1; i <= PropertiesSynPop.get().main.cellsMatrix.getRowCount(); i++){
             int city = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_city");
             int taz = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_cell");
@@ -109,6 +110,9 @@ public class ReadZonalData {
             int capacityPrimary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityPrimary");
             int capacitySecondary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacitySecondary");
             int capacityTertiary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityTertiary");
+            if (!tazs.contains(taz)) {
+                tazs.add(taz);
+            }
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
                 previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
@@ -136,6 +140,8 @@ public class ReadZonalData {
         dataSetSynPop.setDwellingPriceByTypeAndZone(dwellingPriceByTypeAndZone);
         dataSetSynPop.setTazByMunicipality(cityTAZ);
         dataSetSynPop.setSchoolCapacity(schoolCapacity);
+        dataSetSynPop.setTazs(tazs);
+        dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
     }
 
     private void readDistanceMatrix(){

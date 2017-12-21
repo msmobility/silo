@@ -561,7 +561,7 @@ public class MicroDataManager {
         int floorSpaceDwelling = 0;
         switch (floorSpace){
             case 60:
-                floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 40);
+                floorSpaceDwelling = (int) (30 + SiloUtil.getRandomNumberAsFloat() * 50);
                 break;
             case 80:
                 floorSpaceDwelling = (int) (60 + SiloUtil.getRandomNumberAsFloat() * 20);
@@ -597,54 +597,59 @@ public class MicroDataManager {
     }
 
 
-    public int guessjobType(Person pp){
+    public int guessjobType(int gender, int educationLevel){
         int jobType = 0;
-        double[] probability;
-        switch (pp.getGender()){
+        float[] cumProbability;
+        switch (gender){
             case 1:
-                switch ((pp.getEducationLevel())) {
+                switch (educationLevel) {
                     case 0:
-                        probability = new double[]{0.018525903,0.247279377,0.013645804,0.102589096,0.209383272,0.111790907,0.015157988,0.074155564,0.042772461,0.164699627};
+                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
                         break;
                     case 1:
-                        probability = new double[]{0.018525903,0.247279377,0.013645804,0.102589096,0.209383272,0.111790907,0.015157988,0.074155564,0.042772461,0.164699627};
+                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
                         break;
                     case 2:
-                        probability = new double[]{0.025005413,0.306936861,0.023240014,0.131612602,0.161132838,0.100584686,0.030611236,0.059327951,0.062117484,0.099430916};
+                        cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
                         break;
                     case 3:
-                        probability = new double[]{0.008533151,0.249164089,0.020626395,0.04534431,0.067841835,0.111582213,0.048438001,0.036971695,0.207231818,0.204266493};
+                        cumProbability = new float[]{0.008533f,0.257497f,0.278324f,0.323668f,0.39151f,0.503092f,0.55153f,0.588502f,0.795734f,1f};
                         break;
                     case 4:
-                        probability = new double[]{0.004152555,0.150044116,0.014863438,0.023979707,0.053767274,0.100617138,0.040040495,0.031044385,0.069906374,0.511584519};
+                        cumProbability = new float[]{0.004153f,0.154197f,0.16906f,0.19304f,0.246807f,0.347424f,0.387465f,0.418509f,0.4888415f,1f};
                         break;
-                    default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                    default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
                 }
                 break;
             case 2:
-                switch ((pp.getEducationLevel())) {
+                switch (educationLevel) {
                     case 0:
-                        probability = new double[]{0.012755482,0.141039813,0.005312882,0.015392634,0.273558614,0.049521016,0.019501401,0.099264435,0.038971953,0.34468177};
+                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
                         break;
                     case 1:
-                        probability = new double[]{0.012755482,0.141039813,0.005312882,0.015392634,0.273558614,0.049521016,0.019501401,0.099264435,0.038971953,0.34468177};
+                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
                         break;
                     case 2:
-                        probability = new double[]{0.013754169,0.124100786,0.00727449,0.02178542,0.222367369,0.046812291,0.043632331,0.058141381,0.065290076,0.396841686};
+                        cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
                         break;
                     case 3:
-                        probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                        cumProbability = new float[]{0.005341f,0.098198f,0.109149f,0.125893f,0.203838f,0.261698f,0.314764f,0.366875f,0.611298f,1f};
                         break;
                     case 4:
-                        probability = new double[]{0.002848241,0.058853003,0.007342596,0.007007503,0.066280334,0.05505006,0.026564225,0.029730278,0.073777412,0.672546348};
+                        cumProbability = new float[]{0.002848f,0.061701f,0.069044f,0.076051f,0.142332f,0.197382f,0.223946f,0.253676f,0.327454f,1f};
                         break;
-                    default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                    default: cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
                 }
                 break;
-                default: probability = new double[]{0.005341122,0.092856972,0.01095121,0.016743423,0.077945575,0.057859952,0.053065854,0.052110739,0.244423023,0.388702129};
+                default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
         }
-        jobType = SiloUtil.select(probability, 1);
+        float threshold = SiloUtil.getRandomNumberAsFloat();
+        for (int i = 0; i < cumProbability.length; i++) {
+            if (cumProbability[i] > threshold) {
+                return i;
+            }
+        }
+        return cumProbability.length - 1;
 
-        return jobType;
     }
 }

@@ -31,22 +31,24 @@ public class AssignSchools {
     }
 
     public void run() {
-
+        logger.info("   Running module: school allocation");
         calculateDistanceImpedance();
         initializeSchoolCapacity();
         shuffleStudents();
         double logging = 2;
         int it = 1;
         for (Person pp : studentArrayList){
-            int schoolType = pp.getSchoolType();
             int schooltaz;
-            if (schoolType == 3){
+            if (pp.getSchoolType() == 3){
                 schooltaz = selectTertiarySchool(pp.getHomeTaz());
             } else {
                 schooltaz = selectPrimarySecondarySchool(pp.getHomeTaz(), pp.getSchoolType());
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
+                pp.setJobTAZ(schooltaz);
+            } else {
+                pp.setJobTAZ(-2);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");

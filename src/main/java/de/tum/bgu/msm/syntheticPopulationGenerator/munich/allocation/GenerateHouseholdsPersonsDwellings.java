@@ -7,9 +7,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class GenerateHouseholdsPersonsDwellings {
 
@@ -27,6 +25,12 @@ public class GenerateHouseholdsPersonsDwellings {
     private Map<Integer, Float> probMicroData;
     private Map<Integer, Float> probVacantBuildingSize;
     private Map<Integer, Float> probVacantFloor;
+    private double[] probabilityId;
+    private double sumProbabilities;
+    private double[] probabilityTAZ;
+    private double sumTAZs;
+    private int[] ids;
+    private int[] idTAZs;
     private int personCounter;
     private int householdCounter;
 
@@ -37,7 +41,7 @@ public class GenerateHouseholdsPersonsDwellings {
     }
 
     public void run(){
-
+        logger.info("   Running module: household, person and dwelling generation");
         previousHouseholds = 0;
         previousPersons = 0;
         //initializeQualityAndIncomeDistributions();
@@ -46,9 +50,11 @@ public class GenerateHouseholdsPersonsDwellings {
                 initializeMunicipalityData(municipality);
                 double logging = 2;
                 int it = 11;
-                for (int draw = 0; draw < Math.round(totalHouseholds); draw++) {
-                    int hhSelected = selectMicroHouseholdWithReplacement();
-                    int tazSelected = selectTAZwithoutReplacement(hhSelected);
+                int[] hhSelection = selectMultipleHouseholds(totalHouseholds);
+                int[] tazSelection = selectMultipleTAZ(totalHouseholds);
+                for (int draw = 0; draw < totalHouseholds; draw++) {
+                    int hhSelected = hhSelection[draw];
+                    int tazSelected = tazSelection[draw];
                     int idHousehold = generateHousehold(hhSelected, tazSelected);
                     generatePersons(hhSelected, idHousehold);
                     generateDwelling(hhSelected, idHousehold, tazSelected, municipality);
@@ -130,14 +136,13 @@ public class GenerateHouseholdsPersonsDwellings {
     private void generateVacantDwellings(){
 
         for (int municipality : dataSetSynPop.getMunicipalities()){
-
             int vacantDwellings =(int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "totalDwellingsVacant");
             initializeVacantDwellingData(municipality);
             int vacantCounter = 0;
+            int[] tazSelection = selectMultipleTAZ(vacantDwellings);
 
             for (int draw = 0; draw < vacantDwellings; draw++){
-
-                int tazSelected = selectTAZwithoutReplacement(0);
+                int tazSelected = tazSelection[draw];
                 int newDdId = RealEstateDataManager.getNextDwellingId();
                 int floorSpace = microDataManager.guessFloorSpace(SiloUtil.select(probVacantFloor));
                 int buildingYear = SiloUtil.select(probVacantBuildingSize);
@@ -184,9 +189,27 @@ public class GenerateHouseholdsPersonsDwellings {
         ddTypeProbOfMF234orMF5plus = PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality,"ddProbMF234orMF5plus");
         probTAZ = dataSetSynPop.getProbabilityZone().get(municipality);
         probMicroData = new HashMap<>();
+        probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
+        ids = new int[probabilityId.length];
+        sumProbabilities = 0;
         for (int id : dataSetSynPop.getWeights().getColumnAsInt("ID")){
             probMicroData.put(id, dataSetSynPop.getWeights().getValueAt(id, Integer.toString(municipality)));
         }
+        for (int i = 0; i < probabilityId.length; i++){
+/*            sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
+            probabilityId[i] = sumProbabilities;*/
+            sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
+            probabilityId[i] = dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
+            ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i+1, "ID");
+        }
+        probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
+        sumTAZs = 0;
+        probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
+        for (int i = 1; i < probabilityTAZ.length; i++){
+            probabilityTAZ[i] = probabilityTAZ[i] + probabilityTAZ[i-1];
+        }
+        idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
+        sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
         personCounter = 0;
         householdCounter = 0;
     }
@@ -306,5 +329,68 @@ public class GenerateHouseholdsPersonsDwellings {
         }
         result = SiloUtil.select(ddQuality.get(year * 10000000 + municipality));
         return result;
+    }
+
+
+    public int[] selectMultipleHouseholds(int selections) {
+
+        int[] selected;
+        selected = new int[selections];
+        int completed = 0;
+        for (int iteration = 0; iteration < 100; iteration++){
+            int m = selections - completed;
+            double[] randomChoices = new double[m];
+            for (int k = 0; k < randomChoices.length; k++) {
+                randomChoices[k] = SiloUtil.getRandomNumberAsDouble()*selections;
+            }
+            Arrays.sort(randomChoices);
+
+            //look up for the n travellers
+            int p = 0;
+            double cumulative = probabilityId[p];
+            for (double randomNumber : randomChoices){
+                while (randomNumber > cumulative && p < probabilityId.length - 1) {
+                    p++;
+                    cumulative += probabilityId[p];
+                }
+                if (probabilityId[p] > 0) {
+                    selected[completed] = ids[p];
+                    completed++;
+                }
+            }
+        }
+        return selected;
+
+    }
+
+    private int[] selectMultipleTAZ(int selections){
+
+        int[] selected;
+        selected = new int[selections];
+        int completed = 0;
+        for (int iteration = 0; iteration < 100; iteration++){
+            int m = selections - completed;
+            //double[] randomChoice = new double[(int)(numberOfTrips*1.1) ];
+            double[] randomChoices = new double[m];
+            for (int k = 0; k < randomChoices.length; k++) {
+                randomChoices[k] = SiloUtil.getRandomNumberAsDouble();
+            }
+            Arrays.sort(randomChoices);
+
+            //look up for the n travellers
+            int p = 0;
+            double cumulative = probabilityTAZ[p];
+            for (double randomNumber : randomChoices){
+                while (randomNumber > cumulative && p < probabilityTAZ.length - 1) {
+                    p++;
+                    cumulative += probabilityTAZ[p];
+                }
+                if (probabilityTAZ[p] > 0) {
+                    selected[completed] = idTAZs[p];
+                    completed++;
+                }
+            }
+        }
+        return selected;
     }
 }
