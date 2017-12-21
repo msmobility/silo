@@ -2,11 +2,10 @@ package de.tum.bgu.msm.utils.concurrent;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.RandomizableConcurrentFunction;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ThreadSafeRandomsTest {
 

@@ -1,26 +1,18 @@
 package de.tum.bgu.msm.syntheticPopulation;
 
-import com.google.common.primitives.Ints;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.realEstate.ConstructionDemandJSCalculator;
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunction;
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.measure.unit.SI;
 import javax.script.ScriptException;
 import java.io.Reader;
 import java.util.*;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import org.apache.log4j.Logger;
-
-import static de.tum.bgu.msm.SiloUtil.getWeightedSum;
 
 public class ipuTestOpt {
 

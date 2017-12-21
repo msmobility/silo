@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,7 +107,7 @@ public final class Dwelling {
     }
 
     public static Collection<Dwelling> getDwellings() {
-        return dwellingMap.values();
+        return Collections.unmodifiableCollection(dwellingMap.values());
     }
 
     public static Dwelling[] getDwellingArray() {

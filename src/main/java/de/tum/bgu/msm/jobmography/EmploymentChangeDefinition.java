@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.jobmography;
 
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunction;
+import de.tum.bgu.msm.util.concurrent.ConcurrentFunction;
 
 public abstract class EmploymentChangeDefinition implements ConcurrentFunction {
 

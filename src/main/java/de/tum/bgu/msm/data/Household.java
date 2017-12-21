@@ -29,9 +29,9 @@ import java.util.*;
  * Created on Dec 2, 2009
  *
  */
-public class Household {
+public final class Household {
 
-    static Logger logger = Logger.getLogger(Household.class);
+    private static Logger logger = Logger.getLogger(Household.class);
 
     private static final Map<Integer, Household> householdMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
@@ -62,7 +62,7 @@ public class Household {
     }
 
     public static Collection<Household> getHouseholds() {
-        return householdMap.values();
+        return Collections.unmodifiableCollection(householdMap.values());
     }
 
     public static void saveHouseholds (Household[] hhs) {
