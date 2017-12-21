@@ -30,7 +30,27 @@ import java.util.Map;
  */
 public final class Dwelling {
 
-    final static Logger logger = Logger.getLogger(Dwelling.class);
+    private final static Logger logger = Logger.getLogger(Dwelling.class);
+
+    public enum Usage{
+        GROUP_QUARTER_OR_DEFAULT, OWNED, RENTED, VACANT;
+
+        public static Usage valueOf(int code) {
+            switch (code) {
+                case 0:
+                    return GROUP_QUARTER_OR_DEFAULT;
+                case 1:
+                    return OWNED;
+                case 2:
+                    return RENTED;
+                case 3:
+                    return VACANT;
+                default:
+                    throw new RuntimeException("Undefined dwelling usage code " + code);
+            }
+        }
+    }
+
     private static final Map<Integer, Dwelling> dwellingMap = new HashMap<>();
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
@@ -48,7 +68,7 @@ public final class Dwelling {
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int buildingSize = 0;
     private int floorSpace = 0;
-    private int usage = 0;
+    private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
 
 
@@ -217,16 +237,11 @@ public final class Dwelling {
 
     public int getBuildingSize() { return buildingSize; }
 
-    //TODO: magic numbers
-    public void setUsage(int usage) {
+    public void setUsage(Usage usage) {
         this.usage = usage;
-        //Dwelling being used by the landlord or tenant
-        //1: owned
-        //2: rented
-        //0: group quarter - or default
     }
 
-    public int getUsage() { return usage; }
+    public Usage getUsage() { return usage; }
 
     //TODO: magic numbers
     public void setYearConstructionDE (int yearConstructionDE){

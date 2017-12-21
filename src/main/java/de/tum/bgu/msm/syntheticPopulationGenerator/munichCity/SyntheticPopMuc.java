@@ -1659,7 +1659,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
-            dd.setUsage((int)dwellings.getValueAt(i,"usage"));
+            dd.setUsage(Dwelling.Usage.valueOf((int)dwellings.getValueAt(i,"usage")));
         }
         logger.info("   Generated households, persons and dwellings");
 
@@ -1939,7 +1939,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
                 year = selectDwellingYear(year); //convert from year class to actual 4-digit year
                 Dwelling dwell = new Dwelling(newDdId, tazID, id, type , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
-                dwell.setUsage(usage);
+                dwell.setUsage(Dwelling.Usage.valueOf(usage));
                 dwell.setBuildingSize(buildingSize);
                 counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipality,yearBracketsDwelling,sizeBracketsDwelling);
             }
@@ -2034,7 +2034,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
                 int year = selectVacantDwellingYear(buildingSizeAndYearBuilt[1]);
                 int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
                 Dwelling dwell = new Dwelling(newDdId, ddCell[0], -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                dwell.setUsage(3); //vacant dwelling = 3; and hhID is equal to -1
+                dwell.setUsage(Dwelling.Usage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
                 dwell.setBuildingSize(buildingSizeAndYearBuilt[0]);
                 vacantCounter++;
@@ -2640,7 +2640,7 @@ public class SyntheticPopMuc implements SyntheticPopI {
 
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount,int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
-        if (dwelling.getUsage() == 1){
+        if (dwelling.getUsage() == Dwelling.Usage.OWNED){
             attributesCount.setIndexedValueAt(mun,"ownDwellings",attributesCount.getIndexedValueAt(mun,"ownDwellings") + 1);
         } else {
             attributesCount.setIndexedValueAt(mun,"rentedDwellings",attributesCount.getIndexedValueAt(mun,"rentedDwellings") + 1);
