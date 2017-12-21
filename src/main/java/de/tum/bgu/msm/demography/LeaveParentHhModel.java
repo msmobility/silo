@@ -26,12 +26,10 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ResourceBundle;
+import java.util.Collections;
 
 /**
  * Simulates children that leave the parental household
@@ -71,24 +69,24 @@ public class LeaveParentHhModel {
         if (SiloUtil.getRandomNumberAsDouble() < lphProbability[per.getType().ordinal()]) {
 
             // search if dwelling is available
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(new Person[]{per}, modelContainer);
+            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per), modelContainer);
             if (newDwellingId < 0) {
-                if (perId == SiloUtil.trackPp || per.getHhId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
-                        "Person " + perId + " wanted to but could not leave parental household " + per.getHhId() +
+                if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
+                        "Person " + perId + " wanted to but could not leave parental household " + per.getHh().getId() +
                         " because no appropriate vacant dwelling was found.");
                 IssueCounter.countLackOfDwellingFailedLeavingChild();
                 return;
             }
 
             // create new household
-            Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
+            Household hhOfThisPerson = per.getHh();
             hhOfThisPerson.removePerson(per, dataContainer);
             hhOfThisPerson.setType();
             int newHhId = HouseholdDataManager.getNextHouseholdId();
-            Household hh = new Household(newHhId, -1, -1, 1, 0);
-            hh.addPersonForInitialSetup(per);
+            Household hh = new Household(newHhId, -1, -1,  0);
+            hh.addPerson(per);
             hh.setType();
-            hh.setHouseholdRace();
+            hh.determineHouseholdRace();
             per.setRole(PersonRole.single);
 
 

@@ -2,14 +2,14 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.ResourceBundle;
 
@@ -250,7 +250,7 @@ public class SummarizeData {
                         for (Person pp: hh.getPersons()) {
                             pwp.print(pp.getId());
                             pwp.print(",");
-                            pwp.print(pp.getHhId());
+                            pwp.print(pp.getHh().getId());
                             pwp.print(",");
                             pwp.print(pp.getAge());
                             pwp.print(",");
@@ -311,7 +311,7 @@ public class SummarizeData {
                             for (Person pp: hh.getPersons()) {
                                 pwp.print(pp.getId());
                                 pwp.print(",");
-                                pwp.print(pp.getHhId());
+                                pwp.print(pp.getHh().getId());
                                 pwp.print(",");
                                 pwp.print(pp.getAge());
                                 pwp.print(",");
@@ -402,7 +402,7 @@ public class SummarizeData {
         for (Person pp : pps) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHhId());
+            pwp.print(pp.getHh().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -541,7 +541,7 @@ public class SummarizeData {
         for (Person pp : pps) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHhId());
+            pwp.print(pp.getHh().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -682,7 +682,7 @@ public class SummarizeData {
         for (Person pp : pps) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHhId());
+            pwp.print(pp.getHh().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -712,7 +712,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
             pwp.print(",");
-            pwp.print(Household.getHouseholdFromId(pp.getHhId()).getAutos());
+            pwp.print(pp.getHh().getAutos());
             pwp.print(",");
             pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
@@ -821,11 +821,10 @@ public class SummarizeData {
             pwh.print(hh.getHhSize());
             pwh.print(",");
             pwh.println(hh.getAutos());
-            for (int j = 0; j < hh.getHhSize(); j++){
-                Person pp = hh.getPersons()[j];
+            for (Person pp: hh.getPersons()){
                 pwp.print(pp.getId());
                 pwp.print(",");
-                pwp.print(pp.getHhId());
+                pwp.print(pp.getHh().getId());
                 pwp.print(",");
                 pwp.print(pp.getAge());
                 pwp.print(",");
@@ -1035,7 +1034,7 @@ public class SummarizeData {
         for (Person pp : pps) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHhId());
+            pwp.print(pp.getHh().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");

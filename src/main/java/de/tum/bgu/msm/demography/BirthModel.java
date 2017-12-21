@@ -16,18 +16,16 @@
  */
 package de.tum.bgu.msm.demography;
 
-import java.io.File;
-import java.util.ResourceBundle;
-
 import com.pb.common.calculator.UtilityExpressionCalculator;
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+
+import java.io.File;
 
 /**
  * Simulates birth of children
@@ -99,7 +97,7 @@ public class BirthModel {
         if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.marriedScaler;
         else birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.singleScaler;
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
-            Household hhOfThisWoman = Household.getHouseholdFromId(per.getHhId());
+            Household hhOfThisWoman = Household.getHouseholdFromId(per.getHh().getId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
             EventManager.countEvent(EventTypes.checkBirth);
             householdDataManager.addHouseholdThatChanged(hhOfThisWoman);

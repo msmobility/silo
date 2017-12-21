@@ -1,20 +1,19 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.autoOwnership.maryland.MaryLandCarOwnershipModel;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnerShipModel;
+import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.demography.*;
 import de.tum.bgu.msm.jobmography.UpdateJobs;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.realEstate.*;
 import de.tum.bgu.msm.relocation.InOutMigration;
-import de.tum.bgu.msm.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.relocation.MovesModelI;
+import de.tum.bgu.msm.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.relocation.munich.MovesModelMuc;
-import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
@@ -224,5 +223,4 @@ public class SiloModelContainer {
             throw new NullPointerException("Create car ownership model not available. Check implementation!");
         }
     }
-
 }

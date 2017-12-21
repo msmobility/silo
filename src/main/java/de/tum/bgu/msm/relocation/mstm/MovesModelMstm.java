@@ -16,6 +16,7 @@ import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.relocation.MovesDMU;
 
 import java.io.File;
+import java.util.List;
 
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
@@ -215,7 +216,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
-                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(workZone, regions[i]);
+                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(workZone, regions[i]);
                     workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getWorkTLFD(smallestDistInMin);
                 }
             }
@@ -228,16 +229,18 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     @Override
-    public int searchForNewDwelling(Person[] persons, SiloModelContainer siloModelContainer) {
+    public int searchForNewDwelling(List<Person> persons, SiloModelContainer siloModelContainer) {
         // search alternative dwellings
 
         // data preparation
         int wrkCount = 0;
-        for (Person pp: persons) if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) wrkCount++;
+        for (Person pp: persons) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) wrkCount++;
+        }
         int pos = 0;
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
-        Race householdRace = persons[0].getRace();
+        Race householdRace = persons.get(0).getRace();
         for (Person pp: persons) if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
             workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
             pos++;
@@ -245,7 +248,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             if (pp.getRace() != householdRace) householdRace = Race.other;
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.length, incomeBracket);
+        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
 
         // Step 1: select region
         int[] regions = geoData.getRegionList();

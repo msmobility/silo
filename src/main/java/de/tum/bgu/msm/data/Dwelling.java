@@ -19,9 +19,9 @@ package de.tum.bgu.msm.data;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Greg Erhardt 
@@ -30,7 +30,7 @@ import java.util.Collection;
  */
 public class Dwelling {
 
-    static Logger logger = Logger.getLogger(Dwelling.class);
+    final static Logger logger = Logger.getLogger(Dwelling.class);
     private static final Map<Integer, Dwelling> dwellingMap = new HashMap<>();
     //Attributes that must be initialized when one dwelling is generated
     int id;

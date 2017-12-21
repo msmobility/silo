@@ -6,10 +6,7 @@ import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.demography.BirthModel;
 import de.tum.bgu.msm.demography.MarryDivorceModel;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.properties.Properties;
-
-import java.util.ResourceBundle;
 
 /**
  * Conditions that must be fulfilled for each event to be executed
@@ -75,7 +72,7 @@ public class EventRules {
 
     public static boolean ruleLeaveParHousehold (Person per) {
         if (per == null) return false;
-        Household hh = Household.getHouseholdFromId(per.getHhId());
+        Household hh = per.getHh();
         return (hh.getHhSize() >= 2 && per.getRole() == PersonRole.child) &&
                 runEventCheckLeaveParentHh && runEventAllDemography;
     }

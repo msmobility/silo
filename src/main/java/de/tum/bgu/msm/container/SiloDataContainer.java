@@ -1,6 +1,9 @@
 package de.tum.bgu.msm.container;
 
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -76,7 +79,6 @@ public class SiloDataContainer {
             householdData.readPopulation(readSmallSynPop, smallSize);
             realEstateData.readDwellings(readSmallSynPop, smallSize);
             jobData.readJobs( readSmallSynPop, smallSize);
-            householdData.connectPersonsToHouseholds();
             householdData.setTypeOfAllHouseholds();
         }
 

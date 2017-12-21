@@ -16,6 +16,7 @@ import de.tum.bgu.msm.relocation.SelectRegionJSCalculator;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
@@ -153,7 +154,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
-                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(workZone, regions[i]);
+                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(workZone, regions[i]);
                     workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getWorkTLFD(smallestDistInMin);
                 }
             }
@@ -167,7 +168,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
 
     @Override
-    public int searchForNewDwelling(Person[] persons, SiloModelContainer modelContainer) {
+    public int searchForNewDwelling(List<Person> persons, SiloModelContainer modelContainer) {
         // search alternative dwellings
 
         // data preparation
@@ -176,12 +177,14 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         int pos = 0;
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
-        Race householdRace = persons[0].getRace();
+        Race householdRace = persons.get(0).getRace();
         for (Person pp: persons) if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
             workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
             pos++;
             householdIncome += pp.getIncome();
-            if (pp.getRace() != householdRace) householdRace = Race.black; //changed this so race is a proxy of nationality
+            if (pp.getRace() != householdRace) {
+                householdRace = Race.black; //changed this so race is a proxy of nationality
+            }
         }
         if (householdRace == Race.other){
             householdRace = Race.black;
@@ -189,7 +192,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             householdRace = Race.black;
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.length, incomeBracket);
+        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
 
         // Step 1: select region
         int[] regions = geoData.getRegionList();

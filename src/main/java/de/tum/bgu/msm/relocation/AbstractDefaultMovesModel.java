@@ -12,6 +12,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
@@ -57,7 +58,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
 
     @Override
-    public abstract int searchForNewDwelling(Person[] persons, SiloModelContainer modelContainer);
+    public abstract int searchForNewDwelling(List<Person> persons, SiloModelContainer modelContainer);
 
     @Override
     public abstract void calculateRegionalUtilities(SiloModelContainer modelContainer);

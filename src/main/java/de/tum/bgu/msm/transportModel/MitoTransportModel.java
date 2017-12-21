@@ -1,29 +1,29 @@
 package de.tum.bgu.msm.transportModel;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
+import de.tum.bgu.msm.MitoModel;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.input.InputFeed;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Implementation;
 import org.apache.log4j.Logger;
 
-import de.tum.bgu.msm.MitoModel;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.InputFeed;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Implementation of Transport Model Interface for MITO
  * @author Rolf Moeckel
  * Created on February 18, 2017 in Munich, Germany
  */
-public class MitoTransportModel implements TransportModelI {
+public final class MitoTransportModel implements TransportModelI {
+
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
 	private final SiloModelContainer modelContainer;
-	private MitoModel mito;
+	private final MitoModel mito;
     private final GeoData geoData;
 
     public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
@@ -53,7 +53,7 @@ public class MitoTransportModel implements TransportModelI {
 
 		Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
 		for(Person person: Person.getPersons()) {
-			int hhId = person.getHhId();
+			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = person.convertToMitoPp();
 				households.get(hhId).addPerson(mitoPerson);
