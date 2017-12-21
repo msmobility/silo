@@ -4,7 +4,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -2263,8 +2262,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to generate households");
         for (int i = 1; i <= households.getRowCount(); i++) {
             Household hh = new Household((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
-                    (int) households.getValueAt(i, "zone"), (int) households.getValueAt(i, "hhSize"),
-                    (int) households.getValueAt(i, "autos"));
+                    (int) households.getValueAt(i, "zone"), (int) households.getValueAt(i, "autos"));
         }
 
         logger.info("   Starting to generate persons");
@@ -2272,11 +2270,12 @@ public class SyntheticPopDe implements SyntheticPopI {
             Race race = Race.white;
             if ((int) persons.getValueAt(i,"nationality") > 1){race = Race.black;}
             int hhID = (int) persons.getValueAt(i, "hhid");
-            Person pp = new Person((int) persons.getValueAt(i, "id"),hhID ,
+            Household household = Household.getHouseholdFromId(hhID);
+            Person pp = new Person((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), (int) persons.getValueAt(i, "gender"),
                     race, (int) persons.getValueAt(i, "occupation"), (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
-            Household.getHouseholdFromId(hhID).addPersonForInitialSetup(pp);
+            household.addPerson(pp);
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
             if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.single);
             else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.married);
@@ -2545,7 +2544,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 int householdSize = (int) microHouseholds.getIndexedValueAt(hhIdMD, "hhSize");
                 id = HouseholdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                Household household = new Household(id, newDdId, tazID, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = new Household(id, newDdId, tazID, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipalityID);
 
@@ -2565,8 +2564,8 @@ public class SyntheticPopDe implements SyntheticPopI {
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
-                    Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                    household.addPersonForInitialSetup(pers);
+                    Person pers = new Person(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    household.addPerson(pers);
                     pers.setEducationLevel((int) microPersons.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.single; //default value = single
                     if (microPersons.getValueAt(personCounter, "personRole") == 2) { //is married

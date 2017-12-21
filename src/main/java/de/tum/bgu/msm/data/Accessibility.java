@@ -42,7 +42,7 @@ public class Accessibility {
 
 	public void initialize() {
         readWorkTripLengthFrequencyDistribution();
-        calculateDistanceToRegions();
+        calculateTravelTimesToRegions();
 	}
 
     public void readCarSkim(int year) {
@@ -229,8 +229,7 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     }
 
 
-    private void calculateDistanceToRegions () {
-        // calculate the minimal distance from each zone to every region
+    private void calculateTravelTimesToRegions() {
         travelTimeToRegion = new Matrix(geoData.getZones().length, geoData.getRegionList().length);
         travelTimeToRegion.setExternalNumbersZeroBased(geoData.getZones(), geoData.getRegionList());
         for (int iz: geoData.getZones()) {
@@ -267,7 +266,7 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
     }
 
 
-    public float getMinDistanceFromZoneToRegion (int zone, int region) {
+    public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
         return travelTimeToRegion.getValueAt(zone, region);
     }
 

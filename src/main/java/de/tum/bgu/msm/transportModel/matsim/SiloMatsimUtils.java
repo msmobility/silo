@@ -1,9 +1,12 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Random;
-
+import com.pb.common.matrix.Matrix;
+import com.vividsolutions.jts.geom.*;
+import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Job;
+import de.tum.bgu.msm.data.Person;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -24,18 +27,8 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.collections.Tuple;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.pb.common.matrix.Matrix;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author dziemke
@@ -130,8 +123,7 @@ public class SiloMatsimUtils {
     			continue;
     		}
 
-    		int householdId = siloPerson.getHhId();
-    		Household household = Household.getHouseholdFromId(householdId);
+    		Household household = siloPerson.getHh();
     		int numberOfWorkers = household.getNumberOfWorkers();
     		int numberOfAutos = household.getAutos();
     		if (numberOfWorkers == 0) {

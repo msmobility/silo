@@ -5,13 +5,12 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.EventRules;
-
-import java.io.File;
-
+import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+
+import java.io.File;
 
 /**
  * @author Greg Erhardt 
@@ -78,11 +77,10 @@ public class DeathModel {
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
         if (SiloUtil.getRandomNumberAsDouble() < deathProbability[per.getType().ordinal()]) {
             if (per.getWorkplace() > 0) per.quitJob(true, dataContainer.getJobData());
-            Household hhOfPersonToDie = Household.getHouseholdFromId(per.getHhId());
+            Household hhOfPersonToDie = per.getHh();
             int hhId = hhOfPersonToDie.getId();
             if (per.getRole() == PersonRole.married) {
-                int widowId = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
-                Person widow = Person.getPersonFromId(widowId);
+                Person widow = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
                 widow.setRole(PersonRole.single);
             }
             hhOfPersonToDie.removePerson(per, dataContainer);

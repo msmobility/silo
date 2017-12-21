@@ -2,11 +2,6 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-
-import java.io.*;
-import java.util.*;
-import java.util.stream.IntStream;
-
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
@@ -18,6 +13,10 @@ import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class SyntheticPopCT implements SyntheticPopI {
 
@@ -1609,7 +1608,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         logger.info("   Starting to generate households");
         for (int i = 1; i <= households.getRowCount(); i++) {
             Household hh = new Household((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
-                    (int) households.getValueAt(i, "zone"), (int) households.getValueAt(i, "hhSize"),
+                    (int) households.getValueAt(i, "zone"),
                     (int) households.getValueAt(i, "autos"));
         }
 
@@ -1618,11 +1617,11 @@ public class SyntheticPopCT implements SyntheticPopI {
             Race race = Race.white;
             if ((int) persons.getValueAt(i,"nationality") > 1){race = Race.black;}
             int hhID = (int) persons.getValueAt(i, "hhid");
-            Person pp = new Person((int) persons.getValueAt(i, "id"),hhID ,
+            Person pp = new Person((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), (int) persons.getValueAt(i, "gender"),
                     race, (int) persons.getValueAt(i, "occupation"), (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
-            Household.getHouseholdFromId(hhID).addPersonForInitialSetup(pp);
+            Household.getHouseholdFromId(hhID).addPerson(pp);
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
             if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.single);
             else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.married);
@@ -1875,7 +1874,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int householdSize = (int) microDataHousehold.getIndexedValueAt(hhIdMD, "hhSize");
                 id = HouseholdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                Household household = new Household(id, newDdId, tazID, householdSize, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = new Household(id, newDdId, tazID, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipality);
 
@@ -1894,8 +1893,8 @@ public class SyntheticPopCT implements SyntheticPopI {
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
-                    Person pers = new Person(idPerson, id, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
-                    household.addPersonForInitialSetup(pers);
+                    Person pers = new Person(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    household.addPerson(pers);
                     pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.single; //default value = single
                     if (microDataPerson.getValueAt(personCounter, "personRole") == 2) { //is married

@@ -17,7 +17,6 @@
 package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
@@ -58,7 +57,6 @@ public class HouseholdDataManager {
 
 
     public void readPopulation (boolean readSmallSynPop, int sizeSmallSynPop) {
-        // read population
         boolean readBin = Properties.get().householdData.readBinaryPopulation;
         if (readBin) {
             readBinaryPopulationDataObjects();
@@ -98,10 +96,9 @@ public class HouseholdDataManager {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int dwellingID = Integer.parseInt(lineElements[posDwell]);
                 int taz        = Integer.parseInt(lineElements[posTaz]);
-                int hhSize     = Integer.parseInt(lineElements[posSize]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, taz, hhSize, autos);  // this automatically puts it in id->household map in Household class
+                new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
@@ -196,7 +193,12 @@ public class HouseholdDataManager {
                 if (Integer.parseInt(lineElements[posDriver]) == 0){
                     license = false;
                 }
-                Person pp = new Person(id, hhid, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Household household = Household.getHouseholdFromId(hhid);
+                if(household == null) {
+                    throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
+                }
+                Person pp = new Person(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                household.addPerson(pp);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
@@ -211,24 +213,11 @@ public class HouseholdDataManager {
         logger.info("Finished reading " + recCount + " persons.");
     }
 
-
-    public void connectPersonsToHouseholds () {
-        // connect person objects to household objects
-        for (Person per: Person.getPersonArray()) {
-            Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
-            hhOfThisPerson.addPersonForInitialSetup(per);
-            if (per.getHhId() == SiloUtil.trackHh || per.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Connected person " + per.getId() + " to household " + per.getHhId());
-            }
-        }
-    }
-
-
     public void setTypeOfAllHouseholds () {
         // define household types
         for (Household hh: Household.getHouseholds()) {
             hh.setType();
-            hh.setHouseholdRace();
+            hh.determineHouseholdRace();
         }
     }
 
@@ -302,23 +291,22 @@ public class HouseholdDataManager {
     public static void findMarriedCouple(Household hh) {
         // define role of person with ageMain in household where members have ageAll[]
         int[] ages = new int[hh.getHhSize()];
-        Person[] pers = hh.getPersons();
-        for (int i = 0; i < pers.length; i++) ages[i] = pers[i].getAge();
+        List<Person> personsCopy = new ArrayList<>(hh.getPersons());
+        Collections.sort(personsCopy, new Person.PersonByAgeComparator());
 
-        int[] sortedAgeIndex = IndexSort.indexSort(ages);
-        for (int i = sortedAgeIndex.length - 1; i >= 0; i--) {
-            Person pp = pers[sortedAgeIndex[i]];
-            int partnerId = findMostLikelyUnmarriedPartner(pp, hh);
-            if (partnerId != -1) {
-                Person partner = Person.getPersonFromId(partnerId);
+        for (Person person: personsCopy) {
+            Person partner = findMostLikelyUnmarriedPartner(person, hh);
+            if (partner != null) {
                 partner.setRole(PersonRole.married);
-                pp.setRole(PersonRole.married);
-                if (pp.getId() == SiloUtil.trackPp || pp.getHhId() == SiloUtil.trackHh)
-                    SiloUtil.trackWriter.println("Defined role of person  " + pp.getId() + " in household " + pp.getHhId() +
-                            " as " + pp.getRole());
-                if (partner.getId() == SiloUtil.trackPp || partner.getHhId() == SiloUtil.trackHh)
-                    SiloUtil.trackWriter.println("Defined role of partner " + partner.getId() + " in household " + partner.getHhId() +
+                person.setRole(PersonRole.married);
+                if (person.getId() == SiloUtil.trackPp || person.getHh().getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household " + person.getHh().getId() +
+                            " as " + person.getRole());
+                }
+                if (partner.getId() == SiloUtil.trackPp || partner.getHh().getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Defined role of partner " + partner.getId() + " in household " + partner.getHh().getId() +
                             " as " + partner.getRole());
+                }
                 return;
             }
         }
@@ -327,21 +315,30 @@ public class HouseholdDataManager {
 
     public static void defineUnmarriedPersons (Household hh) {
         // For those that did not become the married couple define role in household (child or single)
-        Person[] pps = hh.getPersons();
-        for (Person pp: pps) {
-            if (pp.getRole() == PersonRole.married) continue;
-            boolean someone15to40yearsOlder = false;      // assumption that this person is a parent
-            int ageMain = pp.getAge();
-            for (Person per: pps) {
-                if (per.getId() == pp.getId()) continue;
-                int age = per.getAge();
-                if (age >= ageMain + 15 && age <= ageMain + 40) someone15to40yearsOlder = true;
+        for (Person pp: hh.getPersons()) {
+            if (pp.getRole() == PersonRole.married) {
+                continue;
             }
-            if ((someone15to40yearsOlder && ageMain < 50) || ageMain <= 15) pp.setRole(PersonRole.child);
-            else pp.setRole(PersonRole.single);
-            if (pp.getId() == SiloUtil.trackPp || pp.getHhId() == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household " + pp.getHhId() +
+            boolean someone15to40yearsOlder = false;      // assumption that this person is a parent
+            final int ageMain = pp.getAge();
+            for (Person per: hh.getPersons()) {
+                if (pp.equals(per)) {
+                    continue;
+                }
+                int age = per.getAge();
+                if (age >= ageMain + 15 && age <= ageMain + 40) {
+                    someone15to40yearsOlder = true;
+                }
+            }
+            if ((someone15to40yearsOlder && ageMain < 50) || ageMain <= 15) {
+                pp.setRole(PersonRole.child);
+            } else {
+                pp.setRole(PersonRole.single);
+            }
+            if (pp.getId() == SiloUtil.trackPp || pp.getHh().getId() == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household " + pp.getHh().getId() +
                         " as " + pp.getRole());
+            }
         }
     }
 
@@ -506,49 +503,56 @@ public class HouseholdDataManager {
         return highestPersonIdInUse;
     }
 
-    private static int findMostLikelyUnmarriedPartner (Person per, Household hh) {
+    private static Person findMostLikelyUnmarriedPartner (Person per, Household hh) {
         // when assigning roles to persons, look for likely partner in household that is not married yet
 
-        Person[] pers = hh.getPersons();
-        float[] util = new float[pers.length];
-        int selectedId = -1;
-        for (int i = 0; i < pers.length; i++) {
-            if (pers[i].getGender() != per.getGender() && pers[i].getRole() != PersonRole.married) {
-                int ageDiff = Math.abs(per.getAge() - pers[i].getAge());
-                if (ageDiff == 0) util[i] = 2;
-                else util[i] = 1f / (float) ageDiff;
-                if (selectedId == -1) selectedId = i;
-                if (util[i] > util[selectedId]) selectedId = i;     // find most likely partner
+        Person selectedPartner = null;
+        double highestUtil = Double.NEGATIVE_INFINITY;
+        double tempUtil;
+        for (Person partner: hh.getPersons()) {
+            if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.married) {
+                int ageDiff = Math.abs(per.getAge() - partner.getAge());
+                if (ageDiff == 0) {
+                    tempUtil = 2;
+                } else {
+                    tempUtil = 1f / (float) ageDiff;
+                }
+                if (tempUtil > highestUtil) {
+                    selectedPartner = partner;     // find most likely partner
+                }
             }
         }
-        if (selectedId == -1) return selectedId;
-        else return pers[selectedId].getId();
+        return selectedPartner;
     }
 
 
-    public static int findMostLikelyPartner(Person per, Household hh) {
-
+    public static Person findMostLikelyPartner(Person per, Household hh) {
         // find married partner that fits best for person per
-        Person[] pers = hh.getPersons();
-        float[] util = new float[pers.length];
-        int selectedId = -1;
-        for (int i = 0; i < pers.length; i++) {
-            if (pers[i].getGender() != per.getGender() && pers[i].getRole() == PersonRole.married) {
-                int ageDiff = Math.abs(per.getAge() - pers[i].getAge());
-                if (ageDiff == 0) util[i] = 2;
-                else util[i] = 1f / (float) ageDiff;
-                if (selectedId == -1) selectedId = i;
-                if (util[i] > util[selectedId]) selectedId = i;     // find most likely partner
+        List<Person> persons = hh.getPersons();
+        double highestUtil = Double.NEGATIVE_INFINITY;
+        double tempUtil;
+        Person selectedPartner = null;
+        for (Person partner: persons) {
+            if (partner.getGender() != per.getGender() && partner.getRole() == PersonRole.married) {
+                final int ageDiff = Math.abs(per.getAge() - partner.getAge());
+                if (ageDiff == 0) {
+                    tempUtil = 2;
+                } else  {
+                    tempUtil = 1. / ageDiff;
+                }
+                if (tempUtil > highestUtil) {
+                    selectedPartner = partner;     // find most likely partner
+                }
             }
         }
-        if (selectedId == -1) {
+        if (selectedPartner == null) {
             logger.error("Could not find spouse of person " + per.getId() + " in household " + hh.getId());
-            for (int i = 0; i < pers.length; i++)
-                logger.error("Houshold member " + pers[i].getId() + " (gender: " + pers[i].getGender() + ") is " +
-                        pers[i].getRole() + ", util: " + util[i]);
-
+            for (Person person: persons) {
+                logger.error("Houshold member " + person.getId() + " (gender: " + person.getGender() + ") is " +
+                        person.getRole());
+            }
         }
-        return pers[selectedId].getId();
+        return selectedPartner;
     }
 
 
@@ -634,10 +638,10 @@ public class HouseholdDataManager {
     }
 
     private float getDesiredShift(float[][][] currentIncomeDistribution, Person person) {
-        int gender = person.gender - 1;
-        int age = Math.min(99, person.age);
+        int gender = person.getGender() - 1;
+        int age = Math.min(99, person.getAge());
         int occ = 0;
-        if (person.occupation == 1) {
+        if (person.getOccupation() == 1) {
             occ = 1;
         }
         return initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];
@@ -907,7 +911,7 @@ public class HouseholdDataManager {
             for (Person pp : hh.getPersons()) {
                 pwp.print(pp.getId());
                 pwp.print(",");
-                pwp.print(pp.getHhId());
+                pwp.print(hh.getId());
                 pwp.print(",");
                 pwp.print(pp.getAge());
                 pwp.print(",");

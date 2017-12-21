@@ -145,14 +145,15 @@ public class InOutMigration {
             k += 6;
         }
 
-        Household hh = new Household(hhId, -1, -1, hhSize, 0);
+        Household hh = new Household(hhId, -1, -1, 0);
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
-            Person per = new Person(HouseholdDataManager.getNextPersonId(), hhId, imData[1 + k], imData[2 + k],
+            Person per = new Person(HouseholdDataManager.getNextPersonId(), imData[1 + k], imData[2 + k],
                     ppRace, imData[4 + k], -1, imData[5 + k]);
+            hh.addPerson(per);
             k += 6;
-            hh.addPersonForInitialSetup(per);
+            hh.addPerson(per);
         }
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
@@ -166,7 +167,7 @@ public class InOutMigration {
             }
         }
         hh.setType();
-        hh.setHouseholdRace();
+        hh.determineHouseholdRace();
         HouseholdDataManager.findMarriedCouple(hh);
         HouseholdDataManager.defineUnmarriedPersons(hh);
         int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons(), modelContainer);

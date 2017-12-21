@@ -6,6 +6,8 @@ import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.Person;
 
+import java.util.List;
+
 /**
  * Interface to generate an application-specific implementation of the MovesModelMstm
  * @author Rolf Moeckel
@@ -21,7 +23,7 @@ public interface MovesModelI {
 
     void chooseMove (int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer);
 
-    int searchForNewDwelling(Person[] persons, SiloModelContainer modelContainer);
+    int searchForNewDwelling(List<Person> persons, SiloModelContainer modelContainer);
 
     void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer);
 }

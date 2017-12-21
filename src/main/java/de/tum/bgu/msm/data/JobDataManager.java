@@ -16,9 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.io.*;
-import java.util.*;
-
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -27,6 +24,11 @@ import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -329,7 +331,7 @@ public class JobDataManager {
             // person has home location (i.e., is not inmigrating right now)
             for (int reg: regions) {
                 if (vacantJobsByRegionPos[reg] > 0) {
-                    int distance = (int) (siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
+                    int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                     regionProbability[reg] = siloModelContainer.getAcc().getWorkTLFD(distance) * (double) getNumberOfVacantJobsByRegion(reg);
                 }
             }
@@ -337,7 +339,7 @@ public class JobDataManager {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (int reg: regions) {
                     if (vacantJobsByRegionPos[reg] > 0) {
-                        int distance = (int) (siloModelContainer.getAcc().getMinDistanceFromZoneToRegion(homeZone, reg) + 0.5);
+                        int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                         regionProbability[reg] = 1f / distance;
                     }
                 }

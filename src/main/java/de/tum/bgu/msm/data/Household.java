@@ -18,15 +18,11 @@ package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.demography.BirthModel;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.io.Serializable;
-
-import de.tum.bgu.msm.demography.BirthModel;
+import java.util.*;
 
 /**
  * @author Greg Erhardt 
@@ -39,23 +35,21 @@ public class Household {
 
     private static final Map<Integer, Household> householdMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
-    private int hhId;
+    private final int hhId;
     private int dwellingId;
-    private int hhSize;
     private Race race;
     private Nationality nationality;
     private int autos;
     private int homeZone;
     private HouseholdType type;
-    private Person[] persons;
+    private final List<Person> persons;
 
-    public Household(int id, int dwellingID, int homeZone, int hhSize, int autos) {
+    public Household(int id, int dwellingID, int homeZone, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.homeZone = homeZone;
-        this.hhSize = hhSize;
         this.autos = autos;
-        persons = new Person[hhSize];
+        persons = new ArrayList<>();
         householdMap.put(id,this);
     }
 
@@ -82,7 +76,7 @@ public class Household {
     public void logAttributes () {
         logger.info("Attributes of household " + hhId);
         logger.info("Dwelling ID             " + dwellingId);
-        logger.info("Household size          " + hhSize);
+        logger.info("Household size          " + persons.size());
         logger.info("Home zone               " + homeZone);
         logger.info("Household race          " + race);
         for (Person pp: persons) logger.info("Member of hh is person  " + pp.getId());
@@ -91,7 +85,7 @@ public class Household {
     public void logAttributes (PrintWriter pw) {
         pw.println ("Attributes of household " + hhId);
         pw.println ("Dwelling ID             " + dwellingId);
-        pw.println ("Household size          " + hhSize);
+        pw.println ("Household size          " + persons.size());
         pw.println ("Home zone               " + homeZone);
         // cannot log person attributes or race, because when households are read (and logged) persons are not known yet
     }
@@ -102,7 +96,7 @@ public class Household {
     }
 
     public int getHhSize() {
-        return hhSize;
+        return persons.size();
     }
 
     public int getDwellingId() {
@@ -113,7 +107,7 @@ public class Household {
         return autos;
     }
 
-    public Person[] getPersons(){
+    public List<Person> getPersons(){
         return persons;
     }
 
@@ -163,98 +157,70 @@ public class Household {
 
     public void setType() {
         int incCat = HouseholdDataManager.getIncomeCategoryForIncome(getHhIncome());
-        this.type = HouseholdDataManager.defineHouseholdType(hhSize, incCat);
+        this.type = HouseholdDataManager.defineHouseholdType(persons.size(), incCat);
     }
 
-
-    public void setHouseholdRace() {
-        // define race of household
-        Person[] pps = getPersons();
-        Race householdRace = pps[0].getRace();
-        if (getHhSize() > 1) {
-            for (Person pp: pps) if (pp.getRace() != householdRace) householdRace = Race.other;
+    public void determineHouseholdRace() {
+        Race householdRace = null;
+        for (Person pp: persons) {
+            if(householdRace == null) {
+                householdRace = pp.getRace();
+            } else if (pp.getRace() != householdRace) {
+                this.race = Race.other;
+                return;
+            }
         }
         this.race = householdRace;
     }
-
 
     public void setAutos (int autos) {
         this.autos = autos;
     }
 
-
-    public void addPersonForInitialSetup(Person per){
-        // This method adds a person to the household without increasing the HH size. Only used for initial setup
-
-        for (int i = 0; i < getHhSize(); i++) {
-            if (persons[i] == null) {
-                persons[i] = per;
-                persons[i].setHhId(hhId);
-                return;
-            }
-        }
-        logger.fatal("Found more persons for household " + hhId + " than household size (" + getHhSize() + ") allows.");
-    }
-
-
-    public void removePerson (Person per, SiloDataContainer dataContainer) {
+    public void removePerson (Person person, SiloDataContainer dataContainer) {
         // remove this person from household and reduce household size by one
-        if (hhSize >= 2) {
-            Person[] remainingPersons = new Person[persons.length - 1];
-            int counter = 0;
-            for (Person pers: persons) {
-                if (pers.getId() != per.getId()) {
-                    remainingPersons[counter] = pers;
-                    counter++;
-                }
-            }
-            persons = remainingPersons;
-            hhSize -= 1;
+        if (persons.size() >= 2) {
+            persons.remove(person);
             setType();
-            setHouseholdRace();
+            determineHouseholdRace();
         } else {
             dataContainer.getHouseholdData().removeHousehold(hhId);
         }
-        if (hhId == SiloUtil.trackHh || per.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " +
-                per.getId() + " was removed from household " + hhId + ".");
+        if (hhId == SiloUtil.trackHh || person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " +
+                    person.getId() + " was removed from household " + hhId + ".");
+        }
     }
 
-
-    public void addAdultPerson(Person per) {
+    public void addPerson(Person person) {
         // add existing person per (not a newborn child) to household
-
-        Person[] newPersons = new Person[persons.length + 1];
-        System.arraycopy(persons, 0, newPersons, 0, persons.length);
-        newPersons[persons.length] = per;
-        persons = newPersons;
-        hhSize++;
-        per.setHhId(hhId);
+        persons.add(person);
+        person.setHousehold(this);
         setType();
-        setHouseholdRace();
-        if (per.getId() == SiloUtil.trackPp || hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("A person " +
-                "(not a child) named " + per.getId() + " was added to household " + hhId + ".");
+        determineHouseholdRace();
+        if (person.getId() == SiloUtil.trackPp || hhId == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("A person " +
+                    "(not a child) named " + person.getId() + " was added to household " + hhId + ".");
+        }
     }
-
 
     public void addNewbornPerson(Race race) {
         // create new Person for this household
         int id = HouseholdDataManager.getNextPersonId();
         int gender = 1;
-        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) gender = 2;
-        Person per = new Person (id, hhId, 0, gender, race, 0, 0, 0);
-        per.setRole(PersonRole.child);
-        Person previousPers[] = getPersons();
-        Person newPers[] = new Person[previousPers.length+1];
-        System.arraycopy(previousPers, 0, newPers, 0, previousPers.length);
-        newPers[previousPers.length] = per;
-        persons = newPers;
-        hhSize++;
-        per.setHhId(hhId);
+        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) {
+            gender = 2;
+        }
+        Person person = new Person (id, 0, gender, race, 0, 0, 0);
+        person.setRole(PersonRole.child);
+        persons.add(person);
+        person.setHousehold(this);
         setType();
-        if (id == SiloUtil.trackPp || hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("For unto us a child was born... A child named "
-                + id + " was born and added to household " + hhId + ".");
+        if (id == SiloUtil.trackPp || hhId == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("For unto us a child was born... A child named "
+                    + id + " was born and added to household " + hhId + ".");
+        }
     }
-
 
     public static int getTotalPopulation () {
         int tp = 0;
@@ -263,7 +229,6 @@ public class Household {
         }
         return tp;
     }
-
 
     public static float getAverageHouseholdSize () {
         float ahs = 0;
@@ -288,5 +253,4 @@ public class Household {
         }
         return thhs;
     }
-
 }
