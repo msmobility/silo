@@ -29,6 +29,7 @@ public class ThreadSafeRandomsTest {
         final int id;
 
         TestFunction(int id) {
+            super(SiloUtil.getRandomObject().nextLong());
             this.id = id;
         }
 
