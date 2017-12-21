@@ -95,7 +95,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         Allocation allocation = new Allocation(dataSetSynPop);
         allocation.run();
 
-        addCars(false);
+        //addCars(false);
         SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
 
         long estimatedTime = System.nanoTime() - startTime;
