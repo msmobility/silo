@@ -873,7 +873,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // summarize number of people by PersonRole (married, single, child)
 
         int[][] roleCounter = new int[101][3];
-        for (Person pp: Person.getPersonArray()) {
+        for (Person pp: Person.getPersons()) {
             if (pp.getGender() == 1) continue;
             int age = Math.min(100, pp.getAge());
             roleCounter[age][pp.getRole().ordinal()]++;

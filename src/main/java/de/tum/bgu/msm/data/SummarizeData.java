@@ -398,8 +398,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
-        Person[] pps = Person.getPersonArray();
-        for (Person pp : pps) {
+        for (Person pp : Person.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHh().getId());
@@ -537,8 +536,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE");
-        Person[] pps = Person.getPersonArray();
-        for (Person pp : pps) {
+        for (Person pp : Person.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHh().getId());
@@ -678,8 +676,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
-        Person[] pps = Person.getPersonArray();
-        for (Person pp : pps) {
+        for (Person pp : Person.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHh().getId());
@@ -804,7 +801,6 @@ public class SummarizeData {
         String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + fileEnding;
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE");
-        Person[] pps = Person.getPersonArray();
         Household[] households = Household.getHouseholds().toArray(new Household[Household.getHouseholds().size()]);
         for (int i = 0; i < households.length; i = i + step) {
             Household hh = households[i];
@@ -1030,8 +1026,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
-        Person[] pps = Person.getPersonArray();
-        for (Person pp : pps) {
+        for (Person pp : Person.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHh().getId());

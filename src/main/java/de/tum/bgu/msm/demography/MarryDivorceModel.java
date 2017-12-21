@@ -137,7 +137,7 @@ public class MarryDivorceModel {
         // create HashMap with men and women by age
         HashMap<String, ArrayList<Integer>> ppByAgeAndGender = new HashMap<>();
 
-        for (Person pp: Person.getPersonArray()) {
+        for (Person pp: Person.getPersons()) {
             if (EventRules.ruleGetMarried(pp) && pp.getAge() < 100) {
                 int size = pp.getHh().getHhSize();
                 // put only every fifth person into marriage market, emphasize single-person households
@@ -158,7 +158,7 @@ public class MarryDivorceModel {
         int highestId = HouseholdDataManager.getHighestPersonIdInUse();
         boolean[] personSelectedForMarriage = SiloUtil.createArrayWithValue(highestId + 1, false);
         float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
-        for (Person pp: Person.getPersonArray()) {
+        for (Person pp: Person.getPersons()) {
             if (EventRules.ruleGetMarried(pp) && pp.getAge() < 100 && !personSelectedForMarriage[pp.getId()]) {
                 double marryProb = marriageProbability[pp.getType().ordinal()];   // raw marriage probability for this age/gender group
                 // to keep things simple, emphasize prop to initialize marriage for people from single-person households. Single-person household has no influence on whether someone is selected by the marriage initializer

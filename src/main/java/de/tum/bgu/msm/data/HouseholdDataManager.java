@@ -378,7 +378,7 @@ public class HouseholdDataManager {
 
         int pers[][] = new int[2][101];
         int ppRace[] = new int[4];
-        for (Person per: Person.getPersonArray()) {
+        for (Person per: Person.getPersons()) {
             int gender = per.getGender();
             int age = Math.min(per.getAge(), 100);
             pers[gender-1][age] += 1;
@@ -431,7 +431,7 @@ public class HouseholdDataManager {
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
         float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        for (Person per: Person.getPersonArray()) {
+        for (Person per: Person.getPersons()) {
             int age = per.getAge();
             int gender = per.getGender() - 1;
             boolean employed = per.getWorkplace() > 0;
@@ -477,7 +477,7 @@ public class HouseholdDataManager {
             highestHouseholdIdInUse = Math.max(highestHouseholdIdInUse, hh.getId());
         }
         highestPersonIdInUse = 0;
-        for (Person pp: Person.getPersonArray()) highestPersonIdInUse = Math.max(highestPersonIdInUse, pp.getId());
+        for (Person pp: Person.getPersons()) highestPersonIdInUse = Math.max(highestPersonIdInUse, pp.getId());
     }
 
 
@@ -567,7 +567,7 @@ public class HouseholdDataManager {
 
         laborParticipationShares = new float[2][100];
         int[][] count = new int[2][100];
-        for (Person pp: Person.getPersonArray()) {
+        for (Person pp: Person.getPersons()) {
             int age = pp.getAge();
             if (age > 99) continue;  // people older than 99 will always be unemployed/retired
             int gender = pp.getGender();
@@ -596,7 +596,7 @@ public class HouseholdDataManager {
 
         float[][][] averageIncome = new float[2][100][2];              // income by gender, age and unemployed/employed
         int[][][] count = new int[2][100][2];
-        for (Person pp: Person.getPersonArray()) {
+        for (Person pp: Person.getPersons()) {
             int age = Math.min(99, pp.getAge());
             int occupation = 0;
             if (pp.getOccupation() == 1) occupation = 1;
@@ -627,10 +627,9 @@ public class HouseholdDataManager {
         // select who will get a raise or drop in salary
 
         float[][][] currentIncomeDistribution = calculateIncomeDistribution();
-        Person[] pps = Person.getPersonArray();
 
         ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
-        for (Person person: pps) {
+        for (Person person: Person.getPersons()) {
             float desiredShift = getDesiredShift(currentIncomeDistribution, person);
             executor.addFunction(new IncomeAdjustment(person, desiredShift, meanIncomeChange));
         }
@@ -672,7 +671,7 @@ public class HouseholdDataManager {
         // count currently employed people
         final float[][] currentlyEmployed = new float[2][100];
         final float[][] currentlyUnemployed = new float[2][100];
-        for (Person pp : Person.getPersonArray()) {
+        for (Person pp : Person.getPersons()) {
             int age = pp.getAge();
             if (age > 99) continue;  // people older than 99 will always be unemployed/retired
             int gender = pp.getGender();
@@ -704,7 +703,7 @@ public class HouseholdDataManager {
         // plan employment changes
         ArrayList<Integer> alFindJob = new ArrayList<>();
         ArrayList<Integer> alQuitJob = new ArrayList<>();
-        for (Person pp : Person.getPersonArray()) {
+        for (Person pp : Person.getPersons()) {
             int age = pp.getAge();
             if (age > 99) continue;  // people older than 99 will always be unemployed/retired
             int gen = pp.getGender() - 1;

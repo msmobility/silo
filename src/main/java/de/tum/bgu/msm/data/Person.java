@@ -96,11 +96,7 @@ public class Person {
         for (Person pp: pps) personMap.put(pp.getId(), pp);
     }
 
-    public static Person[] getPersonArray() {
-        return personMap.values().toArray(new Person[personMap.size()]);
-    }
-
-     public void setType (int age, int gender) {
+    public void setType (int age, int gender) {
         if (gender == 1) {
         if (age==0) type = PersonType.menAge0;
         else if (age<=4) type = PersonType.menAge1to4;
