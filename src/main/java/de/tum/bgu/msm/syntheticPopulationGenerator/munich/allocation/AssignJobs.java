@@ -64,7 +64,6 @@ public class AssignJobs {
             for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
                 double value = Math.exp(PropertiesSynPop.get().main.alphaJob *
                         Math.exp(dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j) * PropertiesSynPop.get().main.gammaJob));
-
                 distanceImpedance.setValueAt(i, j, (float)value);
             }
         }
