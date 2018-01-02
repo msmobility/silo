@@ -11,6 +11,6 @@ import de.tum.bgu.msm.data.AbstractDefaultGeoData;
 public class GeoDataMuc extends AbstractDefaultGeoData {
 
     public GeoDataMuc() {
-        super("Zone", "Region", "ID_county");
+        super("Zone", "Region");
     }
 }

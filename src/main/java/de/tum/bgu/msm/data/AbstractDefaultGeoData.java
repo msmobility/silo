@@ -15,7 +15,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     private final String zoneIdColumnName;
     private final String regionColumnName;
-    private final String countyColumnName;
 
     protected int[] zoneIndex;
     protected int[] zones;
@@ -28,7 +27,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     private TableDataSet regDef;
 
     protected int[] countyIndex;
-    protected int[] counties;
 
     private int[] developableLUtypes;
     private TableDataSet landUse;
@@ -37,17 +35,15 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     private boolean useCapacityAsNumberOfDwellings;
 
-    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName, String countyColumnName) {
+    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName) {
         this.zoneIdColumnName = zoneIdColumnName;
         this.regionColumnName = regionColumnName;
-        this.countyColumnName = countyColumnName;
     }
 
     @Override
     public void setInitialData () {
         readZones();
         readRegionDefinition();
-        createListOfCountyFIPSCodes();
         readLandUse();
         readDeveloperData();
     }
@@ -176,11 +172,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
         regionList = SiloUtil.idendifyUniqueValues(regDef.getColumnAsInt(regionColumnName));
         regionIndex = SiloUtil.createIndexArray(regionList);
         regDef.buildIndex(regDef.getColumnPosition(zoneIdColumnName));
-    }
-
-    private void createListOfCountyFIPSCodes() {
-        counties = SiloUtil.idendifyUniqueValues(zonalData.getColumnAsInt(countyColumnName));
-        countyIndex = SiloUtil.createIndexArray(counties);
     }
 
     private void readDeveloperData() {

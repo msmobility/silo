@@ -14,16 +14,20 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
 
     private float[] zonalSchoolQuality;
     private float[] regionalSchoolQuality;
+    private int[] counties;
     private float[] countyCrimeRate;
     private float[] regionalCrimeRate;
 
+    private final String COUNTY_COLUMN_NAME = "COUNTYFIPS";
+
     public GeoDataMstm() {
-        super("ZoneId", "Region", "COUNTYFIPS");
+        super("ZoneId", "Region");
     }
 
     @Override
     public void setInitialData() {
         super.setInitialData();
+        createListOfCountyFIPSCodes();
         readSchoolQuality();
         readCrimeData();
     }
@@ -66,8 +70,13 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
         }
     }
 
+    private void createListOfCountyFIPSCodes() {
+        counties = SiloUtil.idendifyUniqueValues(zonalData.getColumnAsInt(COUNTY_COLUMN_NAME));
+        countyIndex = SiloUtil.createIndexArray(counties);
+    }
+
     public  int getCountyOfZone(int zone) {
-        return (int) zonalData.getIndexedValueAt(zone, "COUNTYFIPS");
+        return (int) zonalData.getIndexedValueAt(zone, COUNTY_COLUMN_NAME);
     }
 
     public int getPUMAofZone (int taz) {
