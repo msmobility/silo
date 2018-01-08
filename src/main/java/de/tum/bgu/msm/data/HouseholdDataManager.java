@@ -443,7 +443,7 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                float ds = siloModelContainer.getAcc().getAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
+                float ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
                 commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
                 commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
             }
@@ -835,7 +835,7 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;

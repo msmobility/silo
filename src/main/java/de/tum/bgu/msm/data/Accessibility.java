@@ -34,6 +34,7 @@ public class Accessibility {
     private Matrix travelTimeToRegion;
 	private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 	private PTDistances ptDistances;
+	private static final double TIME_OF_DAY = 8*60.*60.;
 
     public Accessibility(GeoData geoData) {
         this.geoData = geoData;
@@ -115,16 +116,17 @@ public class Accessibility {
     }
     
 
-    public float getAutoTravelTime(int i, int j) {
-    	return (float) travelTimes.get(TransportMode.car).getTravelTime(i, j);
+    public float getPeakAutoTravelTime(int i, int j) {
+    	return (float) travelTimes.get(TransportMode.car).getTravelTime(i, j, TIME_OF_DAY);
     }
 
-    public float getTransitTravelTime(int i, int j) {
-    	return (float) travelTimes.get(TransportMode.pt).getTravelTime(i, j);
+    public float getPeakTransitTravelTime(int i, int j) {
+    	return (float) travelTimes.get(TransportMode.pt).getTravelTime(i, j, TIME_OF_DAY);
     }
 
-    public float getTravelCosts(int i, int j) {
-        return (autoOperatingCosts / 100f) * getAutoTravelTime(i, j);
+    public float getPeakTravelCosts(int i, int j) {
+        return (autoOperatingCosts / 100f) * getPeakAutoTravelTime(i, j); // Take costs provided by MATSim here? Should be possible
+        // without much alterations as they are part of NodeData, which is contained in MATSimTravelTimes, nk/dz, jan'18
     }
 
     public void calculateAccessibilities (int year) {
@@ -149,14 +151,14 @@ public class Accessibility {
             transitAccessibility[geoData.getZoneIndex(orig)] = 0;
             for (int dest: zones) {
                 double autoImpedance;
-                double autoTravelTime = getAutoTravelTime(orig, dest);
+                double autoTravelTime = getPeakAutoTravelTime(orig, dest);
                 if (autoTravelTime == 0) {      // should never happen for auto
                     autoImpedance = 0;
                 } else {
                     autoImpedance = Math.exp(betaAuto * autoTravelTime);
                 }
                 double transitImpedance;
-                double transitTravelTime = getTransitTravelTime(orig, dest);
+                double transitTravelTime = getPeakTransitTravelTime(orig, dest);
                 if (transitTravelTime == 0) {   // zone is not connected by walk-to-transit
                     transitImpedance = 0;
                 } else {
@@ -237,7 +239,7 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
             for (int i = 0; i < minDist.length; i++) minDist[i] = Float.MAX_VALUE;
             for (int jz: geoData.getZones()) {
                 int region = geoData.getRegionOfZone(jz);
-                float travelTime = getAutoTravelTime(iz, jz);
+                float travelTime = getPeakAutoTravelTime(iz, jz);
                 minDist[region] = Math.min(minDist[region], travelTime);
             }
             for (int region: geoData.getRegionList()) travelTimeToRegion.setValueAt(iz, region, minDist[region]);
