@@ -240,14 +240,14 @@ public final class Household {
         return ahs/(float) cnt;
     }
 
-    public MitoHousehold convertToMitoHh(Zone zone) {
+    public MitoHousehold convertToMitoHh(MitoZone zone) {
         return new MitoHousehold(hhId, getHhIncome(), autos, zone);
     }
 
-    public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, Zone> zones) {
+    public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
         Map<Integer, MitoHousehold> thhs = new HashMap<>();
         for (Household siloHousehold : getHouseholds()) {
-            Zone zone = zones.get(siloHousehold.homeZone);
+            MitoZone zone = zones.get(siloHousehold.homeZone);
             MitoHousehold household = siloHousehold.convertToMitoHh(zone);
             thhs.put(household.getHhId(), household);
         }

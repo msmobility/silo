@@ -54,10 +54,10 @@ public class JobDataManager {
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
-    public static void fillMitoZoneEmployees(Map<Integer, Zone> zones) {
+    public static void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
 
         for (Job jj: Job.getJobs()) {
-            final Zone zone = zones.get(jj.getZone());
+            final MitoZone zone = zones.get(jj.getZone());
             final String type = jj.getType().toUpperCase();
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;

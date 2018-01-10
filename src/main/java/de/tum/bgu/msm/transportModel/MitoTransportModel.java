@@ -43,10 +43,10 @@ public final class MitoTransportModel implements TransportModelI {
     }
     
     private void updateData() {
-    	Map<Integer, Zone> zones = new HashMap<>();
+    	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (int i = 0; i < geoData.getZones().length; i++) {
 			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
-			Zone zone = new Zone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i], areaType);
+			MitoZone zone = new MitoZone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i], areaType);
 			zones.put(zone.getZoneId(), zone);
 		}
 		JobDataManager.fillMitoZoneEmployees(zones);
