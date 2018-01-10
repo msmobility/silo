@@ -555,7 +555,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             if (vacantJobsByZone.containsKey(zones[zn])) {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zones[zn]).length;
                 if (numberOfJobsInThisZone > 0) {
-                    int distance = (int) (accessibility.getAutoTravelTime(homeTaz, zones[zn]) + 0.5);
+                    int distance = (int) (accessibility.getPeakAutoTravelTime(homeTaz, zones[zn]) + 0.5);
                     zoneProbability[zn] = accessibility.getWorkTLFD(distance) * (double) numberOfJobsInThisZone;
                 } else {
                     zoneProbability[zn] = 0;

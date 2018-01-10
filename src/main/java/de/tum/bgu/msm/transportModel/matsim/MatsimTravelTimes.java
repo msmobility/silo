@@ -24,8 +24,7 @@ public class MatsimTravelTimes implements TravelTimes {
 	private final Network network;
 	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
-	private final static double TIME_OF_DAY = 8. * 60 * 60.; // TODO
-	private final Map<Id<Node>, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForNode = new HashMap<>();
+	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
 	public MatsimTravelTimes(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
 		this.leastCoastPathTree = leastCoastPathTree;
@@ -51,25 +50,33 @@ public class MatsimTravelTimes implements TravelTimes {
 	}
 
 	@Override
-	public double getTravelTime(int origin, int destination) {
+	public double getTravelTime(int origin, int destination, double timeOfDay_s) {
 		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
 		
 		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
 			Map<Id<Node>, LeastCostPathTree.NodeData> tree;
-			if(treesForNode.containsKey(originNode.getId())) {
-				tree = treesForNode.get(originNode.getId());
+			if (treesForNodesByTimes.containsKey(originNode.getId())) {
+				Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
+				if (treesForOneNodeByTimes.containsKey(timeOfDay_s)) {
+					tree = treesForOneNodeByTimes.get(timeOfDay_s);					
+				} else {
+					leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
+					tree = leastCoastPathTree.getTree();
+					treesForOneNodeByTimes.put(timeOfDay_s, tree);
+				}
 			} else {
-				leastCoastPathTree.calculate(network, originNode, TIME_OF_DAY);
+				Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = new HashMap<>();
+				leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
 				tree = leastCoastPathTree.getTree();
-				treesForNode.put(originNode.getId(), tree);
+				treesForOneNodeByTimes.put(timeOfDay_s, tree);
+				treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 			}
-
 			
 			for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
 						
-				double arrivalTime = tree.get(destinationNode.getId()).getTime();
-				sumTravelTime_min += ((arrivalTime - TIME_OF_DAY) / 60.);
+				double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
+				sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
 			}
 		}
 		return sumTravelTime_min / NUMBER_OF_CALC_POINTS / NUMBER_OF_CALC_POINTS;
