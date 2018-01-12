@@ -114,7 +114,7 @@ public class SummarizeData {
         for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
         resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
 
-        int[] zones = dataContainer.getGeoData().getZones();
+        int[] zones = dataContainer.getGeoData().getZoneIdsArray();
         int[][] dds = new int[DwellingType.values().length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] prices = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] jobs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
@@ -141,8 +141,8 @@ public class SummarizeData {
             int ddThisZone = 0;
             for (DwellingType dt: DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
             if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
-            double autoAcc = modelContainer.getAcc().getAutoAccessibility(taz);
-            double transitAcc = modelContainer.getAcc().getTransitAccessibility(taz);
+            double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
+            double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
             double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
@@ -177,7 +177,7 @@ public class SummarizeData {
     public int[] getHouseholdsByZone (GeoData geoData) {
         // summarize households by zone
 
-        int[] householdsByZone = new int[geoData.getZones().length];
+        int[] householdsByZone = new int[geoData.getZoneIdsArray().length];
         for (Household hh: Household.getHouseholds()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
             householdsByZone[geoData.getZoneIndex(zone)]++;
@@ -203,7 +203,7 @@ public class SummarizeData {
         // calculate how many households need to be created or deleted in every zone
         int[] changeOfHh = new int[(dataContainer.getGeoData().getHighestZonalId() + 1)];
         HashMap<Integer, int[]> hhByZone = dataContainer.getHouseholdData().getHouseholdsByZone();
-        for (int zone: dataContainer.getGeoData().getZones()) {
+        for (int zone: dataContainer.getGeoData().getZoneIdsArray()) {
             int hhs = 0;
             if (hhByZone.containsKey(zone)) hhs = hhByZone.get(zone).length;
             changeOfHh[zone] =
@@ -214,7 +214,7 @@ public class SummarizeData {
         pwh.println("id,dwelling,zone,hhSize,autos");
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(Properties.get().main.scaledMicroDataPp + year + ".csv", false);
         pwp.println("id,hhID,age,gender,race,occupation,driversLicense,workplace,income");
-        for (int zone: dataContainer.getGeoData().getZones()) {
+        for (int zone: dataContainer.getGeoData().getZoneIdsArray()) {
             if (hhByZone.containsKey(zone)) {
                 int[] hhInThisZone = hhByZone.get(zone);
                 int[] selectedHH = new int[hhInThisZone.length];
@@ -927,7 +927,7 @@ public class SummarizeData {
             int county = geoData.getCountyOfZone(zone);
             autos[autoOwnership][county]++;
             pwa.println(hh.getHhSize()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
-                    accessibility.getTransitAccessibility(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
+                    accessibility.getTransitAccessibilityForZone(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
         }
         pwa.close();
 
@@ -951,7 +951,7 @@ public class SummarizeData {
         regionDefinition.buildIndex(regionDefinition.getColumnPosition("aggFips"));
 
         prestoRegionByTaz = SiloUtil.createArrayWithValue((geoData.getHighestZonalId() + 1), -1);
-        for (int zone: geoData.getZones()) {
+        for (int zone: geoData.getZoneIdsArray()) {
             try {
                 prestoRegionByTaz[zone] =
                         (int) regionDefinition.getIndexedValueAt(((GeoDataMstm) geoData).getCountyOfZone(zone), "presto");

@@ -34,13 +34,13 @@ public class ChangeEmploymentModel {
         if (pp == null) return false;  // person has died or moved away
 
         int sm = 0;
-        for (int reg: geoData.getRegionList()) sm += JobDataManager.getNumberOfVacantJobsByRegion(reg);
+        for (int reg: geoData.getRegionIdsArray()) sm += JobDataManager.getNumberOfVacantJobsByRegion(reg);
         if (sm == 0) {
             IssueCounter.countMissingJob();
             return false;
         } else {
             int homeZone = pp.getHomeTaz();
-            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionList(), siloModelContainer);
+            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionIdsArray(), siloModelContainer);
             if (idVacantJob == -1) {
                 IssueCounter.countMissingJob();
                 return false;

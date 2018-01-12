@@ -653,7 +653,7 @@ public class SiloModelBak {
         SummarizeData.resultFile("Year " + year, false);
         HouseholdDataManager.summarizePopulation(geoData);
         realEstateData.summarizeDwellings();
-        jobData.summarizeJobs(geoData.getRegionList());
+        jobData.summarizeJobs(geoData.getRegionIdsArray());
 
         SummarizeData.resultFileSpatial(rb, "Year " + year, false);
         SummarizeData.summarizeSpatially(year, move, realEstateData, geoData, accessibility);

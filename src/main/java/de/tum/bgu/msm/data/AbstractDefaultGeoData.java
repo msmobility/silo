@@ -7,26 +7,19 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class AbstractDefaultGeoData implements GeoData {
 
     private static final Logger logger = Logger.getLogger(AbstractDefaultGeoData.class);
 
-    private final String zoneIdColumnName;
-    private final String regionColumnName;
+    protected final String zoneIdColumnName;
+    protected final String regionColumnName;
 
-    protected int[] zoneIndex;
-    protected int[] zones;
-    private int highestZonalId;
-    protected TableDataSet zonalData;
-
-    protected HashMap<Integer, int[]> regionDefinition;
-    protected int[] regionList;
-    private int[] regionIndex;
-    private TableDataSet regDef;
-
-    protected int[] countyIndex;
+    protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
+    protected final Map<Integer, Region> regions = new LinkedHashMap<>();
 
     private int[] developableLUtypes;
     private TableDataSet landUse;
@@ -49,57 +42,83 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     @Override
-    public int[] getZones () {
-        return zonalData.getColumnAsInt(zoneIdColumnName);
+    public Map<Integer, Zone> getZones() {
+        return Collections.unmodifiableMap(zones);
+    }
+
+
+    @Override
+    public Map<Integer, Region> getRegions() {
+        return Collections.unmodifiableMap(regions);
+    }
+
+    @Override
+    public int getRegionOfZone(int zone) {
+        return zones.get(zone).getRegion().getId();
+    }
+
+    @Override
+    public int[] getZoneIdsArray() {
+        return zones.keySet().stream().mapToInt(Integer::intValue).toArray();
+    }
+
+
+    @Override
+    public int[] getRegionIdsArray() {
+        return regions.keySet().stream().mapToInt(Integer::intValue).toArray();
     }
 
     @Override
     public int getZoneIndex(int zone) {
-        return zoneIndex[zone];
+        int[] zoneIds = getZoneIdsArray();
+        for(int i= 0; i < zoneIds.length; i++) {
+            if(zoneIds[i] == zone) {
+                return i;
+            }
+        }
+        throw new RuntimeException("Zone " + zone + " not found.");
     }
 
-    @Override
-    public int getHighestZonalId () {
-        return highestZonalId;
-    }
-
-    @Override
-    public int[] getZonesInRegion (int region) {
-        return regionDefinition.get(region);
-    }
-
-    @Override
-    public int[] getRegionList() {
-        return regionList;
-    }
 
     @Override
     public int getRegionIndex(int region) {
-        return regionIndex[region];
+        int[] regionIds = getRegionIdsArray();
+        for(int i= 0; i<regionIds.length; i++) {
+            if(regionIds[i] == region) {
+                return i;
+            }
+        }
+        throw new RuntimeException("Region " + region + " not found.");
     }
 
     @Override
-    public int getRegionOfZone (int zone) {
-        return (int) regDef.getIndexedValueAt(zone, "Region");
+    public double[] getSizeOfZonesInAcres() {
+        return zones.values().stream().mapToDouble(zone -> zone.getArea()).toArray();
     }
 
     @Override
     public float getSizeOfZoneInAcres(int zone) {
-        return zonalData.getIndexedValueAt(zone, "Area");
+        return zones.get(zone).getArea();
     }
 
     @Override
-    public float[] getSizeOfZonesInAcres() {
-        float[] size = new float[getZones().length];
-        for (int zone: getZones()) {
-            size[getZoneIndex(zone)] = getSizeOfZoneInAcres(zone);
-        }
-        return size;
+    public int getHighestZonalId() {
+        return zones.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+    }
+
+    @Override
+    public int[] getZonesInRegion(int region) {
+        return regions.get(region).getZones().stream().mapToInt(zone -> zone.getId()).toArray();
     }
 
     @Override
     public float getAreaOfLandUse (String landUseType, int zone) {
         return landUse.getIndexedValueAt(zone, landUseType);
+    }
+
+    @Override
+    public int getMSAOfZone(int zone) {
+        return zones.get(zone).getMsa();
     }
 
     @Override
@@ -125,11 +144,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     @Override
-    public int getMSAOfZone(int zone) {
-        return (int) zonalData.getIndexedValueAt(zone, "msa");
-    }
-
-    @Override
     public void reduceDevelopmentCapacityByOneDwelling (int zone) {
         float capacity = Math.max(getDevelopmentCapacity(zone) - 1, 0);
         developmentCapacity.setIndexedValueAt(zone, "DevCapacity", capacity);
@@ -145,34 +159,10 @@ public abstract class AbstractDefaultGeoData implements GeoData {
         return useCapacityAsNumberOfDwellings;
     }
 
-    private void readZones() {
-        String fileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalDataFile;
-        zonalData = SiloUtil.readCSVfile(fileName);
-        highestZonalId = SiloUtil.getHighestVal(zonalData.getColumnAsInt(zoneIdColumnName));
-        zonalData.buildIndex(zonalData.getColumnPosition(zoneIdColumnName));
-        zones = getZones();
-        zoneIndex = SiloUtil.createIndexArray(zones);
-    }
 
-    private void readRegionDefinition() {
-        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
-        regDef = SiloUtil.readCSVfile(regFileName);
-        regionDefinition = new HashMap<>();
-        for (int row = 1; row <= regDef.getRowCount(); row++) {
-            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
-            int reg = (int) regDef.getValueAt(row, regionColumnName);
-            if (regionDefinition.containsKey(reg)) {
-                int[] zoneInThisRegion = regionDefinition.get(reg);
-                int[] newZones = SiloUtil.expandArrayByOneElement(zoneInThisRegion, taz);
-                regionDefinition.put(reg, newZones);
-            } else {
-                regionDefinition.put(reg, new int[]{taz});
-            }
-        }
-        regionList = SiloUtil.idendifyUniqueValues(regDef.getColumnAsInt(regionColumnName));
-        regionIndex = SiloUtil.createIndexArray(regionList);
-        regDef.buildIndex(regDef.getColumnPosition(zoneIdColumnName));
-    }
+    protected abstract void readZones();
+
+    protected abstract void readRegionDefinition();
 
     private void readDeveloperData() {
         String baseDirectory = Properties.get().main.baseDirectory;
@@ -225,7 +215,9 @@ public abstract class AbstractDefaultGeoData implements GeoData {
                     Properties.get().geo.capacityFile + "_" + endYear + ".csv";
             PrintWriter pwc = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
             pwc.println("Zone,DevCapacity");
-            for (int zone: getZones()) pwc.println(zone + "," + getDevelopmentCapacity(zone));
+            for (int zone: zones.keySet()) {
+                pwc.println(zone + "," + getDevelopmentCapacity(zone));
+            }
             pwc.close();
         }
 
@@ -233,7 +225,9 @@ public abstract class AbstractDefaultGeoData implements GeoData {
                 Properties.get().geo.landUseAreaFile + "_" + endYear + ".csv";
         PrintWriter pwl = SiloUtil.openFileForSequentialWriting(landUseFileName, false);
         pwl.println("Zone,lu41");
-        for (int zone: getZones()) pwl.println(zone + "," + dataContainer.getRealEstateData().getDevelopableLand(zone));
+        for (int zone: zones.keySet()) {
+            pwl.println(zone + "," + dataContainer.getRealEstateData().getDevelopableLand(zone));
+        }
         pwl.close();
     }
 

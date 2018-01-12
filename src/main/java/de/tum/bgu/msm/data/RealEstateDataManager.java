@@ -1,13 +1,16 @@
 package de.tum.bgu.msm.data;
 
+import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import com.pb.common.datafile.TableDataSet;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.HashMap;
 
 /**
  * Keeps data of dwellings and non-residential floorspace
@@ -130,7 +133,7 @@ public class RealEstateDataManager {
     public void identifyVacantDwellings() {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
 
-        int highestRegion = SiloUtil.getHighestVal(geoData.getRegionList());
+        int highestRegion = SiloUtil.getHighestVal(geoData.getRegionIdsArray());
         numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
@@ -151,7 +154,7 @@ public class RealEstateDataManager {
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
             }
         }
-//        for (int region: SiloUtil.getRegionList()) System.out.println ("Region " + region + " has vacant dwellings: " +
+//        for (int region: SiloUtil.getRegionIdsArray()) System.out.println ("Region " + region + " has vacant dwellings: " +
 //                (vacDwellingsByRegionPos[region]));
 //        System.exit(1);
     }
@@ -325,10 +328,10 @@ public class RealEstateDataManager {
         }
         // aggregate developable land
         SummarizeData.resultFile("Available land for construction by region");
-        double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        for (int zone: geoData.getZones()) availLand[geoData.getRegionOfZone(zone)] +=
+        double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        for (int zone: geoData.getZoneIdsArray()) availLand[geoData.getRegionOfZone(zone)] +=
                 getAvailableLandForConstruction(zone);
-        for (int region: geoData.getRegionList()) {
+        for (int region: geoData.getRegionIdsArray()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
             SummarizeData.resultFile(f.toString());
@@ -467,7 +470,7 @@ public class RealEstateDataManager {
     public double[][] getVacancyRateByTypeAndRegion() {
         // calculate vacancy rate by region and dwelling type
 
-        int[] regionList = geoData.getRegionList();
+        int[] regionList = geoData.getRegionIdsArray();
         int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 0);
 
         for (Dwelling dd: Dwelling.getDwellings()) {
@@ -481,7 +484,7 @@ public class RealEstateDataManager {
         double[][] vacRate = new double[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1];
         for (DwellingType dt: DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionList()) {
+            for (int region: geoData.getRegionIdsArray()) {
                 if ((vacOcc[0][dto][region] + vacOcc[1][dto][region]) > 0) {
                     vacRate[dto][region] = (double) vacOcc[0][dto][region] / (double) (vacOcc[0][dto][region] + vacOcc[1][dto][region]);
                 } else {
@@ -511,7 +514,7 @@ public class RealEstateDataManager {
     public int[][] getDwellingCountByTypeAndRegion() {
         // return number of dwellings by type and region
 
-        int[] regionList = geoData.getRegionList();
+        int[] regionList = geoData.getRegionIdsArray();
         int[][] dwellingCount =
                 SiloUtil.setArrayToValue(new int[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 1);
 

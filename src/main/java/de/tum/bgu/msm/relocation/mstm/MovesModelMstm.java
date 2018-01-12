@@ -42,15 +42,15 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private void calculateRacialCompositionByZoneAndRegion() {
 
-        zonalRacialComposition = new float[geoData.getZones().length][4];
-        regionalRacialComposition = new float[geoData.getRegionList().length][4];
+        zonalRacialComposition = new float[geoData.getZoneIdsArray().length][4];
+        regionalRacialComposition = new float[geoData.getRegionIdsArray().length][4];
         SiloUtil.setArrayToValue(zonalRacialComposition, 0f);
         for (Household hh: Household.getHouseholds()) {
             zonalRacialComposition[geoData.getZoneIndex(hh.getHomeZone())][hh.getRace().ordinal()]++;
             int region = geoData.getRegionOfZone(hh.getHomeZone());
             regionalRacialComposition[geoData.getRegionIndex(region)][hh.getRace().ordinal()]++;
         }
-        for (int zone: geoData.getZones()) {
+        for (int zone: geoData.getZoneIdsArray()) {
             int zonalSum = 0;
             for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
                 zonalSum += zonalRacialComposition[geoData.getZoneIndex(zone)][raceType];
@@ -61,7 +61,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 }
             }
         }
-        for (int region: geoData.getRegionList()) {
+        for (int region: geoData.getRegionIdsArray()) {
             int regSum = 0;
             for (int raceType = 0; raceType < regionalRacialComposition[0].length; raceType++) {
                 regSum += regionalRacialComposition[geoData.getRegionIndex(region)][raceType];
@@ -137,7 +137,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         int[] selRegAvail = new int[numAltsSelReg + 1];
         for (int i = 1; i < selRegAvail.length; i++) selRegAvail[i] = 1;
 
-        int[] regions = geoData.getRegionList();
+        int[] regions = geoData.getRegionIdsArray();
         int highestRegion = SiloUtil.getHighestVal(regions);
         int[] regPrice = new int[highestRegion + 1];
         float[] regAcc = new float[highestRegion + 1];
@@ -209,7 +209,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones, SiloModelContainer siloModelContainer) {
         // return utility of regions based on household type and based on work location of workers in household
 
-        int[] regions = geoData.getRegionList();
+        int[] regions = geoData.getRegionIdsArray();
         double[] util = new double[numAltsSelReg];
         double[] workDistanceFactor = new double[numAltsSelReg];
         for (int i = 0; i < numAltsSelReg; i++) {
@@ -251,12 +251,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
 
         // Step 1: select region
-        int[] regions = geoData.getRegionList();
+        int[] regions = geoData.getRegionIdsArray();
         double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones, siloModelContainer);
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
-        for (int region: geoData.getRegionList()) totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
+        for (int region: geoData.getRegionIdsArray()) totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
         for (int i = 0; i < regionUtilities.length; i++) {
             switch (normalizer) {
                 case ("vacDd"): {
@@ -320,8 +320,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd, SiloModelContainer modelContainer) {
         evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
-        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibility(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibility(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibilityForZone(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibilityForZone(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((GeoDataMstm) geoData).getZonalSchoolQuality(dd.getZone()));
         evaluateDwellingDmu.setUtilityDwellingCrimeRate(((GeoDataMstm)geoData).getCountyCrimeRate(((GeoDataMstm)geoData).getCountyOfZone(dd.getZone())));
 

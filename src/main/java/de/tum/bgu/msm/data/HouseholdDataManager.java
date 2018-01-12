@@ -389,7 +389,7 @@ public class HouseholdDataManager {
         int hhRace[] = new int[4];
         int[] hhIncome = new int[Household.getHouseholdCount()];
         int hhIncomePos = 0;
-        int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
             String row = i + "," + pers[0][i] + "," + pers[1][i];
@@ -430,7 +430,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
-        float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Person per: Person.getPersons()) {
             int age = per.getAge();
             int gender = per.getGender() - 1;
@@ -457,7 +457,7 @@ public class HouseholdDataManager {
         }
         // todo: Add distance in kilometers to this summary
         SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
-        for (int i: geoData.getRegionList()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+        for (int i: geoData.getRegionIdsArray()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
         for (Household hh: Household.getHouseholds()) {
             carOwnership[hh.getAutos()]++;
@@ -761,7 +761,7 @@ public class HouseholdDataManager {
 
     public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
         // return number of households by zone
-        int[] hhByZone = new int[geoData.getZones().length];
+        int[] hhByZone = new int[geoData.getZoneIdsArray().length];
         for (Household hh: Household.getHouseholds()) {
             hhByZone[geoData.getZoneIndex(hh.getHomeZone())]++;
         }
@@ -771,7 +771,7 @@ public class HouseholdDataManager {
 
     public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
         // return number of households by region
-        int[] hhByRegion = new int[geoData.getRegionList().length];
+        int[] hhByRegion = new int[geoData.getRegionIdsArray().length];
         for (Household hh: Household.getHouseholds()) {
             if (hh.getHomeZone() == -1) continue;  // unclear why this is needed
             int region = geoData.getRegionOfZone(hh.getHomeZone());

@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import com.google.common.collect.ArrayTable;
+import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
@@ -13,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,15 +29,16 @@ public class Accessibility {
 
     static Logger logger = Logger.getLogger(Accessibility.class);
     private GeoData geoData;
-    private double[] autoAccessibility;
-    private double[] transitAccessibility;
-    private double[] regionalAccessibility;
     private float[] workTLFD;
     private float autoOperatingCosts;
-    private Matrix travelTimeToRegion;
+    private Table<Integer, Integer, Double> travelTimeToRegion;
 	private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 	private PTDistances ptDistances;
 	private static final double TIME_OF_DAY = 8*60.*60.;
+
+	private final Map<Integer, Double> autoAccessibilityByZone = new HashMap<>();
+	private final Map<Integer, Double> transitAccessibilityByZone = new HashMap<>();
+	private final Map<Integer, Double> accessibilityByRegion = new HashMap<>();
 
     public Accessibility(GeoData geoData) {
         this.geoData = geoData;
@@ -47,7 +51,6 @@ public class Accessibility {
 	}
 
     public void readCarSkim(int year) {
-        // Read hwySkim matrix for year
         logger.info("Reading skims for " + year);
 
         String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
@@ -61,8 +64,8 @@ public class Accessibility {
         Matrix hwySkim = SiloUtil.convertOmxToMatrix(timeOmxSkimAutos);
         travelTimes.put(TransportMode.car, new MatrixTravelTimes(hwySkim));
 //        TableDataSet hwySkimTbl = SiloUtil.readCSVfile(hwyFileName);
-//        hwySkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);
-//        hwySkim.setExternalNumbersZeroBased(SiloUtil.getZones());
+//        hwySkim = new Matrix(SiloUtil.getZoneIdsArray().length, SiloUtil.getZoneIdsArray().length);
+//        hwySkim.setExternalNumbersZeroBased(SiloUtil.getZoneIdsArray());
 //        for (int row = 1; row <= hwySkimTbl.getRowCount(); row++) {
 //            int orig = (int) hwySkimTbl.getValueAt(row, "OTAZ");
 //            int dest = (int) hwySkimTbl.getValueAt(row, "DTAZ");
@@ -91,8 +94,7 @@ public class Accessibility {
 //        }        
     }
     
-    public void readPtSkim(int year) {    
-        // Read transit hwySkim
+    public void readPtSkim(int year) {
         String transitFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.transitSkimFile(year);
         OmxFile tSkim = new OmxFile(transitFileName);
         tSkim.openReadOnly();
@@ -104,17 +106,25 @@ public class Accessibility {
         Matrix transitSkim = SiloUtil.convertOmxToMatrix(timeOmxSkimTransit);
         travelTimes.put(TransportMode.pt, new MatrixTravelTimes(transitSkim));
 //        TableDataSet transitSkimTbl = SiloUtil.readCSVfile(transitFileName);
-//        transitSkim = new Matrix(SiloUtil.getZones().length, SiloUtil.getZones().length);
-//        transitSkim.setExternalNumbersZeroBased(SiloUtil.getZones());
+//        transitSkim = new Matrix(SiloUtil.getZoneIdsArray().length, SiloUtil.getZoneIdsArray().length);
+//        transitSkim.setExternalNumbersZeroBased(SiloUtil.getZoneIdsArray());
 //        for (int row = 1; row <= transitSkimTbl.getRowCount(); row++) {
 //            int orig = (int) transitSkimTbl.getValueAt(row, "OTAZ");
 //            int dest = (int) transitSkimTbl.getValueAt(row, "DTAZ");
 //            if (orig > SiloUtil.getHighestZonalId() || dest > SiloUtil.getHighestZonalId()) continue;
 //            transitSkim.setValueAt(orig, dest, transitSkimTbl.getValueAt(row, "time"));
 //        }
-//        for (int zn: SiloUtil.getZones()) transitSkim.setValueAt(zn, zn, 0);  // intrazonal distance not specified in this CUBE skim, set to 0
+//        for (int zn: SiloUtil.getZoneIdsArray()) transitSkim.setValueAt(zn, zn, 0);  // intrazonal distance not specified in this CUBE skim, set to 0
     }
-    
+
+    public double getAutoAccessibilityForZone(int zoneId) {
+        return this.autoAccessibilityByZone.get(zoneId);
+    }
+
+    public double getTransitAccessibilityForZone(int zoneId) {
+        return this.transitAccessibilityByZone.get(zoneId);
+    }
+
 
     public float getPeakAutoTravelTime(int i, int j) {
     	return (float) travelTimes.get(TransportMode.car).getTravelTime(i, j, TIME_OF_DAY);
@@ -133,43 +143,49 @@ public class Accessibility {
         // Calculate Hansen TripGenAccessibility (recalculated every year)
 
         logger.info("  Calculating accessibilities for " + year);
-        float alphaAuto = Properties.get().accessibility.alphaAuto;
-        float betaAuto = Properties.get().accessibility.betaAuto;
-        float alphaTransit = Properties.get().accessibility.alphaTransit;
-        float betaTransit = Properties.get().accessibility.betaTransit;
+        final float alphaAuto = Properties.get().accessibility.alphaAuto;
+        final float betaAuto = Properties.get().accessibility.betaAuto;
+        final float alphaTransit = Properties.get().accessibility.alphaTransit;
+        final float betaTransit = Properties.get().accessibility.betaTransit;
 
-        int[] zones = geoData.getZones();
-        int[] pop = SummarizeData.getPopulationByZone(geoData);
-        autoAccessibility = new double[zones.length];
-        transitAccessibility = new double[zones.length];
         int counter = 0;
-        for (int orig: zones) {
+        for (Zone orig: geoData.getZones().values()) {
+
             if(Math.log10(counter) / Math.log10(2.) % 1 == 0) {
                 logger.info(counter + " accessibilities calculated");
             }
-            autoAccessibility[geoData.getZoneIndex(orig)] = 0;
-            transitAccessibility[geoData.getZoneIndex(orig)] = 0;
-            for (int dest: zones) {
+            double autoAccessibility = 0;
+            double transitAccessibility = 0;
+
+            for (Zone dest: geoData.getZones().values()) {
+
                 double autoImpedance;
-                double autoTravelTime = getPeakAutoTravelTime(orig, dest);
-                if (autoTravelTime == 0) {      // should never happen for auto
+                double autoTravelTime = getPeakAutoTravelTime(orig.getId(), dest.getId());
+
+                if (autoTravelTime == 0) {
                     autoImpedance = 0;
+                    logger.debug("Auto travel time of 0 between zones " + orig.getId() + " and "
+                            + dest.getId() + "! Should never happen for auto!");
                 } else {
                     autoImpedance = Math.exp(betaAuto * autoTravelTime);
                 }
+
                 double transitImpedance;
-                double transitTravelTime = getPeakTransitTravelTime(orig, dest);
-                if (transitTravelTime == 0) {   // zone is not connected by walk-to-transit
+                double transitTravelTime = getPeakTransitTravelTime(orig.getId(), dest.getId());
+
+                if (transitTravelTime == 0) {
+                    logger.debug("Zone " + orig.getId() + " and " + dest.getId() + ": transit travel time is zero. Assuming zones are not connected by walk-to-transit");
                     transitImpedance = 0;
                 } else {
                     transitImpedance = Math.exp(betaTransit * transitTravelTime);
                 }
-                // dz: zone "orig" and its zoneIndex "GeoDataMstm.getZoneIndex(orig)" are different!!
-                // "orig" is the ID of the zone and zoneIndex is its location in the array
-                // zoneIndex is "indexArray for array" zones
-                autoAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaAuto) * autoImpedance;
-                transitAccessibility[geoData.getZoneIndex(orig)] += Math.pow(pop[dest], alphaTransit) * transitImpedance;
+                int population = dest.getPopulation();
+                autoAccessibility += Math.pow(population, alphaAuto) * autoImpedance;
+                transitAccessibility += Math.pow(population, alphaTransit) * transitImpedance;
             }
+
+            autoAccessibilityByZone.put(orig.getId(), autoAccessibility);
+            transitAccessibilityByZone.put(orig.getId(), transitAccessibility);
             counter++;
         }
         
@@ -203,15 +219,16 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 */
 		
 		
-        autoAccessibility = SiloUtil.scaleArray(autoAccessibility, 100);
-        transitAccessibility = SiloUtil.scaleArray(transitAccessibility, 100);
+        SiloUtil.scaleMap(autoAccessibilityByZone, 100);
+        SiloUtil.scaleMap(transitAccessibilityByZone, 100);
 
-        regionalAccessibility = new double[geoData.getRegionList().length];
-        for (int region: geoData.getRegionList()) {
-            int[] zonesInThisRegion = geoData.getZonesInRegion(region);
-            double sm = 0;
-            for (int zone: zonesInThisRegion) sm += autoAccessibility[geoData.getZoneIndex(zone)];
-             regionalAccessibility[geoData.getRegionIndex(region)] = sm / zonesInThisRegion.length;
+        for (Region region: geoData.getRegions().values()) {
+            double regionalAccessibility = 0;
+            for (Zone zone: region.getZones()) {
+                regionalAccessibility += autoAccessibilityByZone.get(zone.getId());
+            }
+            regionalAccessibility /= region.getZones().size();
+            accessibilityByRegion.put(region.getId(), regionalAccessibility);
         }
     }
 
@@ -232,29 +249,19 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 
 
     private void calculateTravelTimesToRegions() {
-        travelTimeToRegion = new Matrix(geoData.getZones().length, geoData.getRegionList().length);
-        travelTimeToRegion.setExternalNumbersZeroBased(geoData.getZones(), geoData.getRegionList());
-        for (int iz: geoData.getZones()) {
-            float[] minDist = new float[SiloUtil.getHighestVal(geoData.getRegionList())+1];
-            for (int i = 0; i < minDist.length; i++) minDist[i] = Float.MAX_VALUE;
-            for (int jz: geoData.getZones()) {
-                int region = geoData.getRegionOfZone(jz);
-                float travelTime = getPeakAutoTravelTime(iz, jz);
-                minDist[region] = Math.min(minDist[region], travelTime);
+        travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
+
+        for (Zone zone: geoData.getZones().values()) {
+            for(Region region: geoData.getRegions().values()) {
+                double minDist = Double.MAX_VALUE;
+                for(Zone zoneInRegion: region.getZones()) {
+                    float travelTime = getPeakAutoTravelTime(zone.getId(), zoneInRegion.getId());
+                    minDist = Math.min(minDist, travelTime);
+                }
+                travelTimeToRegion.put(zone.getId(), region.getId(), minDist);
             }
-            for (int region: geoData.getRegionList()) travelTimeToRegion.setValueAt(iz, region, minDist[region]);
         }
     }
-
-
-    public double getAutoAccessibility(int zone) {
-        return autoAccessibility[geoData.getZoneIndex(zone)];
-    }
-
-    public double getTransitAccessibility(int zone) {
-        return transitAccessibility[geoData.getZoneIndex(zone)];
-    }
-
 
     public float getWorkTLFD (int minutes) {
         // return probability to commute 'minutes'
@@ -262,14 +269,13 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
         else return 0;
     }
 
-
     public double getRegionalAccessibility (int region) {
-        return regionalAccessibility[geoData.getRegionIndex(region)];
+        return accessibilityByRegion.get(region);
     }
 
 
     public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
-        return travelTimeToRegion.getValueAt(zone, region);
+        return travelTimeToRegion.get(zone, region).floatValue();
     }
 
 

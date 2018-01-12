@@ -217,7 +217,7 @@ public class JobDataManager {
         new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][year][tazIndex]
-        float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getZones().length];
+        float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getZoneIdsArray().length];
 
         // read employment data
         for (int row = 1; row <= jobs.getRowCount(); row++) {
@@ -253,7 +253,7 @@ public class JobDataManager {
             pw.print("zone");
             for (String ind: JobType.getJobTypes()) pw.print("," + ind);
             pw.println();
-            for (int zone: geoData.getZones()) {
+            for (int zone: geoData.getZoneIdsArray()) {
                 pw.print(zone);
                 for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) pw.print("," + jobInventory[jobTp][yr][geoData.getZoneIndex(zone)]);
                 pw.println();
@@ -266,7 +266,7 @@ public class JobDataManager {
     public void identifyVacantJobs() {
         // identify vacant jobs by region (one-time task at beginning of model run only)
 
-        int highestRegionID = SiloUtil.getHighestVal(geoData.getRegionList());
+        int highestRegionID = SiloUtil.getHighestVal(geoData.getRegionIdsArray());
         vacantJobsByRegion = new int[highestRegionID + 1][numberOfStoredVacantJobs + 1];
         vacantJobsByRegion = SiloUtil.setArrayToValue(vacantJobsByRegion, 0);
         vacantJobsByRegionPos = new int[highestRegionID + 1];
@@ -407,9 +407,9 @@ public class JobDataManager {
 
 
     public void calculateJobDensityByZone() {
-        zonalJobDensity = new float[geoData.getZones().length];
+        zonalJobDensity = new float[geoData.getZoneIdsArray().length];
         for (Job jj: Job.getJobs()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
-        for (int zone: geoData.getZones())
+        for (int zone: geoData.getZoneIdsArray())
             zonalJobDensity[geoData.getZoneIndex(zone)] /= geoData.getSizeOfZoneInAcres(zone);
     }
 
