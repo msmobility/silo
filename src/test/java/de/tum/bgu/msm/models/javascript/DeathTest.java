@@ -13,7 +13,7 @@ public class DeathTest {
 
     @Before
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
         calculator = new DeathJSCalculator (reader);
     }
 
@@ -24,7 +24,7 @@ public class DeathTest {
 
     @Test
     public void testModelFailures() {
-        Assert.assertEquals(0.410106, calculator.calculateDeathProbability(200, 0), 0.);
+        Assert.assertEquals(0.410106, calculator.calculateDeathProbability(200, 1), 0.);
     }
 
     @Test(expected = RuntimeException.class)
