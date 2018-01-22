@@ -2,6 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.math.LongMath;
 import com.pb.common.matrix.Matrix;
+import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Person;
@@ -40,6 +41,7 @@ public class AssignJobs {
         calculateDistanceImpedance();
         identifyVacantJobsByZoneType();
         shuffleWorkers();
+        logger.info("Number of workers " + workerArrayList.size());
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
             int[] workplace = selectWorkplace(pp.getHomeTaz(), selectedJobType);
@@ -60,11 +62,15 @@ public class AssignJobs {
    private void calculateDistanceImpedance(){
 
         distanceImpedance = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+        Map<Integer, Float> utilityHBW = dataSetSynPop.getTripLengthDistribution().column("HBW");
         for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
             for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                double value = Math.exp(PropertiesSynPop.get().main.alphaJob *
-                        Math.exp(dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j) * PropertiesSynPop.get().main.gammaJob));
-                distanceImpedance.setValueAt(i, j, (float)value);
+                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+                float utility = 0.00000001f;
+                if (distance < 200){
+                    utility = utilityHBW.get(distance);
+                }
+                distanceImpedance.setValueAt(i, j, utility);
             }
         }
     }
@@ -85,7 +91,8 @@ public class AssignJobs {
         if (numberZonesByType.get(selectedJobType) > 0) {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = distanceImpedance.getValueAt(homeTaz, ids[id] / 100) * numberVacantJobsByZoneByType.get(ids[id]));
+            RowVector distances = distanceImpedance.getRow(homeTaz);
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(distances.getValueAt(ids[id] / 100) * Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45)));
             workplace = select(probs, ids);
         } else {
             workplace[0] = -2;
@@ -141,6 +148,7 @@ public class AssignJobs {
             }
         }
         //get the totals
+        int count = 0;
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
                 int type = jobIntTypes.get(jj.getType());
@@ -152,8 +160,11 @@ public class AssignJobs {
                 //update the number of vacant jobs per job type
                 numberVacantJobsByType.put(type, numberVacantJobsByType.get(type) + 1);
                 numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+                count++;
             }
         }
+        logger.info("Number of vacant jobs " + count);
+
         //create the IDs Hashmaps and reset the counters
         for (String jobType : PropertiesSynPop.get().main.jobStringType){
             int type = jobIntTypes.get(jobType);

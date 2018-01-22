@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
@@ -20,9 +21,12 @@ public class Allocation extends ModuleSynPop{
     @Override
     public void run(){
         logger.info("   Started allocation model.");
-        //generateHouseholdsPersonsDwellings();
-        //generateJobs();
-        readPopulation();
+        if (PropertiesSynPop.get().main.runAllocation) {
+            generateHouseholdsPersonsDwellings();
+            generateJobs();
+        } else {
+            readPopulation();
+        }
         assignJobs();
         assignSchools();
         validateTripLengths();

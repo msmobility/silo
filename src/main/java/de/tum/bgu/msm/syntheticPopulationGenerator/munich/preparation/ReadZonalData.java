@@ -11,6 +11,9 @@ import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +33,7 @@ public class ReadZonalData {
         readCities();
         readZones();
         readDistanceMatrix();
+        readTripLengthFrequencyDistribution();
     }
 
     private void readCities() {
@@ -160,5 +164,45 @@ public class ReadZonalData {
         }
         dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
+    }
+
+
+    private void readTripLengthFrequencyDistribution(){
+        logger.info("   Starting to read trip length frequency distributions");
+        String fileName = PropertiesSynPop.get().main.tripLengthDistributionFileName;
+        String recString = "";
+        Table<Integer, String, Float> frequencies = HashBasedTable.create();
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId = SiloUtil.findPositionInArray("km", header);
+            int posHBW = SiloUtil.findPositionInArray("HBW",header);
+            int posPrimarySecondary = SiloUtil.findPositionInArray("Primary",header);
+            int posTertiary = SiloUtil.findPositionInArray("Tertiary",header);
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                String[] lineElements = recString.split(",");
+                int length  = Integer.parseInt(lineElements[posId]);
+                float hbw  = Float.parseFloat(lineElements[posHBW]);
+                float primary  = Float.parseFloat(lineElements[posPrimarySecondary]);
+                float tertiary  = Float.parseFloat(lineElements[posTertiary]);
+                frequencies.put(length,"HBW", hbw);
+                frequencies.put(length, "Primary", primary);
+                frequencies.put(length, "Tertiary", tertiary);
+            }
+
+
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop job file: " + fileName);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        dataSetSynPop.setTripLengthDistribution(frequencies);
+
     }
 }

@@ -14,6 +14,7 @@ public class MainPropertiesSynPop {
     public final String microDataFile;
     public final int yearMicroData;
     public final boolean runIPU;
+    public final boolean runAllocation;
     public final boolean twoGeographicalAreasIPU;
     public final String[] attributesMunicipality;
     public final TableDataSet marginalsMunicipality;
@@ -48,6 +49,7 @@ public class MainPropertiesSynPop {
     public final double incomeRate;
     public final double[] incomeProbability;
     public final TableDataSet probabilitiesJob;
+    public final String tripLengthDistributionFileName;
     public final String householdsFileName;
     public final String personsFileName;
     public final String dwellingsFileName;
@@ -74,6 +76,7 @@ public class MainPropertiesSynPop {
         microDataFile = ResourceUtil.getProperty(bundle, "micro.data.2010");
         yearMicroData = ResourceUtil.getIntegerProperty(bundle, "year.micro.data");
         runIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop");
+        runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.allocation.synthetic.pop", false);
         twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
 
         extractMicroData = ResourceUtil.getBooleanProperty(bundle, "only.extract.microdata", false);
@@ -104,6 +107,7 @@ public class MainPropertiesSynPop {
         alphaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
         gammaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);
         jobsTable = SiloUtil.readCSVfile(bundle.getString("jobs.dictionary"));
+        tripLengthDistributionFileName = ResourceUtil.getProperty(bundle, "trip.length.distribution");
         probabilitiesJob = SiloUtil.readCSVfile(bundle.getString("employment.probability"));
         probabilitiesJob.buildStringIndex(1);
 

@@ -42,6 +42,7 @@ public class DataSetSynPop {
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
     private Map<Integer, Map<String, Float>> jobProbability;
+    private Table<Integer, String, Float> tripLengthDistribution;
 
     private Matrix distanceTazToTaz;
 
@@ -250,5 +251,13 @@ public class DataSetSynPop {
 
     public void setTazIDs(int[] tazIDs) {
         this.tazIDs = tazIDs;
+    }
+
+    public Table<Integer, String, Float> getTripLengthDistribution() {
+        return tripLengthDistribution;
+    }
+
+    public void setTripLengthDistribution(Table<Integer, String, Float> tripLengthDistribution) {
+        this.tripLengthDistribution = tripLengthDistribution;
     }
 }

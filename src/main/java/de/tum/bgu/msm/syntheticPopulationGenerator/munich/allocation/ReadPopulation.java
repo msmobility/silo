@@ -120,7 +120,7 @@ public class ReadPopulation {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = new Person(id, hhid, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = new Person(id, hhid, age, gender, race, occupation, 0, income); //this automatically puts it in id->person map in Person class
                 pp.setRole(pr);
                 String nationality = lineElements[posNationality];
                 Nationality nat = Nationality.german;
@@ -140,7 +140,7 @@ public class ReadPopulation {
                 pp.setNationality(nat);
                 pp.setEducationLevel(education);
                 pp.setZone(homeZone);
-                pp.setSchoolPlace(schoolTAZ);
+                pp.setSchoolPlace(0);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
@@ -257,7 +257,7 @@ public class ReadPopulation {
                 int zone    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                new Job(id, zone, worker, type);
+                new Job(id, zone, -1, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                     Job.getJobFromId(id).logAttributes(SiloUtil.trackWriter);

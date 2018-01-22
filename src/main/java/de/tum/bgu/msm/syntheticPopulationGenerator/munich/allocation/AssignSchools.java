@@ -64,11 +64,16 @@ public class AssignSchools {
 
         distanceImpedanceTertiary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
         distanceImpedancePrimarySecondary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+        Map<Integer, Float> utilityMapTertiary = dataSetSynPop.getTripLengthDistribution().column("Tertiary");
         for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
             for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                distanceImpedanceTertiary.setValueAt(i,j,(float) Math.exp(PropertiesSynPop.get().main.alphaJob *
-                        Math.exp(dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j) * PropertiesSynPop.get().main.gammaJob)));
-                distanceImpedancePrimarySecondary.setValueAt(i,j,dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j));
+                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+                float utilityTertiary = 0.00000001f;
+                if (distance < 200){
+                    utilityTertiary = utilityMapTertiary.get(distance);
+                }
+                distanceImpedanceTertiary.setValueAt(i,j,utilityTertiary);
+                distanceImpedancePrimarySecondary.setValueAt(i,j, distance);
             }
         }
     }
