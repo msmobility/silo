@@ -207,7 +207,7 @@ var calculateDeathProbability = function(personAge, personSex) {
         } else if (personAge >= 100){
              alpha = 0.410106;
         }
-    } else {
+    } else if(personSex == 2) {
     // sex = female
        if (personAge == 0){
             alpha = 0.00300213;
@@ -417,7 +417,7 @@ var calculateDeathProbability = function(personAge, personSex) {
     if (personAge < 0){
         throw new Error("Undefined negative person age!"+personAge)
     }
-    if (personSex != 1 && personSex != 0) {
+    if (personSex != 1 && personSex != 2) {
         throw new Error("Undefined personSex: "+personSex)
     }
 

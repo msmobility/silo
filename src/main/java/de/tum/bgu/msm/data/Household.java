@@ -178,9 +178,8 @@ public final class Household {
     }
 
     public void removePerson (Person person, SiloDataContainer dataContainer) {
-        // remove this person from household and reduce household size by one
-        if (persons.size() >= 2) {
-            persons.remove(person);
+        persons.remove(person);
+        if(!persons.isEmpty()) {
             setType();
             determineHouseholdRace();
         } else {
@@ -194,6 +193,9 @@ public final class Household {
 
     public void addPerson(Person person) {
         // add existing person per (not a newborn child) to household
+        if(persons.contains(person)) {
+            throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + this.getId());
+        }
         persons.add(person);
         person.setHousehold(this);
         setType();
@@ -252,5 +254,14 @@ public final class Household {
             thhs.put(household.getHhId(), household);
         }
         return thhs;
+    }
+
+    public boolean checkIfOnlyChildrenRemaining() {
+        for (Person person: persons) {
+           if(person.getAge() >= 16) {
+               return false;
+           }
+        }
+        return true;
     }
 }

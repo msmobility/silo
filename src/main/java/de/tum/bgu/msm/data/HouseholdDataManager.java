@@ -528,26 +528,26 @@ public class HouseholdDataManager {
 
     public static Person findMostLikelyPartner(Person per, Household hh) {
         // find married partner that fits best for person per
-        List<Person> persons = hh.getPersons();
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
         Person selectedPartner = null;
-        for (Person partner: persons) {
-            if (partner.getGender() != per.getGender() && partner.getRole() == PersonRole.married) {
+        for(Person partner: hh.getPersons()) {
+            if (!partner.equals(per) && partner.getGender() != per.getGender() && partner.getRole() == PersonRole.married) {
                 final int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
-                    tempUtil = 2;
+                    tempUtil = 2.;
                 } else  {
                     tempUtil = 1. / ageDiff;
                 }
                 if (tempUtil > highestUtil) {
+                    highestUtil = tempUtil;
                     selectedPartner = partner;     // find most likely partner
                 }
             }
         }
         if (selectedPartner == null) {
             logger.error("Could not find spouse of person " + per.getId() + " in household " + hh.getId());
-            for (Person person: persons) {
+            for (Person person: hh.getPersons()) {
                 logger.error("Houshold member " + person.getId() + " (gender: " + person.getGender() + ") is " +
                         person.getRole());
             }
@@ -1041,5 +1041,4 @@ public class HouseholdDataManager {
     public Map<Integer, int[]> getUpdatedHouseholds() {
         return updatedHouseholds;
     }
-
 }

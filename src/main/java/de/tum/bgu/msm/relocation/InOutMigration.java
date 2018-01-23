@@ -153,7 +153,6 @@ public class InOutMigration {
                     ppRace, imData[4 + k], -1, imData[5 + k]);
             hh.addPerson(per);
             k += 6;
-            hh.addPerson(per);
         }
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
