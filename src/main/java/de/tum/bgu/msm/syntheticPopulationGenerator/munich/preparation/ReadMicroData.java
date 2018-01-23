@@ -3,6 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -27,7 +29,10 @@ public class ReadMicroData {
     private Table<Integer, String, Integer> personTable = HashBasedTable.create();
     private Table<Integer, String, Integer> householdTable = HashBasedTable.create();
     private Table<Integer, String, Integer> dwellingTable = HashBasedTable.create();
-    private Map<Integer, Map<String, Integer>> dwellings = new HashMap<>();
+
+    private TableDataSet personDataSet;
+    private TableDataSet householdDataSet;
+    private TableDataSet dwellingDataSet;
 
     public ReadMicroData(DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -72,6 +77,8 @@ public class ReadMicroData {
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
 
+        generateTableDataSet(hhCount, personCount);
+
         //read the micro data and assign the characteristics
         hhCount = 0;
         personCount = 0;
@@ -106,6 +113,9 @@ public class ReadMicroData {
         dataSetSynPop.setPersonTable(personTable);
         dataSetSynPop.setHouseholdTable(householdTable);
         dataSetSynPop.setDwellingTable(dwellingTable);
+        dataSetSynPop.setPersonDataSet(personDataSet);
+        dataSetSynPop.setHouseholdDataSet(householdDataSet);
+        dataSetSynPop.setDwellingDataSet(dwellingDataSet);
     }
 
 
@@ -125,39 +135,79 @@ public class ReadMicroData {
 
 
     private void updateMicroPersons(int personCount, int hhCount, int householdNumber, String recString){
-
         personTable.put(personCount, "id", personCount);
         personTable.put(personCount,"idHh",hhCount);
         personTable.put(personCount,"recordHh",householdNumber);
+        personDataSet.setValueAt(personCount, "id", personCount);
+        personDataSet.setValueAt(personCount, "idHh", hhCount);
+        personDataSet.setValueAt(personCount, "recordHh", householdNumber);
         for (Map.Entry<String, Map<String, Integer>> pair : attributesPersonMicroData.entrySet()){
             int start = pair.getValue().get("initial");
             int finish = pair.getValue().get("end");
             personTable.put(personCount, pair.getKey(),convertToInteger(recString.substring(start,finish)));
+            personDataSet.setValueAt(personCount, pair.getKey(), convertToInteger(recString.substring(start,finish)));
         }
     }
 
 
     private void updateMicroHouseholds(int hhCount, int householdNumber, int personCount,  String recString){
-
         householdTable.put(hhCount,"id", hhCount);
         householdTable.put(hhCount, "recordHh", householdNumber);
         householdTable.put(hhCount,"personCount", personCount);
+        householdDataSet.setValueAt(hhCount, "id", hhCount);
+        householdDataSet.setValueAt(hhCount, "recordHh", householdNumber);
+        householdDataSet.setValueAt(hhCount, "personCount", personCount);
         for (Map.Entry<String, Map<String, Integer>> pair : attributesHouseholdMicroData.entrySet()){
             int start = pair.getValue().get("initial");
             int finish = pair.getValue().get("end");
             householdTable.put(hhCount, pair.getKey(),convertToInteger(recString.substring(start,finish)));
+            householdDataSet.setValueAt(hhCount, pair.getKey(), convertToInteger(recString.substring(start,finish)));
         }
     }
 
 
     private void updateMicroDwellings(int hhCount, String recString){
-
         dwellingTable.put(hhCount, "id", hhCount);
+        dwellingDataSet.setValueAt(hhCount, "id", hhCount);
         for (Map.Entry<String, Map<String, Integer>> pair : attributesDwellingMicroData.entrySet()){
             int start = pair.getValue().get("initial");
             int finish = pair.getValue().get("end");
             dwellingTable.put(hhCount, pair.getKey(),convertToInteger(recString.substring(start,finish)));
+            dwellingDataSet.setValueAt(hhCount, pair.getKey(), convertToInteger(recString.substring(start,finish)));
         }
+    }
+
+    private void generateTableDataSet(int hhCount, int ppCount){
+
+        householdDataSet = new TableDataSet();
+        appendNewColumnToTDS(householdDataSet, "id", hhCount);
+        appendNewColumnToTDS(householdDataSet, "recordHh", hhCount);
+        appendNewColumnToTDS(householdDataSet, "personCount", hhCount);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesHouseholdMicroData.entrySet()){
+            String variableName = pair.getKey();
+            appendNewColumnToTDS(householdDataSet, variableName, hhCount);
+        }
+        personDataSet = new TableDataSet();
+        appendNewColumnToTDS(personDataSet, "id", ppCount);
+        appendNewColumnToTDS(personDataSet, "idHh", ppCount);
+        appendNewColumnToTDS(personDataSet, "recordHh", ppCount);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesPersonMicroData.entrySet()){
+            String variableName = pair.getKey();
+            appendNewColumnToTDS(personDataSet, variableName, ppCount);
+        }
+        dwellingDataSet = new TableDataSet();
+        appendNewColumnToTDS(dwellingDataSet, "id", hhCount);
+        for (Map.Entry<String, Map<String, Integer>> pair : attributesDwellingMicroData.entrySet()){
+            String variableName = pair.getKey();
+            appendNewColumnToTDS(dwellingDataSet, variableName, hhCount);
+        }
+    }
+
+
+    private void appendNewColumnToTDS(TableDataSet tableDataSet, String columnName, int length){
+
+        int[] dummy = SiloUtil.createArrayWithValue(length, 0);
+        tableDataSet.appendColumn(dummy, columnName);
     }
 
 

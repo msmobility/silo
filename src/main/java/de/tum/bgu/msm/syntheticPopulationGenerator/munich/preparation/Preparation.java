@@ -6,8 +6,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class Preparation extends ModuleSynPop {
 
@@ -38,6 +36,7 @@ public class Preparation extends ModuleSynPop {
         read.run();
     }
 
+
     private void readMicroData(){
         ReadMicroData read = new ReadMicroData(dataSetSynPop);
         read.run();
@@ -63,9 +62,9 @@ public class Preparation extends ModuleSynPop {
 
 
     private void writeMicroData(){
-        /*SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataPersons(), PropertiesSynPop.get().main.microPersonsFileName);
-        SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataHouseholds(), PropertiesSynPop.get().main.microHouseholdsFileName);
-        SiloUtil.writeTableDataSet(dataSetSynPop.getMicroDataDwellings(), PropertiesSynPop.get().main.microDwellingsFileName);*/
+        SiloUtil.writeTableDataSet(dataSetSynPop.getPersonDataSet(), PropertiesSynPop.get().main.microPersonsFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getHouseholdDataSet(), PropertiesSynPop.get().main.microHouseholdsFileName);
+        SiloUtil.writeTableDataSet(dataSetSynPop.getDwellingDataSet(), PropertiesSynPop.get().main.microDwellingsFileName);
     }
 
 }

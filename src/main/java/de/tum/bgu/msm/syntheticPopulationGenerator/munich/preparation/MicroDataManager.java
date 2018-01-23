@@ -3,7 +3,6 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.commons.math.MathException;
@@ -503,7 +502,6 @@ public class MicroDataManager {
                 type = DwellingType.MF5plus;
             }
         }
-
         return type;
     }
 
@@ -523,7 +521,6 @@ public class MicroDataManager {
         } else {
             bedrooms = 5;
         }
-
         return bedrooms;
     }
 
@@ -592,7 +589,6 @@ public class MicroDataManager {
         } else {
             yearBracket = 9;
         }
-
         return yearBracket;
     }
 
@@ -650,6 +646,5 @@ public class MicroDataManager {
             }
         }
         return cumProbability.length - 1;
-
     }
 }

@@ -54,9 +54,7 @@ public class PrepareFrequencyMatrix {
                 frequencyMatrix.setValueAt(i, "MUCpopulation", hhSize);
             }
         }
-
         dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
-
         logger.info("   Finished creating the frequency matrix");
 
     }

@@ -51,7 +51,9 @@ public class DataSetSynPop {
     private Table<Integer, String, Integer> householdTable;
     private Table<Integer, String, Integer> personTable;
     private Table<Integer, String, Integer> dwellingTable;
-
+    private TableDataSet householdDataSet;
+    private TableDataSet personDataSet;
+    private TableDataSet dwellingDataSet;
 
     public TableDataSet getWeights() {
         return weights;
@@ -259,5 +261,29 @@ public class DataSetSynPop {
 
     public void setTripLengthDistribution(Table<Integer, String, Float> tripLengthDistribution) {
         this.tripLengthDistribution = tripLengthDistribution;
+    }
+
+    public TableDataSet getHouseholdDataSet() {
+        return householdDataSet;
+    }
+
+    public void setHouseholdDataSet(TableDataSet householdDataSet) {
+        this.householdDataSet = householdDataSet;
+    }
+
+    public TableDataSet getPersonDataSet() {
+        return personDataSet;
+    }
+
+    public void setPersonDataSet(TableDataSet personDataSet) {
+        this.personDataSet = personDataSet;
+    }
+
+    public TableDataSet getDwellingDataSet() {
+        return dwellingDataSet;
+    }
+
+    public void setDwellingDataSet(TableDataSet dwellingDataSet) {
+        this.dwellingDataSet = dwellingDataSet;
     }
 }
