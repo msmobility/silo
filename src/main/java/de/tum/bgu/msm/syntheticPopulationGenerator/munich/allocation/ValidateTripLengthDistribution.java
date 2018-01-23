@@ -23,20 +23,20 @@ public class ValidateTripLengthDistribution {
 
     public void run(){
         logger.info("   Running module: read population");
-        summarizeCommutersFlow();
-        summarizeStudentsFlow();
+        summarizeCommutersTripLength();
+        summarizeStudentsTripLength();
     }
 
 
-    private void summarizeCommutersFlow(){
+    private void summarizeCommutersTripLength(){
         ArrayList<Person> workerArrayList = obtainWorkers();
         Frequency travelTimes = obtainFlows(workerArrayList);
         summarizeFlows(travelTimes, "microData/interimFiles/tripLengthDistributionWork.csv");
     }
 
 
-    private void summarizeStudentsFlow(){
-        for (int school = 1; school <=3 ; school++){
+    private void summarizeStudentsTripLength(){
+        for (int school = 1; school <= 3 ; school++){
             ArrayList<Person> studentArrayList = obtainStudents(school);
             Frequency travelTimes = obtainFlows(studentArrayList);
             summarizeFlows(travelTimes, "microData/interimFiles/tripLengthDistributionSchool" + school + ".csv");
@@ -57,7 +57,6 @@ public class ValidateTripLengthDistribution {
 
 
     private Frequency obtainFlows(ArrayList<Person> workerArrayList){
-
         Frequency commuteDistance = new Frequency();
         for (Person pp : workerArrayList){
             if (pp.getJobTAZ() > 0){
@@ -98,7 +97,6 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainStudents (int school){
-
         Map<Integer, Person> personMap = Person.getPersonMap();
         ArrayList<Person> workerArrayList = new ArrayList<>();
         for (Map.Entry<Integer, Person> pair : personMap.entrySet()) {
