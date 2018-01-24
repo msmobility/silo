@@ -124,7 +124,7 @@ public class JobDataManager {
                 new Job(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
-                    Job.getJobFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(Job.getJobFromId(id).toString());
                 }
             }
         } catch (IOException e) {

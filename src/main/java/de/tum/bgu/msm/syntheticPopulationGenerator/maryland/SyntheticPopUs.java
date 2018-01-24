@@ -182,7 +182,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                         new Job (id, zone, -1, JobType.getJobType(jobTp));
                         if (id == SiloUtil.trackJj) {
                             SiloUtil.trackWriter.println("Generated job with following attributes:");
-                            Job.getJobFromId(id).logAttributes(SiloUtil.trackWriter);
+                            SiloUtil.trackWriter.println(Job.getJobFromId(id).toString());
                         }
                     }
                 }

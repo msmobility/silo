@@ -491,7 +491,7 @@ public class SummarizeData {
             pwj.println("\"");
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                jj.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(jj.toString());
             }
         }
         pwj.close();
@@ -627,7 +627,7 @@ public class SummarizeData {
             pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                jj.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(jj.toString());
             }
         }
         pwj.close();
@@ -773,7 +773,7 @@ public class SummarizeData {
             pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                jj.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(jj.toString());
             }
         }
         pwj.close();
@@ -909,7 +909,7 @@ public class SummarizeData {
             pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                jj.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(jj.toString());
             }
         }
         pwj.close();

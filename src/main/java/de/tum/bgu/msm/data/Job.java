@@ -70,13 +70,6 @@ public class Job {
         jobMap.remove(id);
     }
 
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of job       " + id);
-        pw.println ("Located in zone         " + zone);
-        pw.println ("Filled by person        " + workerId);
-        pw.println ("Job type                " + type);
-    }
-
     public int getId () {
         return id;
     }
@@ -97,4 +90,15 @@ public class Job {
         this.workerId = personID;
     }
 
+    @Override
+    public String toString() {
+        return "Attributes of job       \n"
+                + id
+                + "Located in zone         \n"
+                + zone
+                + "Filled by person        \n"
+                + workerId
+                + "Job type                \n"
+                + type;
+    }
  }
