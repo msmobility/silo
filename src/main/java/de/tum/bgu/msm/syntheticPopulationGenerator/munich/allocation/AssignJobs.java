@@ -105,9 +105,12 @@ public class AssignJobs {
 
         Map<Integer, Person> personMap = Person.getPersonMap();
         workerArrayList = new ArrayList<>();
+        //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
             if (pair.getValue().getOccupation() == 1){
                 workerArrayList.add(pair.getValue());
+                pair.getValue().setWorkplace(-1);
+                pair.getValue().setJobTAZ(-1);
             }
         }
         Collections.shuffle(workerArrayList);
@@ -150,18 +153,19 @@ public class AssignJobs {
         //get the totals
         int count = 0;
         for (Job jj: jobs) {
-            if (jj.getWorkerId() == -1) {
-                int type = jobIntTypes.get(jj.getType());
-                int typeZone = type + jj.getZone() * 100;
-                //update the set of zones that have ID
-                if (numberVacantJobsByZoneByType.get(typeZone) == 0){
-                    numberZonesByType.put(type, numberZonesByType.get(type) + 1);
-                }
-                //update the number of vacant jobs per job type
-                numberVacantJobsByType.put(type, numberVacantJobsByType.get(type) + 1);
-                numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
-                count++;
+            //set all jobs vacant to allocate them
+            jj.setWorkerID(-1);
+            int type = jobIntTypes.get(jj.getType());
+            int typeZone = type + jj.getZone() * 100;
+            //update the set of zones that have ID
+            if (numberVacantJobsByZoneByType.get(typeZone) == 0){
+                numberZonesByType.put(type, numberZonesByType.get(type) + 1);
             }
+            //update the number of vacant jobs per job type
+            numberVacantJobsByType.put(type, numberVacantJobsByType.get(type) + 1);
+            numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+            count++;
+
         }
         logger.info("Number of vacant jobs " + count);
 
@@ -180,23 +184,23 @@ public class AssignJobs {
         }
         //fill the Hashmaps with IDs
         for (Job jj: jobs) {
-            if (jj.getWorkerId() == -1) {
-                int type = jobIntTypes.get(jj.getType());
-                int typeZone = jobIntTypes.get(jj.getType()) + jj.getZone() * 100;
-                //update the list of job IDs per zone and job type
-                int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
-                previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();
-                idVacantJobsByZoneType.put(typeZone,previousJobIDs);
-                //update the set of zones that have ID
-                if (numberVacantJobsByZoneByType.get(typeZone) == 0){
-                    int[] previousZones = idZonesVacantJobsByType.get(type);
-                    previousZones[numberZonesByType.get(type)] = typeZone;
-                    idZonesVacantJobsByType.put(type,previousZones);
-                    numberZonesByType.put(type, numberZonesByType.get(type) + 1);
-                }
-                //update the number of vacant jobs per job type
-                numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+            //all jobs are vacant in this step of the synthetic population
+            int type = jobIntTypes.get(jj.getType());
+            int typeZone = jobIntTypes.get(jj.getType()) + jj.getZone() * 100;
+            //update the list of job IDs per zone and job type
+            int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
+            previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();
+            idVacantJobsByZoneType.put(typeZone,previousJobIDs);
+            //update the set of zones that have ID
+            if (numberVacantJobsByZoneByType.get(typeZone) == 0){
+                int[] previousZones = idZonesVacantJobsByType.get(type);
+                previousZones[numberZonesByType.get(type)] = typeZone;
+                idZonesVacantJobsByType.put(type,previousZones);
+                numberZonesByType.put(type, numberZonesByType.get(type) + 1);
             }
+            //update the number of vacant jobs per job type
+            numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+
         }
     }
 

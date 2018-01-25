@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;

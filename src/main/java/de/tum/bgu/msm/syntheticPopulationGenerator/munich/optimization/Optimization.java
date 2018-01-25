@@ -9,8 +9,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-
 public class Optimization extends ModuleSynPop{
 
     private static final Logger logger = Logger.getLogger(Optimization.class);
@@ -35,24 +33,22 @@ public class Optimization extends ModuleSynPop{
     private void obtainWeightsIPU(){
         if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
             createWeightsAndErrorsCountyandCity();
-            IPUbyCountyAndCity ipu = new IPUbyCountyAndCity(dataSetSynPop);
-            ipu.run();
+            new IPUbyCountyAndCity(dataSetSynPop).run();
             if (PropertiesSynPop.get().main.boroughIPU){
-                IPUbyCountyCityAndBorough ipuMunichCity = new IPUbyCountyCityAndBorough(dataSetSynPop);
-                ipuMunichCity.run(9162);
-                ipuMunichCity.refineCities(9162);
+                IPUbyCountyCityAndBorough ipuWithThreeGeographicalAreas = new IPUbyCountyCityAndBorough(dataSetSynPop);
+                for (int county : dataSetSynPop.getBoroughsByCounty().keySet()) {
+                    ipuWithThreeGeographicalAreas.run(county);
+                }
             }
         } else {
             createWeightsAndErrorsCity();
-            IPUbyCity ipu = new IPUbyCity(dataSetSynPop);
-            ipu.run();
+            new IPUbyCity(dataSetSynPop).run();
         }
     }
 
 
     private void readIPUresults(){
-        ReadIPU ipu = new ReadIPU(dataSetSynPop);
-        ipu.run();
+        new ReadIPU(dataSetSynPop).run();
     }
 
 
@@ -91,16 +87,11 @@ public class Optimization extends ModuleSynPop{
                     PropertiesSynPop.get().main.attributesMunicipality, dataSetSynPop.getCityIDs());
         if (PropertiesSynPop.get().main.boroughIPU) {
             TableDataSet errorsBorough = new TableDataSet();
-            int[] cityIds = Ints.toArray(dataSetSynPop.getMunicipalitiesByCounty().get(9162));
-            for (int city : cityIds){
-                int[] boroughIds = Ints.toArray(dataSetSynPop.getBoroughsByCity().get(city));
-                errorsBorough = SiloUtil.initializeTableDataSet(errorsBorough,
-                        PropertiesSynPop.get().main.attributesBorough, boroughIds);
-            }
+            int[] boroughIds = Ints.toArray(dataSetSynPop.getBoroughs());
+            errorsBorough = SiloUtil.initializeTableDataSet(errorsBorough, PropertiesSynPop.get().main.attributesBorough, boroughIds);
             dataSetSynPop.setErrorsBorough(errorsBorough);
         }
         errorsSummary =  SiloUtil.initializeTableDataSet(errorsSummary, labels, dataSetSynPop.getCountyIDs());
-
         dataSetSynPop.setErrorsCounty(errorsCounty);
         dataSetSynPop.setErrorsMunicipality(errorsMunicipality);
         dataSetSynPop.setErrorsSummary(errorsSummary);

@@ -22,42 +22,41 @@ public class Preparation extends ModuleSynPop {
 
         logger.info("   Started input data preparation.");
         readZonalData();
-        readMicroData();
-        translatePersonMicroData();
-        checkHouseholdRelationships();
-        writeMicroData();
-        createFrequencyMatrix();
+        if (PropertiesSynPop.get().main.runAllocation) {
+            readMicroData();
+            translatePersonMicroData();
+            checkHouseholdRelationships();
+            writeMicroData();
+            if (PropertiesSynPop.get().main.runIPU) {
+                createFrequencyMatrix();
+            }
+        }
         logger.info("   Completed input data preparation.");
     }
 
 
     private void readZonalData(){
-        ReadZonalData read = new ReadZonalData(dataSetSynPop);
-        read.run();
+        new ReadZonalData(dataSetSynPop).run();
     }
 
 
     private void readMicroData(){
-        ReadMicroData read = new ReadMicroData(dataSetSynPop);
-        read.run();
+        new ReadMicroData(dataSetSynPop).run();
     }
 
 
     private void checkHouseholdRelationships(){
-        CheckHouseholdRelationship check = new CheckHouseholdRelationship(dataSetSynPop);
-        check.run();
+        new CheckHouseholdRelationship(dataSetSynPop).run();
     }
 
 
     private void translatePersonMicroData(){
-        TranslateMicroDataToCode translate = new TranslateMicroDataToCode(dataSetSynPop);
-        translate.run();
+        new TranslateMicroDataToCode(dataSetSynPop).run();
     }
 
 
     private void createFrequencyMatrix(){
-        PrepareFrequencyMatrix prepareFrequencyMatrix = new PrepareFrequencyMatrix(dataSetSynPop);
-        prepareFrequencyMatrix.run();
+        new PrepareFrequencyMatrix(dataSetSynPop).run();
     }
 
 

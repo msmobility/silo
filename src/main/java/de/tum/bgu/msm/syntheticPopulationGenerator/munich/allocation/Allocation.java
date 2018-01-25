@@ -1,14 +1,14 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
-import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Allocation extends ModuleSynPop{
 
@@ -27,44 +27,59 @@ public class Allocation extends ModuleSynPop{
         } else {
             readPopulation();
         }
-        assignJobs();
-        assignSchools();
-        validateTripLengths();
+        if (PropertiesSynPop.get().main.runJobAllocation) {
+            assignJobs();
+            assignSchools();
+            validateTripLengths();
+        }
         logger.info("   Completed allocation model.");
 
     }
 
     public void generateHouseholdsPersonsDwellings(){
-        GenerateHouseholdsPersonsDwellings generate = new GenerateHouseholdsPersonsDwellings(dataSetSynPop);
-        generate.run();
+        if (PropertiesSynPop.get().main.boroughIPU){
+            for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
+                addBoroughsAsCities(county);
+            }
+        }
+        new GenerateHouseholdsPersonsDwellings(dataSetSynPop).run();
         SummarizeData.writeOutSyntheticPopulationDE(1990);
     }
 
     public void generateJobs(){
-        GenerateJobs generate = new GenerateJobs(dataSetSynPop);
-        generate.run();
+        new GenerateJobs(dataSetSynPop).run();
         SummarizeData.writeOutSyntheticPopulationDE(1991);
     }
 
     public void assignJobs(){
-        AssignJobs assignJobs = new AssignJobs(dataSetSynPop);
-        assignJobs.run();
+        new AssignJobs(dataSetSynPop).run();
     }
 
     public void assignSchools(){
-        AssignSchools assignSchools = new AssignSchools(dataSetSynPop);
-        assignSchools.run();
+        new AssignSchools(dataSetSynPop).run();
         SummarizeData.writeOutSyntheticPopulationDE(1992);
     }
 
     public void readPopulation(){
-        ReadPopulation readPopulation = new ReadPopulation();
-        readPopulation.run();
+        new ReadPopulation().run();
     }
 
     public void validateTripLengths(){
-        ValidateTripLengthDistribution validateTripLengthDistribution = new ValidateTripLengthDistribution(dataSetSynPop);
-        validateTripLengthDistribution.run();
+        new ValidateTripLengthDistribution(dataSetSynPop).run();
+    }
+
+
+    public void addBoroughsAsCities(int county){
+        //Add to the municipality list the boroughs, because they have weights as well
+        //Only if the option of running IPU with three areas is true
+        ArrayList<Integer> newCities = new ArrayList<>();
+        for (int city : dataSetSynPop.getMunicipalities()){
+            if (!dataSetSynPop.getMunicipalitiesByCounty().get(county).contains(city)){
+                newCities.add(city);
+            }
+        }
+        newCities.addAll(dataSetSynPop.getBoroughsByCounty().get(county));
+        dataSetSynPop.setMunicipalities(newCities);
     }
 
 }

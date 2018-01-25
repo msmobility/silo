@@ -41,12 +41,11 @@ public class DataSetSynPop {
     private Map<Integer, Map<Integer, Float>> probabilityZone;
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
-    private Map<Integer, Map<String, Float>> jobProbability;
     private Table<Integer, String, Float> tripLengthDistribution;
 
     private Matrix distanceTazToTaz;
 
-    private HashMap<Integer, ArrayList> boroughsByCity;
+    private HashMap<Integer, ArrayList> boroughsByCounty;
 
     private Table<Integer, String, Integer> householdTable;
     private Table<Integer, String, Integer> personTable;
@@ -167,12 +166,12 @@ public class DataSetSynPop {
         this.probabilityZone = probabilityZone;
     }
 
-    public HashMap<Integer, ArrayList> getBoroughsByCity() {
-        return boroughsByCity;
+    public HashMap<Integer, ArrayList> getBoroughsByCounty() {
+        return boroughsByCounty;
     }
 
-    public void setBoroughsByCity(HashMap<Integer, ArrayList> boroughsByCity) {
-        this.boroughsByCity = boroughsByCity;
+    public void setBoroughsByCounty(HashMap<Integer, ArrayList> boroughsByCounty) {
+        this.boroughsByCounty = boroughsByCounty;
     }
 
     public TableDataSet getErrorsBorough() {
@@ -237,14 +236,6 @@ public class DataSetSynPop {
 
     public void setTazs(ArrayList<Integer> tazs) {
         this.tazs = tazs;
-    }
-
-    public Map<Integer, Map<String, Float>> getJobProbability() {
-        return jobProbability;
-    }
-
-    public void setJobProbability(Map<Integer, Map<String, Float>> jobProbability) {
-        this.jobProbability = jobProbability;
     }
 
     public int[] getTazIDs() {

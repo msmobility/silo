@@ -37,7 +37,7 @@ public class CreateCarOwnershipModel {
         //method to read the zonal data not using geoData
 
         zonalData = SiloUtil.readCSVfile(Properties.get().geo.zonalAttributesFile);
-        zonalData.buildIndex(zonalData.getColumnPosition("ID_cell"));
+        zonalData.buildIndex(zonalData.getColumnPosition("Zone"));
 
         //add a column to store distance to transit pre-populated with 0s
         float[] minDistance = SiloUtil.createArrayWithValue(zonalData.getRowCount(), 0f);
@@ -52,9 +52,9 @@ public class CreateCarOwnershipModel {
         //get minimum time to transit, convert to distance and append to zonal data
         for (int i = 1; i <= zonalData.getRowCount(); i++) {
             float minDist = 9999; // upper limit for distance (in meters) to transit, default for places with no access to transit
-            int origin = (int) zonalData.getValueAt(i, "ID_cell");
+            int origin = (int) zonalData.getValueAt(i, "Zone");
             for (int j = 1; j <= zonalData.getRowCount(); j++) {
-                int dest = (int) zonalData.getValueAt(j, "ID_cell");
+                int dest = (int) zonalData.getValueAt(j, "Zone");
                 // convert time in minutes to distance in meters using a speed of 5 km/h
                 float distance = accessTimeMatrix.getValueAt(origin, dest) * 83.33f;
                 if (distance > 0 & distance < minDist) {

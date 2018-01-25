@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 
-import com.google.common.primitives.Ints;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.utils.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -49,22 +48,6 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public void refineCities(int county){
-
-        ArrayList<Integer> originalCities = dataSetSynPop.getMunicipalities();
-        Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
-        while (iterator.hasNext()){
-            Integer cityToRemove = iterator.next();
-            originalCities.remove(cityToRemove);
-        }
-        Iterator<Integer> iterator1 = dataSetSynPop.getBoroughs().iterator();
-        while (iterator1.hasNext()) {
-            Integer boroughToAdd = iterator1.next();
-            originalCities.add(boroughToAdd);
-        }
-        dataSetSynPop.setMunicipalities(originalCities);
-    }
-
     public void calculateWeights(int county){
 
         //For each attribute at the region level (landkreise), we obtain the weights
@@ -73,7 +56,7 @@ public class IPUbyCountyCityAndBorough {
             Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
             while (iterator1.hasNext()) {
                 Integer municipality = iterator1.next();
-                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                 while (iterator4.hasNext()) {
                     Integer borough = iterator4.next();
                     weightedSumRegion = weightedSumRegion + SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attribute));
@@ -84,7 +67,7 @@ public class IPUbyCountyCityAndBorough {
                 Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
                 while (iterator2.hasNext()) {
                     Integer municipality = iterator2.next();
-                    Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                    Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                     while (iterator4.hasNext()) {
                         Integer borough = iterator4.next();
                         double[] previousWeights = weightsByBorough.get(borough);
@@ -106,14 +89,14 @@ public class IPUbyCountyCityAndBorough {
             Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
             while (iterator1.hasNext()) {
                 Integer municipality = iterator1.next();
-                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                 while (iterator4.hasNext()) {
                     Integer borough = iterator4.next();
                     weightedSumMunicipality = weightedSumMunicipality + SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attribute));
                 }
                 if (weightedSumMunicipality > 0.001) {
                     double updatingFactor = totalMunicipality.get(municipality).get(attribute) / weightedSumMunicipality;
-                    Iterator<Integer> iterator5 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                    Iterator<Integer> iterator5 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                     while (iterator5.hasNext()) {
                         Integer borough = iterator5.next();
                         double[] previousWeights = weightsByBorough.get(borough);
@@ -133,7 +116,7 @@ public class IPUbyCountyCityAndBorough {
         Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator.hasNext()) {
             Integer municipality = iterator.next();
-            Iterator<Integer> iterator5 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+            Iterator<Integer> iterator5 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
             while (iterator5.hasNext()) {
                 Integer borough = iterator5.next();
                 executor.addFunction(() -> {
@@ -168,7 +151,7 @@ public class IPUbyCountyCityAndBorough {
                 Iterator<Integer> iterator1 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
                 while (iterator1.hasNext()) {
                     Integer municipality = iterator1.next();
-                    Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                    Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                     while (iterator4.hasNext()) {
                         Integer borough = iterator4.next();
                         double weightedSum = SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attributeC));
@@ -191,7 +174,7 @@ public class IPUbyCountyCityAndBorough {
                 double errorByCounty = 0.;
                 double weightedSumCounty = 0.;
                 if (totalMunicipality.get(municipality).get(attributeC) > 0) {
-                    Iterator<Integer> iterator1 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                    Iterator<Integer> iterator1 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                     while (iterator1.hasNext()) {
                         Integer borough = iterator1.next();
                         double weightedSum = SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attributeC));
@@ -211,7 +194,7 @@ public class IPUbyCountyCityAndBorough {
         Iterator<Integer> iterator6 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator6.hasNext()){
             Integer municipality = iterator6.next();
-            Iterator<Integer> iterator1 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+            Iterator<Integer> iterator1 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
             while (iterator1.hasNext()) {
                 Integer borough = iterator1.next();
                 Map<String, Double> errorsByBorough1 = Collections.synchronizedMap(new HashMap<>());
@@ -236,7 +219,7 @@ public class IPUbyCountyCityAndBorough {
             Integer municipality = iterator5.next();
             averageErrorIteration = averageErrorIteration + errorByMun.get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
             counter = counter + errorByMun.get(municipality).entrySet().size();
-            Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+            Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
             while (iterator4.hasNext()) {
                 Integer borough = iterator4.next();
                 averageErrorIteration = averageErrorIteration + errorsByBorough.get(borough).values().stream().mapToDouble(Number::doubleValue).sum();
@@ -278,7 +261,7 @@ public class IPUbyCountyCityAndBorough {
             Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
             while (iterator.hasNext()){
                 Integer municipality = iterator.next();
-                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                 while (iterator4.hasNext()) {
                     Integer borough = iterator4.next();
                     double[] minW = weightsByBorough.get(borough);
@@ -306,7 +289,7 @@ public class IPUbyCountyCityAndBorough {
                 float value = errorByMun.get(municipality).get(attribute).floatValue();
                 dataSetSynPop.getErrorsMunicipality().setIndexedValueAt(municipality, attribute, value);
             }
-            Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+            Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
             while (iterator4.hasNext()) {
                 Integer borough = iterator4.next();
                 dataSetSynPop.getWeights().appendColumn(minWeightsByBorough.get(borough), Integer.toString(borough));
@@ -412,7 +395,7 @@ public class IPUbyCountyCityAndBorough {
             Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
             while (iterator.hasNext()) {
                 Integer municipality = iterator.next();
-                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCity().get(municipality).iterator();
+                Iterator<Integer> iterator4 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
                 while (iterator4.hasNext()) {
                     Integer borough = iterator4.next();
                     double[] dummy = SiloUtil.createArrayWithValue(dataSetSynPop.getFrequencyMatrix().getRowCount(), 1.);

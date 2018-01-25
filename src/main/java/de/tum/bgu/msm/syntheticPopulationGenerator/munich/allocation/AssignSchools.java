@@ -36,7 +36,7 @@ public class AssignSchools {
         initializeSchoolCapacity();
         shuffleStudents();
         double logging = 2;
-        int it = 1;
+        int it = 12;
         for (Person pp : studentArrayList){
             int schooltaz;
             if (pp.getSchoolType() == 3){
@@ -137,6 +137,8 @@ public class AssignSchools {
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
             if (pair.getValue().getOccupation() == 3){
                 studentArrayList.add(pair.getValue());
+                pair.getValue().setSchoolPlace(-1);
+                pair.getValue().setJobTAZ(-1);
             }
         }
         Collections.shuffle(studentArrayList);

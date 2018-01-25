@@ -2,6 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.DwellingType;
@@ -72,25 +73,27 @@ public class ReadZonalData {
         dataSetSynPop.setMunicipalitiesByCounty(municipalitiesByCounty);
 
         if (PropertiesSynPop.get().main.boroughIPU) {
-            HashMap<Integer, ArrayList> boroughsByCity = new HashMap<>();
+            HashMap<Integer, ArrayList> boroughsByCounty = new HashMap<>();
             ArrayList<Integer> boroughs = new ArrayList<>();
+            ArrayList<Integer> countieswithBoroughs = new ArrayList<>();
             for (int row = 1; row <= PropertiesSynPop.get().main.selectedBoroughs.getRowCount(); row++) {
                 if (PropertiesSynPop.get().main.selectedBoroughs.getValueAt(row, "Select") == 1f) {
                     int borough = (int) PropertiesSynPop.get().main.selectedBoroughs.getValueAt(row, "ID_borough");
-                    int city = (int) PropertiesSynPop.get().main.selectedBoroughs.getValueAt(row, "ID_city");
+                    int county = (int) PropertiesSynPop.get().main.selectedBoroughs.getValueAt(row, "ID_county");
                     boroughs.add(borough);
-                    if (boroughsByCity.containsKey(city)) {
-                        ArrayList<Integer> boroughsInThisCity = boroughsByCity.get(city);
+                    if (boroughsByCounty.containsKey(county)) {
+                        ArrayList<Integer> boroughsInThisCity = boroughsByCounty.get(county);
                         boroughsInThisCity.add(borough);
-                        boroughsByCity.put(city, boroughsInThisCity);
+                        boroughsByCounty.put(county, boroughsInThisCity);
                     } else {
                         ArrayList<Integer> boroughsInThisCity = new ArrayList<>();
                         boroughsInThisCity.add(borough);
-                        boroughsByCity.put(city, boroughsInThisCity);
+                        boroughsByCounty.put(county, boroughsInThisCity);
+                        countieswithBoroughs.add(county);
                     }
                 }
             }
-            dataSetSynPop.setBoroughsByCity(boroughsByCity);
+            dataSetSynPop.setBoroughsByCounty(boroughsByCounty);
             dataSetSynPop.setBoroughs(boroughs);
         }
     }
@@ -103,17 +106,23 @@ public class ReadZonalData {
         Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new HashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         ArrayList<Integer> tazs = new ArrayList<>();
-        for (int i = 1; i <= PropertiesSynPop.get().main.cellsMatrix.getRowCount(); i++){
-            int city = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_city");
-            int taz = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"ID_cell");
-            float probability = PropertiesSynPop.get().main.cellsMatrix.getValueAt(i, "population");
-            int priceSFA = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"SFA");
-            int priceSFD = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"SFD");
-            int priceMF234 = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"MF234");
-            int priceMF5plus = (int) PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"MF5plus");
-            int capacityPrimary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityPrimary");
-            int capacitySecondary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacitySecondary");
-            int capacityTertiary = (int)PropertiesSynPop.get().main.cellsMatrix.getValueAt(i,"capacityTertiary");
+        TableDataSet zoneAttributes;
+        if (!PropertiesSynPop.get().main.boroughIPU){
+            zoneAttributes = PropertiesSynPop.get().main.cellsMatrix;
+        } else {
+            zoneAttributes = PropertiesSynPop.get().main.cellsMatrixBoroughs;
+        }
+        for (int i = 1; i <= zoneAttributes.getRowCount(); i++){
+            int city = (int) zoneAttributes.getValueAt(i,"ID_borough");
+            int taz = (int) zoneAttributes.getValueAt(i,"ID_cell");
+            float probability = zoneAttributes.getValueAt(i, "population");
+            int priceSFA = (int) zoneAttributes.getValueAt(i,"SFA");
+            int priceSFD = (int) zoneAttributes.getValueAt(i,"SFD");
+            int priceMF234 = (int) zoneAttributes.getValueAt(i,"MF234");
+            int priceMF5plus = (int) zoneAttributes.getValueAt(i,"MF5plus");
+            int capacityPrimary = (int)zoneAttributes.getValueAt(i,"capacityPrimary");
+            int capacitySecondary = (int)zoneAttributes.getValueAt(i,"capacitySecondary");
+            int capacityTertiary = (int)zoneAttributes.getValueAt(i,"capacityTertiary");
             if (!tazs.contains(taz)) {
                 tazs.add(taz);
             }

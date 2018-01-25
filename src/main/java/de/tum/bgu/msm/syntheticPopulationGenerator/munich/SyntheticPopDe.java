@@ -44,19 +44,16 @@ public class SyntheticPopDe implements SyntheticPopI {
         long startTime = System.nanoTime();
 
         logger.info("Running Module: Reading inputs");
-        Preparation preparation = new Preparation(dataSetSynPop);
-        preparation.run();
+        new Preparation(dataSetSynPop).run();
 
         logger.info("Running Module: Optimization IPU");
-        Optimization optimization = new Optimization(dataSetSynPop);
-        optimization.run();
+        new Optimization(dataSetSynPop).run();
 
         logger.info("Running Module: Allocation");
-        Allocation allocation = new Allocation(dataSetSynPop);
-        allocation.run();
+        new Allocation(dataSetSynPop).run();
 
         logger.info("Running Module: Car ownership");
-        addCars(false);
+        new CreateCarOwnershipModel().run();
 
         logger.info("Summary of the synthetic population");
         SummarizeData.writeOutSyntheticPopulationDE(SiloUtil.getBaseYear());
@@ -71,9 +68,4 @@ public class SyntheticPopDe implements SyntheticPopI {
         SiloUtil.createDirectoryIfNotExistingYet("microData/interimFiles");
     }
 
-
-    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
-        CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel();
-        createCarOwnershipModel.run();
-    }
 }

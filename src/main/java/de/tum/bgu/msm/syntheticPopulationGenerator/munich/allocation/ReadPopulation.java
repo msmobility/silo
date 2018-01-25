@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.MainProperties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
@@ -22,11 +23,10 @@ public class ReadPopulation {
 
     public void run(){
         logger.info("   Running module: read population");
-        readHouseholdData(1990);
-        readPersonData(1990);
-        readDwellingData(1990);
-        readJobData(1991);
-        connectPersonsToHouseholds();
+        readHouseholdData(Properties.get().main.startYear);
+        readPersonData(Properties.get().main.startYear);
+        readDwellingData(Properties.get().main.startYear);
+        readJobData(Properties.get().main.startYear);
     }
 
 
@@ -47,7 +47,6 @@ public class ReadPopulation {
             int posId    = SiloUtil.findPositionInArray("id", header);
             int posDwell = SiloUtil.findPositionInArray("dwelling",header);
             int posTaz   = SiloUtil.findPositionInArray("zone",header);
-            int posSize  = SiloUtil.findPositionInArray("hhSize",header);
             int posAutos = SiloUtil.findPositionInArray("autos",header);
 
             // read line
@@ -57,10 +56,9 @@ public class ReadPopulation {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int dwellingID = Integer.parseInt(lineElements[posDwell]);
                 int taz        = Integer.parseInt(lineElements[posTaz]);
-                int hhSize     = Integer.parseInt(lineElements[posSize]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, taz, hhSize, autos);  // this automatically puts it in id->household map in Household class
+                new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
@@ -120,8 +118,9 @@ public class ReadPopulation {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = new Person(id, hhid, age, gender, race, occupation, 0, income); //this automatically puts it in id->person map in Person class
+                Person pp = new Person(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
                 pp.setRole(pr);
+                Household.getHouseholdFromId(hhid).addPerson(pp);
                 String nationality = lineElements[posNationality];
                 Nationality nat = Nationality.german;
                 if (nationality.equals("other")){
@@ -140,7 +139,8 @@ public class ReadPopulation {
                 pp.setNationality(nat);
                 pp.setEducationLevel(education);
                 pp.setZone(homeZone);
-                pp.setSchoolPlace(0);
+                pp.setJobTAZ(workZone);
+                pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
@@ -208,25 +208,13 @@ public class ReadPopulation {
                 int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
                 dd.setBuildingSize(building);
-                dd.setUsage(use);
+                dd.setUsage(Dwelling.Usage.valueOf(use));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + fileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
         logger.info("Finished reading " + recCount + " dwellings.");
-    }
-
-
-    public void connectPersonsToHouseholds () {
-        // connect person objects to household objects
-        for (Person per: Person.getPersonArray()) {
-            Household hhOfThisPerson = Household.getHouseholdFromId(per.getHhId());
-            hhOfThisPerson.addPersonForInitialSetup(per);
-            if (per.getHhId() == SiloUtil.trackHh || per.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Connected person " + per.getId() + " to household " + per.getHhId());
-            }
-        }
     }
 
 
@@ -257,10 +245,9 @@ public class ReadPopulation {
                 int zone    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                new Job(id, zone, -1, type);
+                new Job(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
-                    Job.getJobFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
             }
         } catch (IOException e) {

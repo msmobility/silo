@@ -14,6 +14,7 @@ public class MainPropertiesSynPop {
     public final String microDataFile;
     public final boolean runIPU;
     public final boolean runAllocation;
+    public final boolean runJobAllocation;
     public final boolean twoGeographicalAreasIPU;
     public final String[] attributesMunicipality;
     public final TableDataSet marginalsMunicipality;
@@ -21,6 +22,7 @@ public class MainPropertiesSynPop {
     public final TableDataSet marginalsCounty;
     public final TableDataSet selectedMunicipalities;
     public final TableDataSet cellsMatrix;
+    public final TableDataSet cellsMatrixBoroughs;
     public final String omxFileName;
     public final int[] ageBracketsPerson;
     public final int[] ageBracketsPersonQuarter;
@@ -65,7 +67,8 @@ public class MainPropertiesSynPop {
         runSyntheticPopulation = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         microDataFile = ResourceUtil.getProperty(bundle, "micro.data");
         runIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop");
-        runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.allocation.synthetic.pop", false);
+        runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.population.allocation", false);
+        runJobAllocation = ResourceUtil.getBooleanProperty(bundle, "run.job.allocation", false);
         twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
 
         attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.municipality");
@@ -80,7 +83,7 @@ public class MainPropertiesSynPop {
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
         cellsMatrix = SiloUtil.readCSVfile(bundle.getString("taz.definition"));
-        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_borough"));
 
         omxFileName = ResourceUtil.getProperty(bundle,"distanceODmatrix");
 
@@ -127,18 +130,21 @@ public class MainPropertiesSynPop {
         microHouseholdsFileName = ResourceUtil.getProperty(bundle,"micro.households");
         microDwellingsFileName = ResourceUtil.getProperty(bundle,"micro.dwellings");
 
-        boroughIPU = ResourceUtil.getBooleanProperty(bundle,"run.ipu.borough", false);
+        boroughIPU = ResourceUtil.getBooleanProperty(bundle,"run.three.areas", false);
         if (boroughIPU){
             selectedBoroughs = SiloUtil.readCSVfile(bundle.getString("municipalities.list.borough"));
             attributesBorough = ResourceUtil.getArray(bundle, "attributes.borough");
             marginalsBorough = SiloUtil.readCSVfile(bundle.getString("marginals.borough"));
             marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
             ageBracketsBorough = ResourceUtil.getIntegerArray(bundle, "age.brackets.borough");
+            cellsMatrixBoroughs = SiloUtil.readCSVfile(bundle.getString("taz.definition.borough"));
+            cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_borough"));
         } else {
-            selectedBoroughs = new TableDataSet();
-            attributesBorough = new String[0];
-            marginalsBorough = new TableDataSet();
-            ageBracketsBorough = new int[0];
+            selectedBoroughs = null;
+            attributesBorough = null;
+            marginalsBorough = null;
+            ageBracketsBorough = null;
+            cellsMatrixBoroughs = null;
         }
 
     }

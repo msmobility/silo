@@ -524,8 +524,17 @@ public class MicroDataManager {
         return bedrooms;
     }
 
+    public Dwelling.Usage translateDwellingUsage(int use){
+        Dwelling.Usage usage = Dwelling.Usage.OWNED;
+        if (use == 2){
+            usage = Dwelling.Usage.RENTED;
+        } else if (use == 3){
+            usage = Dwelling.Usage.VACANT;
+        }
+        return usage;
+    }
 
-    public int guessPrice(float brw, int quality, int size, int use) {
+    public int guessPrice(float brw, int quality, int size, Dwelling.Usage use) {
 
         //coefficient by quality of the dwelling
         float qualityReduction = 1;
@@ -540,9 +549,9 @@ public class MicroDataManager {
         float convertToMonth = 0.0057f;
         //increase price for rented dwellings
         float rentedIncrease = 1; //by default, the price is not reduced/increased
-        if (use == 2){
+        if (use.equals(Dwelling.Usage.RENTED)){
             rentedIncrease = 1.2f; //rented dwelling
-        } else if (use == 3){
+        } else if (use.equals(Dwelling.Usage.VACANT)){
             rentedIncrease = 1; //vacant dwelling
         }
         //extra costs for power, water, etc (Nebenkosten)

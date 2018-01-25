@@ -606,7 +606,13 @@ public class SummarizeData {
             pwd.print(",");
             pwd.print(dd.getYearConstructionDE());
             pwd.print(",");
-            pwd.println(dd.getUsage());
+            int use = 1;
+            if (dd.getUsage().equals(Dwelling.Usage.RENTED)){
+                use = 2;
+            } else if (dd.getUsage().equals(Dwelling.Usage.VACANT)){
+                use = 3;
+            }
+            pwd.println(use);
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
                 dd.logAttributes(SiloUtil.trackWriter);
