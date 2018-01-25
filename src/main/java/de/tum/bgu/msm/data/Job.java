@@ -92,13 +92,9 @@ public class Job {
 
     @Override
     public String toString() {
-        return "Attributes of job       \n"
-                + id
-                + "Located in zone         \n"
-                + zone
-                + "Filled by person        \n"
-                + workerId
-                + "Job type                \n"
-                + type;
+        return "Attributes of job       " + id
+                + "\nLocated in zone         " + zone
+                + "\nFilled by person        " + workerId
+                + "\nJob type                " + type;
     }
  }

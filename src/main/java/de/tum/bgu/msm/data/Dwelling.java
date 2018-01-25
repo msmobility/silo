@@ -16,9 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +27,6 @@ import java.util.Map;
  *
  */
 public final class Dwelling {
-
-    private final static Logger logger = Logger.getLogger(Dwelling.class);
 
     public enum Usage{
         GROUP_QUARTER_OR_DEFAULT, OWNED, RENTED, VACANT;
@@ -89,13 +84,11 @@ public final class Dwelling {
         dwellingMap.put(id, this);
     }
 
-
     public static void saveDwellings (Dwelling[] dds) {
         for (Dwelling dd: dds) {
             dwellingMap.put(dd.getId(), dd);
         }
     }
-
 
     public static Dwelling getDwellingFromId(int dwellingId) {
         return dwellingMap.get(dwellingId);
@@ -114,36 +107,9 @@ public final class Dwelling {
         return dwellingMap.values().toArray(new Dwelling[dwellingMap.size()]);
     }
 
-
     public static void removeDwelling(int id) {
         dwellingMap.remove(id);
     }
-
-
-    public void logAttributes () {
-        logger.info("Attributes of dwelling  " + id);
-        logger.info("Located in zone         " + zone);
-        logger.info("Occupied by household   " + hhId);
-        logger.info("Dwelling type           " + type.toString());
-        logger.info("Number of bedroom       " + bedrooms);
-        logger.info("Quality (1 low, 4 high) " + quality);
-        logger.info("Monthly price in US$    " + price);
-        logger.info("Affordable housing      " + restriction);
-        logger.info("Year dwelling was built " + yearBuilt);
-    }
-
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of dwelling  " + id);
-        pw.println ("Located in zone         " + zone);
-        pw.println ("Occupied by household   " + hhId);
-        pw.println ("Dwelling type           " + type.toString());
-        pw.println ("Number of bedrooms      " + bedrooms);
-        pw.println ("Quality (1 low, 4 high) " + quality);
-        pw.println ("Monthly price in US$    " + price);
-        pw.println ("Affordable housing      " + restriction);
-        pw.println ("Year dwelling was built " + yearBuilt);
-    }
-
 
     public int getId () {
         return id;
@@ -262,4 +228,16 @@ public final class Dwelling {
 
     public int getYearConstructionDE() { return yearConstructionDE; }
 
+    @Override
+    public String toString() {
+        return "Attributes of dwelling  " + id
+                +"\nLocated in zone         "+(zone)
+                +"\nOccupied by household   "+(hhId)
+                +"\nDwelling type           "+(type.toString())
+                +"\nNumber of bedrooms      "+(bedrooms)
+                +"\nQuality (1 low, 4 high) "+(quality)
+                +"\nMonthly price in US$    "+(price)
+                +"\nAffordable housing      "+(restriction)
+                +"\nYear dwelling was built "+(yearBuilt);
+    }
  }

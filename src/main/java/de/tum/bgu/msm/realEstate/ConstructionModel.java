@@ -11,7 +11,6 @@ import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -308,7 +307,7 @@ public class ConstructionModel {
 
         if (ddId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
-            dd.logAttributes(SiloUtil.trackWriter);
+            SiloUtil.trackWriter.println(dd.toString());
         }
     }
 }

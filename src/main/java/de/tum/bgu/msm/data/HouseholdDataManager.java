@@ -98,10 +98,10 @@ public class HouseholdDataManager {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
+                Household hh = new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                    Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(hh.toString());
                 }
             }
         } catch (IOException e) {
@@ -203,7 +203,7 @@ public class HouseholdDataManager {
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
-                    Person.getPersonFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(Person.getPersonFromId(id).toString());
                 }
             }
         } catch (IOException e) {
