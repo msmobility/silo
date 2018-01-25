@@ -334,6 +334,33 @@ public class SiloUtil {
     }
 
 
+    public static <T> T select(Map<T, Float> mappedProbabilities) {
+        // select item based on probabilities (for mapped double probabilities)
+        return select(mappedProbabilities, getSum(mappedProbabilities.values()));
+    }
+
+    public static <T> T select(Map<T, Float> mappedProbabilities, double sum) {
+        // select item based on probabilities (for mapped double probabilities)
+        double selectedWeight = rand.nextDouble() * sum;
+        double select = 0;
+        for (Map.Entry<T, Float> entry : mappedProbabilities.entrySet()) {
+            select += entry.getValue();
+            if (select > selectedWeight) {
+                return entry.getKey();
+            }
+        }
+        logger.info("Error selecting item from weighted probabilities");
+        return null;
+    }
+
+    private static double getSum(Collection<Float> values) {
+        double sm = 0;
+        for (Float value : values) {
+            sm += value;
+        }
+        return sm;
+    }
+
     public static double[] convertProbability (double[] probabilities){
         //method to return the probability in percentage
         double sum = 0;
@@ -684,6 +711,19 @@ public class SiloUtil {
     }
 
 
+    public static TableDataSet addIntegerColumnToTableDataSet(TableDataSet table, String label){
+        int[] dummy3 = SiloUtil.createArrayWithValue(table.getRowCount(),0);
+        table.appendColumn(dummy3,label);
+        return table;
+    }
+
+
+    public static TableDataSet addIntegerColumnToTableDataSet(TableDataSet table, String label, int length){
+        int[] dummy3 = SiloUtil.createArrayWithValue(length,0);
+        table.appendColumn(dummy3,label);
+        return table;
+    }
+
     public static int getHighestVal(int[] array) {
         // return highest number in int array
         int high = Integer.MIN_VALUE;
@@ -883,6 +923,17 @@ public class SiloUtil {
         return convertIntegerArrayListToArray(values);
     }
 
+
+    public static TableDataSet initializeTableDataSet(TableDataSet tableDataSet, String[] labels, int[] ids) {
+        //method to initialize the error matrix
+        tableDataSet.appendColumn(ids, "ID");
+        for (String attribute : labels){
+            float[] dummy = SiloUtil.createArrayWithValue(tableDataSet.getRowCount(), 0f);
+            tableDataSet.appendColumn(dummy, attribute);
+        }
+        tableDataSet.buildIndex(tableDataSet.getColumnPosition("ID"));
+        return tableDataSet;
+    }
 
     public static void setBaseYear(int year) {
         // base year is the year for which the initial synthetic population has been generated. Start year is the year
