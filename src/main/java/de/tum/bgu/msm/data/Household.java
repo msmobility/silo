@@ -31,8 +31,6 @@ import java.util.*;
  */
 public final class Household {
 
-    private static Logger logger = Logger.getLogger(Household.class);
-
     private static final Map<Integer, Household> householdMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
     private final int hhId;
@@ -72,24 +70,6 @@ public final class Household {
     public static void remove (int hhID) {
         householdMap.remove(hhID);
     }
-
-    public void logAttributes () {
-        logger.info("Attributes of household " + hhId);
-        logger.info("Dwelling ID             " + dwellingId);
-        logger.info("Household size          " + persons.size());
-        logger.info("Home zone               " + homeZone);
-        logger.info("Household race          " + race);
-        for (Person pp: persons) logger.info("Member of hh is person  " + pp.getId());
-    }
-
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of household " + hhId);
-        pw.println ("Dwelling ID             " + dwellingId);
-        pw.println ("Household size          " + persons.size());
-        pw.println ("Home zone               " + homeZone);
-        // cannot log person attributes or race, because when households are read (and logged) persons are not known yet
-    }
-
 
     public int getId() {
         return hhId;
@@ -263,5 +243,13 @@ public final class Household {
            }
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return  "Attributes of household " + hhId
+            +"\nDwelling ID             " + dwellingId
+            +"\nHousehold size          " + persons.size()
+            +"\nHome zone               " + homeZone;
     }
 }

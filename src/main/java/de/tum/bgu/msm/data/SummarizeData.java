@@ -379,7 +379,7 @@ public class SummarizeData {
         for (Household hh : Household.getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                hh.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");
@@ -418,7 +418,7 @@ public class SummarizeData {
             pwp.println(pp.getIncome());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                pp.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(pp.toString());
             }
         }
         pwp.close();
@@ -449,7 +449,7 @@ public class SummarizeData {
             pwd.println(dd.getYearBuilt());
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                dd.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(dd.toString());
             }
         }
         pwd.close();
@@ -516,7 +516,7 @@ public class SummarizeData {
         for (Household hh : Household.getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                hh.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");
@@ -568,7 +568,7 @@ public class SummarizeData {
             pwp.println(pp.getSchoolType());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                pp.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(pp.toString());
             }
         }
         pwp.close();
@@ -607,7 +607,7 @@ public class SummarizeData {
             pwd.println(dd.getUsage());
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                dd.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(dd.toString());
             }
         }
         pwd.close();
@@ -656,7 +656,7 @@ public class SummarizeData {
         for (Household hh : Household.getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                hh.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");
@@ -714,7 +714,7 @@ public class SummarizeData {
             pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                pp.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(pp.toString());
             }
         }
         pwp.close();
@@ -753,7 +753,7 @@ public class SummarizeData {
             pwd.println(dd.getUsage());
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                dd.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(dd.toString());
             }
         }
         pwd.close();
@@ -806,7 +806,7 @@ public class SummarizeData {
             Household hh = households[i];
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                hh.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");
@@ -849,7 +849,7 @@ public class SummarizeData {
                 pwp.println(pp.getSchoolType());
                 if (pp.getId() == SiloUtil.trackPp) {
                     SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                    pp.logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(pp.toString());
                 }
             }
         }
@@ -890,7 +890,7 @@ public class SummarizeData {
             pwd.println(dd.getUsage());
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                dd.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(dd.toString());
             }
         }
         pwd.close();
@@ -909,7 +909,7 @@ public class SummarizeData {
             pwj.println(jj.getType());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(jj.toString());
+                SiloUtil.trackWriter.println(jj);
             }
         }
         pwj.close();
@@ -1007,7 +1007,7 @@ public class SummarizeData {
         for (Household hh : Household.getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                hh.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");
@@ -1046,7 +1046,7 @@ public class SummarizeData {
             pwp.println(pp.getIncome());
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                pp.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(pp.toString());
             }
         }
         pwp.close();

@@ -95,7 +95,7 @@ public class RealEstateDataManager {
                 new Dwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
-                    Dwelling.getDwellingFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(Dwelling.getDwellingFromId(id).toString());
                 }
             }
         } catch (IOException e) {
