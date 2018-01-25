@@ -12,7 +12,6 @@ public class MainPropertiesSynPop {
 
     public final boolean runSyntheticPopulation;
     public final String microDataFile;
-    public final int yearMicroData;
     public final boolean runIPU;
     public final boolean runAllocation;
     public final boolean twoGeographicalAreasIPU;
@@ -25,9 +24,6 @@ public class MainPropertiesSynPop {
     public final String omxFileName;
     public final int[] ageBracketsPerson;
     public final int[] ageBracketsPersonQuarter;
-    public final TableDataSet jobsTable;
-    public final TableDataSet educationDegreeTable;
-    public final TableDataSet schoolLevelTable;
     public final int[] householdSizes;
     public final int[] yearBracketsDwelling;
     public final int[] sizeBracketsDwelling;
@@ -45,10 +41,7 @@ public class MainPropertiesSynPop {
     public final double gammaJob;
     public final double alphaUniversity;
     public final double gammaUniversity;
-    public final double incomeShape;
-    public final double incomeRate;
     public final double[] incomeProbability;
-    public final TableDataSet probabilitiesJob;
     public final String tripLengthDistributionFileName;
     public final String householdsFileName;
     public final String personsFileName;
@@ -56,9 +49,6 @@ public class MainPropertiesSynPop {
     public final String jobsFileName;
     public final int numberofQualityLevels;
     public final int[] schoolTypes;
-    public final String attributesPersonFileName;
-    public final String attributesHouseholdFileName;
-    public final boolean extractMicroData;
     public final String errorsSummaryFileName;
     public final String microPersonsFileName;
     public final String microHouseholdsFileName;
@@ -73,29 +63,23 @@ public class MainPropertiesSynPop {
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
         runSyntheticPopulation = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
-        microDataFile = ResourceUtil.getProperty(bundle, "micro.data.2010");
-        yearMicroData = ResourceUtil.getIntegerProperty(bundle, "year.micro.data");
+        microDataFile = ResourceUtil.getProperty(bundle, "micro.data");
         runIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop");
         runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.allocation.synthetic.pop", false);
         twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
 
-        extractMicroData = ResourceUtil.getBooleanProperty(bundle, "only.extract.microdata", false);
-
-        attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.household");
+        attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.municipality");
         marginalsMunicipality = SiloUtil.readCSVfile(bundle.getString("marginals.municipality"));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
-        attributesCounty = ResourceUtil.getArray(bundle, "attributes.region"); //attributes are decided on the properties file
+        attributesCounty = ResourceUtil.getArray(bundle, "attributes.county"); //attributes are decided on the properties file
         marginalsCounty = SiloUtil.readCSVfile(bundle.getString("marginals.county")); //all the marginals from the region
         marginalsCounty.buildIndex(marginalsCounty.getColumnPosition("ID_county"));
-
-        attributesPersonFileName = ResourceUtil.getProperty(bundle, "read.attributes.pp","");
-        attributesHouseholdFileName = ResourceUtil.getProperty(bundle, "read.attributes.hh","");
 
         selectedMunicipalities = SiloUtil.readCSVfile(bundle.getString("municipalities.list"));
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
-        cellsMatrix = SiloUtil.readCSVfile(bundle.getString("raster.cells.definition"));
+        cellsMatrix = SiloUtil.readCSVfile(bundle.getString("taz.definition"));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
         omxFileName = ResourceUtil.getProperty(bundle,"distanceODmatrix");
@@ -106,14 +90,9 @@ public class MainPropertiesSynPop {
         jobStringType = ResourceUtil.getArray(bundle, "employment.types");
         alphaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
         gammaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);
-        jobsTable = SiloUtil.readCSVfile(bundle.getString("jobs.dictionary"));
         tripLengthDistributionFileName = ResourceUtil.getProperty(bundle, "trip.length.distribution");
-        probabilitiesJob = SiloUtil.readCSVfile(bundle.getString("employment.probability"));
-        probabilitiesJob.buildStringIndex(1);
 
         schoolTypes = ResourceUtil.getIntegerArray(bundle, "school.types");
-        educationDegreeTable = SiloUtil.readCSVfile(bundle.getString("education.dictionary"));
-        schoolLevelTable = SiloUtil.readCSVfile(bundle.getString("school.dictionary"));
         alphaUniversity = ResourceUtil.getDoubleProperty(bundle, "university.choice.alpha", 50);
         gammaUniversity = ResourceUtil.getDoubleProperty(bundle, "university.choice.gamma", -0.003);
 
@@ -129,14 +108,14 @@ public class MainPropertiesSynPop {
         increaseError = ResourceUtil.getDoubleProperty(bundle, "increase.error.ipu",1.05);
         initialError = ResourceUtil.getDoubleProperty(bundle, "ini.error.ipu", 1000);
 
-        incomeShape = ResourceUtil.getDoubleProperty(bundle, "income.gamma.shape", 1.0737036186);
-        incomeRate = ResourceUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
+        double incomeShape = ResourceUtil.getDoubleProperty(bundle, "income.gamma.shape", 1.0737036186);
+        double incomeRate = ResourceUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
         incomeProbability = ResourceUtil.getDoubleArray(bundle, "income.probability");
         incomeGammaDistribution = new GammaDistributionImpl(incomeShape,1 / incomeRate);
 
         weightsFileName = ResourceUtil.getProperty(bundle,"weights.matrix");
-        errorsMunicipalityFileName = ResourceUtil.getProperty(bundle, "errors.IPU.Municipality.matrix");
-        errorsCountyFileName = ResourceUtil.getProperty(bundle, "errors.IPU.County.matrix");
+        errorsMunicipalityFileName = ResourceUtil.getProperty(bundle, "errors.IPU.municipality.matrix");
+        errorsCountyFileName = ResourceUtil.getProperty(bundle, "errors.IPU.county.matrix");
         errorsSummaryFileName = ResourceUtil.getProperty(bundle, "errors.IPU.summary.matrix");
 
         householdsFileName = ResourceUtil.getProperty(bundle,"household.file.ascii");

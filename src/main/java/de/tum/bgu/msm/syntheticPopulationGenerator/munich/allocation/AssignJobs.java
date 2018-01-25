@@ -45,8 +45,8 @@ public class AssignJobs {
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
             int[] workplace = selectWorkplace(pp.getHomeTaz(), selectedJobType);
-            int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
             if (workplace[0] > 0) {
+                int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
                 updateMaps(selectedJobType, workplace);
             }
