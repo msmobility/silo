@@ -61,7 +61,6 @@ public class ReadPopulation {
                 new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                    Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
             }
         } catch (IOException e) {
@@ -145,7 +144,6 @@ public class ReadPopulation {
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
-                    Person.getPersonFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
             }
         } catch (IOException e) {
@@ -201,7 +199,6 @@ public class ReadPopulation {
                 Dwelling dd = new Dwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
-                    Dwelling.getDwellingFromId(id).logAttributes(SiloUtil.trackWriter);
                 }
                 int floor = Integer.parseInt(lineElements[posFloor]);
                 int building = Integer.parseInt(lineElements[posBuilding]);
