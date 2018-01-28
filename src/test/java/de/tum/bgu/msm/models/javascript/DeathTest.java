@@ -23,12 +23,12 @@ public class DeathTest {
     }
 
     @Test
-    public void testModelFailures() {
+    public void testModelTwo() {
         Assert.assertEquals(0.410106, calculator.calculateDeathProbability(200, 1), 0.);
     }
 
     @Test(expected = RuntimeException.class)
-    public void testModelFailuresTwo() {
+    public void testModelFailures() {
         calculator.calculateDeathProbability(-2, 1);
     }
 
