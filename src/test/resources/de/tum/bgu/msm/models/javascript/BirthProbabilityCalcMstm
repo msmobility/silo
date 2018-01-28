@@ -4,21 +4,21 @@ var calculateBirthProbability = function(personAge, scaler) {
 
     if (personAge < 9){
         alpha = 0.0;
-    } else if (personAge < 14){
+    } else if (personAge <= 14){
         alpha = 0.9;
-    } else if (personAge < 19){
+    } else if (personAge <= 19){
         alpha = 47.7;
-    } else if (personAge < 24){
+    } else if (personAge <= 24){
         alpha = 109.7;
-    } else if (personAge < 29){
+    } else if (personAge <= 29){
         alpha = 113.5;
-    } else if (personAge < 34){
+    } else if (personAge <= 34){
         alpha = 91.2;
-    } else if (personAge < 39){
+    } else if (personAge <= 39){
         alpha = 39.7;
-    } else if (personAge < 44){
+    } else if (personAge <= 44){
         alpha = 8.0;
-    } else if (personAge < 49){
+    } else if (personAge <= 49){
         alpha = 0.5;
     } else if (personAge >= 50){
         alpha = 0.0;
