@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-public class MarryTest {
+public class MarryDivorceTest {
 
     private MarryDivorceJSCalculator calculator;
     private final double SCALE = 1.1;
@@ -33,8 +33,24 @@ public class MarryTest {
         Assert.assertEquals((0.02514 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);    }
 
     @Test(expected = RuntimeException.class)
-    public void testModelFailures() {
+    public void testModelFailuresOne() {
         calculator.calculateMarriageProbability(null);
+    }
+
+
+    @Test
+    public void testModelThree() {
+        Assert.assertEquals(0.02156, calculator.calculateDivorceProbability(31), 0.);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testModelFailuresTwo() {
+        calculator.calculateDivorceProbability(200);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testModelFailuresThree() {
+        calculator.calculateDivorceProbability(-2);
     }
 
 }

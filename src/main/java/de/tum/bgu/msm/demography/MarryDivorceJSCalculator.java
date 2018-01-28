@@ -18,7 +18,7 @@ public class MarryDivorceJSCalculator extends JavaScriptCalculator<Double> {
         return super.calculate("calculateMarriageProbability", person, scale);
     }
 
-    public double calculateDivorceProbability(Person person) {
-        return 0;
+    public double calculateDivorceProbability (int personType) {
+        return super.calculate("calculateDivorceProbability", personType);
     }
 }

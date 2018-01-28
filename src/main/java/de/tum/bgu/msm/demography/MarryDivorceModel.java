@@ -49,20 +49,19 @@ public class MarryDivorceModel {
 
     private double[][] ageDependentMarryProb;
     private float onePersonHhMarriageBias;
-    private double[] divorceProbability;
     private int ageOffset;
 
     private MarryDivorceJSCalculator calculator;
+
     private ArrayList<Integer[]> couplesToMarryThisYear;
 
     public MarryDivorceModel() {
-        setupMarriageModel();
+        setupModel();
         setupAgeDependentProbabilities();
-        setupDivorceModel();
     }
 
 
-    private void setupMarriageModel() {
+    private void setupModel() {
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
         double scale = Properties.get().demographics.localMarriageAdjuster;
         onePersonHhMarriageBias = Properties.get().demographics.onePersonHhMarriageBias;
@@ -210,23 +209,6 @@ public class MarryDivorceModel {
     }
 
 
-    private void setupDivorceModel() {
-
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DivorceCalc"));
-        DivorceJSCalculator calculator = new DivorceJSCalculator(reader);
-
-        // initialize results for each alternative
-        PersonType[] types = PersonType.values();
-        divorceProbability = new double[types.length];
-
-        //apply the calculator to each alternative
-        for (int i = 0; i < types.length; i++) {
-            divorceProbability[i] = calculator.calculateDivorceProbability(i) / 2; // each divorce event affects two persons
-        }
-
-    }
-
-
     public void choosePlannedMarriage(int coupleId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // marry couple
 
@@ -351,8 +333,8 @@ public class MarryDivorceModel {
         if (!EventRules.ruleGetDivorced(per)) {
             return;
         }
-
-        if (SiloUtil.getRandomNumberAsDouble() < divorceProbability[per.getType().ordinal()]) {
+        double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
+        if (SiloUtil.getRandomNumberAsDouble() < probability) {
             // check if vacant dwelling is available
             int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per), modelContainer);
             if (newDwellingId < 0) {
