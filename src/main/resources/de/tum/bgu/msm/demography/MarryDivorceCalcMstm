@@ -1,0 +1,78 @@
+var calculateMarriageProbability = function(person, scale) {
+
+    var probability;
+    var age = person.getAge();
+    if(age < 0) {
+        throw new Error("Negative age not allowed!");
+    }
+    if(person.getGender()==1) {
+        if(age < 15) {
+            probability = 0.;
+        } else if(age < 20) {
+            probability = 0.00682;
+        } else if(age < 25) {
+            probability = 0.05926;
+        } else if(age < 30) {
+            probability = 0.11516;
+        } else if(age < 35) {
+            probability = 0.11077;
+        } else if(age < 40) {
+            probability = 0.05965;
+        } else if(age < 45) {
+            probability = 0.06225;
+        } else if(age < 50) {
+            probability = 0.03594;
+        } else if(age < 55) {
+            probability = 0.03016;
+        } else if(age < 60) {
+            probability = 0.05158;
+        } else if(age < 65) {
+            probability = 0.02582;
+        } else if(age < 70) {
+            probability = 0.02096;
+        } else if(age < 75) {
+            probability = 0.01262;
+        } else if(age < 80) {
+            probability = 0.00421;
+        } else if(age >= 80) {
+            probability = 0.;
+        }
+    } else if(person.getGender() == 2) {
+        if(age < 15) {
+            probability = 0.;
+        } else if(age < 20) {
+            probability = 0.01564;
+        } else if(age < 25) {
+            probability = 0.08454;
+        } else if(age < 30) {
+            probability = 0.13776;
+        } else if(age < 35) {
+            probability = 0.09874;
+        } else if(age < 40) {
+            probability = 0.04830;
+        } else if(age < 45) {
+            probability = 0.04818;
+        } else if(age < 50) {
+            probability = 0.04832;
+        } else if(age < 55) {
+            probability = 0.02514;
+        } else if(age < 60) {
+            probability = 0.01047;
+        } else if(age < 65) {
+            probability = 0.00724;
+        } else if(age < 70) {
+            probability = 0.00133;
+        } else if(age < 75) {
+            probability = 0.00186;
+        } else if(age < 80) {
+            probability = 0.00062;
+        } else if(age >= 80) {
+            probability = 0.;
+        }
+    } else {
+        throw new Error("Undefined gender " + person.getGender())
+    }
+
+    // "/2" because each marriage event affects two persons
+    return (probability / 2) * scale;
+}

@@ -16,17 +16,17 @@
  */
 package de.tum.bgu.msm.demography;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -37,8 +37,6 @@ import java.io.Reader;
  **/
 
 public class BirthModel {
-
-    static Logger traceLogger = Logger.getLogger("trace");
 
     private static float propGirl;
     private final HouseholdDataManager householdDataManager;

@@ -5,7 +5,6 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.demography.BirthModel;
-import de.tum.bgu.msm.demography.MarryDivorceModel;
 import de.tum.bgu.msm.properties.Properties;
 
 /**
@@ -80,7 +79,7 @@ public class EventRules {
     public static boolean ruleGetMarried (Person per) {
         if (per == null) return false;
         PersonRole role = per.getRole();
-        return (role == PersonRole.single || role == PersonRole.child) && per.getAge() >= MarryDivorceModel.getMinMarryAge() &&
+        return (role == PersonRole.single || role == PersonRole.child) && per.getAge() >= Properties.get().demographics.minMarryAge &&
                 runEventCheckMarriage && runEventAllDemography;
     }
 
