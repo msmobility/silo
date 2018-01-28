@@ -66,7 +66,7 @@ public class EventRules {
     }
 
     public static boolean ruleGiveBirth (Person per) {
-        return (per != null && per.getGender() == 2 && BirthModel.personCanGiveBirth(per.getType())) &&
+        return (per != null && per.getGender() == 2 && BirthModel.personCanGiveBirth(per.getAge())) &&
                 runEventCheckBirth && runEventAllDemography;
     }
 
