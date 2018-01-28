@@ -222,11 +222,6 @@ public class MarryDivorceModel {
             return;  // Person got already married this simulation period or died or moved away
         }
 
-        if (partner1.getId() == 303869) {
-            int a = 0;
-        } else if (partner2.getId() == 303869) {
-            int a = 0;
-        }
         Household hhOfPartner1 = partner1.getHh();
         Household hhOfPartner2 = partner2.getHh();
         int moveTo = 1;
