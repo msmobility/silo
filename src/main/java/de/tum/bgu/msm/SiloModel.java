@@ -16,24 +16,22 @@
  */
 package de.tum.bgu.msm;
 
-import java.io.File;
-
-import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
-
 import com.pb.common.util.ResourceUtil;
-
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+
+import java.io.File;
 
 /**
  * @author Greg Erhardt
@@ -92,13 +90,6 @@ public class SiloModel {
 		setupTransport();
 		modelContainer.getAcc().initialize();
 		modelContainer.getAcc().calculateAccessibilities(Properties.get().main.startYear);
-
-		//        setOldLocalModelVariables();
-		// yy this is where I found setOldLocalModelVariables().  MATSim fails then, since "householdData" then is a null pointer first time when
-		// it is called.  Since I don't know what pulling it up means for MITO, I am putting the command into the if condition.  kai, jan'16
-
-		// Optional method to write out n households with corresponding persons, dwellings and jobs to create smaller
-		// synthetic population for testing
 
 		setupTimeTracker();
 
