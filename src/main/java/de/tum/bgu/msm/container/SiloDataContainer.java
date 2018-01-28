@@ -82,7 +82,7 @@ public class SiloDataContainer {
             householdData.setTypeOfAllHouseholds();
         }
 
-        jobData.updateEmploymentForecast();
+        jobData.calculateEmploymentForecast();
         jobData.identifyVacantJobs();
         jobData.calculateJobDensityByZone();
         realEstateData.fillQualityDistribution();

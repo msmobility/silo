@@ -190,10 +190,9 @@ public class JobDataManager {
     }
 
 
-    public void updateEmploymentForecast() {
-        // create yearly employment forecast files
+    public void calculateEmploymentForecast() {
 
-    	// TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
+        // TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
         String[] yearsGiven;
         if (Properties.get().jobData.hasControlYears) {
             int[] yearsInt = Properties.get().jobData.controlYears;
@@ -209,56 +208,54 @@ public class JobDataManager {
                 (2000 + highestYear));
         TableDataSet jobs ;
         try {
-      	  final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
-		jobs = SiloUtil.readCSVfile(filename);
+            final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
+            jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
-      	  throw new RuntimeException(ee) ;
+            throw new RuntimeException(ee) ;
         }
+        jobs.buildIndex(jobs.getColumnPosition("SMZ"));
         new JobType(Properties.get().jobData.jobTypes);
-
-        // jobInventory by [industry][year][tazIndex]
-        float[][][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestYear+1][geoData.getZones().length];
-
-        // read employment data
-        for (int row = 1; row <= jobs.getRowCount(); row++) {
-            int taz = (int) jobs.getValueAt(row, "SMZ");
-            for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                for (String year: yearsGiven) {
-                     jobInventory[jobTp][Integer.parseInt(year)][geoData.getZoneIndex(taz)] = jobs.getValueAt(row, JobType.getJobType(jobTp) + year);
-                }
-            }
-
-            // interpolate employment data between available years
-            for (int interval = 1; interval < yearsGiven.length; interval++) {
-                for (int year = Integer.parseInt(yearsGiven[interval-1]) + 1;
-                     year < Integer.parseInt(yearsGiven[interval]); year++) {
-                    int prevYear = Integer.parseInt(yearsGiven[interval-1]);
-                    int nextYear = Integer.parseInt(yearsGiven[interval]);
-                    for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                        float prevInt = jobInventory[jobTp][Integer.parseInt(yearsGiven[interval-1])][geoData.getZoneIndex(taz)];
-                        float currInt = jobInventory[jobTp][Integer.parseInt(yearsGiven[interval])][geoData.getZoneIndex(taz)];
-                        jobInventory[jobTp][year][geoData.getZoneIndex(taz)] = prevInt + (currInt - prevInt) * (year - prevYear) /
-                                (nextYear - prevYear);
-                    }
-                }
-            }
-        }
 
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
-        for (int yr = Integer.parseInt(yearsGiven[0]); yr <= highestYear; yr++) {
-            String forecastFileName;
-            forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + yr) + ".csv";
-            PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
-            pw.print("zone");
-            for (String ind: JobType.getJobTypes()) pw.print("," + ind);
-            pw.println();
-            for (int zone: geoData.getZones()) {
-                pw.print(zone);
-                for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) pw.print("," + jobInventory[jobTp][yr][geoData.getZoneIndex(zone)]);
-                pw.println();
+
+        int previousFixedYear = Integer.parseInt(yearsGiven[0]);
+        int nextFixedYear;
+        int interpolatedYear = previousFixedYear;
+        for(int i = 0; i<yearsGiven.length-1; i++) {
+            nextFixedYear = Integer.parseInt(yearsGiven[i+1]);
+            while(interpolatedYear <= nextFixedYear) {
+                final String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
+                final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
+                final StringBuilder builder = new StringBuilder("zone");
+                for (String jobType: JobType.getJobTypes()) {
+                    builder.append(",").append(jobType);
+                }
+                builder.append("\n");
+                for (int zone: geoData.getZones()) {
+                    builder.append(zone);
+                    for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
+                        final int index = jobs.getIndexedRowNumber(zone);
+                        float currentValue;
+                        if(interpolatedYear == previousFixedYear) {
+                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                        } else if(interpolatedYear == nextFixedYear) {
+                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i+1]);
+                        } else {
+                            final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                            final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i+1]);
+                            currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
+                                    (nextFixedYear - previousFixedYear);
+                        }
+                        builder.append(",").append(currentValue);
+                    }
+                    builder.append("\n");
+                }
+                pw.print(builder.toString());
+                pw.close();
+                interpolatedYear++;
             }
-            pw.close();
+            previousFixedYear = nextFixedYear;
         }
     }
 
