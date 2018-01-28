@@ -54,7 +54,7 @@ public class BirthModel {
     private void setupBirthModel() {
         Reader reader;
         if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
-            // todo: Update Birth Probabilities for Munich
+            // todo: Update Birth Probabilities for Munich, add also to test class
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
@@ -62,13 +62,6 @@ public class BirthModel {
         float localScaler = Properties.get().demographics.localScaler;
         calculator = new BirthJSCalculator(reader, localScaler);
     }
-
-
-
-
-//    		double util[] = birthModel.solve(birthDmu.getDmuIndexValues(), birthDmu, birthAvail);
-//            birthProbability[i] = util[0] / 1000d * localScaler;  // birth probability is given as "per 1000 women"
-
 
 
     public void chooseBirth(int perId) {
