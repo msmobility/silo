@@ -233,7 +233,7 @@ public class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkMarriage.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-                    int[] couple = Arrays.copyOfRange(event, 1,2);
+                    int[] couple = Arrays.copyOfRange(event, 1,3);
 					modelContainer.getMardiv().marryCouple(couple, modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkDivorce.ordinal()) {
