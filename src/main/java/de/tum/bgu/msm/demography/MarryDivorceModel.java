@@ -320,11 +320,6 @@ public class MarryDivorceModel {
         // select if person gets divorced/leaves joint dwelling
 
         Person per = Person.getPersonFromId(perId);
-        if (perId == 303869) {
-            int a = 0;
-        } else if (perId == 3084365) {
-            int a = 0;
-        }
         if (!EventRules.ruleGetDivorced(per)) {
             return;
         }
