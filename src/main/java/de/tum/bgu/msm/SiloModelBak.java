@@ -271,7 +271,7 @@ public class SiloModelBak {
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel, realEstateData, accessibility, householdData, jobData);
+                    mardiv.marryCouple(event[1], move, iomig, aoModel, realEstateData, accessibility, householdData, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
                 } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
@@ -515,7 +515,7 @@ public class SiloModelBak {
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel,realEstateData, accessibility,
+                mardiv.marryCouple(event[1], move, iomig, aoModel,realEstateData, accessibility,
                         householdData, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
             } else if (event[0] == EventTypes.checkDivorce.ordinal()) {

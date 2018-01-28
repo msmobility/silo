@@ -32,6 +32,8 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Greg Erhardt
@@ -169,11 +171,11 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 3][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			int numberOfPlannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+            List<int[]> couples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
 			if (trackTime) timeCounter[EventTypes.values().length + 5][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			em.createListOfEvents(numberOfPlannedCouples);
+			em.createListOfEvents(couples);
 			if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
 			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
@@ -209,7 +211,7 @@ public class SiloModel {
 			logger.info("  Simulating events");
 			// walk through all events
 			for (int i = 1; i <= em.getNumberOfEvents(); i++) {
-				Integer[] event = em.selectNextEvent();
+				int[] event = em.selectNextEvent();
 				if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
 					SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
 							event[1]);
@@ -231,7 +233,8 @@ public class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkMarriage.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getMardiv().choosePlannedMarriage(event[1], modelContainer, dataContainer);
+                    int[] couple = Arrays.copyOfRange(event, 1,2);
+					modelContainer.getMardiv().marryCouple(couple, modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.checkDivorce.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

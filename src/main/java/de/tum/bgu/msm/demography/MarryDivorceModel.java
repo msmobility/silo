@@ -31,10 +31,7 @@ import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Simulates marriage and divorce
@@ -47,24 +44,23 @@ public class MarryDivorceModel {
 
     private static Logger logger = Logger.getLogger(MarryDivorceModel.class);
 
-    private double[][] ageDependentMarryProb;
-    private float onePersonHhMarriageBias;
-    private int ageOffset;
-
     private MarryDivorceJSCalculator calculator;
 
-    private ArrayList<Integer[]> couplesToMarryThisYear;
+    private final static int AGE_OFFSET = 10;
+    // ageOffset is the range of ages above and below a persons age that are considered for marriage
+    // needs to cover -9 to +9 to reach one person type above and one person type below
+    // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
+    // capture if potential partner has celebrated birthday already (i.e. turned 35). To improve
+    // performance, the person type of this person in the marriage market is not updated.
 
     public MarryDivorceModel() {
         setupModel();
-        setupAgeDependentProbabilities();
     }
 
-
     private void setupModel() {
+
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
         double scale = Properties.get().demographics.localMarriageAdjuster;
-        onePersonHhMarriageBias = Properties.get().demographics.onePersonHhMarriageBias;
 
         Reader reader;
         if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
@@ -76,41 +72,22 @@ public class MarryDivorceModel {
         calculator = new MarryDivorceJSCalculator(reader, scale);
     }
 
-    private void setupAgeDependentProbabilities() {
-        double marryAbsAgeDiff = Properties.get().demographics.marryAbsAgeDiff;
-        double marryAgeSpreadFac = Properties.get().demographics.marryAgeSpreadFac;
-        ageOffset = 10;  // ageOffset is the range of ages above and below a persons age that are considered for marriage
-        // needs to cover -9 to +9 to reach one person type above and one person type below
-        // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
-        // capture if potential partner has celebrated birthday already (i.e. turned 35). To improve
-        // performance, the person type of this person in the marriage market is not updated.
-        ageDependentMarryProb = new double[2][ageOffset * 2 + 1];   // two genders and age difference classes
-        for (int ageDiff = -ageOffset; ageDiff <= ageOffset; ageDiff++) {
-            ageDependentMarryProb[0][ageDiff + ageOffset] =
-                    1 / Math.exp(Math.pow(ageDiff + marryAbsAgeDiff, 2) * marryAgeSpreadFac);  // man searches woman
-            ageDependentMarryProb[1][ageDiff + ageOffset] =
-                    1 / Math.exp(Math.pow(ageDiff - marryAbsAgeDiff, 2) * marryAgeSpreadFac);  // woman searches man
-
-        }
-    }
-
-
-    public int selectCouplesToGetMarriedThisYear() {
+    public List<int[]> selectCouplesToGetMarriedThisYear() {
         // select singles that will get married during this coming year
         if (!EventRules.runMarriages()) {
-            return 0;
+            return Collections.emptyList();
         }
         logger.info("  Selecting couples to get married this year");
-        couplesToMarryThisYear = new ArrayList<>();
+        List<int[]> couplesToMarryThisYear = new ArrayList<>();
 
         // create HashMap with men and women by age
-        HashMap<String, ArrayList<Integer>> ppByAgeAndGender = new HashMap<>();
+        Map<String, List<Integer>> ppByAgeAndGender = new HashMap<>();
 
         for (Person pp : Person.getPersons()) {
             if (EventRules.ruleGetMarried(pp) && pp.getAge() < 100) {
                 int size = pp.getHh().getHhSize();
                 // put only every fifth person into marriage market, emphasize single-person households
-                if (size == 1 && SiloUtil.getRandomNumberAsFloat() > 0.1 * onePersonHhMarriageBias) {
+                if (size == 1 && SiloUtil.getRandomNumberAsFloat() > 0.1 * Properties.get().demographics.onePersonHhMarriageBias) {
                     continue;
                 }
                 if (size != 1 && SiloUtil.getRandomNumberAsFloat() > 0.1) {
@@ -119,7 +96,7 @@ public class MarryDivorceModel {
                 // Store persons by age and gender
                 String token = pp.getAge() + "_" + pp.getGender();
                 if (ppByAgeAndGender.containsKey(token)) {
-                    ArrayList<Integer> al = ppByAgeAndGender.get(token);
+                    List<Integer> al = ppByAgeAndGender.get(token);
                     al.add(pp.getId());
                 } else {
                     ppByAgeAndGender.put(token, new ArrayList<>(pp.getId()));
@@ -137,7 +114,7 @@ public class MarryDivorceModel {
                 // to keep things simple, emphasize prop to initialize marriage for people from single-person households.
                 // Single-person household has no influence on whether someone is selected by the marriage initializer
                 if (pp.getHh().getHhSize() == 1) {
-                    marryProb *= onePersonHhMarriageBias;
+                    marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
                 }
                 if (SiloUtil.getRandomNumberAsDouble() >= marryProb){
                     continue;
@@ -152,21 +129,21 @@ public class MarryDivorceModel {
                 }
 
                 // Second, select age of new partner
-                double[] ageProb = new double[ageOffset * 2 + 1];
-                for (int ageDiff = -ageOffset; ageDiff <= ageOffset; ageDiff++) {
-                    ageProb[ageDiff + ageOffset] = ageDependentMarryProb[pp.getGender() - 1][ageDiff + ageOffset];
+                double[] ageProb = new double[AGE_OFFSET * 2 + 1];
+                for (int ageDiff = -AGE_OFFSET; ageDiff <= AGE_OFFSET; ageDiff++) {
+                    ageProb[ageDiff + AGE_OFFSET] = getAgeDependentProbabilities(pp.getGender(), ageDiff);
                     int thisAge = pp.getAge() + ageDiff;
                     if (pp.getGender() == 1) {
                         if (ppByAgeAndGender.containsKey(thisAge + "_" + 2)) {    // man looking for women
-                            ageProb[ageDiff + ageOffset] *= ppByAgeAndGender.get(thisAge + "_" + 2).size();
+                            ageProb[ageDiff + AGE_OFFSET] *= ppByAgeAndGender.get(thisAge + "_" + 2).size();
                         } else {
-                            ageProb[ageDiff + ageOffset] = 0;
+                            ageProb[ageDiff + AGE_OFFSET] = 0;
                         }
                     } else {                                                     // woman looking for men
                         if (ppByAgeAndGender.containsKey(thisAge + "_" + 1)) {
-                            ageProb[ageDiff + ageOffset] *= ppByAgeAndGender.get(thisAge + "_" + 1).size();
+                            ageProb[ageDiff + AGE_OFFSET] *= ppByAgeAndGender.get(thisAge + "_" + 1).size();
                         } else {
-                            ageProb[ageDiff + ageOffset] = 0;
+                            ageProb[ageDiff + AGE_OFFSET] = 0;
                         }
                     }
                 }
@@ -174,10 +151,10 @@ public class MarryDivorceModel {
                     logger.warn("Marriage market ran empty, increase share of persons. Age: " + pp.getAge());
                     break;
                 }
-                int selectedAge = SiloUtil.select(ageProb) - ageOffset + pp.getAge();
+                int selectedAge = SiloUtil.select(ageProb) - AGE_OFFSET + pp.getAge();
 
                 // Third, select partner
-                ArrayList<Integer> possiblePartners;
+                List<Integer> possiblePartners;
                 if (pp.getGender() == 1) {   // Look for woman
                     possiblePartners = ppByAgeAndGender.get(selectedAge + "_" + 2);
                 } else {                     // Look for man
@@ -197,7 +174,7 @@ public class MarryDivorceModel {
                 }
                 int selectedPartner = possiblePartners.get(SiloUtil.select(partnerProb));
                 personSelectedForMarriage[selectedPartner] = true;
-                couplesToMarryThisYear.add(new Integer[]{pp.getId(), selectedPartner});
+                couplesToMarryThisYear.add(new int[]{pp.getId(), selectedPartner});
                 if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + pp.getId() + " chose " +
                         "person " + selectedPartner + " to marry and they were scheduled as a couple to marry this year.");
                 if (selectedPartner == SiloUtil.trackPp)
@@ -205,19 +182,28 @@ public class MarryDivorceModel {
                             "by person " + pp.getId() + " to get married and they were scheduled as a couple to marry this year.");
             }
         }
-        return couplesToMarryThisYear.size();
+        return couplesToMarryThisYear;
+    }
+
+    private double getAgeDependentProbabilities(int gender, int ageDiff) {
+        double marryAbsAgeDiff = Properties.get().demographics.marryAbsAgeDiff;
+        double marryAgeSpreadFac = Properties.get().demographics.marryAgeSpreadFac;
+        if(gender == 1) {
+            return 1 / Math.exp(Math.pow(ageDiff + marryAbsAgeDiff, 2) * marryAgeSpreadFac);  // man searches woman
+        } else if(gender ==2) {
+            return 1 / Math.exp(Math.pow(ageDiff - marryAbsAgeDiff, 2) * marryAgeSpreadFac);  // woman searches man
+        } else {
+            throw new IllegalArgumentException("Unknwon gender " + gender);
+        }
     }
 
 
-    public void choosePlannedMarriage(int coupleId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
-        // marry couple
-
-        Integer[] personIds = couplesToMarryThisYear.get(coupleId);
-        Person partner1 = Person.getPersonFromId(personIds[0]);
+    public void marryCouple(int[] couple, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+        Person partner1 = Person.getPersonFromId(couple[0]);
         if (!EventRules.ruleGetMarried(partner1)) {
             return;  // Person got already married this simulation period or died or moved away
         }
-        Person partner2 = Person.getPersonFromId(personIds[1]);
+        Person partner2 = Person.getPersonFromId(couple[1]);
         if (!EventRules.ruleGetMarried(partner2)) {
             return;  // Person got already married this simulation period or died or moved away
         }

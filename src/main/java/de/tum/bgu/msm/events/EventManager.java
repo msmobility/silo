@@ -4,13 +4,14 @@ import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.realEstate.ConstructionModel;
+import de.tum.bgu.msm.relocation.InOutMigration;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Generates a series of events in random order
@@ -23,19 +24,18 @@ public class EventManager {
     private static Logger logger = Logger.getLogger(EventManager.class);
 
     private SiloDataContainer dataContainer;
-    private ArrayList<Integer[]> events;
+    private List<int[]> events;
     private int randomEventOrder[];
     private int posInArray;
     private static HashMap<EventTypes, Integer> eventCounter;
 
     public EventManager (SiloDataContainer dataContainer) {
-        // Constructor of EventManager
         this.dataContainer = dataContainer;
         EventRules.setUpEventRules();
     }
 
 
-    public void createListOfEvents (int numberOfPlannedMarriages) {
+    public void createListOfEvents (List<int[]> plannedMarriages) {
         // create an array list that contains all land use events
 
         events = new ArrayList<>();
@@ -47,60 +47,59 @@ public class EventManager {
             int id = per.getId();
             // Birthday
             if (EventRules.ruleBirthday(per)) {
-                events.add(new Integer[]{EventTypes.birthday.ordinal(), id});
+                events.add(new int[]{EventTypes.birthday.ordinal(), id});
                 numEvents ++;
             }
             // Death
             if (EventRules.ruleDeath(per)) {
-                events.add(new Integer[]{EventTypes.checkDeath.ordinal(), id});
+                events.add(new int[]{EventTypes.checkDeath.ordinal(), id});
                 numEvents ++;
             }
             // Birth
             if (EventRules.ruleGiveBirth(per)) {
-                events.add(new Integer[]{EventTypes.checkBirth.ordinal(), id});
+                events.add(new int[]{EventTypes.checkBirth.ordinal(), id});
                 numEvents ++;
             }
             // Leave parental household
             if (EventRules.ruleLeaveParHousehold(per)) {
-                events.add(new Integer[]{EventTypes.checkLeaveParentHh.ordinal(), id});
+                events.add(new int[]{EventTypes.checkLeaveParentHh.ordinal(), id});
                 numEvents ++;
             }
             // Divorce
             if (EventRules.ruleGetDivorced(per)) {
-                events.add(new Integer[]{EventTypes.checkDivorce.ordinal(), id});
+                events.add(new int[]{EventTypes.checkDivorce.ordinal(), id});
                 numEvents++;
             }
             // Change school
             if (EventRules.ruleChangeSchoolUniversity(per)) {
-                events.add(new Integer[]{EventTypes.checkSchoolUniv.ordinal(), id});
+                events.add(new int[]{EventTypes.checkSchoolUniv.ordinal(), id});
                 numEvents++;
             }
             // Change drivers license
             if (EventRules.ruleChangeDriversLicense(per)) {
-                events.add(new Integer[]{EventTypes.checkDriversLicense.ordinal(), id});
+                events.add(new int[]{EventTypes.checkDriversLicense.ordinal(), id});
                 numEvents++;
             }
         }
 
 
         // wedding events
-        for (int i = 0; i < numberOfPlannedMarriages; i++) {
-            events.add(new Integer[]{EventTypes.checkMarriage.ordinal(), i});
+        for (int[] couple: plannedMarriages) {
+            events.add(new int[]{EventTypes.checkMarriage.ordinal(), couple[0], couple[1]});
             numEvents++;
         }
-
 
         // employment events
         if (EventRules.ruleStartNewJob()) {
             for (int ppId: HouseholdDataManager.getStartNewJobPersonIds()) {
-                events.add(new Integer[]{EventTypes.findNewJob.ordinal(), ppId});
+                events.add(new int[]{EventTypes.findNewJob.ordinal(), ppId});
                 numEvents++;
             }
         }
 
         if (EventRules.ruleQuitJob()) {
             for (int ppId: HouseholdDataManager.getQuitJobPersonIds()) {
-                events.add(new Integer[]{EventTypes.quitJob.ordinal(), ppId});
+                events.add(new int[]{EventTypes.quitJob.ordinal(), ppId});
                 numEvents++;
             }
         }
@@ -110,7 +109,7 @@ public class EventManager {
         for (Household hh: Household.getHouseholds()) {
             if (EventRules.ruleHouseholdMove(hh)) {
                 int id = hh.getId();
-                events.add(new Integer[]{EventTypes.householdMove.ordinal(), id});
+                events.add(new int[]{EventTypes.householdMove.ordinal(), id});
                 numEvents++;
             }
         }
@@ -118,7 +117,7 @@ public class EventManager {
         if (EventRules.ruleOutmigrate()) {
             for (int hhId: InOutMigration.outMigratingHhId) {
                 if (EventRules.ruleOutmigrate(Household.getHouseholdFromId(hhId))) {
-                    events.add(new Integer[]{EventTypes.outMigration.ordinal(), hhId});
+                    events.add(new int[]{EventTypes.outMigration.ordinal(), hhId});
                     numEvents++;
                 }
             }
@@ -126,7 +125,7 @@ public class EventManager {
 
         if (EventRules.ruleInmigrate()) {
             for (int hhId: InOutMigration.inmigratingHhId) {
-                events.add(new Integer[]{EventTypes.inmigration.ordinal(), hhId});
+                events.add(new int[]{EventTypes.inmigration.ordinal(), hhId});
                 numEvents++;
             }
         }
@@ -137,19 +136,19 @@ public class EventManager {
             int id = dd.getId();
             // renovate dwelling or deteriorate
             if (EventRules.ruleChangeDwellingQuality(dd)) {
-                events.add(new Integer[]{EventTypes.ddChangeQual.ordinal(), id});
+                events.add(new int[]{EventTypes.ddChangeQual.ordinal(), id});
                 numEvents++;
             }
             // demolish
             if (EventRules.ruleDemolishDwelling(dd)) {
-                events.add(new Integer[]{EventTypes.ddDemolition.ordinal(), id});
+                events.add(new int[]{EventTypes.ddDemolition.ordinal(), id});
                 numEvents++;
             }
         }
         // build new dwellings
         if (EventRules.ruleBuildDwelling()) {
             for (int constructionCase: ConstructionModel.listOfPlannedConstructions) {
-                events.add(new Integer[]{EventTypes.ddConstruction.ordinal(), constructionCase});
+                events.add(new int[]{EventTypes.ddConstruction.ordinal(), constructionCase});
                 numEvents++;
             }
         }
@@ -271,9 +270,9 @@ public class EventManager {
     }
 
 
-    public Integer[] selectNextEvent() {
+    public int[] selectNextEvent() {
         // select the next event in order stored in randomEventOrder
-        Integer[] event = events.get(randomEventOrder[posInArray]);
+        int[] event = events.get(randomEventOrder[posInArray]);
         posInArray++;
         return event;
     }
