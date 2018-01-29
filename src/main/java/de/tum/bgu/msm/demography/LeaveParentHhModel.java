@@ -87,7 +87,7 @@ public class LeaveParentHhModel {
             hh.addPerson(per);
             hh.setType();
             hh.determineHouseholdRace();
-            per.setRole(PersonRole.single);
+            per.setRole(PersonRole.SINGLE);
 
 
             // Move new household

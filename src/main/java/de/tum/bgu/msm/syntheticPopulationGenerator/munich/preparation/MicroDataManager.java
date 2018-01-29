@@ -403,11 +403,11 @@ public class MicroDataManager {
 
 
     public PersonRole translatePersonRole (int role){
-        PersonRole personRole = PersonRole.single;
+        PersonRole personRole = PersonRole.SINGLE;
         if (role == 2) {
-            personRole = PersonRole.married;
+            personRole = PersonRole.MARRIED;
         } else if (role == 3) {
-            personRole = PersonRole.child;
+            personRole = PersonRole.CHILD;
         }
         return personRole;
     }

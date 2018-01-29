@@ -69,7 +69,7 @@ public class BirthModel {
         if (per.getGender() == 1) return;            // Exclude males, model should never get here
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb = calculator.calculateBirthProbability(per.getAge());
-        if (per.getRole() == PersonRole.married) birthProb *= Properties.get().demographics.marriedScaler;
+        if (per.getRole() == PersonRole.MARRIED) birthProb *= Properties.get().demographics.marriedScaler;
         else birthProb *= Properties.get().demographics.singleScaler;
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             // For, unto us a child is born

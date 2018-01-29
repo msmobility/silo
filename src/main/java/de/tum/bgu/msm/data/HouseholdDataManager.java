@@ -183,7 +183,7 @@ public class HouseholdDataManager {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 int gender     = Integer.parseInt(lineElements[posGender]);
                 String relShp  = lineElements[posRelShp].replace("\"", "");
-                PersonRole pr  = PersonRole.valueOf(relShp);
+                PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
@@ -297,8 +297,8 @@ public class HouseholdDataManager {
         for (Person person: personsCopy) {
             Person partner = findMostLikelyUnmarriedPartner(person, hh);
             if (partner != null) {
-                partner.setRole(PersonRole.married);
-                person.setRole(PersonRole.married);
+                partner.setRole(PersonRole.MARRIED);
+                person.setRole(PersonRole.MARRIED);
                 if (person.getId() == SiloUtil.trackPp || person.getHh().getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household " + person.getHh().getId() +
                             " as " + person.getRole());
@@ -316,7 +316,7 @@ public class HouseholdDataManager {
     public static void defineUnmarriedPersons (Household hh) {
         // For those that did not become the married couple define role in household (child or single)
         for (Person pp: hh.getPersons()) {
-            if (pp.getRole() == PersonRole.married) {
+            if (pp.getRole() == PersonRole.MARRIED) {
                 continue;
             }
             boolean someone15to40yearsOlder = false;      // assumption that this person is a parent
@@ -331,9 +331,9 @@ public class HouseholdDataManager {
                 }
             }
             if ((someone15to40yearsOlder && ageMain < 50) || ageMain <= 15) {
-                pp.setRole(PersonRole.child);
+                pp.setRole(PersonRole.CHILD);
             } else {
-                pp.setRole(PersonRole.single);
+                pp.setRole(PersonRole.SINGLE);
             }
             if (pp.getId() == SiloUtil.trackPp || pp.getHh().getId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household " + pp.getHh().getId() +
@@ -510,7 +510,7 @@ public class HouseholdDataManager {
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
         for (Person partner: hh.getPersons()) {
-            if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.married) {
+            if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.MARRIED) {
                 int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
                     tempUtil = 2;
@@ -532,7 +532,7 @@ public class HouseholdDataManager {
         double tempUtil;
         Person selectedPartner = null;
         for(Person partner: hh.getPersons()) {
-            if (!partner.equals(per) && partner.getGender() != per.getGender() && partner.getRole() == PersonRole.married) {
+            if (!partner.equals(per) && partner.getGender() != per.getGender() && partner.getRole() == PersonRole.MARRIED) {
                 final int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
                     tempUtil = 2.;

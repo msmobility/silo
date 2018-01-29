@@ -211,11 +211,11 @@ public class MarryDivorceModel {
         Household hhOfPartner1 = partner1.getHh();
         Household hhOfPartner2 = partner2.getHh();
         int moveTo = 1;
-        if (partner1.getRole().equals(PersonRole.child) && !partner2.getRole().equals(PersonRole.child))
+        if (partner1.getRole().equals(PersonRole.CHILD) && !partner2.getRole().equals(PersonRole.CHILD))
             moveTo = 2; // if one is not a child, move into that household
-        if (!partner1.getRole().equals(PersonRole.child) && partner2.getRole().equals(PersonRole.child)) moveTo = 1;
-        if (!partner1.getRole().equals(PersonRole.child) && !partner2.getRole().equals(PersonRole.child) ||
-                partner1.getRole().equals(PersonRole.child) && partner2.getRole().equals(PersonRole.child)) {
+        if (!partner1.getRole().equals(PersonRole.CHILD) && partner2.getRole().equals(PersonRole.CHILD)) moveTo = 1;
+        if (!partner1.getRole().equals(PersonRole.CHILD) && !partner2.getRole().equals(PersonRole.CHILD) ||
+                partner1.getRole().equals(PersonRole.CHILD) && partner2.getRole().equals(PersonRole.CHILD)) {
             int hhSizeA = hhOfPartner1.getHhSize();                                                                  // if both are/areNot children, move into smaller hh size
             int hhSizeB = hhOfPartner2.getHhSize();
             if (hhSizeA > hhSizeB) {
@@ -279,8 +279,8 @@ public class MarryDivorceModel {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
             }
         }
-        partner1.setRole(PersonRole.married);
-        partner2.setRole(PersonRole.married);
+        partner1.setRole(PersonRole.MARRIED);
+        partner2.setRole(PersonRole.MARRIED);
         EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner1);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner2);
@@ -326,8 +326,8 @@ public class MarryDivorceModel {
             // divorce
             Household oldHh = per.getHh();
             Person divorcedPerson = HouseholdDataManager.findMostLikelyPartner(per, oldHh);
-            divorcedPerson.setRole(PersonRole.single);
-            per.setRole(PersonRole.single);
+            divorcedPerson.setRole(PersonRole.SINGLE);
+            per.setRole(PersonRole.SINGLE);
             oldHh.removePerson(per, dataContainer);
             oldHh.determineHouseholdRace();
             oldHh.setType();

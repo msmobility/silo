@@ -19,9 +19,7 @@ package de.tum.bgu.msm.data;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.demography.BirthModel;
-import org.apache.log4j.Logger;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -194,7 +192,7 @@ public final class Household {
             gender = 2;
         }
         Person person = new Person (id, 0, gender, race, 0, 0, 0);
-        person.setRole(PersonRole.child);
+        person.setRole(PersonRole.CHILD);
         persons.add(person);
         person.setHousehold(this);
         setType();

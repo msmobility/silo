@@ -55,9 +55,9 @@ public class DeathModel {
             }
             Household hhOfPersonToDie = per.getHh();
 
-            if (per.getRole() == PersonRole.married) {
+            if (per.getRole() == PersonRole.MARRIED) {
                 Person widow = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
-                widow.setRole(PersonRole.single);
+                widow.setRole(PersonRole.SINGLE);
             }
             hhOfPersonToDie.removePerson(per, dataContainer);
             boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();

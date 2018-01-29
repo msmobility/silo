@@ -34,19 +34,19 @@ public class EventRules {
     public static boolean ruleLeaveParHousehold (Person per) {
         if (per == null) return false;
         Household hh = per.getHh();
-        return (hh.getHhSize() >= 2 && per.getRole() == PersonRole.child) &&
+        return (hh.getHhSize() >= 2 && per.getRole() == PersonRole.CHILD) &&
                 Properties.get().eventRules.leaveParentHh && Properties.get().eventRules.allDemography;
     }
 
     public static boolean ruleGetMarried (Person per) {
         if (per == null) return false;
         PersonRole role = per.getRole();
-        return (role == PersonRole.single || role == PersonRole.child) && per.getAge() >= Properties.get().demographics.minMarryAge &&
+        return (role == PersonRole.SINGLE || role == PersonRole.CHILD) && per.getAge() >= Properties.get().demographics.minMarryAge &&
                 Properties.get().eventRules.marriage && Properties.get().eventRules.allDemography;
     }
 
     public static boolean ruleGetDivorced (Person per) {
-        return (per != null && per.getRole() == PersonRole.married) && Properties.get().eventRules.divorce && Properties.get().eventRules.allDemography;
+        return (per != null && per.getRole() == PersonRole.MARRIED) && Properties.get().eventRules.divorce && Properties.get().eventRules.allDemography;
     }
 
     public static boolean ruleChangeSchoolUniversity (Person per) {
