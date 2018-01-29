@@ -54,8 +54,6 @@ public class SiloModel {
 	private boolean runMatsim;
 	private boolean runTravelDemandModel;
 
-	public enum Implementation {MUNICH, MARYLAND, CAPE_TOWN, MSP}
-
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	private final Config matsimConfig;

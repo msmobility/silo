@@ -16,7 +16,7 @@
  */
 package de.tum.bgu.msm.demography;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
@@ -51,7 +51,7 @@ public class BirthModel {
 
     private void setupBirthModel() {
         Reader reader;
-        if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
             // todo: Update Birth Probabilities for Munich, add also to test class
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
         } else {

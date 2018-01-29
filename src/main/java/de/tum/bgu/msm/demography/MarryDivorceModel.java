@@ -17,7 +17,7 @@
 package de.tum.bgu.msm.demography;
 
 import com.google.common.collect.ImmutableList;
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -63,7 +63,7 @@ public class MarryDivorceModel {
         double scale = Properties.get().demographics.localMarriageAdjuster;
 
         Reader reader;
-        if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
             // todo: Update Probabilities for Munich, add also to test class
             reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         } else {
@@ -275,7 +275,7 @@ public class MarryDivorceModel {
                 return;
             }
             modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
-            if (Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+            if (Properties.get().main.implementation == Implementation.MUNICH) {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
             }
         }
@@ -345,7 +345,7 @@ public class MarryDivorceModel {
                     newHhId + ".");
             EventManager.countEvent(EventTypes.CHECK_DIVORCE);
             dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
-            if (Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+            if (Properties.get().main.implementation == Implementation.MUNICH) {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
             }
         }

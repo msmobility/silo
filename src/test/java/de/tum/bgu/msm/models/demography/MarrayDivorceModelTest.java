@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -23,7 +23,7 @@ public class MarrayDivorceModelTest {
     @BeforeClass
     public static void setupModel() {
         SiloUtil.setBaseYear(2000);
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", SiloModel.Implementation.MARYLAND);
+        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.createSiloDataContainer();
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);

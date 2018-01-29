@@ -18,7 +18,7 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.transportModel.matsim;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
@@ -132,7 +132,7 @@ public class MatsimTransportModel implements TransportModelI {
 		acc.addTravelTimeForMode(TransportMode.car, matsimTravelTimes);
 //		acc.addTravelTimeForMode(TransportMode.pt, matsimTravelTimes); // use car times for now also, as pt travel times are too slow to compute, Nico Oct 17
 		
-		if (config.transit().isUseTransit() && Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 			acc.setPTDistances(matsimPTDistances);
 		}

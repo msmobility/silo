@@ -47,7 +47,7 @@ public class SiloUtil {
     private static int baseYear;
 
 
-    public static ResourceBundle siloInitialization(String resourceBundleNames, SiloModel.Implementation implementation) {
+    public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
         Properties.initializeProperties(rb, implementation);

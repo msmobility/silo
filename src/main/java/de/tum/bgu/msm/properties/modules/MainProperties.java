@@ -1,9 +1,7 @@
 package de.tum.bgu.msm.properties.modules;
 
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.Implementation;
 
 import java.util.ResourceBundle;
 
@@ -43,9 +41,9 @@ public class MainProperties {
     public final String housingEnvironmentImpactFile;
     public final String prestoSummaryFile;
 
-    public final SiloModel.Implementation implementation;
+    public final Implementation implementation;
 
-    public MainProperties(ResourceBundle bundle, SiloModel.Implementation implementation) {
+    public MainProperties(ResourceBundle bundle, Implementation implementation) {
         this.implementation = implementation;
         runSilo = ResourceUtil.getBooleanProperty(bundle, "run.silo.model", true);
         trackTime = ResourceUtil.getBooleanProperty(bundle, "track.time", false);

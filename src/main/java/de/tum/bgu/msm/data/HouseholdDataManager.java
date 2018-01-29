@@ -916,7 +916,7 @@ public class HouseholdDataManager {
                 pwp.print(",");
                 pwp.print(pp.getGender());
                 pwp.print(",\"");
-                pwp.print(pp.getRole());
+                pwp.print(pp.getRole().toString());
                 pwp.print("\",\"");
                 pwp.print(pp.getRace());
                 pwp.print("\",");

@@ -29,7 +29,7 @@ public final class SiloMatsim {
 	 */
 	public SiloMatsim(String args, Config config) {
 		SiloUtil.setBaseYear(2000);
-		rb = SiloUtil.siloInitialization(args, SiloModel.Implementation.MARYLAND);
+		rb = SiloUtil.siloInitialization(args, Implementation.MARYLAND);
 
 		matsimConfig = config ;
 	}	    

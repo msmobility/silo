@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.capeTown.SyntheticPopCT;
 import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
@@ -25,7 +25,7 @@ public class SyntheticPopulationGenerator {
     public void run(){
 
         SyntheticPopI syntheticPop;
-        SiloModel.Implementation imp = Properties.get().main.implementation;
+        Implementation imp = Properties.get().main.implementation;
         if (Properties.get().main.runSynPop) {
             switch (imp) {
                 case MUNICH:

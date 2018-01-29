@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.demography;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
@@ -33,7 +33,7 @@ public class DeathModel {
 
 	private void setupDeathModel() {
         Reader reader;
-        if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));

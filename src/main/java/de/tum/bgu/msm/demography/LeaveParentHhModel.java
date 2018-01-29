@@ -16,7 +16,7 @@
  */
 package de.tum.bgu.msm.demography;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -94,7 +94,7 @@ public class LeaveParentHhModel {
             modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
             EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
             dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
-            if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
+            if(Properties.get().main.implementation == Implementation.MUNICH) {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
             }
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
