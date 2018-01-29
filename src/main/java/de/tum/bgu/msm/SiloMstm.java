@@ -26,7 +26,6 @@ public class SiloMstm {
     public static void main(String[] args) {
         // main run method
 
-        SiloUtil.setBaseYear(2000);
         ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MARYLAND);
         long startTime = System.currentTimeMillis();
         try {

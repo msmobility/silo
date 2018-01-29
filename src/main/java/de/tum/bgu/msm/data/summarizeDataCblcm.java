@@ -46,7 +46,7 @@ public class summarizeDataCblcm {
             households[dataContainer.getGeoData().getZoneIndex(hh.getHomeZone())][hhIncomeGroup - 1]++;
         }
 
-        if (SiloUtil.checkIfFileExists(popFileName) && year != SiloUtil.getBaseYear()) {
+        if (SiloUtil.checkIfFileExists(popFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet pop = SiloUtil.readCSVfile(popFileName);
             for (int income = 0; income <= Properties.get().main.incomeBrackets.length; income++) {
                 int[] hh = new int[dataContainer.getGeoData().getZones().length];
@@ -94,7 +94,7 @@ public class summarizeDataCblcm {
             jobs[dataContainer.getGeoData().getZoneIndex(jj.getZone())][jobType]++;
         }
 
-        if (SiloUtil.checkIfFileExists(emplFileName) && year != SiloUtil.getBaseYear()) {
+        if (SiloUtil.checkIfFileExists(emplFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet empl = SiloUtil.readCSVfile(emplFileName);
             for (int emplType = 0; emplType < JobType.getNumberOfJobTypes(); emplType++) {
                 int[] jobOfThisType = new int[dataContainer.getGeoData().getZones().length];
@@ -134,7 +134,7 @@ public class summarizeDataCblcm {
             dwellings[dataContainer.getGeoData().getZoneIndex(dd.getZone())][ddType]++;
         }
 
-        if (SiloUtil.checkIfFileExists(ddFileName) && year != SiloUtil.getBaseYear()) {
+        if (SiloUtil.checkIfFileExists(ddFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet ddTable = SiloUtil.readCSVfile(ddFileName);
             for (DwellingType ddType: DwellingType.values()) {
                 int[] dd = new int[dataContainer.getGeoData().getZones().length];
@@ -169,7 +169,7 @@ public class summarizeDataCblcm {
         String accFileName = (directory + "/cblcm/" + Properties.get().cblcm.accessibilityFile +
                 Properties.get().main.gregorianIterator + ".csv");
 
-        if (SiloUtil.checkIfFileExists(accFileName) && year != SiloUtil.getBaseYear()) {
+        if (SiloUtil.checkIfFileExists(accFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet accTable = SiloUtil.readCSVfile(accFileName);
             double[] accHwy = new double[dataContainer.getGeoData().getZones().length];
             double[] accTrn = new double[dataContainer.getGeoData().getZones().length];
@@ -221,7 +221,7 @@ public class summarizeDataCblcm {
 
         PrintWriter pwp;
         PrintWriter pwj;
-        if (!SiloUtil.checkIfFileExists(hhFileName) || year == SiloUtil.getBaseYear()) {
+        if (!SiloUtil.checkIfFileExists(hhFileName) || year == Properties.get().main.implementation.BASE_YEAR) {
             pwp = SiloUtil.openFileForSequentialWriting(hhFileName, false);
             pwp.print("Housing");
             for (int fips: countyOrder) pwp.print(" " + fips);

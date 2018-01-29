@@ -44,8 +44,6 @@ public class SiloUtil {
     private static HashMap rbHashMap;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
-    private static int baseYear;
-
 
     public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
         File propFile = new File(resourceBundleNames);
@@ -216,7 +214,7 @@ public class SiloUtil {
                 String fileName = ResourceUtil.getProperty(rb, "track.file.name");
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != baseYear);
+                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);
@@ -935,18 +933,6 @@ public class SiloUtil {
         return tableDataSet;
     }
 
-    public static void setBaseYear(int year) {
-        // base year is the year for which the initial synthetic population has been generated. Start year is the year
-        // the current model run starts with. For example, SILO may run from 2000 to 2007 (base year == 2000 and start
-        // year == 2000), then the travel model might be run, and SILO picks up from 2007 to 2040 (base year == 2000 and
-        // start year == 2007)
-        baseYear = year;
-    }
-
-    public static int getBaseYear() {
-        return baseYear;
-    }
-
     static public String customFormat(String pattern, double value ) {
         // function copied from: http://docs.oracle.com/javase/tutorial/java/data/numberformat.html
         // 123456.789 ###,###.###  123,456.789 The pound sign (#) denotes a digit, the comma is a placeholder for the grouping separator, and the period is a placeholder for the decimal separator.
@@ -1039,8 +1025,8 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
 	int startYear = Properties.get().main.startYear;
-	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != getBaseYear());
-	if (startYear == getBaseYear()) {
+	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
+	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +

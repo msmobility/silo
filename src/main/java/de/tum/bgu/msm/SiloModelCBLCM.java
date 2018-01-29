@@ -100,7 +100,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear != SiloUtil.getBaseYear()) {
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) {
 	            modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(currentYear, dataContainer);
 	            dataContainer.getJobData().identifyVacantJobs();
 	        }
@@ -138,11 +138,11 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear != SiloUtil.getBaseYear()) dataContainer.getHouseholdData().adjustIncome();
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) dataContainer.getHouseholdData().adjustIncome();
 	        if (trackTime) timeCounter[EventTypes.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear == SiloUtil.getBaseYear() || currentYear != Properties.get().main.startYear)
+	        if (currentYear == Properties.get().main.implementation.BASE_YEAR || currentYear != Properties.get().main.startYear)
 	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 

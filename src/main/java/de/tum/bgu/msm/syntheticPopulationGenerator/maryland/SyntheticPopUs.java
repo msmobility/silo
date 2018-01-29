@@ -95,7 +95,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
-        SummarizeData.writeOutSyntheticPopulation(SiloUtil.getBaseYear());
+        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR);
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }

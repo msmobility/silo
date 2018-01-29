@@ -22,7 +22,6 @@ public class MarrayDivorceModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.setBaseYear(2000);
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.createSiloDataContainer();

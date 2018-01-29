@@ -49,7 +49,7 @@ public class SummarizeData {
         SiloUtil.createDirectoryIfNotExistingYet(directory);
         String resultFileName = rb.getString(PROPERTIES_RESULT_FILE_NAME);
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
-                Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != SiloUtil.getBaseYear());
+                Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
         resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + Properties.get().main.endYear + ".csv", false);
     }
 
@@ -93,7 +93,7 @@ public class SummarizeData {
                 SiloUtil.createDirectoryIfNotExistingYet(directory);
                 String resultFileName = Properties.get().main.spatialResultFileName;
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
-                        Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != SiloUtil.getBaseYear());
+                        Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
                 spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +"_"+ Properties.get().main.endYear + ".csv", false);
                 break;
             case "close":
@@ -976,7 +976,7 @@ public class SummarizeData {
 
         String fileName = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
                 Properties.get().main.prestoSummaryFile + Properties.get().main.gregorianIterator + ".csv");
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != SiloUtil.getBaseYear());
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != Properties.get().main.implementation.BASE_YEAR);
         pw.println(year + ",Housing costs by income group");
         pw.print("Income");
         for (int i = 0; i < 10; i++) pw.print(",rent_" + ((i + 1) * 250));
