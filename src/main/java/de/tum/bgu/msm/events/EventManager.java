@@ -31,7 +31,6 @@ public class EventManager {
 
     public EventManager (SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
-        EventRules.setUpEventRules();
     }
 
 
