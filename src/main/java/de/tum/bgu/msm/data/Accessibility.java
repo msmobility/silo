@@ -292,7 +292,11 @@ at de.tum.bgu.msm.data.Accessibility.calculateAccessibilities(Accessibility.java
 	}
 
 	
-	public void setPTDistances(MatsimPTDistances ptDistances) {
+	public void setPTDistances(PTDistances ptDistances) {
 		this.ptDistances = ptDistances;
 	}
+
+	public PTDistances getPtDistances() {
+        return this.ptDistances;
+    }
 }

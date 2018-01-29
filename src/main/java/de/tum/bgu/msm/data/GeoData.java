@@ -48,5 +48,4 @@ public interface GeoData {
 
     void writeOutDevelopmentCapacityFile(SiloDataContainer dataContainer);
 
-
 }

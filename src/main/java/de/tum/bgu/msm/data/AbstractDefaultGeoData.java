@@ -16,6 +16,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     private final String zoneIdColumnName;
     private final String regionColumnName;
 
+
     protected int[] zoneIndex;
     protected int[] zones;
     private int highestZonalId;

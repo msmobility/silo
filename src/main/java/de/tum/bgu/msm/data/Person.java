@@ -16,9 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
