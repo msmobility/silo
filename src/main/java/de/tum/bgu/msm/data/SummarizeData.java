@@ -407,7 +407,8 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getGender());
             pwp.print(",\"");
-            pwp.print(pp.getRole());
+            String role = pp.getRole().toString();
+            pwp.print(role);
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
@@ -545,7 +546,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getGender());
             pwp.print(",\"");
-            pwp.print(pp.getRole());
+            pwp.print(pp.getRole().toString());
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
@@ -693,7 +694,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getGender());
             pwp.print(",\"");
-            pwp.print(pp.getRole());
+            pwp.print(pp.getRole().toString());
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
@@ -834,7 +835,7 @@ public class SummarizeData {
                 pwp.print(",");
                 pwp.print(pp.getGender());
                 pwp.print(",\"");
-                pwp.print(pp.getRole());
+                pwp.print(pp.getRole().toString());
                 pwp.print("\",\"");
                 pwp.print(pp.getRace());
                 pwp.print("\",");
@@ -1043,7 +1044,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getGender());
             pwp.print(",\"");
-            pwp.print(pp.getRole());
+            pwp.print(pp.getRole().toString());
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
