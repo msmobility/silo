@@ -71,7 +71,7 @@ public class DeathModel {
                 }
             }
             Person.removePerson(per.getId());
-            EventManager.countEvent(EventTypes.checkDeath);
+            EventManager.countEvent(EventTypes.CHECK_DEATH);
             householdDataManager.addHouseholdThatChanged(hhOfPersonToDie);
             if (perId == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
                 SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhOfPersonToDie.getId() +

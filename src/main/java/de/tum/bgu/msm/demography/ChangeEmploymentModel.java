@@ -53,7 +53,7 @@ public class ChangeEmploymentModel {
             int age = Math.min(99, pp.getAge());
             int inc = HouseholdDataManager.selectIncomeForPerson(gender, age, 1);
             pp.setIncome(inc);
-            EventManager.countEvent(EventTypes.findNewJob);
+            EventManager.countEvent(EventTypes.FIND_NEW_JOB);
             householdDataManager.addHouseholdThatChanged(pp.getHh());
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " started working for job " + jj.getId());
             return true;
@@ -67,7 +67,7 @@ public class ChangeEmploymentModel {
         Person pp = Person.getPersonFromId(perId);
         if (pp == null) return;  // person has died or moved away
         pp.quitJob(true, jobDataManager);
-        EventManager.countEvent(EventTypes.quitJob);
+        EventManager.countEvent(EventTypes.QUIT_JOB);
         householdDataManager.addHouseholdThatChanged(pp.getHh());
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }

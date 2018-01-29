@@ -303,7 +303,7 @@ public class ConstructionModel {
         double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd, modelContainer);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
-        EventManager.countEvent(EventTypes.ddConstruction);
+        EventManager.countEvent(EventTypes.DD_CONSTRUCTION);
 
         if (ddId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");

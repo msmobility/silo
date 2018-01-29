@@ -6,18 +6,11 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.calculator.UtilityExpressionCalculator;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ResourceBundle;
-import java.io.File;
 
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
-
-import javax.script.ScriptException;
 
 /**
  * Simulates renovation and deterioration of dwellings
@@ -59,7 +52,7 @@ public class RenovationModel {
         int selected = SiloUtil.select(getProbabilities(currentQuality));
 
         if (selected != 2) {
-            EventManager.countEvent(EventTypes.ddChangeQual);
+            EventManager.countEvent(EventTypes.DD_CHANGE_QUAL);
             RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
         }
         switch (selected) {

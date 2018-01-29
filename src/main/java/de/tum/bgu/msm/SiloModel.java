@@ -221,68 +221,68 @@ public class SiloModel {
 				if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
 					SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
 							event[1]);
-				if (event[0] == EventTypes.birthday.ordinal()) {
+				if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getBirth().celebrateBirthday(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkDeath.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getDeath().chooseDeath(event[1], dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkBirth.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_BIRTH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getBirth().chooseBirth(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkMarriage.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
                     int[] couple = Arrays.copyOfRange(event, 1,3);
 					modelContainer.getMardiv().marryCouple(couple, modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkDivorce.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getMardiv().chooseDivorce(event[1], modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkSchoolUniv.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_SCHOOL_UNIV.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getChangeSchoolUniv().updateSchoolUniv(event[1], dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.checkDriversLicense.ordinal()) {
+				} else if (event[0] == EventTypes.CHECK_DRIVERS_LICENSE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getChangeDriversLicense().changeDriversLicense(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.findNewJob.ordinal()) {
+				} else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getChangeEmployment().findNewJob(event[1], modelContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.quitJob.ordinal()) {
+				} else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getChangeEmployment().quitJob(event[1], dataContainer.getJobData());
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.householdMove.ordinal()) {
+				} else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getMove().chooseMove(event[1],modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.inmigration.ordinal()) {
+				} else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getIomig().inmigrateHh(event[1], modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.outMigration.ordinal()) {
+				} else if (event[0] == EventTypes.OUT_MIGRATION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getIomig().outMigrateHh(event[1], false, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
+				} else if (event[0] == EventTypes.DD_CHANGE_QUAL.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getRenov().checkRenovation(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.ddDemolition.ordinal()) {
+				} else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-				} else if (event[0] == EventTypes.ddConstruction.ordinal()) {
+				} else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
 					modelContainer.getCons().buildDwelling(event[1], year, modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;

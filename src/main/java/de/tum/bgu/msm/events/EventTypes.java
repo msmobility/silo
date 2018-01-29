@@ -9,22 +9,22 @@ package de.tum.bgu.msm.events;
 public enum EventTypes {
 
     // person events
-    birthday,
-    checkDeath,
-    checkBirth,
-    checkLeaveParentHh,
-    checkMarriage,
-    checkDivorce,
-    checkSchoolUniv,
-    checkDriversLicense,
-    householdMove,
-    inmigration,
-    outMigration,
+    BIRTHDAY,
+    CHECK_DEATH,
+    CHECK_BIRTH,
+    CHECK_LEAVE_PARENT_HH,
+    CHECK_MARRIAGE,
+    CHECK_DIVORCE,
+    CHECK_SCHOOL_UNIV,
+    CHECK_DRIVERS_LICENSE,
+    HOUSEHOLD_MOVE,
+    INMIGRATION,
+    OUT_MIGRATION,
     // dwelling events
-    ddChangeQual,
-    ddDemolition,
-    ddConstruction,
+    DD_CHANGE_QUAL,
+    DD_DEMOLITION,
+    DD_CONSTRUCTION,
     // employment events
-    findNewJob,
-    quitJob
+    FIND_NEW_JOB,
+    QUIT_JOB
 }

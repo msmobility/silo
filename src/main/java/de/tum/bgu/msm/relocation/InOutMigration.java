@@ -57,7 +57,7 @@ public class InOutMigration {
 
 
     public void setupInOutMigration(int year) {
-        // prepare data for inmigration and outmigration
+        // prepare data for INMIGRATION and outmigration
     	//TODO METHOD ONLY HANDLES INMIGRATION. SHOULD IT ALSO HANDLE OUTMIGRATION
         if (!EventRules.ruleInmigrate() && !EventRules.ruleOutmigrate()) return;
         logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
@@ -178,7 +178,7 @@ public class InOutMigration {
             return;
         }
 
-        EventManager.countEvent(EventTypes.inmigration);
+        EventManager.countEvent(EventTypes.INMIGRATION);
         if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
             modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
         }
@@ -193,7 +193,7 @@ public class InOutMigration {
         // Household with ID hhId out migrates
         Household hh = Household.getHouseholdFromId(hhId);
         if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) return;
-        EventManager.countEvent(EventTypes.outMigration);
+        EventManager.countEvent(EventTypes.OUT_MIGRATION);
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         for (Person pp: hh.getPersons()) {

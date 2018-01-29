@@ -92,7 +92,7 @@ public class LeaveParentHhModel {
 
             // Move new household
             modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
-            EventManager.countEvent(EventTypes.checkLeaveParentHh);
+            EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
             dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
             if(Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household

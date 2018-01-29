@@ -50,7 +50,7 @@ public class MarryDivorceModel {
     // ageOffset is the range of ages above and below a persons age that are considered for marriage
     // needs to cover -9 to +9 to reach one person type above and one person type below
     // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
-    // capture if potential partner has celebrated birthday already (i.e. turned 35). To improve
+    // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
     public MarryDivorceModel() {
@@ -281,7 +281,7 @@ public class MarryDivorceModel {
         }
         partner1.setRole(PersonRole.married);
         partner2.setRole(PersonRole.married);
-        EventManager.countEvent(EventTypes.checkMarriage);
+        EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner1);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner2);
     }
@@ -343,7 +343,7 @@ public class MarryDivorceModel {
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
-            EventManager.countEvent(EventTypes.checkDivorce);
+            EventManager.countEvent(EventTypes.CHECK_DIVORCE);
             dataContainer.getHouseholdData().addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
             if (Properties.get().main.implementation == SiloModel.Implementation.MUNICH) {
                 modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household

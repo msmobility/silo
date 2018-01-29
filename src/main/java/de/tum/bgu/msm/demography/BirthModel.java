@@ -75,7 +75,7 @@ public class BirthModel {
             // For, unto us a child is born
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHh().getId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
-            EventManager.countEvent(EventTypes.checkBirth);
+            EventManager.countEvent(EventTypes.CHECK_BIRTH);
             householdDataManager.addHouseholdThatChanged(hhOfThisWoman);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
@@ -101,8 +101,8 @@ public class BirthModel {
         int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
         per.setAge(age);
         per.setType(age, per.getGender());
-        EventManager.countEvent(EventTypes.birthday);
-        if (personId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Celebrated birthday of person " +
+        EventManager.countEvent(EventTypes.BIRTHDAY);
+        if (personId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
                 personId + ". New age is " + age + ".");
     }
 }
