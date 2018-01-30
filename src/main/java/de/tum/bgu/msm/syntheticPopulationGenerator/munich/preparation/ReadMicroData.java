@@ -51,7 +51,7 @@ public class ReadMicroData {
 
 
         //Scanning the file to obtain the number of households and persons in Bavaria
-        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + PropertiesSynPop.get().main.microDataFile;
+        String pumsFileName = PropertiesSynPop.get().main.microDataFile;
         String recString = "";
         int recCount = 0;
         int hhCount = 0;
