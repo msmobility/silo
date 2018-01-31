@@ -83,7 +83,7 @@ public class MainPropertiesSynPop {
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
         cellsMatrix = SiloUtil.readCSVfile(bundle.getString("taz.definition"));
-        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_borough"));
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
         omxFileName = ResourceUtil.getProperty(bundle,"distanceODmatrix");
 
@@ -138,7 +138,7 @@ public class MainPropertiesSynPop {
             marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
             ageBracketsBorough = ResourceUtil.getIntegerArray(bundle, "age.brackets.borough");
             cellsMatrixBoroughs = SiloUtil.readCSVfile(bundle.getString("taz.definition.borough"));
-            cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_borough"));
+            cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_cell"));
         } else {
             selectedBoroughs = null;
             attributesBorough = null;
