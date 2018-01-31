@@ -48,7 +48,7 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public void calculateWeights(int county){
+    private void calculateWeights(int county){
 
         //For each attribute at the region level (landkreise), we obtain the weights
         double weightedSumRegion = 0;
@@ -139,7 +139,7 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public double calculateErrors(int county){
+    private double calculateErrors(int county){
 
         double averageErrorIteration = 0.;
         int counter = 0;
@@ -233,7 +233,7 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public int checkStoppingCriteria(int county, double averageErrorIteration, int iteration){
+    private int checkStoppingCriteria(int county, double averageErrorIteration, int iteration){
 
         //Stopping criteria: exceeds the maximum number of iterations or the maximum error is lower than the threshold
         int finish = 0;
@@ -274,7 +274,7 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public void summarizeErrorsAndWeights(int county, int iteration){
+    private void summarizeErrorsAndWeights(int county, int iteration){
 
         //Write the weights after finishing IPU for each municipality (saved each time over the previous version)
         long estimatedTime = (System.nanoTime() - startTime) / 1000000000;
@@ -320,7 +320,7 @@ public class IPUbyCountyCityAndBorough {
     }
 
 
-    public void initializeErrorsandTotals(int county){
+    private void initializeErrorsandTotals(int county){
 
         startTime = System.nanoTime();
 
@@ -423,7 +423,7 @@ public class IPUbyCountyCityAndBorough {
         dataSetSynPop.setValuesByHousehold(valuesByHousehold);
     }
 
-    public void resetErrorsandTotals(){
+    private void resetErrorsandTotals(){
         weightsByBorough.clear();
         minWeightsByBorough.clear();
         valuesByHousehold.clear();
