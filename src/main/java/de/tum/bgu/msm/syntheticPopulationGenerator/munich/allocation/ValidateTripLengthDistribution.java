@@ -84,9 +84,9 @@ public class ValidateTripLengthDistribution {
     private void writeVectorToCSV(int[] thresholds, double[] frequencies, String outputFile){
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(outputFile, true));
-            pw.println("threshold,frequency");
+            pw.println("alpha, gamma, threshold,frequency,new");
             for (int i = 0; i< thresholds.length; i++) {
-                pw.println(thresholds[i] + "," + frequencies[i]);
+                pw.println(dataSetSynPop.getAlphaJobTest()+ "," + dataSetSynPop.getGammaJobTest()+ "," + thresholds[i] + "," + frequencies[i]);
             }
             pw.flush();
             pw.close();

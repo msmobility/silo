@@ -28,9 +28,19 @@ public class Allocation extends ModuleSynPop{
             readPopulation();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
-            assignJobs();
-            assignSchools();
-            validateTripLengths();
+/*            double[] alphaJobs = {40, 50, 50.2, 60, 70};
+            double[] gammaJobs = {-0.001, -0.002, -0.003, -0.004, -0.005};*/
+            double[] alphaJobs = {50};
+            double[] gammaJobs = {-0.003};
+            for (double alphaJob : alphaJobs) {
+                dataSetSynPop.setAlphaJobTest(alphaJob);
+                for (double gammaJob : gammaJobs) {
+                    dataSetSynPop.setGammaJobTest(gammaJob);
+                    assignJobs();
+                    assignSchools();
+                    validateTripLengths();
+                }
+            }
         }
         logger.info("   Completed allocation model.");
 
@@ -57,7 +67,7 @@ public class Allocation extends ModuleSynPop{
 
     public void assignSchools(){
         new AssignSchools(dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1992);
+        //SummarizeData.writeOutSyntheticPopulationDE(1992);
     }
 
     public void readPopulation(){

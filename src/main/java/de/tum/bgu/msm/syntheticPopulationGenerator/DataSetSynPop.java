@@ -53,6 +53,8 @@ public class DataSetSynPop {
     private TableDataSet householdDataSet;
     private TableDataSet personDataSet;
     private TableDataSet dwellingDataSet;
+    private double alphaJobTest;
+    private double gammaJobTest;
 
     public TableDataSet getWeights() {
         return weights;
@@ -276,5 +278,21 @@ public class DataSetSynPop {
 
     public void setDwellingDataSet(TableDataSet dwellingDataSet) {
         this.dwellingDataSet = dwellingDataSet;
+    }
+
+    public double getAlphaJobTest() {
+        return alphaJobTest;
+    }
+
+    public void setAlphaJobTest(double alphaJobTest) {
+        this.alphaJobTest = alphaJobTest;
+    }
+
+    public double getGammaJobTest() {
+        return gammaJobTest;
+    }
+
+    public void setGammaJobTest(double gammaJobTest) {
+        this.gammaJobTest = gammaJobTest;
     }
 }

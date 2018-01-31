@@ -54,10 +54,10 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Allocation(dataSetSynPop).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModel().run();
+        //new CreateCarOwnershipModel().run();
 
         logger.info("Summary of the synthetic population");
-        SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR);
+        //SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR);
 
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);

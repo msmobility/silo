@@ -63,14 +63,18 @@ public class AssignJobs {
 
         distanceImpedance = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
         Map<Integer, Float> utilityHBW = dataSetSynPop.getTripLengthDistribution().column("HBW");
+        double maxUtility = Math.exp(dataSetSynPop.getAlphaJobTest() * Math.exp(dataSetSynPop.getGammaJobTest()));
         for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
             for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+                /*int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
                 float utility = 0.00000001f;
                 if (distance < 200){
                     utility = utilityHBW.get(distance);
-                }
-                distanceImpedance.setValueAt(i, j, utility);
+                }*/
+                double utility = Math.exp(dataSetSynPop.getAlphaJobTest() *
+                        Math.exp(dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j) * dataSetSynPop.getGammaJobTest())) /
+                        maxUtility;
+                distanceImpedance.setValueAt(i, j, (float) utility);
             }
         }
     }
@@ -92,7 +96,7 @@ public class AssignJobs {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
             RowVector distances = distanceImpedance.getRow(homeTaz);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(distances.getValueAt(ids[id] / 100) * Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45)));
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = distances.getValueAt(ids[id] / 100) * numberVacantJobsByZoneByType.get(ids[id]));
             workplace = select(probs, ids);
         } else {
             workplace[0] = -2;

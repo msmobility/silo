@@ -24,7 +24,7 @@ public class Optimization extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runIPU){
             obtainWeightsIPU();
         } else {
-            readIPUresults();
+            //readIPUresults();
         }
         logger.info("   Completed optimization model.");
     }
