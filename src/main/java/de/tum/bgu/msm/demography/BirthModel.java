@@ -52,8 +52,7 @@ public class BirthModel {
     private void setupBirthModel() {
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
-            // todo: Update Birth Probabilities for Munich, add also to test class
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
         }
