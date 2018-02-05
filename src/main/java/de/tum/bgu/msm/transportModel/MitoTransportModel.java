@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.transportModel;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -7,12 +8,10 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.InputFeed;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.resources.Implementation;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Implementation of Transport Model Interface for MITO
@@ -26,8 +25,9 @@ public final class MitoTransportModel implements TransportModelI {
 	private final MitoModel mito;
     private final GeoData geoData;
 
-    public MitoTransportModel(ResourceBundle rb, String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
-        this.mito = MitoModel.standAloneModel(rb, Implementation.valueOf(Properties.get().main.implementation.name()));
+    public MitoTransportModel(String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
+		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
+        this.mito = MitoModel.standAloneModel(propertiesPath, Implementation.valueOf(Properties.get().main.implementation.name()));
         this.geoData = geoData;
         this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
@@ -47,7 +47,7 @@ public final class MitoTransportModel implements TransportModelI {
 		for (int i = 0; i < geoData.getZones().length; i++) {
 			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
 			MitoZone zone = new MitoZone(geoData.getZones()[i], geoData.getSizeOfZonesInAcres()[i], areaType);
-			zones.put(zone.getZoneId(), zone);
+			zones.put(zone.getId(), zone);
 		}
 		JobDataManager.fillMitoZoneEmployees(zones);
 

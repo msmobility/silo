@@ -229,7 +229,7 @@ public final class Household {
         for (Household siloHousehold : getHouseholds()) {
             MitoZone zone = zones.get(siloHousehold.homeZone);
             MitoHousehold household = siloHousehold.convertToMitoHh(zone);
-            thhs.put(household.getHhId(), household);
+            thhs.put(household.getId(), household);
         }
         return thhs;
     }

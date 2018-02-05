@@ -70,7 +70,7 @@ public class SiloModelCBLCM {
 	        timeCounter = new long[EventTypes.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(null, Properties.get().main.baseDirectory, geoData, modelContainer);
+	        transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, geoData, modelContainer);
 	        if (Properties.get().main.createPrestoSummary) {
 				SummarizeData.preparePrestoSummary(geoData);
 			}
