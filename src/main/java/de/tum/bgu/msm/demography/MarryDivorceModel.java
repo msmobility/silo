@@ -227,29 +227,13 @@ public class MarryDivorceModel {
             }
         }
         // if household is already crowded, move couple into new household
-        if ((moveTo == 1 && hhOfPartner1.getHhSize() > 3) || (moveTo == 2 && hhOfPartner2.getHhSize() > 3)) moveTo = 3;
+        if ((moveTo == 1 && hhOfPartner1.getHhSize() > 3) || (moveTo == 2 && hhOfPartner2.getHhSize() > 3)) {
+            moveTo = 3;
+        }
         if (moveTo == 1) {
-            // brightGroom moves to per
-            hhOfPartner2.removePerson(partner2, dataContainer);
-            hhOfPartner1.addPerson(partner2);
-            if (hhOfPartner2.checkIfOnlyChildrenRemaining()) {
-                moveRemainingChildren(hhOfPartner2, hhOfPartner1, dataContainer);
-            }
-            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh ||
-                    hhOfPartner2.getId() == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("Person " + partner1.getId() +
-                        " and person " + partner2.getId() + " got married and moved into household " + hhOfPartner1.getId() + ".");
+            moveMarriedPersons(hhOfPartner2, hhOfPartner1, partner2, partner1, dataContainer);
         } else if (moveTo == 2) {
-            // per moves to brightGroom
-            hhOfPartner1.removePerson(partner1, dataContainer);
-            hhOfPartner2.addPerson(partner1);
-            if (hhOfPartner1.checkIfOnlyChildrenRemaining()) {
-                moveRemainingChildren(hhOfPartner1, hhOfPartner2, dataContainer);
-            }
-            if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || hhOfPartner1.getId() == SiloUtil.trackHh ||
-                    hhOfPartner2.getId() == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("Person " + partner1.getId() +
-                        " and person " + partner2.getId() + " got married and moved into household " + hhOfPartner2.getId() + ".");
+            moveMarriedPersons(hhOfPartner1, hhOfPartner2, partner1, partner2, dataContainer);
         } else {
             // create new household for newly-wed couple
             int newHhId = HouseholdDataManager.getNextHouseholdId();
@@ -284,6 +268,18 @@ public class MarryDivorceModel {
         EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner1);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfPartner2);
+    }
+
+    private void moveMarriedPersons(Household hhOfMovingPerson, Household hhOfStayingPerson, Person movingPerson, Person stayingPerson, SiloDataContainer dataContainer) {
+        hhOfMovingPerson.removePerson(movingPerson, dataContainer);
+        hhOfStayingPerson.addPerson(movingPerson);
+        if (hhOfMovingPerson.checkIfOnlyChildrenRemaining()) {
+            moveRemainingChildren(hhOfMovingPerson, hhOfStayingPerson, dataContainer);
+        }
+        if (movingPerson.getId() == SiloUtil.trackPp || stayingPerson.getId() == SiloUtil.trackPp || hhOfMovingPerson.getId() == SiloUtil.trackHh ||
+                hhOfStayingPerson.getId() == SiloUtil.trackHh)
+            SiloUtil.trackWriter.println("Person " + stayingPerson.getId() +
+                    " and person " + movingPerson.getId() + " got married and moved into household " + stayingPerson.getId() + ".");
     }
 
 
