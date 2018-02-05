@@ -1,13 +1,16 @@
 package de.tum.bgu.msm.data;
 
+import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import com.pb.common.datafile.TableDataSet;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Formatter;
+import java.util.HashMap;
 
 /**
  * Keeps data of dwellings and non-residential floorspace
@@ -151,9 +154,6 @@ public class RealEstateDataManager {
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
             }
         }
-//        for (int region: SiloUtil.getRegionList()) System.out.println ("Region " + region + " has vacant dwellings: " +
-//                (vacDwellingsByRegionPos[region]));
-//        System.exit(1);
     }
 
 
@@ -326,8 +326,10 @@ public class RealEstateDataManager {
         // aggregate developable land
         SummarizeData.resultFile("Available land for construction by region");
         double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        for (int zone: geoData.getZones()) availLand[geoData.getRegionOfZone(zone)] +=
-                getAvailableLandForConstruction(zone);
+        for (int zone: geoData.getZones()) {
+            availLand[geoData.getRegionOfZone(zone)] +=
+                    getAvailableLandForConstruction(zone);
+        }
         for (int region: geoData.getRegionList()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
@@ -363,17 +365,6 @@ public class RealEstateDataManager {
             }
             SummarizeData.resultFile(line);
         }
-    }
-
-
-    public static int findPositionInArray (DwellingType type){
-        // return index position of element in array typeArray
-        int ind = -1;
-        DwellingType[] types = DwellingType.values();
-        for (int a = 0; a < DwellingType.values().length; a++) if (types[a] == type) ind = a;
-        if (ind == -1) logger.error ("Could not find dwelling type " + type.toString() +
-                " in array (see method <findPositionInArray> in class <RealEstateDataManager>");
-        return ind;
     }
 
 
