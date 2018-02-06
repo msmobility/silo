@@ -18,7 +18,6 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.DefaultPTDistances;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.EventManager;
@@ -94,10 +93,6 @@ public class SiloModel {
 
 		if (Properties.get().main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
-		}
-
-		if(!runMatsim && Properties.get().main.implementation == Implementation.MUNICH) {
-			modelContainer.getAcc().setPTDistances(new DefaultPTDistances((GeoDataMuc) dataContainer.getGeoData()));
 		}
 	}
 

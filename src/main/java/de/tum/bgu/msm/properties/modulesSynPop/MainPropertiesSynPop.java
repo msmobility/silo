@@ -3,6 +3,7 @@ package de.tum.bgu.msm.properties.modulesSynPop;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import org.apache.commons.math.distribution.GammaDistributionImpl;
 
 import java.util.ResourceBundle;
 

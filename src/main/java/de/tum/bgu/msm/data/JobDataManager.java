@@ -274,7 +274,8 @@ public class JobDataManager {
         	if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
-                int region = geoData.getRegionOfZone(jj.getZone());
+
+                int region = geoData.getZones().get(jj.getZone()).getRegion().getId();
                 if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
                     vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
                     vacantJobsByRegionPos[region]++;

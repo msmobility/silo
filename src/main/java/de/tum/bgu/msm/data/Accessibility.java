@@ -7,7 +7,6 @@ import com.google.common.collect.ArrayTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
@@ -90,23 +89,23 @@ public class Accessibility {
     public void readCarSkim(int year) {
         LOGGER.info("Reading car skims for " + year);
         String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
-        MatrixTravelTimes matrixTravelTimes = readSkim(hwyFileName, carMatrixName);
-        travelTimes.put(TransportMode.car, matrixTravelTimes);
+        SkimTravelTimes SkimTravelTimes = readSkim(hwyFileName, carMatrixName);
+        travelTimes.put(TransportMode.car, SkimTravelTimes);
     }
     
     public void readPtSkim(int year) {
         LOGGER.info("Reading transit skims for " + year);
         String transitFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.transitSkimFile(year);
-        MatrixTravelTimes matrixTravelTimes = readSkim(transitFileName, transitMatrixName);
-        travelTimes.put(TransportMode.pt, matrixTravelTimes);
+        SkimTravelTimes SkimTravelTimes = readSkim(transitFileName, transitMatrixName);
+        travelTimes.put(TransportMode.pt, SkimTravelTimes);
     }
 
-    private MatrixTravelTimes readSkim(String fileName, String matrixName) {
+    private SkimTravelTimes readSkim(String fileName, String matrixName) {
     	OmxFile omx = new OmxFile(fileName);
     omx.openReadOnly();
 
     OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName) ;
-    	return new MatrixTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
+    	return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
     }
 
     public void calculateAccessibilities (int year) {
@@ -133,6 +132,17 @@ public class Accessibility {
         double sumScaleFactor = autoAccessibilities.zSum();
         sumScaleFactor = 1.0 / sumScaleFactor;
         autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactor));
+
+
+
+        regionalAccessibility = new double[geoData.getRegionList().length];
+        for (int region: geoData.getRegionList()) {
+            int[] zonesInThisRegion = geoData.getZonesInRegion(region);
+            double sm = 0;
+            for (int zone: zonesInThisRegion) sm += autoAccessibility[geoData.getZoneIndex(zone)];
+            regionalAccessibility[geoData.getRegionIndex(region)] = sm / zonesInThisRegion.length;
+        }
+
     }
 
 
