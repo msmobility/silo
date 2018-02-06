@@ -3,7 +3,7 @@ package de.tum.bgu.msm.data;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.travelTimes.MatrixTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -55,8 +55,8 @@ public class Accessibility {
         if (Properties.get().accessibility.usingAutoPeakSkim) {
             matrixName = Properties.get().accessibility.autoPeakSkim;
         }
-        MatrixTravelTimes matrixTravelTimes = readSkim(hwyFileName, matrixName);
-        travelTimes.put(TransportMode.car, matrixTravelTimes);
+        SkimTravelTimes SkimTravelTimes = readSkim(hwyFileName, matrixName);
+        travelTimes.put(TransportMode.car, SkimTravelTimes);
     }
     
     public void readPtSkim(int year) {    
@@ -66,15 +66,15 @@ public class Accessibility {
         if (Properties.get().accessibility.usingTransitPeakSkim) {
             transitMatrixName = Properties.get().accessibility.transitPeakSkim;
         }
-        MatrixTravelTimes matrixTravelTimes = readSkim(transitFileName, transitMatrixName);
-        travelTimes.put(TransportMode.pt, matrixTravelTimes);
+        SkimTravelTimes SkimTravelTimes = readSkim(transitFileName, transitMatrixName);
+        travelTimes.put(TransportMode.pt, SkimTravelTimes);
     }
 
-    private MatrixTravelTimes readSkim(String fileName, String matrixName) {
+    private SkimTravelTimes readSkim(String fileName, String matrixName) {
         OmxFile omx = new OmxFile(fileName);
         omx.openReadOnly();
         OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName);
-        return new MatrixTravelTimes(Matrices.convertOmxToFloatMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
+        return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
     }
     
 
