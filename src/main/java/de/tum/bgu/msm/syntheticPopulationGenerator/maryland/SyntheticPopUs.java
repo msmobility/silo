@@ -95,7 +95,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
-        SummarizeData.writeOutSyntheticPopulation(SiloUtil.getBaseYear());
+        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR);
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
@@ -182,7 +182,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                         new Job (id, zone, -1, JobType.getJobType(jobTp));
                         if (id == SiloUtil.trackJj) {
                             SiloUtil.trackWriter.println("Generated job with following attributes:");
-                            Job.getJobFromId(id).logAttributes(SiloUtil.trackWriter);
+                            SiloUtil.trackWriter.println(Job.getJobFromId(id).toString());
                         }
                     }
                 }
@@ -437,15 +437,15 @@ public class SyntheticPopUs implements SyntheticPopI {
             // trace persons, households and dwellings
             for (Person pp: hh.getPersons()) if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Generated person with following attributes:");
-                Person.getPersonFromId(pp.getId()).logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(pp.toString());
             }
             if (newHhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Generated household with following attributes:");
-                Household.getHouseholdFromId(newHhId).logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(hh.toString());
             }
             if (newDdId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Generated dwelling with following attributes:");
-                Dwelling.getDwellingFromId(newDdId).logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(Dwelling.getDwellingFromId(newDdId).toString());
             }
 
         }
@@ -657,18 +657,18 @@ public class SyntheticPopUs implements SyntheticPopI {
         int numberOfCouples = Math.min(coupleCounter.get(1), coupleCounter.get(2));
         int[] marriedPersons = new int[]{numberOfCouples, numberOfCouples};
         if (numberOfCouples > 0) {
-            pp[0].setRole(PersonRole.married);
+            pp[0].setRole(PersonRole.MARRIED);
             marriedPersons[pp[0].getGender()-1] -= 1;
-        } else pp[0].setRole(PersonRole.single);
+        } else pp[0].setRole(PersonRole.SINGLE);
 
         for (int i = 1; i < pp.length; i++) {
             if ((relShp[i] == 2 || relShp[i] == 19) && marriedPersons[pp[i].getGender()-1] > 0) {
-                pp[i].setRole(PersonRole.married);
+                pp[i].setRole(PersonRole.MARRIED);
                 marriedPersons[pp[i].getGender()-1] -= 1;
                 //   natural child     adopted child        step child        grandchild       foster child
             } else if (relShp[i] == 3 || relShp[i] == 4 || relShp[i] == 5 || relShp[i] == 8 || relShp[i] == 20)
-                pp[i].setRole(PersonRole.child);
-            else pp[i].setRole(PersonRole.single);
+                pp[i].setRole(PersonRole.CHILD);
+            else pp[i].setRole(PersonRole.SINGLE);
         }
     }
 
@@ -768,7 +768,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     vacDwellingsModel++;
                     if (newDdId == SiloUtil.trackDd) {
                         SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
-                        Dwelling.getDwellingFromId(newDdId).logAttributes(SiloUtil.trackWriter);
+                        SiloUtil.trackWriter.println(Dwelling.getDwellingFromId(newDdId).toString());
                     }
                 }
             }

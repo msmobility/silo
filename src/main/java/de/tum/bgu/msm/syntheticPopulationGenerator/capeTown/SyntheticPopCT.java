@@ -5,6 +5,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
@@ -1594,7 +1595,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         //Read the synthetic population
 
         logger.info("   Starting to read the synthetic population");
-        String fileEnding = "_" + SiloUtil.getBaseYear() + ".csv";
+        String fileEnding = "_" + Properties.get().main.implementation.BASE_YEAR + ".csv";
         TableDataSet households = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_HOUSEHOLD_SYN_POP) + fileEnding);
         TableDataSet persons = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_PERSON_SYN_POP) + fileEnding);
         TableDataSet dwellings = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_DWELLING_SYN_POP) + fileEnding);
@@ -1623,9 +1624,9 @@ public class SyntheticPopCT implements SyntheticPopI {
                     (int) persons.getValueAt(i, "income"));
             Household.getHouseholdFromId(hhID).addPerson(pp);
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
-            if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.single);
-            else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.married);
-            else pp.setRole(PersonRole.child);
+            if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
+            else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
+            else pp.setRole(PersonRole.CHILD);
             if (persons.getValueAt(i,"driversLicense") == 1) pp.setDriverLicense(true);
             int nationality = (int) persons.getValueAt(i,"nationality");
             if (nationality == 1) {
@@ -1896,11 +1897,11 @@ public class SyntheticPopCT implements SyntheticPopI {
                     Person pers = new Person(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     household.addPerson(pers);
                     pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "educationLevel"));
-                    PersonRole role = PersonRole.single; //default value = single
+                    PersonRole role = PersonRole.SINGLE; //default value = single
                     if (microDataPerson.getValueAt(personCounter, "personRole") == 2) { //is married
-                        role = PersonRole.married;
+                        role = PersonRole.MARRIED;
                     } else if (microDataPerson.getValueAt(personCounter, "personRole") == 3) { //is children
-                        role = PersonRole.child;
+                        role = PersonRole.CHILD;
                     }
                     pers.setRole(role);
                     int nationality = (int) microDataPerson.getValueAt(personCounter,"nationality");

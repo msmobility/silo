@@ -1,0 +1,38 @@
+var calculateBirthProbability = function(personAge, scaler) {
+
+    alpha = 0.;
+
+    if (personAge < 9){
+        alpha = 0.0;
+    } else if (personAge <= 14){
+        alpha = 0.9;
+    } else if (personAge <= 19){
+        alpha = 47.7;
+    } else if (personAge <= 24){
+        alpha = 109.7;
+    } else if (personAge <= 29){
+        alpha = 113.5;
+    } else if (personAge <= 34){
+        alpha = 91.2;
+    } else if (personAge <= 39){
+        alpha = 39.7;
+    } else if (personAge <= 44){
+        alpha = 8.0;
+    } else if (personAge <= 49){
+        alpha = 0.5;
+    } else if (personAge >= 50){
+        alpha = 0.0;
+    }
+
+    // Birth probabilities are provided as birth per 1,000 women
+    alpha = alpha / 1000.
+
+    // Birth rate can be adjusted by global scaler
+    alpha = alpha * scaler
+
+    if (personAge < 0){
+        throw new Error("Undefined negative person age!"+personAge)
+    }
+
+return alpha;
+}

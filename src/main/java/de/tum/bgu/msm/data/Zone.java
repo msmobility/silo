@@ -2,11 +2,9 @@ package de.tum.bgu.msm.data;
 
 import java.util.Set;
 
-public interface Zone {
+public interface Zone extends Id{
 
     void setRegion(Region region);
-
-    int getId();
 
     Region getRegion();
 

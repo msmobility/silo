@@ -44,10 +44,8 @@ public class SiloUtil {
     private static HashMap rbHashMap;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
-    private static int baseYear;
 
-
-    public static ResourceBundle siloInitialization(String resourceBundleNames, SiloModel.Implementation implementation) {
+    public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
         File propFile = new File(resourceBundleNames);
         rb = ResourceUtil.getPropertyBundle(propFile);
         Properties.initializeProperties(rb, implementation);
@@ -216,7 +214,7 @@ public class SiloUtil {
                 String fileName = ResourceUtil.getProperty(rb, "track.file.name");
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != baseYear);
+                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);
@@ -333,6 +331,33 @@ public class SiloUtil {
         return name[length - 1];
     }
 
+
+    public static <T> T select(Map<T, Float> mappedProbabilities) {
+        // select item based on probabilities (for mapped double probabilities)
+        return select(mappedProbabilities, getSum(mappedProbabilities.values()));
+    }
+
+    public static <T> T select(Map<T, Float> mappedProbabilities, double sum) {
+        // select item based on probabilities (for mapped double probabilities)
+        double selectedWeight = rand.nextDouble() * sum;
+        double select = 0;
+        for (Map.Entry<T, Float> entry : mappedProbabilities.entrySet()) {
+            select += entry.getValue();
+            if (select > selectedWeight) {
+                return entry.getKey();
+            }
+        }
+        logger.info("Error selecting item from weighted probabilities");
+        return null;
+    }
+
+    private static double getSum(Collection<Float> values) {
+        double sm = 0;
+        for (Float value : values) {
+            sm += value;
+        }
+        return sm;
+    }
 
     public static double[] convertProbability (double[] probabilities){
         //method to return the probability in percentage
@@ -695,6 +720,19 @@ public class SiloUtil {
     }
 
 
+    public static TableDataSet addIntegerColumnToTableDataSet(TableDataSet table, String label){
+        int[] dummy3 = SiloUtil.createArrayWithValue(table.getRowCount(),0);
+        table.appendColumn(dummy3,label);
+        return table;
+    }
+
+
+    public static TableDataSet addIntegerColumnToTableDataSet(TableDataSet table, String label, int length){
+        int[] dummy3 = SiloUtil.createArrayWithValue(length,0);
+        table.appendColumn(dummy3,label);
+        return table;
+    }
+
     public static int getHighestVal(int[] array) {
         // return highest number in int array
         int high = Integer.MIN_VALUE;
@@ -895,16 +933,15 @@ public class SiloUtil {
     }
 
 
-    public static void setBaseYear(int year) {
-        // base year is the year for which the initial synthetic population has been generated. Start year is the year
-        // the current model run starts with. For example, SILO may run from 2000 to 2007 (base year == 2000 and start
-        // year == 2000), then the travel model might be run, and SILO picks up from 2007 to 2040 (base year == 2000 and
-        // start year == 2007)
-        baseYear = year;
-    }
-
-    public static int getBaseYear() {
-        return baseYear;
+    public static TableDataSet initializeTableDataSet(TableDataSet tableDataSet, String[] labels, int[] ids) {
+        //method to initialize the error matrix
+        tableDataSet.appendColumn(ids, "ID");
+        for (String attribute : labels){
+            float[] dummy = SiloUtil.createArrayWithValue(tableDataSet.getRowCount(), 0f);
+            tableDataSet.appendColumn(dummy, attribute);
+        }
+        tableDataSet.buildIndex(tableDataSet.getColumnPosition("ID"));
+        return tableDataSet;
     }
 
     static public String customFormat(String pattern, double value ) {
@@ -999,8 +1036,8 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
 	int startYear = Properties.get().main.startYear;
-	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != getBaseYear());
-	if (startYear == getBaseYear()) {
+	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
+	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
 		pw.print("Year");
 		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +

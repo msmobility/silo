@@ -2,10 +2,10 @@ package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
 import org.apache.log4j.Logger;
 
 /**
@@ -35,7 +35,7 @@ public class ChangeSchoolUnivModel {
             int schoolId = 0;
             pp.setSchoolPlace(schoolId);
             pp.setEducationLevel(2);  // todo if 2 is the right code for someone who graduates from high school
-            EventManager.countEvent(EventTypes.checkSchoolUniv);
+            EventManager.countEvent(EventTypes.CHECK_SCHOOL_UNIV);
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId +
                     " changed school. New school place (0 = left school) " + schoolId);
             return true;

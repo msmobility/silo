@@ -253,61 +253,61 @@ public class SiloModelBak {
                 if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
                     SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
                             event[1]);
-                if (event[0] == EventTypes.birthday.ordinal()) {
+                if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     birth.celebrateBirthday(event[1]);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.checkDeath.ordinal()) {
+                } else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     death.chooseDeath(event[1], jobData, householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.checkBirth.ordinal()) {
+                } else if (event[0] == EventTypes.CHECK_BIRTH.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     birth.chooseBirth(event[1]);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
+                } else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     lph.chooseLeaveParentHh(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
+                } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel, realEstateData, accessibility, householdData, jobData);
+                    mardiv.marryCouple(event[1], move, iomig, aoModel, realEstateData, accessibility, householdData, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
+                } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     mardiv.chooseDivorce(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.findNewJob.ordinal()) {
+                } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    changeEmployment.findNewJob(event[1]);
+                    changeEmployment.FIND_NEW_JOB(event[1]);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.quitJob.ordinal()) {
+                } else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
-                    changeEmployment.quitJob(event[1], jobData);
+                    changeEmployment.QUIT_JOB(event[1], jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.householdMove.ordinal()) {
+                } else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     move.chooseMove(event[1], realEstateData, accessibility);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.inmigration.ordinal()) {
+                } else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     iomig.inmigrateHh(event[1], move, changeEmployment, aoModel, realEstateData, householdData,
                             accessibility, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.outMigration.ordinal()) {
+                } else if (event[0] == EventTypes.OUT_MIGRATION.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     iomig.outMigrateHh(event[1], false, householdData, jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
+                } else if (event[0] == EventTypes.DD_CHANGE_QUAL.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     renov.checkRenovation(event[1]);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.ddDemolition.ordinal()) {
+                } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     demol.checkDemolition(event[1], move, iomig, realEstateData, accessibility, householdData,
                             jobData);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
-                } else if (event[0] == EventTypes.ddConstruction.ordinal()) {
+                } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
                     if (trackTime) startTime = System.currentTimeMillis();
                     cons.buildDwelling(event[1], move, year, realEstateData, accessibility);
                     if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
@@ -497,62 +497,62 @@ public class SiloModelBak {
             if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
                 SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
                         event[1]);
-            if (event[0] == EventTypes.birthday.ordinal()) {
+            if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 birth.celebrateBirthday(event[1]);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.checkDeath.ordinal()) {
+            } else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 death.chooseDeath(event[1], jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.checkBirth.ordinal()) {
+            } else if (event[0] == EventTypes.CHECK_BIRTH.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 birth.chooseBirth(event[1]);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
+            } else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 lph.chooseLeaveParentHh(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
+            } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                mardiv.choosePlannedMarriage(event[1], move, iomig, aoModel,realEstateData, accessibility,
+                mardiv.marryCouple(event[1], move, iomig, aoModel,realEstateData, accessibility,
                         householdData, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
+            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 mardiv.chooseDivorce(event[1], move, aoModel, realEstateData, accessibility, jobData, householdData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.findNewJob.ordinal()) {
+            } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                changeEmployment.findNewJob(event[1]);
+                changeEmployment.FIND_NEW_JOB(event[1]);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.quitJob.ordinal()) {
+            } else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
-                changeEmployment.quitJob(event[1], jobData);
+                changeEmployment.QUIT_JOB(event[1], jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.householdMove.ordinal()) {
+            } else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 move.chooseMove(event[1], realEstateData, accessibility);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.inmigration.ordinal()) {
+            } else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 iomig.inmigrateHh(event[1], move, changeEmployment, aoModel, realEstateData, householdData,
                         accessibility, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.outMigration.ordinal()) {
+            } else if (event[0] == EventTypes.OUT_MIGRATION.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 iomig.outMigrateHh(event[1], false, householdData, jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
+            } else if (event[0] == EventTypes.DD_CHANGE_QUAL.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 renov.checkRenovation(event[1]);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.ddDemolition.ordinal()) {
+            } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 demol.checkDemolition(event[1], move, iomig, realEstateData, accessibility, householdData,
                         jobData);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-            } else if (event[0] == EventTypes.ddConstruction.ordinal()) {
+            } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
                 if (trackTime) startTime = System.currentTimeMillis();
                 cons.buildDwelling(event[1], move, currentYear, realEstateData, accessibility);
                 if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
@@ -687,7 +687,7 @@ public class SiloModelBak {
                 float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
                 pw.print("," + timeInMinutes);
             }
-            pw.print("," + timeCounter[EventTypes.values().length][year] / 60000f);       // setup inmigration/outmigration
+            pw.print("," + timeCounter[EventTypes.values().length][year] / 60000f);       // setup INMIGRATION/outmigration
             pw.print("," + timeCounter[EventTypes.values().length + 1][year] / 60000f);   // setup construction of new dwellings
             pw.print("," + timeCounter[EventTypes.values().length + 2][year] / 60000f);   // update job inventory
             pw.print("," + timeCounter[EventTypes.values().length + 3][year] / 60000f);   // setup job change model

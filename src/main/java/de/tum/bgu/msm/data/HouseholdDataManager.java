@@ -98,10 +98,10 @@ public class HouseholdDataManager {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
+                Household hh = new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                    Household.getHouseholdFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(hh.toString());
                 }
             }
         } catch (IOException e) {
@@ -183,7 +183,7 @@ public class HouseholdDataManager {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 int gender     = Integer.parseInt(lineElements[posGender]);
                 String relShp  = lineElements[posRelShp].replace("\"", "");
-                PersonRole pr  = PersonRole.valueOf(relShp);
+                PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
@@ -203,7 +203,7 @@ public class HouseholdDataManager {
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
-                    Person.getPersonFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(Person.getPersonFromId(id).toString());
                 }
             }
         } catch (IOException e) {
@@ -297,8 +297,8 @@ public class HouseholdDataManager {
         for (Person person: personsCopy) {
             Person partner = findMostLikelyUnmarriedPartner(person, hh);
             if (partner != null) {
-                partner.setRole(PersonRole.married);
-                person.setRole(PersonRole.married);
+                partner.setRole(PersonRole.MARRIED);
+                person.setRole(PersonRole.MARRIED);
                 if (person.getId() == SiloUtil.trackPp || person.getHh().getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household " + person.getHh().getId() +
                             " as " + person.getRole());
@@ -316,7 +316,7 @@ public class HouseholdDataManager {
     public static void defineUnmarriedPersons (Household hh) {
         // For those that did not become the married couple define role in household (child or single)
         for (Person pp: hh.getPersons()) {
-            if (pp.getRole() == PersonRole.married) {
+            if (pp.getRole() == PersonRole.MARRIED) {
                 continue;
             }
             boolean someone15to40yearsOlder = false;      // assumption that this person is a parent
@@ -331,9 +331,9 @@ public class HouseholdDataManager {
                 }
             }
             if ((someone15to40yearsOlder && ageMain < 50) || ageMain <= 15) {
-                pp.setRole(PersonRole.child);
+                pp.setRole(PersonRole.CHILD);
             } else {
-                pp.setRole(PersonRole.single);
+                pp.setRole(PersonRole.SINGLE);
             }
             if (pp.getId() == SiloUtil.trackPp || pp.getHh().getId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household " + pp.getHh().getId() +
@@ -443,7 +443,7 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                float ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
+                double ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
                 commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
                 commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
             }
@@ -510,7 +510,7 @@ public class HouseholdDataManager {
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
         for (Person partner: hh.getPersons()) {
-            if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.married) {
+            if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.MARRIED) {
                 int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
                     tempUtil = 2;
@@ -528,26 +528,26 @@ public class HouseholdDataManager {
 
     public static Person findMostLikelyPartner(Person per, Household hh) {
         // find married partner that fits best for person per
-        List<Person> persons = hh.getPersons();
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
         Person selectedPartner = null;
-        for (Person partner: persons) {
-            if (partner.getGender() != per.getGender() && partner.getRole() == PersonRole.married) {
+        for(Person partner: hh.getPersons()) {
+            if (!partner.equals(per) && partner.getGender() != per.getGender() && partner.getRole() == PersonRole.MARRIED) {
                 final int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
-                    tempUtil = 2;
+                    tempUtil = 2.;
                 } else  {
                     tempUtil = 1. / ageDiff;
                 }
                 if (tempUtil > highestUtil) {
+                    highestUtil = tempUtil;
                     selectedPartner = partner;     // find most likely partner
                 }
             }
         }
         if (selectedPartner == null) {
             logger.error("Could not find spouse of person " + per.getId() + " in household " + hh.getId());
-            for (Person person: persons) {
+            for (Person person: hh.getPersons()) {
                 logger.error("Houshold member " + person.getId() + " (gender: " + person.getGender() + ") is " +
                         person.getRole());
             }
@@ -835,7 +835,7 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;
@@ -916,7 +916,7 @@ public class HouseholdDataManager {
                 pwp.print(",");
                 pwp.print(pp.getGender());
                 pwp.print(",\"");
-                pwp.print(pp.getRole());
+                pwp.print(pp.getRole().toString());
                 pwp.print("\",\"");
                 pwp.print(pp.getRace());
                 pwp.print("\",");
@@ -1041,5 +1041,4 @@ public class HouseholdDataManager {
     public Map<Integer, int[]> getUpdatedHouseholds() {
         return updatedHouseholds;
     }
-
 }

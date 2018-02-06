@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.container;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
@@ -27,7 +28,7 @@ public class SiloDataContainer {
 
     /**
      *
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(de.tum.bgu.msm.SiloModel.Implementation)}}
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
      * being used to encapsulate the object creation.
      *
      *
@@ -82,7 +83,7 @@ public class SiloDataContainer {
             householdData.setTypeOfAllHouseholds();
         }
 
-        jobData.updateEmploymentForecast();
+        jobData.calculateEmploymentForecast();
         jobData.identifyVacantJobs();
         jobData.calculateJobDensityByZone();
         realEstateData.fillQualityDistribution();

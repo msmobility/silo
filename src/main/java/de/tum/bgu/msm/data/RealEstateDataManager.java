@@ -98,7 +98,7 @@ public class RealEstateDataManager {
                 new Dwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
-                    Dwelling.getDwellingFromId(id).logAttributes(SiloUtil.trackWriter);
+                    SiloUtil.trackWriter.println(Dwelling.getDwellingFromId(id).toString());
                 }
             }
         } catch (IOException e) {
@@ -154,9 +154,6 @@ public class RealEstateDataManager {
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
             }
         }
-//        for (int region: SiloUtil.getRegionIdsArray()) System.out.println ("Region " + region + " has vacant dwellings: " +
-//                (vacDwellingsByRegionPos[region]));
-//        System.exit(1);
     }
 
 
@@ -329,8 +326,10 @@ public class RealEstateDataManager {
         // aggregate developable land
         SummarizeData.resultFile("Available land for construction by region");
         double[] availLand = new double[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        for (int zone: geoData.getZoneIdsArray()) availLand[geoData.getRegionOfZone(zone)] +=
-                getAvailableLandForConstruction(zone);
+        for (int zone: geoData.getZoneIdsArray()) {
+            availLand[geoData.getRegionOfZone(zone)] +=
+                    getAvailableLandForConstruction(zone);
+        }
         for (int region: geoData.getRegionIdsArray()) {
             Formatter f = new Formatter();
             f.format("%d,%f", region, availLand[region]);
@@ -366,17 +365,6 @@ public class RealEstateDataManager {
             }
             SummarizeData.resultFile(line);
         }
-    }
-
-
-    public static int findPositionInArray (DwellingType type){
-        // return index position of element in array typeArray
-        int ind = -1;
-        DwellingType[] types = DwellingType.values();
-        for (int a = 0; a < DwellingType.values().length; a++) if (types[a] == type) ind = a;
-        if (ind == -1) logger.error ("Could not find dwelling type " + type.toString() +
-                " in array (see method <findPositionInArray> in class <RealEstateDataManager>");
-        return ind;
     }
 
 

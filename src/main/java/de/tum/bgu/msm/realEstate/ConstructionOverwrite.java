@@ -4,7 +4,6 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -119,7 +118,7 @@ public class ConstructionOverwrite {
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
-                dd.logAttributes(SiloUtil.trackWriter);
+                SiloUtil.trackWriter.println(dd.toString());
             }
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }

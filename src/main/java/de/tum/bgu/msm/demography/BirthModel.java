@@ -16,16 +16,19 @@
  */
 package de.tum.bgu.msm.demography;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
 
-import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 /**
  * Simulates birth of children
@@ -35,56 +38,26 @@ import java.io.File;
 
 public class BirthModel {
 
-    static Logger traceLogger = Logger.getLogger("trace");
-
-	private static double[] birthProbability;
     private static float propGirl;
     private final HouseholdDataManager householdDataManager;
+    private static BirthJSCalculator calculator;
 
     public BirthModel(HouseholdDataManager householdDataManager) {
-        propGirl        = Properties.get().demographics.propabilityForGirl;
+        propGirl = Properties.get().demographics.propabilityForGirl;
         this.householdDataManager = householdDataManager;
         setupBirthModel();
 	}
 
 
-	private void setupBirthModel() {
-
-		// read properties
-		int birthModelSheetNumber =
-                Properties.get().demographics.birthModelSheet;
-        String uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName;
-        int dataSheetNumber = Properties.get().demographics.dataSheet;
-        boolean logCalculation = Properties.get().demographics.logBirthCalculation;
-        float localScaler = Properties.get().demographics.localScaler;
-
-        // initialize UEC
-        UtilityExpressionCalculator birthModel = new UtilityExpressionCalculator(new File(uecFileName),
-        		birthModelSheetNumber,
-        		dataSheetNumber,
-        		SiloUtil.getRbHashMap(),
-        		BirthDMU.class);
- 		BirthDMU birthDmu = new BirthDMU();
-
-		// everything is available
-		int numAlts = birthModel.getNumberOfAlternatives();
-		int[] birthAvail = new int[numAlts+1];
-        for (int i=1; i < birthAvail.length; i++)  birthAvail[i] = 1;
-
-        PersonType[] types = PersonType.values();
-        birthProbability = new double[types.length];
-        for (int i=0; i<types.length; i++) {
-        	// set DMU attributes
-        	birthDmu.setType(types[i]);
-            // There is only one alternative, and the utility is really the probability of giving birth
-    		double util[] = birthModel.solve(birthDmu.getDmuIndexValues(), birthDmu, birthAvail);
-            birthProbability[i] = util[0] / 1000d * localScaler;  // birth probability is given as "per 1000 women"
-
-            if (logCalculation) {
-                // log UEC values for each person type
-                birthModel.logAnswersArray(traceLogger, "Birth Married Model for Person Type " + types[i].toString());
-            }
+    private void setupBirthModel() {
+        Reader reader;
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+        } else {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
         }
+        float localScaler = Properties.get().demographics.localScaler;
+        calculator = new BirthJSCalculator(reader, localScaler);
     }
 
 
@@ -92,14 +65,16 @@ public class BirthModel {
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleGiveBirth(per)) return;  // Person has died or moved away
+        if (per.getGender() == 1) return;            // Exclude males, model should never get here
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
-        double birthProb;
-        if (per.getRole() == PersonRole.married) birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.marriedScaler;
-        else birthProb = birthProbability[per.getType().ordinal()] * Properties.get().demographics.singleScaler;
+        double birthProb = calculator.calculateBirthProbability(per.getAge());
+        if (per.getRole() == PersonRole.MARRIED) birthProb *= Properties.get().demographics.marriedScaler;
+        else birthProb *= Properties.get().demographics.singleScaler;
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
+            // For, unto us a child is born
             Household hhOfThisWoman = Household.getHouseholdFromId(per.getHh().getId());
             hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
-            EventManager.countEvent(EventTypes.checkBirth);
+            EventManager.countEvent(EventTypes.CHECK_BIRTH);
             householdDataManager.addHouseholdThatChanged(hhOfThisWoman);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
@@ -113,11 +88,11 @@ public class BirthModel {
     }
 
 
-    public static boolean personCanGiveBirth(PersonType pt) {
-        return (birthProbability[pt.ordinal()] > 0);
+    public static boolean personCanGiveBirth(int age) {
+        return (calculator.calculateBirthProbability(age) > 0);
     }
 
-    //TODO AGE UPDATION IS INT. FOR SIMULATIONS LESS THAN 1 YEAR, AGE CAN BE NON-INT VALUE
+
     public void celebrateBirthday (int personId) {
         // increase age of this person by number of years in simulation period
         Person per = Person.getPersonFromId(personId);
@@ -125,8 +100,8 @@ public class BirthModel {
         int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
         per.setAge(age);
         per.setType(age, per.getGender());
-        EventManager.countEvent(EventTypes.birthday);
-        if (personId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Celebrated birthday of person " +
+        EventManager.countEvent(EventTypes.BIRTHDAY);
+        if (personId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
                 personId + ". New age is " + age + ".");
     }
 }

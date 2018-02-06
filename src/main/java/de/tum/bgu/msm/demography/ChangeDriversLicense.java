@@ -1,15 +1,12 @@
 package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonType;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -72,7 +69,7 @@ public class ChangeDriversLicense {
         if (pp.getAge() < 18) return  false;
         if (SiloUtil.getRandomNumberAsDouble() < changeDriversLicenseProbability[pp.getType().ordinal()]) {
             pp.setDriverLicense(true);
-            EventManager.countEvent(EventTypes.checkDriversLicense);
+            EventManager.countEvent(EventTypes.CHECK_DRIVERS_LICENSE);
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId +
                     " obtained a drivers license.");
             return true;
@@ -87,7 +84,7 @@ public class ChangeDriversLicense {
 
         if (SiloUtil.getRandomNumberAsDouble() < createDriversLicenseProbability[pp.getType().ordinal()]) {
             pp.setDriverLicense(true);
-            EventManager.countEvent(EventTypes.checkDriversLicense);
+            EventManager.countEvent(EventTypes.CHECK_DRIVERS_LICENSE);
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId +
                     " obtained a drivers license.");
             return true;

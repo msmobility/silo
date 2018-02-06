@@ -91,7 +91,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         int idNewDD = searchForNewDwelling(hh.getPersons(), modelContainer);  // Step 2: Choose new dwelling
         if (idNewDD > 0) {
             moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
-            EventManager.countEvent(EventTypes.householdMove);
+            EventManager.countEvent(EventTypes.HOUSEHOLD_MOVE);
             dataContainer.getHouseholdData().addHouseholdThatMoved(hh);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                     Household.getHouseholdFromId(hhId).getDwellingId());

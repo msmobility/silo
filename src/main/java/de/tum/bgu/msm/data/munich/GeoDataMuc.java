@@ -2,8 +2,12 @@ package de.tum.bgu.msm.data.munich;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.AbstractDefaultGeoData;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.RegionImpl;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.api.core.v01.Coord;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
@@ -24,8 +28,14 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         int[] zoneIds = zonalData.getColumnAsInt(zoneIdColumnName);
         int[] zoneMsa = zonalData.getColumnAsInt("msa");
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+
+        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
+        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
+        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
+
         for(int i = 0; i < zoneIds.length; i++) {
-            Zone zone = new ZoneImpl(zoneIds[i], zoneMsa[i], zoneAreas[i]);
+            Coord centroid = new Coord(centroidX[i], centroidY[i]);
+            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
             zones.put(zoneIds[i], zone);
         }
     }
@@ -54,4 +64,17 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             }
         }
     }
+
+    @Override
+    public void setInitialData () {
+        super.setInitialData();
+    }
 }
+
+
+
+
+
+
+
+

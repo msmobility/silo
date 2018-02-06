@@ -16,9 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -30,9 +27,7 @@ import java.util.Map;
  *
  */
 public final class Person {
-
-    static Logger logger = Logger.getLogger(Person.class);
-
+    
     private static final Map<Integer,Person> personMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated
@@ -175,34 +170,6 @@ public final class Person {
         this.occupation = newOccupation;
     }
 
-    public void logAttributes () {
-        logger.info("Attributes of person " + id);
-        logger.info("Household id         " + hh.getId());
-        logger.info("Age                  " + age);
-        logger.info("Gender (1 m, 2 f)    " + gender);
-        logger.info("Role in household    " + role);
-        logger.info("Race                 " + race);
-        logger.info("Occupation           " + occupation);
-        logger.info("Workplace ID         " + workplace);
-        logger.info("Income               " + income);
-        logger.info("Person type          " + type.toString());
-        logger.info("Person role          " + role.toString());
-    }
-
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of person " + id);
-        pw.println ("Household id         " + hh.getId());
-        pw.println ("Age                  " + age);
-        pw.println ("Gender (1 m, 2 f)    " + gender);
-        pw.println ("Role in household    " + role);
-        pw.println ("Race                 " + race);
-        pw.println ("Occupation           " + occupation);
-        pw.println ("Workplace ID         " + workplace);
-        pw.println ("Income               " + income);
-        pw.println ("Person type          " + type.toString());
-        // cannot log person role here because when persons are read, the role is not defined yet.
-    }
-
     public int getId() {
 		return id; 
 	}
@@ -316,6 +283,21 @@ public final class Person {
             workzone = Job.getJobFromId(workplace).getZone();
         }
         return new MitoPerson(id, mitoOccupation, workzone, age, mitoGender, driverLicense);
+    }
+    
+    @Override
+    public String toString() {
+        return "Attributes of person " + id
+        +"\nHousehold id         " + hh.getId()
+        +"\nAge                  " + age
+        +"\nGender (1 m, 2 f)    " + gender
+        +"\nRole in household    " + role
+        +"\nRace                 " + race
+        +"\nOccupation           " + occupation
+        +"\nWorkplace ID         " + workplace
+        +"\nIncome               " + income
+        +"\nPerson type          " + type.toString();
+        // cannot log person role here because when persons are read, the role is not defined yet.
     }
 
     static class PersonByAgeComparator implements Comparator<Person> {

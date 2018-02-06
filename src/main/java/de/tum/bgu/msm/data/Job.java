@@ -16,10 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -70,13 +68,6 @@ public class Job {
         jobMap.remove(id);
     }
 
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of job       " + id);
-        pw.println ("Located in zone         " + zone);
-        pw.println ("Filled by person        " + workerId);
-        pw.println ("Job type                " + type);
-    }
-
     public int getId () {
         return id;
     }
@@ -97,4 +88,11 @@ public class Job {
         this.workerId = personID;
     }
 
+    @Override
+    public String toString() {
+        return "Attributes of job       " + id
+                + "\nLocated in zone         " + zone
+                + "\nFilled by person        " + workerId
+                + "\nJob type                " + type;
+    }
  }

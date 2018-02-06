@@ -1,16 +1,18 @@
 package de.tum.bgu.msm.events;
 
+import com.google.common.collect.EnumMultiset;
+import com.google.common.collect.Multiset;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.relocation.InOutMigration;
 import de.tum.bgu.msm.realEstate.ConstructionModel;
+import de.tum.bgu.msm.relocation.InOutMigration;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Generates a series of events in random order
@@ -23,19 +25,17 @@ public class EventManager {
     private static Logger logger = Logger.getLogger(EventManager.class);
 
     private SiloDataContainer dataContainer;
-    private ArrayList<Integer[]> events;
+    private List<int[]> events;
     private int randomEventOrder[];
     private int posInArray;
-    private static HashMap<EventTypes, Integer> eventCounter;
+    private static Multiset<EventTypes> eventCounter = EnumMultiset.create(EventTypes.class);
 
     public EventManager (SiloDataContainer dataContainer) {
-        // Constructor of EventManager
         this.dataContainer = dataContainer;
-        EventRules.setUpEventRules();
     }
 
 
-    public void createListOfEvents (int numberOfPlannedMarriages) {
+    public void createListOfEvents (List<int[]> plannedMarriages) {
         // create an array list that contains all land use events
 
         events = new ArrayList<>();
@@ -47,60 +47,59 @@ public class EventManager {
             int id = per.getId();
             // Birthday
             if (EventRules.ruleBirthday(per)) {
-                events.add(new Integer[]{EventTypes.birthday.ordinal(), id});
+                events.add(new int[]{EventTypes.BIRTHDAY.ordinal(), id});
                 numEvents ++;
             }
             // Death
             if (EventRules.ruleDeath(per)) {
-                events.add(new Integer[]{EventTypes.checkDeath.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_DEATH.ordinal(), id});
                 numEvents ++;
             }
             // Birth
             if (EventRules.ruleGiveBirth(per)) {
-                events.add(new Integer[]{EventTypes.checkBirth.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_BIRTH.ordinal(), id});
                 numEvents ++;
             }
             // Leave parental household
             if (EventRules.ruleLeaveParHousehold(per)) {
-                events.add(new Integer[]{EventTypes.checkLeaveParentHh.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_LEAVE_PARENT_HH.ordinal(), id});
                 numEvents ++;
             }
             // Divorce
             if (EventRules.ruleGetDivorced(per)) {
-                events.add(new Integer[]{EventTypes.checkDivorce.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_DIVORCE.ordinal(), id});
                 numEvents++;
             }
             // Change school
             if (EventRules.ruleChangeSchoolUniversity(per)) {
-                events.add(new Integer[]{EventTypes.checkSchoolUniv.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_SCHOOL_UNIV.ordinal(), id});
                 numEvents++;
             }
             // Change drivers license
             if (EventRules.ruleChangeDriversLicense(per)) {
-                events.add(new Integer[]{EventTypes.checkDriversLicense.ordinal(), id});
+                events.add(new int[]{EventTypes.CHECK_DRIVERS_LICENSE.ordinal(), id});
                 numEvents++;
             }
         }
 
 
         // wedding events
-        for (int i = 0; i < numberOfPlannedMarriages; i++) {
-            events.add(new Integer[]{EventTypes.checkMarriage.ordinal(), i});
+        for (int[] couple: plannedMarriages) {
+            events.add(new int[]{EventTypes.CHECK_MARRIAGE.ordinal(), couple[0], couple[1]});
             numEvents++;
         }
-
 
         // employment events
         if (EventRules.ruleStartNewJob()) {
             for (int ppId: HouseholdDataManager.getStartNewJobPersonIds()) {
-                events.add(new Integer[]{EventTypes.findNewJob.ordinal(), ppId});
+                events.add(new int[]{EventTypes.FIND_NEW_JOB.ordinal(), ppId});
                 numEvents++;
             }
         }
 
         if (EventRules.ruleQuitJob()) {
             for (int ppId: HouseholdDataManager.getQuitJobPersonIds()) {
-                events.add(new Integer[]{EventTypes.quitJob.ordinal(), ppId});
+                events.add(new int[]{EventTypes.QUIT_JOB.ordinal(), ppId});
                 numEvents++;
             }
         }
@@ -110,7 +109,7 @@ public class EventManager {
         for (Household hh: Household.getHouseholds()) {
             if (EventRules.ruleHouseholdMove(hh)) {
                 int id = hh.getId();
-                events.add(new Integer[]{EventTypes.householdMove.ordinal(), id});
+                events.add(new int[]{EventTypes.HOUSEHOLD_MOVE.ordinal(), id});
                 numEvents++;
             }
         }
@@ -118,7 +117,7 @@ public class EventManager {
         if (EventRules.ruleOutmigrate()) {
             for (int hhId: InOutMigration.outMigratingHhId) {
                 if (EventRules.ruleOutmigrate(Household.getHouseholdFromId(hhId))) {
-                    events.add(new Integer[]{EventTypes.outMigration.ordinal(), hhId});
+                    events.add(new int[]{EventTypes.OUT_MIGRATION.ordinal(), hhId});
                     numEvents++;
                 }
             }
@@ -126,7 +125,7 @@ public class EventManager {
 
         if (EventRules.ruleInmigrate()) {
             for (int hhId: InOutMigration.inmigratingHhId) {
-                events.add(new Integer[]{EventTypes.inmigration.ordinal(), hhId});
+                events.add(new int[]{EventTypes.INMIGRATION.ordinal(), hhId});
                 numEvents++;
             }
         }
@@ -137,19 +136,19 @@ public class EventManager {
             int id = dd.getId();
             // renovate dwelling or deteriorate
             if (EventRules.ruleChangeDwellingQuality(dd)) {
-                events.add(new Integer[]{EventTypes.ddChangeQual.ordinal(), id});
+                events.add(new int[]{EventTypes.DD_CHANGE_QUAL.ordinal(), id});
                 numEvents++;
             }
             // demolish
             if (EventRules.ruleDemolishDwelling(dd)) {
-                events.add(new Integer[]{EventTypes.ddDemolition.ordinal(), id});
+                events.add(new int[]{EventTypes.DD_DEMOLITION.ordinal(), id});
                 numEvents++;
             }
         }
         // build new dwellings
         if (EventRules.ruleBuildDwelling()) {
             for (int constructionCase: ConstructionModel.listOfPlannedConstructions) {
-                events.add(new Integer[]{EventTypes.ddConstruction.ordinal(), constructionCase});
+                events.add(new int[]{EventTypes.DD_CONSTRUCTION.ordinal(), constructionCase});
                 numEvents++;
             }
         }
@@ -163,23 +162,18 @@ public class EventManager {
         randomEventOrder = IndexSort.indexSort(randomNumArray);
         posInArray = 0;
 
-        // initialize event counter
-        eventCounter = new HashMap<>();
-        for (EventTypes et: EventTypes.values()) eventCounter.put(et, 0);
+        // reset event counter
+        eventCounter.clear();
     }
 
 
     public static void countEvent (EventTypes et) {
-        // add 1 to counter for EventTypes et
-        int counter = eventCounter.get(et) + 1;
-        eventCounter.put(et, counter);
+       eventCounter.add(et);
     }
 
 
     public static void countEvent (EventTypes et, int amount) {
-        // add <amount> to counter for EventTypes et
-        int counter = eventCounter.get(et) + amount;
-        eventCounter.put(et, counter);
+        eventCounter.add(et, amount);
     }
 
 
@@ -190,47 +184,47 @@ public class EventManager {
         float hh = Household.getHouseholdCount();
         float dd = Dwelling.getDwellingCount();
         SummarizeData.resultFile("Count of simulated events");
-        int birthday = eventCounter.get(EventTypes.birthday);
+        int birthday = eventCounter.count(EventTypes.BIRTHDAY);
         logger.info("  Simulated birthdays:         " + birthday + " (" +
                 SiloUtil.rounder((100f * birthday / pp), 1) + "% of pp)");
         SummarizeData.resultFile("Birthdays,"+birthday);
-        int births = eventCounter.get(EventTypes.checkBirth);
+        int births = eventCounter.count(EventTypes.CHECK_BIRTH);
         logger.info("  Simulated births:            " + births + " (" +
                 SiloUtil.rounder((100f * births / pp), 1) + "% of pp)");
         SummarizeData.resultFile("Births,"+births);
-        int deaths = eventCounter.get(EventTypes.checkDeath);
+        int deaths = eventCounter.count(EventTypes.CHECK_DEATH);
         logger.info("  Simulated deaths:            " + deaths + " (" +
                 SiloUtil.rounder((100f * deaths / pp), 1) + "% of pp)");
         SummarizeData.resultFile("Deaths,"+deaths);
-        int marriages = eventCounter.get(EventTypes.checkMarriage);
+        int marriages = eventCounter.count(EventTypes.CHECK_MARRIAGE);
         logger.info("  Simulated marriages          " + marriages + " (" +
                 SiloUtil.rounder((100f * marriages / hh), 1) + "% of hh)");
         SummarizeData.resultFile("Marriages,"+marriages);
-        int divorces = eventCounter.get(EventTypes.checkDivorce);
+        int divorces = eventCounter.count(EventTypes.CHECK_DIVORCE);
         logger.info("  Simulated divorces:          " + divorces + " (" +
                 SiloUtil.rounder((100f * divorces / hh), 1) + "% of hh)");
         SummarizeData.resultFile("Divorces,"+divorces);
-        int lph = eventCounter.get(EventTypes.checkLeaveParentHh);
+        int lph = eventCounter.count(EventTypes.CHECK_LEAVE_PARENT_HH);
         logger.info("  Simulated leave parental hh: " + lph + " (" +
                 SiloUtil.rounder((100f * lph / hh), 1) + "% of hh)");
         SummarizeData.resultFile("LeaveParentalHH,"+lph);
-        int suc = eventCounter.get(EventTypes.checkSchoolUniv);
+        int suc = eventCounter.count(EventTypes.CHECK_SCHOOL_UNIV);
         logger.info("  Simulated change of school or university: " + suc + " (" +
                 SiloUtil.rounder((100f * suc / pp), 1) + "% of pp)");
         SummarizeData.resultFile("ChangeSchoolUniv,"+suc);
-        int dlc = eventCounter.get(EventTypes.checkDriversLicense);
+        int dlc = eventCounter.count(EventTypes.CHECK_DRIVERS_LICENSE);
         logger.info("  Simulated change of drivers license: " + dlc + " (" +
                 SiloUtil.rounder((100f * dlc / pp), 1) + "% of pp)");
         SummarizeData.resultFile("ChangeDriversLicense,"+dlc);
-        int sj = eventCounter.get(EventTypes.findNewJob);
+        int sj = eventCounter.count(EventTypes.FIND_NEW_JOB);
         logger.info("  Simulated start new job:     " + sj + " (" +
                 SiloUtil.rounder((100f * sj / pp), 1) + "% of pp)");
         SummarizeData.resultFile("StartNewJob,"+sj);
-        int qj = eventCounter.get(EventTypes.quitJob);
+        int qj = eventCounter.count(EventTypes.QUIT_JOB);
         logger.info("  Simulated leaving jobs:      " + qj + " (" +
                 SiloUtil.rounder((100f * qj / pp), 1) + "% of pp)");
         SummarizeData.resultFile("QuitJob,"+qj);
-        int moves = eventCounter.get(EventTypes.householdMove);
+        int moves = eventCounter.count(EventTypes.HOUSEHOLD_MOVE);
         logger.info("  Simulated household moves:   " + moves + " (" +
                 SiloUtil.rounder((100f * moves / hh), 0) + "% of hh)");
         SummarizeData.resultFile("Moves,"+moves);
@@ -240,25 +234,25 @@ public class EventManager {
         logger.info("  Simulated household relinquished a car" + carChangeCounter[1] + " (" +
                 SiloUtil.rounder((100f * carChangeCounter[1] / hh), 0) + "% of hh)");
         SummarizeData.resultFile("RelinquishedCar,"+carChangeCounter[1]);
-        int inmigration = eventCounter.get(EventTypes.inmigration);
+        int inmigration = eventCounter.count(EventTypes.INMIGRATION);
         logger.info("  Simulated inmigrated hh:     " + inmigration + " (" +
                 SiloUtil.rounder((100f * inmigration / hh), 0) + "% of hh)");
         SummarizeData.resultFile("InmigrantsHH," + inmigration);
         SummarizeData.resultFile("InmigrantsPP," + InOutMigration.inMigrationPPCounter);
-        int outmigration = eventCounter.get(EventTypes.outMigration);
+        int outmigration = eventCounter.count(EventTypes.OUT_MIGRATION);
         logger.info("  Simulated outmigrated hh:    " + outmigration + " (" +
                 SiloUtil.rounder((100f * outmigration / hh), 0) + "% of hh)");
         SummarizeData.resultFile("OutmigrantsHH," + outmigration);
         SummarizeData.resultFile("OutmigrantsPP," + InOutMigration.outMigrationPPCounter);
-        int renovate = eventCounter.get(EventTypes.ddChangeQual);
+        int renovate = eventCounter.count(EventTypes.DD_CHANGE_QUAL);
         logger.info("  Simulated up-/downgrade dd:  " + renovate + " (" +
                 SiloUtil.rounder((100f * renovate / dd), 0) + "% of dd)");
         SummarizeData.resultFile("UpDowngradeDD,"+renovate);
-        int demolitions = eventCounter.get(EventTypes.ddDemolition);
+        int demolitions = eventCounter.count(EventTypes.DD_DEMOLITION);
         logger.info("  Simulated demolition of dd:  " + demolitions + " (" +
                 SiloUtil.rounder((100f * demolitions / dd), 0) + "% of dd)");
         SummarizeData.resultFile("Demolition,"+demolitions);
-        int construction = eventCounter.get(EventTypes.ddConstruction);
+        int construction = eventCounter.count(EventTypes.DD_CONSTRUCTION);
         logger.info("  Simulated construction of dd:  " + construction + " (" +
                 SiloUtil.rounder((100f * construction / dd), 0) + "% of dd)");
         SummarizeData.resultFile("Construction,"+construction);
@@ -266,14 +260,13 @@ public class EventManager {
 
 
     public Integer getNumberOfEvents() {
-        // returns size of event array
         return events.size();
     }
 
 
-    public Integer[] selectNextEvent() {
+    public int[] selectNextEvent() {
         // select the next event in order stored in randomEventOrder
-        Integer[] event = events.get(randomEventOrder[posInArray]);
+        int[] event = events.get(randomEventOrder[posInArray]);
         posInArray++;
         return event;
     }

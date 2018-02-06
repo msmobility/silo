@@ -1,18 +1,17 @@
 package de.tum.bgu.msm;
 
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
+import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ResourceBundle;
-
-import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-
-import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 
 /**
  * @author dziemke
@@ -28,8 +27,7 @@ public final class SiloMatsim {
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
 	public SiloMatsim(String args, Config config) {
-		SiloUtil.setBaseYear(2000);
-		rb = SiloUtil.siloInitialization(args, SiloModel.Implementation.MARYLAND);
+		rb = SiloUtil.siloInitialization(args, Implementation.MARYLAND);
 
 		matsimConfig = config ;
 	}	    

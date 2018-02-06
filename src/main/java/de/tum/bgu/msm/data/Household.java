@@ -19,9 +19,7 @@ package de.tum.bgu.msm.data;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.demography.BirthModel;
-import org.apache.log4j.Logger;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -30,8 +28,6 @@ import java.util.*;
  *
  */
 public final class Household {
-
-    private static Logger logger = Logger.getLogger(Household.class);
 
     private static final Map<Integer, Household> householdMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
@@ -72,24 +68,6 @@ public final class Household {
     public static void remove (int hhID) {
         householdMap.remove(hhID);
     }
-
-    public void logAttributes () {
-        logger.info("Attributes of household " + hhId);
-        logger.info("Dwelling ID             " + dwellingId);
-        logger.info("Household size          " + persons.size());
-        logger.info("Home zone               " + homeZone);
-        logger.info("Household race          " + race);
-        for (Person pp: persons) logger.info("Member of hh is person  " + pp.getId());
-    }
-
-    public void logAttributes (PrintWriter pw) {
-        pw.println ("Attributes of household " + hhId);
-        pw.println ("Dwelling ID             " + dwellingId);
-        pw.println ("Household size          " + persons.size());
-        pw.println ("Home zone               " + homeZone);
-        // cannot log person attributes or race, because when households are read (and logged) persons are not known yet
-    }
-
 
     public int getId() {
         return hhId;
@@ -178,9 +156,8 @@ public final class Household {
     }
 
     public void removePerson (Person person, SiloDataContainer dataContainer) {
-        // remove this person from household and reduce household size by one
-        if (persons.size() >= 2) {
-            persons.remove(person);
+        persons.remove(person);
+        if(!persons.isEmpty()) {
             setType();
             determineHouseholdRace();
         } else {
@@ -194,6 +171,9 @@ public final class Household {
 
     public void addPerson(Person person) {
         // add existing person per (not a newborn child) to household
+        if(persons.contains(person)) {
+            throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + this.getId());
+        }
         persons.add(person);
         person.setHousehold(this);
         setType();
@@ -212,7 +192,7 @@ public final class Household {
             gender = 2;
         }
         Person person = new Person (id, 0, gender, race, 0, 0, 0);
-        person.setRole(PersonRole.child);
+        person.setRole(PersonRole.CHILD);
         persons.add(person);
         person.setHousehold(this);
         setType();
@@ -249,8 +229,25 @@ public final class Household {
         for (Household siloHousehold : getHouseholds()) {
             MitoZone zone = zones.get(siloHousehold.homeZone);
             MitoHousehold household = siloHousehold.convertToMitoHh(zone);
-            thhs.put(household.getHhId(), household);
+            thhs.put(household.getId(), household);
         }
         return thhs;
+    }
+
+    public boolean checkIfOnlyChildrenRemaining() {
+        for (Person person: persons) {
+           if(person.getAge() >= 16) {
+               return false;
+           }
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return  "Attributes of household " + hhId
+            +"\nDwelling ID             " + dwellingId
+            +"\nHousehold size          " + persons.size()
+            +"\nHome zone               " + homeZone;
     }
 }

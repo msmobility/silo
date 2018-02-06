@@ -39,7 +39,7 @@ public class SiloMsp {
 
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], SiloModel.Implementation.MSP);
+        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MSP);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");

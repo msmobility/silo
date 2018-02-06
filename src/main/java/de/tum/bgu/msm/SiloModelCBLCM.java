@@ -3,15 +3,12 @@ package de.tum.bgu.msm;
  * 
  */
 
-import java.io.IOException;
-
-import de.tum.bgu.msm.SiloModel.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -20,7 +17,11 @@ import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
 
-import static de.tum.bgu.msm.SiloModel.* ;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import static de.tum.bgu.msm.SiloModel.logger;
 
 /**
  * @author kainagel
@@ -69,7 +70,7 @@ public class SiloModelCBLCM {
 	        timeCounter = new long[EventTypes.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(null, Properties.get().main.baseDirectory, geoData, modelContainer);
+	        transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, geoData, modelContainer);
 	        if (Properties.get().main.createPrestoSummary) {
 				SummarizeData.preparePrestoSummary(geoData);
 			}
@@ -99,7 +100,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear != SiloUtil.getBaseYear()) {
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) {
 	            modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(currentYear, dataContainer);
 	            dataContainer.getJobData().identifyVacantJobs();
 	        }
@@ -110,11 +111,11 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        int numberOfPlannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+	        List<int[]> plannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
 	        if (trackTime) timeCounter[EventTypes.values().length + 5][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        em.createListOfEvents(numberOfPlannedCouples);
+	        em.createListOfEvents(plannedCouples);
 	        if (trackTime) timeCounter[EventTypes.values().length + 4][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (SiloUtil.containsElement(skimYears, currentYear)) {
@@ -137,11 +138,11 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear != SiloUtil.getBaseYear()) dataContainer.getHouseholdData().adjustIncome();
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) dataContainer.getHouseholdData().adjustIncome();
 	        if (trackTime) timeCounter[EventTypes.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear == SiloUtil.getBaseYear() || currentYear != Properties.get().main.startYear)
+	        if (currentYear == Properties.get().main.implementation.BASE_YEAR || currentYear != Properties.get().main.startYear)
 	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
 	        if (trackTime) timeCounter[EventTypes.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
@@ -150,63 +151,64 @@ public class SiloModelCBLCM {
 	        for (int i = 1; i <= em.getNumberOfEvents(); i++) {
 	            //	    if (i%500000==0) logger.info("Processing event " + i);
 	            // event[] stores event id in position [0] and person id in position [1]
-	            Integer[] event = em.selectNextEvent();
+	            int[] event = em.selectNextEvent();
 	            if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
 	                SiloUtil.trackWriter.println ("Check event " + EventTypes.values()[event[0]] +  " for pp/hh/dd " +
 	                        event[1]);
-	            if (event[0] == EventTypes.birthday.ordinal()) {
+	            if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getBirth().celebrateBirthday(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.checkDeath.ordinal()) {
+	            } else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getDeath().chooseDeath(event[1], dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.checkBirth.ordinal()) {
+	            } else if (event[0] == EventTypes.CHECK_BIRTH.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getBirth().chooseBirth(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.checkLeaveParentHh.ordinal()) {
+	            } else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.checkMarriage.ordinal()) {
+	            } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getMardiv().choosePlannedMarriage(event[1], modelContainer, dataContainer);
+	                int[] couple = Arrays.copyOfRange(event, 1,2);
+					modelContainer.getMardiv().marryCouple(couple, modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.checkDivorce.ordinal()) {
+	            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getMardiv().chooseDivorce(event[1], modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.findNewJob.ordinal()) {
+	            } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getChangeEmployment().findNewJob(event[1], modelContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.quitJob.ordinal()) {
+	            } else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getChangeEmployment().quitJob(event[1], dataContainer.getJobData());
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.householdMove.ordinal()) {
+	            } else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getMove().chooseMove(event[1], modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.inmigration.ordinal()) {
+	            } else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getIomig().inmigrateHh(event[1], modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.outMigration.ordinal()) {
+	            } else if (event[0] == EventTypes.OUT_MIGRATION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getIomig().outMigrateHh(event[1], false, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.ddChangeQual.ordinal()) {
+	            } else if (event[0] == EventTypes.DD_CHANGE_QUAL.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getRenov().checkRenovation(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.ddDemolition.ordinal()) {
+	            } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
-	            } else if (event[0] == EventTypes.ddConstruction.ordinal()) {
+	            } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                modelContainer.getCons().buildDwelling(event[1], currentYear, modelContainer, dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;

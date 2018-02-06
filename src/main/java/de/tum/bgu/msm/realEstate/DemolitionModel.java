@@ -1,25 +1,17 @@
 package de.tum.bgu.msm.realEstate;
 
-import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.events.EventManager;
-import com.pb.common.util.ResourceUtil;
-import com.pb.common.calculator.UtilityExpressionCalculator;
+import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.IssueCounter;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ResourceBundle;
-import java.io.File;
-
-import de.tum.bgu.msm.events.IssueCounter;
-import org.apache.log4j.Logger;
-
-import javax.script.ScriptException;
 
 /**
  * Simulates demolition of dwellings
@@ -74,7 +66,7 @@ public class DemolitionModel {
                 dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             }
             Dwelling.removeDwelling(dwellingId);
-            EventManager.countEvent(EventTypes.ddDemolition);
+            EventManager.countEvent(EventTypes.DD_DEMOLITION);
             if (dwellingId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Dwelling " +
                     dwellingId + " was demolished.");
         }

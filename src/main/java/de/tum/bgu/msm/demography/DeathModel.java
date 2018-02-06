@@ -1,28 +1,30 @@
 package de.tum.bgu.msm.demography;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
 
-import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt, Rolf Moeckel
  * Created on Dec 2, 2009
+ * Revised on Jan 19, 2018
  *
  */
 public class DeathModel {
 
-    private static Logger traceLogger = Logger.getLogger("trace");
-
     private final HouseholdDataManager householdDataManager;
-	private double[] deathProbability;
+    private DeathJSCalculator calculator;
 
     public DeathModel(HouseholdDataManager householdDataManager) {
         this.householdDataManager = householdDataManager;
@@ -30,90 +32,50 @@ public class DeathModel {
 	}
 
 	private void setupDeathModel() {
-
-		// read properties
-		int deathModelSheetNumber = Properties.get().demographics.deathModelSheet;
-        boolean logCalculation = Properties.get().demographics.logDeathCalculation;
-
-		// initialize UEC
-        UtilityExpressionCalculator deathModel = new UtilityExpressionCalculator(new File(Properties.get().main.baseDirectory + Properties.get().demographics.uecFileName),
-        		deathModelSheetNumber,
-                Properties.get().demographics.dataSheet,
-        		SiloUtil.getRbHashMap(),
-        		DeathDMU.class);
-        
-		DeathDMU deathDmu = new DeathDMU();
-
-		// everything is available	
-		int numAlts = deathModel.getNumberOfAlternatives();
-		int[] death2Avail = new int[numAlts+1]; 
-        for (int i=1; i < death2Avail.length; i++) {
-            death2Avail[i] = 1;
+        Reader reader;
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
+        } else {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
         }
-        
-        PersonType[] types = PersonType.values();
-        deathProbability = new double[types.length];
-        for (int i=0; i<types.length; i++) {
-
-        	// set DMU attributes
-        	deathDmu.setType(types[i]);
-        	
-            // There is only one alternative, and the utility is 
-    		// really the probability of dying
-    		double util[] = deathModel.solve(deathDmu.getDmuIndexValues(), deathDmu, death2Avail);
-    		deathProbability[i] = util[0];
-            
-            if (logCalculation) {
-                // log UEC values for each person type
-                deathModel.logAnswersArray(traceLogger, "Death Model for Person Type " + types[i].toString());
-            }
-        }
+        calculator = new DeathJSCalculator(reader);
 	}
+
 
 	public void chooseDeath(int perId, SiloDataContainer dataContainer) {
         // simulate if person with ID perId dies in this simulation period
 
         Person per = Person.getPersonFromId(perId);
         if (!EventRules.ruleDeath(per)) return;  // Person has moved away
-        if (SiloUtil.getRandomNumberAsDouble() < deathProbability[per.getType().ordinal()]) {
-            if (per.getWorkplace() > 0) per.quitJob(true, dataContainer.getJobData());
+        int age = Math.min(per.getAge(), 100);
+        int sexIndex = per.getGender();
+        if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, sexIndex)) {
+            if (per.getWorkplace() > 0) {
+                per.quitJob(true, dataContainer.getJobData());
+            }
             Household hhOfPersonToDie = per.getHh();
-            int hhId = hhOfPersonToDie.getId();
-            if (per.getRole() == PersonRole.married) {
+
+            if (per.getRole() == PersonRole.MARRIED) {
                 Person widow = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
-                widow.setRole(PersonRole.single);
+                widow.setRole(PersonRole.SINGLE);
             }
             hhOfPersonToDie.removePerson(per, dataContainer);
-            boolean onlyChildrenLeft = checkIfOnlyChildrenRemainInHousehold(hhOfPersonToDie, per);
+            boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
             if (onlyChildrenLeft) {
                 for (Person pp: hhOfPersonToDie.getPersons()) {
-                    if (pp != per)
                     Person.removePerson(pp.getId());
-                    if (pp.getId() == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
-                        SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhId +
+                    if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
+                        SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
                                 " to foster care as remaining child just before head of household (ID " +
                                 per.getId() + ") passed away.");
                 }
-                dataContainer.getHouseholdData().removeHousehold(hhId);
             }
             Person.removePerson(per.getId());
-            EventManager.countEvent(EventTypes.checkDeath);
+            EventManager.countEvent(EventTypes.CHECK_DEATH);
             householdDataManager.addHouseholdThatChanged(hhOfPersonToDie);
-            if (perId == SiloUtil.trackPp || hhId == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhId +
+            if (perId == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
+                SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhOfPersonToDie.getId() +
                         " has passed away.");
         }
     }
-
-
-    private boolean checkIfOnlyChildrenRemainInHousehold(Household hh, Person personToDie) {
-        // if hh has only children left, send children to foster care (foster care is outside of study area, children
-        // are dropped from this simulation)
-
-        if (hh.getHhSize() == 1) return false;
-        boolean onlyChildren = true;
-        for (Person per: hh.getPersons()) if (per.getId() != personToDie.getId() && per.getAge() >= 16) onlyChildren = false;
-        return onlyChildren;
-    }
-
 }
