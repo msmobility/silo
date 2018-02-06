@@ -38,12 +38,10 @@ import java.io.Reader;
 
 public class BirthModel {
 
-    private static float propGirl;
     private final HouseholdDataManager householdDataManager;
     private static BirthJSCalculator calculator;
 
     public BirthModel(HouseholdDataManager householdDataManager) {
-        propGirl = Properties.get().demographics.propabilityForGirl;
         this.householdDataManager = householdDataManager;
         setupBirthModel();
 	}
@@ -83,8 +81,8 @@ public class BirthModel {
     }
 
 
-    public static float getProbabilityForGirl () {
-        return propGirl;
+    public static double getProbabilityForGirl () {
+        return calculator.getProbabilityForGirl();
     }
 
 

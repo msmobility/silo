@@ -14,7 +14,6 @@ public class DemographicsProperties {
     public final boolean logDeathCalculation;
 
     //Birth
-    public final float propabilityForGirl;
     public final float marriedScaler;
     public final float singleScaler;
     public final int simulationPeriodLength;
@@ -41,7 +40,6 @@ public class DemographicsProperties {
         deathModelSheet = ResourceUtil.getIntegerProperty(bundle, "Demographics.UEC.ModelSheetNumber.Death");
         logDeathCalculation = ResourceUtil.getBooleanProperty(bundle, "log.util.death");
 
-        propabilityForGirl = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.proability.girl");
         marriedScaler = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.birth.scaler.married");
         singleScaler = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.birth.scaler.single");
         simulationPeriodLength = ResourceUtil.getIntegerProperty(bundle, "simulation.period.length");

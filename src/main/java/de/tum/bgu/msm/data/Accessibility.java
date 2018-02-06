@@ -102,10 +102,11 @@ public class Accessibility {
     }
 
     private MatrixTravelTimes readSkim(String fileName, String matrixName) {
-        OmxFile omx = new OmxFile(fileName);
-        omx.openReadOnly();
-        OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName);
-        return new MatrixTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
+    	OmxFile omx = new OmxFile(fileName);
+    omx.openReadOnly();
+
+    OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName) ;
+    	return new MatrixTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
     }
 
     public void calculateAccessibilities (int year) {

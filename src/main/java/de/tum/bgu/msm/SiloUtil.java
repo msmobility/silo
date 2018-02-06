@@ -237,9 +237,7 @@ public class SiloUtil {
         if(outputFile.getParentFile() != null) {
             outputFile.getParentFile().mkdirs();
         }
-        try {
-            FileWriter fw = new FileWriter(outputFile, appendFile);
-            BufferedWriter bw = new BufferedWriter(fw);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, appendFile))){
             return new PrintWriter(bw);
         } catch (IOException e) {
             logger.error("Could not open file <" + fileName + ">.");
@@ -249,7 +247,7 @@ public class SiloUtil {
 
 
     public static void writeTableDataSet (TableDataSet data, String fileName) {
-        try{
+        try {
             CSVFileWriter cfwWriter = new CSVFileWriter();
             cfwWriter.writeFile(data, new File(fileName));
             cfwWriter.close();
