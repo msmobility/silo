@@ -18,4 +18,8 @@ public class BirthJSCalculator extends JavaScriptCalculator <Double> {
         return super.calculate("calculateBirthProbability", personAge, scaler);
     }
 
+    public double getProbabilityForGirl() {
+        return super.calculate("probabilityForAGirl");
+    }
+
 }
