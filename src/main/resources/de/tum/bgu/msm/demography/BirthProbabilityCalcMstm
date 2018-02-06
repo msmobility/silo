@@ -36,3 +36,8 @@ var calculateBirthProbability = function(personAge, scaler) {
 
 return alpha;
 }
+
+
+var probabilityForAGirl = function() {
+    return 0.488;
+}
