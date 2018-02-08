@@ -15,3 +15,5 @@ lib/
 /timeTracker.csv
 scenOutput
 status.csv
+test/output/*
+*2002.csv
