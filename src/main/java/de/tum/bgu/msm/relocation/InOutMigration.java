@@ -145,7 +145,7 @@ public class InOutMigration {
             k += 6;
         }
 
-        Household hh = new Household(hhId, -1, -1, 0);
+        Household hh = new Household(hhId, -1, 0);
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];

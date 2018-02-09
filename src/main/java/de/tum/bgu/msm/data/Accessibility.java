@@ -114,15 +114,21 @@ public class Accessibility {
         LOGGER.info("  Calculating accessibilities for " + year);
 
         final DoubleMatrix2D carTravelTimesCopy = getPeakAutoTravelTimeMatrix().copy();
+        final int[] population = SummarizeData.getPopulationByZone(geoData);
         carTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) -> {
-            int population = geoData.getZones().get(destination).getPopulation();
-            return Math.pow(population, alphaAuto) * Math.exp(betaAuto * autoTravelTime);
+            if(!geoData.getZones().containsKey(origin) || !geoData.getZones().containsKey(destination)) {
+                return 0;
+            }
+            double imp = Math.exp(betaAuto * autoTravelTime);
+            return Math.pow(population[destination], alphaAuto) * imp;
         });
 
         final DoubleMatrix2D transitTravelTimesCopy = getPeakTransitTravelTimeMatrix().copy();
         transitTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) -> {
-            int population = geoData.getZones().get(destination).getPopulation();
-            return Math.pow(population, alphaTransit) * Math.exp(betaTransit * autoTravelTime);
+            if(!geoData.getZones().containsKey(origin) || !geoData.getZones().containsKey(destination)) {
+                return 0;
+            }
+            return Math.pow(population[destination], alphaTransit) * Math.exp(betaTransit * autoTravelTime);
         });
 
         for(int i: geoData.getZones().keySet()) {
@@ -134,15 +140,10 @@ public class Accessibility {
         autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactor));
 
 
-
-        regionalAccessibility = new double[geoData.getRegionList().length];
-        for (int region: geoData.getRegionList()) {
-            int[] zonesInThisRegion = geoData.getZonesInRegion(region);
-            double sm = 0;
-            for (int zone: zonesInThisRegion) sm += autoAccessibility[geoData.getZoneIndex(zone)];
-            regionalAccessibility[geoData.getRegionIndex(region)] = sm / zonesInThisRegion.length;
-        }
-
+        geoData.getRegions().values().parallelStream().forEach(r -> {
+            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();
+            regionalAccessibilities.setQuick(r.getId(), sum);
+        });
     }
 
 

@@ -6,6 +6,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -114,7 +115,7 @@ public class SummarizeData {
         for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
         resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
 
-        int[] zones = dataContainer.getGeoData().getZoneIdsArray();
+
         int[][] dds = new int[DwellingType.values().length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] prices = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] jobs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
@@ -136,7 +137,7 @@ public class SummarizeData {
         }
 
 
-        for (int taz: zones) {
+        for (int taz: dataContainer.getGeoData().getZones().keySet()) {
             float avePrice = -1;
             int ddThisZone = 0;
             for (DwellingType dt: DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
@@ -933,7 +934,7 @@ public class SummarizeData {
         for (Household hh: Household.getHouseholds()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
-            int county = geoData.getCountyOfZone(zone);
+            int county = ((MstmZone)geoData.getZones().get(hh.getHomeZone())).getCounty().getId();
             autos[autoOwnership][county]++;
             pwa.println(hh.getHhSize()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
                     accessibility.getTransitAccessibilityForZone(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
@@ -1099,4 +1100,6 @@ public class SummarizeData {
         logger.info("Summarized initial auto ownership");
 
     }
+
+
 }

@@ -170,7 +170,7 @@ public class ConstructionModel {
         int[][] counter = new int[DwellingType.values().length][geoData.getHighestZonalId() + 1];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
-            int zone = dd.getZone();
+            int zone = geoData.getZones().get(dd.getZone()).getId();
             counter[dt][zone]++;
             avePrice[dt][zone] += dd.getPrice();
         }
@@ -200,7 +200,7 @@ public class ConstructionModel {
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getRegionOfZone(dd.getZone());
+            int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();
         }
@@ -230,7 +230,7 @@ public class ConstructionModel {
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getRegionOfZone(dd.getZone());
+            int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;
             aveSize[dt][region] += dd.getBedrooms();
         }
@@ -292,14 +292,14 @@ public class ConstructionModel {
 
         Integer[] attributes = plannedDwellings.get(id);
         int ddId = RealEstateDataManager.getNextDwellingId();
-        int zone = attributes[0];
+        int zoneId = attributes[0];
         int dto = attributes[1];
         int size = attributes[2];
         int quality = attributes[3];
         float restriction = attributes[4] / 100f;
         int price = attributes[5];
 
-        Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+        Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
         double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd, modelContainer);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);

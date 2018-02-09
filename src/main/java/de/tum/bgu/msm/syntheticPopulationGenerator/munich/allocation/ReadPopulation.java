@@ -55,7 +55,7 @@ public class ReadPopulation {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
+                new Household(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                 }

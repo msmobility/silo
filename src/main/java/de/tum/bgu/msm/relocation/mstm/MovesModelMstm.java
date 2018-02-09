@@ -11,6 +11,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.relocation.MovesDMU;
@@ -36,7 +37,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         selectDwellingRaceRelevance = Properties.get().moves.racialRelevanceInZone;
         provideRentSubsidyToLowIncomeHh = Properties.get().moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
-            realEstateData.calculateMedianRentByMSA(geoData);
+            realEstateData.calculateMedianRentByMSA();
         }
     }
 
@@ -291,16 +292,16 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
-            int msa = geoData.getMSAOfZone(dd.getZone());
+            int msa = geoData.getZones().get(dd.getZone()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
             float racialShare = 1;
             if (householdRace != Race.other) {
-                racialShare = getZonalRacialShare(dd.getZone(), householdRace);
+                racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZone()).getId(), householdRace);
             }
             // multiply by racial share to make zones with higher own racial share more attractive
             double adjProb;
-            if (householdQualifiesForSubsidy(householdIncome, dd.getZone(), dd.getPrice())) {
+            if (householdQualifiesForSubsidy(householdIncome, geoData.getZones().get(dd.getZone()).getId(), dd.getPrice())) {
                 adjProb = Math.pow(calculateDwellingUtilityOfHousehold(ht, householdIncome, dd, siloModelContainer), (1 - selectDwellingRaceRelevance)) *
                         Math.pow(racialShare, selectDwellingRaceRelevance);
             } else {
@@ -322,13 +323,13 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
         evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibilityForZone(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibilityForZone(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((GeoDataMstm) geoData).getZonalSchoolQuality(dd.getZone()));
-        evaluateDwellingDmu.setUtilityDwellingCrimeRate(((GeoDataMstm)geoData).getCountyCrimeRate(((GeoDataMstm)geoData).getCountyOfZone(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((MstmZone) geoData.getZones().get(dd.getZone())).getSchoolQuality());
+        evaluateDwellingDmu.setUtilityDwellingCrimeRate(((MstmZone) geoData.getZones().get(dd.getZone())).getCounty().getCrimeRate());
 
         int price = dd.getPrice();
         if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
             // housing subsidy program in place
-            int msa = geoData.getMSAOfZone(dd.getZone());
+            int msa = geoData.getZones().get(dd.getZone()).getMsa();
             if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                 float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
                 float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;

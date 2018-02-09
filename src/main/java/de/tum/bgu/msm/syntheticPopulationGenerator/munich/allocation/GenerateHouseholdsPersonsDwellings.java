@@ -74,7 +74,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private Household generateHousehold(int tazSelected){
 
         int id = HouseholdDataManager.getNextHouseholdId();
-        Household household = new Household(id, id, tazSelected, 0); //(int id, int dwellingID, int homeZone, int autos)
+        Household household = new Household(id, id, 0); //(int id, int dwellingID, int homeZone, int autos)
         householdCounter++;
         return household;
     }

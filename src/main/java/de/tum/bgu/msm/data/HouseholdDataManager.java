@@ -98,7 +98,7 @@ public class HouseholdDataManager {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                Household hh = new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
+                Household hh = new Household(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(hh.toString());
@@ -407,7 +407,7 @@ public class HouseholdDataManager {
             hhRace[hh.getRace().ordinal()]++;
             hhIncome[hhIncomePos] = hh.getHhIncome();
             hhIncomePos++;
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
+            int region = geoData.getZones().get(hh.getHomeZone()).getRegion().getId();
             hhByRegion[region]++;
         }
                 SummarizeData.resultFile("hhByType,hh");

@@ -407,7 +407,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             int selectedYear = selectYear(yearBuilt);
             new Dwelling(newDdId, taz, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
             if (gender[0] == 0) return;   // this dwelling is empty, do not create household
-            Household hh = new Household(newHhId, newDdId, taz, autos);
+            Household hh = new Household(newHhId, newDdId, autos);
             for (int s = 0; s < hhSize; s++) {
                 int newPpId = HouseholdDataManager.getNextPersonId();
 

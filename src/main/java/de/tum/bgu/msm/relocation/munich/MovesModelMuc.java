@@ -34,28 +34,30 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         regionalShareForeigners = new float[geoData.getRegionIdsArray().length];
         SiloUtil.setArrayToValue(zonalShareForeigners, 0f);
         for (Household hh: Household.getHouseholds()) {
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
+            int region = geoData.getZones().get(hh.getHomeZone()).getRegion().getId();
             if (hh.getNationality() != Nationality.german) {
                 zonalShareForeigners[geoData.getZoneIndex(hh.getHomeZone())]++;
                 regionalShareForeigners[geoData.getRegionIndex(region)]++;
             }
         }
         int[] hhByZone = HouseholdDataManager.getNumberOfHouseholdsByZone(geoData);
-        for (int zone: geoData.getZoneIdsArray()) {
-            if (hhByZone[geoData.getZoneIndex(zone)] > 0) {
-                zonalShareForeigners[geoData.getZoneIndex(zone)] =
-                        zonalShareForeigners[geoData.getZoneIndex(zone)] / hhByZone[geoData.getZoneIndex(zone)];
+        for (int zone: geoData.getZones().keySet()) {
+            int index = geoData.getZoneIndex(zone);
+            if (hhByZone[index] > 0) {
+                zonalShareForeigners[index] =
+                        zonalShareForeigners[index] / hhByZone[index];
             } else {
-                zonalShareForeigners[geoData.getZoneIndex(zone)] = 0;  // should not be necessary, but implemented for safety
+                zonalShareForeigners[index] = 0;  // should not be necessary, but implemented for safety
             }
         }
         int[] hhByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
-        for (int region: geoData.getRegionIdsArray()) {
-            if (hhByRegion[geoData.getRegionIndex(region)] > 0) {
-                regionalShareForeigners[geoData.getRegionIndex(region)] =
-                        regionalShareForeigners[geoData.getRegionIndex(region)] / hhByRegion[geoData.getRegionIndex(region)];
+        for (int region: geoData.getRegions().keySet()) {
+            int index = geoData.getRegionIndex(region);
+            if (hhByRegion[index] > 0) {
+                regionalShareForeigners[index] =
+                        regionalShareForeigners[index] / hhByRegion[index];
             } else {
-                regionalShareForeigners[geoData.getRegionIndex(region)] = 0;  // should not be necessary, but implemented for safety
+                regionalShareForeigners[index] = 0;  // should not be necessary, but implemented for safety
             }
         }
     }
