@@ -151,10 +151,8 @@ public class SiloUtil {
         boolean exists = dataFile.exists();
         if (!exists) {
             final String msg = "File not found: " + fileName;
-		logger.error(msg);
-//            System.exit(1);
+		    logger.error(msg);
             throw new RuntimeException(msg) ;
-            // from the perspective of the junit testing infrastructure, a "System.exit(...)" is not a test failure ... and thus not detected.  kai, aug'16
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
@@ -237,7 +235,9 @@ public class SiloUtil {
         if(outputFile.getParentFile() != null) {
             outputFile.getParentFile().mkdirs();
         }
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, appendFile))){
+        try {
+            FileWriter fw = new FileWriter(outputFile, appendFile);
+            BufferedWriter bw = new BufferedWriter(fw);
             return new PrintWriter(bw);
         } catch (IOException e) {
             logger.error("Could not open file <" + fileName + ">.");
