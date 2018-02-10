@@ -90,7 +90,7 @@ public class Accessibility {
         LOGGER.info("Reading car skims for " + year);
         String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
         SkimTravelTimes skimTravelTimes = readSkim(hwyFileName, carMatrixName);
-        travelTimes.put(TransportMode.car, SkimTravelTimes);
+        travelTimes.put(TransportMode.car, skimTravelTimes);
     }
     
     public void readPtSkim(int year) {

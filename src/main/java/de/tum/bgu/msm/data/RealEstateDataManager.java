@@ -7,10 +7,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Formatter;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Keeps data of dwellings and non-residential floorspace
