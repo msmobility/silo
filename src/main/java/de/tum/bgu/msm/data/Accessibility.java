@@ -105,7 +105,7 @@ public class Accessibility {
     omx.openReadOnly();
 
     OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName) ;
-    	return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
+    	return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
     }
 
     public void calculateAccessibilities (int year) {
@@ -133,12 +133,12 @@ public class Accessibility {
 
         for(int i: geoData.getZones().keySet()) {
             autoAccessibilities.setQuick(i,carTravelTimesCopy.viewRow(i).zSum());
-            transitAccessibilities.setQuick(i,carTravelTimesCopy.viewRow(i).zSum());
+            transitAccessibilities.setQuick(i,transitTravelTimesCopy.viewRow(i).zSum());
         }
-        double sumScaleFactor = autoAccessibilities.zSum();
-        sumScaleFactor = 1.0 / sumScaleFactor;
-        autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactor));
-
+        double sumScaleFactorCar = 1.0 / autoAccessibilities.zSum();;
+        autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
+        double sumScaleFactorTransit = 1.0 / transitAccessibilities.zSum();
+        transitAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
 
         geoData.getRegions().values().parallelStream().forEach(r -> {
             double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();

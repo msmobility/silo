@@ -109,7 +109,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
-        for (Integer id: updatedHouseholds.keySet()) {
+        for (int id: updatedHouseholds.keySet()) {
             Household household = Household.getHouseholdFromId(id);
             if(household == null) {
                 continue;
