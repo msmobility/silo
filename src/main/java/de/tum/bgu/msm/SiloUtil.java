@@ -151,8 +151,9 @@ public class SiloUtil {
         boolean exists = dataFile.exists();
         if (!exists) {
             final String msg = "File not found: " + fileName;
-		logger.error(msg);
-            throw new RuntimeException(msg) ;
+
+		    logger.error(msg);
+        throw new RuntimeException(msg) ;
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);

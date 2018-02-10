@@ -81,15 +81,15 @@ public class Accessibility {
         }
     }
 
-	public void initialize() {
+	  public void initialize() {
         readWorkTripLengthFrequencyDistribution();
         calculateTravelTimesToRegions();
-	}
+	  }
 
     public void readCarSkim(int year) {
         LOGGER.info("Reading car skims for " + year);
         String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
-        SkimTravelTimes SkimTravelTimes = readSkim(hwyFileName, carMatrixName);
+        SkimTravelTimes skimTravelTimes = readSkim(hwyFileName, carMatrixName);
         travelTimes.put(TransportMode.car, SkimTravelTimes);
     }
     
@@ -101,11 +101,10 @@ public class Accessibility {
     }
 
     private SkimTravelTimes readSkim(String fileName, String matrixName) {
-    	OmxFile omx = new OmxFile(fileName);
-    omx.openReadOnly();
-
-    OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName) ;
-    	return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
+    	  OmxFile omx = new OmxFile(fileName);
+        omx.openReadOnly();
+        OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName) ;
+    	  return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
     }
 
     public void calculateAccessibilities (int year) {
