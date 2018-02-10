@@ -74,7 +74,7 @@ public class Accessibility {
         OmxFile omx = new OmxFile(fileName);
         omx.openReadOnly();
         OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName);
-        return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, omx.getLookup("lookup1")));
+        return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
     }
     
 
