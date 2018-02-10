@@ -267,7 +267,7 @@ public class JobDataManager {
     public void identifyVacantJobs() {
         // identify vacant jobs by region (one-time task at beginning of model run only)
 
-        int highestRegionID = SiloUtil.getHighestVal(geoData.getRegionIdsArray());
+        int highestRegionID = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         vacantJobsByRegion = new int[highestRegionID + 1][numberOfStoredVacantJobs + 1];
         vacantJobsByRegion = SiloUtil.setArrayToValue(vacantJobsByRegion, 0);
         vacantJobsByRegionPos = new int[highestRegionID + 1];
@@ -275,7 +275,6 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobs()) {
-            if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
 
@@ -286,8 +285,9 @@ public class JobDataManager {
                 } else {
                     IssueCounter.countExcessOfVacantJobs(region);
                 }
-                if (jobId == SiloUtil.trackJj)
+                if (jobId == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
+                }
             }
         }
     }

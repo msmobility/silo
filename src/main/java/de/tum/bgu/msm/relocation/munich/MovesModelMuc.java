@@ -114,30 +114,18 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     @Override
     public void calculateRegionalUtilities(SiloModelContainer siloModelContainer) {
 
-        int[] regions = geoData.getRegionIdsArray();
         calculateShareOfForeignersByZoneAndRegion();
+        int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+        utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Nationality.values().length][highestRegion+1];
 
-        int highestRegion = SiloUtil.getHighestVal(regions);
-        int[] regPrice = new int[highestRegion + 1];
-        float[] regAcc = new float[highestRegion + 1];
-        for (int region: regions) {
-            regPrice[geoData.getRegionIndex(region)] = calculateRegPrice(region);
-            regAcc[geoData.getRegionIndex(region)] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
-        }
-
-        utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Nationality.values().length][regions.length];
-        for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
-
-            float[] priceUtil = new float[highestRegion + 1];
-
-            for (int region: regions) {
-                priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
-            }
-
-            for (Nationality nationality: Nationality.values()) {
-                for (int region: regions) {
+        for (int region: geoData.getRegions().keySet()) {
+            for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
+                for (Nationality nationality: Nationality.values()) {
+                    float regAcc = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
+                    int regPrice = calculateRegPrice(region);
+                    float priceUtil = (float) convertPriceToUtility(regPrice, income);
                     utilityRegion[income - 1][nationality.ordinal()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
-                            nationality, priceUtil[region], regAcc[region], (float) regionalShareForeigners.getQuick(region));
+                            nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region));
                 }
             }
         }
