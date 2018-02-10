@@ -29,17 +29,5 @@ public class RegionImpl implements Region {
         return zones.add(zone);
     }
 
-    @Override
-    public int getNumberOfHouseholds() {
-        int count = 0;
-        for (Zone zone : zones) {
-            for (Dwelling dwelling : zone.getDwellings()) {
-                if(dwelling.getResidentId() != -1) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
 
 }

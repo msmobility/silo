@@ -137,7 +137,7 @@ public class Accessibility {
         double sumScaleFactorCar = 1.0 / autoAccessibilities.zSum();;
         autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
         double sumScaleFactorTransit = 1.0 / transitAccessibilities.zSum();
-        transitAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
+        transitAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorTransit));
 
         geoData.getRegions().values().parallelStream().forEach(r -> {
             double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();

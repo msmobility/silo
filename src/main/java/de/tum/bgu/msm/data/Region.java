@@ -7,6 +7,4 @@ public interface Region extends Id{
     Collection<Zone> getZones();
 
     boolean addZone(Zone zone);
-
-    int getNumberOfHouseholds();
 }

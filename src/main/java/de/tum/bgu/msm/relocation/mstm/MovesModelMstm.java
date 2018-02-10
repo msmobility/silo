@@ -6,6 +6,8 @@ package de.tum.bgu.msm.relocation.mstm;
 * Revised on Apr 24, 2014 in College Park, MD
 */
 
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -15,8 +17,10 @@ import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.relocation.MovesDMU;
+import de.tum.bgu.msm.util.matrices.Matrices;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 public class MovesModelMstm extends AbstractDefaultMovesModel {
@@ -27,10 +31,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU selectRegionDmu;
-    private float[][] zonalRacialComposition;
-    private float[][] regionalRacialComposition;
+    private final DoubleMatrix2D zonalRacialComposition;
+    private final DoubleMatrix2D regionalRacialComposition;
     private double selectDwellingRaceRelevance;
     private boolean provideRentSubsidyToLowIncomeHh;
+    private final DoubleMatrix1D hhByRegion;
+
 
     public MovesModelMstm(GeoDataMstm geoData, RealEstateDataManager realEstateData) {
         super(geoData);
@@ -39,44 +45,55 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         if (provideRentSubsidyToLowIncomeHh) {
             realEstateData.calculateMedianRentByMSA();
         }
+        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
+        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
+        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
     }
 
     private void calculateRacialCompositionByZoneAndRegion() {
+        resetMatrices();
+        updateHouseholdInventar();
+        scaleMatrices();
+    }
 
-        zonalRacialComposition = new float[geoData.getZoneIdsArray().length][4];
-        regionalRacialComposition = new float[geoData.getRegionIdsArray().length][4];
-        SiloUtil.setArrayToValue(zonalRacialComposition, 0f);
+    private void resetMatrices() {
+        regionalRacialComposition.assign(0);
+        zonalRacialComposition.assign(0);
+        hhByRegion.assign(0);
+    }
+
+    private void updateHouseholdInventar() {
         for (Household hh: Household.getHouseholds()) {
-            zonalRacialComposition[geoData.getZoneIndex(hh.getHomeZone())][hh.getRace().ordinal()]++;
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
-            regionalRacialComposition[geoData.getRegionIndex(region)][hh.getRace().ordinal()]++;
+            final int zone = hh.getHomeZone();
+            final int region = geoData.getZones().get(zone).getRegion().getId();
+
+            zonalRacialComposition.setQuick(zone, hh.getRace().getId(),
+                    zonalRacialComposition.getQuick(zone, hh.getRace().getId()) + 1);
+            regionalRacialComposition.setQuick(region, hh.getRace().getId(),
+                    regionalRacialComposition.getQuick(region, hh.getRace().getId()) + 1);
+
+            hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
         }
-        for (int zone: geoData.getZoneIdsArray()) {
-            int zonalSum = 0;
-            for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                zonalSum += zonalRacialComposition[geoData.getZoneIndex(zone)][raceType];
-            }
+    }
+
+    private void scaleMatrices() {
+        for (int zone: geoData.getZones().keySet()) {
+            final double zonalSum = zonalRacialComposition.viewRow(zone).zSum();
             if (zonalSum > 0) {
-                for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                    zonalRacialComposition[geoData.getZoneIndex(zone)][raceType] /= zonalSum;
-                }
+                zonalRacialComposition.viewRow(zone).assign(share -> share / zonalSum);
             }
         }
-        for (int region: geoData.getRegionIdsArray()) {
-            int regSum = 0;
-            for (int raceType = 0; raceType < regionalRacialComposition[0].length; raceType++) {
-                regSum += regionalRacialComposition[geoData.getRegionIndex(region)][raceType];
-            }
+
+        for (int region: geoData.getRegions().keySet()) {
+            final double regSum = regionalRacialComposition.viewRow(region).zSum();
             if (regSum > 0) {
-                for (int raceType = 0; raceType < zonalRacialComposition[0].length; raceType++) {
-                    regionalRacialComposition[geoData.getRegionIndex(region)][raceType] /= regSum;
-                }
+                regionalRacialComposition.viewRow(region).assign(share -> share / regSum);
             }
         }
     }
 
-    private float getZonalRacialShare(int zone, Race race) {
-        return zonalRacialComposition[geoData.getZoneIndex(zone)][race.ordinal()];
+    private double getZonalRacialShare(int zone, Race race) {
+        return zonalRacialComposition.getQuick(zone, race.getId());
     }
 
 
@@ -155,7 +172,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         selectRegionDmu.setRegionalCrimeRate(regCrime);
         for (Race race: Race.values()) {
             float[] regionalRacialShare = new float[highestRegion + 1];
-            for (int region: regions) regionalRacialShare[region] = regionalRacialComposition[geoData.getRegionIndex(region)][race.ordinal()];
+            for (int region: regions) {
+                regionalRacialShare[region] = (float) regionalRacialComposition.getQuick(region, race.getId());
+            }
             selectRegionDmu.setRegionalRace(race, regionalRacialShare);
         }
         utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Race.values().length][numAltsSelReg];
@@ -169,14 +188,13 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 selectRegionDmu.setRace(race);
                 double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
                 for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
-                    utilityRegion[income - 1][race.ordinal()][alternative] = util[alternative];
+                    utilityRegion[income - 1][race.getId()][alternative] = util[alternative];
                 }
                 if (logCalculationRegion)
                     selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
                             income + " with race " + race);
             }
         }
-        householdsByRegion = HouseholdDataManager.getNumberOfHouseholdsByRegion(geoData);
     }
 
 
@@ -224,7 +242,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         }
         int incomeCat = HouseholdType.convertHouseholdTypeToIncomeCategory(ht);
         for (int i = 0; i < numAltsSelReg; i++) {
-            util[i] = utilityRegion[incomeCat - 1][race.ordinal()][i] * workDistanceFactor[i];
+            util[i] = utilityRegion[incomeCat - 1][race.getId()][i] * workDistanceFactor[i];
         }
         return util;
     }
@@ -275,7 +293,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                     regionUtilities[i] = regionUtilities[i] * (y / 100d * RealEstateDataManager.getNumberOfDDinRegion(regions[i]));
                     if (RealEstateDataManager.getNumberOfVacantDDinRegion(regions[i]) < 1) regionUtilities[i] = 0d;
                 } case ("population"): {
-                    regionUtilities[i] = regionUtilities[i] * householdsByRegion[i];
+                    regionUtilities[i] = regionUtilities[i] * hhByRegion.getQuick(regions[i]);
                 } case ("noNormalization"): {
                     // do nothing
                 }
@@ -295,7 +313,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             int msa = geoData.getZones().get(dd.getZone()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
-            float racialShare = 1;
+            double racialShare = 1;
             if (householdRace != Race.other) {
                 racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZone()).getId(), householdRace);
             }
@@ -350,7 +368,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
         return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * HouseholdDataManager.getMedianIncome(geoData.getMSAOfZone(zone))) &&
+                income <= (0.5f * HouseholdDataManager.getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
                 price <= (0.4f * assumedIncome);
     }
 }

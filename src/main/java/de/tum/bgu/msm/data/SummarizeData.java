@@ -175,18 +175,6 @@ public class SummarizeData {
     }
 
 
-    public int[] getHouseholdsByZone (GeoData geoData) {
-        // summarize households by zone
-
-        int[] householdsByZone = new int[geoData.getZoneIdsArray().length];
-        for (Household hh: Household.getHouseholds()) {
-            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            householdsByZone[geoData.getZoneIndex(zone)]++;
-        }
-        return householdsByZone;
-    }
-
-
     public static void scaleMicroDataToExogenousForecast (int year, SiloDataContainer dataContainer) {
         //TODO Will fail for new zones with 0 households and a projected growth. Could be an issue when modeling for Zones with transient existence.
         // scale synthetic population to exogenous forecast (for output only, scaled synthetic population is not used internally)
@@ -430,8 +418,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -582,8 +569,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -734,8 +720,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -870,9 +855,7 @@ public class SummarizeData {
         String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + fileEnding;
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (int i = 0; i < dds.length; i = i + step) {
-            Dwelling dd = dds[i];
+        for (Dwelling dd: Dwelling.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());

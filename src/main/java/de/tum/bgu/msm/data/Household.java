@@ -100,7 +100,12 @@ public final class Household {
     }
 
     public int getHomeZone() {
-        return Dwelling.getDwellingFromId(this.dwellingId).getZone();
+        Dwelling dwelling = Dwelling.getDwellingFromId(this.dwellingId);
+        if(dwelling != null) {
+            return dwelling.getZone();
+        } else {
+            return -1;
+        }
     }
 
     public Race getRace() {return race; }

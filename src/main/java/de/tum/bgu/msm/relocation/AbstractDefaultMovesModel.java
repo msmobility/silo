@@ -27,7 +27,6 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected int[] evalDwellingAvail;
     protected MovesDMU evaluateDwellingDmu;
     protected double[][][] utilityRegion;
-    protected int[] householdsByRegion;
 
     protected boolean logCalculationDwelling;
     protected boolean logCalculationRegion;

@@ -54,17 +54,6 @@ public interface GeoData {
     @Deprecated
     int getZoneIndex(int zone);
 
-    /**
-     * @deprecated  As of jan'18. Future access will be directly from {@link Zone} class
-     */
-    @Deprecated
-    double[] getSizeOfZonesInAcres();
-
-    /**
-     * @deprecated  As of jan'18. Future access will be directly from {@link Zone} class
-     */
-    @Deprecated
-    float getSizeOfZoneInAcres(int zone);
 
     /**
      * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
@@ -72,21 +61,9 @@ public interface GeoData {
     @Deprecated
     int getHighestZonalId();
 
-    /**
-     * @deprecated  As of jan'18. Future access will be directly from {@link Region} class
-     */
-    @Deprecated
-    int[] getZonesInRegion(int region);
-
     boolean useNumberOfDwellingsAsCapacity();
 
     float getDevelopmentCapacity(int zone);
-
-    /**
-     * @deprecated  As of jan'18. Future access will be directly from {@link Zone} class
-     */
-    @Deprecated
-    int getMSAOfZone(int zone);
 
     void reduceDevelopmentCapacityByOneDwelling(int zone);
 

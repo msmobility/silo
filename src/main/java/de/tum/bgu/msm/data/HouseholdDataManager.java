@@ -758,34 +758,11 @@ public class HouseholdDataManager {
         return hhByZone;
     }
 
-
-    public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
-        // return number of households by zone
-        int[] hhByZone = new int[geoData.getZoneIdsArray().length];
-        for (Household hh: Household.getHouseholds()) {
-            hhByZone[geoData.getZoneIndex(hh.getHomeZone())]++;
-        }
-        return hhByZone;
-    }
-
-
-    public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
-        // return number of households by region
-        int[] hhByRegion = new int[geoData.getRegionIdsArray().length];
-        for (Household hh: Household.getHouseholds()) {
-            if (hh.getHomeZone() == -1) continue;  // unclear why this is needed
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
-            hhByRegion[geoData.getRegionIndex(region)]++;
-        }
-        return hhByRegion;
-    }
-
-
     public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholds()) {
-            int homeMSA = geoData.getMSAOfZone(hh.getHomeZone());
+            int homeMSA = geoData.getZones().get(hh.getHomeZone()).getMsa();
             if (rentHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = rentHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());

@@ -97,8 +97,10 @@ public class ConstructionModel {
             float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
             for (int region : geoData.getRegionIdsArray()) {
                 int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
-                if (demand == 0) continue;
-                int[] zonesInThisRegion = geoData.getZonesInRegion(region);
+                if (demand == 0) {
+                    continue;
+                }
+                int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getId).toArray();
                 double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 for (int zone : zonesInThisRegion) {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
@@ -149,7 +151,7 @@ public class ConstructionModel {
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoData.getMSAOfZone(zone);
+                        int msa = geoData.getZones().get(zone).getMsa();
                         attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 

@@ -27,4 +27,5 @@ public class MstmRegion extends RegionImpl {
     public void setCrimeRate(double crimeRate) {
         this.crimeRate = crimeRate;
     }
+
 }

@@ -1,18 +1,15 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 /**
  * Updates prices of dwellings based on current demand
@@ -115,15 +112,20 @@ public class PricingModel {
             changeRate = Math.max(changeRate, 1f - maxDelta);
             double newPrice = currentPrice * changeRate;
 
-            if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("The monthly costs of dwelling " +
-                    dd.getId() + " was changed from " + currentPrice + " to " + newPrice + " (in 2000$).");
+            if (dd.getId() == SiloUtil.trackDd) {
+                SiloUtil.trackWriter.println("The monthly costs of dwelling " +
+                        dd.getId() + " was changed from " + currentPrice + " to " + newPrice + " (in 2000$).");
+            }
             dd.setPrice((int) (newPrice + 0.5));
             cnt[dto]++;
             sumOfPrices[dto] += newPrice;
 
             String token = dto+"_"+vacRate[dto][region]+"_"+currentPrice+"_"+newPrice;
-            if (priceChange.containsKey(token)) priceChange.put(token, (priceChange.get(token) + 1));
-            else priceChange.put(token, 1);
+            if (priceChange.containsKey(token)) {
+                priceChange.put(token, (priceChange.get(token) + 1));
+            } else {
+                priceChange.put(token, 1);
+            }
 
         }
         double[] averagePrice = new double[DwellingType.values().length];
@@ -132,14 +134,5 @@ public class PricingModel {
             averagePrice[dto] = sumOfPrices[dto] / cnt[dto];
         }
         dataContainer.getRealEstateData().setAvePriceByDwellingType(averagePrice);
-
-/*        PrintWriter pw = SiloUtil.openFileForSequentialWriting(("priceUpdate"+String.valueOf(year)+".csv"), false);
-        pw.println("type,regVacRate,oldPrice,newPrice,frequency");
-        for (String token: priceChange.keySet()) {
-            String[] values = token.split("_");
-            for (String val: values) pw.print(val + ",");
-            pw.println(priceChange.get(token));
-        }
-        pw.close();*/
     }
 }
