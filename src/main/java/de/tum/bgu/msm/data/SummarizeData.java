@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.data;
 
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
@@ -8,6 +9,7 @@ import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -121,7 +123,7 @@ public class SummarizeData {
         int[] jobs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] hhs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[][] hhInc = new int[Properties.get().main.incomeBrackets.length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
-        int[] pop = getPopulationByZone(dataContainer.getGeoData());
+        DoubleMatrix1D pop = getPopulationByZone(dataContainer.getGeoData());
         for (Household hh: Household.getHouseholds()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
             int incGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
@@ -147,7 +149,7 @@ public class SummarizeData {
             double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
-            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop[taz] + "," + hhs[taz];
+            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
             for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++) txt = txt.concat("," + hhInc[inc][taz]);
             for (DwellingType dt: DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
@@ -163,15 +165,13 @@ public class SummarizeData {
     }
 
 
-    public static int[] getPopulationByZone (GeoData geoData) {
-        // summarize population by zone
-
-        int[] pp = new int[geoData.getHighestZonalId() + 1];
+    public static DoubleMatrix1D getPopulationByZone (GeoData geoData) {
+        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         for (Household hh: Household.getHouseholds()) {
-            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            pp[zone] += hh.getHhSize();
+            final int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
+            popByZone.setQuick(zone, popByZone.getQuick(zone) + 1);
         }
-        return pp;
+        return popByZone;
     }
 
 

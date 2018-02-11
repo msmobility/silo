@@ -111,24 +111,15 @@ public class Accessibility {
         // Calculate Hansen TripGenAccessibility (recalculated every year)
 
         LOGGER.info("  Calculating accessibilities for " + year);
-
         final DoubleMatrix2D carTravelTimesCopy = getPeakAutoTravelTimeMatrix().copy();
-        final int[] population = SummarizeData.getPopulationByZone(geoData);
-        carTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) -> {
-            if(!geoData.getZones().containsKey(origin) || !geoData.getZones().containsKey(destination)) {
-                return 0;
-            }
-            double imp = Math.exp(betaAuto * autoTravelTime);
-            return Math.pow(population[destination], alphaAuto) * imp;
-        });
+
+        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(geoData);
+        carTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) ->
+                Math.pow(population.getQuick(destination), alphaAuto) * Math.exp(betaAuto * autoTravelTime));
 
         final DoubleMatrix2D transitTravelTimesCopy = getPeakTransitTravelTimeMatrix().copy();
-        transitTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) -> {
-            if(!geoData.getZones().containsKey(origin) || !geoData.getZones().containsKey(destination)) {
-                return 0;
-            }
-            return Math.pow(population[destination], alphaTransit) * Math.exp(betaTransit * autoTravelTime);
-        });
+        transitTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) ->
+                Math.pow(population.getQuick(destination), alphaTransit) * Math.exp(betaTransit * autoTravelTime));
 
         for(int i: geoData.getZones().keySet()) {
             autoAccessibilities.setQuick(i,carTravelTimesCopy.viewRow(i).zSum());
