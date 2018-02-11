@@ -125,9 +125,9 @@ public class Accessibility {
             autoAccessibilities.setQuick(i,carTravelTimesCopy.viewRow(i).zSum());
             transitAccessibilities.setQuick(i,transitTravelTimesCopy.viewRow(i).zSum());
         }
-        double sumScaleFactorCar = 1.0 / autoAccessibilities.zSum();;
+        double sumScaleFactorCar = 100.0 / autoAccessibilities.getMaxLocation()[0];
         autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
-        double sumScaleFactorTransit = 1.0 / transitAccessibilities.zSum();
+        double sumScaleFactorTransit = 100.0 / transitAccessibilities.getMaxLocation()[0];
         transitAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorTransit));
 
         geoData.getRegions().values().parallelStream().forEach(r -> {
