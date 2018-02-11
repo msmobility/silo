@@ -151,8 +151,9 @@ public class SiloUtil {
         boolean exists = dataFile.exists();
         if (!exists) {
             final String msg = "File not found: " + fileName;
+
 		    logger.error(msg);
-            throw new RuntimeException(msg) ;
+        throw new RuntimeException(msg) ;
         }
         try {
             TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
@@ -528,6 +529,17 @@ public class SiloUtil {
         return Math.round(value * Math.pow(10, digits) + 0.5)/(float) Math.pow(10, digits);
     }
 
+    /**
+    scale double value map so that largest value equals maxVal
+    **/
+    public static void scaleMap (Map<?, Double> doubleMap, float maxVal) {
+        double highestValTemp = Double.MIN_VALUE;
+        for (double val: doubleMap.values()) {
+            highestValTemp = Math.max(val, highestValTemp);
+        }
+        final double highestVal = highestValTemp;
+        doubleMap.replaceAll ((k,v) -> (v * maxVal * 1.) / (highestVal * 1.));
+    }
 
     public static float[] scaleArray (float[] array, float maxVal) {
         // scale float array so that largest value equals maxVal
@@ -983,7 +995,9 @@ static boolean modelStopper (String action) {
 		deleteFile (fileName);
 	} else {
 		TableDataSet status = readCSVfile(fileName);
-		if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) return true;
+		if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) {
+		    return true;
+        }
 	}
 	return false;
 }
@@ -1003,7 +1017,7 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 	SummarizeData.resultFile("Year " + year, false);
 	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
-	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionList());
+	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionIdsArray());
 
 	SummarizeData.resultFileSpatial("Year " + year, false);
 	SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);

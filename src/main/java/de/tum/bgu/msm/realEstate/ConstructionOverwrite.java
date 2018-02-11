@@ -101,7 +101,7 @@ public class ConstructionOverwrite {
         ArrayList<Integer[]> list = plannedDwellings.get(year);
         for (Integer[] data: list) {
             int ddId = RealEstateDataManager.getNextDwellingId();
-            int zone = data[0];
+            int zoneId = data[0];
             int dto = data[1];
             int size = data[2];
             int quality = data[3];
@@ -110,11 +110,11 @@ public class ConstructionOverwrite {
             if (restriction != 0) {
                 // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                 // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                int msa = dataContainer.getGeoData().getMSAOfZone(zone);
+                int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = new Dwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
-            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zone + "," + DwellingType.values()[dto] + "," + size + "," +
+            Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");

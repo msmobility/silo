@@ -83,7 +83,7 @@ public class LeaveParentHhModel {
             hhOfThisPerson.removePerson(per, dataContainer);
             hhOfThisPerson.setType();
             int newHhId = HouseholdDataManager.getNextHouseholdId();
-            Household hh = new Household(newHhId, -1, -1,  0);
+            Household hh = new Household(newHhId, -1,  0);
             hh.addPerson(per);
             hh.setType();
             hh.determineHouseholdRace();

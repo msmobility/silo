@@ -2,11 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
-import omx.OmxFile;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.SummarizeData;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;

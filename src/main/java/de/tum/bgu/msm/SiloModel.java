@@ -16,13 +16,10 @@
  */
 package de.tum.bgu.msm;
 
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.DefaultPTDistances;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -33,7 +30,6 @@ import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -97,10 +93,6 @@ public class SiloModel {
 
 		if (Properties.get().main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
-		}
-
-		if(!runMatsim && Properties.get().main.implementation == Implementation.MUNICH) {
-			modelContainer.getAcc().setPTDistances(new DefaultPTDistances((GeoDataMuc) dataContainer.getGeoData()));
 		}
 	}
 

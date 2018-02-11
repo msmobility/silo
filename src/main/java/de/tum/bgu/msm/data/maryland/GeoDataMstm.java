@@ -3,7 +3,12 @@ package de.tum.bgu.msm.data.maryland;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.AbstractDefaultGeoData;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Zonal, county and regional data used by the SILO Model
@@ -12,11 +17,7 @@ import de.tum.bgu.msm.properties.Properties;
  **/
 public class GeoDataMstm extends AbstractDefaultGeoData {
 
-    private float[] zonalSchoolQuality;
-    private float[] regionalSchoolQuality;
-    private int[] counties;
-    private float[] countyCrimeRate;
-    private float[] regionalCrimeRate;
+    private final Map<Integer, County> counties = new HashMap<>();
 
     private final String COUNTY_COLUMN_NAME = "COUNTYFIPS";
 
@@ -27,7 +28,6 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     @Override
     public void setInitialData() {
         super.setInitialData();
-        createListOfCountyFIPSCodes();
         readSchoolQuality();
         readCrimeData();
     }
@@ -35,72 +35,142 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     private void readSchoolQuality() {
         String sqFileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalSchoolQualityFile;
         TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
-        zonalSchoolQuality = new float[zones.length];
         for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
             int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
-            zonalSchoolQuality[zoneIndex[taz]] = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
+            float schoolQuality = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
+            MstmZone zone = (MstmZone) zones.get(taz);
+            zone.setSchoolQuality(schoolQuality);
         }
-        regionalSchoolQuality = new float[SiloUtil.getHighestVal(regionList) + 1];
-        for (int zone: zones) {
-            int reg = getRegionOfZone(zone);
-            regionalSchoolQuality[reg] += getZonalSchoolQuality(zone);
+        for (Region region: regions.values()) {
+            ((MstmRegion) region).calculateRegionalSchoolQuality();
         }
-        for (int region: regionList)
-            regionalSchoolQuality[region] = regionalSchoolQuality[region] / regionDefinition.get(region).length;
     }
 
     private void readCrimeData() {
-        countyCrimeRate = new float[counties.length];
         String crimeFileName = Properties.get().main.baseDirectory + Properties.get().geo.countyCrimeFile;
         TableDataSet tblCrimeIndex = SiloUtil.readCSVfile(crimeFileName);
         for (int row = 1; row <= tblCrimeIndex.getRowCount(); row++) {
             int county = (int) tblCrimeIndex.getValueAt(row, "FIPS");
-            countyCrimeRate[countyIndex[county]] = tblCrimeIndex.getValueAt(row, "CrimeIndicator");
+            double crimeRate = tblCrimeIndex.getValueAt(row, "CrimeIndicator");
+            if(counties.containsKey(county)) {
+                counties.get(county).setCrimeRate(crimeRate);
+            } else {
+                throw new RuntimeException("County " + county + " referred in crime data table does not exist!");
+            }
         }
-        regionalCrimeRate = new float[SiloUtil.getHighestVal(regionList) + 1];
-        float[] regionalArea = new float[SiloUtil.getHighestVal(regionList) + 1];
-        for (int zone: zones) {
-            int reg = getRegionOfZone(zone);
-            int fips = getCountyOfZone(zone);
-            regionalCrimeRate[reg] += countyCrimeRate[countyIndex[fips]] * getSizeOfZoneInAcres(zone);  // weight by bedrooms
-            regionalArea[reg] += getSizeOfZoneInAcres(zone);
+
+        for(Region region: regions.values()) {
+            double regionalCrimeRate = 0.;
+            double regionalArea = 0.;
+            for(Zone zone: region.getZones()) {
+                regionalCrimeRate += ((MstmZone)zone).getCounty().getCrimeRate() * zone.getArea();
+                regionalArea += zone.getArea();
+            }
+            regionalCrimeRate /= regionalArea;
+            ((MstmRegion) region).setCrimeRate(regionalCrimeRate);
         }
-        for (int region: regionList) {
-            regionalCrimeRate[region] = regionalCrimeRate[region] / regionalArea[region];
+    }
+
+    @Override
+    protected void readZones() {
+        String fileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalDataFile;
+        TableDataSet zonalData = SiloUtil.readCSVfile(fileName);
+        int[] zoneIds = zonalData.getColumnAsInt(zoneIdColumnName);
+        int[] zoneMsa = zonalData.getColumnAsInt("msa");
+        int[] puma = zonalData.getColumnAsInt("PUMA");
+        int[] simplifiedPuma = zonalData.getColumnAsInt("simplifiedPUMA");
+        int[] countyData = zonalData.getColumnAsInt(COUNTY_COLUMN_NAME);
+        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+
+        for(int i = 0; i < zoneIds.length; i++) {
+            County county;
+            if(counties.containsKey(countyData[i])) {
+                county = counties.get(countyData[i]);
+            } else {
+                county = new County(countyData[i]);
+                counties.put(county.getId(), county);
+            }
+            Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county);
+            zones.put(zoneIds[i], zone);
         }
     }
 
-    private void createListOfCountyFIPSCodes() {
-        counties = SiloUtil.idendifyUniqueValues(zonalData.getColumnAsInt(COUNTY_COLUMN_NAME));
-        countyIndex = SiloUtil.createIndexArray(counties);
+    @Override
+    protected void readRegionDefinition() {
+        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
+        TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
+        for (int row = 1; row <= regDef.getRowCount(); row++) {
+            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
+            int regionId = (int) regDef.getValueAt(row, regionColumnName);
+            Zone zone = zones.get(taz);
+            if (zone != null) {
+                Region region;
+                if (regions.containsKey(regionId)) {
+                    region = regions.get(regionId);
+                    region.addZone(zone);
+                } else {
+                    region = new MstmRegion(regionId);
+                    region.addZone(zone);
+                    regions.put(region.getId(), region);
+                }
+                zone.setRegion(region);
+            } else {
+                throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
+            }
+        }
+    }
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
+     */
+    @Deprecated
+    public int getPUMAofZone(int taz) {
+        return ((MstmZone)this.zones.get(taz)).getPuma();
+    }
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
+     */
+    @Deprecated
+    public int getSimplifiedPUMAofZone(int taz) {
+        return ((MstmZone)this.zones.get(taz)).getSimplifiedPuma();
     }
 
-    public  int getCountyOfZone(int zone) {
-        return (int) zonalData.getIndexedValueAt(zone, COUNTY_COLUMN_NAME);
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
+     */
+    @Deprecated
+    public int getCountyOfZone(int taz) {
+        return ((MstmZone)this.zones.get(taz)).getCounty().getId();
     }
 
-    public int getPUMAofZone (int taz) {
-        return (int) zonalData.getIndexedValueAt(taz, "PUMA");
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmRegion} instead
+     */
+    @Deprecated
+    public float getRegionalSchoolQuality(int region) {
+        return (float) ((MstmRegion)this.regions.get(region)).getSchoolQuality();
     }
 
-    public int getSimplifiedPUMAofZone (int taz) {
-        // return PUMA in which taz is located (less geographic detail, last digit is rounded to 1)
-        return (int) zonalData.getIndexedValueAt(taz, "simplifiedPUMA");
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmRegion} instead
+     */
+    @Deprecated
+    public float getRegionalCrimeRate(int region) {
+        return (float) ((MstmRegion)this.regions.get(region)).getCrimeRate();
     }
 
-    public float getZonalSchoolQuality (int zone) {
-        return zonalSchoolQuality[zoneIndex[zone]];
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
+     */
+    @Deprecated
+    public double getZonalSchoolQuality(int zone) {
+        return ((MstmZone)this.zones.get(zone)).getSchoolQuality();
     }
 
-    public float getRegionalSchoolQuality (int region) {
-        return regionalSchoolQuality[region];
-    }
-
-    public float getCountyCrimeRate (int fips) {
-        return countyCrimeRate[countyIndex[fips]];
-    }
-
-    public float getRegionalCrimeRate (int region) {
-        return regionalCrimeRate[region];
+    /**
+     * @deprecated  As of jan'18. Use direct access method of {@link County} instead
+     */
+    @Deprecated
+    public double getCountyCrimeRate(int countyOfZone) {
+        return this.counties.get(countyOfZone).getCrimeRate();
     }
 }

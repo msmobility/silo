@@ -2,6 +2,8 @@ package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 
+import java.util.Map;
+
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
  * @author Ana Moreno and Rolf Moeckel, Technical University of Munich
@@ -12,29 +14,56 @@ public interface GeoData {
 
     void setInitialData();
 
-    int[] getZones();
+    /**
+     * Returns an immutable map of all zones mapped to their IDs
+     */
+    Map<Integer, Zone> getZones();
 
-    int[] getRegionList();
+    /**
+     * Returns an immutable map of all regions mapped to their IDs
+     */
+    Map<Integer, Region> getRegions();
 
+    /**
+     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
+     */
+    @Deprecated
+    int[] getZoneIdsArray();
+
+    /**
+     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
+     */
+    @Deprecated
+    int[] getRegionIdsArray();
+
+    /**
+     * @deprecated  As of jan'18. Future access will be directly from {@link Zone} class
+     */
+    @Deprecated
     int getRegionOfZone(int zone);
 
+    /**
+     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getRegions()}
+     */
+    @Deprecated
     int getRegionIndex(int region);
 
+    /**
+     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
+     */
+    @Deprecated
     int getZoneIndex(int zone);
 
-    float[] getSizeOfZonesInAcres();
 
-    float getSizeOfZoneInAcres(int zone);
-
+    /**
+     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
+     */
+    @Deprecated
     int getHighestZonalId();
-
-    int[] getZonesInRegion(int region);
 
     boolean useNumberOfDwellingsAsCapacity();
 
     float getDevelopmentCapacity(int zone);
-
-    int getMSAOfZone(int zone);
 
     void reduceDevelopmentCapacityByOneDwelling(int zone);
 
@@ -47,5 +76,4 @@ public interface GeoData {
     boolean isThisDwellingTypeAllowed(String dwellingType, int zone);
 
     void writeOutDevelopmentCapacityFile(SiloDataContainer dataContainer);
-
 }

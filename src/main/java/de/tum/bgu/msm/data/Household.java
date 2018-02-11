@@ -36,14 +36,12 @@ public final class Household {
     private Race race;
     private Nationality nationality;
     private int autos;
-    private int homeZone;
     private HouseholdType type;
     private final List<Person> persons;
 
-    public Household(int id, int dwellingID, int homeZone, int autos) {
+    public Household(int id, int dwellingID, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
-        this.homeZone = homeZone;
         this.autos = autos;
         persons = new ArrayList<>();
         householdMap.put(id,this);
@@ -102,7 +100,12 @@ public final class Household {
     }
 
     public int getHomeZone() {
-        return homeZone;
+        Dwelling dwelling = Dwelling.getDwellingFromId(this.dwellingId);
+        if(dwelling != null) {
+            return dwelling.getZone();
+        } else {
+            return -1;
+        }
     }
 
     public Race getRace() {return race; }
@@ -125,11 +128,6 @@ public final class Household {
 
     public void setDwelling (int id) {
         this.dwellingId = id;
-        setHomeZone(Dwelling.getDwellingFromId(id).getZone());
-    }
-
-    public void setHomeZone (int zone) {
-        this.homeZone = zone;
     }
 
 
@@ -227,7 +225,7 @@ public final class Household {
     public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
         Map<Integer, MitoHousehold> thhs = new HashMap<>();
         for (Household siloHousehold : getHouseholds()) {
-            MitoZone zone = zones.get(siloHousehold.homeZone);
+            MitoZone zone = zones.get(Dwelling.getDwellingFromId(siloHousehold.getDwellingId()).getZone());
             MitoHousehold household = siloHousehold.convertToMitoHh(zone);
             thhs.put(household.getId(), household);
         }
@@ -248,6 +246,6 @@ public final class Household {
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
             +"\nHousehold size          " + persons.size()
-            +"\nHome zone               " + homeZone;
+            +"\nHome zone               " + Dwelling.getDwellingFromId(dwellingId).getZone();
     }
 }

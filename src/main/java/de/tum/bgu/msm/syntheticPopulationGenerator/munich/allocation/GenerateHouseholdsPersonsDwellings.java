@@ -7,7 +7,10 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class GenerateHouseholdsPersonsDwellings {
 
@@ -71,7 +74,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private Household generateHousehold(int tazSelected){
 
         int id = HouseholdDataManager.getNextHouseholdId();
-        Household household = new Household(id, id, tazSelected, 0); //(int id, int dwellingID, int homeZone, int autos)
+        Household household = new Household(id, id, 0); //(int id, int dwellingID, int homeZone, int autos)
         householdCounter++;
         return household;
     }

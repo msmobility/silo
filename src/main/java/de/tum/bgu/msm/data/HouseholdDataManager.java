@@ -98,7 +98,7 @@ public class HouseholdDataManager {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                Household hh = new Household(id, dwellingID, taz, autos);  // this automatically puts it in id->household map in Household class
+                Household hh = new Household(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(hh.toString());
@@ -389,7 +389,7 @@ public class HouseholdDataManager {
         int hhRace[] = new int[4];
         int[] hhIncome = new int[Household.getHouseholdCount()];
         int hhIncomePos = 0;
-        int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
             String row = i + "," + pers[0][i] + "," + pers[1][i];
@@ -407,7 +407,7 @@ public class HouseholdDataManager {
             hhRace[hh.getRace().ordinal()]++;
             hhIncome[hhIncomePos] = hh.getHhIncome();
             hhIncomePos++;
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
+            int region = geoData.getZones().get(hh.getHomeZone()).getRegion().getId();
             hhByRegion[region]++;
         }
                 SummarizeData.resultFile("hhByType,hh");
@@ -430,7 +430,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
-        float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Person per: Person.getPersons()) {
             int age = per.getAge();
             int gender = per.getGender() - 1;
@@ -443,7 +443,7 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                float ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
+                double ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
                 commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
                 commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
             }
@@ -457,7 +457,7 @@ public class HouseholdDataManager {
         }
         // todo: Add distance in kilometers to this summary
         SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
-        for (int i: geoData.getRegionList()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+        for (int i: geoData.getRegionIdsArray()) SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         int[] carOwnership = new int[4];
         for (Household hh: Household.getHouseholds()) {
             carOwnership[hh.getAutos()]++;
@@ -758,34 +758,11 @@ public class HouseholdDataManager {
         return hhByZone;
     }
 
-
-    public static int[] getNumberOfHouseholdsByZone (GeoData geoData) {
-        // return number of households by zone
-        int[] hhByZone = new int[geoData.getZones().length];
-        for (Household hh: Household.getHouseholds()) {
-            hhByZone[geoData.getZoneIndex(hh.getHomeZone())]++;
-        }
-        return hhByZone;
-    }
-
-
-    public static int[] getNumberOfHouseholdsByRegion(GeoData geoData) {
-        // return number of households by region
-        int[] hhByRegion = new int[geoData.getRegionList().length];
-        for (Household hh: Household.getHouseholds()) {
-            if (hh.getHomeZone() == -1) continue;  // unclear why this is needed
-            int region = geoData.getRegionOfZone(hh.getHomeZone());
-            hhByRegion[geoData.getRegionIndex(region)]++;
-        }
-        return hhByRegion;
-    }
-
-
     public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholds()) {
-            int homeMSA = geoData.getMSAOfZone(hh.getHomeZone());
+            int homeMSA = geoData.getZones().get(hh.getHomeZone()).getMsa();
             if (rentHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = rentHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());
@@ -835,7 +812,7 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder(siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;

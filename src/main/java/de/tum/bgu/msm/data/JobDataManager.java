@@ -16,6 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -27,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,17 +49,18 @@ public class JobDataManager {
     private static int[][] vacantJobsByRegion;
     private static int[] vacantJobsByRegionPos;
     private static int numberOfStoredVacantJobs;
-    private static float[] zonalJobDensity;
+    private final Map<Integer, Double> zonalJobDensity;
 
 
     public JobDataManager(GeoData geoData) {
         this.geoData = geoData;
+        this.zonalJobDensity = new HashMap<>();
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
     public static void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
 
-        for (Job jj: Job.getJobs()) {
+        for (Job jj : Job.getJobs()) {
             final MitoZone zone = zones.get(jj.getZone());
             final String type = jj.getType().toUpperCase();
             try {
@@ -72,14 +76,14 @@ public class JobDataManager {
                         logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
                 }
                 zone.addEmployeeForType(mitoJobType);
-            } catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
             }
         }
     }
 
 
-    public void readJobs (boolean readSmallSynPop, int sizeSmallSynPop) {
+    public void readJobs(boolean readSmallSynPop, int sizeSmallSynPop) {
         // read population
         new JobType(Properties.get().jobData.jobTypes);
         boolean readBin = Properties.get().jobData.readBinaryJobFile;
@@ -109,17 +113,17 @@ public class JobDataManager {
             // read header
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("id", header);
-            int posZone = SiloUtil.findPositionInArray("zone",header);
-            int posWorker = SiloUtil.findPositionInArray("personId",header);
-            int posType = SiloUtil.findPositionInArray("type",header);
+            int posZone = SiloUtil.findPositionInArray("zone", header);
+            int posWorker = SiloUtil.findPositionInArray("personId", header);
+            int posType = SiloUtil.findPositionInArray("type", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
-                int id      = Integer.parseInt(lineElements[posId]);
-                int zone    = Integer.parseInt(lineElements[posZone]);
-                int worker  = Integer.parseInt(lineElements[posWorker]);
+                int id = Integer.parseInt(lineElements[posId]);
+                int zone = Integer.parseInt(lineElements[posZone]);
+                int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
                 new Job(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
@@ -161,29 +165,29 @@ public class JobDataManager {
             Object[] data = (Object[]) in.readObject();
             Job.saveJobs((Job[]) data[0]);
         } catch (Exception e) {
-            logger.error ("Error reading from binary file " + fileName + ". Object not read.\n" + e);
+            logger.error("Error reading from binary file " + fileName + ". Object not read.\n" + e);
         }
         logger.info("Finished reading " + Job.getJobCount() + " jobs.");
     }
 
 
-    public void setHighestJobId () {
+    public void setHighestJobId() {
         // identify highest job ID in use
         highestJobIdInUse = 0;
-        for (Job jj: Job.getJobs()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
+        for (Job jj : Job.getJobs()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
     }
 
 
-    public static int getNextJobId () {
+    public static int getNextJobId() {
         // increase highestJobIdInUse by 1 and return value
         highestJobIdInUse++;
         return highestJobIdInUse;
     }
 
-    public static List<Integer> getNextJobIds (int amount) {
+    public static List<Integer> getNextJobIds(int amount) {
         // increase highestJobIdInUse by 1 and return value
         List<Integer> ids = new ArrayList<>();
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             ids.add(++highestJobIdInUse);
         }
         return ids;
@@ -206,12 +210,12 @@ public class JobDataManager {
 
         logger.info("  Interpolating employment forecast for all years from " + (2000 + smallestYear) + " to " +
                 (2000 + highestYear));
-        TableDataSet jobs ;
+        TableDataSet jobs;
         try {
             final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
             jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
-            throw new RuntimeException(ee) ;
+            throw new RuntimeException(ee);
         }
         jobs.buildIndex(jobs.getColumnPosition("SMZ"));
         new JobType(Properties.get().jobData.jobTypes);
@@ -222,28 +226,28 @@ public class JobDataManager {
         int previousFixedYear = Integer.parseInt(yearsGiven[0]);
         int nextFixedYear;
         int interpolatedYear = previousFixedYear;
-        for(int i = 0; i<yearsGiven.length-1; i++) {
-            nextFixedYear = Integer.parseInt(yearsGiven[i+1]);
-            while(interpolatedYear <= nextFixedYear) {
+        for (int i = 0; i < yearsGiven.length - 1; i++) {
+            nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
+            while (interpolatedYear <= nextFixedYear) {
                 final String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
                 final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
                 final StringBuilder builder = new StringBuilder("zone");
-                for (String jobType: JobType.getJobTypes()) {
+                for (String jobType : JobType.getJobTypes()) {
                     builder.append(",").append(jobType);
                 }
                 builder.append("\n");
-                for (int zone: geoData.getZones()) {
+                for (int zone : geoData.getZones().keySet()) {
                     builder.append(zone);
                     for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                         final int index = jobs.getIndexedRowNumber(zone);
                         float currentValue;
-                        if(interpolatedYear == previousFixedYear) {
+                        if (interpolatedYear == previousFixedYear) {
                             currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                        } else if(interpolatedYear == nextFixedYear) {
-                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i+1]);
+                        } else if (interpolatedYear == nextFixedYear) {
+                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
                         } else {
                             final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                            final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i+1]);
+                            final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
                             currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
                                     (nextFixedYear - previousFixedYear);
                         }
@@ -263,7 +267,7 @@ public class JobDataManager {
     public void identifyVacantJobs() {
         // identify vacant jobs by region (one-time task at beginning of model run only)
 
-        int highestRegionID = SiloUtil.getHighestVal(geoData.getRegionList());
+        int highestRegionID = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         vacantJobsByRegion = new int[highestRegionID + 1][numberOfStoredVacantJobs + 1];
         vacantJobsByRegion = SiloUtil.setArrayToValue(vacantJobsByRegion, 0);
         vacantJobsByRegionPos = new int[highestRegionID + 1];
@@ -271,24 +275,25 @@ public class JobDataManager {
 
         logger.info("  Identifying vacant jobs");
         for (Job jj : Job.getJobs()) {
-        	if (jj == null) continue;   // should not happen, but model has crashed without this statement.
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
-                int region = geoData.getRegionOfZone(jj.getZone());
+
+                int region = geoData.getZones().get(jj.getZone()).getRegion().getId();
                 if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
                     vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
                     vacantJobsByRegionPos[region]++;
                 } else {
                     IssueCounter.countExcessOfVacantJobs(region);
                 }
-                if (jobId == SiloUtil.trackJj)
+                if (jobId == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
+                }
             }
         }
     }
 
 
-    public static int getNumberOfVacantJobsByRegion (int region) {
+    public static int getNumberOfVacantJobsByRegion(int region) {
         return vacantJobsByRegionPos[region];
     }
 
@@ -319,14 +324,14 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob (int homeZone, int[] regions, SiloModelContainer siloModelContainer) {
+    public static int findVacantJob(int homeZone, int[] regions, SiloModelContainer siloModelContainer) {
         // select vacant job for person living in homeZone
 
         double[] regionProbability = new double[SiloUtil.getHighestVal(regions) + 1];
 
         if (homeZone > 0) {
             // person has home location (i.e., is not inmigrating right now)
-            for (int reg: regions) {
+            for (int reg : regions) {
                 if (vacantJobsByRegionPos[reg] > 0) {
                     int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                     regionProbability[reg] = siloModelContainer.getAcc().getWorkTLFD(distance) * (double) getNumberOfVacantJobsByRegion(reg);
@@ -334,7 +339,7 @@ public class JobDataManager {
             }
             if (SiloUtil.getSum(regionProbability) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
-                for (int reg: regions) {
+                for (int reg : regions) {
                     if (vacantJobsByRegionPos[reg] > 0) {
                         int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                         regionProbability[reg] = 1f / distance;
@@ -343,7 +348,7 @@ public class JobDataManager {
             }
         } else {
             // person has no home location because (s)he is inmigrating right now and a dwelling has not been chosen yet
-            for (int reg: regions) {
+            for (int reg : regions) {
                 if (vacantJobsByRegionPos[reg] > 0) {
                     regionProbability[reg] = getNumberOfVacantJobsByRegion(reg);
                 }
@@ -363,7 +368,8 @@ public class JobDataManager {
         vacantJobsByRegion[selectedRegion][selectedJob] = vacantJobsByRegion[selectedRegion][vacantJobsByRegionPos[selectedRegion] - 1];
         vacantJobsByRegion[selectedRegion][vacantJobsByRegionPos[selectedRegion] - 1] = 0;
         vacantJobsByRegionPos[selectedRegion] -= 1;
-        if (jobId == SiloUtil.trackJj) SiloUtil.trackWriter.println("Removed job " + jobId + " from list of vacant jobs.");
+        if (jobId == SiloUtil.trackJj)
+            SiloUtil.trackWriter.println("Removed job " + jobId + " from list of vacant jobs.");
         return jobId;
     }
 
@@ -383,18 +389,18 @@ public class JobDataManager {
         // summarize jobs for summary file
 
         String txt = "jobByRegion";
-        for (String empType: JobType.getJobTypes()) txt += "," + empType;
+        for (String empType : JobType.getJobTypes()) txt += "," + empType;
         SummarizeData.resultFile(txt + ",total");
 
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
-        for (Job job: Job.getJobs()) {
+        for (Job job : Job.getJobs()) {
             jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
         }
 
-        for (int region: regionList) {
+        for (int region : regionList) {
             StringBuilder line = new StringBuilder(String.valueOf(region));
             int regionSum = 0;
-            for (String empType: JobType.getJobTypes()) {
+            for (String empType : JobType.getJobTypes()) {
                 line.append(",").append(jobsByTypeAndRegion[JobType.getOrdinal(empType)][region]);
                 regionSum += jobsByTypeAndRegion[JobType.getOrdinal(empType)][region];
             }
@@ -404,23 +410,24 @@ public class JobDataManager {
 
 
     public void calculateJobDensityByZone() {
-        zonalJobDensity = new float[geoData.getZones().length];
-        for (Job jj: Job.getJobs()) zonalJobDensity[geoData.getZoneIndex(jj.getZone())]++;
-        for (int zone: geoData.getZones())
-            zonalJobDensity[geoData.getZoneIndex(zone)] /= geoData.getSizeOfZoneInAcres(zone);
+        Multiset<Integer> counter = ConcurrentHashMultiset.create();
+        Job.getJobs().parallelStream().forEach(j -> counter.add(j.getZone()));
+        geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
     }
 
 
-    public float getJobDensityInZone(int zone) {
-        return zonalJobDensity[geoData.getZoneIndex(zone)];
+    public double getJobDensityInZone(int zone) {
+        return zonalJobDensity.get(zone);
     }
 
     public int getJobDensityCategoryOfZone(int zone) {
         // return job density category 1 to 10 of zone
-
+        //TODO: magic numbers
         float[] densityCategories = {0.f, 0.143f, 0.437f, 0.865f, 1.324f, 1.8778f, 2.664f, 3.99105f, 6.f, 12.7f};
         for (int i = 0; i < densityCategories.length; i++) {
-            if (zonalJobDensity[geoData.getZoneIndex(zone)] < densityCategories[i]) return i;
+            if (zonalJobDensity.get(zone) < densityCategories[i]) {
+                return i;
+            }
         }
         return densityCategories.length;
     }

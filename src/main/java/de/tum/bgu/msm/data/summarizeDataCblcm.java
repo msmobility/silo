@@ -40,7 +40,7 @@ public class summarizeDataCblcm {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 Properties.get().main.gregorianIterator + ".csv");
-        int[][] households = new int[dataContainer.getGeoData().getZones().length][Properties.get().main.incomeBrackets.length + 1];
+        int[][] households = new int[dataContainer.getGeoData().getZoneIdsArray().length][Properties.get().main.incomeBrackets.length + 1];
         for (Household hh : Household.getHouseholds()) {
             int hhIncomeGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
             households[dataContainer.getGeoData().getZoneIndex(hh.getHomeZone())][hhIncomeGroup - 1]++;
@@ -49,8 +49,8 @@ public class summarizeDataCblcm {
         if (SiloUtil.checkIfFileExists(popFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet pop = SiloUtil.readCSVfile(popFileName);
             for (int income = 0; income <= Properties.get().main.incomeBrackets.length; income++) {
-                int[] hh = new int[dataContainer.getGeoData().getZones().length];
-                for (int i = 0; i < dataContainer.getGeoData().getZones().length; i++) hh[i] = households[i][income];
+                int[] hh = new int[dataContainer.getGeoData().getZoneIdsArray().length];
+                for (int i = 0; i < dataContainer.getGeoData().getZoneIdsArray().length; i++) hh[i] = households[i][income];
                 String columnName;
                 if (income == 0) {
                     columnName = "hh" + year + "_i_0-" + Properties.get().main.incomeBrackets[income];
@@ -71,7 +71,7 @@ public class summarizeDataCblcm {
                         "-" + Properties.get().main.incomeBrackets[i]);
             pw.print(",hh" + year + "_i_above" + Properties.get().main.incomeBrackets[Properties.get().main.incomeBrackets.length-1]);
             pw.println();
-            int[] zones = dataContainer.getGeoData().getZones();
+            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
             for (int zn = 0; zn < zones.length; zn++) {
                 pw.print(zones[zn]);
                 for (int i = 0; i <= Properties.get().main.incomeBrackets.length; i++) pw.print("," + households[zn][i]);
@@ -88,7 +88,7 @@ public class summarizeDataCblcm {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
                 Properties.get().main.gregorianIterator + ".csv");
-        int[][] jobs = new int[dataContainer.getGeoData().getZones().length][JobType.getNumberOfJobTypes()];
+        int[][] jobs = new int[dataContainer.getGeoData().getZoneIdsArray().length][JobType.getNumberOfJobTypes()];
         for (Job jj : Job.getJobs()) {
             int jobType = JobType.getOrdinal(jj.getType());
             jobs[dataContainer.getGeoData().getZoneIndex(jj.getZone())][jobType]++;
@@ -97,8 +97,8 @@ public class summarizeDataCblcm {
         if (SiloUtil.checkIfFileExists(emplFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet empl = SiloUtil.readCSVfile(emplFileName);
             for (int emplType = 0; emplType < JobType.getNumberOfJobTypes(); emplType++) {
-                int[] jobOfThisType = new int[dataContainer.getGeoData().getZones().length];
-                for (int i = 0; i < dataContainer.getGeoData().getZones().length; i++) jobOfThisType[i] = jobs[i][emplType];
+                int[] jobOfThisType = new int[dataContainer.getGeoData().getZoneIdsArray().length];
+                for (int i = 0; i < dataContainer.getGeoData().getZoneIdsArray().length; i++) jobOfThisType[i] = jobs[i][emplType];
                 String columnName = "empl_" + year + "_" + JobType.getJobType(emplType);
                 empl.appendColumn(jobOfThisType, columnName);
             }
@@ -109,7 +109,7 @@ public class summarizeDataCblcm {
             for (int emplType = 0; emplType < JobType.getNumberOfJobTypes(); emplType++)
                 pw.print(",empl_" + year + "_" + JobType.getJobType(emplType));
             pw.println();
-            int[] zones = dataContainer.getGeoData().getZones();
+            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
             for (int zn = 0; zn < zones.length; zn++) {
                 pw.print(zones[zn]);
                 for (int empType = 0; empType < JobType.getNumberOfJobTypes(); empType++) {
@@ -128,7 +128,7 @@ public class summarizeDataCblcm {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
                 Properties.get().main.gregorianIterator + ".csv");
-        int[][] dwellings = new int[dataContainer.getGeoData().getZones().length][DwellingType.values().length];
+        int[][] dwellings = new int[dataContainer.getGeoData().getZoneIdsArray().length][DwellingType.values().length];
         for (Dwelling dd : Dwelling.getDwellingArray()) {
             int ddType = dd.getType().ordinal();
             dwellings[dataContainer.getGeoData().getZoneIndex(dd.getZone())][ddType]++;
@@ -137,9 +137,9 @@ public class summarizeDataCblcm {
         if (SiloUtil.checkIfFileExists(ddFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet ddTable = SiloUtil.readCSVfile(ddFileName);
             for (DwellingType ddType: DwellingType.values()) {
-                int[] dd = new int[dataContainer.getGeoData().getZones().length];
+                int[] dd = new int[dataContainer.getGeoData().getZoneIdsArray().length];
                 int type = ddType.ordinal();
-                for (int i = 0; i < dataContainer.getGeoData().getZones().length; i++) dd[i] = dwellings[i][type];
+                for (int i = 0; i < dataContainer.getGeoData().getZoneIdsArray().length; i++) dd[i] = dwellings[i][type];
                 String columnName = "dd_" + year + "_" + ddType.toString();
                 ddTable.appendColumn(dd, columnName);
             }
@@ -150,7 +150,7 @@ public class summarizeDataCblcm {
             for (DwellingType ddType: DwellingType.values())
                 pw.print(",dd_" + year + "_" + ddType.toString());
             pw.println();
-            int[] zones = dataContainer.getGeoData().getZones();
+            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
             for (int zn = 0; zn < zones.length; zn++) {
                 pw.print(zones[zn]);
                 for (DwellingType ddType: DwellingType.values()) pw.print("," + dwellings[zn][ddType.ordinal()]);
@@ -171,12 +171,12 @@ public class summarizeDataCblcm {
 
         if (SiloUtil.checkIfFileExists(accFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet accTable = SiloUtil.readCSVfile(accFileName);
-            double[] accHwy = new double[dataContainer.getGeoData().getZones().length];
-            double[] accTrn = new double[dataContainer.getGeoData().getZones().length];
-            int[] zones = dataContainer.getGeoData().getZones();
+            double[] accHwy = new double[dataContainer.getGeoData().getZoneIdsArray().length];
+            double[] accTrn = new double[dataContainer.getGeoData().getZoneIdsArray().length];
+            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
             for (int i = 0; i < zones.length; i++) {
-                accHwy[i] = modelContainer.getAcc().getAutoAccessibility(zones[i]);
-                accTrn[i] = modelContainer.getAcc().getTransitAccessibility(zones[i]);
+                accHwy[i] = modelContainer.getAcc().getAutoAccessibilityForZone(zones[i]);
+                accTrn[i] = modelContainer.getAcc().getTransitAccessibilityForZone(zones[i]);
             }
             accTable.appendColumn(accHwy, "acc_auto_" + year);
             accTable.appendColumn(accTrn, "acc_transit_" + year);
@@ -184,9 +184,9 @@ public class summarizeDataCblcm {
         } else {
             PrintWriter pw = SiloUtil.openFileForSequentialWriting(accFileName,false);
             pw.println("zone,acc_auto_" + year + ",acc_transit_" + year);
-            int[] zones = dataContainer.getGeoData().getZones();
-            for (int zone : zones) pw.println(zone + "," + modelContainer.getAcc().getAutoAccessibility(zone) + "," +
-                    modelContainer.getAcc().getTransitAccessibility(zone));
+            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
+            for (int zone : zones) pw.println(zone + "," + modelContainer.getAcc().getAutoAccessibilityForZone(zone) + "," +
+                    modelContainer.getAcc().getTransitAccessibilityForZone(zone));
             pw.close();
         }
     }

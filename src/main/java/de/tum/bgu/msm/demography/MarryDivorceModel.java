@@ -237,7 +237,7 @@ public class MarryDivorceModel {
         } else {
             // create new household for newly-wed couple
             int newHhId = HouseholdDataManager.getNextHouseholdId();
-            Household newHh = new Household(newHhId, -1, -1, 0);
+            Household newHh = new Household(newHhId, -1, 0);
             newHh.addPerson(partner1);
             newHh.addPerson(partner2);
             hhOfPartner1.removePerson(partner1, dataContainer);
@@ -329,7 +329,7 @@ public class MarryDivorceModel {
             oldHh.setType();
 
             int newHhId = HouseholdDataManager.getNextHouseholdId();
-            Household newHh = new Household(newHhId, -1, -1, 0);
+            Household newHh = new Household(newHhId, -1, 0);
             newHh.addPerson(per);
             newHh.setType();
             newHh.determineHouseholdRace();

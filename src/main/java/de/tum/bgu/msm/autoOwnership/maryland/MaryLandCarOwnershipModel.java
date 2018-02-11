@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.autoOwnership.maryland;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.Accessibility;
@@ -12,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Simulates number of vehicles per household
@@ -111,7 +109,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
-        for (Integer id: updatedHouseholds.keySet()) {
+        for (int id: updatedHouseholds.keySet()) {
             Household household = Household.getHouseholdFromId(id);
             if(household == null) {
                 continue;
@@ -120,7 +118,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
             int hhSize = Math.min(household.getHhSize(), 8);
             int workers = Math.min(household.getNumberOfWorkers(), 4);
             int incomeCategory = getIncomeCategory(household.getHhIncome());
-            int transitAcc = (int) (accessibility.getTransitAccessibility(household.getHomeZone()) + 0.5);
+            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(household.getHomeZone()) + 0.5);
             int density = jobDataManager.getJobDensityCategoryOfZone(household.getHomeZone());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];

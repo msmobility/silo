@@ -107,7 +107,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         tazByPuma = new HashMap<>();
         ArrayList<Integer> alHomePuma = new ArrayList<>();
         ArrayList<Integer> alWorkPuma = new ArrayList<>();
-        for (int taz: geoData.getZones()) {
+        for (int taz: geoData.getZoneIdsArray()) {
             int homePuma = geoData.getPUMAofZone(taz);
             int workPuma = geoData.getSimplifiedPUMAofZone(taz);
             if (!alHomePuma.contains(homePuma)) alHomePuma.add(homePuma);
@@ -174,7 +174,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 
         // create base year employment
-        for (int zone: geoData.getZones()) {
+        for (int zone: geoData.getZoneIdsArray()) {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 if (jobInventory[jobTp][zone] > 0) {
                     for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
@@ -407,7 +407,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             int selectedYear = selectYear(yearBuilt);
             new Dwelling(newDdId, taz, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
             if (gender[0] == 0) return;   // this dwelling is empty, do not create household
-            Household hh = new Household(newHhId, newDdId, taz, autos);
+            Household hh = new Household(newHhId, newDdId, autos);
             for (int s = 0; s < hhSize; s++) {
                 int newPpId = HouseholdDataManager.getNextPersonId();
 
@@ -548,7 +548,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         int fullPumaZone = workState * 100000 + workPumaZone;
         if (!checkIfSimplifiedPumaInStudyArea(fullPumaZone) && workPumaZone != 0) return -2;  // person does work in puma zone outside of study area
-        int[] zones = geoData.getZones();
+        int[] zones = geoData.getZoneIdsArray();
         double[] zoneProbability = new double[zones.length];
 
         for (int zn = 0; zn < zones.length; zn++) {
@@ -734,7 +734,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         countyLevelVacancies.buildIndex(countyLevelVacancies.getColumnPosition("Fips"));
         double[] expectedVacancies = ResourceUtil.getDoubleArray(rb, PROPERTIES_VACANCY_RATES);
 
-        for (int taz: geoData.getZones()) {
+        for (int taz: geoData.getZoneIdsArray()) {
             float vacRateCountyTarget;
             try {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(geoData.getCountyOfZone(taz), "VacancyRate");
@@ -850,16 +850,16 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void summarizeVacantJobsByRegion () {
         // write out vacant jobs by region
         logger.info("----Vacant Jobs By Region Start----");
-        int[] vacantJobsByRegion = new int[SiloUtil.getHighestVal(geoData.getRegionList())+1];
-        for (int zone: geoData.getZones()) {
+        int[] vacantJobsByRegion = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray())+1];
+        for (int zone: geoData.getZoneIdsArray()) {
             if (vacantJobsByZone.containsKey(zone)) vacantJobsByRegion[geoData.getRegionOfZone(zone)] +=
                     vacantJobsByZone.get(zone).length;
         }
-        for (int region: geoData.getRegionList()) logger.info("----,"+region+","+vacantJobsByRegion[region]);
+        for (int region: geoData.getRegionIdsArray()) logger.info("----,"+region+","+vacantJobsByRegion[region]);
         logger.info("----Vacant Jobs By Region End----");
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
-        for (int zone: geoData.getZones()) {
+        for (int zone: geoData.getZoneIdsArray()) {
             if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[geoData.getPUMAofZone(zone)] +=
                     vacantJobsByZone.get(zone).length;
         }

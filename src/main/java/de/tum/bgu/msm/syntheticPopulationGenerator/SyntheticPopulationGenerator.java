@@ -8,7 +8,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.SyntheticPopDe;
 import org.apache.log4j.Logger;
 
-
 import java.util.ResourceBundle;
 
 public class SyntheticPopulationGenerator {
