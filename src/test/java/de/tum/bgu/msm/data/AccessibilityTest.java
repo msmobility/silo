@@ -9,10 +9,11 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
+import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
-import org.matsim.core.utils.misc.CRCChecksum;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -124,17 +125,8 @@ public class AccessibilityTest {
         writerRegion.flush();
         writerRegion.close();
 
-        long checksum_ref_car = CRCChecksum.getCRCFromFile("./test/input/accessibilitiesCar.txt");
-        long checksum_run_car = CRCChecksum.getCRCFromFile("./test/output/accessibilitiesCar.txt");
-        Assert.assertEquals(checksum_ref_car, checksum_run_car);
-
-        long checksum_ref_transit = CRCChecksum.getCRCFromFile("./test/input/accessibilitiesTransit.txt");
-        long checksum_run_transit = CRCChecksum.getCRCFromFile("./test/output/accessibilitiesTransit.txt");
-        Assert.assertEquals(checksum_ref_transit, checksum_run_transit);
-
-        long checksum_ref_region = CRCChecksum.getCRCFromFile("./test/input/accessibilitiesRegion.txt");
-        long checksum_run_region = CRCChecksum.getCRCFromFile("./test/output/accessibilitiesRegion.txt");
-        Assert.assertEquals(checksum_ref_region, checksum_run_region);
-
+        FileAssert.assertEquals("car accessibilities are different.", new File("./test/input/accessibilitiesCar.txt"), new File("./test/output/accessibilitiesCar.txt"));
+        FileAssert.assertEquals("transit accessibilities are different.", new File("./test/input/accessibilitiesTransit.txt"), new File("./test/output/accessibilitiesTransit.txt"));
+        FileAssert.assertEquals("region accessibilities are different.", new File("./test/input/accessibilitiesRegion.txt"), new File("./test/output/accessibilitiesRegion.txt"));
     }
 }

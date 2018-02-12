@@ -297,6 +297,11 @@
 			<version>${matsimVersion}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>junit-addons</groupId>
+			<artifactId>junit-addons</artifactId>
+			<version>1.4</version>
+		</dependency>
 		<!-- need the jxl dependency for the pb.common calculator, as it is requested at runtime -->
 		<dependency>
 			<groupId>jexcelapi</groupId>
