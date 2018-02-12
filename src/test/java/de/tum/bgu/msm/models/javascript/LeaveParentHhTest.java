@@ -14,7 +14,7 @@ public class LeaveParentHhTest {
 
     @Before
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
         calculator = new LeaveParentHhJSCalculator (reader);
     }
 

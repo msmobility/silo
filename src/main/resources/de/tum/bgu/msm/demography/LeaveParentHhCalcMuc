@@ -1,0 +1,42 @@
+var calculateLeaveParentsProbability = function(personType) {
+
+    alpha = 0.;
+
+    if (personType > 43){
+        throw new Error("Undefined person type!")
+    } else if (personType < 0){
+        throw new Error("Undefined person type!")
+    }
+
+    if (personType == 4){
+        alpha = 0.0143;
+    } else if (personType == 5){
+        alpha = 0.0398;
+    } else if (personType == 6){
+         alpha = 0.0214;
+    } else if (personType == 7){
+         alpha = 0.0064;
+    } else if (personType == 8){
+         alpha = 0.0018;
+    } else if (personType == 9){
+         alpha = 0.0006;
+    } else if (personType == 10){
+         alpha = 0.0001;
+    } else if (personType == 26){
+         alpha = 0.0202;
+    } else if (personType == 27){
+         alpha = 0.0432;
+    } else if (personType == 28){
+         alpha = 0.0192;
+    } else if (personType == 29){
+         alpha = 0.0038;
+    } else if (personType == 30){
+         alpha = 0.0006;
+    } else if (personType == 31){
+         alpha = 0.0003;
+    } else if (personType == 32){
+         alpha = 0.0001;
+    }
+
+return alpha;
+}

@@ -47,7 +47,12 @@ public class LeaveParentHhModel {
 
     private void setupLPHModel() {
 
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
+        Reader reader;
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
+        } else {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
+        }
         LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader);
 
         // initialize results for each alternative
