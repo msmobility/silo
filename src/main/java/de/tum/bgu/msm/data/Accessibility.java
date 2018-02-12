@@ -129,14 +129,21 @@ public class Accessibility {
         scaleAccessibility(transitAccessibilities);
 
         LOGGER.info("  Calculating regional accessibilities");
-        calculateRegionalAccessibility();
+        regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities));
     }
 
-    private void calculateRegionalAccessibility() {
-        geoData.getRegions().values().parallelStream().forEach(r -> {
+    /**
+     * Calculates regional accessibilities for the given regions and zonal accessibilities and returns them in a vector
+     * @param regions the regions to calculate the accessibility for
+     * @param autoAccessibilities the accessibility vector containing values for each zone
+     */
+    static DoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, DoubleMatrix1D autoAccessibilities) {
+        final DoubleMatrix1D matrix = Matrices.doubleMatrix1D(regions);
+        regions.parallelStream().forEach(r -> {
             double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();
-            regionalAccessibilities.setQuick(r.getId(), sum);
+            matrix.setQuick(r.getId(), sum);
         });
+        return matrix;
     }
 
     /**
@@ -220,7 +227,7 @@ public class Accessibility {
     }
 
     public double getRegionalAccessibility (int region) {
-        return 0.;//accessibilityByRegion.get(region);
+        return regionalAccessibilities.getQuick(region);
     }
 
 
