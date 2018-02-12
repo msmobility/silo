@@ -36,8 +36,8 @@ public class IssueCounter {
 
 
     public static void regionSpecificCounters(GeoData geoData) {
-        exceededVacantDwellingStorage = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
-        exceededVacantJobStorage = new int[SiloUtil.getHighestVal(geoData.getRegionList()) + 1];
+        exceededVacantDwellingStorage = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        exceededVacantJobStorage = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         SiloUtil.setArrayToValue(exceededVacantDwellingStorage, 0);
         SiloUtil.setArrayToValue(exceededVacantJobStorage, 0);
     }
@@ -105,12 +105,12 @@ public class IssueCounter {
                 "where a household had to outmigrate because its dwelling was demolished and no other vacant dwelling could be found.");
         if (SiloUtil.getSum(exceededVacantDwellingStorage) > 0) {
             logger.warn("  Could not store all vacant dwellings in vacDwellingsByRegion[][] for regions:");
-            for (int region: geoData.getRegionList()) if (exceededVacantDwellingStorage[region] > 0)
+            for (int region: geoData.getRegionIdsArray()) if (exceededVacantDwellingStorage[region] > 0)
                 logger.warn("  - Region " + region + ": " + exceededVacantDwellingStorage[region] + " vacant dwellings");
         }
         if (SiloUtil.getSum(exceededVacantJobStorage) > 0) {
             logger.warn("  Could not store all vacant jobs in vacantJobsByRegion[][] for regions:");
-            for (int region: geoData.getRegionList()) if (exceededVacantJobStorage[region] > 0)
+            for (int region: geoData.getRegionIdsArray()) if (exceededVacantJobStorage[region] > 0)
                 logger.warn("  - Region " + region + ": " + exceededVacantJobStorage[region] + " vacant jobs");
         }
         if (missingJob > 0) logger.warn("  Encountered " + missingJob + " cases where a person should have started a " +

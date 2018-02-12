@@ -10,7 +10,9 @@ import de.tum.bgu.msm.realEstate.ConstructionModel;
 import de.tum.bgu.msm.relocation.InOutMigration;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Generates a series of events in random order

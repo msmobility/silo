@@ -8,10 +8,6 @@ public interface PTDistances {
 		throw new RuntimeException("Not implemented!");
 	}
 
-	default double getDistanceToNearestPTStop(int zone) {
-		throw new RuntimeException("Not implemented!");
-	}
-
 	default double getDistanceToNearestPTStop(Coord coord) {
 		throw new RuntimeException("Not implemented!");
 	}

@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
+
 import java.util.*;
 import java.util.stream.IntStream;
 

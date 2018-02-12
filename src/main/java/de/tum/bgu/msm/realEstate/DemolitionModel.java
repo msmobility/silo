@@ -1,17 +1,17 @@
 package de.tum.bgu.msm.realEstate;
 
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.IssueCounter;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import de.tum.bgu.msm.events.IssueCounter;
 
 /**
  * Simulates demolition of dwellings

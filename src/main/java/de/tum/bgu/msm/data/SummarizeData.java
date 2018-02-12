@@ -1,12 +1,15 @@
 package de.tum.bgu.msm.data;
 
+import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -114,13 +117,13 @@ public class SummarizeData {
         for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
         resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
 
-        int[] zones = dataContainer.getGeoData().getZones();
+
         int[][] dds = new int[DwellingType.values().length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] prices = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] jobs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[] hhs = new int[dataContainer.getGeoData().getHighestZonalId() + 1];
         int[][] hhInc = new int[Properties.get().main.incomeBrackets.length + 1][dataContainer.getGeoData().getHighestZonalId() + 1];
-        int[] pop = getPopulationByZone(dataContainer.getGeoData());
+        DoubleMatrix1D pop = getPopulationByZone(dataContainer.getGeoData());
         for (Household hh: Household.getHouseholds()) {
             int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
             int incGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
@@ -136,17 +139,17 @@ public class SummarizeData {
         }
 
 
-        for (int taz: zones) {
+        for (int taz: dataContainer.getGeoData().getZones().keySet()) {
             float avePrice = -1;
             int ddThisZone = 0;
             for (DwellingType dt: DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
             if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
-            double autoAcc = modelContainer.getAcc().getAutoAccessibility(taz);
-            double transitAcc = modelContainer.getAcc().getTransitAccessibility(taz);
+            double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
+            double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
             double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
-            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop[taz] + "," + hhs[taz];
+            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
             for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++) txt = txt.concat("," + hhInc[inc][taz]);
             for (DwellingType dt: DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
@@ -162,27 +165,13 @@ public class SummarizeData {
     }
 
 
-    public static int[] getPopulationByZone (GeoData geoData) {
-        // summarize population by zone
-
-        int[] pp = new int[geoData.getHighestZonalId() + 1];
+    public static DoubleMatrix1D getPopulationByZone (GeoData geoData) {
+        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         for (Household hh: Household.getHouseholds()) {
-            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            pp[zone] += hh.getHhSize();
+            final int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
+            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
         }
-        return pp;
-    }
-
-
-    public int[] getHouseholdsByZone (GeoData geoData) {
-        // summarize households by zone
-
-        int[] householdsByZone = new int[geoData.getZones().length];
-        for (Household hh: Household.getHouseholds()) {
-            int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            householdsByZone[geoData.getZoneIndex(zone)]++;
-        }
-        return householdsByZone;
+        return popByZone;
     }
 
 
@@ -203,7 +192,7 @@ public class SummarizeData {
         // calculate how many households need to be created or deleted in every zone
         int[] changeOfHh = new int[(dataContainer.getGeoData().getHighestZonalId() + 1)];
         HashMap<Integer, int[]> hhByZone = dataContainer.getHouseholdData().getHouseholdsByZone();
-        for (int zone: dataContainer.getGeoData().getZones()) {
+        for (int zone: dataContainer.getGeoData().getZoneIdsArray()) {
             int hhs = 0;
             if (hhByZone.containsKey(zone)) hhs = hhByZone.get(zone).length;
             changeOfHh[zone] =
@@ -214,7 +203,7 @@ public class SummarizeData {
         pwh.println("id,dwelling,zone,hhSize,autos");
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(Properties.get().main.scaledMicroDataPp + year + ".csv", false);
         pwp.println("id,hhID,age,gender,race,occupation,driversLicense,workplace,income");
-        for (int zone: dataContainer.getGeoData().getZones()) {
+        for (int zone: dataContainer.getGeoData().getZoneIdsArray()) {
             if (hhByZone.containsKey(zone)) {
                 int[] hhInThisZone = hhByZone.get(zone);
                 int[] selectedHH = new int[hhInThisZone.length];
@@ -429,8 +418,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -581,8 +569,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -733,8 +720,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (Dwelling dd : dds) {
+        for (Dwelling dd : Dwelling.getDwellingArray()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -869,9 +855,7 @@ public class SummarizeData {
         String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + fileEnding;
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        Dwelling[] dds = Dwelling.getDwellingArray();
-        for (int i = 0; i < dds.length; i = i + step) {
-            Dwelling dd = dds[i];
+        for (Dwelling dd: Dwelling.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -933,10 +917,10 @@ public class SummarizeData {
         for (Household hh: Household.getHouseholds()) {
             int autoOwnership = hh.getAutos();
             int zone = hh.getHomeZone();
-            int county = geoData.getCountyOfZone(zone);
+            int county = ((MstmZone)geoData.getZones().get(hh.getHomeZone())).getCounty().getId();
             autos[autoOwnership][county]++;
             pwa.println(hh.getHhSize()+","+hh.getNumberOfWorkers()+","+hh.getHhIncome()+","+
-                    accessibility.getTransitAccessibility(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
+                    accessibility.getTransitAccessibilityForZone(zone)+","+jobData.getJobDensityInZone(zone)+","+hh.getAutos());
         }
         pwa.close();
 
@@ -960,7 +944,7 @@ public class SummarizeData {
         regionDefinition.buildIndex(regionDefinition.getColumnPosition("aggFips"));
 
         prestoRegionByTaz = SiloUtil.createArrayWithValue((geoData.getHighestZonalId() + 1), -1);
-        for (int zone: geoData.getZones()) {
+        for (int zone: geoData.getZoneIdsArray()) {
             try {
                 prestoRegionByTaz[zone] =
                         (int) regionDefinition.getIndexedValueAt(((GeoDataMstm) geoData).getCountyOfZone(zone), "presto");
@@ -1099,4 +1083,6 @@ public class SummarizeData {
         logger.info("Summarized initial auto ownership");
 
     }
+
+
 }

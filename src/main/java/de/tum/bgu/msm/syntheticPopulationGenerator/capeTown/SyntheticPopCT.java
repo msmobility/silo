@@ -1334,6 +1334,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                         int[] records = select(jobsInTaz, tazInCity);
                         jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
                         int id = JobDataManager.getNextJobId();
+
                         Job jj = new Job(id, records[0], -1, jobType); //(int id, int zone, int workerId, String type)
                     }
                 }
@@ -1609,7 +1610,6 @@ public class SyntheticPopCT implements SyntheticPopI {
         logger.info("   Starting to generate households");
         for (int i = 1; i <= households.getRowCount(); i++) {
             Household hh = new Household((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
-                    (int) households.getValueAt(i, "zone"),
                     (int) households.getValueAt(i, "autos"));
         }
 
@@ -1875,7 +1875,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int householdSize = (int) microDataHousehold.getIndexedValueAt(hhIdMD, "hhSize");
                 id = HouseholdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                Household household = new Household(id, newDdId, tazID, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = new Household(id, newDdId, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipality);
 

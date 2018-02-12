@@ -2,7 +2,8 @@ package de.tum.bgu.msm.demography;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import org.apache.log4j.Logger;

@@ -27,7 +27,6 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected int[] evalDwellingAvail;
     protected MovesDMU evaluateDwellingDmu;
     protected double[][][] utilityRegion;
-    protected int[] householdsByRegion;
 
     protected boolean logCalculationDwelling;
     protected boolean logCalculationRegion;
@@ -199,8 +198,8 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         int priceSum = 0;
         int counter = 0;
         for (Dwelling d : Dwelling.getDwellingArray()) {
-            int zone = d.getZone();
-            if (geoData.getRegionOfZone(zone) == region) {
+
+            if (geoData.getZones().get(d.getZone()).getRegion().getId() == region) {
                 priceSum += d.getPrice();
                 counter++;
             }
@@ -224,8 +223,10 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
-        if (dd.getRestriction() <= 0) return true;   // Dwelling is not income restricted
-        int msa = geoData.getMSAOfZone(dd.getZone());
+        if (dd.getRestriction() <= 0) {
+            return true;   // Dwelling is not income restricted
+        }
+        int msa = geoData.getZones().get(dd.getZone()).getMsa();
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 

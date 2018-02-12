@@ -2,13 +2,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 import com.google.common.primitives.Ints;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static de.tum.bgu.msm.SiloUtil.addIntegerColumnToTableDataSet;

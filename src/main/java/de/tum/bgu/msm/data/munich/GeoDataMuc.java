@@ -1,6 +1,12 @@
 package de.tum.bgu.msm.data.munich;
 
+import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.AbstractDefaultGeoData;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.RegionImpl;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.Coord;
 
 /**
@@ -11,34 +17,57 @@ import org.matsim.api.core.v01.Coord;
 
 public class GeoDataMuc extends AbstractDefaultGeoData {
 
-    private final String ptDistanceColName = "distanceToTransit";
-    protected Coord[] centroids;
-
     public GeoDataMuc() {
         super("Zone", "Region");
     }
 
     @Override
-    public void setInitialData () {
-        super.setInitialData();
-        createCentroids();
-    }
+    protected void readZones() {
+        String fileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalDataFile;
+        TableDataSet zonalData = SiloUtil.readCSVfile(fileName);
+        int[] zoneIds = zonalData.getColumnAsInt(zoneIdColumnName);
+        int[] zoneMsa = zonalData.getColumnAsInt("msa");
+        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
 
-    private void createCentroids() {
-        centroids = new Coord[zones.length];
-        for(int zone: zones) {
-            Coord centroid = new Coord(zonalData.getIndexedValueAt(zone, "centroidX"),
-                    zonalData.getIndexedValueAt(zone, "centroidY"));
-            centroids[getZoneIndex(zone)] = centroid;
+        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
+        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
+        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
+
+        for(int i = 0; i < zoneIds.length; i++) {
+            Coord centroid = new Coord(centroidX[i], centroidY[i]);
+            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
+            zones.put(zoneIds[i], zone);
         }
     }
 
-    public double getPTDistanceOfZone(int zone) {
-        return zonalData.getIndexedValueAt(zone, ptDistanceColName);
+    @Override
+    protected void readRegionDefinition() {
+        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
+        TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
+        for (int row = 1; row <= regDef.getRowCount(); row++) {
+            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
+            int regionId = (int) regDef.getValueAt(row, regionColumnName);
+            Zone zone = zones.get(taz);
+            if (zone != null) {
+                Region region;
+                if (regions.containsKey(regionId)) {
+                    region = regions.get(regionId);
+                    region.addZone(zone);
+                } else {
+                    region = new RegionImpl(regionId);
+                    region.addZone(zone);
+                    regions.put(region.getId(), region);
+                }
+                zone.setRegion(region);
+            } else {
+                throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
+            }
+        }
     }
 
-    public Coord getCentroidOfZone(int zone) {
-        return centroids[getZoneIndex(zone)];
+    @Override
+    public void setInitialData () {
+        super.setInitialData();
     }
 }
 

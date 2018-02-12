@@ -99,7 +99,9 @@ public class BirthModel {
         per.setAge(age);
         per.setType(age, per.getGender());
         EventManager.countEvent(EventTypes.BIRTHDAY);
-        if (personId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
-                personId + ". New age is " + age + ".");
+        if (personId == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
+                    personId + ". New age is " + age + ".");
+        }
     }
 }

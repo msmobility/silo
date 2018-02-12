@@ -1,16 +1,15 @@
 package de.tum.bgu.msm.realEstate;
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import de.tum.bgu.msm.properties.Properties;
 
 /**
  * Simulates renovation and deterioration of dwellings

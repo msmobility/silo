@@ -8,7 +8,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Allocation extends ModuleSynPop{
 
