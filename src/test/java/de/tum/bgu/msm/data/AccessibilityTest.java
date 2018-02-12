@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class AccessibilityTest {
 
@@ -110,6 +111,7 @@ public class AccessibilityTest {
             accRegions[region] = accessibility.getRegionalAccessibility(region);
         }
 
+        Locale.setDefault(Locale.ENGLISH);
         MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesCar.txt"));
         writerCar.printArray(accCar);
         writerCar.flush();
