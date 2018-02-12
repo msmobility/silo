@@ -67,7 +67,7 @@ public class AccessibilityTest {
 
         DoubleMatrix1D regionalAccessibility = Accessibility.calculateRegionalAccessibility(regions, accessibilityAuto);
         Assert.assertEquals(3, regionalAccessibility.size());
-        Assert.assertEquals(20, regionalAccessibility.getQuick(region1.getId()), 0.);
+        Assert.assertEquals(10, regionalAccessibility.getQuick(region1.getId()), 0.);
         Assert.assertEquals(10, regionalAccessibility.getQuick(region2.getId()), 0.);
     }
 

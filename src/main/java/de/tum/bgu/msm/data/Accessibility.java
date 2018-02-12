@@ -140,7 +140,7 @@ public class Accessibility {
     static DoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, DoubleMatrix1D autoAccessibilities) {
         final DoubleMatrix1D matrix = Matrices.doubleMatrix1D(regions);
         regions.parallelStream().forEach(r -> {
-            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();
+            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum() / r.getZones().size();
             matrix.setQuick(r.getId(), sum);
         });
         return matrix;
