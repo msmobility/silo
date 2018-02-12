@@ -15,7 +15,7 @@ public class ConstructionDemandTest {
 
     @Before
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
         calculator = new ConstructionDemandJSCalculator(reader);
     }
 

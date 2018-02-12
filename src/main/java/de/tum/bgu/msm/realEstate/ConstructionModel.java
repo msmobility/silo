@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.realEstate;
 
 import com.pb.common.util.IndexSort;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -50,7 +51,12 @@ public class ConstructionModel {
     }
 
     private void setupConstructionModel() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalc"));
+        Reader reader;
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
+        } else{
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
+        }
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader);
 
         makeSomeNewDdAffordable = Properties.get().realEstate.makeSOmeNewDdAffordable;
