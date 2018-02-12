@@ -16,6 +16,7 @@ import omx.OmxMatrix;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -111,29 +112,71 @@ public class Accessibility {
         // Calculate Hansen TripGenAccessibility (recalculated every year)
 
         LOGGER.info("  Calculating accessibilities for " + year);
-        final DoubleMatrix2D carTravelTimesCopy = getPeakAutoTravelTimeMatrix().copy();
-
         final DoubleMatrix1D population = SummarizeData.getPopulationByZone(geoData);
-        carTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) ->
-                Math.pow(population.getQuick(destination), alphaAuto) * Math.exp(betaAuto * autoTravelTime));
 
-        final DoubleMatrix2D transitTravelTimesCopy = getPeakTransitTravelTimeMatrix().copy();
-        transitTravelTimesCopy.forEachNonZero((origin, destination, autoTravelTime) ->
-                Math.pow(population.getQuick(destination), alphaTransit) * Math.exp(betaTransit * autoTravelTime));
+        LOGGER.info("  Calculating zone zone accessibilities: auto");
+        final DoubleMatrix2D autoAccessZoneToZone =
+                calculateZoneToZoneAccessibilities(population, getPeakAutoTravelTimeMatrix(), alphaAuto, betaAuto);
+        LOGGER.info("  Calculating zone zone accessibilities: transit");
+        final DoubleMatrix2D transitAccessZoneToZone =
+                calculateZoneToZoneAccessibilities(population, getPeakTransitTravelTimeMatrix(), alphaTransit, betaTransit);
 
-        for(int i: geoData.getZones().keySet()) {
-            autoAccessibilities.setQuick(i,carTravelTimesCopy.viewRow(i).zSum());
-            transitAccessibilities.setQuick(i,transitTravelTimesCopy.viewRow(i).zSum());
-        }
-        double sumScaleFactorCar = 100.0 / autoAccessibilities.getMaxLocation()[0];
-        autoAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorCar));
-        double sumScaleFactorTransit = 100.0 / transitAccessibilities.getMaxLocation()[0];
-        transitAccessibilities.assign(DoubleFunctions.mult(sumScaleFactorTransit));
+        LOGGER.info("  Aggregating zone accessibilities");
+        aggregateAccessibilities(autoAccessZoneToZone, transitAccessZoneToZone, autoAccessibilities, transitAccessibilities, geoData.getZones().keySet());
 
+        LOGGER.info("  Scaling zone accessibilities");
+        scaleAccessibility(autoAccessibilities);
+        scaleAccessibility(transitAccessibilities);
+
+        LOGGER.info("  Calculating regional accessibilities");
+        calculateRegionalAccessibility();
+    }
+
+    private void calculateRegionalAccessibility() {
         geoData.getRegions().values().parallelStream().forEach(r -> {
             double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum();
             regionalAccessibilities.setQuick(r.getId(), sum);
         });
+    }
+
+    /**
+     * Scales the accessibility vector such that the highest value equals to 100
+     * @param accessibility the accessibility vector containing agregated accessbilities for every zone
+     */
+    static void scaleAccessibility(DoubleMatrix1D accessibility) {
+        final double sumScaleFactor = 100.0 / accessibility.getMaxLocation()[0];
+        accessibility.assign(DoubleFunctions.mult(sumScaleFactor));
+    }
+
+    /**
+     * Aggregates the zone to zone accessibilities into the given vectors, only considering the given keys.
+     * @param autoAcessibilities zone to zone accessibility matrix for auto
+     * @param transitAccessibilities zone to zone accessibility matrix for transit
+     * @param aggregatedAuto vector to which the the aggregated auto accessibilities  will be written to
+     * @param aggregatedTransit vector to which the the aggregated transit accessibilities will be written to
+     * @param keys zone ids that will be considered for aggregation
+     */
+    static void aggregateAccessibilities(DoubleMatrix2D autoAcessibilities, DoubleMatrix2D transitAccessibilities,
+                                          DoubleMatrix1D aggregatedAuto, DoubleMatrix1D aggregatedTransit, Collection<Integer> keys) {
+        keys.forEach(i -> {
+            aggregatedAuto.setQuick(i, autoAcessibilities.viewRow(i).zSum());
+            aggregatedTransit.setQuick(i, transitAccessibilities.viewRow(i).zSum());});
+    }
+
+    /**
+     * Aggregates the zone to zone Hansen accessibilities into the given vectors, only considering the given keys.
+     * Formula for origin i to destinations j:
+     * accessibility_i = population_j^alpha * e^(beta * traveltime_ij)
+     * @param population a vector containing the population by zone
+     * @param travelTimes zone to zone travel time matrix
+     * @param alpha alpha parameter used for the hansen calculation
+     * @param beta beta parameter used for the hansen calculation
+     */
+    static DoubleMatrix2D calculateZoneToZoneAccessibilities(DoubleMatrix1D population, DoubleMatrix2D travelTimes, double alpha, double beta) {
+        final int size = Math.toIntExact(population.size());
+        final DoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0,0, size, size).copy();
+        return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
+                Math.pow(population.getQuick(destination), alpha) * Math.exp(beta * travelTime));
     }
 
 

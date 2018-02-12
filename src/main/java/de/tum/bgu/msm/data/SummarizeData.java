@@ -169,7 +169,7 @@ public class SummarizeData {
         DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         for (Household hh: Household.getHouseholds()) {
             final int zone = Dwelling.getDwellingFromId(hh.getDwellingId()).getZone();
-            popByZone.setQuick(zone, popByZone.getQuick(zone) + 1);
+            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
         }
         return popByZone;
     }
