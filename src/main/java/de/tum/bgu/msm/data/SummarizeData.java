@@ -130,7 +130,7 @@ public class SummarizeData {
             hhInc[incGroup - 1][zone]++;
             hhs[zone] ++;
         }
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd: Dwelling.getDwellings()) {
             dds[dd.getType().ordinal()][dd.getZone()]++;
             prices[dd.getZone()] += dd.getPrice();
         }
@@ -340,7 +340,7 @@ public class SummarizeData {
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
         pw.println("id,zone,type,size,yearBuilt,occupied");
-        for (Dwelling dd: Dwelling.getDwellingArray()){
+        for (Dwelling dd: Dwelling.getDwellings()){
             pw.print(dd.getId());
             pw.print(",");
             pw.print(dd.getZone());
@@ -418,7 +418,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -569,7 +569,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -720,7 +720,7 @@ public class SummarizeData {
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());

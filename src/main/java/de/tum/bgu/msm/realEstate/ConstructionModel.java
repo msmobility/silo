@@ -176,7 +176,7 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][geoData.getHighestZonalId() + 1];
         int[][] counter = new int[DwellingType.values().length][geoData.getHighestZonalId() + 1];
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             int dt = dd.getType().ordinal();
             int zone = geoData.getZones().get(dd.getZone()).getId();
             counter[dt][zone]++;
@@ -206,7 +206,7 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;
@@ -236,7 +236,7 @@ public class ConstructionModel {
 
         float[][] aveSize = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;

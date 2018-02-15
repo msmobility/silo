@@ -129,7 +129,7 @@ public class summarizeDataCblcm {
         String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] dwellings = new int[dataContainer.getGeoData().getZoneIdsArray().length][DwellingType.values().length];
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             int ddType = dd.getType().ordinal();
             dwellings[dataContainer.getGeoData().getZoneIndex(dd.getZone())][ddType]++;
         }

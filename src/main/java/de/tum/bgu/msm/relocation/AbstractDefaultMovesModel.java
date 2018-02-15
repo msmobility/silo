@@ -142,7 +142,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         numAltsEvalDwelling = ddUtilityModel.getNumberOfAlternatives();
         evalDwellingAvail = new int[numAltsEvalDwelling + 1];
         for (int i = 1; i < evalDwellingAvail.length; i++) evalDwellingAvail[i] = 1;
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             if (dd.getResidentId() == -1) {
                 // dwelling is vacant, evaluate for all household types
                 double utils[] = updateUtilitiesOfVacantDwelling(dd, modelContainer);
@@ -197,7 +197,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
         int priceSum = 0;
         int counter = 0;
-        for (Dwelling d : Dwelling.getDwellingArray()) {
+        for (Dwelling d : Dwelling.getDwellings()) {
 
             if (geoData.getZones().get(d.getZone()).getRegion().getId() == region) {
                 priceSum += d.getPrice();

@@ -139,7 +139,7 @@ public class RealEstateDataManager {
         vacDwellingsByRegionPos = SiloUtil.setArrayToValue(vacDwellingsByRegionPos, 0);
 
         logger.info("  Identifying vacant dwellings");
-        for (Dwelling dd : Dwelling.getDwellingArray()) {
+        for (Dwelling dd : Dwelling.getDwellings()) {
             if (dd.getResidentId() == -1) {
                 int dwellingId = dd.getId();
                 int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
@@ -216,7 +216,7 @@ public class RealEstateDataManager {
         rentCategories = 25;
         int[] incBrackets = Properties.get().main.incomeBrackets;
         float[][] priceByIncome = new float[incBrackets.length + 1][rentCategories + 1];
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd: Dwelling.getDwellings()) {
             highestDwellingIdInUse = Math.max(highestDwellingIdInUse, dd.getId());
             largestNoBedrooms = Math.max(largestNoBedrooms, dd.getBedrooms());
             int hhId = dd.getResidentId();
@@ -274,7 +274,7 @@ public class RealEstateDataManager {
     public void calculateMedianRentByMSA() {
 
         Map<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd: Dwelling.getDwellings()) {
             int dwellingMSA = geoData.getZones().get(dd.getZone()).getMsa();
             if (rentHashMap.containsKey(dwellingMSA)) {
                 ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
@@ -306,7 +306,7 @@ public class RealEstateDataManager {
             SummarizeData.resultFile(row);
         }
         int[] ddByType = new int[DwellingType.values().length];
-        for (Dwelling dd: Dwelling.getDwellingArray()) ddByType[dd.getType().ordinal()]++;
+        for (Dwelling dd: Dwelling.getDwellings()) ddByType[dd.getType().ordinal()]++;
         for (DwellingType dt: DwellingType.values()) {
             SummarizeData.resultFile("CountOfDD,"+dt.toString()+","+ddByType[dt.ordinal()]);
         }

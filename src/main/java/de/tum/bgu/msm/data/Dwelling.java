@@ -62,6 +62,7 @@ public final class Dwelling {
     private double utilOfResident;
     private double[] utilByHhType;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
+    //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int buildingSize = 0;
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
@@ -101,10 +102,6 @@ public final class Dwelling {
 
     public static Collection<Dwelling> getDwellings() {
         return Collections.unmodifiableCollection(dwellingMap.values());
-    }
-
-    public static Dwelling[] getDwellingArray() {
-        return dwellingMap.values().toArray(new Dwelling[dwellingMap.size()]);
     }
 
     public static void removeDwelling(int id) {

@@ -243,11 +243,9 @@ public final class Household {
 
     @Override
     public String toString() {
-        final int homeZone;
+        int homeZone = -1;
         final Dwelling dwelling = Dwelling.getDwellingFromId(dwellingId);
-        if(dwelling == null) {
-            homeZone = -1;
-        } else {
+        if(dwelling != null) {
             homeZone = dwelling.getZone();
         }
         return  "Attributes of household " + hhId

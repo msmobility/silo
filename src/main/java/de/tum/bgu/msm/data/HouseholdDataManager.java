@@ -937,7 +937,7 @@ public class HouseholdDataManager {
             pwd.println(dd.getYearBuilt());
         }
         // add a few empty dwellings
-        for (Dwelling dd: Dwelling.getDwellingArray()) {
+        for (Dwelling dd: Dwelling.getDwellings()) {
             if (dd.getResidentId() == -1 && SiloUtil.select(100) > 90) {
                 // write out dwelling attributes
                 pwd.print(dd.getId());
