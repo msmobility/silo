@@ -243,9 +243,16 @@ public final class Household {
 
     @Override
     public String toString() {
+        final int homeZone;
+        final Dwelling dwelling = Dwelling.getDwellingFromId(dwellingId);
+        if(dwelling == null) {
+            homeZone = -1;
+        } else {
+            homeZone = dwelling.getZone();
+        }
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
             +"\nHousehold size          " + persons.size()
-            +"\nHome zone               " + Dwelling.getDwellingFromId(dwellingId).getZone();
+            +"\nHome zone               " + homeZone ;
     }
 }
