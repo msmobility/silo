@@ -6,8 +6,14 @@ public interface Zone extends Id{
 
     Region getRegion();
 
+    /**
+     * @return the zone's metropolitan statistical area
+     */
     int getMsa();
 
+    /**
+     * @return the area of the zone in acres
+     */
     float getArea();
 
 }
