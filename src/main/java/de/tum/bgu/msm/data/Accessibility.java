@@ -29,19 +29,16 @@ import java.util.Map;
 
 public class Accessibility {
 
-    private final static Logger LOGGER = Logger.getLogger(Accessibility.class);
-
-    private GeoData geoData;
-    private float[] workTLFD;
-    private Table<Integer, Integer, Double> travelTimeToRegion;
+    private static final Logger LOGGER = Logger.getLogger(Accessibility.class);
     private static final double TIME_OF_DAY = 8 * 60. * 60.;
+
+    private final GeoData geoData;
 
     private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 
     private final DoubleMatrix1D autoAccessibilities;
     private final DoubleMatrix1D transitAccessibilities;
     private final DoubleMatrix1D regionalAccessibilities;
-
 
     private final float autoOperatingCosts;
     private final float alphaAuto;
@@ -52,20 +49,21 @@ public class Accessibility {
     private final String transitMatrixName;
     private final String carMatrixName;
 
+    private float[] workTLFD;
+    private Table<Integer, Integer, Double> travelTimeToRegion;
 
     public Accessibility(GeoData geoData) {
         this.geoData = geoData;
 
-        autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
+        this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
+        this.alphaAuto = Properties.get().accessibility.alphaAuto;
+        this.betaAuto = Properties.get().accessibility.betaAuto;
+        this.alphaTransit = Properties.get().accessibility.alphaTransit;
+        this.betaTransit = Properties.get().accessibility.betaTransit;
 
-        alphaAuto = Properties.get().accessibility.alphaAuto;
-        betaAuto = Properties.get().accessibility.betaAuto;
-        alphaTransit = Properties.get().accessibility.alphaTransit;
-        betaTransit = Properties.get().accessibility.betaTransit;
-
-        autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
 
         // Work-around to make sure that existing code does not break
         if (Properties.get().accessibility.usingTransitPeakSkim) {
