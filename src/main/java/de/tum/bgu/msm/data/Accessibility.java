@@ -114,10 +114,10 @@ public class Accessibility {
 
         LOGGER.info("  Calculating zone zone accessibilities: auto");
         final DoubleMatrix2D autoAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, getPeakAutoTravelTimeMatrix(), alphaAuto, betaAuto);
+                calculateZoneToZoneAccessibilities(population, getPeakTravelTimeMatrix(TransportMode.car), alphaAuto, betaAuto);
         LOGGER.info("  Calculating zone zone accessibilities: transit");
         final DoubleMatrix2D transitAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, getPeakTransitTravelTimeMatrix(), alphaTransit, betaTransit);
+                calculateZoneToZoneAccessibilities(population, getPeakTravelTimeMatrix(TransportMode.pt), alphaTransit, betaTransit);
 
         LOGGER.info("  Aggregating zone accessibilities");
         aggregateAccessibilities(autoAccessZoneToZone, transitAccessZoneToZone, autoAccessibilities, transitAccessibilities, geoData.getZones().keySet());
@@ -189,7 +189,6 @@ public class Accessibility {
                 Math.pow(population.getQuick(destination), alpha) * Math.exp(beta * travelTime));
     }
 
-
     private void readWorkTripLengthFrequencyDistribution() {
         // read HTS trip length frequency distribution for work trips
 
@@ -215,7 +214,6 @@ public class Accessibility {
         }
     }
 
-
     private void calculateTravelTimesToRegions() {
         travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
 
@@ -231,21 +229,17 @@ public class Accessibility {
         }
     }
 
-
     public double getRegionalAccessibility(int region) {
         return regionalAccessibilities.getQuick(region);
     }
-
 
     public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
         return travelTimeToRegion.get(zone, region).floatValue();
     }
 
-
     public Map<String, TravelTimes> getTravelTimes() {
         return Collections.unmodifiableMap(travelTimes);
     }
-
 
     public void addTravelTimeForMode(String mode, TravelTimes travelTimes) {
         if (mode == null) {
@@ -258,6 +252,21 @@ public class Accessibility {
             LOGGER.info("Replace travel time for " + mode + " mode.");
         }
         this.travelTimes.put(mode, travelTimes);
+    }
+
+    private DoubleMatrix2D getPeakTravelTimeMatrix(String forMode) {
+        TravelTimes tt = travelTimes.get(forMode);
+        if (tt instanceof SkimTravelTimes) {
+            return ((SkimTravelTimes) tt).getPeakTravelTimeMatrix();
+        } else {
+            final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getZones().values());
+            for (int origin : geoData.getZones().keySet()) {
+                for (int destination : geoData.getZones().keySet()) {
+                    matrix.setQuick(origin, destination, tt.getTravelTime(origin, destination, TIME_OF_DAY));
+                }
+            }
+            return matrix;
+        }
     }
 
     public double getAutoAccessibilityForZone(int zoneId) {
@@ -275,37 +284,6 @@ public class Accessibility {
     public double getPeakTransitTravelTime(int i, int j) {
         return travelTimes.get(TransportMode.pt).getTravelTime(i, j, TIME_OF_DAY);
     }
-
-    public DoubleMatrix2D getPeakAutoTravelTimeMatrix() {
-        TravelTimes tt = travelTimes.get(TransportMode.car);
-        if (tt instanceof SkimTravelTimes) {
-            return ((SkimTravelTimes) tt).getPeakTravelTimeMatrix();
-        } else {
-            final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getZones().values());
-            for (int origin : geoData.getZones().keySet()) {
-                for (int destination : geoData.getZones().keySet()) {
-                    matrix.setQuick(origin, destination, tt.getTravelTime(origin, destination, TIME_OF_DAY));
-                }
-            }
-            return matrix;
-        }
-    }
-
-    public DoubleMatrix2D getPeakTransitTravelTimeMatrix() {
-        TravelTimes tt = travelTimes.get(TransportMode.pt);
-        if (tt instanceof SkimTravelTimes) {
-            return ((SkimTravelTimes) tt).getPeakTravelTimeMatrix();
-        } else {
-            final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getZones().values());
-            for (int origin : geoData.getZones().keySet()) {
-                for (int destination : geoData.getZones().keySet()) {
-                    matrix.setQuick(origin, destination, tt.getTravelTime(origin, destination, TIME_OF_DAY));
-                }
-            }
-            return matrix;
-        }
-    }
-
 
     public double getPeakTravelCosts(int i, int j) {
         return (autoOperatingCosts / 100) * getPeakAutoTravelTime(i, j);
