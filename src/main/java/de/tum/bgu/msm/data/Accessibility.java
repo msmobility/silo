@@ -36,6 +36,8 @@ public class Accessibility {
 
     private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
 
+    private final Table<Integer, Integer, Double> travelTimeToRegion;
+
     private final DoubleMatrix1D autoAccessibilities;
     private final DoubleMatrix1D transitAccessibilities;
     private final DoubleMatrix1D regionalAccessibilities;
@@ -50,10 +52,10 @@ public class Accessibility {
     private final String carMatrixName;
 
     private float[] workTLFD;
-    private Table<Integer, Integer, Double> travelTimeToRegion;
 
     public Accessibility(GeoData geoData) {
         this.geoData = geoData;
+        this.travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
 
         this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
         this.alphaAuto = Properties.get().accessibility.alphaAuto;
@@ -80,8 +82,15 @@ public class Accessibility {
         }
     }
 
+    /**
+     * Initializes the accessibility object by reading trip length distributions
+     * and zone to region travel times. Travel times should therefore
+     * be read/updated _BEFORE_ this method is called.
+     */
     public void initialize() {
+        LOGGER.info("Initializing trip length frequency distributions");
         readWorkTripLengthFrequencyDistribution();
+        LOGGER.info("Initializing travel times to regions");
         calculateTravelTimesToRegions();
     }
 
@@ -106,8 +115,7 @@ public class Accessibility {
         return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
     }
 
-    public void calculateAccessibilities(int year) {
-        // Calculate Hansen TripGenAccessibility (recalculated every year)
+    public void calculateHansenAccessibilities(int year) {
 
         LOGGER.info("  Calculating accessibilities for " + year);
         final DoubleMatrix1D population = SummarizeData.getPopulationByZone(geoData);
@@ -205,36 +213,22 @@ public class Accessibility {
         }
     }
 
-    public float getWorkTLFD(int minutes) {
-        // return probability to commute 'minutes'
+    private void calculateTravelTimesToRegions() {
+        geoData.getZones().values(). forEach( z -> {
+            geoData.getRegions().values().stream().forEach( r -> {
+                double min = r.getZones().stream().mapToDouble(zoneInRegion ->
+                        getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+                travelTimeToRegion.put(z.getId(), r.getId(), min);
+            });
+        });
+    }
+
+    public float getCommutingTimeProbability(int minutes) {
         if (minutes < workTLFD.length) {
             return workTLFD[minutes];
         } else {
             return 0;
         }
-    }
-
-    private void calculateTravelTimesToRegions() {
-        travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
-
-        for (Zone zone : geoData.getZones().values()) {
-            for (Region region : geoData.getRegions().values()) {
-                double minDist = Double.MAX_VALUE;
-                for (Zone zoneInRegion : region.getZones()) {
-                    double travelTime = getPeakAutoTravelTime(zone.getId(), zoneInRegion.getId());
-                    minDist = Math.min(minDist, travelTime);
-                }
-                travelTimeToRegion.put(zone.getId(), region.getId(), minDist);
-            }
-        }
-    }
-
-    public double getRegionalAccessibility(int region) {
-        return regionalAccessibilities.getQuick(region);
-    }
-
-    public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
-        return travelTimeToRegion.get(zone, region).floatValue();
     }
 
     public Map<String, TravelTimes> getTravelTimes() {
@@ -277,8 +271,16 @@ public class Accessibility {
         return this.transitAccessibilities.getQuick(zoneId);
     }
 
+    public double getRegionalAccessibility(int region) {
+        return regionalAccessibilities.getQuick(region);
+    }
+
     public double getPeakAutoTravelTime(int i, int j) {
         return travelTimes.get(TransportMode.car).getTravelTime(i, j, TIME_OF_DAY);
+    }
+
+    public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
+        return travelTimeToRegion.get(zone, region).floatValue();
     }
 
     public double getPeakTransitTravelTime(int i, int j) {

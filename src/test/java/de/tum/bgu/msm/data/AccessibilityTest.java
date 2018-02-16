@@ -5,10 +5,12 @@ import cern.colt.matrix.tdouble.DoubleFactory1D;
 import cern.colt.matrix.tdouble.DoubleFactory2D;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.matrices.Matrices;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -95,38 +97,53 @@ public class AccessibilityTest {
         Accessibility accessibility = new Accessibility(geoData);
         accessibility.readCarSkim(2000);
         accessibility.readPtSkim(2000);
-        accessibility.calculateAccessibilities(2000);
+        accessibility.initialize();
+        accessibility.calculateHansenAccessibilities(2000);
 
+        DoubleMatrix2D minTravelTimes = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
 
-        double[] accCar = new double[geoData.getZones().keySet().stream().mapToInt(Integer::intValue).max().getAsInt()+1];
-        double[] accTransit = new double[geoData.getZones().keySet().stream().mapToInt(Integer::intValue).max().getAsInt()+1];
-        double[] accRegions = new double[geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt()+1];
+        for(Zone zone: geoData.getZones().values()) {
+            for(Region region: geoData.getRegions().values()) {
+                minTravelTimes.setQuick(zone.getId(), region.getId(), accessibility.getMinTravelTimeFromZoneToRegion(zone.getId(), region.getId()));
+            }
+        }
+
+        DoubleMatrix1D accCar = Matrices.doubleMatrix1D(geoData.getZones().values());
+        DoubleMatrix1D accTransit = Matrices.doubleMatrix1D(geoData.getZones().values());
+        DoubleMatrix1D accRegions = Matrices.doubleMatrix1D(geoData.getRegions().values());
 
         for(int zone: geoData.getZones().keySet()) {
-            accCar[zone] = accessibility.getAutoAccessibilityForZone(zone);
-            accTransit[zone] = accessibility.getTransitAccessibilityForZone(zone);
+            accCar.setQuick(zone, accessibility.getAutoAccessibilityForZone(zone));
+            accTransit.setQuick(zone, accessibility.getTransitAccessibilityForZone(zone));
         }
 
         for(int region: geoData.getRegions().keySet()) {
-            accRegions[region] = accessibility.getRegionalAccessibility(region);
+            accRegions.setQuick(region, accessibility.getRegionalAccessibility(region));
         }
 
         Locale.setDefault(Locale.ENGLISH);
+
+        MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTT.txt"));
+        writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
+        writerZone2Region.flush();
+        writerZone2Region.close();
+
         MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesCar.txt"));
-        writerCar.printArray(accCar);
+        writerCar.printArray(accCar.toArray());
         writerCar.flush();
         writerCar.close();
 
         MatrixVectorWriter writerTransit = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesTransit.txt"));
-        writerTransit.printArray(accTransit);
+        writerTransit.printArray(accTransit.toArray());
         writerTransit.flush();
         writerTransit.close();
 
         MatrixVectorWriter writerRegion = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesRegion.txt"));
-        writerRegion.printArray(accRegions);
+        writerRegion.printArray(accRegions.toArray());
         writerRegion.flush();
         writerRegion.close();
 
+        FileAssert.assertEquals("zone 2 region travel times  are different.", new File("./test/input/zone2regionTT.txt"), new File("./test/output/zone2RegionTT.txt"));
         FileAssert.assertEquals("car accessibilities are different.", new File("./test/input/accessibilitiesCar.txt"), new File("./test/output/accessibilitiesCar.txt"));
         FileAssert.assertEquals("transit accessibilities are different.", new File("./test/input/accessibilitiesTransit.txt"), new File("./test/output/accessibilitiesTransit.txt"));
         FileAssert.assertEquals("region accessibilities are different.", new File("./test/input/accessibilitiesRegion.txt"), new File("./test/output/accessibilitiesRegion.txt"));

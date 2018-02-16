@@ -28,6 +28,7 @@ import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
 
 import java.util.Arrays;
@@ -86,13 +87,41 @@ public class SiloModel {
 		modelContainer.getCarOwnershipModel().initialize();
 
 		setupTransport();
-		modelContainer.getAcc().initialize();
-		modelContainer.getAcc().calculateAccessibilities(Properties.get().main.startYear);
-
+        setupAccessibility();
 		setupTimeTracker();
 
 		if (Properties.get().main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
+		}
+	}
+
+	private void setupAccessibility() {
+	    if(runMatsim) {
+	        modelContainer.getAcc().addTravelTimeForMode(TransportMode.car, ((MatsimTransportModel) transportModel).getTravelTimes());
+        } else {
+            modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
+        }
+        modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
+        modelContainer.getAcc().initialize();
+        modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
+    }
+
+	private void setupTransport() {
+		runMatsim = Properties.get().transportModel.runMatsim;
+		runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
+
+		if ( runMatsim && ( runTravelDemandModel || Properties.get().main.createMstmOutput)) {
+			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
+		}
+		if (runMatsim) {
+			logger.info("  MATSim is used as the transport model");
+			transportModel = new MatsimTransportModel(dataContainer, matsimConfig);
+			transportModel.runTransportModel(Properties.get().main.startYear);
+		} else if(runTravelDemandModel){
+			logger.info("  MITO is used as the transport model");
+			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
+		} else {
+			logger.info(" No transport model is used");
 		}
 	}
 
@@ -101,30 +130,6 @@ public class SiloModel {
 		timeCounter = new long[EventTypes.values().length + 12][Properties.get().main.endYear + 1];
 		startTime = 0;
 		IssueCounter.logIssues(dataContainer.getGeoData());
-	}
-
-	private void setupTransport() {
-		runMatsim = Properties.get().transportModel.runMatsim;
-		runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
-		if ( runMatsim && ( runTravelDemandModel || Properties.get().main.createMstmOutput)) {
-			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
-		}
-
-		if (runMatsim) {
-			logger.info("  MATSim is used as the transport model");
-			transportModel = new MatsimTransportModel(dataContainer, modelContainer.getAcc(), matsimConfig);
-			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
-			transportModel.runTransportModel(Properties.get().main.startYear);
-		} else if(runTravelDemandModel){
-			logger.info("  MITO is used as the transport model");
-			modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
-			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
-			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
-		} else {
-			modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
-			modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
-			logger.info(" No transport model is used");
-		}
 	}
 
 	private void setupYears() {
@@ -182,7 +187,7 @@ public class SiloModel {
 					modelContainer.getAcc().readCarSkim(year);
 				}
 				modelContainer.getAcc().readPtSkim(year);
-				modelContainer.getAcc().calculateAccessibilities(year);
+				modelContainer.getAcc().calculateHansenAccessibilities(year);
 			}
 
 			if (trackTime) startTime = System.currentTimeMillis();
@@ -288,7 +293,7 @@ public class SiloModel {
 			if ( runMatsim || runTravelDemandModel || Properties.get().main.createMstmOutput) {
                 if (SiloUtil.containsElement(tdmYears, year + 1)) {
                 transportModel.runTransportModel(year + 1);
-                    modelContainer.getAcc().calculateAccessibilities(year + 1);
+                    modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
                 }
             }
 

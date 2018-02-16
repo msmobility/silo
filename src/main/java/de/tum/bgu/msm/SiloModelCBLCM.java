@@ -124,7 +124,7 @@ public class SiloModelCBLCM {
 	                // years to read skims may be provided in skimYears
 	                modelContainer.getAcc().readCarSkim(currentYear);
 	                modelContainer.getAcc().readPtSkim(currentYear);
-	                modelContainer.getAcc().calculateAccessibilities(currentYear);
+	                modelContainer.getAcc().calculateHansenAccessibilities(currentYear);
 	            }
 	        }
 

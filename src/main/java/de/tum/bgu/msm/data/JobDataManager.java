@@ -334,7 +334,7 @@ public class JobDataManager {
             for (int reg : regions) {
                 if (vacantJobsByRegionPos[reg] > 0) {
                     int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                    regionProbability[reg] = siloModelContainer.getAcc().getWorkTLFD(distance) * (double) getNumberOfVacantJobsByRegion(reg);
+                    regionProbability[reg] = siloModelContainer.getAcc().getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
                 }
             }
             if (SiloUtil.getSum(regionProbability) == 0) {

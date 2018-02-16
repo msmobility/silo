@@ -104,7 +104,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 //            if (p.getOccupation() == 1 && p.getWorkplace() != -2) {
 //                int workZone = Job.getJobFromId(p.getWorkplace()).getZone();
 //                int travelTime = (int) SiloUtil.rounder(siloModelContainer.getAcc().getAutoTravelTime(homeZone, workZone),0);
-//                util = util * siloModelContainer.getAcc().getWorkTLFD(travelTime);
+//                util = util * siloModelContainer.getAcc().getCommutingTimeProbability(travelTime);
 //            }
 //        }
 //        return util;
@@ -236,7 +236,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
                     int smallestDistInMin = (int) siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(workZone, regions[i]);
-                    workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getWorkTLFD(smallestDistInMin);
+                    workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getCommutingTimeProbability(smallestDistInMin);
                 }
             }
         }

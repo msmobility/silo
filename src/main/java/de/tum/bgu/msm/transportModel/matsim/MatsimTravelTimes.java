@@ -4,7 +4,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
@@ -19,38 +18,39 @@ import java.util.Map;
 public class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
-	private final LeastCostPathTree leastCoastPathTree;
-	private final Network network;
+	private LeastCostPathTree leastCoastPathTree;
+	private Network network;
 	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
-	public MatsimTravelTimes(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
-		this.leastCoastPathTree = leastCoastPathTree;
-		this.network = network;
-		initialize(zoneFeatureMap);
-	}
+	public void update(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
+        this.leastCoastPathTree = leastCoastPathTree;
+        this.network = network;
+        this.treesForNodesByTimes.clear();
+        updateZoneConnections(zoneFeatureMap);
+    }
 
-	private void initialize(Map<Integer,SimpleFeature> zoneFeatureMap) {
+	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
+	    zoneCalculationNodesMap.clear();
 		for (int zoneId : zoneFeatureMap.keySet()) {
+            SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
 
-			for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-				SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
+            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
 				Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
-				Link originLink = NetworkUtils.getNearestLink(network, originCoord);
-				Node originNode = originLink.getToNode();
+                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
 				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
-					zoneCalculationNodesMap.put(zoneId, new LinkedList<Node>());
+					zoneCalculationNodesMap.put(zoneId, new LinkedList());
 				}
 				zoneCalculationNodesMap.get(zoneId).add(originNode);
 			}
 		}
-	}
+        logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
+    }
 
 	@Override
 	public double getTravelTime(int origin, int destination, double timeOfDay_s) {
-		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
 		
 		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
@@ -78,6 +78,6 @@ public class MatsimTravelTimes implements TravelTimes {
 				sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
 			}
 		}
-		return sumTravelTime_min / NUMBER_OF_CALC_POINTS / NUMBER_OF_CALC_POINTS;
+		return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
 	}
 }
