@@ -123,7 +123,7 @@ public class AccessibilityTest {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTT.txt"));
+        MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTravelTimes.txt"));
         writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
         writerZone2Region.flush();
         writerZone2Region.close();
@@ -143,9 +143,9 @@ public class AccessibilityTest {
         writerRegion.flush();
         writerRegion.close();
 
-        FileAssert.assertEquals("zone 2 region travel times  are different.", new File("./test/input/zone2regionTT.txt"), new File("./test/output/zone2RegionTT.txt"));
         FileAssert.assertEquals("car accessibilities are different.", new File("./test/input/accessibilitiesCar.txt"), new File("./test/output/accessibilitiesCar.txt"));
         FileAssert.assertEquals("transit accessibilities are different.", new File("./test/input/accessibilitiesTransit.txt"), new File("./test/output/accessibilitiesTransit.txt"));
         FileAssert.assertEquals("region accessibilities are different.", new File("./test/input/accessibilitiesRegion.txt"), new File("./test/output/accessibilitiesRegion.txt"));
+        FileAssert.assertEquals("zone 2 region travel times  are different.", new File("./test/input/zone2regionTravelTimes.txt"), new File("./test/output/zone2regionTravelTimes.txt"));
     }
 }
