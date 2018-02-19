@@ -22,6 +22,7 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
@@ -38,8 +39,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private final DoubleMatrix1D hhByRegion;
 
 
-    public MovesModelMstm(GeoDataMstm geoData, RealEstateDataManager realEstateData) {
-        super(geoData);
+    public MovesModelMstm(GeoDataMstm geoData, RealEstateDataManager realEstateData, Accessibility accessibility) {
+        super(geoData, accessibility);
         selectDwellingRaceRelevance = Properties.get().moves.racialRelevanceInZone;
         provideRentSubsidyToLowIncomeHh = Properties.get().moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
@@ -148,7 +149,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     @Override
-    public void calculateRegionalUtilities(SiloModelContainer siloModelContainer) {
+    public void calculateRegionalUtilities() {
         // everything is available
 
         calculateRacialCompositionByZoneAndRegion();
@@ -161,9 +162,16 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         float[] regAcc = new float[highestRegion + 1];
         float[] regSchQu = new float[highestRegion + 1];
         float[] regCrime = new float[highestRegion + 1];
+        Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
         for (int region: regions) {
-            regPrice[region] = calculateRegPrice(region);
-            regAcc[region] = (float) convertAccessToUtility(siloModelContainer.getAcc().getRegionalAccessibility(region));
+            int price;
+            if(rentsByRegion.containsKey(region)) {
+                price = rentsByRegion.get(region).intValue();
+            } else {
+                price = 0;
+            }
+            regPrice[region] = price;
+            regAcc[region] = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
             regSchQu[region] = ((GeoDataMstm) geoData).getRegionalSchoolQuality(region);
             regCrime[region] = 1f - ((GeoDataMstm) geoData).getRegionalCrimeRate(region);  // invert utility, as lower crime rate has higher utility
         }
@@ -225,7 +233,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
 
-    private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones, SiloModelContainer siloModelContainer) {
+    private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
         // return utility of regions based on household type and based on work location of workers in household
 
         int[] regions = geoData.getRegionIdsArray();
@@ -235,8 +243,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             workDistanceFactor[i] = 1;
             if (workZones != null) {  // for inmigrating household, work places are selected after household found a home
                 for (int workZone : workZones) {
-                    int smallestDistInMin = (int) siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(workZone, regions[i]);
-                    workDistanceFactor[i] = workDistanceFactor[i] * siloModelContainer.getAcc().getCommutingTimeProbability(smallestDistInMin);
+                    int smallestDistInMin = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, regions[i]);
+                    workDistanceFactor[i] = workDistanceFactor[i] * accessibility.getCommutingTimeProbability(smallestDistInMin);
                 }
             }
         }
@@ -248,7 +256,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     @Override
-    public int searchForNewDwelling(List<Person> persons, SiloModelContainer siloModelContainer) {
+    public int searchForNewDwelling(List<Person> persons) {
         // search alternative dwellings
 
         // data preparation
@@ -271,7 +279,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
         // Step 1: select region
         int[] regions = geoData.getRegionIdsArray();
-        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones, siloModelContainer);
+        double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones);
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
@@ -320,7 +328,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             // multiply by racial share to make zones with higher own racial share more attractive
             double adjProb;
             if (householdQualifiesForSubsidy(householdIncome, geoData.getZones().get(dd.getZone()).getId(), dd.getPrice())) {
-                adjProb = Math.pow(calculateDwellingUtilityOfHousehold(ht, householdIncome, dd, siloModelContainer), (1 - selectDwellingRaceRelevance)) *
+                adjProb = Math.pow(calculateDwellingUtilityOfHousehold(ht, householdIncome, dd), (1 - selectDwellingRaceRelevance)) *
                         Math.pow(racialShare, selectDwellingRaceRelevance);
             } else {
                 adjProb = Math.pow(dd.getUtilByHhType()[ht.ordinal()], (1 - selectDwellingRaceRelevance)) *
@@ -336,11 +344,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
 
     @Override
-    protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd, SiloModelContainer modelContainer) {
+    protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd) {
         evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
         evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
-        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(modelContainer.getAcc().getAutoAccessibilityForZone(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(modelContainer.getAcc().getTransitAccessibilityForZone(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone())));
+        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone())));
         evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((MstmZone) geoData.getZones().get(dd.getZone())).getSchoolQuality());
         evaluateDwellingDmu.setUtilityDwellingCrimeRate(((MstmZone) geoData.getZones().get(dd.getZone())).getCounty().getCrimeRate());
 

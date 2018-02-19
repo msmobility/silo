@@ -198,8 +198,6 @@ public class Accessibility {
     }
 
     private void readWorkTripLengthFrequencyDistribution() {
-        // read HTS trip length frequency distribution for work trips
-
         String fileName = Properties.get().main.baseDirectory + Properties.get().accessibility.htsWorkTLFD;
         TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
         workTLFD = new float[tlfd.getRowCount() + 1];

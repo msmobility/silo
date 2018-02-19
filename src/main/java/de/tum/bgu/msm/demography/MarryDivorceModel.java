@@ -248,7 +248,7 @@ public class MarryDivorceModel {
             if (hhOfPartner2.checkIfOnlyChildrenRemaining()) {
                 moveRemainingChildren(hhOfPartner2, newHh, dataContainer);
             }
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(ImmutableList.of(partner1, partner2), modelContainer);
+            int newDwellingId = modelContainer.getMove().searchForNewDwelling(ImmutableList.of(partner1, partner2));
             if (newDwellingId < 0) {
                 modelContainer.getIomig().outMigrateHh(newHhId, true, dataContainer);
                 if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || newHhId == SiloUtil.trackHh)
@@ -308,7 +308,7 @@ public class MarryDivorceModel {
         double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
         if (SiloUtil.getRandomNumberAsDouble() < probability) {
             // check if vacant dwelling is available
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per), modelContainer);
+            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per));
             if (newDwellingId < 0) {
                 if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println(

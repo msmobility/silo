@@ -169,7 +169,7 @@ public class InOutMigration {
         hh.determineHouseholdRace();
         HouseholdDataManager.findMarriedCouple(hh);
         HouseholdDataManager.defineUnmarriedPersons(hh);
-        int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons(), modelContainer);
+        int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
         if (newDdId > 0) {
             modelContainer.getMove().moveHousehold(hh, -1, newDdId, dataContainer);
         } else {

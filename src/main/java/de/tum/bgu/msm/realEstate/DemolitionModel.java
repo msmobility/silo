@@ -54,7 +54,7 @@ public class DemolitionModel {
             if (occupied == 1) {
                 // dwelling is currently occupied, force household to move out
                 Household hh = Household.getHouseholdFromId(residentId);
-                int idNewDD = modelContainer.getMove().searchForNewDwelling(hh.getPersons(), modelContainer);
+                int idNewDD = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
                 if (idNewDD > 0) {
                     modelContainer.getMove().moveHousehold(hh, -1, idNewDD, dataContainer);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
                 } else {

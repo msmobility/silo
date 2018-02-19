@@ -133,8 +133,8 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getMove().calculateRegionalUtilities(modelContainer);
-	        modelContainer.getMove().calculateAverageHousingSatisfaction(modelContainer);
+	        modelContainer.getMove().calculateRegionalUtilities();
+	        modelContainer.getMove().calculateAverageHousingSatisfaction();
 	        if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
@@ -190,7 +190,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getMove().chooseMove(event[1], modelContainer, dataContainer);
+	                modelContainer.getMove().chooseMove(event[1], dataContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();

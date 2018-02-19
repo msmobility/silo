@@ -308,7 +308,7 @@ public class ConstructionModel {
         int price = attributes[5];
 
         Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
-        double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd, modelContainer);
+        double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         EventManager.countEvent(EventTypes.DD_CONSTRUCTION);

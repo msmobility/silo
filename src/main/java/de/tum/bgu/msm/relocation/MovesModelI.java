@@ -9,21 +9,21 @@ import de.tum.bgu.msm.data.Person;
 import java.util.List;
 
 /**
- * Interface to generate an application-specific implementation of the MovesModelMstm
+ * Interface to generate an application-specific implementation of the MovesModel
  * @author Rolf Moeckel
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
  */
 public interface MovesModelI {
 
-    void calculateAverageHousingSatisfaction (SiloModelContainer modelContainer);
+    void calculateAverageHousingSatisfaction();
 
-    double[] updateUtilitiesOfVacantDwelling (Dwelling dd, SiloModelContainer modelContainer);
+    double[] updateUtilitiesOfVacantDwelling (Dwelling dd);
 
-    void calculateRegionalUtilities(SiloModelContainer modelContainer);
+    void calculateRegionalUtilities();
 
-    void chooseMove (int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer);
+    void chooseMove (int hhId, SiloDataContainer dataContainer);
 
-    int searchForNewDwelling(List<Person> persons, SiloModelContainer modelContainer);
+    int searchForNewDwelling(List<Person> persons);
 
     void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer);
 }

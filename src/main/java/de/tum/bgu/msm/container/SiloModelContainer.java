@@ -130,13 +130,13 @@ public class SiloModelContainer {
         CreateCarOwnershipModel createCarOwnershipModel = null;
         switch(Properties.get().main.implementation) {
             case MARYLAND:
-                move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData());
                 carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
+                move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData(), acc);
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel();
                 carOwnershipModel = new MunichCarOwnerShipModel();
-                move = new MovesModelMuc(dataContainer.getGeoData());
+                move = new MovesModelMuc(dataContainer.getGeoData(), acc);
                 break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);

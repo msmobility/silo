@@ -74,7 +74,7 @@ public class LeaveParentHhModel {
         if (SiloUtil.getRandomNumberAsDouble() < lphProbability[per.getType().ordinal()]) {
 
             // search if dwelling is available
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per), modelContainer);
+            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per));
             if (newDwellingId < 0) {
                 if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
                         "Person " + perId + " wanted to but could not leave parental household " + per.getHh().getId() +
