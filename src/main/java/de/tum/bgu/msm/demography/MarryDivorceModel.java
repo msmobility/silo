@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.demography;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -99,7 +100,7 @@ public class MarryDivorceModel {
                     List<Integer> al = ppByAgeAndGender.get(token);
                     al.add(pp.getId());
                 } else {
-                    ppByAgeAndGender.put(token, new ArrayList<>(pp.getId()));
+                    ppByAgeAndGender.put(token, Lists.newArrayList(pp.getId()));
                 }
             }
         }
