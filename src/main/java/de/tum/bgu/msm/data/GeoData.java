@@ -43,17 +43,10 @@ public interface GeoData {
     int getRegionOfZone(int zone);
 
     /**
-     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getRegions()}
-     */
-    @Deprecated
-    int getRegionIndex(int region);
-
-    /**
      * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
      */
     @Deprecated
     int getZoneIndex(int zone);
-
 
     /**
      * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}

@@ -141,36 +141,4 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     public int getCountyOfZone(int taz) {
         return ((MstmZone)this.zones.get(taz)).getCounty().getId();
     }
-
-    /**
-     * @deprecated  As of jan'18. Use direct access method of {@link MstmRegion} instead
-     */
-    @Deprecated
-    public float getRegionalSchoolQuality(int region) {
-        return (float) ((MstmRegion)this.regions.get(region)).getSchoolQuality();
-    }
-
-    /**
-     * @deprecated  As of jan'18. Use direct access method of {@link MstmRegion} instead
-     */
-    @Deprecated
-    public float getRegionalCrimeRate(int region) {
-        return (float) ((MstmRegion)this.regions.get(region)).getCrimeRate();
-    }
-
-    /**
-     * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
-     */
-    @Deprecated
-    public double getZonalSchoolQuality(int zone) {
-        return ((MstmZone)this.zones.get(zone)).getSchoolQuality();
-    }
-
-    /**
-     * @deprecated  As of jan'18. Use direct access method of {@link County} instead
-     */
-    @Deprecated
-    public double getCountyCrimeRate(int countyOfZone) {
-        return this.counties.get(countyOfZone).getCrimeRate();
-    }
 }

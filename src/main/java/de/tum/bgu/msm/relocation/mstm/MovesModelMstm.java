@@ -10,9 +10,9 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.relocation.AbstractDefaultMovesModel;
@@ -156,32 +156,32 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         int[] selRegAvail = new int[numAltsSelReg + 1];
         for (int i = 1; i < selRegAvail.length; i++) selRegAvail[i] = 1;
 
-        int[] regions = geoData.getRegionIdsArray();
-        int highestRegion = SiloUtil.getHighestVal(regions);
+        int highestRegion = geoData.getRegions().keySet().stream().reduce(Integer::max).get().intValue();
         int[] regPrice = new int[highestRegion + 1];
         float[] regAcc = new float[highestRegion + 1];
         float[] regSchQu = new float[highestRegion + 1];
         float[] regCrime = new float[highestRegion + 1];
         Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
-        for (int region: regions) {
+        for (Region region: geoData.getRegions().values()) {
+            final int id = region.getId();
             int price;
-            if(rentsByRegion.containsKey(region)) {
-                price = rentsByRegion.get(region).intValue();
+            if(rentsByRegion.containsKey(id)) {
+                price = rentsByRegion.get(id).intValue();
             } else {
                 price = 0;
             }
-            regPrice[region] = price;
-            regAcc[region] = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            regSchQu[region] = ((GeoDataMstm) geoData).getRegionalSchoolQuality(region);
-            regCrime[region] = 1f - ((GeoDataMstm) geoData).getRegionalCrimeRate(region);  // invert utility, as lower crime rate has higher utility
+            regPrice[id] = price;
+            regAcc[id] = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(id));
+            regSchQu[id] = (float) ((MstmRegion) region).getSchoolQuality();
+            regCrime[id] = (float) (1f - ((MstmRegion) region).getCrimeRate());  // invert utility, as lower crime rate has higher utility
         }
         selectRegionDmu.setRegionalAccessibility(regAcc);
         selectRegionDmu.setRegionalSchoolQuality(regSchQu);
         selectRegionDmu.setRegionalCrimeRate(regCrime);
         for (Race race: Race.values()) {
             float[] regionalRacialShare = new float[highestRegion + 1];
-            for (int region: regions) {
-                regionalRacialShare[region] = (float) regionalRacialComposition.getQuick(region, race.getId());
+            for (int regionId: geoData.getRegions().keySet()) {
+                regionalRacialShare[regionId] = (float) regionalRacialComposition.getQuick(regionId, race.getId());
             }
             selectRegionDmu.setRegionalRace(race, regionalRacialShare);
         }
@@ -189,7 +189,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
             // set DMU attributes
             float[] priceUtil = new float[highestRegion + 1];
-            for (int region: regions) priceUtil[region] = (float) convertPriceToUtility(regPrice[region], income);
+            for (int regionId: geoData.getRegions().keySet()) {
+                priceUtil[regionId] = (float) convertPriceToUtility(regPrice[regionId], income);
+            }
             selectRegionDmu.setMedianRegionPrice(priceUtil);
             selectRegionDmu.setIncomeGroup(income - 1);
             for (Race race: Race.values()) {
