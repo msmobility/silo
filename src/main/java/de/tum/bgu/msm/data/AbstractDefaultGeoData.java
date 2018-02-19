@@ -80,18 +80,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
         throw new RuntimeException("Zone " + zone + " not found.");
     }
 
-
-    @Override
-    public int getRegionIndex(int region) {
-        int[] regionIds = getRegionIdsArray();
-        for(int i= 0; i<regionIds.length; i++) {
-            if(regionIds[i] == region) {
-                return i;
-            }
-        }
-        throw new RuntimeException("Region " + region + " not found.");
-    }
-
     @Override
     public int getHighestZonalId() {
         return zones.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
