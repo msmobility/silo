@@ -22,8 +22,5 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
         alpha = 0.05;
         beta = 89.;
     }
-    if(vacancyByRegion >= 1) {
-        print("Be careful - if vacancy is not a rate under 1 it may result in infinite values!")
-    }
     return alpha / Math.exp(beta * vacancyByRegion);
 }
