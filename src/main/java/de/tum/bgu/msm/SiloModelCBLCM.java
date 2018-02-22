@@ -16,22 +16,28 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
-import static de.tum.bgu.msm.SiloModel.logger;
+import java.util.Set;
 
 /**
  * @author kainagel
  *
  */
 public class SiloModelCBLCM {
-	private int[] scalingYears;
+
+    private final static Logger logger = Logger.getLogger(SiloModelCBLCM.class);
+
+
+    private final Set<Integer> tdmYears = new HashSet<>();
+	private final Set<Integer> skimYears = new HashSet<>();
+	private final Set<Integer> scalingYears = new HashSet<>();
+
 	private int currentYear;
-	private int[] skimYears;
-	private int[] tdmYears;
 	private boolean trackTime;
 	private long[][] timeCounter;
 	private SiloModelContainer modelContainer;
@@ -49,11 +55,11 @@ public class SiloModelCBLCM {
 		// initial steps that only need to performed once to set up the model
 
 	        // define years to simulate
-	        scalingYears = Properties.get().main.scalingYears;
-	        if (scalingYears[0] != -1) SummarizeData.readScalingYearControlTotals();
+	        scalingYears.addAll(Properties.get().main.scalingYears);
+	        if (!scalingYears.isEmpty()) SummarizeData.readScalingYearControlTotals();
 	        currentYear = Properties.get().main.startYear;
-	        tdmYears = Properties.get().transportModel.modelYears;
-	        skimYears = Properties.get().transportModel.skimYears;
+	        tdmYears.addAll(Properties.get().transportModel.modelYears);
+	        skimYears.addAll(Properties.get().transportModel.skimYears);
 	        // Note: only implemented for MSTM:
 	        geoData = new GeoDataMstm();
 	        // Note: only implemented for MSTM:
@@ -84,7 +90,7 @@ public class SiloModelCBLCM {
 	            logger.error("SILO is not prepared to simulate other interval than 1 year. Invalid interval: " + year);
 	            System.exit(1);
 	        }
-	        if (SiloUtil.containsElement(scalingYears, currentYear))
+	        if (scalingYears.contains(currentYear))
 	            SummarizeData.scaleMicroDataToExogenousForecast(currentYear, dataContainer);
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
@@ -118,8 +124,8 @@ public class SiloModelCBLCM {
 	        em.createListOfEvents(plannedCouples);
 	        if (trackTime) timeCounter[EventTypes.values().length + 4][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (SiloUtil.containsElement(skimYears, currentYear)) {
-	            if (currentYear != Properties.get().main.startYear && !SiloUtil.containsElement(tdmYears, currentYear)) {
+	        if (skimYears.contains(currentYear)) {
+	            if (currentYear != Properties.get().main.startYear && !tdmYears.contains(currentYear)) {
 	                // skims are always read in start year and in every year the transportation model ran. Additional
 	                // years to read skims may be provided in skimYears
 	                modelContainer.getAcc().readCarSkim(currentYear);
@@ -218,7 +224,7 @@ public class SiloModelCBLCM {
 	        }
 
 	        int nextYearForTransportModel = currentYear + 1;
-	        if (SiloUtil.containsElement(tdmYears, nextYearForTransportModel)) {
+	        if (tdmYears.contains(nextYearForTransportModel)) {
 	            if (Properties.get().transportModel.runTravelDemandModel)
 	                transportModel.runTransportModel(nextYearForTransportModel);
 	        }
@@ -243,7 +249,7 @@ public class SiloModelCBLCM {
 	        //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data
 	        SummarizeData.resultWriterReplicate = true;
 
-	        if (SiloUtil.containsElement(scalingYears, Properties.get().main.endYear))
+	        if (scalingYears.contains(Properties.get().main.endYear))
 	            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
 
 	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);

@@ -18,6 +18,7 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.EventManager;
@@ -32,21 +33,24 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
-public class SiloModel {
-	static Logger logger = Logger.getLogger(SiloModel.class);
+public final class SiloModel {
+	private final static Logger LOGGER = Logger.getLogger(SiloModel.class);
 
-	private int[] tdmYears;
-	private int[] skimYears;
-	private boolean trackTime;
-	private long[][] timeCounter;
-	private long startTime;
-	private int[] scalingYears;
+	private final Set<Integer> tdmYears = new HashSet<>();
+	private final Set<Integer> skimYears = new HashSet<>();
+    private final Set<Integer> scalingYears = new HashSet<>();
+
+    private boolean trackTime;
+    private long[][] timeCounter;
+    private long startTime;
 	private TransportModelI transportModel;
 	private boolean runMatsim;
 	private boolean runTravelDemandModel;
@@ -75,35 +79,25 @@ public class SiloModel {
 	}
 
 	private void setupModel() {
-		logger.info("Setting up SILO Model (Implementation " + Properties.get().main.implementation + ")");
-		setupYears();
+		LOGGER.info("Setting up SILO Model (Implementation " + Properties.get().main.implementation + ")");
 
-		// create main objects and read synthetic population
-		dataContainer = SiloDataContainer.createSiloDataContainer();
-		if (Properties.get().main.writeSmallSynpop) {
-			dataContainer.getHouseholdData().writeOutSmallSynPop();
-		}
-		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
-		modelContainer.getCarOwnershipModel().initialize();
-
-		setupTransport();
-        setupAccessibility();
+        setupContainer();
+        setupYears();
+        setupTransport();
+        setupAccessibility(modelContainer.getAcc());
 		setupTimeTracker();
 
+        if (Properties.get().main.writeSmallSynpop) {
+            dataContainer.getHouseholdData().writeOutSmallSynPop();
+        }
 		if (Properties.get().main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
 		}
 	}
 
-	private void setupAccessibility() {
-	    if(runMatsim) {
-	        modelContainer.getAcc().addTravelTimeForMode(TransportMode.car, ((MatsimTransportModel) transportModel).getTravelTimes());
-        } else {
-            modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
-        }
-        modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
-        modelContainer.getAcc().initialize();
-        modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
+    private void setupContainer() {
+        dataContainer = SiloDataContainer.createSiloDataContainer();
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
     }
 
 	private void setupTransport() {
@@ -114,16 +108,27 @@ public class SiloModel {
 			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
 		}
 		if (runMatsim) {
-			logger.info("  MATSim is used as the transport model");
+			LOGGER.info("  MATSim is used as the transport model");
 			transportModel = new MatsimTransportModel(dataContainer, matsimConfig);
 			transportModel.runTransportModel(Properties.get().main.startYear);
 		} else if(runTravelDemandModel){
-			logger.info("  MITO is used as the transport model");
+			LOGGER.info("  MITO is used as the transport model");
 			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
 		} else {
-			logger.info(" No transport model is used");
+			LOGGER.info(" No transport model is used");
 		}
 	}
+
+    private void setupAccessibility(Accessibility accessibility) {
+        if(runMatsim) {
+            accessibility.addTravelTimeForMode(TransportMode.car, ((MatsimTransportModel) transportModel).getTravelTimes());
+        } else {
+            accessibility.readCarSkim(Properties.get().main.startYear);
+        }
+        accessibility.readPtSkim(Properties.get().main.startYear);
+        accessibility.initialize();
+        accessibility.calculateHansenAccessibilities(Properties.get().main.startYear);
+    }
 
 	private void setupTimeTracker() {
 		trackTime = Properties.get().main.trackTime;
@@ -133,20 +138,20 @@ public class SiloModel {
 	}
 
 	private void setupYears() {
-		scalingYears = Properties.get().main.scalingYears;
-		if (scalingYears[0] != -1) {
+		scalingYears.addAll(Properties.get().main.scalingYears);
+		if (!scalingYears.isEmpty()) {
 			SummarizeData.readScalingYearControlTotals();
 		}
-		tdmYears = Properties.get().transportModel.modelYears;
-		skimYears = Properties.get().transportModel.skimYears;
+		tdmYears.addAll(Properties.get().transportModel.modelYears);
+		skimYears.addAll(Properties.get().transportModel.skimYears);
 	}
 
 	private void runYearByYear() {
 		for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
-			if (SiloUtil.containsElement(scalingYears, year)) {
+			if (scalingYears.contains(year)) {
 				SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
 			}
-			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
+			LOGGER.info("Simulating changes from year " + year + " to year " + (year + 1));
 			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
 			EventManager em = new EventManager(dataContainer);
@@ -178,7 +183,7 @@ public class SiloModel {
 			em.createListOfEvents(couples);
 			if (trackTime) timeCounter[EventTypes.values().length + 4][year] += System.currentTimeMillis() - startTime;
 
-			if (SiloUtil.containsElement(skimYears, year) && !SiloUtil.containsElement(tdmYears, year) &&
+			if (skimYears.contains(year) && !tdmYears.contains(year) &&
 					!Properties.get().transportModel.runTravelDemandModel &&
 					year != Properties.get().main.startYear) {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
@@ -208,7 +213,7 @@ public class SiloModel {
 				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += System.currentTimeMillis() - startTime;
 
-			logger.info("  Simulating events");
+			LOGGER.info("  Simulating events");
 			// walk through all events
 			for (int i = 1; i <= em.getNumberOfEvents(); i++) {
 				int[] event = em.selectNextEvent();
@@ -281,7 +286,7 @@ public class SiloModel {
 					modelContainer.getCons().buildDwelling(event[1], year, modelContainer, dataContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else {
-					logger.warn("Unknown event type: " + event[0]);
+					LOGGER.warn("Unknown event type: " + event[0]);
 				}
 			}
 
@@ -291,7 +296,7 @@ public class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
 			if ( runMatsim || runTravelDemandModel || Properties.get().main.createMstmOutput) {
-                if (SiloUtil.containsElement(tdmYears, year + 1)) {
+                if (tdmYears.contains(year + 1)) {
                 transportModel.runTransportModel(year + 1);
                     modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
                 }
@@ -304,7 +309,7 @@ public class SiloModel {
 			EventManager.logEvents(carChangeCounter);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
-			logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +
+			LOGGER.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +
 					" persons, " + dataContainer.getHouseholdData().getNumberOfHouseholds()+" households and "  +
 					Dwelling.getDwellingCount() + " dwellings.");
 			if (SiloUtil.modelStopper("check")) break;
@@ -312,8 +317,9 @@ public class SiloModel {
 	}
 
 	private void endSimulation() {
-		if (SiloUtil.containsElement(scalingYears, Properties.get().main.endYear))
-			SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
+		if (scalingYears.contains(Properties.get().main.endYear)) {
+            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
+        }
 
 		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
@@ -325,19 +331,11 @@ public class SiloModel {
 		SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, dataContainer);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
-		if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
-		logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
+		if (trackTime) {
+		    SiloUtil.writeOutTimeTracker(timeCounter);
+        }
+		LOGGER.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
-
-
-	//    private void summarizeRentAndIncome () {
-	//        PrintWriter pw = SiloUtil.openFileForSequentialWriting("temp.csv", false);
-	//        pw.println("income,rent");
-	//        for (Household hh: Household.getHouseholdArray()) {
-	//            pw.println(hh.getHhIncome() + "," + Dwelling.getDwellingFromId(hh.getDwellingId()).getPrice());
-	//        }
-	//        pw.close();
-	//    }
 
 	//*************************************************************************
 	//*** Special implementation of same SILO Model for integration with    ***

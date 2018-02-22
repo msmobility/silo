@@ -3,7 +3,10 @@ package de.tum.bgu.msm.properties.modules;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MainProperties {
 
@@ -13,7 +16,7 @@ public class MainProperties {
     public final boolean trackTime;
     public final String trackTimeFile;
 
-    public final int[] scalingYears;
+    public final Set<Integer> scalingYears;
 
     public final boolean readSmallSynpop;
     public final boolean writeSmallSynpop;
@@ -48,7 +51,8 @@ public class MainProperties {
         runSilo = ResourceUtil.getBooleanProperty(bundle, "run.silo.model", true);
         trackTime = ResourceUtil.getBooleanProperty(bundle, "track.time", false);
         trackTimeFile = bundle.getString("track.time.file");
-        scalingYears =  ResourceUtil.getIntegerArray(bundle, "scaling.years");
+        scalingYears = Arrays.stream(ResourceUtil.getIntegerArray(bundle, "scaling.years"))
+                .boxed().filter(i -> i > 0).collect(Collectors.toSet());
         readSmallSynpop = ResourceUtil.getBooleanProperty(bundle, "read.small.syn.pop", false);
         writeSmallSynpop = ResourceUtil.getBooleanProperty(bundle, "write.small.syn.pop", false);
         spatialResultFileName = bundle.getString("spatial.result.file.name");

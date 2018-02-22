@@ -10,7 +10,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class MarrayDivorceModelTest {
+public class MarryDivorceModelTest {
 
     private static MarryDivorceModel model;
     private static int[] couple1;

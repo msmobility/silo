@@ -970,14 +970,14 @@ static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties 
 	float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
 	int hours = (int) (endTime / 60);
 	int min = (int) (endTime - 60 * hours);
-	SiloModel.logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
+	logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
 	if (Properties.get().main.trackTime) {
 		String fileName = Properties.get().main.trackTimeFile;
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 			out.close();
 		} catch (IOException e) {
-			SiloModel.logger.warn("Could not add run-time statement to time-tracking file.");
+			logger.warn("Could not add run-time statement to time-tracking file.");
 		}
 	}
 }
@@ -1011,8 +1011,7 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 
 	if (trackHh != -1 || trackPp != -1 || trackDd != -1)
 		trackWriter.println("Started simulation for year " + year);
-	SiloModel.logger.info("  Summarizing micro data for year " + year);
-
+	logger.info("  Summarizing micro data for year " + year);
 
 	SummarizeData.resultFile("Year " + year, false);
 	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
