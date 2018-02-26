@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.relocation.SelectDwellingJSCalculator;
+import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

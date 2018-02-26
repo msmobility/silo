@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.realEstate.RenovationJSCalculator;
+import de.tum.bgu.msm.models.realEstate.RenovationJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.script.ScriptException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 

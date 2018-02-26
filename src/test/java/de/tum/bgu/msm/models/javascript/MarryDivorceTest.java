@@ -2,7 +2,7 @@ package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Race;
-import de.tum.bgu.msm.demography.MarryDivorceJSCalculator;
+import de.tum.bgu.msm.models.demography.MarryDivorceJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

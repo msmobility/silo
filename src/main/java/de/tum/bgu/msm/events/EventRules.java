@@ -4,7 +4,7 @@ import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.demography.BirthModel;
+import de.tum.bgu.msm.models.demography.BirthModel;
 import de.tum.bgu.msm.properties.Properties;
 
 /**
