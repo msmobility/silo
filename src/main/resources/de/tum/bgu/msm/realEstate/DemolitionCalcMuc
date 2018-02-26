@@ -1,0 +1,21 @@
+var calculateDemolitionProbability = function(dwelling, year) {
+    quality = dwelling.getQuality();
+    age = year - dwelling.getYearBuilt();
+    vacantModifier = 0.9;
+    if(!dwelling.getUsage().name().equals("VACANT")) {
+        vacantModifier = 0.1;
+    }
+
+    if(age > 61) {
+        return vacantModifier * 0.0078;
+    } else if(age > 52) {
+        return vacantModifier * 0.0148;
+    } else if(age > 41) {
+        return vacantModifier * 0.0123;
+    } else if(age > 31) {
+        return vacantModifier * 0.0098;
+    } else {
+        return vacantModifier * 0.0018;
+    }
+    throw new Error("Unexpected demolition calc state");
+}

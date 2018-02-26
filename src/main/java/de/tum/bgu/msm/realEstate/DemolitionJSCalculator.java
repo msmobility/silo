@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.realEstate;
 
+import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;
@@ -10,7 +11,7 @@ public final class DemolitionJSCalculator extends JavaScriptCalculator<Double> {
         super(reader);
     }
 
-    public double calculateDemolitionProbability(boolean occupied, int quality) {
-        return super.calculate("calculateDemolitionProbability", occupied, quality);
+    public double calculateDemolitionProbability(Dwelling dwelling, int year) {
+        return super.calculate("calculateDemolitionProbability", dwelling, year);
     }
 }

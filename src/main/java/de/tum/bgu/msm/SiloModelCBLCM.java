@@ -212,7 +212,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer);
+	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer, (int) year);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();

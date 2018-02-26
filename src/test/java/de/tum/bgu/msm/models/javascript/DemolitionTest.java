@@ -19,13 +19,13 @@ public class DemolitionTest {
         calculator = new DemolitionJSCalculator(reader);
     }
 
-    @Test
-    public void testModel() {
-        Assert.assertEquals(0.0001, calculator.calculateDemolitionProbability(true, 1), 0.);
-    }
-
-    @Test (expected = RuntimeException.class)
-    public void testModelFailure() {
-        calculator.calculateDemolitionProbability(true, 5);
-    }
+//    @Test
+//    public void testModel() {
+//        Assert.assertEquals(0.0001, calculator.calculateDemolitionProbability(true, 1), 0.);
+//    }
+//
+//    @Test (expected = RuntimeException.class)
+//    public void testModelFailure() {
+//        calculator.calculateDemolitionProbability(true, 5);
+//    }
 }
