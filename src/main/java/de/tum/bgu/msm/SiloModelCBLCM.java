@@ -13,8 +13,8 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.transportModel.TransportModelI;
+import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
+import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
 import org.apache.log4j.Logger;
 
@@ -212,7 +212,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer);
+	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer, (int) year);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();

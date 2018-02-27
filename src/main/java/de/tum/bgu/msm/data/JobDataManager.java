@@ -360,6 +360,10 @@ public class JobDataManager {
             return -1;
         }
         int selectedRegion = SiloUtil.select(regionProbability);
+        if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
+            logger.warn("Selected region "+ selectedRegion + " but could not find any jobs there.");
+            return -1;
+        }
         float[] jobProbability = new float[getNumberOfVacantJobsByRegion(selectedRegion)];
         jobProbability = SiloUtil.setArrayToValue(jobProbability, 1);
         int selectedJob = SiloUtil.select(jobProbability);

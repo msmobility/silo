@@ -25,9 +25,9 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.transportModel.TransportModelI;
-import de.tum.bgu.msm.transportModel.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
+import de.tum.bgu.msm.models.transportModel.TransportModelI;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
@@ -279,7 +279,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer);
+					modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer, year);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

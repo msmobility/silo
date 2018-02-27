@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.autoOwnership.munich.MunichCarOwnershipJSCalculator;
+import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnershipJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

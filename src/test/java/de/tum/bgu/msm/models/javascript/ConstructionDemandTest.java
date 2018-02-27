@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.data.DwellingType;
-import de.tum.bgu.msm.realEstate.ConstructionDemandJSCalculator;
+import de.tum.bgu.msm.models.realEstate.ConstructionDemandJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

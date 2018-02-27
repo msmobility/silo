@@ -6,8 +6,8 @@ import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.realEstate.ConstructionModel;
-import de.tum.bgu.msm.relocation.InOutMigration;
+import de.tum.bgu.msm.models.realEstate.ConstructionModel;
+import de.tum.bgu.msm.models.relocation.InOutMigration;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

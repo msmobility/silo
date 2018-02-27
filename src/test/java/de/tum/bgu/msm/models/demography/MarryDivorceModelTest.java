@@ -5,7 +5,6 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.demography.MarryDivorceModel;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
