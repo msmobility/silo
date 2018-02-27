@@ -65,8 +65,7 @@ public class MarryDivorceModel {
 
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
-            // todo: Update Probabilities for Munich, add also to test class
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         }
