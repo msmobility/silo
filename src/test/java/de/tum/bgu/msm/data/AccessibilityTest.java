@@ -124,6 +124,7 @@ public class AccessibilityTest {
         Locale.setDefault(Locale.ENGLISH);
 
         try {
+            new File("./test/output/").mkdirs();
             MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTravelTimes.txt"));
             writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
             writerZone2Region.flush();
