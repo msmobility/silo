@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunction;
+import java.util.concurrent.Callable;
 
-public abstract class EmploymentChangeDefinition implements ConcurrentFunction {
+public abstract class EmploymentChangeDefinition implements Callable {
 
     protected final int zone;
     protected int changes;

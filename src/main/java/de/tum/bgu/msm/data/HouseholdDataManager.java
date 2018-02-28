@@ -21,7 +21,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -625,25 +625,12 @@ public class HouseholdDataManager {
 
     public void adjustIncome() {
         // select who will get a raise or drop in salary
-
         float[][][] currentIncomeDistribution = calculateIncomeDistribution();
-
-        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for (Person person: Person.getPersons()) {
-            float desiredShift = getDesiredShift(currentIncomeDistribution, person);
-            executor.addFunction(new IncomeAdjustment(person, desiredShift, meanIncomeChange));
+            executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, initialIncomeDistribution));
         }
         executor.execute();
-    }
-
-    private float getDesiredShift(float[][][] currentIncomeDistribution, Person person) {
-        int gender = person.getGender() - 1;
-        int age = Math.min(99, person.getAge());
-        int occ = 0;
-        if (person.getOccupation() == 1) {
-            occ = 1;
-        }
-        return initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];
     }
 
     public static int selectIncomeForPerson (int gender, int age, int occupation) {

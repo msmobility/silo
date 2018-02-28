@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
@@ -1110,11 +1110,11 @@ public class SyntheticPopCT implements SyntheticPopI {
             while (finish == 0 & iteration < maxIterations) {
 
                 //For each municipality, obtain the weight matching each attribute
-                ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+                ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
                 Iterator<Integer> iterator = municipalities.iterator();
                 while (iterator.hasNext()) {
                     Integer municipality = iterator.next();
-                    executor.addFunction(() -> {
+                    executor.addTaskToQueue(() -> {
                         for (String attribute : attributesMunicipality) {
                             double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                             if (weightedSumMunicipality > 0.001) {
@@ -1126,6 +1126,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                                 weightsByMun.put(municipality, updatedWeights);
                             }
                         }
+                        return null;
                     });
                 }
                 executor.execute();
@@ -1159,12 +1160,12 @@ public class SyntheticPopCT implements SyntheticPopI {
                 //obtain the errors by municipality
                 double averageErrorIteration = 0.;
                 int counter = 0;
-                ConcurrentFunctionExecutor executor1 = new ConcurrentFunctionExecutor();
+                ConcurrentExecutor executor1 = ConcurrentExecutor.cachedService();
                 Iterator<Integer> iterator1 = municipalities.iterator();
                 while (iterator1.hasNext()){
                     Integer municipality = iterator1.next();
                     Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
-                    executor1.addFunction(() ->{
+                    executor1.addTaskToQueue(() ->{
                         for (String attribute : attributesMunicipality){
                             double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                             double errorByAttributeAndMunicipality = 0;
@@ -1173,6 +1174,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                                 errorsByMunicipality.put(attribute, errorByAttributeAndMunicipality);
                             }
                         }
+                        return null;
                     });
                     errorByMun.put(municipality, errorsByMunicipality);
                 }

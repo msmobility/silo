@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulation;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.models.realEstate.ConstructionDemandJSCalculator;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -168,11 +168,11 @@ public class ipuTestOpt {
         while (finish == 0) {
 
             //For each municipality, obtain the weight matching each attribute
-            ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+            ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
             Iterator<Integer> iterator = municipalities.iterator();
             while (iterator.hasNext()) {
                 Integer municipality = iterator.next();
-                executor.addFunction(() -> {
+                executor.addTaskToQueue(() -> {
                     for (String attribute : attributesMunicipality) {
                         double weightedSumMunicipality = sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                         if (weightedSumMunicipality > 0.000001) {
@@ -184,6 +184,7 @@ public class ipuTestOpt {
                             weightsByMun.put(municipality, m3);
                         }
                     }
+                    return null;
                 });
             }
             executor.execute();

@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
@@ -115,14 +115,14 @@ public class IPUbyCountyCityAndBorough {
         }
 
         //For each borough, obtain the weight matching each attribute
-        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator.hasNext()) {
             Integer municipality = iterator.next();
             Iterator<Integer> iterator5 = dataSetSynPop.getBoroughsByCounty().get(county).iterator();
             while (iterator5.hasNext()) {
                 Integer borough = iterator5.next();
-                executor.addFunction(() -> {
+                executor.addTaskToQueue(() -> {
                     for (String attribute : PropertiesSynPop.get().main.attributesBorough) {
                         double weightedSumBorough = SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attribute));
                         if (weightedSumBorough > 0.001) {
@@ -134,6 +134,7 @@ public class IPUbyCountyCityAndBorough {
                             weightsByBorough.put(borough, updatedWeights);
                         }
                     }
+                    return null;
                 });
             }
         }
@@ -193,7 +194,7 @@ public class IPUbyCountyCityAndBorough {
         }
 
         //obtain the errors by borough
-        ConcurrentFunctionExecutor executor1 = new ConcurrentFunctionExecutor();
+        ConcurrentExecutor executor1 = ConcurrentExecutor.cachedService();
         Iterator<Integer> iterator6 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator6.hasNext()){
             Integer municipality = iterator6.next();
@@ -201,7 +202,7 @@ public class IPUbyCountyCityAndBorough {
             while (iterator1.hasNext()) {
                 Integer borough = iterator1.next();
                 Map<String, Double> errorsByBorough1 = Collections.synchronizedMap(new HashMap<>());
-                executor1.addFunction(() -> {
+                executor1.addTaskToQueue(() -> {
                     for (String attribute : PropertiesSynPop.get().main.attributesBorough) {
                         double weightedSumMunicipality = SiloUtil.sumProduct(weightsByBorough.get(borough), valuesByHousehold.get(attribute));
                         double errorByAttributeAndMunicipality = 0;
@@ -210,6 +211,7 @@ public class IPUbyCountyCityAndBorough {
                             errorsByBorough1.put(attribute, errorByAttributeAndMunicipality);
                         }
                     }
+                    return null;
                 });
                 errorsByBorough.put(borough, errorsByBorough1);
             }

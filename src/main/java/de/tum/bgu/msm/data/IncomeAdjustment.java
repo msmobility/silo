@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DoubleRandomEngine;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.util.concurrent.RandomizableConcurrentFunction;
 
@@ -7,25 +9,30 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction {
 
     private final Person person;
     private final float meanIncomeChange;
-    private final float desiredShift;
+    private final float[][][] currentIncomeDistribution;
+    private final float[][][] initialIncomeDistribution;
 
 
-    public IncomeAdjustment(Person person, float desiredShift, float meanIncomeChange) {
+    public IncomeAdjustment(Person person, float meanIncomeChange,
+                            float[][][] currentIncomeDistribution, float[][][] initialIncomeDistribution) {
         super(SiloUtil.getRandomObject().nextLong());
         this.person = person;
-        this.desiredShift = desiredShift;
         this.meanIncomeChange = meanIncomeChange;
+        this.currentIncomeDistribution = currentIncomeDistribution;
+        this.initialIncomeDistribution = initialIncomeDistribution;
     }
 
     @Override
-    public void execute() {
+    public Object call() {
         // adjust income of person with ID per
-        int newIncome = selectNewIncome();
-        person.setIncome(newIncome);
+        person.setIncome(selectNewIncome());
+        return null;
     }
 
     private int selectNewIncome () {
         // calculate new income using a normal distribution
+
+        float desiredShift = getDesiredShift();
 
         double[] prob = new double[21];
         int lowerBound;
@@ -42,18 +49,30 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction {
         }
         int smallestAbsValuePos = 0;
         float smallestAbsValue = Float.MAX_VALUE;
+
+        // normal distribution to calculate change of income
+        Normal normal = new Normal(0,0, DoubleRandomEngine.makeDefault());
         for (int i = 0; i < prob.length; i++) {
             int change = lowerBound + (upperBound - lowerBound) / (prob.length-1) * i;
             if (Math.abs(change) < smallestAbsValue) {
                 smallestAbsValuePos = i;
                 smallestAbsValue = Math.abs(change);
             }
-            // normal distribution to calculate change of income
-            prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) * Math.exp(-(Math.pow((desiredShift - change), 2) /
-                    (2 * Math.pow(meanIncomeChange, 2))));
+            normal.setState(change, meanIncomeChange);
+            prob[i] = normal.pdf(desiredShift);
         }
         prob[smallestAbsValuePos] = prob[smallestAbsValuePos] * 10;   // make no change most likely
         int sel = SiloUtil.select(prob, random);
         return Math.max((person.getIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+    }
+
+    private float getDesiredShift() {
+        int gender = person.getGender() - 1;
+        int age = Math.min(99, person.getAge());
+        int occ = 0;
+        if (person.getOccupation() == 1) {
+            occ = 1;
+        }
+        return initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];
     }
 }

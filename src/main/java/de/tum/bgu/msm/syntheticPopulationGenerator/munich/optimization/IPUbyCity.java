@@ -3,12 +3,12 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
 import org.apache.log4j.Logger;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 public class IPUbyCity {
@@ -54,8 +54,9 @@ public class IPUbyCity {
     public void calculateWeights(int municipality){
 
         //For each municipality, obtain the weight matching each attribute
-        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
-        executor.addFunction(() -> {
+        final ExecutorService service = Executors.newCachedThreadPool();
+        List<Callable<Void>> tasks = new ArrayList<>();
+        tasks.add(() -> {
             for (String attribute : PropertiesSynPop.get().main.attributesMunicipality) {
                 double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                 if (weightedSumMunicipality > 0.001) {
@@ -67,8 +68,13 @@ public class IPUbyCity {
                     weightsByMun.put(municipality, updatedWeights);
                 }
             }
+            return null;
         });
-        executor.execute();
+        try {
+            service.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -76,8 +82,9 @@ public class IPUbyCity {
 
         int counter = 0;
         //obtain the errors by municipality
-        ConcurrentFunctionExecutor executor1 = new ConcurrentFunctionExecutor();
-        executor1.addFunction(() ->{
+        final ExecutorService service = Executors.newCachedThreadPool();
+        List<Callable<Void>> tasks = new ArrayList<>();
+        tasks.add(() ->{
             for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
                 double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                 double errorByAttributeAndMunicipality = 0;
@@ -86,8 +93,13 @@ public class IPUbyCity {
                     errorsByMunicipality.put(attribute, errorByAttributeAndMunicipality);
                 }
             }
+            return null;
         });
-        executor1.execute();
+        try {
+            service.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         double averageErrorIteration = errorsByMunicipality.values().stream().mapToDouble(Number::doubleValue).sum();
         counter = counter + errorsByMunicipality.entrySet().size();

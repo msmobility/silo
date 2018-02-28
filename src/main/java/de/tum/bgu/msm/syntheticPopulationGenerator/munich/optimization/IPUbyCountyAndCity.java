@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
@@ -79,11 +79,11 @@ public class IPUbyCountyAndCity {
 
 
         //For each municipality, obtain the weight matching each attribute
-        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
+        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         Iterator<Integer> iterator = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator.hasNext()) {
             Integer municipality = iterator.next();
-            executor.addFunction(() -> {
+            executor.addTaskToQueue(() -> {
                 for (String attribute : PropertiesSynPop.get().main.attributesMunicipality) {
                     double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                     if (weightedSumMunicipality > 0.001) {
@@ -95,6 +95,7 @@ public class IPUbyCountyAndCity {
                         weightsByMun.put(municipality, updatedWeights);
                     }
                 }
+                return null;
             });
         }
         executor.execute();
@@ -124,12 +125,12 @@ public class IPUbyCountyAndCity {
         }
 
         //obtain the errors by municipality
-        ConcurrentFunctionExecutor executor1 = new ConcurrentFunctionExecutor();
+        ConcurrentExecutor executor1 = ConcurrentExecutor.cachedService();
         Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator2.hasNext()){
             Integer municipality = iterator2.next();
             Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
-            executor1.addFunction(() ->{
+            executor1.addTaskToQueue(() ->{
                 for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
                     double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
                     double errorByAttributeAndMunicipality = 0;
@@ -138,6 +139,7 @@ public class IPUbyCountyAndCity {
                         errorsByMunicipality.put(attribute, errorByAttributeAndMunicipality);
                     }
                 }
+                return null;
             });
             errorByMun.put(municipality, errorsByMunicipality);
         }

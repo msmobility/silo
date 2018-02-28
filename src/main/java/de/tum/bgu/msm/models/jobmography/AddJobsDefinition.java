@@ -5,8 +5,9 @@ import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
-public class AddJobsDefinition extends EmploymentChangeDefinition {
+public class AddJobsDefinition extends EmploymentChangeDefinition implements Callable {
 
     public final List<Integer> ids;
 
@@ -16,8 +17,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition {
     }
 
     @Override
-    public void execute() {
-        // add new jobs
+    public Object call() throws Exception {
         for (int i = 0; i < changes; i++) {
             int id = ids.get(i);
             synchronized (Job.class) {
@@ -28,5 +28,6 @@ public class AddJobsDefinition extends EmploymentChangeDefinition {
                         " was newly created in zone " + zone + " based on exogenous forecast.");
             }
         }
+        return null;
     }
 }

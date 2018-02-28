@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobType;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.concurrent.ConcurrentFunctionExecutor;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -56,15 +56,15 @@ public class UpdateJobs {
             }
         }
 
-        ConcurrentFunctionExecutor executor = new ConcurrentFunctionExecutor();
 
+        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for (int row = 1; row <= forecast.getRowCount(); row++) {
             int zone = (int) forecast.getValueAt(row, "zone");
             for (String jt : JobType.getJobTypes()) {
                 int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zone]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zone];
-                    executor.addFunction(new AddJobsDefinition(zone, change, jt));
+                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt));
                 } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zone]) {
                     int change = jobsByZone[JobType.getOrdinal(jt)][zone] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);
@@ -75,7 +75,7 @@ public class UpdateJobs {
                     if(occupiedJobs == null) {
                         occupiedJobs = Collections.EMPTY_LIST;
                     }
-                    executor.addFunction(new RemoveJobsDefinition(zone, change, jt, vacantJobs, occupiedJobs, dataContainer.getJobData()));
+                    executor.addTaskToQueue(new RemoveJobsDefinition(zone, change, jt, vacantJobs, occupiedJobs, dataContainer.getJobData()));
                 }
             }
         }

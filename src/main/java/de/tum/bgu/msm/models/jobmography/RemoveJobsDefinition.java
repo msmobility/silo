@@ -21,9 +21,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
     }
 
     @Override
-    public void execute() {
-        // remove jobs
-
+    public Object call() {
         // first, try to eliminate only jobs that are vacant
         removeVacantJobs();
 
@@ -31,6 +29,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
         if(changes > 0) {
             removeOccupiedJobs();
         }
+        return null;
     }
 
     private void removeVacantJobs() {
