@@ -76,7 +76,7 @@ public class AccessibilityTest {
     }
 
     @Test
-    public void testIntegration() throws IOException {
+    public void testIntegration()  {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         int smallSize = 0;
@@ -123,26 +123,30 @@ public class AccessibilityTest {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTravelTimes.txt"));
-        writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
-        writerZone2Region.flush();
-        writerZone2Region.close();
+        try {
+            new File("./test/output/").mkdirs();
+            MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTravelTimes.txt"));
+            writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
+            writerZone2Region.flush();
+            writerZone2Region.close();
 
-        MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesCar.txt"));
-        writerCar.printArray(accCar.toArray());
-        writerCar.flush();
-        writerCar.close();
+            MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesCar.txt"));
+            writerCar.printArray(accCar.toArray());
+            writerCar.flush();
+            writerCar.close();
 
-        MatrixVectorWriter writerTransit = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesTransit.txt"));
-        writerTransit.printArray(accTransit.toArray());
-        writerTransit.flush();
-        writerTransit.close();
+            MatrixVectorWriter writerTransit = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesTransit.txt"));
+            writerTransit.printArray(accTransit.toArray());
+            writerTransit.flush();
+            writerTransit.close();
 
-        MatrixVectorWriter writerRegion = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesRegion.txt"));
-        writerRegion.printArray(accRegions.toArray());
-        writerRegion.flush();
-        writerRegion.close();
-
+            MatrixVectorWriter writerRegion = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesRegion.txt"));
+            writerRegion.printArray(accRegions.toArray());
+            writerRegion.flush();
+            writerRegion.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         FileAssert.assertEquals("car accessibilities are different.", new File("./test/input/accessibilitiesCar.txt"), new File("./test/output/accessibilitiesCar.txt"));
         FileAssert.assertEquals("transit accessibilities are different.", new File("./test/input/accessibilitiesTransit.txt"), new File("./test/output/accessibilitiesTransit.txt"));
         FileAssert.assertEquals("region accessibilities are different.", new File("./test/input/accessibilitiesRegion.txt"), new File("./test/output/accessibilitiesRegion.txt"));
