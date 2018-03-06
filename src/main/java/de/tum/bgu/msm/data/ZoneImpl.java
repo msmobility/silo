@@ -1,16 +1,10 @@
 package de.tum.bgu.msm.data;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 public class ZoneImpl implements Zone {
 
     private final int id;
     private final int msa;
     private final float area;
-
-    private final Set<Job> jobs = new LinkedHashSet<>();
-    private final Set<Dwelling> dwellings = new LinkedHashSet<>();
 
     private Region region;
 

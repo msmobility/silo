@@ -26,17 +26,18 @@ public enum HouseholdType {
 
 
     public static int convertHouseholdTypeToIncomeCategory (HouseholdType ht) {
-        // convert household type into income category
-
-        int incCategory;
         if (ht.equals(HouseholdType.size1inc1) || ht.equals(HouseholdType.size2inc1) ||
-                ht.equals(HouseholdType.size3inc1) || ht.equals(HouseholdType.size4inc1)) incCategory = 1;
-        else if (ht.equals(HouseholdType.size1inc2) || ht.equals(HouseholdType.size2inc2) ||
-                ht.equals(HouseholdType.size3inc2) || ht.equals(HouseholdType.size4inc2)) incCategory = 2;
-        else if (ht.equals(HouseholdType.size1inc3) || ht.equals(HouseholdType.size2inc3) ||
-                ht.equals(HouseholdType.size3inc3) || ht.equals(HouseholdType.size4inc3)) incCategory = 3;
-        else incCategory = 4;
-        return incCategory;
+                ht.equals(HouseholdType.size3inc1) || ht.equals(HouseholdType.size4inc1)) {
+            return 1;
+        } else if (ht.equals(HouseholdType.size1inc2) || ht.equals(HouseholdType.size2inc2) ||
+                ht.equals(HouseholdType.size3inc2) || ht.equals(HouseholdType.size4inc2)) {
+            return 2;
+        } else if (ht.equals(HouseholdType.size1inc3) || ht.equals(HouseholdType.size2inc3) ||
+                ht.equals(HouseholdType.size3inc3) || ht.equals(HouseholdType.size4inc3)) {
+            return 3;
+        } else {
+            return 4;
+        }
     }
 }
 
