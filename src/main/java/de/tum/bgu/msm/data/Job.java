@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created on 22 February 2013 in Santa Fe
  **/
 
-public class Job {
+public final class Job {
 
     private static final Map<Integer, Job> jobMap = new ConcurrentHashMap<>();
 
