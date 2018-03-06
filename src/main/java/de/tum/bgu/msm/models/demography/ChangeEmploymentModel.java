@@ -15,13 +15,11 @@ import org.apache.log4j.Logger;
  **/
 
 public class ChangeEmploymentModel {
-    static Logger logger = Logger.getLogger(ChangeEmploymentModel.class);
     private final HouseholdDataManager householdDataManager;
     private GeoData geoData;
 
 
     public ChangeEmploymentModel(GeoData geoData, HouseholdDataManager householdDataManager) {
-        // constructor
         this.geoData = geoData;
         this.householdDataManager = householdDataManager;
     }
