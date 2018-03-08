@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
-import org.apache.log4j.Logger;
 
 /**
  * Simulates finding a new job and quitting a job
@@ -15,13 +15,11 @@ import org.apache.log4j.Logger;
  **/
 
 public class ChangeEmploymentModel {
-    private final HouseholdDataManager householdDataManager;
-    private GeoData geoData;
+    private final SiloDataContainer dataContainer;
 
 
-    public ChangeEmploymentModel(GeoData geoData, HouseholdDataManager householdDataManager) {
-        this.geoData = geoData;
-        this.householdDataManager = householdDataManager;
+    public ChangeEmploymentModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
     }
 
 
@@ -32,13 +30,19 @@ public class ChangeEmploymentModel {
         if (pp == null) return false;  // person has died or moved away
 
         int sm = 0;
-        for (int reg: geoData.getRegionIdsArray()) sm += JobDataManager.getNumberOfVacantJobsByRegion(reg);
+        for (int reg: dataContainer.getGeoData().getRegions().keySet()) {
+            sm += JobDataManager.getNumberOfVacantJobsByRegion(reg);
+        }
         if (sm == 0) {
             IssueCounter.countMissingJob();
             return false;
         } else {
-            int homeZone = pp.getHomeTaz();
-            int idVacantJob = JobDataManager.findVacantJob(homeZone, geoData.getRegionIdsArray(), siloModelContainer);
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(pp.getHh().getDwellingId());
+            int zoneId = -1;
+            if(dwelling != null) {
+                zoneId = dwelling.getZone();
+            }
+            int idVacantJob = JobDataManager.findVacantJob(zoneId, dataContainer.getGeoData().getRegions().keySet(), siloModelContainer);
             if (idVacantJob == -1) {
                 IssueCounter.countMissingJob();
                 return false;
@@ -52,7 +56,7 @@ public class ChangeEmploymentModel {
             int inc = HouseholdDataManager.selectIncomeForPerson(gender, age, 1);
             pp.setIncome(inc);
             EventManager.countEvent(EventTypes.FIND_NEW_JOB);
-            householdDataManager.addHouseholdThatChanged(pp.getHh());
+            dataContainer.getHouseholdData().addHouseholdThatChanged(pp.getHh());
             if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " started working for job " + jj.getId());
             return true;
         }
@@ -66,7 +70,7 @@ public class ChangeEmploymentModel {
         if (pp == null) return;  // person has died or moved away
         pp.quitJob(true, jobDataManager);
         EventManager.countEvent(EventTypes.QUIT_JOB);
-        householdDataManager.addHouseholdThatChanged(pp.getHh());
+        dataContainer.getHouseholdData().addHouseholdThatChanged(pp.getHh());
         if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
     }
 }

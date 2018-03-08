@@ -47,7 +47,6 @@ public final class Dwelling {
         }
     }
 
-    private static final Map<Integer, Dwelling> dwellingMap = new HashMap<>();
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
     private final int zone;
@@ -69,7 +68,7 @@ public final class Dwelling {
     private int yearConstructionDE = 0;
 
 
-    public Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
+    private Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
                      int year) {
         this.id = id;
         this.zone = zone;
@@ -82,30 +81,6 @@ public final class Dwelling {
         this.yearBuilt = year;
         this.utilOfResident = 0.;
         this.utilByHhType = new double[HouseholdType.values().length];
-        dwellingMap.put(id, this);
-    }
-
-    public static void saveDwellings (Dwelling[] dds) {
-        for (Dwelling dd: dds) {
-            dwellingMap.put(dd.getId(), dd);
-        }
-    }
-
-    public static Dwelling getDwellingFromId(int dwellingId) {
-        return dwellingMap.get(dwellingId);
-    }
-
-
-    public static int getDwellingCount() {
-        return dwellingMap.size();
-    }
-
-    public static Collection<Dwelling> getDwellings() {
-        return Collections.unmodifiableCollection(dwellingMap.values());
-    }
-
-    public static void removeDwelling(int id) {
-        dwellingMap.remove(id);
     }
 
     public int getId () {

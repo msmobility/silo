@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
@@ -18,15 +19,25 @@ import java.util.*;
 public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     static Logger logger = Logger.getLogger(MunichCarOwnerShipModel.class);
+    private final SiloDataContainer dataContainer;
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
-    public static void summarizeCarUpdate() {
+    public MunichCarOwnerShipModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
+    }
+
+    public void summarizeCarUpdate() {
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
         pwa.println("id, dwelling, zone, license, income, size, autos");
         for (Household hh: Household.getHouseholds()) {
-            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + hh.getHomeZone() + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            int homeZone = -1;
+            if(dwelling != null) {
+                homeZone = dwelling.getZone();
+            }
+            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
         }
         pwa.close();
 

@@ -2,10 +2,11 @@ package de.tum.bgu.msm.models.autoOwnership.maryland;
 
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -22,20 +23,20 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
     static Logger logger = Logger.getLogger(MaryLandCarOwnershipModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
-    private final JobDataManager jobDataManager;
     private final Accessibility accessibility;
+    private final SiloDataContainer dataContainer;
     private String uecFileName;
     private int dataSheetNumber;
     int numAltsAutoOwnership;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
-    public MaryLandCarOwnershipModel(JobDataManager jobDataManager, Accessibility accessibility) {
+    public MaryLandCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         // constructor
         logger.info("  Setting up probabilities for auto-ownership model");
         uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;
         dataSheetNumber = Properties.get().demographics.autoOwnershipDataSheet;
-        this.jobDataManager = jobDataManager;
+        this.dataContainer = dataContainer;
         this.accessibility = accessibility;
     }
 
@@ -118,8 +119,9 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
             int hhSize = Math.min(household.getHhSize(), 8);
             int workers = Math.min(household.getNumberOfWorkers(), 4);
             int incomeCategory = getIncomeCategory(household.getHhIncome());
-            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(household.getHomeZone()) + 0.5);
-            int density = jobDataManager.getJobDensityCategoryOfZone(household.getHomeZone());
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZone()) + 0.5);
+            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.getZone());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];
             }

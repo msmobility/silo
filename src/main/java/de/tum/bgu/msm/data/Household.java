@@ -99,14 +99,14 @@ public final class Household {
         return hhInc;
     }
 
-    public int getHomeZone() {
-        Dwelling dwelling = Dwelling.getDwellingFromId(this.dwellingId);
-        if(dwelling != null) {
-            return dwelling.getZone();
-        } else {
-            return -1;
-        }
-    }
+//    public int getHomeZone() {
+//        Dwelling dwelling = Dwelling.getDwellingFromId(this.dwellingId);
+//        if(dwelling != null) {
+//            return dwelling.getZone();
+//        } else {
+//            return -1;
+//        }
+//    }
 
     public Race getRace() {return race; }
 
@@ -218,20 +218,6 @@ public final class Household {
         return ahs/(float) cnt;
     }
 
-    public MitoHousehold convertToMitoHh(MitoZone zone) {
-        return new MitoHousehold(hhId, getHhIncome(), autos, zone);
-    }
-
-    public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
-        Map<Integer, MitoHousehold> thhs = new HashMap<>();
-        for (Household siloHousehold : getHouseholds()) {
-            MitoZone zone = zones.get(Dwelling.getDwellingFromId(siloHousehold.getDwellingId()).getZone());
-            MitoHousehold household = siloHousehold.convertToMitoHh(zone);
-            thhs.put(household.getId(), household);
-        }
-        return thhs;
-    }
-
     public boolean checkIfOnlyChildrenRemaining() {
         for (Person person: persons) {
            if(person.getAge() >= 16) {
@@ -243,14 +229,8 @@ public final class Household {
 
     @Override
     public String toString() {
-        int homeZone = -1;
-        final Dwelling dwelling = Dwelling.getDwellingFromId(dwellingId);
-        if(dwelling != null) {
-            homeZone = dwelling.getZone();
-        }
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
-            +"\nHousehold size          " + persons.size()
-            +"\nHome zone               " + homeZone ;
+            +"\nHousehold size          " + persons.size();
     }
 }

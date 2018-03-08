@@ -177,12 +177,12 @@ public class EventManager {
     }
 
 
-    public static void logEvents(int [] carChangeCounter) {
+    public static void logEvents(int [] carChangeCounter, SiloDataContainer dataContainer) {
         // log number of events to screen and result file
 
         float pp = Person.getPersonCount();
         float hh = Household.getHouseholdCount();
-        float dd = Dwelling.getDwellingCount();
+        float dd = dataContainer.getRealEstateData().getDwellings().size();
         SummarizeData.resultFile("Count of simulated events");
         int birthday = eventCounter.count(EventTypes.BIRTHDAY);
         logger.info("  Simulated birthdays:         " + birthday + " (" +

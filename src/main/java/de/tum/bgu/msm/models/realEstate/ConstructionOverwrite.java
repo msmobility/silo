@@ -25,8 +25,10 @@ public class ConstructionOverwrite {
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
     private HashMap<Integer, ArrayList> plannedDwellings;
+    private final SiloDataContainer dataContainer;
 
-    public ConstructionOverwrite() {
+    public ConstructionOverwrite(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         useOverwrite = Properties.get().realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) return;
         traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
@@ -87,7 +89,7 @@ public class ConstructionOverwrite {
     }
 
 
-    public void addDwellings (int year, SiloDataContainer dataContainer) {
+    public void addDwellings (int year) {
         // add overwrite dwellings for this year
 
         if (!useOverwrite) return;
@@ -113,7 +115,7 @@ public class ConstructionOverwrite {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
@@ -146,7 +148,7 @@ public class ConstructionOverwrite {
         int[] dwellingRent  = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);
         for (int row = 1; row <= overwriteDwellings.getRowCount(); row++) {
             int ddId = (int) overwriteDwellings.getValueAt(row, "dwellingID");
-            Dwelling dd = Dwelling.getDwellingFromId(ddId);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(ddId);
             if (dd == null) overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
             if (dd == null) continue;
             dwellingRent[row-1] = dd.getPrice();

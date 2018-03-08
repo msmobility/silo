@@ -122,9 +122,7 @@ public class ReadPopulation {
                 if (nationality.equals("other")){
                     nat = Nationality.other;
                 }
-                int education = Integer.parseInt(lineElements[posEducation]);
-                int homeZone = Integer.parseInt(lineElements[posHomeZone]);
-                int workZone = Integer.parseInt(lineElements[posWorkZone]);
+                int education = Integer.parseInt(lineElements[posEducation]);int workZone = Integer.parseInt(lineElements[posWorkZone]);
                 String licenseStr = lineElements[posLicense];
                 boolean license = false;
                 if (licenseStr.equals("true")){
@@ -134,7 +132,6 @@ public class ReadPopulation {
                 int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
                 pp.setEducationLevel(education);
-                pp.setZone(homeZone);
                 pp.setJobTAZ(workZone);
                 pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);

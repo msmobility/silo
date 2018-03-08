@@ -28,10 +28,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -324,14 +321,14 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob(int homeZone, int[] regions, SiloModelContainer siloModelContainer) {
+    public static int findVacantJob(int homeZone, Collection<Integer> regionIds, SiloModelContainer siloModelContainer) {
         // select vacant job for person living in homeZone
 
-        double[] regionProbability = new double[SiloUtil.getHighestVal(regions) + 1];
+        double[] regionProbability = new double[SiloUtil.getHighestVal(regionIds.stream().mapToInt(Integer::intValue).toArray()) + 1];
 
         if (homeZone > 0) {
             // person has home location (i.e., is not inmigrating right now)
-            for (int reg : regions) {
+            for (int reg : regionIds) {
                 if (vacantJobsByRegionPos[reg] > 0) {
                     int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                     regionProbability[reg] = siloModelContainer.getAcc().getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
@@ -339,7 +336,7 @@ public class JobDataManager {
             }
             if (SiloUtil.getSum(regionProbability) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
-                for (int reg : regions) {
+                for (int reg : regionIds) {
                     if (vacantJobsByRegionPos[reg] > 0) {
                         int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                         regionProbability[reg] = 1f / distance;
@@ -348,7 +345,7 @@ public class JobDataManager {
             }
         } else {
             // person has no home location because (s)he is inmigrating right now and a dwelling has not been chosen yet
-            for (int reg : regions) {
+            for (int reg : regionIds) {
                 if (vacantJobsByRegionPos[reg] > 0) {
                     regionProbability[reg] = getNumberOfVacantJobsByRegion(reg);
                 }

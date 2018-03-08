@@ -111,7 +111,7 @@ public class SiloModelContainer {
         DeathModel death = new DeathModel(dataContainer.getHouseholdData());
         BirthModel birth = new BirthModel(dataContainer.getHouseholdData());
         LeaveParentHhModel lph = new LeaveParentHhModel();
-        MarryDivorceModel mardiv = new MarryDivorceModel();
+        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
@@ -119,24 +119,24 @@ public class SiloModelContainer {
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         InOutMigration iomig = new InOutMigration();
-        ConstructionModel cons = new ConstructionModel(dataContainer.getGeoData());
-        RenovationModel renov = new RenovationModel();
-        DemolitionModel demol = new DemolitionModel();
-        PricingModel prm = new PricingModel();
+        ConstructionModel cons = new ConstructionModel(dataContainer);
+        RenovationModel renov = new RenovationModel(dataContainer);
+        DemolitionModel demol = new DemolitionModel(dataContainer);
+        PricingModel prm = new PricingModel(dataContainer);
         UpdateJobs updateJobs = new UpdateJobs();
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite();
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
 
         CarOwnershipModel carOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
         switch(Properties.get().main.implementation) {
             case MARYLAND:
-                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
-                move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData(), acc);
+                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer, acc);
+                move = new MovesModelMstm(dataContainer, acc);
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel();
-                carOwnershipModel = new MunichCarOwnerShipModel();
-                move = new MovesModelMuc(dataContainer.getGeoData(), acc);
+                carOwnershipModel = new MunichCarOwnerShipModel(dataContainer);
+                move = new MovesModelMuc(dataContainer, acc);
                 break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);

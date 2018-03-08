@@ -3,10 +3,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import com.pb.common.matrix.Matrix;
 import com.vividsolutions.jts.geom.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -99,10 +97,10 @@ public class SiloMatsimUtils {
 		return config;
 	}
 
-	public static Population createMatsimPopulation(Config config, HouseholdDataManager householdDataManager, int year,
+	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
 			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
-    	Collection<Person> siloPersons = householdDataManager.getPersons();
+    	Collection<Person> siloPersons = dataContainer.getHouseholdData().getPersons();
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
@@ -137,7 +135,8 @@ public class SiloMatsimUtils {
     		}
 
     		int siloPersonId = siloPerson.getId();
-    		int siloHomeTazId = siloPerson.getHomeTaz();
+    		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+    		int siloHomeTazId = dwelling.getId();
     		Job job = Job.getJobFromId(siloWorkplaceId);
     		int workZoneId = job.getZone();
 

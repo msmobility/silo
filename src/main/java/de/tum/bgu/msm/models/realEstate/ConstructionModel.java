@@ -28,7 +28,8 @@ public class ConstructionModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
 
-    private GeoData geoData;
+    private final SiloDataContainer dataContainer;
+    private final GeoData geoData;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
@@ -42,8 +43,9 @@ public class ConstructionModel {
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
 
-    public ConstructionModel(GeoData geoData) {
-        this.geoData = geoData;
+    public ConstructionModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
+        this.geoData = dataContainer.getGeoData();
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);
         setupConstructionModel();
@@ -176,7 +178,7 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][geoData.getHighestZonalId() + 1];
         int[][] counter = new int[DwellingType.values().length][geoData.getHighestZonalId() + 1];
-        for (Dwelling dd : Dwelling.getDwellings()) {
+        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
             int zone = geoData.getZones().get(dd.getZone()).getId();
             counter[dt][zone]++;
@@ -206,7 +208,7 @@ public class ConstructionModel {
 
         float[][] avePrice = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        for (Dwelling dd : Dwelling.getDwellings()) {
+        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;
@@ -236,7 +238,7 @@ public class ConstructionModel {
 
         float[][] aveSize = new float[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        for (Dwelling dd : Dwelling.getDwellings()) {
+        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
             int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
             counter[dt][region]++;
@@ -244,7 +246,7 @@ public class ConstructionModel {
         }
         for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region : geoData.getRegionIdsArray()) {
+            for (int region : geoData.getRegions().keySet()) {
                 if (counter[dto][region] > 0) {
                     aveSize[dto][region] = aveSize[dto][region] / counter[dto][region];
                 } else {
@@ -257,7 +259,7 @@ public class ConstructionModel {
         for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
             int validRegions = 0;
-            for (int region : geoData.getRegionIdsArray()) {
+            for (int region : geoData.getRegions().keySet()) {
                 if (aveSize[dto][region] > 0) {
                     totalAveSizeByType[dto] += aveSize[dto][region];
                     validRegions++;
@@ -267,7 +269,7 @@ public class ConstructionModel {
         }
         for (DwellingType dt: DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionIdsArray()) {
+            for (int region: geoData.getRegions().keySet()) {
                 if (aveSize[dto][region] == 0) aveSize[dto][region] = totalAveSizeByType[dto];
             }
         }
@@ -307,7 +309,7 @@ public class ConstructionModel {
         float restriction = attributes[4] / 100f;
         int price = attributes[5];
 
-        Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+        Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
         double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);

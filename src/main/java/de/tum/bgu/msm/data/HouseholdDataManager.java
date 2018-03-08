@@ -18,6 +18,7 @@ package de.tum.bgu.msm.data;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.properties.Properties;
@@ -250,6 +251,25 @@ public class HouseholdDataManager {
         return ht;
     }
 
+    public Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
+        Map<Integer, MitoHousehold> thhs = new HashMap<>();
+        for (Household siloHousehold : Household.getHouseholds()) {
+            int zoneId = -1;
+            Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
+            if(dwelling != null) {
+                zoneId = dwelling.getZone();
+            }
+            MitoZone zone = zones.get(zoneId);
+            MitoHousehold household = convertToMitoHh(siloHousehold, zone);
+            thhs.put(household.getId(), household);
+        }
+        return thhs;
+    }
+
+    private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
+        return new MitoHousehold(household.getId(), household.getHhIncome(), household.getAutos(), zone);
+    }
+
 
     public static int getIncomeCategoryForIncome(int hhInc) {
         // return income category defined exogenously
@@ -348,7 +368,7 @@ public class HouseholdDataManager {
 
         int dwellingId = Household.getHouseholdFromId(householdId).getDwellingId();
         if (dwellingId != -1) {
-            Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
+            Dwelling dd = realEstateData.getDwelling(dwellingId);
             dd.setResidentID(-1);
             realEstateData.addDwellingToVacancyList(dd);
         }
@@ -373,9 +393,10 @@ public class HouseholdDataManager {
     }
 
 
-    public static void summarizePopulation (GeoData geoData, SiloModelContainer siloModelContainer) {
+    public static void summarizePopulation (SiloDataContainer dataContainer, SiloModelContainer siloModelContainer) {
         // summarize population for summary file
 
+        final GeoData geoData = dataContainer.getGeoData();
         int pers[][] = new int[2][101];
         int ppRace[] = new int[4];
         for (Person per: Person.getPersons()) {
@@ -389,7 +410,7 @@ public class HouseholdDataManager {
         int hhRace[] = new int[4];
         int[] hhIncome = new int[Household.getHouseholdCount()];
         int hhIncomePos = 0;
-        int hhByRegion[] = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        int hhByRegion[] = new int[dataContainer.getGeoData().getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
             String row = i + "," + pers[0][i] + "," + pers[1][i];
@@ -407,7 +428,12 @@ public class HouseholdDataManager {
             hhRace[hh.getRace().ordinal()]++;
             hhIncome[hhIncomePos] = hh.getHhIncome();
             hhIncomePos++;
-            int region = geoData.getZones().get(hh.getHomeZone()).getRegion().getId();
+            int homeZone = -1;
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                homeZone = dwelling.getZone();
+            }
+            int region = dataContainer.getGeoData().getZones().get(homeZone).getRegion().getId();
             hhByRegion[region]++;
         }
                 SummarizeData.resultFile("hhByType,hh");
@@ -430,7 +456,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
-        float[][] commDist = new float[2][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         for (Person per: Person.getPersons()) {
             int age = per.getAge();
             int gender = per.getGender() - 1;
@@ -443,9 +469,14 @@ public class HouseholdDataManager {
             if (employed) labP[1][gender][ageGroup]++;
             else labP[0][gender][ageGroup]++;
             if (employed) {
-                double ds = siloModelContainer.getAcc().getPeakAutoTravelTime(per.getHomeTaz(), Job.getJobFromId(per.getWorkplace()).getZone());
-                commDist[0][geoData.getRegionOfZone(per.getHomeTaz())] += ds;
-                commDist[1][geoData.getRegionOfZone(per.getHomeTaz())] ++;
+                Zone zone = null;
+                Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(per.getHh().getDwellingId());
+                if(dwelling != null) {
+                    zone = geoData.getZones().get(dwelling.getZone());
+                }
+                double ds = siloModelContainer.getAcc().getPeakAutoTravelTime(zone.getId(), Job.getJobFromId(per.getWorkplace()).getZone());
+                commDist[0][zone.getRegion().getId()] += ds;
+                commDist[1][zone.getRegion().getId()] ++;
             }
         }
         String[] grp = {"<18","18-29","30-49","50-64",">=65"};
@@ -732,7 +763,11 @@ public class HouseholdDataManager {
 
         HashMap<Integer, int[]> hhByZone = new HashMap<>();
         for (Household hh: Household.getHouseholds()) {
-            int zone = hh.getHomeZone();
+            int zone = -1;
+            Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
             if (hhByZone.containsKey(zone)) {
                 int[] oldList = hhByZone.get(zone);
                 int[] newList = SiloUtil.expandArrayByOneElement(oldList, hh.getId());
@@ -749,7 +784,12 @@ public class HouseholdDataManager {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Household hh: Household.getHouseholds()) {
-            int homeMSA = geoData.getZones().get(hh.getHomeZone()).getMsa();
+            int zone = -1;
+            Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
+            int homeMSA = geoData.getZones().get(zone).getMsa();
             if (rentHashMap.containsKey(homeMSA)) {
                 ArrayList<Integer> inc = rentHashMap.get(homeMSA);
                 inc.add(hh.getHhIncome());
@@ -799,7 +839,12 @@ public class HouseholdDataManager {
             Integer smallestDist = 21;
             for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
                 int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(hh.getHomeZone(), metroZone), 0);
+                int zone = -1;
+                Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+                if(dwelling != null) {
+                    zone = dwelling.getZone();
+                }
+                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(zone, metroZone), 0);
                 smallestDist = Math.min(smallestDist, dist);
                 if (dist > 10) continue;
                 hhCounter[row-1][dist][incCat-1]++;
@@ -865,7 +910,12 @@ public class HouseholdDataManager {
             pwh.print(",");
             pwh.print(hh.getDwellingId());
             pwh.print(",");
-            pwh.print(hh.getHomeZone());
+            int zone = -1;
+            Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
+            pwh.print(zone);
             pwh.print(",");
             pwh.print(hh.getHhSize());
             pwh.print(",");
@@ -904,7 +954,7 @@ public class HouseholdDataManager {
                 }
             }
             // write out dwelling attributes
-            Dwelling dd = Dwelling.getDwellingFromId(hh.getDwellingId());
+            Dwelling dd = realEstateData.getDwelling(hh.getDwellingId());
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZone());
@@ -924,7 +974,7 @@ public class HouseholdDataManager {
             pwd.println(dd.getYearBuilt());
         }
         // add a few empty dwellings
-        for (Dwelling dd: Dwelling.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             if (dd.getResidentId() == -1 && SiloUtil.select(100) > 90) {
                 // write out dwelling attributes
                 pwd.print(dd.getId());

@@ -49,7 +49,6 @@ public final class Person {
     private int educationLevel = 0;
     private Nationality nationality = Nationality.german;
     private float travelTime = 0;
-    private int zone = 0;
     private int hhSize = 0;
     private int jobTAZ = 0;
     private boolean driverLicense = false;
@@ -174,10 +173,6 @@ public final class Person {
 		return id; 
 	}
 	
-	public int getHomeTaz() {
-		return hh.getHomeZone();
-	}
-	
 	public int getAge() {
 		return age; 
 	}
@@ -250,10 +245,6 @@ public final class Person {
     public void setTravelTime(float travelTime){ this.travelTime = travelTime;}
 
     public float getTravelTime() { return travelTime; }
-
-    public void setZone(int zone){ this.zone = zone;}
-
-    public int getZone() { return zone; }
 
     public void setHhSize(int hhSize){ this.hhSize = hhSize;}
 

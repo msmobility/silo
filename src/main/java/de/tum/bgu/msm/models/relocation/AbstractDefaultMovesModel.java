@@ -22,6 +22,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
+    protected final SiloDataContainer dataContainer;
 
     protected String uecFileName;
     protected int dataSheetNumber;
@@ -40,8 +41,9 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
     protected UtilityExpressionCalculator ddUtilityModel;
 
-    public AbstractDefaultMovesModel(GeoData geoData, Accessibility accessibility) {
-        this.geoData = geoData;
+    public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
+        this.dataContainer = dataContainer;
+        this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
         dataSheetNumber = Properties.get().moves.dataSheet;
@@ -140,8 +142,10 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         // everything is available
         numAltsEvalDwelling = ddUtilityModel.getNumberOfAlternatives();
         evalDwellingAvail = new int[numAltsEvalDwelling + 1];
-        for (int i = 1; i < evalDwellingAvail.length; i++) evalDwellingAvail[i] = 1;
-        for (Dwelling dd : Dwelling.getDwellings()) {
+        for (int i = 1; i < evalDwellingAvail.length; i++) {
+            evalDwellingAvail[i] = 1;
+        }
+        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getResidentId() == -1) {
                 // dwelling is vacant, evaluate for all household types
                 double utils[] = updateUtilitiesOfVacantDwelling(dd);
@@ -193,7 +197,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
 
         int priceSum = 0;
         int counter = 0;
-        for (Dwelling d : Dwelling.getDwellings()) {
+        for (Dwelling d : dataContainer.getRealEstateData().getDwellings()) {
 
             if (geoData.getZones().get(d.getZone()).getRegion().getId() == region) {
                 priceSum += d.getPrice();
@@ -211,7 +215,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected Map<Integer, Double> calculateRegionalPrices() {
         final Map<Integer, Zone> zones = geoData.getZones();
         final Map<Integer, List<Dwelling>> dwellingsByRegion =
-                Dwelling.getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
+                dataContainer.getRealEstateData().getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
                         zones.get(d.getZone()).getRegion().getId()));
         final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream().collect(Collectors.toMap(e ->
                 e.getKey(), e-> e.getValue().stream().mapToDouble(d -> d.getPrice()).average().getAsDouble()));
@@ -221,8 +225,10 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected boolean moveOrNot(int hhId) {
         Household hh = Household.getHouseholdFromId(hhId);
         HouseholdType hhType = hh.getHouseholdType();
-        Dwelling dd = Dwelling.getDwellingFromId(hh.getDwellingId());
-        if (!isHouseholdEligibleToLiveHere(hh, dd)) return true;
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+        if (!isHouseholdEligibleToLiveHere(hh, dd)) {
+            return true;
+        }
         double currentUtil = dd.getUtilOfResident();
 
         double[] prop = new double[2];
@@ -247,7 +253,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         averageHousingSatisfaction = new double[HouseholdType.values().length];
         int[] hhCountyByType = new int[HouseholdType.values().length];
         for (Household hh : Household.getHouseholds()) {
-            double util = Dwelling.getDwellingFromId(hh.getDwellingId()).getUtilOfResident();
+            double util = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getUtilOfResident();
             int count = hh.getHouseholdType().ordinal();
             averageHousingSatisfaction[count] += util;
             hhCountyByType[count]++;
@@ -261,13 +267,13 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     public void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer) {
         // if this household had a dwelling in this study area before, vacate old dwelling
         if (idOldDD > 0) {
-            Dwelling dd = Dwelling.getDwellingFromId(idOldDD);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(idOldDD);
             dd.setResidentID(-1);
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
         dataContainer.getRealEstateData().removeDwellingFromVacancyList(idNewDD);
         hh.setDwelling(idNewDD);
-        Dwelling.getDwellingFromId(idNewDD).setResidentID(hh.getId());
+        dataContainer.getRealEstateData().getDwelling(idNewDD).setResidentID(hh.getId());
         if (hh.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Household " +
                     hh.getId() + " moved from dwelling " + idOldDD + " to dwelling " + idNewDD + ".");

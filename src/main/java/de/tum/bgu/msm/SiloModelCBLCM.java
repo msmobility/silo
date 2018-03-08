@@ -135,7 +135,7 @@ public class SiloModelCBLCM {
 	        }
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getDdOverwrite().addDwellings(currentYear, dataContainer);
+	        modelContainer.getDdOverwrite().addDwellings(currentYear);
 	        if (trackTime) timeCounter[EventTypes.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
@@ -180,11 +180,11 @@ public class SiloModelCBLCM {
 	            } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                int[] couple = Arrays.copyOfRange(event, 1,2);
-					modelContainer.getMardiv().marryCouple(couple, modelContainer, dataContainer);
+					modelContainer.getMardiv().marryCouple(couple, modelContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getMardiv().chooseDivorce(event[1], modelContainer, dataContainer);
+	                modelContainer.getMardiv().chooseDivorce(event[1], modelContainer);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
@@ -212,7 +212,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_DEMOLITION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, dataContainer, (int) year);
+	                modelContainer.getDemol().checkDemolition(event[1], modelContainer, (int) year);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.DD_CONSTRUCTION.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
@@ -230,15 +230,15 @@ public class SiloModelCBLCM {
 	        }
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getPrm().updatedRealEstatePrices(currentYear, dataContainer);
+	        modelContainer.getPrm().updatedRealEstatePrices();
 	        if (trackTime) timeCounter[EventTypes.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
 
-	        EventManager.logEvents(new int[] {0,0});
+	        EventManager.logEvents(new int[] {0,0}, dataContainer);
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
 	        logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +
 	                " persons, " + dataContainer.getHouseholdData().getNumberOfHouseholds()+" households and "  +
-	                Dwelling.getDwellingCount() + " dwellings.");
+	                dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 	        currentYear++;
 	        if (SiloUtil.modelStopper("check")) finishModel();
 	}

@@ -23,8 +23,10 @@ import java.io.Reader;
 
 public class DemolitionModel {
     private final DemolitionJSCalculator calculator;
+    private final SiloDataContainer dataContainer;
 
-    public DemolitionModel() {
+    public DemolitionModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
@@ -35,26 +37,26 @@ public class DemolitionModel {
         calculator = new DemolitionJSCalculator(reader);
     }
 
-    public void checkDemolition (int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int year) {
+    public void checkDemolition (int dwellingId, SiloModelContainer modelContainer, int year) {
 
-        Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
         if (!EventRules.ruleDemolishDwelling(dd)) {
             return;  // Dwelling not available for demolition
         }
 
         if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, year)) {
-            demolishDwelling(dwellingId, modelContainer, dataContainer, dd);
+            demolishDwelling(dwellingId, modelContainer, dd);
         }
     }
 
-    private void demolishDwelling(int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer, Dwelling dd) {
+    private void demolishDwelling(int dwellingId, SiloModelContainer modelContainer, Dwelling dd) {
         Household hh = Household.getHouseholdFromId(dd.getResidentId());
         if (hh != null) {
             moveOutHousehold(dwellingId, modelContainer, dataContainer, hh);
         } else {
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
         }
-        Dwelling.removeDwelling(dwellingId);
+        dataContainer.getRealEstateData().removeDwelling(dwellingId);
         EventManager.countEvent(EventTypes.DD_DEMOLITION);
         if (dwellingId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " +

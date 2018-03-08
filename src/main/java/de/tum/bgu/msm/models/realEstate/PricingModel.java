@@ -17,9 +17,11 @@ import java.util.HashMap;
  * Created on 24 Febuary 2010 in Santa Fe
  **/
 
-public class PricingModel {
+public final class PricingModel {
 
     static Logger logger = Logger.getLogger(PricingModel.class);
+
+    private final SiloDataContainer dataContainer;
 
     private String uecFileName;
     private int dataSheetNumber;
@@ -32,7 +34,8 @@ public class PricingModel {
     private double[] structuralVacancy;
 
 
-    public PricingModel () {
+    public PricingModel (SiloDataContainer dataContainer) {
+        this.dataContainer  = dataContainer;
         uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
         dataSheetNumber = Properties.get().realEstate.dataSheet;
         setupPricingModel();
@@ -74,7 +77,7 @@ public class PricingModel {
     }
 
 
-    public void updatedRealEstatePrices (int year, SiloDataContainer dataContainer) {
+    public void updatedRealEstatePrices () {
         // updated prices based on current demand
         logger.info("  Updating real-estate prices");
 
@@ -85,7 +88,7 @@ public class PricingModel {
 
         int[] cnt = new int[DwellingType.values().length];
         double[] sumOfPrices = new double[DwellingType.values().length];
-        for (Dwelling dd: Dwelling.getDwellings()) {
+        for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getRestriction() != 0) continue;  // dwelling is under affordable-housing constraints, rent cannot be raised
             int dto = dd.getType().ordinal();
             float structuralVacLow = (float) (structuralVacancy[dto] * inflectionLow);
