@@ -72,6 +72,7 @@ public class RealEstateDataManager {
     public Dwelling createDwelling(int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
                                    int year) {
         Dwelling dwelling = new Dwelling(id, zone, hhId, type, bedrooms, quality, price, restriction, year);
+        this.dwellings.put(id, dwelling);
         return dwelling;
     }
 

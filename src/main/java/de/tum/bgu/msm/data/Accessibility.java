@@ -7,6 +7,7 @@ import com.google.common.collect.ArrayTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
@@ -50,11 +51,13 @@ public class Accessibility {
 
     private final String transitMatrixName;
     private final String carMatrixName;
+    private final SiloDataContainer dataContainer;
 
     private float[] workTLFD;
 
-    public Accessibility(GeoData geoData) {
-        this.geoData = geoData;
+    public Accessibility(SiloDataContainer dataContainer) {
+        this.geoData = dataContainer.getGeoData();
+        this.dataContainer = dataContainer;
         this.travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
 
         this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
@@ -118,7 +121,7 @@ public class Accessibility {
     public void calculateHansenAccessibilities(int year) {
 
         LOGGER.info("  Calculating accessibilities for " + year);
-        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(geoData);
+        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(dataContainer);
 
         LOGGER.info("  Calculating zone zone accessibilities: auto");
         final DoubleMatrix2D autoAccessZoneToZone =

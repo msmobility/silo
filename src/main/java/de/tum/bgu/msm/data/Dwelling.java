@@ -16,11 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
@@ -68,7 +63,7 @@ public final class Dwelling {
     private int yearConstructionDE = 0;
 
 
-    private Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
+    Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
                      int year) {
         this.id = id;
         this.zone = zone;

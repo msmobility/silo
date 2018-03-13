@@ -112,10 +112,10 @@ public class SiloModelContainer {
         BirthModel birth = new BirthModel(dataContainer.getHouseholdData());
         LeaveParentHhModel lph = new LeaveParentHhModel();
         MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer);
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
+        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
-        Accessibility acc = new Accessibility(dataContainer.getGeoData());
+        Accessibility acc = new Accessibility(dataContainer);
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
         InOutMigration iomig = new InOutMigration();

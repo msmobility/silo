@@ -76,7 +76,7 @@ public class SiloModelCBLCM {
 	        timeCounter = new long[EventTypes.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, geoData, modelContainer);
+	        transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, modelContainer);
 	        if (Properties.get().main.createPrestoSummary) {
 				SummarizeData.preparePrestoSummary(geoData);
 			}
@@ -255,7 +255,7 @@ public class SiloModelCBLCM {
 	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 	        if (Properties.get().main.endYear != 2040) {
-	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear);
+	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);
 	            geoData.writeOutDevelopmentCapacityFile(dataContainer);
 	        }
 

@@ -25,18 +25,18 @@ public class MarryDivorceModelTest {
 
         dataContainer = SiloDataContainer.createSiloDataContainer();
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
-        model = new MarryDivorceModel();
+        model = new MarryDivorceModel(dataContainer);
 
         couple1 = new int[]{1,2};
         Household household1 = new Household(1,  1, 0);
-        Dwelling dwelling1 = new Dwelling(1, 1, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(1, 1, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000);
         Person person1 = new Person(1, 30, 2, Race.other, -1, -1, 0);
         person1.setHousehold(household1);
         household1.addPerson(person1);
         person1.setRole(PersonRole.SINGLE);
 
         Household household2 = new Household(1, 2, 0);
-        Dwelling dwelling2 = new Dwelling(2, 1, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(2, 1, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000);
         Person person2 = new Person(2, 30, 2, Race.other, -1, -1, 0);
         person2.setHousehold(household2);
         household2.addPerson(person2);
@@ -44,14 +44,14 @@ public class MarryDivorceModelTest {
 
         couple2 = new int[]{3,4};
         Household household3 = new Household(3, 3,  0);
-        Dwelling dwelling3 = new Dwelling(3, 1, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(3, 1, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person3 = new Person(3, 30, 2, Race.other, -1, -1, 0);
         person3.setHousehold(household3);
         household3.addPerson(person3);
         person3.setRole(PersonRole.SINGLE);
 
         Household household4 = new Household(4, 4,  0);
-        Dwelling dwelling4 = new Dwelling(4, 1, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(4, 1, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person4 = new Person(4, 30, 2, Race.other, -1, -1, 0);
         person4.setHousehold(household4);
         household4.addPerson(person4);
@@ -59,14 +59,14 @@ public class MarryDivorceModelTest {
 
         couple3 = new int[]{5,6};
         Household household5 = new Household(5, 5,  0);
-        Dwelling dwelling5 = new Dwelling(5, 1, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(5, 1, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person5 = new Person(5, 30, 2, Race.other, -1, -1, 0);
         person5.setHousehold(household5);
         household5.addPerson(person5);
         person5.setRole(PersonRole.SINGLE);
 
         Household household6 = new Household(6, 6,  0);
-        Dwelling dwelling6 = new Dwelling(6, 1, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(6, 1, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person6 = new Person(6, 30, 2, Race.other, -1, -1, 0);
         person6.setHousehold(household6);
         household6.addPerson(person6);
@@ -78,7 +78,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageGroomMovingToBride() {
-        model.marryCouple(couple1, modelContainer, dataContainer);
+        model.marryCouple(couple1, modelContainer);
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(1).getRole());
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(2).getRole());
@@ -90,7 +90,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageBrideMovingToGroom() {
-        model.marryCouple(couple2, modelContainer, dataContainer);
+        model.marryCouple(couple2, modelContainer);
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(3).getRole());
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(4).getRole());
@@ -102,7 +102,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageBrideMovingToGroomWithChild() {
-        model.marryCouple(couple3, modelContainer, dataContainer);
+        model.marryCouple(couple3, modelContainer);
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(5).getRole());
         Assert.assertEquals(PersonRole.MARRIED, Person.getPersonFromId(6).getRole());

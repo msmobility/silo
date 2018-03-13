@@ -113,7 +113,7 @@ public final class SiloModel {
 			transportModel.runTransportModel(Properties.get().main.startYear);
 		} else if(runTravelDemandModel){
 			LOGGER.info("  MITO is used as the transport model");
-			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer.getGeoData(), modelContainer);
+			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, modelContainer);
 		} else {
 			LOGGER.info(" No transport model is used");
 		}
@@ -324,7 +324,7 @@ public final class SiloModel {
 		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 		if (Properties.get().main.endYear != 2040) {
-			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear);
+			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);
 			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
 		}
 

@@ -1014,7 +1014,7 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 	logger.info("  Summarizing micro data for year " + year);
 
 	SummarizeData.resultFile("Year " + year, false);
-	HouseholdDataManager.summarizePopulation(dataContainer.getGeoData(), modelContainer);
+	HouseholdDataManager.summarizePopulation(dataContainer, modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
 	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionIdsArray());
 
@@ -1024,10 +1024,10 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
         summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
     }
 	if (Properties.get().main.createHousingEnvironmentImpactFile) {
-        SummarizeData.summarizeHousing(year);
+        SummarizeData.summarizeHousing(year, dataContainer);
     }
 	if (Properties.get().main.createPrestoSummary) {
-		SummarizeData.summarizePrestoRegion(year);
+		SummarizeData.summarizePrestoRegion(year, dataContainer);
 	}
 }
 
