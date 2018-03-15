@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -12,10 +13,10 @@ import java.io.IOException;
 public class ReadPopulation {
 
     private static final Logger logger = Logger.getLogger(ReadPopulation.class);
+    private final SiloDataContainer dataContainer;
 
-
-    public ReadPopulation(){
-
+    public ReadPopulation(SiloDataContainer dataContainer){
+        this.dataContainer = dataContainer;
     }
 
     public void run(){
@@ -152,6 +153,7 @@ public class ReadPopulation {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
         fileName += "_" + year + ".csv";
 
@@ -190,7 +192,7 @@ public class ReadPopulation {
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Dwelling dd = new Dwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Dwelling dd = realEstate.createDwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }

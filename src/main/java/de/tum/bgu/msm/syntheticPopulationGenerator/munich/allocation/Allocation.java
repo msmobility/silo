@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -12,9 +13,11 @@ import java.util.ArrayList;
 public class Allocation extends ModuleSynPop{
 
     private static final Logger logger = Logger.getLogger(Allocation.class);
+    private final SiloDataContainer dataContainer;
 
-    public Allocation(DataSetSynPop dataSetSynPop){
+    public Allocation(DataSetSynPop dataSetSynPop, SiloDataContainer dataContainer){
         super(dataSetSynPop);
+        this.dataContainer = dataContainer;
     }
 
     @Override
@@ -41,30 +44,30 @@ public class Allocation extends ModuleSynPop{
                 addBoroughsAsCities(county);
             }
         }
-        new GenerateHouseholdsPersonsDwellings(dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1990);
+        new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop).run();
+        SummarizeData.writeOutSyntheticPopulationDE(1990, dataContainer);
     }
 
     public void generateJobs(){
         new GenerateJobs(dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1991);
+        SummarizeData.writeOutSyntheticPopulationDE(1991, dataContainer);
     }
 
     public void assignJobs(){
-        new AssignJobs(dataSetSynPop).run();
+        new AssignJobs(dataContainer, dataSetSynPop).run();
     }
 
     public void assignSchools(){
-        new AssignSchools(dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1992);
+        new AssignSchools(dataContainer, dataSetSynPop).run();
+        SummarizeData.writeOutSyntheticPopulationDE(1992, dataContainer);
     }
 
     public void readPopulation(){
-        new ReadPopulation().run();
+        new ReadPopulation(dataContainer).run();
     }
 
     public void validateTripLengths(){
-        new ValidateTripLengthDistribution(dataSetSynPop).run();
+        new ValidateTripLengthDistribution(dataContainer, dataSetSynPop).run();
     }
 
 

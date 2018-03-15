@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
@@ -145,8 +146,8 @@ public class SyntheticPopCT implements SyntheticPopI {
     //private HashMap<>
 
 
-
     static Logger logger = Logger.getLogger(SyntheticPopCT.class);
+    private SiloDataContainer dataContainer;
 
     public SyntheticPopCT(ResourceBundle rb){
         this.rb = rb;
@@ -159,6 +160,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         readZonalData();
         createDirectoryForOutput();
+        dataContainer = SiloDataContainer.createSiloDataContainer();
         long startTime = System.nanoTime();
         boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed
@@ -1396,6 +1398,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         //Start the selection of the jobs in random order to avoid geographical bias
         logger.info("   Started assigning workplaces");
         int assignedJobs = 0;
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
@@ -1407,7 +1410,8 @@ public class SyntheticPopCT implements SyntheticPopI {
             if (lengthKeys > 0) {
 
                 //Select the workplace location (TAZ) for that person given his/her job type
-                int[] workplace = selectWorkplace(pp.getZone(), numberVacantJobsByZoneByType, keys, lengthKeys,
+                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
+                int[] workplace = selectWorkplace(origin, numberVacantJobsByZoneByType, keys, lengthKeys,
                         distanceImpedance);
 
                 //Assign last vacant jobID from the TAZ
@@ -1527,6 +1531,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         //Start the selection of schools in random order to avoid geographical bias
         logger.info("   Started assigning schools");
         int assignedSchools = 0;
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         int[] studentsOutside = new int[schoolTypes.length];
         int[] studentsByType = new int[schoolTypes.length];
         for (Person pp : studentArrayList) {
@@ -1540,17 +1545,18 @@ public class SyntheticPopCT implements SyntheticPopI {
 
                 //Select the school location (which raster cell) for that person given his/her job type
                 int[] schoolPlace = new int[2];
+                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
                 if (schoolType == 3) {
-                    schoolPlace = selectWorkplace(pp.getZone(), numberVacantSchoolsByZoneByType,
+                    schoolPlace = selectWorkplace(origin, numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, universityDistanceImpedance);
-                    travelUniversity.addValue((int) distanceMatrix.getValueAt(pp.getZone(), schoolPlace[0] / 100));
+                    travelUniversity.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
                 } else {
-                    schoolPlace = selectClosestSchool(pp.getZone(), numberVacantSchoolsByZoneByType,
+                    schoolPlace = selectClosestSchool(origin, numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, schoolDistanceImpedance);
                     if (schoolType == 1){
-                        travelPrimary.addValue((int) distanceMatrix.getValueAt(pp.getZone(),schoolPlace[0] / 100));
+                        travelPrimary.addValue((int) distanceMatrix.getValueAt(origin,schoolPlace[0] / 100));
                     } else if (schoolType == 2){
-                        travelSecondary.addValue((int) distanceMatrix.getValueAt(pp.getZone(), schoolPlace[0] / 100));
+                        travelSecondary.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
                     }
                 }
 
@@ -1559,7 +1565,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
 
                 //For validation OD TableDataSet
-                int homeMun = (int) cellsMatrix.getIndexedValueAt(pp.getZone(), "smallID");
+                int homeMun = (int) cellsMatrix.getIndexedValueAt(origin, "smallID");
                 int workMun = (int) cellsMatrix.getIndexedValueAt(pp.getSchoolPlace(), "smallID");
                 int odPair = homeMun * 1000 + workMun;
                 odMunicipalityFlow.setIndexedValueAt(odPair,Integer.toString(count),odMunicipalityFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
@@ -1637,12 +1643,12 @@ public class SyntheticPopCT implements SyntheticPopI {
                 pp.setNationality(Nationality.other);
             }
             pp.setHhSize(Household.getHouseholdFromId(hhID).getHhSize());
-            pp.setZone(Household.getHouseholdFromId(hhID).getHomeZone());
             pp.setSchoolType((int) persons.getValueAt(i,"schoolDE"));
             pp.setWorkplace((int) persons.getValueAt(i,"workplace"));
         }
 
         logger.info("   Starting to generate dwellings");
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (int i = 1; i <= dwellings.getRowCount(); i++){
             int buildingSize = (int) dwellings.getValueAt(i,"building");
             int zone = (int) dwellings.getValueAt(i,"zone");
@@ -1657,7 +1663,7 @@ public class SyntheticPopCT implements SyntheticPopI {
             int quality = (int)dwellings.getValueAt(i,"quality");
             float brw = prices.getIndexedValueAt(zone, ddtype);
             float price = guessPrice(brw, quality, size);
-            Dwelling dd = new Dwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
+            Dwelling dd = realEstate.createDwelling((int)dwellings.getValueAt(i,"id"),(int)dwellings.getValueAt(i,"zone"),
                     (int)dwellings.getValueAt(i,"hhID"),type,bedrooms,
                     (int)dwellings.getValueAt(i,"quality"),(int) price,
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
@@ -1819,6 +1825,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         }
 
 
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         //Selection of households, persons, jobs and dwellings per municipality
         for (int municipality : municipalities){
             logger.info("   Municipality " + cityID[municipality] + ". Starting to generate households.");
@@ -1917,7 +1924,6 @@ public class SyntheticPopCT implements SyntheticPopI {
                     //pers.setJobTypeDE(selectedJobType);
                     pers.setDriverLicense(obtainDriverLicense(pers.getGender(), pers.getAge(),probabilityDriverLicense));
                     pers.setSchoolType((int) microDataPerson.getValueAt(personCounter, "schoolType"));
-                    pers.setZone(household.getHomeZone());
                     hhPersons++;
                     counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipality,ageBracketsPerson);
                 }
@@ -1942,7 +1948,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 qualityCounts[quality - 1]++;
                 ddQuality.put(key, qualityCounts);
                 year = selectDwellingYear(year); //convert from year class to actual 4-digit year
-                Dwelling dwell = new Dwelling(newDdId, tazID, id, type , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = realEstate.createDwelling(newDdId, tazID, id, type , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setFloorSpace(floorSpace);
                 dwell.setUsage(Dwelling.Usage.valueOf(usage));
                 dwell.setBuildingSize(buildingSize);
@@ -2038,7 +2044,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int quality = select(ddQuality.get(key)) + 1; //Based on the distribution of qualities at the municipality for that construction period
                 int year = selectVacantDwellingYear(buildingSizeAndYearBuilt[1]);
                 int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
-                Dwelling dwell = new Dwelling(newDdId, ddCell[0], -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = realEstate.createDwelling(newDdId, ddCell[0], -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setUsage(Dwelling.Usage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
                 dwell.setBuildingSize(buildingSizeAndYearBuilt[0]);
