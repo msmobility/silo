@@ -74,7 +74,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         geoData.setInitialData();
-        accessibility = new Accessibility(geoData);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
         accessibility.readCarSkim(Properties.get().main.startYear);
         accessibility.readPtSkim(Properties.get().main.startYear);
         accessibility.initialize();
