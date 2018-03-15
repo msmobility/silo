@@ -53,14 +53,14 @@ public class RealEstateDataManagerTest {
         MatrixVectorWriter writerZone2Region = null;
         try {
             new File("./test/output/").mkdirs();
-            writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/dwellingCountByTypeAndRegion.txt"));
+            writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/vacancyRateByTypeAndRegion.txt"));
             for(int i = 0; i < vacRate.length; i++) {
                 writerZone2Region.printArray(vacRate[i]);
             }
             writerZone2Region.flush();
             writerZone2Region.close();
 
-            FileAssert.assertEquals("dwelling count by type and region is different.", new File("./test/input/dwellingCountByTypeAndRegion.txt"), new File("./test/output/dwellingCountByTypeAndRegion.txt"));
+            FileAssert.assertEquals("vacancy Rate by type and region is different.", new File("./test/input/vacancyRateByTypeAndRegion.txt"), new File("./test/output/vacancyRateByTypeAndRegion.txt"));
         } catch (IOException e) {
             e.printStackTrace();
         }
