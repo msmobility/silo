@@ -475,8 +475,8 @@ public class RealEstateDataManager {
     public double[][] getVacancyRateByTypeAndRegion() {
         // calculate vacancy rate by region and dwelling type
 
-        int[] regionList = geoData.getRegionIdsArray();
-        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 0);
+        final int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][DwellingType.values().length][highestRegionId + 1], 0);
 
         for (Dwelling dd: dwellings.values()) {
             int dto = dd.getType().ordinal();
@@ -486,7 +486,7 @@ public class RealEstateDataManager {
                 vacOcc[0][dto][geoData.getZones().get(dd.getZone()).getRegion().getId()]++;
             }
         }
-        double[][] vacRate = new double[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1];
+        double[][] vacRate = new double[DwellingType.values().length][highestRegionId + 1];
         for (DwellingType dt: DwellingType.values()) {
             int dto = dt.ordinal();
             for (int region: geoData.getRegions().keySet()) {
@@ -519,9 +519,9 @@ public class RealEstateDataManager {
     public int[][] getDwellingCountByTypeAndRegion() {
         // return number of dwellings by type and region
 
-        int[] regionList = geoData.getRegionIdsArray();
+        int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] dwellingCount =
-                SiloUtil.setArrayToValue(new int[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 1);
+                SiloUtil.setArrayToValue(new int[DwellingType.values().length][highestRegionId + 1], 1);
 
         for (Dwelling dd: dwellings.values()) {
             dwellingCount[dd.getType().ordinal()][geoData.getZones().get(dd.getZone()).getRegion().getId()] ++;

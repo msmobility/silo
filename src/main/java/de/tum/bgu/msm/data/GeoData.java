@@ -15,12 +15,12 @@ public interface GeoData {
     void setInitialData();
 
     /**
-     * Returns an immutable map of all zones mapped to their IDs
+     * Returns a map of all zones mapped to their IDs
      */
     Map<Integer, Zone> getZones();
 
     /**
-     * Returns an immutable map of all regions mapped to their IDs
+     * Returns a map of all regions mapped to their IDs
      */
     Map<Integer, Region> getRegions();
 
