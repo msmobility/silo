@@ -23,11 +23,11 @@ import java.io.Reader;
  */
 public class DeathModel {
 
-    private final HouseholdDataManager householdDataManager;
+    private final SiloDataContainer dataContainer;
     private DeathJSCalculator calculator;
 
-    public DeathModel(HouseholdDataManager householdDataManager) {
-        this.householdDataManager = householdDataManager;
+    public DeathModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
 		setupDeathModel();
 	}
 
@@ -42,16 +42,19 @@ public class DeathModel {
 	}
 
 
-	public void chooseDeath(int perId, SiloDataContainer dataContainer) {
+	public void chooseDeath(int perId) {
         // simulate if person with ID perId dies in this simulation period
 
-        Person per = Person.getPersonFromId(perId);
-        if (!EventRules.ruleDeath(per)) return;  // Person has moved away
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        Person per = householdData.getPersonFromId(perId);
+        if (!EventRules.ruleDeath(per)) {
+            return;  // Person has moved away
+        }
         int age = Math.min(per.getAge(), 100);
         int sexIndex = per.getGender();
         if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, sexIndex)) {
             if (per.getWorkplace() > 0) {
-                per.quitJob(true, dataContainer.getJobData());
+                dataContainer.getJobData().quitJob(true, per);
             }
             Household hhOfPersonToDie = per.getHh();
 
@@ -59,20 +62,20 @@ public class DeathModel {
                 Person widow = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
                 widow.setRole(PersonRole.SINGLE);
             }
-            hhOfPersonToDie.removePerson(per, dataContainer);
+            householdData.removePerson(per.getId());
             boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
             if (onlyChildrenLeft) {
                 for (Person pp: hhOfPersonToDie.getPersons()) {
-                    Person.removePerson(pp.getId());
+                    householdData.removePerson(pp.getId());
                     if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
                         SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
                                 " to foster care as remaining child just before head of household (ID " +
                                 per.getId() + ") passed away.");
                 }
             }
-            Person.removePerson(per.getId());
+            householdData.removePerson(per.getId());
             EventManager.countEvent(EventTypes.CHECK_DEATH);
-            householdDataManager.addHouseholdThatChanged(hhOfPersonToDie);
+            householdData.addHouseholdThatChanged(hhOfPersonToDie);
             if (perId == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
                 SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhOfPersonToDie.getId() +
                         " has passed away.");

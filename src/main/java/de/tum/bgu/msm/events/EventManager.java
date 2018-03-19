@@ -106,7 +106,8 @@ public class EventManager {
 
 
         // create household events
-        for (Household hh: Household.getHouseholds()) {
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        for (Household hh: householdData.getHouseholds()) {
             if (EventRules.ruleHouseholdMove(hh)) {
                 int id = hh.getId();
                 events.add(new int[]{EventTypes.HOUSEHOLD_MOVE.ordinal(), id});
@@ -116,7 +117,7 @@ public class EventManager {
 
         if (EventRules.ruleOutmigrate()) {
             for (int hhId: InOutMigration.outMigratingHhId) {
-                if (EventRules.ruleOutmigrate(Household.getHouseholdFromId(hhId))) {
+                if (EventRules.ruleOutmigrate(householdData.getHouseholdFromId(hhId))) {
                     events.add(new int[]{EventTypes.OUT_MIGRATION.ordinal(), hhId});
                     numEvents++;
                 }
@@ -180,8 +181,8 @@ public class EventManager {
     public static void logEvents(int [] carChangeCounter, SiloDataContainer dataContainer) {
         // log number of events to screen and result file
 
-        float pp = Person.getPersonCount();
-        float hh = Household.getHouseholdCount();
+        float pp = dataContainer.getHouseholdData().getPersonCount();
+        float hh = dataContainer.getHouseholdData().getHouseholds().size();
         float dd = dataContainer.getRealEstateData().getDwellings().size();
         SummarizeData.resultFile("Count of simulated events");
         int birthday = eventCounter.count(EventTypes.BIRTHDAY);

@@ -50,13 +50,14 @@ public final class MitoTransportModel implements TransportModelI {
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
 			zones.put(zone.getId(), zone);
 		}
-		JobDataManager.fillMitoZoneEmployees(zones);
+		dataContainer.getJobData().fillMitoZoneEmployees(zones);
 
-		Map<Integer, MitoHousehold> households = dataContainer.getHouseholdData().convertHhs(zones);
-		for(Person person: Person.getPersons()) {
+		HouseholdDataManager householdData = dataContainer.getHouseholdData();
+		Map<Integer, MitoHousehold> households = householdData.convertHhs(zones);
+		for(Person person: dataContainer.getHouseholdData().getPersons()) {
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
-				MitoPerson mitoPerson = person.convertToMitoPp();
+				MitoPerson mitoPerson = householdData.convertToMitoPp(person);
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId

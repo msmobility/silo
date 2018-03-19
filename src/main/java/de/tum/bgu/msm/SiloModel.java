@@ -166,7 +166,7 @@ public final class SiloModel {
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			if (year != Properties.get().main.implementation.BASE_YEAR) {
-				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year, dataContainer);
+				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
 				dataContainer.getJobData().identifyVacantJobs();
 			}
 			if (trackTime) timeCounter[EventTypes.values().length + 2][year] += System.currentTimeMillis() - startTime;
@@ -226,7 +226,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getDeath().chooseDeath(event[1], dataContainer);
+					modelContainer.getDeath().chooseDeath(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_BIRTH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -234,7 +234,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer, dataContainer);
+					modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -247,7 +247,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_SCHOOL_UNIV.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeSchoolUniv().updateSchoolUniv(event[1], dataContainer);
+					modelContainer.getChangeSchoolUniv().updateSchoolUniv(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_DRIVERS_LICENSE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -255,23 +255,23 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeEmployment().findNewJob(event[1], modelContainer);
+					modelContainer.getChangeEmployment().findNewJob(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getChangeEmployment().quitJob(event[1], dataContainer.getJobData());
+					modelContainer.getChangeEmployment().quitJob(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getMove().chooseMove(event[1], dataContainer);
+					modelContainer.getMove().chooseMove(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.INMIGRATION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getIomig().inmigrateHh(event[1], modelContainer, dataContainer);
+					modelContainer.getIomig().inmigrateHh(event[1], modelContainer);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.OUT_MIGRATION.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getIomig().outMigrateHh(event[1], false, dataContainer);
+					modelContainer.getIomig().outMigrateHh(event[1], false);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.DD_CHANGE_QUAL.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
@@ -309,8 +309,8 @@ public final class SiloModel {
 			EventManager.logEvents(carChangeCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
-			LOGGER.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getNumberOfPersons() +
-					" persons, " + dataContainer.getHouseholdData().getNumberOfHouseholds()+" households and "  +
+			LOGGER.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getPersonCount() +
+					" persons, " + dataContainer.getHouseholdData().getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 			if (SiloUtil.modelStopper("check")) break;
 		}

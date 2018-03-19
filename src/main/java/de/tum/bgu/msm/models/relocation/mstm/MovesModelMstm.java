@@ -64,7 +64,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     private void updateHouseholdInventar() {
-        for (Household hh: Household.getHouseholds()) {
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if(dwelling != null) {
@@ -274,11 +274,14 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
         Race householdRace = persons.get(0).getRace();
-        for (Person pp: persons) if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-            workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
-            pos++;
-            householdIncome += pp.getIncome();
-            if (pp.getRace() != householdRace) householdRace = Race.other;
+        JobDataManager jobData = dataContainer.getJobData();
+        for (Person pp: persons) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+                workZones[pos] = jobData.getJobFromId(pp.getWorkplace()).getZone();
+                pos++;
+                householdIncome += pp.getIncome();
+                if (pp.getRace() != householdRace) householdRace = Race.other;
+            }
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
         HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);

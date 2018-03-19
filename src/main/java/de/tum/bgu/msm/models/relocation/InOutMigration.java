@@ -5,10 +5,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.Race;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
@@ -27,7 +24,9 @@ import java.util.HashMap;
 
 public class InOutMigration {
 
-    static Logger logger = Logger.getLogger(InOutMigration.class);
+    private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
+    private final SiloDataContainer dataContainer;
+
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
@@ -38,8 +37,8 @@ public class InOutMigration {
     public static int inMigrationPPCounter;
 
 
-    public InOutMigration() {
-
+    public InOutMigration(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
@@ -50,7 +49,7 @@ public class InOutMigration {
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
         } else {
-            logger.error("Unknown property found for population.control.total, set to population or migration");
+            LOGGER.error("Unknown property found for population.control.total, set to population or migration");
             System.exit(0);
         }
     }
@@ -60,20 +59,21 @@ public class InOutMigration {
         // prepare data for INMIGRATION and outmigration
     	//TODO METHOD ONLY HANDLES INMIGRATION. SHOULD IT ALSO HANDLE OUTMIGRATION
         if (!EventRules.ruleInmigrate() && !EventRules.ruleOutmigrate()) return;
-        logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
+        LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         // create outmigrants
         int outmigrants = 0;
         if (populationControlMethod.equalsIgnoreCase("migration")) {
             outmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Outmigration");
         } else {
-            int currentPopulation = Household.getTotalPopulation();
+            int currentPopulation = householdData.getTotalPopulation();
             int target = (int) tblPopulationTarget.getIndexedValueAt(year, "Population");
             if (target < currentPopulation) {
                 outmigrants = currentPopulation - target;
             }
         }
-        Household[] hhs = Household.getHouseholds().toArray(new Household[Household.getHouseholds().size()]);
+        Household[] hhs = householdData.getHouseholds().toArray(new Household[0]);
         ArrayList<Integer> selectedOutmigrationHh = new ArrayList<>();
         int createdOutMigrants = 0;
         if (outmigrants > 0) {
@@ -90,7 +90,7 @@ public class InOutMigration {
         if (populationControlMethod.equalsIgnoreCase("migration")) {
             inmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Inmigration");
         } else {
-            int currentPopulation = Household.getTotalPopulation();
+            int currentPopulation = householdData.getTotalPopulation();
             int target = (int) tblPopulationTarget.getIndexedValueAt(year, "Population");
             if (target > currentPopulation) {
                 inmigrants = target - currentPopulation;
@@ -119,7 +119,7 @@ public class InOutMigration {
                 inData[6 + k] = pp.getWorkplace();
                 k += 6;
             }
-            int hhId = HouseholdDataManager.getNextHouseholdId();
+            int hhId = householdData.getNextHouseholdId();
             inHhIdArray.add(hhId);
             inmigratingHhData.put(hhId, inData);  // create new hhId for inmigrating households and save in HashMap
             createdInmigrants += hhs[selected].getHhSize();
@@ -132,7 +132,7 @@ public class InOutMigration {
     }
 
 
-    public void inmigrateHh(int hhId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public void inmigrateHh(int hhId, SiloModelContainer modelContainer) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
         if (!EventRules.ruleInmigrate()) return;
@@ -144,20 +144,21 @@ public class InOutMigration {
             hhInc += imData[5 + k];
             k += 6;
         }
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        Household hh =  householdData.createHousehold(hhId, -1, 0);
 
-        Household hh = new Household(hhId, -1, 0);
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
-            Person per = new Person(HouseholdDataManager.getNextPersonId(), imData[1 + k], imData[2 + k],
+            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], imData[2 + k],
                     ppRace, imData[4 + k], -1, imData[5 + k]);
-            hh.addPerson(per);
+            householdData.addPersonToHousehold(per, hh);
             k += 6;
         }
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId(), modelContainer);
+                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
                 if (!success) per.setOccupation(2);
             }
             if (per.getAge() > 17){
@@ -174,7 +175,7 @@ public class InOutMigration {
             modelContainer.getMove().moveHousehold(hh, -1, newDdId, dataContainer);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
-            outMigrateHh(hhId, true, dataContainer);
+            outMigrateHh(hhId, true);
             return;
         }
 
@@ -184,22 +185,33 @@ public class InOutMigration {
         }
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
-        for (Person pp: Household.getHouseholdFromId(hhId).getPersons())
-            if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
+        for (Person pp: householdData.getHouseholdFromId(hhId).getPersons()) {
+            if (pp.getId() == SiloUtil.trackPp) {
+                SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
+            }
+        }
     }
 
 
-    public void outMigrateHh (int hhId, boolean overwriteEventRules, SiloDataContainer dataContainer) {
+    public void outMigrateHh (int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
-        Household hh = Household.getHouseholdFromId(hhId);
-        if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) return;
+        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
+        if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) {
+            return;
+        }
         EventManager.countEvent(EventTypes.OUT_MIGRATION);
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
+        JobDataManager jobData = dataContainer.getJobData();
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Person pp: hh.getPersons()) {
-            if (pp.getWorkplace() > 0) pp.quitJob(true, dataContainer.getJobData());
-            Person.removePerson(pp.getId());
-            if (pp.getId() == SiloUtil.trackPp) SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
+            if (pp.getWorkplace() > 0) {
+                jobData.quitJob(true, pp);
+            }
+            householdData.removePerson(pp.getId());
+            if (pp.getId() == SiloUtil.trackPp) {
+                SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
+            }
         }
         dataContainer.getHouseholdData().removeHousehold(hhId);
     }

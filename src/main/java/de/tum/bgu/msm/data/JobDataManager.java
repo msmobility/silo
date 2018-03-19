@@ -20,6 +20,7 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -41,23 +43,54 @@ public class JobDataManager {
     static Logger logger = Logger.getLogger(JobDataManager.class);
 
     private final GeoData geoData;
+    private final Map<Integer, Job> jobs = new ConcurrentHashMap<>();
 
-    private static int highestJobIdInUse;
+    private int highestJobIdInUse;
     private static int[][] vacantJobsByRegion;
     private static int[] vacantJobsByRegionPos;
     private static int numberOfStoredVacantJobs;
     private final Map<Integer, Double> zonalJobDensity;
 
 
-    public JobDataManager(GeoData geoData) {
-        this.geoData = geoData;
+    public JobDataManager(SiloDataContainer dataContainer) {
+        this.geoData = dataContainer.getGeoData();
         this.zonalJobDensity = new HashMap<>();
         numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
-    public static void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
+    public Job createJob(int id, int zone, int workerId, String type) {
+        Job job = new Job(id, zone, workerId, type);
+        this.jobs.put(id, job);
+        return job;
+    }
 
-        for (Job jj : Job.getJobs()) {
+    public Job getJobFromId(int jobId) {
+        return jobs.get(jobId);
+    }
+
+    public void saveJobs (Job[] jjs) {
+        for (Job jj: jjs) jobs.put(jj.getId(), jj);
+    }
+
+    public int getJobCount() {
+        return jobs.size();
+    }
+
+    public Collection<Job> getJobs() {
+        return jobs.values();
+    }
+
+    public Set<Integer> getJobMapIDs () {
+        return jobs.keySet();
+    }
+
+    public void removeJob(int id) {
+        jobs.remove(id);
+    }
+
+    public void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
+
+        for (Job jj : jobs.values()) {
             final MitoZone zone = zones.get(jj.getZone());
             final String type = jj.getType().toUpperCase();
             try {
@@ -122,10 +155,10 @@ public class JobDataManager {
                 int zone = Integer.parseInt(lineElements[posZone]);
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                new Job(id, zone, worker, type);
+                createJob(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
-                    SiloUtil.trackWriter.println(Job.getJobFromId(id).toString());
+                    SiloUtil.trackWriter.println(jobs.get(id).toString());
                 }
             }
         } catch (IOException e) {
@@ -136,12 +169,12 @@ public class JobDataManager {
     }
 
 
-    public static void writeBinaryJobDataObjects() {
+    public void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryJobFile;
         logger.info("  Writing job data to binary file.");
-        Object[] data = Job.getJobs().toArray(new Job[Job.getJobCount()]);
+        Object[] data = jobs.values().toArray(new Job[]{});
         try {
             File fl = new File(fileName);
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fl));
@@ -160,28 +193,29 @@ public class JobDataManager {
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
             Object[] data = (Object[]) in.readObject();
-            Job.saveJobs((Job[]) data[0]);
+            saveJobs((Job[]) data[0]);
         } catch (Exception e) {
             logger.error("Error reading from binary file " + fileName + ". Object not read.\n" + e);
         }
-        logger.info("Finished reading " + Job.getJobCount() + " jobs.");
+        logger.info("Finished reading " + jobs.size() + " jobs.");
     }
 
 
     public void setHighestJobId() {
         // identify highest job ID in use
         highestJobIdInUse = 0;
-        for (Job jj : Job.getJobs()) highestJobIdInUse = Math.max(highestJobIdInUse, jj.getId());
+        for (int id : jobs.keySet()) {
+            highestJobIdInUse = Math.max(highestJobIdInUse, id);
+        }
     }
 
 
-    public static int getNextJobId() {
+    public int getNextJobId() {
         // increase highestJobIdInUse by 1 and return value
-        highestJobIdInUse++;
-        return highestJobIdInUse;
+        return ++highestJobIdInUse;
     }
 
-    public static List<Integer> getNextJobIds(int amount) {
+    public List<Integer> getNextJobIds(int amount) {
         // increase highestJobIdInUse by 1 and return value
         List<Integer> ids = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
@@ -271,7 +305,7 @@ public class JobDataManager {
         vacantJobsByRegionPos = SiloUtil.setArrayToValue(vacantJobsByRegionPos, 0);
 
         logger.info("  Identifying vacant jobs");
-        for (Job jj : Job.getJobs()) {
+        for (Job jj : jobs.values()) {
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
 
@@ -287,6 +321,23 @@ public class JobDataManager {
                 }
             }
         }
+    }
+
+    public void quitJob (boolean makeJobAvailableToOthers, Person person) {
+        // Person quits job and the job is added to the vacantJobList
+        // <makeJobAvailableToOthers> is false if this job disappears from the job market
+        if(person == null) {
+            return;
+        }
+        final int workplace = person.getWorkplace();
+        Job jb = jobs.get(workplace);
+        if (makeJobAvailableToOthers) {
+            addJobToVacancyList(jb.getZone(), workplace);
+        }
+        jb.setWorkerID(-1);
+        person.setWorkplace(-1);
+        person.setOccupation(2);
+        person.setIncome((int) (person.getIncome() * 0.6 + 0.5));  //  todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
     }
 
 
@@ -321,7 +372,7 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob(int homeZone, Collection<Integer> regionIds, SiloModelContainer siloModelContainer) {
+    public static int findVacantJob(int homeZone, Collection<Integer> regionIds, Accessibility accessibility) {
         // select vacant job for person living in homeZone
 
         double[] regionProbability = new double[SiloUtil.getHighestVal(regionIds.stream().mapToInt(Integer::intValue).toArray()) + 1];
@@ -330,15 +381,15 @@ public class JobDataManager {
             // person has home location (i.e., is not inmigrating right now)
             for (int reg : regionIds) {
                 if (vacantJobsByRegionPos[reg] > 0) {
-                    int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                    regionProbability[reg] = siloModelContainer.getAcc().getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
+                    int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
+                    regionProbability[reg] = accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
                 }
             }
             if (SiloUtil.getSum(regionProbability) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (int reg : regionIds) {
                     if (vacantJobsByRegionPos[reg] > 0) {
-                        int distance = (int) (siloModelContainer.getAcc().getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
+                        int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
                         regionProbability[reg] = 1f / distance;
                     }
                 }
@@ -378,27 +429,34 @@ public class JobDataManager {
     public void addJobToVacancyList(int zone, int jobId) {
         // add job jobId to vacancy list
 
-        int region = geoData.getRegionOfZone(zone);
+        int region = geoData.getZones().get(zone).getRegion().getId();
         vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
-        if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) vacantJobsByRegionPos[region]++;
-        if (vacantJobsByRegionPos[region] >= numberOfStoredVacantJobs) IssueCounter.countExcessOfVacantJobs(region);
-        if (jobId == SiloUtil.trackJj) SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
+        if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
+            vacantJobsByRegionPos[region]++;
+        }
+        if (vacantJobsByRegionPos[region] >= numberOfStoredVacantJobs) {
+            IssueCounter.countExcessOfVacantJobs(region);
+        }
+        if (jobId == SiloUtil.trackJj) {
+            SiloUtil.trackWriter.println("Added job " + jobId + " to list of vacant jobs.");
+        }
     }
 
 
-    public void summarizeJobs(int[] regionList) {
+    public void summarizeJobs(Map<Integer, Region> regions) {
         // summarize jobs for summary file
 
         String txt = "jobByRegion";
         for (String empType : JobType.getJobTypes()) txt += "," + empType;
         SummarizeData.resultFile(txt + ",total");
 
-        int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][SiloUtil.getHighestVal(regionList) + 1];
-        for (Job job : Job.getJobs()) {
-            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getRegionOfZone(job.getZone())]++;
+        final int highestId = regions.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+        int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][highestId + 1];
+        for (Job job : jobs.values()) {
+            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.getZone()).getRegion().getId()]++;
         }
 
-        for (int region : regionList) {
+        for (int region : regions.keySet()) {
             StringBuilder line = new StringBuilder(String.valueOf(region));
             int regionSum = 0;
             for (String empType : JobType.getJobTypes()) {
@@ -412,7 +470,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         Multiset<Integer> counter = ConcurrentHashMultiset.create();
-        Job.getJobs().parallelStream().forEach(j -> counter.add(j.getZone()));
+        jobs.values().parallelStream().forEach(j -> counter.add(j.getZone()));
         geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
     }
 

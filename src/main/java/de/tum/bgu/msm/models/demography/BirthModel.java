@@ -61,39 +61,43 @@ public class BirthModel {
 
     public void chooseBirth(int perId) {
 
-        Person per = Person.getPersonFromId(perId);
-        if (!EventRules.ruleGiveBirth(per)) return;  // Person has died or moved away
-        if (per.getGender() == 1) return;            // Exclude males, model should never get here
+        Person per = householdDataManager.getPersonFromId(perId);
+        if (!EventRules.ruleGiveBirth(per)) {
+            return;  // Person has died or moved away
+        }
+        if (per.getGender() == 1) {
+            return;            // Exclude males, model should never get here
+        }
         // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb = calculator.calculateBirthProbability(per.getAge());
-        if (per.getRole() == PersonRole.MARRIED) birthProb *= Properties.get().demographics.marriedScaler;
-        else birthProb *= Properties.get().demographics.singleScaler;
+        if (per.getRole() == PersonRole.MARRIED) {
+            birthProb *= Properties.get().demographics.marriedScaler;
+        } else {
+            birthProb *= Properties.get().demographics.singleScaler;
+        }
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             // For, unto us a child is born
-            Household hhOfThisWoman = Household.getHouseholdFromId(per.getHh().getId());
-            hhOfThisWoman.addNewbornPerson(hhOfThisWoman.getRace());
-            EventManager.countEvent(EventTypes.CHECK_BIRTH);
+            Household hhOfThisWoman = householdDataManager.getHouseholdFromId(per.getHh().getId());
+            householdDataManager.addNewbornPersonToHousehold(hhOfThisWoman);
             householdDataManager.addHouseholdThatChanged(hhOfThisWoman);
+            EventManager.countEvent(EventTypes.CHECK_BIRTH);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
             }
         }
     }
 
-
     public static double getProbabilityForGirl () {
         return calculator.getProbabilityForGirl();
     }
-
 
     public static boolean personCanGiveBirth(int age) {
         return (calculator.calculateBirthProbability(age) > 0);
     }
 
-
     public void celebrateBirthday (int personId) {
         // increase age of this person by number of years in simulation period
-        Person per = Person.getPersonFromId(personId);
+        Person per = householdDataManager.getPersonFromId(personId);
         if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
         int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
         per.setAge(age);

@@ -50,7 +50,7 @@ public class DemolitionModel {
     }
 
     private void demolishDwelling(int dwellingId, SiloModelContainer modelContainer, Dwelling dd) {
-        Household hh = Household.getHouseholdFromId(dd.getResidentId());
+        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(dd.getResidentId());
         if (hh != null) {
             moveOutHousehold(dwellingId, modelContainer, dataContainer, hh);
         } else {
@@ -69,7 +69,7 @@ public class DemolitionModel {
         if (idNewDD > 0) {
             modelContainer.getMove().moveHousehold(hh, -1, idNewDD, dataContainer);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
         } else {
-            modelContainer.getIomig().outMigrateHh(hh.getId(), true, dataContainer);
+            modelContainer.getIomig().outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             IssueCounter.countLackOfDwellingForcedOutmigration();
         }

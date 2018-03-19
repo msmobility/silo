@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonType;
 import de.tum.bgu.msm.events.EventManager;
@@ -23,8 +24,11 @@ public class ChangeDriversLicense {
     private double[] changeDriversLicenseProbability;
     private double[] createDriversLicenseProbability;
 
-    public ChangeDriversLicense() {
+    private final SiloDataContainer dataContainer;
+
+    public ChangeDriversLicense(SiloDataContainer dataContainer) {
         // constructor
+        this.dataContainer = dataContainer;
         setupChangeDriversLicense();
         setupCreateDriversLicense();
     }
@@ -63,7 +67,7 @@ public class ChangeDriversLicense {
     public boolean changeDriversLicense (int perId) {
         // check if person obtains a drivers license
 
-        Person pp = Person.getPersonFromId(perId);
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp == null) return false;  // person has died or moved away
         if (pp.hasDriverLicense()) return false;
         if (pp.getAge() < 18) return  false;
@@ -79,7 +83,7 @@ public class ChangeDriversLicense {
 
 
     public boolean createDriversLicense(int perId){
-        Person pp = Person.getPersonFromId(perId);
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp == null) return false;  // person has died or moved away
 
         if (SiloUtil.getRandomNumberAsDouble() < createDriversLicenseProbability[pp.getType().ordinal()]) {

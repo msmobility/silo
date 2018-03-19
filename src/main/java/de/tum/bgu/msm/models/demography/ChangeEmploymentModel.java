@@ -16,17 +16,17 @@ import de.tum.bgu.msm.events.IssueCounter;
 
 public class ChangeEmploymentModel {
     private final SiloDataContainer dataContainer;
+    private final Accessibility accessibility;
 
-
-    public ChangeEmploymentModel(SiloDataContainer dataContainer) {
+    public ChangeEmploymentModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         this.dataContainer = dataContainer;
+        this.accessibility = accessibility;
     }
 
-
-    public boolean findNewJob (int perId, SiloModelContainer siloModelContainer) {
+    public boolean findNewJob (int perId) {
         // find new job for person perId
 
-        Person pp = Person.getPersonFromId(perId);
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp == null) return false;  // person has died or moved away
 
         int sm = 0;
@@ -42,12 +42,12 @@ public class ChangeEmploymentModel {
             if(dwelling != null) {
                 zoneId = dwelling.getZone();
             }
-            int idVacantJob = JobDataManager.findVacantJob(zoneId, dataContainer.getGeoData().getRegions().keySet(), siloModelContainer);
+            int idVacantJob = JobDataManager.findVacantJob(zoneId, dataContainer.getGeoData().getRegions().keySet(), accessibility);
             if (idVacantJob == -1) {
                 IssueCounter.countMissingJob();
                 return false;
             }
-            Job jj = Job.getJobFromId(idVacantJob);
+            Job jj = dataContainer.getJobData().getJobFromId(idVacantJob);
             jj.setWorkerID(perId);
             pp.setWorkplace(jj.getId());
             pp.setOccupation(1);
@@ -62,15 +62,16 @@ public class ChangeEmploymentModel {
         }
     }
 
-
-    public void quitJob (int perId, JobDataManager jobDataManager) {
+    public void quitJob (int perId) {
         // Let person perId quit her/his job and make this job available to others
 
-        Person pp = Person.getPersonFromId(perId);
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp == null) return;  // person has died or moved away
-        pp.quitJob(true, jobDataManager);
+        dataContainer.getJobData().quitJob(true, pp);
         EventManager.countEvent(EventTypes.QUIT_JOB);
         dataContainer.getHouseholdData().addHouseholdThatChanged(pp.getHh());
-        if (perId == SiloUtil.trackPp) SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+        if (perId == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+        }
     }
 }

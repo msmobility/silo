@@ -54,11 +54,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     @Override
-    public int getRegionOfZone(int zone) {
-        return zones.get(zone).getRegion().getId();
-    }
-
-    @Override
     public int[] getZoneIdsArray() {
         return zones.keySet().stream().mapToInt(Integer::intValue).toArray();
     }

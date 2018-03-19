@@ -111,7 +111,7 @@ public class MaryLandCarOwnershipModel implements CarOwnershipModel {
         // as calculating accessibilities requires to know where households are living
 
         for (int id: updatedHouseholds.keySet()) {
-            Household household = Household.getHouseholdFromId(id);
+            Household household = dataContainer.getHouseholdData().getHouseholdFromId(id);
             if(household == null) {
                 continue;
             }

@@ -104,7 +104,8 @@ public class SiloMatsimUtils {
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
-    	    	
+
+    	JobDataManager jobData = dataContainer.getJobData();
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
@@ -136,8 +137,8 @@ public class SiloMatsimUtils {
 
     		int siloPersonId = siloPerson.getId();
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		int siloHomeTazId = dwelling.getZone();
-    		Job job = Job.getJobFromId(siloWorkplaceId);
+    		int siloHomeTazId = dwelling.getId();
+    		Job job = jobData.getJobFromId(siloWorkplaceId);
     		int workZoneId = job.getZone();
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here

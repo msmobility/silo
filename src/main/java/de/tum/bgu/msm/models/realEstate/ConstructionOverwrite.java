@@ -136,7 +136,10 @@ public class ConstructionOverwrite {
     public void finishOverwriteTracer () {
         // Read Tracer File and write out current conditions at end of simulation
 
-        if (!useOverwrite) return;  // if overwrite is not used, now overwrite dwellings can be traced
+        if (!useOverwrite) {
+            return;  // if overwrite is not used, now overwrite dwellings can be traced
+        }
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
@@ -153,7 +156,7 @@ public class ConstructionOverwrite {
             if (dd == null) continue;
             dwellingRent[row-1] = dd.getPrice();
             if (dd.getResidentId() > 0) {
-                Household hh = Household.getHouseholdFromId(dd.getResidentId());
+                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
                 householdId[row-1] = hh.getId();
                 householdSize[row-1] = hh.getHhSize();
                 householdInc[row-1] = hh.getHhIncome();

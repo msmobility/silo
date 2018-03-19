@@ -31,7 +31,7 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
         pwa.println("id, dwelling, zone, license, income, size, autos");
-        for (Household hh: Household.getHouseholds()) {
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             int homeZone = -1;
             if(dwelling != null) {
@@ -74,8 +74,9 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
     public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
 
         int[] counter = new int[2];
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Map.Entry<Integer, int[]> pair : updatedHouseholds.entrySet()) {
-            Household hh = Household.getHouseholdFromId(pair.getKey());
+            Household hh = householdData.getHouseholdFromId(pair.getKey());
             if (hh != null) {
                 int[] previousAttributes = pair.getValue();
                 // update cars owned by household hh

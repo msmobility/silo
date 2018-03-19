@@ -646,9 +646,8 @@ public class SiloUtil {
 
     public static int[] createArrayWithValue (int arrayLength, int value) {
         // fill one-dimensional boolean array with value
-
         int[] anArray = new int[arrayLength];
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
+        Arrays.fill(anArray, value);
         return anArray;
     }
 
@@ -1014,9 +1013,9 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 	logger.info("  Summarizing micro data for year " + year);
 
 	SummarizeData.resultFile("Year " + year, false);
-	HouseholdDataManager.summarizePopulation(dataContainer, modelContainer);
+	dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
 	dataContainer.getRealEstateData().summarizeDwellings();
-	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegionIdsArray());
+	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
 
 	SummarizeData.resultFileSpatial("Year " + year, false);
 	SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);

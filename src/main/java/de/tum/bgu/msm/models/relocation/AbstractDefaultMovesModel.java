@@ -78,23 +78,24 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     }
 
     @Override
-    public void chooseMove (int hhId, SiloDataContainer dataContainer) {
+    public void chooseMove (int hhId) {
         // simulates (a) if this household moves and (b) where this household moves
 
-        if (!EventRules.ruleHouseholdMove(Household.getHouseholdFromId(hhId))) {
+        Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
+        if (!EventRules.ruleHouseholdMove(household)) {
             return;  // Household does not exist anymore
         }
-        if (!moveOrNot(hhId)) {
+        if (!moveOrNot(household)) {
             return;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
         }
-        Household hh = Household.getHouseholdFromId(hhId);
-        int idNewDD = searchForNewDwelling(hh.getPersons());  // Step 2: Choose new dwelling
+
+        int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
         if (idNewDD > 0) {
-            moveHousehold(hh, hh.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
+            moveHousehold(household, household.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
             EventManager.countEvent(EventTypes.HOUSEHOLD_MOVE);
-            dataContainer.getHouseholdData().addHouseholdThatMoved(hh);
+            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                    Household.getHouseholdFromId(hhId).getDwellingId());
+                    household.getDwellingId());
         } else {
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
                     "could not find an adequate dwelling.");
@@ -145,6 +146,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         for (int i = 1; i < evalDwellingAvail.length; i++) {
             evalDwellingAvail[i] = 1;
         }
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getResidentId() == -1) {
                 // dwelling is vacant, evaluate for all household types
@@ -152,7 +154,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
                 dd.setUtilitiesOfVacantDwelling(utils);
             } else {
                 // dwelling is occupied, evaluate for the current household
-                Household hh = Household.getHouseholdFromId(dd.getResidentId());
+                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
                 double util = calculateDwellingUtilityOfHousehold(hh.getHouseholdType(), hh.getHhIncome(), dd);
                 dd.setUtilOfResident(util);
                 // log UEC values for each household
@@ -222,11 +224,11 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         return rentsByRegion;
     }
 
-    protected boolean moveOrNot(int hhId) {
-        Household hh = Household.getHouseholdFromId(hhId);
-        HouseholdType hhType = hh.getHouseholdType();
-        Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
-        if (!isHouseholdEligibleToLiveHere(hh, dd)) {
+    protected boolean moveOrNot(Household household) {
+
+        HouseholdType hhType = household.getHouseholdType();
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+        if (!isHouseholdEligibleToLiveHere(household, dd)) {
             return true;
         }
         double currentUtil = dd.getUtilOfResident();
@@ -252,7 +254,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
         evaluateAllDwellingUtilities();
         averageHousingSatisfaction = new double[HouseholdType.values().length];
         int[] hhCountyByType = new int[HouseholdType.values().length];
-        for (Household hh : Household.getHouseholds()) {
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             double util = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getUtilOfResident();
             int count = hh.getHouseholdType().ordinal();
             averageHousingSatisfaction[count] += util;

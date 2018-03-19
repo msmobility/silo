@@ -43,7 +43,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
 
-        for (Household hh: Household.getHouseholds()) {
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if(dwelling != null) {
@@ -183,9 +183,10 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
         Race householdRace = persons.get(0).getRace();
+        JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-                workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
+                workZones[pos] = jobData.getJobFromId(pp.getWorkplace()).getZone();
                 pos++;
                 householdIncome += pp.getIncome();
                 if (pp.getRace() != householdRace) {
