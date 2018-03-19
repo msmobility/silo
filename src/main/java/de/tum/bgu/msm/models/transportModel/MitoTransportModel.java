@@ -63,7 +63,7 @@ public final class MitoTransportModel implements TransportModelI {
 			}
 		}
 		
-		Map<String, TravelTimes> travelTimes = modelContainer.getAcc().getTravelTimes();
+		Map<String, TravelTimes> travelTimes = modelContainer.getAcc().getTravelTimesByMode();
         logger.info("  SILO data being sent to MITO");
         InputFeed feed = new InputFeed(zones, travelTimes, households);
         mito.feedData(feed);
