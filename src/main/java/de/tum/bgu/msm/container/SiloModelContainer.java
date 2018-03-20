@@ -132,7 +132,7 @@ public class SiloModelContainer {
                 move = new MovesModelMstm(dataContainer, acc);
                 break;
             case MUNICH:
-                createCarOwnershipModel = new CreateCarOwnershipModel();
+                createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer);
                 carOwnershipModel = new MunichCarOwnerShipModel(dataContainer);
                 move = new MovesModelMuc(dataContainer, acc);
                 break;

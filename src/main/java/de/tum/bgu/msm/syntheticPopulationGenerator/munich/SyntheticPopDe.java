@@ -56,7 +56,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Allocation(dataSetSynPop, dataContainer).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModel().run();
+        new CreateCarOwnershipModel(dataContainer).run();
 
         logger.info("Summary of the synthetic population");
         SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR, dataContainer);

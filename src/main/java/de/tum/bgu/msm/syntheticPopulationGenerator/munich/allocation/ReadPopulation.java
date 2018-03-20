@@ -31,6 +31,7 @@ public class ReadPopulation {
     private void readHouseholdData(int year) {
         logger.info("Reading household micro data from ascii file");
 
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
@@ -56,7 +57,7 @@ public class ReadPopulation {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                new Household(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                householdData.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                 }
@@ -72,6 +73,7 @@ public class ReadPopulation {
     private void readPersonData(int year) {
         logger.info("Reading person micro data from ascii file");
 
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
         fileName += "_" + year + ".csv";
 
@@ -115,9 +117,9 @@ public class ReadPopulation {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = new Person(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = householdData.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
                 pp.setRole(pr);
-                Household.getHouseholdFromId(hhid).addPerson(pp);
+                householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
                 Nationality nat = Nationality.german;
                 if (nationality.equals("other")){
@@ -214,6 +216,7 @@ public class ReadPopulation {
     private void readJobData(int year) {
         logger.info("Reading job micro data from ascii file");
 
+        JobDataManager jobDataManager = dataContainer.getJobData();
         String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
@@ -238,7 +241,7 @@ public class ReadPopulation {
                 int zone    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                new Job(id, zone, worker, type);
+                jobDataManager.createJob(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }

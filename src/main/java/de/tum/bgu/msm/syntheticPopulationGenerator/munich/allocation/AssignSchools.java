@@ -135,7 +135,7 @@ public class AssignSchools {
 
     private void shuffleStudents(){
 
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         studentArrayList = new ArrayList<>();
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
             if (pair.getValue().getOccupation() == 3){

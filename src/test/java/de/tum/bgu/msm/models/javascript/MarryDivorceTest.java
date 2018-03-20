@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Race;
 import de.tum.bgu.msm.models.demography.MarryDivorceJSCalculator;
@@ -14,22 +15,24 @@ public class MarryDivorceTest {
 
     private MarryDivorceJSCalculator calculator;
     private final double SCALE = 1.1;
+    private SiloDataContainer dataContainer;
 
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         calculator = new MarryDivorceJSCalculator(reader, SCALE);
+        this.dataContainer = SiloDataContainer.createSiloDataContainer();
     }
 
     @Test
     public void testModelOne() {
-        Person person = new Person(1, 20, 1, Race.other, 1, -1, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(1, 20, 1, Race.other, 1, -1, 0);
         Assert.assertEquals((0.05926 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);
     }
 
     @Test
     public void testModelTwo() {
-        Person person = new Person(1, 50, 2, Race.other, 1, -1, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(1, 50, 2, Race.other, 1, -1, 0);
         Assert.assertEquals((0.02514 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);    }
 
     @Test(expected = RuntimeException.class)

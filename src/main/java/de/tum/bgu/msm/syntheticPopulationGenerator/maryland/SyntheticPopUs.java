@@ -54,6 +54,8 @@ public class SyntheticPopUs implements SyntheticPopI {
     private GeoDataMstm geoData;
     private Accessibility accessibility;
     private RealEstateDataManager realEstateDataManager;
+    private HouseholdDataManager householdDataManager;
+    private JobDataManager jobData;
 
 
     public SyntheticPopUs(ResourceBundle rb) {
@@ -70,8 +72,9 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         identifyUniquePUMAzones();
         readControlTotals();
-        createJobs();
         SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        jobData = dataContainer.getJobData();
+        createJobs();
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         geoData.setInitialData();
         accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
@@ -79,17 +82,18 @@ public class SyntheticPopUs implements SyntheticPopI {
         accessibility.readPtSkim(Properties.get().main.startYear);
         accessibility.initialize();
         processPums();
-        JobDataManager jobData = dataContainer.getJobData();
+
         realEstateDataManager = dataContainer.getRealEstateData();
+        householdDataManager = dataContainer.getHouseholdData();
 
         generateAutoOwnership(dataContainer);
         SummarizeData.summarizeAutoOwnershipByCounty(accessibility, dataContainer);
         addVacantDwellings();
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
-        logger.info ("  Total number of households created " + Household.getHouseholdCount());
-        logger.info ("  Total number of persons created    " + Person.getPersonCount());
+        logger.info ("  Total number of households created " + householdDataManager.getHouseholds().size());
+        logger.info ("  Total number of persons created    " + householdDataManager.getPersons().size());
         logger.info ("  Total number of dwellings created  " + realEstateDataManager.getDwellings().size());
-        logger.info ("  Total number of jobs created       " + Job.getJobCount());
+        logger.info ("  Total number of jobs created       " + jobData.getJobs().size());
         calculateVacancyRate();
         if (!jobErrorCounter.isEmpty()) {
             logger.warn("  Could not find sufficient number of jobs in these PUMA zones (note that most of these " +
@@ -184,11 +188,11 @@ public class SyntheticPopUs implements SyntheticPopI {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 if (jobInventory[jobTp][zone] > 0) {
                     for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
-                        int id = JobDataManager.getNextJobId();
-                        new Job (id, zone, -1, JobType.getJobType(jobTp));
+                        int id = jobData.getNextJobId();
+                        jobData.createJob (id, zone, -1, JobType.getJobType(jobTp));
                         if (id == SiloUtil.trackJj) {
                             SiloUtil.trackWriter.println("Generated job with following attributes:");
-                            SiloUtil.trackWriter.println(Job.getJobFromId(id).toString());
+                            SiloUtil.trackWriter.println(jobData.getJobFromId(id).toString());
                         }
                     }
                 }
@@ -203,7 +207,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Identifying vacant jobs by zone");
         vacantJobsByZone = new HashMap<>();
-        Collection<Job> jobs = Job.getJobs();
+        Collection<Job> jobs = jobData.getJobs();
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
                 int id = jj.getId();
@@ -406,16 +410,16 @@ public class SyntheticPopUs implements SyntheticPopI {
             int newDdId = RealEstateDataManager.getNextDwellingId();
             int newHhId;
             if (gender[0] == 0) newHhId = -1;
-            else newHhId = HouseholdDataManager.getNextHouseholdId();
+            else newHhId = householdDataManager.getNextHouseholdId();
             int taz = locateDwelling(pumaZone);
 
             int price = getDwellingPrice(rent, mortgage);
             int selectedYear = selectYear(yearBuilt);
             realEstateDataManager.createDwelling(newDdId, taz, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
             if (gender[0] == 0) return;   // this dwelling is empty, do not create household
-            Household hh = new Household(newHhId, newDdId, autos);
+            Household hh = householdDataManager.createHousehold(newHhId, newDdId, autos);
             for (int s = 0; s < hhSize; s++) {
-                int newPpId = HouseholdDataManager.getNextPersonId();
+                int newPpId = householdDataManager.getNextPersonId();
 
                 int occ = translateOccupation(occupation[s]);
                 int workplace = -1;
@@ -431,11 +435,11 @@ public class SyntheticPopUs implements SyntheticPopI {
                         workplace = selectWorkplaceByTripLengthFrequencyDistribution(workPumaZone[s], workState[s], taz);
                     }
                     if (workplace != -2) {
-                        Job.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
+                        jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                     }
                 }
-                Person pp = new Person(newPpId, age[s], gender[s], race[s], occ, workplace, income[s]);
-                hh.addPerson(pp);
+                Person pp = householdDataManager.createPerson(newPpId, age[s], gender[s], race[s], occ, workplace, income[s]);
+                householdDataManager.addPersonToHousehold(pp, hh);
             }
             hh.setType();
             hh.determineHouseholdRace();
@@ -704,7 +708,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         dataContainer.getJobData().calculateJobDensityByZone();
         MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(dataContainer, accessibility);   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
-        for (Household hh: Household.getHouseholds()) {
+        for (Household hh: householdDataManager.getHouseholds()) {
             households.put(hh.getId(), null);
         }
     }
@@ -858,17 +862,21 @@ public class SyntheticPopUs implements SyntheticPopI {
         // write out vacant jobs by region
         logger.info("----Vacant Jobs By Region Start----");
         int[] vacantJobsByRegion = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray())+1];
-        for (int zone: geoData.getZoneIdsArray()) {
-            if (vacantJobsByZone.containsKey(zone)) vacantJobsByRegion[geoData.getRegionOfZone(zone)] +=
-                    vacantJobsByZone.get(zone).length;
+        for (Zone zone: geoData.getZones().values()) {
+            if (vacantJobsByZone.containsKey(zone.getId())) {
+                vacantJobsByRegion[zone.getRegion().getId()] +=
+                        vacantJobsByZone.get(zone).length;
+            }
         }
         for (int region: geoData.getRegionIdsArray()) logger.info("----,"+region+","+vacantJobsByRegion[region]);
         logger.info("----Vacant Jobs By Region End----");
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
-        for (int zone: geoData.getZoneIdsArray()) {
-            if (vacantJobsByZone.containsKey(zone)) vacantJobsByPuma[geoData.getPUMAofZone(zone)] +=
-                    vacantJobsByZone.get(zone).length;
+        for (Zone zone: geoData.getZones().values()) {
+            if (vacantJobsByZone.containsKey(zone.getId())) {
+                vacantJobsByPuma[((MstmZone) zone).getPuma()] +=
+                        vacantJobsByZone.get(zone).length;
+            }
         }
         for (int i = 0; i < 9999999; i++)
             if (vacantJobsByPuma[i] > 0) logger.info("----,"+i+","+vacantJobsByPuma[i]);
@@ -880,7 +888,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // summarize number of people by PersonRole (married, single, child)
 
         int[][] roleCounter = new int[101][3];
-        for (Person pp: Person.getPersons()) {
+        for (Person pp: householdDataManager.getPersons()) {
             if (pp.getGender() == 1) continue;
             int age = Math.min(100, pp.getAge());
             roleCounter[age][pp.getRole().ordinal()]++;

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -16,10 +17,12 @@ public class GenerateJobs {
 
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobsByTaz;
+    private final SiloDataContainer dataContainer;
 
 
-    public GenerateJobs(DataSetSynPop dataSetSynPop){
+    public GenerateJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
+        this.dataContainer = dataContainer;
     }
 
     public void run(){
@@ -37,16 +40,17 @@ public class GenerateJobs {
 
 
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
+        JobDataManager jobDataManager = dataContainer.getJobData();
             int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
             for (int job = 0; job < totalJobs; job++){
-                int id = JobDataManager.getNextJobId();
+                int id = jobDataManager.getNextJobId();
                 int tazSelected = SiloUtil.select(jobsByTaz);
                 if (jobsByTaz.get(tazSelected) > 1){
                     jobsByTaz.put(tazSelected, jobsByTaz.get(tazSelected) - 1);
                 } else {
                     jobsByTaz.remove(tazSelected);
                 }
-                Job jj = new Job(id, tazSelected, -1, jobType);
+                jobDataManager.createJob(id, tazSelected, -1, jobType);
             }
 
     }

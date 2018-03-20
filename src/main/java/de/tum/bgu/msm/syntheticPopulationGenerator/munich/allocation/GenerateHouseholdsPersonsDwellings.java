@@ -40,6 +40,8 @@ public class GenerateHouseholdsPersonsDwellings {
     private int personCounter;
     private int householdCounter;
 
+    private HouseholdDataManager householdDataManager;
+
 
     public GenerateHouseholdsPersonsDwellings(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
@@ -52,6 +54,7 @@ public class GenerateHouseholdsPersonsDwellings {
         previousHouseholds = 0;
         previousPersons = 0;
         //initializeQualityAndIncomeDistributions();
+        householdDataManager = dataContainer.getHouseholdData();
         for (int municipality : dataSetSynPop.getMunicipalities()){
             initializeMunicipalityData(municipality);
             double logging = 2;
@@ -77,8 +80,8 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private Household generateHousehold(){
 
-        int id = HouseholdDataManager.getNextHouseholdId();
-        Household household = new Household(id, id, 0);
+        int id = householdDataManager.getNextHouseholdId();
+        Household household = householdDataManager.createHousehold(id, id, 0);
         householdCounter++;
         return household;
     }
@@ -88,7 +91,7 @@ public class GenerateHouseholdsPersonsDwellings {
 
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
         for (int person = 0; person < hhSize; person++) {
-            int id = HouseholdDataManager.getNextPersonId();
+            int id = householdDataManager.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
             int gender = dataSetSynPop.getPersonTable().get(personSelected, "gender");
@@ -101,8 +104,8 @@ public class GenerateHouseholdsPersonsDwellings {
             int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
-            Person pers = new Person(id, age, gender, race, occupation, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
-            hh.addPerson(pers);
+            Person pers = householdDataManager.createPerson(id, age, gender, race, occupation, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            householdDataManager.addPersonToHousehold(pers, hh);
             pers.setRole(personRole);
             pers.setNationality(nationality1);
             pers.setDriverLicense(license);

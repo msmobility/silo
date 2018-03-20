@@ -5,10 +5,7 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -86,8 +83,8 @@ public class AssignJobs {
 
     private void setWorkerAndJob(Person pp, int jobID){
 
-        Job.getJobFromId(jobID).setWorkerID(pp.getId());
-        int jobTAZ = Job.getJobFromId(jobID).getZone();
+        dataContainer.getJobData().getJobFromId(jobID).setWorkerID(pp.getId());
+        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).getZone();
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
@@ -111,7 +108,7 @@ public class AssignJobs {
 
     private void shuffleWorkers(){
 
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
@@ -129,7 +126,7 @@ public class AssignJobs {
     private void identifyVacantJobsByZoneType() {
 
         logger.info("  Identifying vacant jobs by zone");
-        Collection<Job> jobs = Job.getJobs();
+        Collection<Job> jobs = dataContainer.getJobData().getJobs();
 
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
         jobIntTypes = new HashMap<>();

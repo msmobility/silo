@@ -89,10 +89,10 @@ public class AccessibilityTest {
         GeoData geoData = dataContainer.getGeoData();
         geoData.setInitialData();
 
-        RealEstateDataManager realEstateDataManager = new RealEstateDataManager(geoData);
+        RealEstateDataManager realEstateDataManager = new RealEstateDataManager(dataContainer);
         realEstateDataManager.readDwellings(readSmallSynPop, smallSize);
 
-        HouseholdDataManager hhManager = new HouseholdDataManager(realEstateDataManager);
+        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
         hhManager.readPopulation(readSmallSynPop, smallSize);
 
         Accessibility accessibility = new Accessibility(dataContainer);

@@ -49,7 +49,7 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void generateJobs(){
-        new GenerateJobs(dataSetSynPop).run();
+        new GenerateJobs(dataContainer, dataSetSynPop).run();
         SummarizeData.writeOutSyntheticPopulationDE(1991, dataContainer);
     }
 
