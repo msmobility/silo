@@ -22,10 +22,28 @@ public class AccessibilityProperties {
     public final float betaTransit;
     public final String htsWorkTLFD;
 
+    /**
+     * A factor every travel time in the car skim is multiplied with to allow for different time units. Use this to
+     * convert input travel times to minutes as expected by SILO.
+     * Default = 1.
+     */
+    public final double skimFileFactorCar;
+
+    /**
+     * A factor every travel time in the transit skim is multiplied with to allow for different time units. Use this to
+     * convert input travel times to minutes as expected by SILO.
+     * Default = 1.
+     */
+    public final double skimFileFactorTransit;
+
+
     public AccessibilityProperties(ResourceBundle bundle) {
         this.bundle = bundle;
         autoOperatingCosts = (float) ResourceUtil.getDoubleProperty(bundle, "auto.operating.costs");
         usingAutoPeakSkim = bundle.containsKey("auto.peak.sov.skim.matrix.name");
+        skimFileFactorCar = ResourceUtil.getDoubleProperty(bundle, "skims.factor.car", 1.);
+        skimFileFactorTransit = ResourceUtil.getDoubleProperty(bundle, "skims.factor.transit", 1.);
+
         if(usingAutoPeakSkim) {
             autoPeakSkim = bundle.getString("auto.peak.sov.skim.matrix.name");
         } else {

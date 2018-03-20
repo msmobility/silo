@@ -35,7 +35,7 @@ public class Accessibility {
 
     private final GeoData geoData;
 
-    private final Map<String, TravelTimes> travelTimes = new LinkedHashMap<>();
+    private final Map<String, TravelTimes> travelTimesByMode = new LinkedHashMap<>();
 
     private final Table<Integer, Integer, Double> travelTimeToRegion;
 
@@ -49,8 +49,6 @@ public class Accessibility {
     private final float alphaTransit;
     private final float betaTransit;
 
-    private final String transitMatrixName;
-    private final String carMatrixName;
     private final SiloDataContainer dataContainer;
 
     private float[] workTLFD;
@@ -69,20 +67,6 @@ public class Accessibility {
         this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
         this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
         this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
-
-        // Work-around to make sure that existing code does not break
-        if (Properties.get().accessibility.usingTransitPeakSkim) {
-            transitMatrixName = Properties.get().accessibility.transitPeakSkim;
-        } else {
-            transitMatrixName = "CheapJrnyTime";
-        }
-
-        // Work-around to make sure that existing code does not break
-        if (Properties.get().accessibility.usingAutoPeakSkim) {
-            carMatrixName = Properties.get().accessibility.autoPeakSkim;
-        } else {
-            carMatrixName = "HOVTime";
-        }
     }
 
     /**
@@ -100,22 +84,38 @@ public class Accessibility {
     public void readCarSkim(int year) {
         LOGGER.info("Reading car skims for " + year);
         String hwyFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.autoSkimFile(year);
-        SkimTravelTimes skimTravelTimes = readSkim(hwyFileName, carMatrixName);
-        travelTimes.put(TransportMode.car, skimTravelTimes);
+        String carMatrixName;
+        // Work-around to make sure that existing code does not break
+        if (Properties.get().accessibility.usingAutoPeakSkim) {
+            carMatrixName = Properties.get().accessibility.autoPeakSkim;
+        } else {
+            carMatrixName = "HOVTime";
+        }
+        double factor = Properties.get().accessibility.skimFileFactorCar;
+        SkimTravelTimes skimTravelTimes = readSkim(hwyFileName, carMatrixName, factor);
+        travelTimesByMode.put(TransportMode.car, skimTravelTimes);
     }
 
     public void readPtSkim(int year) {
         LOGGER.info("Reading transit skims for " + year);
         String transitFileName = Properties.get().main.baseDirectory + "skims/" + Properties.get().accessibility.transitSkimFile(year);
-        SkimTravelTimes SkimTravelTimes = readSkim(transitFileName, transitMatrixName);
-        travelTimes.put(TransportMode.pt, SkimTravelTimes);
+        String transitMatrixName;
+        // Work-around to make sure that existing code does not break
+        if (Properties.get().accessibility.usingTransitPeakSkim) {
+            transitMatrixName = Properties.get().accessibility.transitPeakSkim;
+        } else {
+            transitMatrixName = "CheapJrnyTime";
+        }
+        double factor = Properties.get().accessibility.skimFileFactorTransit;
+        SkimTravelTimes SkimTravelTimes = readSkim(transitFileName, transitMatrixName, factor);
+        travelTimesByMode.put(TransportMode.pt, SkimTravelTimes);
     }
 
-    private SkimTravelTimes readSkim(String fileName, String matrixName) {
+    private SkimTravelTimes readSkim(String fileName, String matrixName, double factor) {
         OmxFile omx = new OmxFile(fileName);
         omx.openReadOnly();
         OmxMatrix timeOmxSkimTransit = omx.getMatrix(matrixName);
-        return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit));
+        return new SkimTravelTimes(Matrices.convertOmxToDoubleMatrix2D(timeOmxSkimTransit, factor));
     }
 
     public void calculateHansenAccessibilities(int year) {
@@ -232,8 +232,8 @@ public class Accessibility {
         }
     }
 
-    public Map<String, TravelTimes> getTravelTimes() {
-        return Collections.unmodifiableMap(travelTimes);
+    public Map<String, TravelTimes> getTravelTimesByMode() {
+        return Collections.unmodifiableMap(travelTimesByMode);
     }
 
     public void addTravelTimeForMode(String mode, TravelTimes travelTimes) {
@@ -243,14 +243,14 @@ public class Accessibility {
         if (travelTimes == null) {
             LOGGER.fatal("TravelTimes object is null. Aborting...", new RuntimeException());
         }
-        if (this.travelTimes.containsKey(mode)) {
+        if (this.travelTimesByMode.containsKey(mode)) {
             LOGGER.info("Replace travel time for " + mode + " mode.");
         }
-        this.travelTimes.put(mode, travelTimes);
+        this.travelTimesByMode.put(mode, travelTimes);
     }
 
     private DoubleMatrix2D getPeakTravelTimeMatrix(String forMode) {
-        TravelTimes tt = travelTimes.get(forMode);
+        TravelTimes tt = travelTimesByMode.get(forMode);
         if (tt instanceof SkimTravelTimes) {
             return ((SkimTravelTimes) tt).getPeakTravelTimeMatrix();
         } else {
@@ -277,7 +277,7 @@ public class Accessibility {
     }
 
     public double getPeakAutoTravelTime(int i, int j) {
-        return travelTimes.get(TransportMode.car).getTravelTime(i, j, TIME_OF_DAY);
+        return travelTimesByMode.get(TransportMode.car).getTravelTime(i, j, TIME_OF_DAY);
     }
 
     public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
@@ -285,7 +285,7 @@ public class Accessibility {
     }
 
     public double getPeakTransitTravelTime(int i, int j) {
-        return travelTimes.get(TransportMode.pt).getTravelTime(i, j, TIME_OF_DAY);
+        return travelTimesByMode.get(TransportMode.pt).getTravelTime(i, j, TIME_OF_DAY);
     }
 
     public double getPeakTravelCosts(int i, int j) {
