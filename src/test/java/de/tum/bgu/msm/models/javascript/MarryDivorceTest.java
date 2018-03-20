@@ -1,11 +1,14 @@
 package de.tum.bgu.msm.models.javascript;
 
+import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Race;
 import de.tum.bgu.msm.models.demography.MarryDivorceJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
@@ -16,6 +19,11 @@ public class MarryDivorceTest {
     private MarryDivorceJSCalculator calculator;
     private final double SCALE = 1.1;
     private SiloDataContainer dataContainer;
+
+    @BeforeClass
+    public static void intitializeProperties() {
+        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+    }
 
     @Before
     public void setup() {

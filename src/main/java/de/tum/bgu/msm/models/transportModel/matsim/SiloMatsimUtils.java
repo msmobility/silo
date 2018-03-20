@@ -137,7 +137,7 @@ public class SiloMatsimUtils {
 
     		int siloPersonId = siloPerson.getId();
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		int siloHomeTazId = dwelling.getId();
+    		int siloHomeTazId = dwelling.getZone();
     		Job job = jobData.getJobFromId(siloWorkplaceId);
     		int workZoneId = job.getZone();
 

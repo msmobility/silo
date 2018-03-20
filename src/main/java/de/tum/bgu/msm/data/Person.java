@@ -16,10 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Greg Erhardt 
@@ -114,7 +111,7 @@ public final class Person {
         }
     }
 
-    public void setHousehold(Household household) {
+    void setHousehold(Household household) {
         this.hh = household;
     }
 

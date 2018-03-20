@@ -31,14 +31,12 @@ public class MarryDivorceModelTest {
         Household household1 = dataContainer.getHouseholdData().createHousehold(1,  1, 0);
         dataContainer.getRealEstateData().createDwelling(1, 1, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000);
         Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, 2, Race.other, -1, -1, 0);
-        person1.setHousehold(household1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
 
-        Household household2 = dataContainer.getHouseholdData().createHousehold(1, 2, 0);
+        Household household2 = dataContainer.getHouseholdData().createHousehold(2, 2, 0);
         dataContainer.getRealEstateData().createDwelling(2, 1, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000);
         Person person2 = dataContainer.getHouseholdData().createPerson(2, 30, 2, Race.other, -1, -1, 0);
-        person2.setHousehold(household2);
         dataContainer.getHouseholdData().addPersonToHousehold(person2, household2);
         person2.setRole(PersonRole.SINGLE);
 
@@ -46,14 +44,12 @@ public class MarryDivorceModelTest {
         Household household3 = dataContainer.getHouseholdData().createHousehold(3, 3,  0);
         dataContainer.getRealEstateData().createDwelling(3, 1, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person3 = dataContainer.getHouseholdData().createPerson(3, 30, 2, Race.other, -1, -1, 0);
-        person3.setHousehold(household3);
         dataContainer.getHouseholdData().addPersonToHousehold(person3, household3);
         person3.setRole(PersonRole.SINGLE);
 
         Household household4 = dataContainer.getHouseholdData().createHousehold(4, 4,  0);
         dataContainer.getRealEstateData().createDwelling(4, 1, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person4 = dataContainer.getHouseholdData().createPerson(4, 30, 2, Race.other, -1, -1, 0);
-        person4.setHousehold(household4);
         dataContainer.getHouseholdData().addPersonToHousehold(person4, household4);
         person4.setRole(PersonRole.SINGLE);
 
@@ -61,17 +57,14 @@ public class MarryDivorceModelTest {
         Household household5 = dataContainer.getHouseholdData().createHousehold(5, 5,  0);
         dataContainer.getRealEstateData().createDwelling(5, 1, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person5 = dataContainer.getHouseholdData().createPerson(5, 30, 2, Race.other, -1, -1, 0);
-        person5.setHousehold(household5);
         dataContainer.getHouseholdData().addPersonToHousehold(person5, household5);
         person5.setRole(PersonRole.SINGLE);
 
         Household household6 = dataContainer.getHouseholdData().createHousehold(6, 6,  0);
         dataContainer.getRealEstateData().createDwelling(6, 1, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person6 = dataContainer.getHouseholdData().createPerson(6, 30, 2, Race.other, -1, -1, 0);
-        person6.setHousehold(household6);
         dataContainer.getHouseholdData().addPersonToHousehold(person6, household6);
         Person person6Child = dataContainer.getHouseholdData().createPerson(61, 10, 2, Race.other, -1, -1, 0);
-        person6Child.setHousehold(household6);
         dataContainer.getHouseholdData().addPersonToHousehold(person6Child, household6);
         person6.setRole(PersonRole.CHILD);
     }

@@ -5,7 +5,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import junitx.framework.FileAssert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -15,8 +15,8 @@ import java.util.Locale;
 
 public class RealEstateDataManagerTest {
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
     }
 

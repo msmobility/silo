@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.DwellingType;
 import de.tum.bgu.msm.models.realEstate.DemolitionJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
@@ -19,12 +20,15 @@ public class DemolitionTest {
     private Dwelling dwelling1;
     private Dwelling dwelling2;
 
+    @BeforeClass
+    public static void initializeProperties() {
+        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+    }
 
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader);
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
         SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
         dwelling1 = dataContainer.getRealEstateData().createDwelling(1,1,1, DwellingType.SFD, 1,1,1,1,1);
         dwelling2 = dataContainer.getRealEstateData().createDwelling(1,1,1, DwellingType.SFD, 1,5,1,1,5);

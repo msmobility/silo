@@ -278,10 +278,11 @@ public class MarryDivorceModel {
     }
 
     private void moveMarriedPersons(Person movingPerson, Person stayingPerson) {
+        Household movingHousehold = movingPerson.getHh();
         dataContainer.getHouseholdData().removePersonFromHousehold(movingPerson);
         dataContainer.getHouseholdData().addPersonToHousehold(movingPerson, stayingPerson.getHh());
-        if (movingPerson.getHh().checkIfOnlyChildrenRemaining()) {
-            moveRemainingChildren(movingPerson.getHh(), stayingPerson.getHh());
+        if (movingHousehold.checkIfOnlyChildrenRemaining()) {
+            moveRemainingChildren(movingHousehold, stayingPerson.getHh());
         }
         if (movingPerson.getId() == SiloUtil.trackPp || stayingPerson.getId() == SiloUtil.trackPp || movingPerson.getHh().getId() == SiloUtil.trackHh ||
                 stayingPerson.getHh().getId() == SiloUtil.trackHh)

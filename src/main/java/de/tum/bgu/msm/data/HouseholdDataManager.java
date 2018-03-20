@@ -470,7 +470,8 @@ public class HouseholdDataManager {
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
         for(Person person: household.getPersons()) {
-            removePerson(person.getId());
+            person.setHousehold(null);
+            persons.remove(person.getId());
         }
         households.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
