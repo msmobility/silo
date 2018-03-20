@@ -19,8 +19,7 @@ import java.util.*;
 public class RealEstateDataManager {
     static Logger logger = Logger.getLogger(RealEstateDataManager.class);
 
-    private final GeoData geoData;
-    private final HouseholdDataManager householdData;
+    private final SiloDataContainer dataContainer;
 
     private final Map<Integer, Dwelling> dwellings = new HashMap<>();
 
@@ -40,8 +39,7 @@ public class RealEstateDataManager {
     private HashMap<DwellingType, Float> acresByDwellingType;
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
-        this.geoData = dataContainer.getGeoData();
-        this.householdData = dataContainer.getHouseholdData();
+        this.dataContainer = dataContainer;
     }
 
     public void saveDwellings (Dwelling[] dds) {
@@ -159,7 +157,8 @@ public class RealEstateDataManager {
     public void identifyVacantDwellings() {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
 
-        int highestRegion = SiloUtil.getHighestVal(geoData.getRegionIdsArray());
+        final GeoData geoData = dataContainer.getGeoData();
+        int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
@@ -243,6 +242,7 @@ public class RealEstateDataManager {
 
         // identify how much rent (specified by 25 rent categories) is paid by households of each income category
         rentCategories = 25;
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         int[] incBrackets = Properties.get().main.incomeBrackets;
         float[][] priceByIncome = new float[incBrackets.length + 1][rentCategories + 1];
         for (Dwelling dd: dwellings.values()) {
@@ -296,6 +296,7 @@ public class RealEstateDataManager {
 
     public void calculateMedianRentByMSA() {
 
+        final GeoData geoData = dataContainer.getGeoData();
         Map<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Dwelling dd: dwellings.values()) {
             int dwellingMSA = geoData.getZones().get(dd.getZone()).getMsa();
@@ -345,6 +346,7 @@ public class RealEstateDataManager {
         }
         // aggregate developable land
         SummarizeData.resultFile("Available land for construction by region");
+        final GeoData geoData = dataContainer.getGeoData();
         final int highestId = geoData.getRegions().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
         double[] availLand = new double[highestId + 1];
@@ -366,7 +368,7 @@ public class RealEstateDataManager {
         SummarizeData.resultFile(header);
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
-        for (Household hh: householdData.getHouseholds()) {
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int hhInc = hh.getHhIncome();
             int rent = dwellings.get(hh.getDwellingId()).getPrice();
             int incCat = Math.min((hhInc / 10000), 9);
@@ -415,7 +417,8 @@ public class RealEstateDataManager {
         boolean found = false;
 
         // todo: when selecting a vacant dwelling, I should be able to store the index of this dwelling in the vacDwellingByRegion array, which should make it faster to remove the vacant dwelling from this array.
-        int region = geoData.getZones().get(dwellings.get(ddId).getZone()).getRegion().getId();
+        int region = dataContainer.getGeoData().getZones()
+                .get(dwellings.get(ddId).getZone()).getRegion().getId();
         for (int i = 0; i < vacDwellingsByRegionPos[region]; i++) {
             if (vacDwellingsByRegion[region][i] == ddId) {
                 vacDwellingsByRegion[region][i] = vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1];
@@ -434,7 +437,7 @@ public class RealEstateDataManager {
     public void addDwellingToVacancyList (Dwelling dd) {
         // add dwelling to vacancy list
 
-        int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
+        int region = dataContainer.getGeoData().getZones().get(dd.getZone()).getRegion().getId();
         vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dd.getId();
         if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
         if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
@@ -480,8 +483,9 @@ public class RealEstateDataManager {
     public double[][] getVacancyRateByTypeAndRegion() {
         // calculate vacancy rate by region and dwelling type
 
-        int[] regionList = geoData.getRegionIdsArray();
-        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 0);
+        final GeoData geoData = dataContainer.getGeoData();
+        final int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][DwellingType.values().length][highestRegionId + 1], 0);
 
         for (Dwelling dd: dwellings.values()) {
             int dto = dd.getType().ordinal();
@@ -491,7 +495,8 @@ public class RealEstateDataManager {
                 vacOcc[0][dto][geoData.getZones().get(dd.getZone()).getRegion().getId()]++;
             }
         }
-        double[][] vacRate = new double[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1];
+
+        double[][] vacRate = new double[DwellingType.values().length][highestRegionId + 1];
         for (DwellingType dt: DwellingType.values()) {
             int dto = dt.ordinal();
             for (int region: geoData.getRegions().keySet()) {
@@ -524,9 +529,10 @@ public class RealEstateDataManager {
     public int[][] getDwellingCountByTypeAndRegion() {
         // return number of dwellings by type and region
 
-        int[] regionList = geoData.getRegionIdsArray();
+        final GeoData geoData = dataContainer.getGeoData();
+        final int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] dwellingCount =
-                SiloUtil.setArrayToValue(new int[DwellingType.values().length][SiloUtil.getHighestVal(regionList) + 1], 1);
+                SiloUtil.setArrayToValue(new int[DwellingType.values().length][highestRegionId + 1], 1);
 
         for (Dwelling dd: dwellings.values()) {
             dwellingCount[dd.getType().ordinal()][geoData.getZones().get(dd.getZone()).getRegion().getId()] ++;
@@ -540,7 +546,7 @@ public class RealEstateDataManager {
 
         double sm;
         if (useDwellingCapacityForThisZone(zone)) {         // use absolute number of dwellings as capacity constraint
-            sm = SiloUtil.rounder(geoData.getDevelopmentCapacity(zone),0);  // some capacity values are not integer numbers, not sure why
+            sm = SiloUtil.rounder(dataContainer.getGeoData().getDevelopmentCapacity(zone),0);  // some capacity values are not integer numbers, not sure why
         } else {
             sm = getDevelopableLand(zone);                            // use land use data
         }
@@ -550,8 +556,10 @@ public class RealEstateDataManager {
 
     public boolean useDwellingCapacityForThisZone (int zone) {
         // return true if capacity for number of dwellings is used in this zone, otherwise return false
-
-        if (!geoData.useNumberOfDwellingsAsCapacity()) return false;
+        final GeoData geoData = dataContainer.getGeoData();
+        if (!geoData.useNumberOfDwellingsAsCapacity()) {
+            return false;
+        }
         try {
             geoData.getDevelopmentCapacity(zone);
             return true;
@@ -563,7 +571,7 @@ public class RealEstateDataManager {
 
     public double getDevelopableLand(int zone) {
         // return number of acres of available land for development
-
+        final GeoData geoData = dataContainer.getGeoData();
         double sm = 0;
         for (int type : geoData.getDevelopableLandUseTypes()) {
             String landUseType = "LU" + type;
@@ -575,7 +583,7 @@ public class RealEstateDataManager {
 
     public void convertLand(int zone, float acres) {
         // remove acres from developable land
-
+        final GeoData geoData = dataContainer.getGeoData();
         if (useDwellingCapacityForThisZone(zone)) {
             geoData.reduceDevelopmentCapacityByOneDwelling(zone);
         } else {

@@ -38,6 +38,7 @@ import static de.tum.bgu.msm.SiloUtil.openFileForSequentialWriting;
  */
 public class HouseholdDataManager {
     private final static Logger LOGGER = Logger.getLogger(HouseholdDataManager.class);
+    private final SiloDataContainer dataContainer;
 
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
@@ -49,17 +50,13 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
 
-    private final JobDataManager jobDataManager;
-    private RealEstateDataManager realEstateData;
-
     private final Map<Integer,Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
     private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer) {
-        this.realEstateData = dataContainer.getRealEstateData();
-        this.jobDataManager = dataContainer.getJobData();
+        this.dataContainer = dataContainer;
         meanIncomeChange = Properties.get().householdData.meanIncomeChange;
     }
 
@@ -112,7 +109,7 @@ public class HouseholdDataManager {
             if (!household.getPersons().isEmpty()) {
                 householdCharacteristicsChanged(household);
             } else {
-                households.remove(household.getId());
+                removeHousehold(household.getId());
             }
             if (household.getId() == SiloUtil.trackHh || person.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " +
@@ -319,7 +316,7 @@ public class HouseholdDataManager {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
                 }
                 Person pp = createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
-                household.addPerson(pp);
+                addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
@@ -368,36 +365,6 @@ public class HouseholdDataManager {
             else ht = HouseholdType.size4inc4;
         }
         return ht;
-    }
-
-    public Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
-        Map<Integer, MitoHousehold> thhs = new HashMap<>();
-        for (Household siloHousehold : households.values()) {
-            int zoneId = -1;
-            Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
-            if(dwelling != null) {
-                zoneId = dwelling.getZone();
-            }
-            MitoZone zone = zones.get(zoneId);
-            MitoHousehold household = convertToMitoHh(siloHousehold, zone);
-            thhs.put(household.getId(), household);
-        }
-        return thhs;
-    }
-
-    private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-        return new MitoHousehold(household.getId(), household.getHhIncome(), household.getAutos(), zone);
-    }
-
-    public MitoPerson convertToMitoPp(Person person) {
-        final Gender mitoGender = Gender.valueOf(person.getGender());
-        final Occupation mitoOccupation = Occupation.valueOf(person.getOccupation());
-        final int workPlace = person.getWorkplace();
-        int workzone = -1;
-        if(workPlace > 0) {
-            workzone = jobDataManager.getJobFromId(workPlace).getZone();
-        }
-        return new MitoPerson(person.getId(), mitoOccupation, workzone, person.getAge(), mitoGender, person.hasDriverLicense());
     }
 
 
@@ -498,9 +465,9 @@ public class HouseholdDataManager {
         Household household = households.get(householdId);
         int dwellingId = household.getDwellingId();
         if (dwellingId != -1) {
-            Dwelling dd = realEstateData.getDwelling(dwellingId);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
             dd.setResidentID(-1);
-            realEstateData.addDwellingToVacancyList(dd);
+            dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
         for(Person person: household.getPersons()) {
             removePerson(person.getId());
@@ -879,6 +846,7 @@ public class HouseholdDataManager {
         // return HashMap<Zone, ArrayOfHouseholdIds>
 
         HashMap<Integer, int[]> hhByZone = new HashMap<>();
+        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
         for (Household hh: households.values()) {
             int zone = -1;
             Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
@@ -900,6 +868,7 @@ public class HouseholdDataManager {
     public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
+        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
         for (Household hh: households.values()) {
             int zone = -1;
             Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
@@ -949,8 +918,11 @@ public class HouseholdDataManager {
         // summarize households by distance from Metro stop and income group
         int[][][] hhCounter = new int[selectedMetro.getRowCount()][11][4];
         HashMap<Integer, ArrayList> hhByDistToMetro = new HashMap<>();
-        for (Integer dist = 0; dist <= 20; dist++) hhByDistToMetro.put(dist, new ArrayList<Integer>());
+        for (Integer dist = 0; dist <= 20; dist++) {
+            hhByDistToMetro.put(dist, new ArrayList<Integer>());
+        }
 
+        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
         for (Household hh: households.values()) {
             int incCat = getIncomeCategoryForIncome(hh.getHhIncome());
             Integer smallestDist = 21;
@@ -1019,6 +991,10 @@ public class HouseholdDataManager {
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         pwj.println("id,zone,personId,type");
         int counter = 0;
+
+        final RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+        final JobDataManager jobData = dataContainer.getJobData();
+
         for (Household hh : households.values()) {
             counter++;
             if (counter > numberOfHh) break;
@@ -1059,7 +1035,7 @@ public class HouseholdDataManager {
                 // write out job attributes (if person is employed)
                 int job = pp.getWorkplace();
                 if (job > 0 && pp.getOccupation() == 1) {
-                    Job jj = jobDataManager.getJobFromId(job);
+                    Job jj = jobData.getJobFromId(job);
                     pwj.print(jj.getId());
                     pwj.print(",");
                     pwj.print(jj.getZone());
@@ -1114,7 +1090,7 @@ public class HouseholdDataManager {
             }
         }
         // add a few empty jobs
-        for (Job jj: jobDataManager.getJobs()) {
+        for (Job jj: jobData.getJobs()) {
             if (jj.getWorkerId() == -1 && SiloUtil.select(100) > 90) {
                 pwj.print(jj.getId());
                 pwj.print(",");

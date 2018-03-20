@@ -16,11 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.demography.BirthModel;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Greg Erhardt 

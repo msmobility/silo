@@ -73,7 +73,6 @@ public class DeathModel {
                                 per.getId() + ") passed away.");
                 }
             }
-            householdData.removePerson(per.getId());
             EventManager.countEvent(EventTypes.CHECK_DEATH);
             householdData.addHouseholdThatChanged(hhOfPersonToDie);
             if (perId == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
