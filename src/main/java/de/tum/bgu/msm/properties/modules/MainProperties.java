@@ -30,7 +30,6 @@ public class MainProperties {
     public final String baseDirectory;
     public final int startYear;
     public final int endYear;
-    public final int simulationLength;
     public final int gregorianIterator;
     public final int[] incomeBrackets;
     public final int qualityLevels;
@@ -64,7 +63,6 @@ public class MainProperties {
         baseDirectory = ResourceUtil.getProperty(bundle, "base.directory");
         startYear = ResourceUtil.getIntegerProperty(bundle, "start.year");
         endYear = ResourceUtil.getIntegerProperty(bundle, "end.year");
-        simulationLength = ResourceUtil.getIntegerProperty(bundle, "simulation.period.length");
         gregorianIterator = ResourceUtil.getIntegerProperty(bundle, "this.gregorian.iterator");
         incomeBrackets = ResourceUtil.getIntegerArray(bundle, "income.brackets.hh.types");
         qualityLevels = ResourceUtil.getIntegerProperty(bundle, "dwelling.quality.levels.distinguished");

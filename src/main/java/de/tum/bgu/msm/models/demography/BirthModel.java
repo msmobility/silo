@@ -92,10 +92,10 @@ public class BirthModel {
 
 
     public void celebrateBirthday (int personId) {
-        // increase age of this person by number of years in simulation period
+        // increase age of this person by one year
         Person per = Person.getPersonFromId(personId);
         if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
-        int age = per.getAge() + Properties.get().demographics.simulationPeriodLength;
+        int age = per.getAge() + 1;
         per.setAge(age);
         per.setType(age, per.getGender());
         EventManager.countEvent(EventTypes.BIRTHDAY);
