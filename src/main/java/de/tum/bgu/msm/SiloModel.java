@@ -147,7 +147,7 @@ public final class SiloModel {
 	}
 
 	private void runYearByYear() {
-		for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
+		for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
 			if (scalingYears.contains(year)) {
 				SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
 			}
