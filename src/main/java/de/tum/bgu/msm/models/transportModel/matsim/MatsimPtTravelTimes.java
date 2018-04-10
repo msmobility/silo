@@ -24,6 +24,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 
+@Deprecated // yyyyyy rather than having a separate class for each mode, add the mode to the "getTravelTime" query. kai, apr'18
 public class MatsimPtTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimPtTravelTimes.class);
 
@@ -34,7 +35,8 @@ public class MatsimPtTravelTimes implements TravelTimes {
 	private final static double TIME_OF_DAY = 8. * 60 * 60.; // TODO
 	private final static String mode = TransportMode.pt;
 	private final ActivityFacilitiesFactory activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
-
+	
+	@Deprecated // yyyyyy rather than having a separate class for each mode, add the mode to the "getTravelTime" query. kai, apr'18
 	public MatsimPtTravelTimes(TripRouter tripRouter, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
 		this.tripRouter = tripRouter;
 		this.network = network;
@@ -59,6 +61,7 @@ public class MatsimPtTravelTimes implements TravelTimes {
 	}
 
 	@Override
+	@Deprecated // yyyyyy rather than having a separate class for each mode, add the mode to the "getTravelTime" query. kai, apr'18
 	public double getTravelTime(int origin, int destination, double timeOfDay) {
 		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
