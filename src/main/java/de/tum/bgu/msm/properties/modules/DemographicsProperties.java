@@ -16,7 +16,6 @@ public class DemographicsProperties {
     //Birth
     public final float marriedScaler;
     public final float singleScaler;
-    public final int simulationPeriodLength;
     public final int birthModelSheet;
     public final boolean logBirthCalculation;
     public final float localScaler;
@@ -42,7 +41,6 @@ public class DemographicsProperties {
 
         marriedScaler = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.birth.scaler.married");
         singleScaler = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.birth.scaler.single");
-        simulationPeriodLength = ResourceUtil.getIntegerProperty(bundle, "simulation.period.length");
         birthModelSheet = ResourceUtil.getIntegerProperty(bundle, "Demographics.UEC.ModelSheetNumber.Birth");
         logBirthCalculation = ResourceUtil.getBooleanProperty(bundle, "log.util.birth");
         localScaler = (float) ResourceUtil.getDoubleProperty(bundle, "demographics.local.birth.rate.adjuster");

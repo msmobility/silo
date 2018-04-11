@@ -27,7 +27,7 @@ public class SiloCSDMS {
 //        SyntheticPopUs sp = new SyntheticPopUs(rb);
 //        sp.runSP();
         initialize(args);
-        for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
+        for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
             update(1d);
         }
         finalizeIt();

@@ -1044,7 +1044,7 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
 		pw.println();
 	}
-	for (int year = startYear; year < Properties.get().main.endYear; year += Properties.get().main.simulationLength) {
+	for (int year = startYear; year < Properties.get().main.endYear; year ++) {
 		pw.print(year);
 		for (EventTypes et: EventTypes.values()) {
 			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
