@@ -39,11 +39,9 @@ public class AssignSchools {
         int it = 12;
         for (Person pp : studentArrayList){
             int schooltaz;
-            if (pp.getSchoolType() == 3){
-                schooltaz = selectTertiarySchool(pp.getHomeTaz());
-            } else {
+
                 schooltaz = selectPrimarySecondarySchool(pp.getHomeTaz(), pp.getSchoolType());
-            }
+
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
                 pp.setJobTAZ(schooltaz);

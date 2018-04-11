@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.math.LongMath;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
@@ -30,6 +31,8 @@ public class AssignJobs {
     private ArrayList<Person> workerArrayList;
     private int assignedJobs;
     private int[] tazIds;
+    private TableDataSet commutersFlow;
+    private TableDataSet tripLength;
 
     public AssignJobs(DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -55,6 +58,8 @@ public class AssignJobs {
             }
             assignedJobs++;
         }
+        SiloUtil.writeTableDataSet(commutersFlow, "microData/interimFiles/commuter.a." + dataSetSynPop.getAlphaJobTest() + ".b." + dataSetSynPop.getGammaJobTest() + ".csv");
+        SiloUtil.writeTableDataSet(tripLength, "microData/interimFiles/flows.a." + dataSetSynPop.getAlphaJobTest() + ".b." + dataSetSynPop.getGammaJobTest() + ".csv");
         logger.info("   Finished job allocation. Assigned " + assignedJobs + " jobs.");
     }
 
@@ -66,15 +71,15 @@ public class AssignJobs {
         double maxUtility = Math.exp(dataSetSynPop.getAlphaJobTest() * Math.exp(dataSetSynPop.getGammaJobTest()));
         for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
             for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                /*int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
                 float utility = 0.00000001f;
                 if (distance < 200){
                     utility = utilityHBW.get(distance);
-                }*/
-                double utility = Math.exp(dataSetSynPop.getAlphaJobTest() *
+                }
+                /*double utility = Math.exp(dataSetSynPop.getAlphaJobTest() *
                         Math.exp(dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j) * dataSetSynPop.getGammaJobTest())) /
-                        maxUtility;
-                distanceImpedance.setValueAt(i, j, (float) utility);
+                        maxUtility;*/
+                distanceImpedance.setValueAt(i, j, utility);
             }
         }
     }
@@ -86,6 +91,12 @@ public class AssignJobs {
         int jobTAZ = Job.getJobFromId(jobID).getZone();
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
+        int cityHome = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(pp.getHomeTaz(),"ID_city");
+        int cityWork = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(jobTAZ,"ID_city");
+        commutersFlow.setIndexedValueAt(cityHome, Integer.toString(cityWork),1 + commutersFlow.getIndexedValueAt(cityHome, Integer.toString(cityWork)));
+        tripLength.setIndexedValueAt(cityHome,"times", 1+ tripLength.getIndexedValueAt (cityHome,"times"));
+        float dist = dataSetSynPop.getDistanceTazToTaz().getValueAt(pp.getHomeTaz(),jobTAZ);
+        tripLength.setIndexedValueAt(cityHome,"cumDist", dist + tripLength.getIndexedValueAt(cityHome,"cumDist"));
     }
 
 
@@ -127,6 +138,19 @@ public class AssignJobs {
         logger.info("  Identifying vacant jobs by zone");
         Collection<Job> jobs = Job.getJobs();
 
+        commutersFlow = new TableDataSet();
+        int[] zones = dataSetSynPop.getCityIDs();
+        commutersFlow.appendColumn(zones,"cities");
+        for (int zone : zones) {
+            SiloUtil.addIntegerColumnToTableDataSet(commutersFlow, Integer.toString(zone));
+        }
+        commutersFlow.buildIndex(commutersFlow.getColumnPosition("cities"));
+        tripLength = new TableDataSet();
+        tripLength.appendColumn(zones, "cities");
+        SiloUtil.addIntegerColumnToTableDataSet(tripLength, "cumDist");
+        SiloUtil.addIntegerColumnToTableDataSet(tripLength, "times");
+        SiloUtil.addIntegerColumnToTableDataSet(tripLength,"averageDist");
+        tripLength.buildIndex(tripLength.getColumnPosition("cities"));
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
         jobIntTypes = new HashMap<>();
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {

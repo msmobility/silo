@@ -1,13 +1,14 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
-import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 public class Allocation extends ModuleSynPop{
@@ -30,8 +31,10 @@ public class Allocation extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runJobAllocation) {
 /*            double[] alphaJobs = {40, 50, 50.2, 60, 70};
             double[] gammaJobs = {-0.001, -0.002, -0.003, -0.004, -0.005};*/
-            double[] alphaJobs = {50};
-            double[] gammaJobs = {-0.003};
+            double[] alphaJobs = {35};
+            double[] gammaJobs = {0};
+            //double[] alphaJobs = {30, 35, 40};
+            //double[] gammaJobs = {0.01, 0.02, 0.05, 0.07, 0.085, 0.1, 0.2, 0.3};
             for (double alphaJob : alphaJobs) {
                 dataSetSynPop.setAlphaJobTest(alphaJob);
                 for (double gammaJob : gammaJobs) {
