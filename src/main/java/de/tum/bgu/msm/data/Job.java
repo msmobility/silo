@@ -16,11 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Class to hold job data
  * Author: Rolf Moeckel, PB Albuquerque
@@ -29,43 +24,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Job {
 
-    private static final Map<Integer, Job> jobMap = new ConcurrentHashMap<>();
-
 	private final int id;
     private final int zone;
     private int workerId;
     private final String type;
 
-    public Job (int id, int zone, int workerId, String type) {
+    Job (int id, int zone, int workerId, String type) {
         this.id = id;
         this.zone = zone;
         this.workerId = workerId;
         this.type = type;
-        jobMap.put(id, this);
-    }
-
-    public static void saveJobs (Job[] jjs) {
-        for (Job jj: jjs) jobMap.put(jj.getId(), jj);
-    }
-
-    public static Job getJobFromId(int jobId) {
-        return jobMap.get(jobId);
-    }
-
-    public static int getJobCount() {
-        return jobMap.size();
-    }
-
-    public static Collection<Job> getJobs() {
-            return jobMap.values();
-    }
-
-    public static Set<Integer> getJobMapIDs () {
-        return jobMap.keySet();
-    }
-
-    public static void removeJob(int id) {
-        jobMap.remove(id);
     }
 
     public int getId () {

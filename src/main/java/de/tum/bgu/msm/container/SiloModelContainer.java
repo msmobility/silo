@@ -1,19 +1,18 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.models.demography.*;
 import de.tum.bgu.msm.models.jobmography.UpdateJobs;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.models.realEstate.*;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.models.relocation.munich.MovesModelMuc;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
@@ -107,36 +106,35 @@ public class SiloModelContainer {
      */
     public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer) {
 
-        logger.info("Creating UEC Models");
-        DeathModel death = new DeathModel(dataContainer.getHouseholdData());
+        DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer.getHouseholdData());
-        LeaveParentHhModel lph = new LeaveParentHhModel();
-        MarryDivorceModel mardiv = new MarryDivorceModel();
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer.getGeoData(), dataContainer.getHouseholdData());
-        ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer.getGeoData());
-        ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense();
-        Accessibility acc = new Accessibility(dataContainer.getGeoData());
+        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer);
+        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer);
+        ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
+        ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense(dataContainer);
+        Accessibility acc = new Accessibility(dataContainer);
+        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer, acc);
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        InOutMigration iomig = new InOutMigration();
-        ConstructionModel cons = new ConstructionModel(dataContainer.getGeoData());
-        RenovationModel renov = new RenovationModel();
-        DemolitionModel demol = new DemolitionModel();
-        PricingModel prm = new PricingModel();
-        UpdateJobs updateJobs = new UpdateJobs();
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite();
+        InOutMigration iomig = new InOutMigration(dataContainer);
+        ConstructionModel cons = new ConstructionModel(dataContainer);
+        RenovationModel renov = new RenovationModel(dataContainer);
+        DemolitionModel demol = new DemolitionModel(dataContainer);
+        PricingModel prm = new PricingModel(dataContainer);
+        UpdateJobs updateJobs = new UpdateJobs(dataContainer);
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
 
         CarOwnershipModel carOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
         switch(Properties.get().main.implementation) {
             case MARYLAND:
-                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer.getJobData(), acc);
-                move = new MovesModelMstm((GeoDataMstm)dataContainer.getGeoData(), dataContainer.getRealEstateData(), acc);
+                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer, acc);
+                move = new MovesModelMstm(dataContainer, acc);
                 break;
             case MUNICH:
-                createCarOwnershipModel = new CreateCarOwnershipModel();
-                carOwnershipModel = new MunichCarOwnerShipModel();
-                move = new MovesModelMuc(dataContainer.getGeoData(), acc);
+                createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer);
+                carOwnershipModel = new MunichCarOwnerShipModel(dataContainer);
+                move = new MovesModelMuc(dataContainer, acc);
                 break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);

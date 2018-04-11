@@ -3,7 +3,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
@@ -14,6 +16,7 @@ public class AssignSchools {
     private static final Logger logger = Logger.getLogger(AssignSchools.class);
 
     private final DataSetSynPop dataSetSynPop;
+    private final SiloDataContainer dataContainer;
 
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
@@ -23,8 +26,9 @@ public class AssignSchools {
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
-    public AssignSchools(DataSetSynPop dataSetSynPop){
+    public AssignSchools(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
+        this.dataContainer = dataContainer;
     }
 
     public void run() {
@@ -34,12 +38,14 @@ public class AssignSchools {
         shuffleStudents();
         double logging = 2;
         int it = 12;
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : studentArrayList){
             int schooltaz;
+            int hometaz = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
             if (pp.getSchoolType() == 3){
-                schooltaz = selectTertiarySchool(pp.getHomeTaz());
+                schooltaz = selectTertiarySchool(hometaz);
             } else {
-                schooltaz = selectPrimarySecondarySchool(pp.getHomeTaz(), pp.getSchoolType());
+                schooltaz = selectPrimarySecondarySchool(hometaz, pp.getSchoolType());
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
@@ -129,7 +135,7 @@ public class AssignSchools {
 
     private void shuffleStudents(){
 
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         studentArrayList = new ArrayList<>();
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
             if (pair.getValue().getOccupation() == 3){

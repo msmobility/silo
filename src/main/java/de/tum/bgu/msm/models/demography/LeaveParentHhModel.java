@@ -40,8 +40,10 @@ import java.util.Collections;
 public class LeaveParentHhModel {
 
     private double[] lphProbability;
+    private final SiloDataContainer dataContainer;
 
-    public LeaveParentHhModel() {
+    public LeaveParentHhModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         setupLPHModel();
     }
 
@@ -66,10 +68,11 @@ public class LeaveParentHhModel {
     }
 
 
-    public void chooseLeaveParentHh(int perId, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public void chooseLeaveParentHh(int perId, SiloModelContainer modelContainer) {
         // remove person with perId from its household and create new household with this person
 
-        Person per = Person.getPersonFromId(perId);
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        Person per = householdData.getPersonFromId(perId);
         if (!EventRules.ruleLeaveParHousehold(per)) return;   // Person got married this simulation period
         if (SiloUtil.getRandomNumberAsDouble() < lphProbability[per.getType().ordinal()]) {
 
@@ -85,25 +88,22 @@ public class LeaveParentHhModel {
 
             // create new household
             Household hhOfThisPerson = per.getHh();
-            hhOfThisPerson.removePerson(per, dataContainer);
+            householdData.removePersonFromHousehold(per);
             hhOfThisPerson.setType();
-            int newHhId = HouseholdDataManager.getNextHouseholdId();
-            Household hh = new Household(newHhId, -1,  0);
-            hh.addPerson(per);
-            hh.setType();
-            hh.determineHouseholdRace();
+            int newHhId = householdData.getNextHouseholdId();
+            Household household = householdData.createHousehold(newHhId, -1,  0);
+            householdData.addPersonToHousehold(per, household);
             per.setRole(PersonRole.SINGLE);
 
-
             // Move new household
-            modelContainer.getMove().moveHousehold(hh, -1, newDwellingId, dataContainer);
+            modelContainer.getMove().moveHousehold(household, -1, newDwellingId, dataContainer);
             EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
             dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
             if(Properties.get().main.implementation == Implementation.MUNICH) {
-                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
+                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(household); // set initial car ownership of new household
             }
             if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
-                    hh.getId() == SiloUtil.trackHh) {
+                    household.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Person " + perId +
                         " has left the parental household " + hhOfThisPerson.getId() +
                         " and established the new household " + newHhId + ".");

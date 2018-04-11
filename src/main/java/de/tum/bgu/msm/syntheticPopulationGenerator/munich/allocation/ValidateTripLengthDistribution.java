@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
@@ -16,9 +18,11 @@ public class ValidateTripLengthDistribution {
     private static final Logger logger = Logger.getLogger(ValidateTripLengthDistribution.class);
 
     private final DataSetSynPop dataSetSynPop;
+    private final SiloDataContainer dataContainer;
 
-    public ValidateTripLengthDistribution(DataSetSynPop dataSetSynPop){
-            this.dataSetSynPop = dataSetSynPop;
+    public ValidateTripLengthDistribution(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+        this.dataSetSynPop = dataSetSynPop;
+        this.dataContainer = dataContainer;
     }
 
     public void run(){
@@ -45,7 +49,7 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainWorkers(){
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> workerArrayList = new ArrayList<>();
         for (Map.Entry<Integer, Person> pair : personMap.entrySet()){
             if (pair.getValue().getOccupation() == 1){
@@ -56,11 +60,13 @@ public class ValidateTripLengthDistribution {
     }
 
 
-    private Frequency obtainFlows(ArrayList<Person> workerArrayList){
+    private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
-        for (Person pp : workerArrayList){
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        for (Person pp : personArrayList){
             if (pp.getJobTAZ() > 0){
-                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(pp.getHomeTaz(), pp.getJobTAZ());
+                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
                 commuteDistance.addValue(value);
             }
         }
@@ -97,7 +103,7 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainStudents (int school){
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> workerArrayList = new ArrayList<>();
         for (Map.Entry<Integer, Person> pair : personMap.entrySet()) {
             if (pair.getValue().getOccupation() == 3 & pair.getValue().getSchoolType() == school) {

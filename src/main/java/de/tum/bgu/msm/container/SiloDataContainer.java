@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * All the data items are constructed within the SiloModelContainer
  */
 public class SiloDataContainer {
-    private static Logger logger = Logger.getLogger(SiloDataContainer.class);
+    private final static Logger LOGGER = Logger.getLogger(SiloDataContainer.class);
 
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
@@ -32,26 +32,9 @@ public class SiloDataContainer {
      * being used to encapsulate the object creation.
      *
      *
-     * @param householdData
-     * @param realEstateData
-     * @param jobData
-     * @param geoData
      */
-    private SiloDataContainer(HouseholdDataManager householdData, RealEstateDataManager realEstateData,
-                               JobDataManager jobData, GeoData geoData) {
-        this.householdData = householdData;
-        this.realEstateData = realEstateData;
-        this.jobData = jobData;
-        this.geoData = geoData;
-    }
+    private SiloDataContainer() {
 
-    /**
-     * This factory method is used to create all the data objects needed for SILO from the Configuration file, loaded as a ResourceBundle
-     * Each data object is created sequentially, before being passed as parameters to the private constructor.
-     * @return A SiloDataContainer, with each data object created within
-     */
-    public static SiloDataContainer createSiloDataContainer() {
-        GeoData geoData;
         switch (Properties.get().main.implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
@@ -60,17 +43,19 @@ public class SiloDataContainer {
                 geoData = new GeoDataMuc();
                 break;
             default:
-                logger.error("Invalid implementation. Choose <MSTM> or <Muc>.");
+                LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
-        geoData.setInitialData();
-        IssueCounter.regionSpecificCounters(geoData);
+        realEstateData = new RealEstateDataManager(this);
+        jobData = new JobDataManager(this);
+        householdData = new HouseholdDataManager(this);
+    }
 
-        // read micro data
-        RealEstateDataManager realEstateData = new RealEstateDataManager(geoData);
-        HouseholdDataManager householdData = new HouseholdDataManager(realEstateData);
-        JobDataManager jobData = new JobDataManager(geoData);
+    private void setupDataContainer() {
+        geoData.setInitialData();
+        IssueCounter.regionSpecificCounters(getGeoData());
+
         if (!Properties.get().main.runSynPop) {   // read data only if synth. pop. generator did not run
             int smallSize = 0;
             boolean readSmallSynPop = Properties.get().main.readSmallSynpop;
@@ -82,7 +67,6 @@ public class SiloDataContainer {
             jobData.readJobs( readSmallSynPop, smallSize);
             householdData.setTypeOfAllHouseholds();
         }
-
         jobData.calculateEmploymentForecast();
         jobData.identifyVacantJobs();
         jobData.calculateJobDensityByZone();
@@ -91,10 +75,18 @@ public class SiloDataContainer {
         realEstateData.identifyVacantDwellings();
         householdData.setHighestHouseholdAndPersonId();
         householdData.calculateInitialSettings();
+    }
 
-        logger.info("  Creating Data Objects for SiloDataContainer");
-
-        return new SiloDataContainer(householdData, realEstateData, jobData, geoData);
+    /**
+     * This factory method is used to create all the data objects needed for SILO
+     * Each data object is created sequentially
+     * @return A SiloDataContainer, with each data object created within
+     */
+    public static SiloDataContainer createSiloDataContainer() {
+        LOGGER.info("  Creating Data Objects for SiloDataContainer");
+        SiloDataContainer dataContainer = new SiloDataContainer();
+        dataContainer.setupDataContainer();
+        return dataContainer;
     }
 
     public HouseholdDataManager getHouseholdData() {

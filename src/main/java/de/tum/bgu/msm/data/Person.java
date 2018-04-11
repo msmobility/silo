@@ -16,10 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Greg Erhardt 
@@ -27,8 +24,7 @@ import java.util.Map;
  *
  */
 public final class Person {
-    
-    private static final Map<Integer,Person> personMap = new HashMap<>();
+
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated
     private final int id;
@@ -49,13 +45,12 @@ public final class Person {
     private int educationLevel = 0;
     private Nationality nationality = Nationality.german;
     private float travelTime = 0;
-    private int zone = 0;
     private int hhSize = 0;
     private int jobTAZ = 0;
     private boolean driverLicense = false;
     private int schoolType = 0;
 
-    public Person(int id, int age, int gender, Race race, int occupation, int workplace, int income) {
+    Person(int id, int age, int gender, Race race, int occupation, int workplace, int income) {
 		this.id = id;
 		this.age = age;
 		this.gender = gender; 
@@ -64,31 +59,6 @@ public final class Person {
         this.workplace = workplace;
 		this.income = income; 
 		setType(age, gender);
-        personMap.put(id,this);
-    }
-    
-    public static Person getPersonFromId(int id) {
-        return personMap.get(id);
-    }
-
-    public static void removePerson(int id) {
-        personMap.remove(id);
-    }
-
-    public static int getPersonCount() {
-        return personMap.size();
-    }
-
-    public static Collection<Person> getPersons() {
-        return personMap.values();
-    }
-
-    public static Map<Integer, Person> getPersonMap() {
-        return personMap;
-    }
-
-    public static void savePersons (Person[] pps) {
-        for (Person pp: pps) personMap.put(pp.getId(), pp);
     }
 
     public void setType (int age, int gender) {
@@ -141,7 +111,7 @@ public final class Person {
         }
     }
 
-    public void setHousehold(Household household) {
+    void setHousehold(Household household) {
         this.hh = household;
     }
 
@@ -172,10 +142,6 @@ public final class Person {
 
     public int getId() {
 		return id; 
-	}
-	
-	public int getHomeTaz() {
-		return hh.getHomeZone();
 	}
 	
 	public int getAge() {
@@ -210,19 +176,6 @@ public final class Person {
         return workplace;
     }
 
-    public void quitJob (boolean makeJobAvailableToOthers, JobDataManager jobDataManager) {
-        // Person quits job and the job is added to the vacantJobList
-        // <makeJobAvailableToOthers> is false if this job disappears from the job market
-        Job jb = Job.getJobFromId(workplace);
-        if (makeJobAvailableToOthers) {
-            jobDataManager.addJobToVacancyList(jb.getZone(), workplace);
-        }
-        jb.setWorkerID(-1);
-        workplace = -1;
-        occupation = 2;
-        income = (int) (income * 0.6 + 0.5);  //  todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
-    }
-
     public void setEducationLevel(int educationLevel) {
         this.educationLevel = educationLevel;
     }
@@ -251,10 +204,6 @@ public final class Person {
 
     public float getTravelTime() { return travelTime; }
 
-    public void setZone(int zone){ this.zone = zone;}
-
-    public int getZone() { return zone; }
-
     public void setHhSize(int hhSize){ this.hhSize = hhSize;}
 
     public int getHhSize() { return hhSize; }
@@ -274,16 +223,6 @@ public final class Person {
     public void setSchoolPlace(int schoolPlace) {this.schoolPlace = schoolPlace;}
 
     public int getSchoolPlace() {return schoolPlace;}
-
-    public MitoPerson convertToMitoPp() {
-        Gender mitoGender = Gender.valueOf(gender);
-        Occupation mitoOccupation = Occupation.valueOf(occupation);
-        int workzone = -1;
-        if(workplace > 0) {
-            workzone = Job.getJobFromId(workplace).getZone();
-        }
-        return new MitoPerson(id, mitoOccupation, workzone, age, mitoGender, driverLicense);
-    }
     
     @Override
     public String toString() {

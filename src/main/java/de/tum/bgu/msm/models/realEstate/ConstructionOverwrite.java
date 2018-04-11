@@ -25,8 +25,10 @@ public class ConstructionOverwrite {
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
     private HashMap<Integer, ArrayList> plannedDwellings;
+    private final SiloDataContainer dataContainer;
 
-    public ConstructionOverwrite() {
+    public ConstructionOverwrite(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         useOverwrite = Properties.get().realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) return;
         traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
@@ -87,7 +89,7 @@ public class ConstructionOverwrite {
     }
 
 
-    public void addDwellings (int year, SiloDataContainer dataContainer) {
+    public void addDwellings (int year) {
         // add overwrite dwellings for this year
 
         if (!useOverwrite) return;
@@ -113,7 +115,7 @@ public class ConstructionOverwrite {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = new Dwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
@@ -134,7 +136,10 @@ public class ConstructionOverwrite {
     public void finishOverwriteTracer () {
         // Read Tracer File and write out current conditions at end of simulation
 
-        if (!useOverwrite) return;  // if overwrite is not used, now overwrite dwellings can be traced
+        if (!useOverwrite) {
+            return;  // if overwrite is not used, now overwrite dwellings can be traced
+        }
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
@@ -146,12 +151,12 @@ public class ConstructionOverwrite {
         int[] dwellingRent  = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);
         for (int row = 1; row <= overwriteDwellings.getRowCount(); row++) {
             int ddId = (int) overwriteDwellings.getValueAt(row, "dwellingID");
-            Dwelling dd = Dwelling.getDwellingFromId(ddId);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(ddId);
             if (dd == null) overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
             if (dd == null) continue;
             dwellingRent[row-1] = dd.getPrice();
             if (dd.getResidentId() > 0) {
-                Household hh = Household.getHouseholdFromId(dd.getResidentId());
+                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
                 householdId[row-1] = hh.getId();
                 householdSize[row-1] = hh.getHhSize();
                 householdInc[row-1] = hh.getHhIncome();

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.jobmography;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.Person;
@@ -11,13 +12,12 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
 
     private final List<Integer> vacantJobs;
     private final List<Integer> occupiedJobs;
-    private final JobDataManager jobDataManager;
 
-    public RemoveJobsDefinition(int zone, int change, String jobType, List<Integer> vacantJobs, List<Integer> occupiedJobs, JobDataManager jobDataManager) {
-        super(zone, change, jobType);
+    public RemoveJobsDefinition(int zone, int change, String jobType, List<Integer> vacantJobs,
+                                List<Integer> occupiedJobs, SiloDataContainer dataContainer) {
+        super(zone, change, jobType, dataContainer);
         this.vacantJobs = vacantJobs;
         this.occupiedJobs = occupiedJobs;
-        this.jobDataManager = jobDataManager;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
                 SiloUtil.trackWriter.println("Vacant job " + job +
                         " of type " + jobType + " was removed in zone " + zone + " based on exogenous forecast.");
             }
-            changes--;
+            this.changes--;
         }
     }
 
@@ -49,17 +49,17 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
             removeJob(occupiedJob);
             if (occupiedJob == SiloUtil.trackJj) SiloUtil.trackWriter.println("Previously occupied job " +
                     occupiedJob + " of type " + jobType + " was removed in zone " + zone + " based on exogenous forecast.");
-            changes--;
+            this.changes--;
         }
     }
 
     private void firePerson(Integer occupiedJob) {
-        Job jobToBeRemoved = Job.getJobFromId(occupiedJob);
-        int personId = jobToBeRemoved.getWorkerId();
-        Person.getPersonFromId(personId).quitJob(false, jobDataManager);
+        Job jobToBeRemoved = jobDataManager.getJobFromId(occupiedJob);
+        Person person = householdDataManager.getPersonFromId(jobToBeRemoved.getWorkerId());
+        jobDataManager.quitJob(false, person);
     }
 
-    private synchronized static void removeJob(int job) {
-        Job.removeJob(job);
+    private synchronized void removeJob(int job) {
+        this.jobDataManager.removeJob(job);
     }
 }

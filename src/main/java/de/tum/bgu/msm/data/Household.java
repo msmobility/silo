@@ -16,11 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.demography.BirthModel;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Greg Erhardt 
@@ -29,7 +26,6 @@ import java.util.*;
  */
 public final class Household {
 
-    private static final Map<Integer, Household> householdMap = new HashMap<>();
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
     private final int hhId;
     private int dwellingId;
@@ -39,32 +35,11 @@ public final class Household {
     private HouseholdType type;
     private final List<Person> persons;
 
-    public Household(int id, int dwellingID, int autos) {
+    Household(int id, int dwellingID, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.autos = autos;
         persons = new ArrayList<>();
-        householdMap.put(id,this);
-    }
-
-    public static Household getHouseholdFromId(int householdId) {
-        return householdMap.get(householdId);
-    }
-
-    public static int getHouseholdCount() {
-        return householdMap.size();
-    }
-
-    public static Collection<Household> getHouseholds() {
-        return Collections.unmodifiableCollection(householdMap.values());
-    }
-
-    public static void saveHouseholds (Household[] hhs) {
-        for (Household hh: hhs) householdMap.put(hh.getId(), hh);
-    }
-
-    public static void remove (int hhID) {
-        householdMap.remove(hhID);
     }
 
     public int getId() {
@@ -99,15 +74,6 @@ public final class Household {
         return hhInc;
     }
 
-    public int getHomeZone() {
-        Dwelling dwelling = Dwelling.getDwellingFromId(this.dwellingId);
-        if(dwelling != null) {
-            return dwelling.getZone();
-        } else {
-            return -1;
-        }
-    }
-
     public Race getRace() {return race; }
 
     public Nationality getNationality() {
@@ -130,6 +96,13 @@ public final class Household {
         this.dwellingId = id;
     }
 
+    void addPerson(Person person) {
+        this.persons.add(person);
+    }
+
+    void removePerson(Person person) {
+        this.persons.remove(person);
+    }
 
     public void setType() {
         int incCat = HouseholdDataManager.getIncomeCategoryForIncome(getHhIncome());
@@ -153,85 +126,6 @@ public final class Household {
         this.autos = autos;
     }
 
-    public void removePerson (Person person, SiloDataContainer dataContainer) {
-        persons.remove(person);
-        if(!persons.isEmpty()) {
-            setType();
-            determineHouseholdRace();
-        } else {
-            dataContainer.getHouseholdData().removeHousehold(hhId);
-        }
-        if (hhId == SiloUtil.trackHh || person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " +
-                    person.getId() + " was removed from household " + hhId + ".");
-        }
-    }
-
-    public void addPerson(Person person) {
-        // add existing person per (not a newborn child) to household
-        if(persons.contains(person)) {
-            throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + this.getId());
-        }
-        persons.add(person);
-        person.setHousehold(this);
-        setType();
-        determineHouseholdRace();
-        if (person.getId() == SiloUtil.trackPp || hhId == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("A person " +
-                    "(not a child) named " + person.getId() + " was added to household " + hhId + ".");
-        }
-    }
-
-    public void addNewbornPerson(Race race) {
-        // create new Person for this household
-        int id = HouseholdDataManager.getNextPersonId();
-        int gender = 1;
-        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) {
-            gender = 2;
-        }
-        Person person = new Person (id, 0, gender, race, 0, 0, 0);
-        person.setRole(PersonRole.CHILD);
-        persons.add(person);
-        person.setHousehold(this);
-        setType();
-        if (id == SiloUtil.trackPp || hhId == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("For unto us a child was born... A child named "
-                    + id + " was born and added to household " + hhId + ".");
-        }
-    }
-
-    public static int getTotalPopulation () {
-        int tp = 0;
-        for (Household hh: getHouseholds()) {
-            tp += hh.getHhSize();
-        }
-        return tp;
-    }
-
-    public static float getAverageHouseholdSize () {
-        float ahs = 0;
-        int cnt = 0;
-        for (Household hh: getHouseholds()) {
-            ahs += hh.getHhSize();
-            cnt++;
-        }
-        return ahs/(float) cnt;
-    }
-
-    public MitoHousehold convertToMitoHh(MitoZone zone) {
-        return new MitoHousehold(hhId, getHhIncome(), autos, zone);
-    }
-
-    public static Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
-        Map<Integer, MitoHousehold> thhs = new HashMap<>();
-        for (Household siloHousehold : getHouseholds()) {
-            MitoZone zone = zones.get(Dwelling.getDwellingFromId(siloHousehold.getDwellingId()).getZone());
-            MitoHousehold household = siloHousehold.convertToMitoHh(zone);
-            thhs.put(household.getId(), household);
-        }
-        return thhs;
-    }
-
     public boolean checkIfOnlyChildrenRemaining() {
         for (Person person: persons) {
            if(person.getAge() >= 16) {
@@ -243,14 +137,8 @@ public final class Household {
 
     @Override
     public String toString() {
-        int homeZone = -1;
-        final Dwelling dwelling = Dwelling.getDwellingFromId(dwellingId);
-        if(dwelling != null) {
-            homeZone = dwelling.getZone();
-        }
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
-            +"\nHousehold size          " + persons.size()
-            +"\nHome zone               " + homeZone ;
+            +"\nHousehold size          " + persons.size();
     }
 }

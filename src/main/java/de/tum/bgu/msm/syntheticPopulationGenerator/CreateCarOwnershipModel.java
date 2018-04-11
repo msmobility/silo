@@ -2,12 +2,15 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
 
 /**
  * Implements car ownership of initial synthetic population (base year) for the Munich Metropolitan Area
@@ -22,12 +25,14 @@ public class CreateCarOwnershipModel {
 
     private TableDataSet zonalData;
     private final CreateCarOwnershipJSCalculator calculator;
+    private final SiloDataContainer dataContainer;
 
-    public CreateCarOwnershipModel() {
+    public CreateCarOwnershipModel(SiloDataContainer dataContainer) {
         logger.info(" Setting up probabilities for car ownership model");
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator(reader);
         readZonalData();
+        this.dataContainer = dataContainer;
     }
 
     public void readZonalData() {
@@ -63,10 +68,10 @@ public class CreateCarOwnershipModel {
     }
 
     public void run() {
-        for (Household hh : Household.getHouseholds()) {
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             simulateCarOwnership(hh);
         }
-        SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
+        //SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
     }
 
     public void simulateCarOwnership(Household hh) {

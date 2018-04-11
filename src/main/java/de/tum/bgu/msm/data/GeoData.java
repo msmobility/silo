@@ -37,12 +37,6 @@ public interface GeoData {
     int[] getRegionIdsArray();
 
     /**
-     * @deprecated  As of jan'18. Future access will be directly from {@link Zone} class
-     */
-    @Deprecated
-    int getRegionOfZone(int zone);
-
-    /**
      * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
      */
     @Deprecated

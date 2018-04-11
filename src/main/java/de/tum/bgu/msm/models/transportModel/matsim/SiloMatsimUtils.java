@@ -3,10 +3,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import com.pb.common.matrix.Matrix;
 import com.vividsolutions.jts.geom.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -99,14 +97,15 @@ public class SiloMatsimUtils {
 		return config;
 	}
 
-	public static Population createMatsimPopulation(Config config, HouseholdDataManager householdDataManager, int year,
+	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
 			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
-    	Collection<Person> siloPersons = householdDataManager.getPersons();
+    	Collection<Person> siloPersons = dataContainer.getHouseholdData().getPersons();
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
-    	    	
+
+    	JobDataManager jobData = dataContainer.getJobData();
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
@@ -137,8 +136,9 @@ public class SiloMatsimUtils {
     		}
 
     		int siloPersonId = siloPerson.getId();
-    		int siloHomeTazId = siloPerson.getHomeTaz();
-    		Job job = Job.getJobFromId(siloWorkplaceId);
+    		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+    		int siloHomeTazId = dwelling.getZone();
+    		Job job = jobData.getJobFromId(siloWorkplaceId);
     		int workZoneId = job.getZone();
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here

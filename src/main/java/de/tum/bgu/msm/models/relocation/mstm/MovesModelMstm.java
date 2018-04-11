@@ -10,8 +10,8 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
@@ -39,12 +39,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private final DoubleMatrix1D hhByRegion;
 
 
-    public MovesModelMstm(GeoDataMstm geoData, RealEstateDataManager realEstateData, Accessibility accessibility) {
-        super(geoData, accessibility);
+    public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
+        super(dataContainer, accessibility);
         selectDwellingRaceRelevance = Properties.get().moves.racialRelevanceInZone;
         provideRentSubsidyToLowIncomeHh = Properties.get().moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
-            realEstateData.calculateMedianRentByMSA();
+            dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
         zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
         regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
@@ -64,8 +64,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     private void updateHouseholdInventar() {
-        for (Household hh: Household.getHouseholds()) {
-            final int zone = hh.getHomeZone();
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
+            int zone = -1;
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
             final int region = geoData.getZones().get(zone).getRegion().getId();
 
             zonalRacialComposition.setQuick(zone, hh.getRace().getId(),
@@ -270,11 +274,14 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
         Race householdRace = persons.get(0).getRace();
-        for (Person pp: persons) if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-            workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
-            pos++;
-            householdIncome += pp.getIncome();
-            if (pp.getRace() != householdRace) householdRace = Race.other;
+        JobDataManager jobData = dataContainer.getJobData();
+        for (Person pp: persons) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+                workZones[pos] = jobData.getJobFromId(pp.getWorkplace()).getZone();
+                pos++;
+                householdIncome += pp.getIncome();
+                if (pp.getRace() != householdRace) householdRace = Race.other;
+            }
         }
         int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
         HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
@@ -285,7 +292,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
-        for (int region: geoData.getRegionIdsArray()) totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
+        for (int region: geoData.getRegions().keySet()) {
+            totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
+        }
         for (int i = 0; i < regionUtilities.length; i++) {
             switch (normalizer) {
                 case ("vacDd"): {
@@ -319,7 +328,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
             int msa = geoData.getZones().get(dd.getZone()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;

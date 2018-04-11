@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.PrintWriter;
@@ -30,7 +31,7 @@ public class summarizeDataCblcm {
         summarizeEmployment(year, dataContainer);
         summarizeDwellings(year, dataContainer);
         summarizeAccessibilities(year, modelContainer, dataContainer);
-        summarizeByCounty(year, (GeoDataMstm) dataContainer.getGeoData());
+        summarizeByCounty(year, dataContainer);
     }
 
 
@@ -40,17 +41,23 @@ public class summarizeDataCblcm {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 Properties.get().main.gregorianIterator + ".csv");
-        int[][] households = new int[dataContainer.getGeoData().getZoneIdsArray().length][Properties.get().main.incomeBrackets.length + 1];
-        for (Household hh : Household.getHouseholds()) {
+        int[][] households = new int[dataContainer.getGeoData().getZones().size()][Properties.get().main.incomeBrackets.length + 1];
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             int hhIncomeGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
-            households[dataContainer.getGeoData().getZoneIndex(hh.getHomeZone())][hhIncomeGroup - 1]++;
+            int zone = -1;
+            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
+            households[dataContainer.getGeoData().getZoneIndex(zone)][hhIncomeGroup - 1]++;
         }
 
         if (SiloUtil.checkIfFileExists(popFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet pop = SiloUtil.readCSVfile(popFileName);
             for (int income = 0; income <= Properties.get().main.incomeBrackets.length; income++) {
-                int[] hh = new int[dataContainer.getGeoData().getZoneIdsArray().length];
-                for (int i = 0; i < dataContainer.getGeoData().getZoneIdsArray().length; i++) hh[i] = households[i][income];
+                int[] hh = new int[dataContainer.getGeoData().getZones().size()];
+                for (int i = 0; i < dataContainer.getGeoData().getZones().size(); i++) hh[i] = households[i][income];
                 String columnName;
                 if (income == 0) {
                     columnName = "hh" + year + "_i_0-" + Properties.get().main.incomeBrackets[income];
@@ -71,10 +78,12 @@ public class summarizeDataCblcm {
                         "-" + Properties.get().main.incomeBrackets[i]);
             pw.print(",hh" + year + "_i_above" + Properties.get().main.incomeBrackets[Properties.get().main.incomeBrackets.length-1]);
             pw.println();
-            int[] zones = dataContainer.getGeoData().getZoneIdsArray();
-            for (int zn = 0; zn < zones.length; zn++) {
-                pw.print(zones[zn]);
-                for (int i = 0; i <= Properties.get().main.incomeBrackets.length; i++) pw.print("," + households[zn][i]);
+
+            for (int zn: dataContainer.getGeoData().getZones().keySet()) {
+                pw.print(zn);
+                for (int i = 0; i <= Properties.get().main.incomeBrackets.length; i++) {
+                    pw.print("," + households[zn][i]);
+                }
                 pw.println();
             }
             pw.close();
@@ -89,7 +98,7 @@ public class summarizeDataCblcm {
         String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] jobs = new int[dataContainer.getGeoData().getZoneIdsArray().length][JobType.getNumberOfJobTypes()];
-        for (Job jj : Job.getJobs()) {
+        for (Job jj : dataContainer.getJobData().getJobs()) {
             int jobType = JobType.getOrdinal(jj.getType());
             jobs[dataContainer.getGeoData().getZoneIndex(jj.getZone())][jobType]++;
         }
@@ -129,7 +138,7 @@ public class summarizeDataCblcm {
         String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] dwellings = new int[dataContainer.getGeoData().getZoneIdsArray().length][DwellingType.values().length];
-        for (Dwelling dd : Dwelling.getDwellings()) {
+        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int ddType = dd.getType().ordinal();
             dwellings[dataContainer.getGeoData().getZoneIndex(dd.getZone())][ddType]++;
         }
@@ -192,7 +201,7 @@ public class summarizeDataCblcm {
     }
 
 
-    private static void summarizeByCounty (int year, GeoDataMstm geoData) {
+    private static void summarizeByCounty (int year, SiloDataContainer dataContainer) {
         // summarize population and employment data by county
 
         String countyOrderFile = Properties.get().cblcm.countyOrderFile;
@@ -206,14 +215,22 @@ public class summarizeDataCblcm {
 
         int[] hhByCounty = new int[countyOrder.length];
         int[] jobsByCounty = new int[countyOrder.length];
-        for (Household hh: Household.getHouseholds()) {
-            int homeFips = geoData.getCountyOfZone(hh.getHomeZone());
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        GeoDataMstm geoData = (GeoDataMstm) dataContainer.getGeoData();
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
+            int zoneId = -1;
+            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zoneId = dwelling.getZone();
+            }
+            MstmZone zone = (MstmZone) geoData.getZones().get(zoneId);
+            int homeFips = zone.getCounty().getId();
             if (SiloUtil.containsElement(countyOrder, homeFips)) {
                 hhByCounty[countyOrderIndex[homeFips]]++;
             }
         }
-        for (Job jj: Job.getJobs()) {
-            int jobFips = geoData.getCountyOfZone(jj.getZone());
+        for (Job jj: dataContainer.getJobData().getJobs()) {
+            int jobFips = ((MstmZone) geoData.getZones().get(jj.getZone())).getCounty().getId();
             if (SiloUtil.containsElement(countyOrder, jobFips)) {
                 jobsByCounty[countyOrderIndex[jobFips]]++;
             }

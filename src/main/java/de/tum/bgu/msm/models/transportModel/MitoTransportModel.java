@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.transportModel;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -22,17 +23,17 @@ public final class MitoTransportModel implements TransportModelI {
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
 	private final SiloModelContainer modelContainer;
+	private final SiloDataContainer dataContainer;
 	private final MitoModel mito;
-    private final GeoData geoData;
 
-    public MitoTransportModel(String baseDirectory, GeoData geoData, SiloModelContainer modelContainer) {
+    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, SiloModelContainer modelContainer) {
 		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
         this.mito = MitoModel.standAloneModel(propertiesPath, Implementation.valueOf(Properties.get().main.implementation.name()));
-        this.geoData = geoData;
         this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
-    }
+		this.dataContainer = dataContainer;
+	}
 
     @Override
     public void runTransportModel(int year) {
@@ -44,18 +45,19 @@ public final class MitoTransportModel implements TransportModelI {
     
     private void updateData() {
     	Map<Integer, MitoZone> zones = new HashMap<>();
-		for (Zone siloZone: geoData.getZones().values()) {
+		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
 			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
 			zones.put(zone.getId(), zone);
 		}
-		JobDataManager.fillMitoZoneEmployees(zones);
+		dataContainer.getJobData().fillMitoZoneEmployees(zones);
 
-		Map<Integer, MitoHousehold> households = Household.convertHhs(zones);
-		for(Person person: Person.getPersons()) {
+		HouseholdDataManager householdData = dataContainer.getHouseholdData();
+		Map<Integer, MitoHousehold> households = convertHhs(zones);
+		for(Person person: dataContainer.getHouseholdData().getPersons()) {
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
-				MitoPerson mitoPerson = person.convertToMitoPp();
+				MitoPerson mitoPerson = convertToMitoPp(person);
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
@@ -68,6 +70,37 @@ public final class MitoTransportModel implements TransportModelI {
         InputFeed feed = new InputFeed(zones, travelTimes, households);
         mito.feedData(feed);
     }
+
+	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
+		Map<Integer, MitoHousehold> thhs = new HashMap<>();
+		RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+		for (Household siloHousehold : dataContainer.getHouseholdData().getHouseholds()) {
+			int zoneId = -1;
+			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
+			if(dwelling != null) {
+				zoneId = dwelling.getZone();
+			}
+			MitoZone zone = zones.get(zoneId);
+			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
+			thhs.put(household.getId(), household);
+		}
+		return thhs;
+	}
+
+	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
+		return new MitoHousehold(household.getId(), household.getHhIncome(), household.getAutos(), zone);
+	}
+
+	private MitoPerson convertToMitoPp(Person person) {
+		final Gender mitoGender = Gender.valueOf(person.getGender());
+		final Occupation mitoOccupation = Occupation.valueOf(person.getOccupation());
+		final int workPlace = person.getWorkplace();
+		int workzone = -1;
+		if(workPlace > 0) {
+			workzone = dataContainer.getJobData().getJobFromId(workPlace).getZone();
+		}
+		return new MitoPerson(person.getId(), mitoOccupation, workzone, person.getAge(), mitoGender, person.hasDriverLicense());
+	}
 
     private void setBaseDirectory (String baseDirectory) {
         mito.setBaseDirectory(baseDirectory);

@@ -15,19 +15,18 @@ import org.apache.log4j.Logger;
  **/
 
 public class ChangeSchoolUnivModel {
-    static Logger logger = Logger.getLogger(ChangeSchoolUnivModel.class);
-    private GeoData geoData;
+    private static Logger LOGGER = Logger.getLogger(ChangeSchoolUnivModel.class);
 
+    private SiloDataContainer dataContainer;
 
-    public ChangeSchoolUnivModel(GeoData geoData) {
-        this.geoData = geoData;
+    public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
     }
 
-
-    public boolean updateSchoolUniv (int perId, SiloDataContainer dataContainer) {
+    public boolean updateSchoolUniv (int perId) {
         // check if person needs to find a new school
 
-        Person pp = Person.getPersonFromId(perId);
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp == null) return false;  // person has died or moved away
 
         // todo: Implement logical rules how students change from one school type to another or graduate from school/university

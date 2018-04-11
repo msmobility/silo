@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -42,6 +43,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
+        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
         long startTime = System.nanoTime();
 
         logger.info("Running Module: Reading inputs");
@@ -51,13 +53,13 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Optimization(dataSetSynPop).run();
 
         logger.info("Running Module: Allocation");
-        new Allocation(dataSetSynPop).run();
+        new Allocation(dataSetSynPop, dataContainer).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModel().run();
+        new CreateCarOwnershipModel(dataContainer).run();
 
         logger.info("Summary of the synthetic population");
-        SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR);
+        SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR, dataContainer);
 
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);

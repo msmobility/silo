@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
@@ -18,15 +19,25 @@ import java.util.*;
 public class MunichCarOwnerShipModel implements CarOwnershipModel {
 
     static Logger logger = Logger.getLogger(MunichCarOwnerShipModel.class);
+    private final SiloDataContainer dataContainer;
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
-    public static void summarizeCarUpdate() {
+    public MunichCarOwnerShipModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
+    }
+
+    public void summarizeCarUpdate() {
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
         pwa.println("id, dwelling, zone, license, income, size, autos");
-        for (Household hh: Household.getHouseholds()) {
-            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + hh.getHomeZone() + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            int homeZone = -1;
+            if(dwelling != null) {
+                homeZone = dwelling.getZone();
+            }
+            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
         }
         pwa.close();
 
@@ -63,8 +74,9 @@ public class MunichCarOwnerShipModel implements CarOwnershipModel {
     public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
 
         int[] counter = new int[2];
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Map.Entry<Integer, int[]> pair : updatedHouseholds.entrySet()) {
-            Household hh = Household.getHouseholdFromId(pair.getKey());
+            Household hh = householdData.getHouseholdFromId(pair.getKey());
             if (hh != null) {
                 int[] previousAttributes = pair.getValue();
                 // update cars owned by household hh

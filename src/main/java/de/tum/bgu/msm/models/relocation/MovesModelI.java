@@ -20,7 +20,7 @@ public interface MovesModelI {
 
     void calculateRegionalUtilities();
 
-    void chooseMove (int hhId, SiloDataContainer dataContainer);
+    void chooseMove (int hhId);
 
     int searchForNewDwelling(List<Person> persons);
 

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.events.EventManager;
@@ -19,10 +20,11 @@ import java.io.Reader;
 
 public class RenovationModel {
 
-    // properties
+    private final SiloDataContainer dataContainer;
 	private double[][] renovationProbability;
 
-    public RenovationModel() {
+    public RenovationModel(SiloDataContainer dataContainer) {
+        this.dataContainer = dataContainer;
         setupRenovationModel();
 	}
 
@@ -45,7 +47,7 @@ public class RenovationModel {
 
     public void checkRenovation(int dwellingId) {
         //check if dwelling is renovated or deteriorates
-        Dwelling dd = Dwelling.getDwellingFromId(dwellingId);
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
         if (!EventRules.ruleChangeDwellingQuality(dd)) return;  // Dwelling not available for renovation
         int currentQuality = dd.getQuality();
         int selected = SiloUtil.select(getProbabilities(currentQuality));

@@ -8,7 +8,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import junitx.framework.FileAssert;
@@ -85,16 +85,17 @@ public class AccessibilityTest {
             smallSize = Properties.get().main.smallSynPopSize;
         }
 
-        GeoData geoData = new GeoDataMstm();
+        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        GeoData geoData = dataContainer.getGeoData();
         geoData.setInitialData();
 
-        RealEstateDataManager realEstateDataManager = new RealEstateDataManager(geoData);
+        RealEstateDataManager realEstateDataManager = new RealEstateDataManager(dataContainer);
         realEstateDataManager.readDwellings(readSmallSynPop, smallSize);
 
-        HouseholdDataManager hhManager = new HouseholdDataManager(realEstateDataManager);
+        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
         hhManager.readPopulation(readSmallSynPop, smallSize);
 
-        Accessibility accessibility = new Accessibility(geoData);
+        Accessibility accessibility = new Accessibility(dataContainer);
         accessibility.readCarSkim(2000);
         accessibility.readPtSkim(2000);
         accessibility.initialize();

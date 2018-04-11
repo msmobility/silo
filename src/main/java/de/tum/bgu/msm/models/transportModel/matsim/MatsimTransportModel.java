@@ -97,7 +97,7 @@ public class MatsimTransportModel implements TransportModelI {
 		String matsimRunId = scenarioName + "_" + year;
 		
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor, workerScalingFactor);
-		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer.getHouseholdData(), year, zoneFeatureMap,
+		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, zoneFeatureMap,
 				populationScalingFactor * workerScalingFactor);
 		
 		if (writePopulation) {

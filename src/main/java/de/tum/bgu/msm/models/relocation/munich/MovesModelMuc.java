@@ -8,6 +8,7 @@ package de.tum.bgu.msm.models.relocation.munich;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
@@ -27,8 +28,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
 
-    public MovesModelMuc(GeoData geoData, Accessibility accessibility) {
-        super(geoData, accessibility);
+    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
+        super(dataContainer, accessibility);
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
     }
@@ -42,8 +43,12 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
 
-        for (Household hh: Household.getHouseholds()) {
-            final int zone = hh.getHomeZone();
+        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
+            int zone = -1;
+            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            if(dwelling != null) {
+                zone = dwelling.getZone();
+            }
             final int region = geoData.getZones().get(zone).getRegion().getId();
             hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
             hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
@@ -178,9 +183,10 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         int householdIncome = 0;
         int[] workZones = new int[wrkCount];
         Race householdRace = persons.get(0).getRace();
+        JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-                workZones[pos] = Job.getJobFromId(pp.getWorkplace()).getZone();
+                workZones[pos] = jobData.getJobFromId(pp.getWorkplace()).getZone();
                 pos++;
                 householdIncome += pp.getIncome();
                 if (pp.getRace() != householdRace) {
@@ -239,7 +245,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = Dwelling.getDwellingFromId(vacantDwellings[i]);
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
             double util = calculateDwellingUtilityOfHousehold(ht, householdIncome, dd);
             expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];

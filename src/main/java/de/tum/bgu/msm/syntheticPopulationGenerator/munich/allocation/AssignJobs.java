@@ -4,8 +4,8 @@ import com.google.common.math.LongMath;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -18,6 +18,7 @@ public class AssignJobs {
     private static final Logger logger = Logger.getLogger(AssignJobs.class);
 
     private final DataSetSynPop dataSetSynPop;
+    private final SiloDataContainer dataContainer;
     private Matrix distanceImpedance;
 
     private HashMap<String, Integer> jobIntTypes;
@@ -32,8 +33,9 @@ public class AssignJobs {
     private int assignedJobs;
     private int[] tazIds;
 
-    public AssignJobs(DataSetSynPop dataSetSynPop){
+    public AssignJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
+        this.dataContainer = dataContainer;
     }
 
 
@@ -43,9 +45,11 @@ public class AssignJobs {
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
-            int[] workplace = selectWorkplace(pp.getHomeTaz(), selectedJobType);
+            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
+            int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
@@ -79,8 +83,8 @@ public class AssignJobs {
 
     private void setWorkerAndJob(Person pp, int jobID){
 
-        Job.getJobFromId(jobID).setWorkerID(pp.getId());
-        int jobTAZ = Job.getJobFromId(jobID).getZone();
+        dataContainer.getJobData().getJobFromId(jobID).setWorkerID(pp.getId());
+        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).getZone();
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
@@ -104,7 +108,7 @@ public class AssignJobs {
 
     private void shuffleWorkers(){
 
-        Map<Integer, Person> personMap = Person.getPersonMap();
+        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
         for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
@@ -122,7 +126,7 @@ public class AssignJobs {
     private void identifyVacantJobsByZoneType() {
 
         logger.info("  Identifying vacant jobs by zone");
-        Collection<Job> jobs = Job.getJobs();
+        Collection<Job> jobs = dataContainer.getJobData().getJobs();
 
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
         jobIntTypes = new HashMap<>();
