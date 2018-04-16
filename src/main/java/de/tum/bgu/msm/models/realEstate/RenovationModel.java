@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -18,13 +19,12 @@ import java.io.Reader;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel {
+public class RenovationModel extends AbstractModel {
 
-    private final SiloDataContainer dataContainer;
 	private double[][] renovationProbability;
 
     public RenovationModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         setupRenovationModel();
 	}
 

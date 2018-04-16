@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.models.AbstractModel;
 
 /**
  * Simulates finding a new job and quitting a job
@@ -14,12 +15,11 @@ import de.tum.bgu.msm.events.IssueCounter;
  * Created on 1 March 2013 in Santa Fe
  **/
 
-public class ChangeEmploymentModel {
-    private final SiloDataContainer dataContainer;
+public class ChangeEmploymentModel extends AbstractModel {
     private final Accessibility accessibility;
 
     public ChangeEmploymentModel(SiloDataContainer dataContainer, Accessibility accessibility) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         this.accessibility = accessibility;
     }
 

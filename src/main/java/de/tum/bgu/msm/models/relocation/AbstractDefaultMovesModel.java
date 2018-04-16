@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -15,14 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractDefaultMovesModel implements MovesModelI {
+public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractDefaultMovesModel.class);
     protected final static Logger traceLogger = Logger.getLogger("trace");
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
-    protected final SiloDataContainer dataContainer;
 
     protected String uecFileName;
     protected int dataSheetNumber;
@@ -42,7 +42,7 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected UtilityExpressionCalculator ddUtilityModel;
 
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
@@ -61,7 +61,6 @@ public abstract class AbstractDefaultMovesModel implements MovesModelI {
     protected abstract void setupSelectDwellingModel();
 
     protected abstract double calculateDwellingUtilityOfHousehold(HouseholdType hhType, int income, Dwelling dwelling);
-
 
     @Override
     public double[] updateUtilitiesOfVacantDwelling (Dwelling dd) {

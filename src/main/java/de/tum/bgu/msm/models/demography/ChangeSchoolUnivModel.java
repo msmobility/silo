@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import org.apache.log4j.Logger;
 
 /**
@@ -14,13 +15,10 @@ import org.apache.log4j.Logger;
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
 
-public class ChangeSchoolUnivModel {
-    private static Logger LOGGER = Logger.getLogger(ChangeSchoolUnivModel.class);
-
-    private SiloDataContainer dataContainer;
+public class ChangeSchoolUnivModel extends AbstractModel {
 
     public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
     }
 
     public boolean updateSchoolUniv (int perId) {

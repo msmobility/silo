@@ -10,6 +10,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -22,10 +23,9 @@ import java.util.HashMap;
  * Created on 15 January 2010 in Albuquerque
  **/
 
-public class InOutMigration {
+public class InOutMigration extends AbstractModel {
 
     private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
-    private final SiloDataContainer dataContainer;
 
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
@@ -38,7 +38,7 @@ public class InOutMigration {
 
 
     public InOutMigration(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;

@@ -10,6 +10,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -21,12 +22,12 @@ import java.io.Reader;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel {
+public class DemolitionModel extends AbstractModel {
+
     private final DemolitionJSCalculator calculator;
-    private final SiloDataContainer dataContainer;
 
     public DemolitionModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));

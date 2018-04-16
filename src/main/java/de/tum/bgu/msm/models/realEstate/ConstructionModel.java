@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -24,11 +25,10 @@ import java.util.ArrayList;
  * Created on 4 December 2012 in Santa Fe
  **/
 
-public class ConstructionModel {
+public class ConstructionModel extends AbstractModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
 
-    private final SiloDataContainer dataContainer;
     private final GeoData geoData;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
@@ -44,7 +44,7 @@ public class ConstructionModel {
 
 
     public ConstructionModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);

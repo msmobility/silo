@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.JobType;
 import de.tum.bgu.msm.events.EventRules;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -20,14 +21,12 @@ import java.util.*;
  * Revised on 11 March 2014 in College Park, MD
  **/
 
-public class UpdateJobs {
+public class UpdateJobs extends AbstractModel {
 
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
 
-    private final SiloDataContainer dataContainer;
-
     public UpdateJobs(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
     }
 
     public void updateJobInventoryMultiThreadedThisYear(int year) {

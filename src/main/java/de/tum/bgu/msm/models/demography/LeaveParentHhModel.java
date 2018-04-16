@@ -25,6 +25,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -37,13 +38,12 @@ import java.util.Collections;
  * Created on 30 December 2009 in Cologne
  **/
 
-public class LeaveParentHhModel {
+public class LeaveParentHhModel extends AbstractModel {
 
     private double[] lphProbability;
-    private final SiloDataContainer dataContainer;
 
     public LeaveParentHhModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         setupLPHModel();
     }
 

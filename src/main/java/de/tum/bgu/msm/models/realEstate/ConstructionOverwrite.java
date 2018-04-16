@@ -4,12 +4,14 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This method allows to add dwellings as an overwrite. New dwellings are given exogenously and added in a given year,
@@ -19,16 +21,16 @@ import java.util.HashMap;
  * Created on 14 October 2014 in College Park
  **/
 
-public class ConstructionOverwrite {
+public class ConstructionOverwrite extends AbstractModel {
+
     static Logger logger = Logger.getLogger(ConstructionModel.class);
 
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
-    private HashMap<Integer, ArrayList> plannedDwellings;
-    private final SiloDataContainer dataContainer;
+    private HashMap<Integer, List<Integer[]>> plannedDwellings;
 
     public ConstructionOverwrite(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         useOverwrite = Properties.get().realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) return;
         traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
@@ -78,7 +80,7 @@ public class ConstructionOverwrite {
             }
             data[5] = (int) (restrictions * 100);
             if (plannedDwellings.containsKey(year)) {
-                ArrayList<Integer[]> list = plannedDwellings.get(year);
+                List<Integer[]> list = plannedDwellings.get(year);
                 for (int i = 1; i <= quantity; i++) list.add(data);
             } else {
                 ArrayList<Integer[]> list = new ArrayList<>();
@@ -100,7 +102,7 @@ public class ConstructionOverwrite {
         String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
         PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, true);
-        ArrayList<Integer[]> list = plannedDwellings.get(year);
+        List<Integer[]> list = plannedDwellings.get(year);
         for (Integer[] data: list) {
             int ddId = RealEstateDataManager.getNextDwellingId();
             int zoneId = data[0];

@@ -18,6 +18,7 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
@@ -25,6 +26,7 @@ import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -36,16 +38,14 @@ import java.io.Reader;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel {
+public class BirthModel extends AbstractModel {
 
-    private final HouseholdDataManager householdDataManager;
     private static BirthJSCalculator calculator;
 
-    public BirthModel(HouseholdDataManager householdDataManager) {
-        this.householdDataManager = householdDataManager;
+    public BirthModel(SiloDataContainer dataContainer) {
+        super(dataContainer);
         setupBirthModel();
 	}
-
 
     private void setupBirthModel() {
         Reader reader;
@@ -61,7 +61,8 @@ public class BirthModel {
 
     public void chooseBirth(int perId) {
 
-        Person per = householdDataManager.getPersonFromId(perId);
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        Person per = householdData.getPersonFromId(perId);
         if (!EventRules.ruleGiveBirth(per)) {
             return;  // Person has died or moved away
         }
@@ -77,9 +78,9 @@ public class BirthModel {
         }
         if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
             // For, unto us a child is born
-            Household hhOfThisWoman = householdDataManager.getHouseholdFromId(per.getHh().getId());
-            householdDataManager.addNewbornPersonToHousehold(hhOfThisWoman);
-            householdDataManager.addHouseholdThatChanged(hhOfThisWoman);
+            Household hhOfThisWoman = householdData.getHouseholdFromId(per.getHh().getId());
+            householdData.addNewbornPersonToHousehold(hhOfThisWoman);
+            householdData.addHouseholdThatChanged(hhOfThisWoman);
             EventManager.countEvent(EventTypes.CHECK_BIRTH);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " gave birth to a child.");
@@ -97,7 +98,7 @@ public class BirthModel {
 
     public void celebrateBirthday (int personId) {
         // increase age of this person by one year
-        Person per = householdDataManager.getPersonFromId(personId);
+        Person per = dataContainer.getHouseholdData().getPersonFromId(personId);
 
         if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
         int age = per.getAge() + 1;

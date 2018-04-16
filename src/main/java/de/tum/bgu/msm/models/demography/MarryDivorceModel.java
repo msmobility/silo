@@ -27,6 +27,7 @@ import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -41,10 +42,9 @@ import java.util.*;
  * Revised on 5 March 2015 in Wheaton, MD
  **/
 
-public class MarryDivorceModel {
+public class MarryDivorceModel extends AbstractModel {
 
     private static Logger logger = Logger.getLogger(MarryDivorceModel.class);
-    private final SiloDataContainer dataContainer;
 
     private MarryDivorceJSCalculator calculator;
 
@@ -56,7 +56,7 @@ public class MarryDivorceModel {
     // performance, the person type of this person in the marriage market is not updated.
 
     public MarryDivorceModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         setupModel();
     }
 

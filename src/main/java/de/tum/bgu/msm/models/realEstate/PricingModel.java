@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -17,11 +18,9 @@ import java.util.HashMap;
  * Created on 24 Febuary 2010 in Santa Fe
  **/
 
-public final class PricingModel {
+public final class PricingModel extends AbstractModel {
 
     static Logger logger = Logger.getLogger(PricingModel.class);
-
-    private final SiloDataContainer dataContainer;
 
     private String uecFileName;
     private int dataSheetNumber;
@@ -35,7 +34,7 @@ public final class PricingModel {
 
 
     public PricingModel (SiloDataContainer dataContainer) {
-        this.dataContainer  = dataContainer;
+        super(dataContainer);
         uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
         dataSheetNumber = Properties.get().realEstate.dataSheet;
         setupPricingModel();

@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonType;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -17,18 +18,15 @@ import java.io.Reader;
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
 
-public class ChangeDriversLicense {
-    static Logger logger = Logger.getLogger(ChangeDriversLicense.class);
+public class ChangeDriversLicense extends AbstractModel {
+
     private ChangeDriversLicenseJSCalculator calculator;
     private CreateDriversLicenseJSCalculator calculatorCreate;
     private double[] changeDriversLicenseProbability;
     private double[] createDriversLicenseProbability;
 
-    private final SiloDataContainer dataContainer;
-
     public ChangeDriversLicense(SiloDataContainer dataContainer) {
-        // constructor
-        this.dataContainer = dataContainer;
+        super(dataContainer);
         setupChangeDriversLicense();
         setupCreateDriversLicense();
     }
@@ -62,8 +60,6 @@ public class ChangeDriversLicense {
         }
     }
 
-
-
     public boolean changeDriversLicense (int perId) {
         // check if person obtains a drivers license
 
@@ -80,7 +76,6 @@ public class ChangeDriversLicense {
         }
         return false;
     }
-
 
     public boolean createDriversLicense(int perId){
         Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);

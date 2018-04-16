@@ -21,6 +21,7 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import org.apache.log4j.Logger;
@@ -47,19 +48,18 @@ import java.util.Random;
 /**
  * @author dziemke
  */
-public class MatsimTransportModel implements TransportModelI {
+public class MatsimTransportModel extends AbstractModel implements TransportModelI {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
 
-	private final SiloDataContainer dataContainer;
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
 
 
 	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
+		super(dataContainer);
 		Gbl.assertNotNull(dataContainer);
-		this.dataContainer = dataContainer;
 		this.initialMatsimConfig = matsimConfig;
 		this.travelTimes = new MatsimTravelTimes();
 	}

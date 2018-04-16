@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -21,13 +22,12 @@ import java.io.Reader;
  * Revised on Jan 19, 2018
  *
  */
-public class DeathModel {
+public class DeathModel extends AbstractModel {
 
-    private final SiloDataContainer dataContainer;
     private DeathJSCalculator calculator;
 
     public DeathModel(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+        super(dataContainer);
 		setupDeathModel();
 	}
 

@@ -8,6 +8,7 @@ import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.InputFeed;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -19,20 +20,19 @@ import java.util.Map;
  * @author Rolf Moeckel
  * Created on February 18, 2017 in Munich, Germany
  */
-public final class MitoTransportModel implements TransportModelI {
+public final class MitoTransportModel extends AbstractModel implements TransportModelI {
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
 	private final SiloModelContainer modelContainer;
-	private final SiloDataContainer dataContainer;
 	private final MitoModel mito;
 
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, SiloModelContainer modelContainer) {
+    	super(dataContainer);
 		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
         this.mito = MitoModel.standAloneModel(propertiesPath, Implementation.valueOf(Properties.get().main.implementation.name()));
         this.modelContainer = modelContainer;
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
-		this.dataContainer = dataContainer;
 	}
 
     @Override
