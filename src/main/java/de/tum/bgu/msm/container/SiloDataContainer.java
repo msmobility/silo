@@ -72,7 +72,7 @@ public class SiloDataContainer {
 
     /**
      * This factory method is used to create an empty data container.
-     * Not tested, use with caution!
+     * Barely tested, use with caution!
      * @return A SiloDataContainer, with each data object created within
      */
     public static SiloDataContainer createEmptySiloDataContainer(Implementation implementation) {

@@ -68,6 +68,8 @@ public class MarryDivorceModelTest {
         Person person6Child = dataContainer.getHouseholdData().createPerson(61, 10, 2, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person6Child, household6);
         person6.setRole(PersonRole.CHILD);
+
+        dataContainer.getRealEstateData().identifyVacantDwellings();
     }
 
     @Test
