@@ -60,12 +60,12 @@ public class RealEstateDataManager {
         dwellings.remove(id);
     }
 
-    public void readDwellings (boolean readSmallSynPop, int sizeSmallSynPop) {
+    public void readDwellings (Properties properties) {
         boolean readBin = Properties.get().realEstate.readBinaryDwellingFile;
         if (readBin) {
             readBinaryDwellingDataObjects();
         } else {
-            readDwellingData( readSmallSynPop, sizeSmallSynPop);
+            readDwellingData(properties);
         }
         readAcresNeededByDwellingType();
     }
@@ -78,13 +78,12 @@ public class RealEstateDataManager {
     }
 
 
-    private void readDwellingData(boolean readSmallSynPop, int sizeSmallSynPop) {
+    private void readDwellingData(Properties properties) {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
         int year = Properties.get().main.startYear;
-        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
-        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        String fileName = properties.main.baseDirectory + properties.realEstate.dwellingsFile;
         fileName += "_" + year + ".csv";
 
         String recString = "";

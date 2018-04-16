@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class MarryDivorceModelTest {
     public static void setupModel() {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
-        dataContainer = SiloDataContainer.createSiloDataContainer();
+        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
         model = new MarryDivorceModel(dataContainer);
 

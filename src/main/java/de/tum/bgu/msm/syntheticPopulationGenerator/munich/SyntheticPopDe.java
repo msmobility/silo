@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -43,7 +44,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
-        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
         long startTime = System.nanoTime();
 
         logger.info("Running Module: Reading inputs");

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -160,7 +161,8 @@ public class SyntheticPopCT implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         readZonalData();
         createDirectoryForOutput();
-        dataContainer = SiloDataContainer.createSiloDataContainer();
+        //TODO: change to cape town implementation
+        dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
         long startTime = System.nanoTime();
         boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed

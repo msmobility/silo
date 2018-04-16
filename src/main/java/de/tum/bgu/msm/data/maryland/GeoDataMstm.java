@@ -26,8 +26,8 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     }
 
     @Override
-    public void setInitialData() {
-        super.setInitialData();
+    public void readData() {
+        super.readData();
         readSchoolQuality();
         readCrimeData();
     }

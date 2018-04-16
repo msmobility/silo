@@ -2,6 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.maryland.MstmZone;
@@ -72,11 +73,11 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         identifyUniquePUMAzones();
         readControlTotals();
-        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MARYLAND);
         jobData = dataContainer.getJobData();
         createJobs();
         geoData = (GeoDataMstm) dataContainer.getGeoData();
-        geoData.setInitialData();
+        geoData.readData();
         accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
         accessibility.readCarSkim(Properties.get().main.startYear);
         accessibility.readPtSkim(Properties.get().main.startYear);

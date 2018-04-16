@@ -96,7 +96,19 @@ public final class SiloModel {
 	}
 
     private void setupContainer() {
-        dataContainer = SiloDataContainer.createSiloDataContainer();
+        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+
+		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
+		dataContainer.getHouseholdData().setTypeOfAllHouseholds();
+		dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
+		dataContainer.getHouseholdData().calculateInitialSettings();
+		dataContainer.getJobData().calculateEmploymentForecast();
+		dataContainer.getJobData().identifyVacantJobs();
+		dataContainer.getJobData().calculateJobDensityByZone();
+		dataContainer.getRealEstateData().fillQualityDistribution();
+		dataContainer.getRealEstateData().setHighestVariables();
+		dataContainer.getRealEstateData().identifyVacantDwellings();
+
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
     }
 

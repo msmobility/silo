@@ -12,7 +12,7 @@ import java.util.Map;
 
 public interface GeoData {
 
-    void setInitialData();
+    void readData();
 
     /**
      * Returns an immutable map of all zones mapped to their IDs

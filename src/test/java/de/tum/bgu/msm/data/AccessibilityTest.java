@@ -79,21 +79,15 @@ public class AccessibilityTest {
     public void testIntegration()  {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
-        int smallSize = 0;
-        boolean readSmallSynPop = Properties.get().main.readSmallSynpop;
-        if (readSmallSynPop) {
-            smallSize = Properties.get().main.smallSynPopSize;
-        }
-
-        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();
-        geoData.setInitialData();
+        geoData.readData();
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManager(dataContainer);
-        realEstateDataManager.readDwellings(readSmallSynPop, smallSize);
+        realEstateDataManager.readDwellings(Properties.get());
 
         HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
-        hhManager.readPopulation(readSmallSynPop, smallSize);
+        hhManager.readPopulation(Properties.get());
 
         Accessibility accessibility = new Accessibility(dataContainer);
         accessibility.readCarSkim(2000);

@@ -175,23 +175,22 @@ public class HouseholdDataManager {
         for (Person pp: pps) persons.put(pp.getId(), pp);
     }
 
-    public void readPopulation (boolean readSmallSynPop, int sizeSmallSynPop) {
-        boolean readBin = Properties.get().householdData.readBinaryPopulation;
+    public void readPopulation(Properties properties) {
+        boolean readBin = properties.householdData.readBinaryPopulation;
         if (readBin) {
             readBinaryPopulationDataObjects();
         } else {
-            readHouseholdData(readSmallSynPop,  sizeSmallSynPop);
-            readPersonData(readSmallSynPop, sizeSmallSynPop);
+            readHouseholdData(properties);
+            readPersonData(properties);
         }
     }
 
 
-    private void readHouseholdData(boolean readSmallSynPop, int sizeSmallSynPop) {
+    private void readHouseholdData(Properties properties) {
         LOGGER.info("Reading household micro data from ascii file");
 
-        int year = Properties.get().main.startYear;
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
-        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        int year = properties.main.startYear;
+        String fileName = properties.main.baseDirectory + properties.householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -265,12 +264,11 @@ public class HouseholdDataManager {
         LOGGER.info("Finished reading " + getPersonCount() + " persons.");
     }
 
-    private void readPersonData(boolean readSmallSynPop, int sizeSmallSynPop) {
+    private void readPersonData(Properties properties) {
         LOGGER.info("Reading person micro data from ascii file");
 
         int year = Properties.get().main.startYear;
-        String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
-        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        String fileName = properties.main.baseDirectory +  properties.householdData.personFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";

@@ -107,7 +107,7 @@ public class SiloModelContainer {
     public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer) {
 
         DeathModel death = new DeathModel(dataContainer);
-        BirthModel birth = new BirthModel(dataContainer.getHouseholdData());
+        BirthModel birth = new BirthModel(dataContainer);
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer);
         MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);

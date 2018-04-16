@@ -6,6 +6,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.DwellingType;
 import de.tum.bgu.msm.models.realEstate.DemolitionJSCalculator;
+import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -29,7 +30,7 @@ public class DemolitionTest {
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader);
-        SiloDataContainer dataContainer = SiloDataContainer.createSiloDataContainer();
+        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         dwelling1 = dataContainer.getRealEstateData().createDwelling(1,1,1, DwellingType.SFD, 1,1,1,1,1);
         dwelling2 = dataContainer.getRealEstateData().createDwelling(1,1,1, DwellingType.SFD, 1,5,1,1,5);
 

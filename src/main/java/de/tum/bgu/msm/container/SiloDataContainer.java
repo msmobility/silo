@@ -7,7 +7,6 @@ import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -33,9 +32,9 @@ public class SiloDataContainer {
      *
      *
      */
-    private SiloDataContainer() {
+    private SiloDataContainer(Implementation implementation) {
 
-        switch (Properties.get().main.implementation) {
+        switch (implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
                 break;
@@ -52,40 +51,33 @@ public class SiloDataContainer {
         householdData = new HouseholdDataManager(this);
     }
 
-    private void setupDataContainer() {
-        geoData.setInitialData();
-        IssueCounter.regionSpecificCounters(getGeoData());
-
-        if (!Properties.get().main.runSynPop) {   // read data only if synth. pop. generator did not run
-            int smallSize = 0;
-            boolean readSmallSynPop = Properties.get().main.readSmallSynpop;
-            if (readSmallSynPop) {
-                smallSize = Properties.get().main.smallSynPopSize;
-            }
-            householdData.readPopulation(readSmallSynPop, smallSize);
-            realEstateData.readDwellings(readSmallSynPop, smallSize);
-            jobData.readJobs( readSmallSynPop, smallSize);
-            householdData.setTypeOfAllHouseholds();
-        }
-        jobData.calculateEmploymentForecast();
-        jobData.identifyVacantJobs();
-        jobData.calculateJobDensityByZone();
-        realEstateData.fillQualityDistribution();
-        realEstateData.setHighestVariables();
-        realEstateData.identifyVacantDwellings();
-        householdData.setHighestHouseholdAndPersonId();
-        householdData.calculateInitialSettings();
+    public void loadData(Properties properties) {
+        geoData.readData();
+        householdData.readPopulation(properties);
+        realEstateData.readDwellings(properties);
+        jobData.readJobs(properties);
     }
 
     /**
-     * This factory method is used to create all the data objects needed for SILO
-     * Each data object is created sequentially
+     * This factory method is used to create a fully set up data container with
+     * all input data read in defined in the properties.
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer createSiloDataContainer() {
+    public static SiloDataContainer loadSiloDataContainer(Properties properties) {
         LOGGER.info("  Creating Data Objects for SiloDataContainer");
-        SiloDataContainer dataContainer = new SiloDataContainer();
-        dataContainer.setupDataContainer();
+        SiloDataContainer dataContainer = new SiloDataContainer(properties.main.implementation);
+        dataContainer.loadData(properties);
+        return dataContainer;
+    }
+
+    /**
+     * This factory method is used to create an empty data container.
+     * Not tested, use with caution!
+     * @return A SiloDataContainer, with each data object created within
+     */
+    public static SiloDataContainer createEmptySiloDataContainer(Implementation implementation) {
+        LOGGER.info("  Creating Data Objects for SiloDataContainer");
+        SiloDataContainer dataContainer = new SiloDataContainer(implementation);
         return dataContainer;
     }
 

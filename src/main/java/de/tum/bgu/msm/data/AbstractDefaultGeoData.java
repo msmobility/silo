@@ -35,7 +35,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     @Override
-    public void setInitialData () {
+    public void readData() {
         readZones();
         readRegionDefinition();
         readLandUse();

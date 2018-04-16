@@ -21,7 +21,6 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -113,25 +112,23 @@ public class JobDataManager {
     }
 
 
-    public void readJobs(boolean readSmallSynPop, int sizeSmallSynPop) {
-        // read population
-        new JobType(Properties.get().jobData.jobTypes);
-        boolean readBin = Properties.get().jobData.readBinaryJobFile;
+    public void readJobs(Properties properties) {
+        new JobType(properties.jobData.jobTypes);
+        boolean readBin = properties.jobData.readBinaryJobFile;
         if (readBin) {
             readBinaryJobDataObjects();
         } else {
-            readJobData(readSmallSynPop, sizeSmallSynPop);
+            readJobData(properties);
         }
         setHighestJobId();
     }
 
 
-    private void readJobData(boolean readSmallSynPop, int sizeSmallSynPop) {
+    private void readJobData(Properties properties) {
         logger.info("Reading job micro data from ascii file");
 
         int year = Properties.get().main.startYear;
-        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
-        if (readSmallSynPop) fileName += "_" + sizeSmallSynPop;
+        String fileName = properties.main.baseDirectory + properties.jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
