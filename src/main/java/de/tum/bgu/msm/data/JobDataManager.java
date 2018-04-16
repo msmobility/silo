@@ -54,7 +54,6 @@ public class JobDataManager {
     public JobDataManager(SiloDataContainer dataContainer) {
         this.geoData = dataContainer.getGeoData();
         this.zonalJobDensity = new HashMap<>();
-        numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
     }
 
     public Job createJob(int id, int zone, int workerId, String type) {
@@ -294,7 +293,7 @@ public class JobDataManager {
 
     public void identifyVacantJobs() {
         // identify vacant jobs by region (one-time task at beginning of model run only)
-
+        numberOfStoredVacantJobs = Properties.get().jobData.maxStorageOfvacantJobs;
         int highestRegionID = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         vacantJobsByRegion = new int[highestRegionID + 1][numberOfStoredVacantJobs + 1];
         vacantJobsByRegion = SiloUtil.setArrayToValue(vacantJobsByRegion, 0);

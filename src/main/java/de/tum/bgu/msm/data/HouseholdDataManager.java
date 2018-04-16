@@ -45,7 +45,6 @@ public class HouseholdDataManager {
 
     private float[][] laborParticipationShares;
     private static float[][][] initialIncomeDistribution;              // income by age, gender and occupation
-    private static float meanIncomeChange;
     public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
@@ -57,7 +56,6 @@ public class HouseholdDataManager {
 
     public HouseholdDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
-        meanIncomeChange = Properties.get().householdData.meanIncomeChange;
     }
 
     public Household createHousehold (int id, int dwellingID, int autos) {
@@ -740,6 +738,7 @@ public class HouseholdDataManager {
     public void adjustIncome() {
         // select who will get a raise or drop in salary
         float[][][] currentIncomeDistribution = calculateIncomeDistribution();
+        float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for (Person person: persons.values()) {
             executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, initialIncomeDistribution));
@@ -749,7 +748,7 @@ public class HouseholdDataManager {
 
     public static int selectIncomeForPerson (int gender, int age, int occupation) {
         // select income for household based on gender, age and occupation
-
+        float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         double[] prob = new double[21];
         int[] change = new int[21];
         for (int i = 0; i < prob.length; i++) {
