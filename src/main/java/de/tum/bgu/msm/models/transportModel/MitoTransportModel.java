@@ -4,10 +4,9 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.InputFeed;
+import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -23,15 +22,15 @@ import java.util.Map;
 public final class MitoTransportModel extends AbstractModel implements TransportModelI {
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-	private final SiloModelContainer modelContainer;
 	private final MitoModel mito;
+    private final TravelTimes travelTimes;
 
-    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, SiloModelContainer modelContainer) {
+    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, TravelTimes travelTimes) {
     	super(dataContainer);
+    	this.travelTimes = travelTimes;
 		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
         this.mito = MitoModel.standAloneModel(propertiesPath, Implementation.valueOf(Properties.get().main.implementation.name()));
-        this.modelContainer = modelContainer;
-        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+        this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
 	}
 
@@ -52,7 +51,6 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
 
-		HouseholdDataManager householdData = dataContainer.getHouseholdData();
 		Map<Integer, MitoHousehold> households = convertHhs(zones);
 		for(Person person: dataContainer.getHouseholdData().getPersons()) {
 			int hhId = person.getHh().getId();
@@ -64,10 +62,9 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 						+ " and will thus NOT be considered in the transport model.");
 			}
 		}
-		
-		Map<String, TravelTimes> travelTimes = modelContainer.getAcc().getTravelTimesByMode();
+
         logger.info("  SILO data being sent to MITO");
-        InputFeed feed = new InputFeed(zones, travelTimes, households);
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households);
         mito.feedData(feed);
     }
 

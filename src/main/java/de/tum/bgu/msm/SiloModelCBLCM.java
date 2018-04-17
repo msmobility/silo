@@ -5,17 +5,16 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
+import de.tum.bgu.msm.utils.SkimUtil;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -32,7 +31,6 @@ public class SiloModelCBLCM {
 
     private final static Logger logger = Logger.getLogger(SiloModelCBLCM.class);
 
-
     private final Set<Integer> tdmYears = new HashSet<>();
 	private final Set<Integer> skimYears = new HashSet<>();
 	private final Set<Integer> scalingYears = new HashSet<>();
@@ -43,7 +41,6 @@ public class SiloModelCBLCM {
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	public GeoData geoData;
-	private TransportModelI transportModel; // ony used for MD implementation
 
 
 	public SiloModelCBLCM() {
@@ -53,7 +50,6 @@ public class SiloModelCBLCM {
 
 	void initialize() {
 		// initial steps that only need to performed once to set up the model
-
 	        // define years to simulate
 	        scalingYears.addAll(Properties.get().main.scalingYears);
 	        if (!scalingYears.isEmpty()) SummarizeData.readScalingYearControlTotals();
@@ -66,17 +62,17 @@ public class SiloModelCBLCM {
 
 		// read micro data
 		dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
-		
-		modelContainer.getAcc().readCarSkim(Properties.get().main.startYear);
-		modelContainer.getAcc().readPtSkim(Properties.get().main.startYear);
+		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
+
+		SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(), currentYear, Properties.get());
+		SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(), currentYear, Properties.get());
 		modelContainer.getAcc().initialize();
 
 	        trackTime = Properties.get().main.trackTime;
 	        timeCounter = new long[EventTypes.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
-	        transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, modelContainer);
+
 	        if (Properties.get().main.createPrestoSummary) {
 				SummarizeData.preparePrestoSummary(geoData);
 			}
@@ -128,8 +124,10 @@ public class SiloModelCBLCM {
 	            if (currentYear != Properties.get().main.startYear && !tdmYears.contains(currentYear)) {
 	                // skims are always read in start year and in every year the transportation model ran. Additional
 	                // years to read skims may be provided in skimYears
-	                modelContainer.getAcc().readCarSkim(currentYear);
-	                modelContainer.getAcc().readPtSkim(currentYear);
+	                SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                            currentYear, Properties.get());
+	                SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                            currentYear, Properties.get());
 	                modelContainer.getAcc().calculateHansenAccessibilities(currentYear);
 	            }
 	        }
@@ -226,7 +224,7 @@ public class SiloModelCBLCM {
 	        int nextYearForTransportModel = currentYear + 1;
 	        if (tdmYears.contains(nextYearForTransportModel)) {
 	            if (Properties.get().transportModel.runTravelDemandModel)
-	                transportModel.runTransportModel(nextYearForTransportModel);
+	                modelContainer.getTransportModel().runTransportModel(nextYearForTransportModel);
 	        }
 
 	        if (trackTime) startTime = System.currentTimeMillis();

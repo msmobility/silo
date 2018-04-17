@@ -57,11 +57,11 @@ public class MatsimTransportModel extends AbstractModel implements TransportMode
 	private final MatsimTravelTimes travelTimes;
 
 
-	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
+	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig, MatsimTravelTimes travelTimes) {
 		super(dataContainer);
 		Gbl.assertNotNull(dataContainer);
 		this.initialMatsimConfig = matsimConfig;
-		this.travelTimes = new MatsimTravelTimes();
+		this.travelTimes = travelTimes;
 	}
 
 	@Override

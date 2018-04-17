@@ -9,8 +9,10 @@ import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.utils.SkimUtil;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -89,9 +91,11 @@ public class AccessibilityTest {
         HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
         hhManager.readPopulation(Properties.get());
 
-        Accessibility accessibility = new Accessibility(dataContainer);
-        accessibility.readCarSkim(2000);
-        accessibility.readPtSkim(2000);
+        SkimTravelTimes travelTimes = new SkimTravelTimes();
+        SkimUtil.updateCarSkim(travelTimes, 2000, Properties.get());
+        SkimUtil.updateTransitSkim(travelTimes, 2000, Properties.get());
+
+        Accessibility accessibility = new Accessibility(dataContainer, travelTimes);
         accessibility.initialize();
         accessibility.calculateHansenAccessibilities(2000);
 

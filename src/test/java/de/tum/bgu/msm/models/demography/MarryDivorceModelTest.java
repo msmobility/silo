@@ -25,7 +25,7 @@ public class MarryDivorceModelTest {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
         model = new MarryDivorceModel(dataContainer);
 
         couple1 = new int[]{1,2};

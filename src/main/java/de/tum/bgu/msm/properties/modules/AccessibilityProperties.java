@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.properties.modules;
 
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.util.ResourceBundle;
 
@@ -47,13 +48,13 @@ public class AccessibilityProperties {
         if(usingAutoPeakSkim) {
             autoPeakSkim = bundle.getString("auto.peak.sov.skim.matrix.name");
         } else {
-            autoPeakSkim = null;
+            autoPeakSkim = "HOVTime";
         }
         usingTransitPeakSkim = bundle.containsKey("transit.peak.time.matrix.name");
         if(usingTransitPeakSkim) {
             transitPeakSkim = bundle.getString("transit.peak.time.matrix.name");
         } else {
-            transitPeakSkim = null;
+            transitPeakSkim = "CheapJrnyTime";
         }
         alphaAuto = (float) ResourceUtil.getDoubleProperty(bundle, "auto.accessibility.alpha");
         betaAuto = (float) ResourceUtil.getDoubleProperty(bundle, "auto.accessibility.beta");
@@ -63,11 +64,11 @@ public class AccessibilityProperties {
     }
 
     public String autoSkimFile(int year) {
-        return bundle.getString(AUTO_PEAK_SKIM + year);
+        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(AUTO_PEAK_SKIM + year);
     }
 
     public String transitSkimFile(int year) {
-        return bundle.getString(TRANSIT_PEAK_SKIM + year);
+        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(TRANSIT_PEAK_SKIM + year);
     }
 
 }

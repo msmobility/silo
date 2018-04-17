@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
@@ -15,7 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MatsimTravelTimes implements TravelTimes {
+public class MatsimTravelTimes extends SkimTravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
 	private LeastCostPathTree leastCoastPathTree;
@@ -50,34 +51,40 @@ public class MatsimTravelTimes implements TravelTimes {
     }
 
 	@Override
-	public double getTravelTime(int origin, int destination, double timeOfDay_s) {
-		double sumTravelTime_min = 0.;
-		
-		for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
-			Map<Id<Node>, LeastCostPathTree.NodeData> tree;
-			if (treesForNodesByTimes.containsKey(originNode.getId())) {
-				Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
-				if (treesForOneNodeByTimes.containsKey(timeOfDay_s)) {
-					tree = treesForOneNodeByTimes.get(timeOfDay_s);					
+	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
+
+		if(TransportMode.car.equals(mode)) {
+			double sumTravelTime_min = 0.;
+
+			for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
+				Map<Id<Node>, LeastCostPathTree.NodeData> tree;
+				if (treesForNodesByTimes.containsKey(originNode.getId())) {
+					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
+					if (treesForOneNodeByTimes.containsKey(timeOfDay_s)) {
+						tree = treesForOneNodeByTimes.get(timeOfDay_s);
+					} else {
+						leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
+						tree = leastCoastPathTree.getTree();
+						treesForOneNodeByTimes.put(timeOfDay_s, tree);
+					}
 				} else {
+					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = new HashMap<>();
 					leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
 					tree = leastCoastPathTree.getTree();
 					treesForOneNodeByTimes.put(timeOfDay_s, tree);
+					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 				}
-			} else {
-				Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = new HashMap<>();
-				leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
-				tree = leastCoastPathTree.getTree();
-				treesForOneNodeByTimes.put(timeOfDay_s, tree);
-				treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
+
+				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
+
+					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
+					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
+				}
 			}
-			
-			for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
-						
-				double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
-				sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
-			}
+			return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
+		} else {
+		    //TODO: reconsider matsim pt travel times. nk apr'18
+            return super.getTravelTime(origin, destination, timeOfDay_s, mode);
 		}
-		return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
 	}
 }

@@ -6,13 +6,16 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 
+import javax.sql.rowset.spi.TransactionalWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -78,9 +81,17 @@ public class SyntheticPopUs implements SyntheticPopI {
         createJobs();
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         geoData.readData();
-        accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
-        accessibility.readCarSkim(Properties.get().main.startYear);
-        accessibility.readPtSkim(Properties.get().main.startYear);
+        SkimTravelTimes skimTravelTimes = new SkimTravelTimes();
+        accessibility = new Accessibility(dataContainer, skimTravelTimes);                        // read in travel times and trip length frequency distribution
+
+        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
+        skimTravelTimes.readSkim(TransportMode.pt, transitSkimFile,
+                    Properties.get().accessibility.transitPeakSkim, Properties.get().accessibility.skimFileFactorTransit);
+
+        final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
+        skimTravelTimes.readSkim(TransportMode.car, carSkimFile,
+                    Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
+
         accessibility.initialize();
         processPums();
 

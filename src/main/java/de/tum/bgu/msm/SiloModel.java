@@ -18,18 +18,14 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.models.transportModel.TransportModelI;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.utils.SkimUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
 
 import java.util.Arrays;
@@ -51,9 +47,6 @@ public final class SiloModel {
     private boolean trackTime;
     private long[][] timeCounter;
     private long startTime;
-	private TransportModelI transportModel;
-	private boolean runMatsim;
-	private boolean runTravelDemandModel;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
@@ -83,8 +76,7 @@ public final class SiloModel {
 
         setupContainer();
         setupYears();
-        setupTransport();
-        setupAccessibility(modelContainer.getAcc());
+        setupAccessibility();
 		setupTimeTracker();
 
         if (Properties.get().main.writeSmallSynpop) {
@@ -97,7 +89,6 @@ public final class SiloModel {
 
     private void setupContainer() {
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-
 		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
 		dataContainer.getHouseholdData().setTypeOfAllHouseholds();
 		dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
@@ -109,40 +100,26 @@ public final class SiloModel {
 		dataContainer.getRealEstateData().setHighestVariables();
 		dataContainer.getRealEstateData().identifyVacantDwellings();
 
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, matsimConfig);
     }
 
-	private void setupTransport() {
-		runMatsim = Properties.get().transportModel.runMatsim;
-		runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
+    private void setupAccessibility() {
 
-		if ( runMatsim && ( runTravelDemandModel || Properties.get().main.createMstmOutput)) {
-			throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point." ) ;
-		}
-		if (runMatsim) {
-			LOGGER.info("  MATSim is used as the transport model");
-			transportModel = new MatsimTransportModel(dataContainer, matsimConfig);
-			transportModel.runTransportModel(Properties.get().main.startYear);
-		} else if(runTravelDemandModel){
-			LOGGER.info("  MITO is used as the transport model");
-			transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, modelContainer);
-		} else {
-			LOGGER.info(" No transport model is used");
-		}
-	}
-
-    private void setupAccessibility(Accessibility accessibility) {
-        if(runMatsim) {
-            accessibility.addTravelTimeForMode(TransportMode.car, ((MatsimTransportModel) transportModel).getTravelTimes());
+	    if(Properties.get().transportModel.runMatsim) {
+	        modelContainer.getTransportModel().runTransportModel(Properties.get().main.startYear);
         } else {
-            accessibility.readCarSkim(Properties.get().main.startYear);
+            SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                    Properties.get().main.startYear, Properties.get());
         }
-        accessibility.readPtSkim(Properties.get().main.startYear);
-        accessibility.initialize();
-        accessibility.calculateHansenAccessibilities(Properties.get().main.startYear);
+        SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                Properties.get().main.startYear, Properties.get());
+        modelContainer.getAcc().initialize();
+        modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
     }
 
-	private void setupTimeTracker() {
+
+
+    private void setupTimeTracker() {
 		trackTime = Properties.get().main.trackTime;
 		timeCounter = new long[EventTypes.values().length + 12][Properties.get().main.endYear + 1];
 		startTime = 0;
@@ -200,12 +177,15 @@ public final class SiloModel {
 					year != Properties.get().main.startYear) {
 				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
 				// years to read skims may be provided in skimYears
-				if (!runMatsim) {
-					modelContainer.getAcc().readCarSkim(year);
+				if (!Properties.get().transportModel.runMatsim) {
+                    SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                            Properties.get().main.startYear, Properties.get());
 				}
-				modelContainer.getAcc().readPtSkim(year);
-				modelContainer.getAcc().calculateHansenAccessibilities(year);
-			}
+                SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+                        Properties.get().main.startYear, Properties.get());
+                modelContainer.getAcc().calculateHansenAccessibilities(year);
+            }
+
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			modelContainer.getDdOverwrite().addDwellings(year);
@@ -307,9 +287,10 @@ public final class SiloModel {
 			dataContainer.getHouseholdData().clearUpdatedHouseholds();
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
-			if ( runMatsim || runTravelDemandModel || Properties.get().main.createMstmOutput) {
+			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
+                    || Properties.get().main.createMstmOutput) {
                 if (tdmYears.contains(year + 1)) {
-                transportModel.runTransportModel(year + 1);
+                    modelContainer.getTransportModel().runTransportModel(year + 1);
                     modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
                 }
             }
