@@ -144,6 +144,15 @@ public class SiloUtil {
     }
 
 
+    public static int findPositionInArray (Object element, Object array[]) {
+        int ind = -1;
+        for (int a = 0; a < array.length; a++) if (array[a].equals(element)) ind = a;
+        if (ind == -1) logger.error ("Could not find element " + element +
+                " in array (see method <findPositionInArray> in class <SiloUtil>");
+        return ind;
+    }
+
+
     public static TableDataSet readCSVfile (String fileName) {
         // read csv file and return as TableDataSet
         File dataFile = new File(fileName);
