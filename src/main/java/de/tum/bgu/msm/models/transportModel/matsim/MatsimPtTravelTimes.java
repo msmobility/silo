@@ -62,7 +62,7 @@ public class MatsimPtTravelTimes implements TravelTimes {
 
 	@Override
 	@Deprecated // yyyyyy rather than having a separate class for each mode, add the mode to the "getTravelTime" query. kai, apr'18
-	public double getTravelTime(int origin, int destination, double timeOfDay) {
+	public double getTravelTime(int origin, int destination, double timeOfDay, String mode) {
 		logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
 		double sumTravelTime_min = 0.;
 
