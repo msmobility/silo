@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,7 +60,7 @@ public final class Household {
     }
 
     public List<Person> getPersons(){
-        return persons;
+        return Collections.unmodifiableList(persons);
     }
 
     public HouseholdType getHouseholdType() {

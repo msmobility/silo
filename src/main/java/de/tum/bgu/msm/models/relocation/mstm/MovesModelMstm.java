@@ -32,11 +32,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU selectRegionDmu;
-    private final DoubleMatrix2D zonalRacialComposition;
-    private final DoubleMatrix2D regionalRacialComposition;
+    private DoubleMatrix2D zonalRacialComposition;
+    private DoubleMatrix2D regionalRacialComposition;
+    private DoubleMatrix1D hhByRegion;
     private double selectDwellingRaceRelevance;
     private boolean provideRentSubsidyToLowIncomeHh;
-    private final DoubleMatrix1D hhByRegion;
 
 
     public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -46,9 +46,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         if (provideRentSubsidyToLowIncomeHh) {
             dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
-        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
-        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
     }
 
     private void calculateRacialCompositionByZoneAndRegion() {
@@ -58,6 +55,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     private void resetMatrices() {
+        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
+        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
+        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalRacialComposition.assign(0);
         zonalRacialComposition.assign(0);
         hhByRegion.assign(0);

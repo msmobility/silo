@@ -18,7 +18,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     protected final String zoneIdColumnName;
     protected final String regionColumnName;
 
-
     protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
     protected final Map<Integer, Region> regions = new LinkedHashMap<>();
 

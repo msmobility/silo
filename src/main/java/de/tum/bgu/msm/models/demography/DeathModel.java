@@ -44,40 +44,49 @@ public class DeathModel extends AbstractModel {
 
 	public void chooseDeath(int perId) {
         // simulate if person with ID perId dies in this simulation period
-
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Person per = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleDeath(per)) {
+        Person person = householdData.getPersonFromId(perId);
+
+        int age = Math.min(person.getAge(), 100);
+        int sexIndex = person.getGender();
+        if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, sexIndex)) {
+            die(person);
+        }
+    }
+
+    void die(Person person) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        if (!EventRules.ruleDeath(person)) {
             return;  // Person has moved away
         }
-        int age = Math.min(per.getAge(), 100);
-        int sexIndex = per.getGender();
-        if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, sexIndex)) {
-            if (per.getWorkplace() > 0) {
-                dataContainer.getJobData().quitJob(true, per);
-            }
-            Household hhOfPersonToDie = per.getHh();
+        if (person.getWorkplace() > 0) {
+            dataContainer.getJobData().quitJob(true, person);
+        }
+        final Household hhOfPersonToDie = person.getHh();
 
-            if (per.getRole() == PersonRole.MARRIED) {
-                Person widow = HouseholdDataManager.findMostLikelyPartner(per, hhOfPersonToDie);
-                widow.setRole(PersonRole.SINGLE);
-            }
-            householdData.removePerson(per.getId());
-            boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
-            if (onlyChildrenLeft) {
-                for (Person pp: hhOfPersonToDie.getPersons()) {
-                    householdData.removePerson(pp.getId());
-                    if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
-                        SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
-                                " to foster care as remaining child just before head of household (ID " +
-                                per.getId() + ") passed away.");
+        if (person.getRole() == PersonRole.MARRIED) {
+            Person widow = HouseholdDataManager.findMostLikelyPartner(person, hhOfPersonToDie);
+            widow.setRole(PersonRole.SINGLE);
+        }
+        householdData.removePerson(person.getId());
+
+        final boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
+        if (onlyChildrenLeft) {
+            for (Person pp: hhOfPersonToDie.getPersons()) {
+                if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
+                            " to foster care as remaining child just before head of household (ID " +
+                            person.getId() + ") passed away.");
                 }
             }
-            EventManager.countEvent(EventTypes.CHECK_DEATH);
-            householdData.addHouseholdThatChanged(hhOfPersonToDie);
-            if (perId == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("We regret to inform that person " + perId + " from household " + hhOfPersonToDie.getId() +
-                        " has passed away.");
+            householdData.removeHousehold(hhOfPersonToDie.getId());
+        }
+
+        EventManager.countEvent(EventTypes.CHECK_DEATH);
+        householdData.addHouseholdThatChanged(hhOfPersonToDie);
+        if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
+                    " has passed away.");
         }
     }
 }
