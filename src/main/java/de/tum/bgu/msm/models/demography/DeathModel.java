@@ -44,8 +44,12 @@ public class DeathModel extends AbstractModel {
 
 	public void chooseDeath(int perId) {
         // simulate if person with ID perId dies in this simulation period
+
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Person person = householdData.getPersonFromId(perId);
+        if (!EventRules.ruleDeath(person)) {
+            return;  // Person has moved away
+        }
 
         int age = Math.min(person.getAge(), 100);
         int sexIndex = person.getGender();
@@ -56,9 +60,7 @@ public class DeathModel extends AbstractModel {
 
     void die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        if (!EventRules.ruleDeath(person)) {
-            return;  // Person has moved away
-        }
+
         if (person.getWorkplace() > 0) {
             dataContainer.getJobData().quitJob(true, person);
         }

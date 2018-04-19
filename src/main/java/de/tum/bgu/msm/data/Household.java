@@ -128,6 +128,9 @@ public final class Household {
     }
 
     public boolean checkIfOnlyChildrenRemaining() {
+        if(persons.isEmpty()) {
+            return false;
+        }
         for (Person person: persons) {
            if(person.getAge() >= 16) {
                return false;

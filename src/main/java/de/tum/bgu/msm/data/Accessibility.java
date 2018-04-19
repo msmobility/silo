@@ -60,6 +60,10 @@ public class Accessibility {
         this.dataContainer = dataContainer;
         this.travelTimeToRegion = HashBasedTable.create();
 
+        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
+
         this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
         this.alphaAuto = Properties.get().accessibility.alphaAuto;
         this.betaAuto = Properties.get().accessibility.betaAuto;
@@ -82,11 +86,6 @@ public class Accessibility {
     public void calculateHansenAccessibilities(int year) {
 
         LOGGER.info("  Calculating accessibilities for " + year);
-
-        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
-
         final DoubleMatrix1D population = SummarizeData.getPopulationByZone(dataContainer);
 
         LOGGER.info("  Calculating zone zone accessibilities: auto");
