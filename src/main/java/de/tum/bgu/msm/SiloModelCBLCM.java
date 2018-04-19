@@ -178,7 +178,7 @@ public class SiloModelCBLCM {
 	            } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                int[] couple = Arrays.copyOfRange(event, 1,2);
-					modelContainer.getMardiv().marryCouple(couple, modelContainer);
+					modelContainer.getMardiv().marryCouple(couple);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();

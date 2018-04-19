@@ -24,5 +24,5 @@ public interface MovesModelI {
 
     int searchForNewDwelling(List<Person> persons);
 
-    void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer);
+    void moveHousehold(Household hh, int idOldDD, int idNewDD);
 }

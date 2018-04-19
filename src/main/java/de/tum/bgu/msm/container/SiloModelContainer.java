@@ -4,7 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
 import de.tum.bgu.msm.models.demography.*;
@@ -19,7 +19,6 @@ import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
@@ -54,9 +53,9 @@ public class SiloModelContainer {
     private final ChangeSchoolUnivModel changeSchoolUniv;
     private final ChangeDriversLicense changeDriversLicense;
     private final Accessibility acc;
-    private final CarOwnershipModel carOwnershipModel;
+    private final CreateCarOwnershipModel carOwnershipModel;
     private final UpdateJobs updateJobs;
-    private final CreateCarOwnershipModel createCarOwnershipModel;
+    private final de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel;
     private final TransportModelI transportModel;
 
     /**
@@ -87,8 +86,8 @@ public class SiloModelContainer {
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, ChangeDriversLicense changeDriversLicense,
-                               Accessibility acc, CarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
-                               CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
+                               Accessibility acc, CreateCarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
+                               de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
         this.iomig = iomig;
         this.cons = cons;
         this.ddOverwrite = ddOverwrite;
@@ -146,7 +145,6 @@ public class SiloModelContainer {
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer);
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer);
-        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense(dataContainer);
 
@@ -160,21 +158,22 @@ public class SiloModelContainer {
         UpdateJobs updateJobs = new UpdateJobs(dataContainer);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
 
-        CarOwnershipModel carOwnershipModel;
-        CreateCarOwnershipModel createCarOwnershipModel = null;
+        CreateCarOwnershipModel carOwnershipModel;
+        de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel = null;
         switch (Properties.get().main.implementation) {
             case MARYLAND:
                 carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer, acc);
                 move = new MovesModelMstm(dataContainer, acc);
                 break;
             case MUNICH:
-                createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer);
+                createCarOwnershipModel = new de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel(dataContainer);
                 carOwnershipModel = new MunichCarOwnerShipModel(dataContainer);
                 move = new MovesModelMuc(dataContainer, acc);
                 break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
+        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
         ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
 
@@ -244,7 +243,7 @@ public class SiloModelContainer {
         return acc;
     }
 
-    public CarOwnershipModel getCarOwnershipModel() {
+    public CreateCarOwnershipModel getCarOwnershipModel() {
         return carOwnershipModel;
     }
 
@@ -256,7 +255,7 @@ public class SiloModelContainer {
         return this.transportModel;
     }
 
-    public CreateCarOwnershipModel getCreateCarOwnershipModel() {
+    public de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel getCreateCarOwnershipModel() {
         if (createCarOwnershipModel != null) {
             return createCarOwnershipModel;
         } else {

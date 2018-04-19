@@ -90,7 +90,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
         int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
         if (idNewDD > 0) {
-            moveHousehold(household, household.getDwellingId(), idNewDD, dataContainer);    // Step 3: Move household
+            moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
             EventManager.countEvent(EventTypes.HOUSEHOLD_MOVE);
             dataContainer.getHouseholdData().addHouseholdThatMoved(household);
             if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
@@ -265,7 +265,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     @Override
-    public void moveHousehold(Household hh, int idOldDD, int idNewDD, SiloDataContainer dataContainer) {
+    public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
         // if this household had a dwelling in this study area before, vacate old dwelling
         if (idOldDD > 0) {
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(idOldDD);

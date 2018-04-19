@@ -172,7 +172,7 @@ public class InOutMigration extends AbstractModel {
         HouseholdDataManager.defineUnmarriedPersons(hh);
         int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
         if (newDdId > 0) {
-            modelContainer.getMove().moveHousehold(hh, -1, newDdId, dataContainer);
+            modelContainer.getMove().moveHousehold(hh, -1, newDdId);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);

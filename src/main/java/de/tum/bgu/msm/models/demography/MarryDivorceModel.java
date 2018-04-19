@@ -28,7 +28,10 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.relocation.InOutMigration;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -45,6 +48,9 @@ import java.util.*;
 public class MarryDivorceModel extends AbstractModel {
 
     private static Logger logger = Logger.getLogger(MarryDivorceModel.class);
+    private final MovesModelI movesModel;
+    private final InOutMigration iomig;
+    private final CreateCarOwnershipModel carOwnership;
 
     private MarryDivorceJSCalculator calculator;
 
@@ -55,8 +61,12 @@ public class MarryDivorceModel extends AbstractModel {
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public MarryDivorceModel(SiloDataContainer dataContainer) {
+    public MarryDivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel,
+                             InOutMigration iomig, CreateCarOwnershipModel carOwnership) {
         super(dataContainer);
+        this.movesModel = movesModel;
+        this.iomig = iomig;
+        this.carOwnership = carOwnership;
         setupModel();
     }
 
@@ -201,95 +211,116 @@ public class MarryDivorceModel extends AbstractModel {
     }
 
 
-    public void marryCouple(int[] couple, SiloModelContainer modelContainer) {
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Person partner1 = householdData.getPersonFromId(couple[0]);
+    public void marryCouple(int[] couple) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Person partner1 = householdData.getPersonFromId(couple[0]);
         if (!EventRules.ruleGetMarried(partner1)) {
             return;  // Person got already married this simulation period or died or moved away
         }
-        Person partner2 = householdData.getPersonFromId(couple[1]);
+        final Person partner2 = householdData.getPersonFromId(couple[1]);
         if (!EventRules.ruleGetMarried(partner2)) {
             return;  // Person got already married this simulation period or died or moved away
         }
 
-        Household hhOfPartner1 = partner1.getHh();
-        Household hhOfPartner2 = partner2.getHh();
-        int moveTo = 1;
-        if (partner1.getRole().equals(PersonRole.CHILD) && !partner2.getRole().equals(PersonRole.CHILD)) {
-            moveTo = 2; // if one is not a child, move into that household
+        final Household hhOfPartner1 = partner1.getHh();
+        final Household hhOfPartner2 = partner2.getHh();
+
+        final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
+
+        final boolean success = moveTogether(partner1, partner2, moveTo);
+
+        if(success) {
+            partner1.setRole(PersonRole.MARRIED);
+            partner2.setRole(PersonRole.MARRIED);
+            EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
+            householdData.addHouseholdThatChanged(hhOfPartner1);
+            householdData.addHouseholdThatChanged(hhOfPartner2);
+        } else {
+            if (partner1.getId() == SiloUtil.trackPp
+                    || partner2.getId() == SiloUtil.trackPp
+                    || moveTo.getId() == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Person " + partner1.getId()
+                        + " and person " + partner2.getId()
+                        + " of household " + moveTo.getId()
+                        + " got married but could not find an appropriate vacant dwelling. "
+                        + "Household outmigrated.");
+                IssueCounter.countLackOfDwellingFailedMarriage();
+            }
         }
-        if (!partner1.getRole().equals(PersonRole.CHILD) && partner2.getRole().equals(PersonRole.CHILD)) {
-            moveTo = 1;
-        }
-        if (!partner1.getRole().equals(PersonRole.CHILD) && !partner2.getRole().equals(PersonRole.CHILD) ||
-                partner1.getRole().equals(PersonRole.CHILD) && partner2.getRole().equals(PersonRole.CHILD)) {
-            int hhSizeA = hhOfPartner1.getHhSize();                                                                  // if both are/areNot children, move into smaller hh size
-            int hhSizeB = hhOfPartner2.getHhSize();
-            if (hhSizeA > hhSizeB) {
-                moveTo = 2;
-            } else if (hhSizeA == hhSizeB) {                                                                         // if hhSize is identical, move into larger dwelling
-                Dwelling a = dataContainer.getRealEstateData().getDwelling(hhOfPartner1.getDwellingId());
-                Dwelling b = dataContainer.getRealEstateData().getDwelling(hhOfPartner2.getDwellingId());
-                if (b.getBedrooms() > a.getBedrooms()) moveTo = 2;
+    }
+
+    private Household chooseRelocationTarget(Person partner1, Person partner2, Household household1, Household household2) {
+        final int hhSize1 = household1.getHhSize();
+        final int hhSize2 = household2.getHhSize();
+        final PersonRole role1 = partner1.getRole();
+        final PersonRole role2 = partner2.getRole();
+
+        Household moveTo = household1;
+        if (role1.equals(PersonRole.CHILD) && !role2.equals(PersonRole.CHILD)) {
+            moveTo = household2; // if one is not a child, move into that household
+        } else if (!role1.equals(PersonRole.CHILD) && role2.equals(PersonRole.CHILD)) {
+            moveTo = household1;
+        } else if (role1 == role2) {
+            // if both are/areNot children, move into smaller hh size
+            if (hhSize1 > hhSize2) {
+                moveTo = household2;
+            } else if (hhSize1 == hhSize2) {
+                // if hhSize is identical, move into larger dwelling
+                Dwelling dwelling1 = dataContainer.getRealEstateData().getDwelling(household1.getDwellingId());
+                Dwelling dwelling2 = dataContainer.getRealEstateData().getDwelling(household2.getDwellingId());
+                if (dwelling1.getBedrooms() < dwelling2.getBedrooms()) {
+                    moveTo = household2;
+                }
             }
         }
         // if household is already crowded, move couple into new household
-        if ((moveTo == 1 && hhOfPartner1.getHhSize() > 3) || (moveTo == 2 && hhOfPartner2.getHhSize() > 3)) {
-            moveTo = 3;
+        if (moveTo.getHhSize() > 3) {
+            final int newHhId = dataContainer.getHouseholdData().getNextHouseholdId();
+            moveTo = dataContainer.getHouseholdData().createHousehold(newHhId, -1, 0);
         }
-        if (moveTo == 1) {
-            moveMarriedPersons(partner2, partner1);
-        } else if (moveTo == 2) {
-            moveMarriedPersons(partner1, partner2);
-        } else {
-            // create new household for newly-wed couple
-            int newHhId = householdData.getNextHouseholdId();
-            Household newHh = householdData.createHousehold(newHhId, -1, 0);
-            householdData.addPersonToHousehold(partner1, newHh);
-            householdData.addPersonToHousehold(partner2, newHh);
-            householdData.removePersonFromHousehold(partner1);
-            if (hhOfPartner1.checkIfOnlyChildrenRemaining()) {
-                moveRemainingChildren(hhOfPartner1, newHh);
-            }
-            householdData.removePersonFromHousehold(partner2);
-            if (hhOfPartner2.checkIfOnlyChildrenRemaining()) {
-                moveRemainingChildren(hhOfPartner2, newHh);
-            }
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(ImmutableList.of(partner1, partner2));
+        return moveTo;
+    }
+
+    private boolean moveTogether(Person person1, Person person2, Household moveTo) {
+
+        movePerson(person1, moveTo);
+        movePerson(person2, moveTo);
+
+        if (person1.getId() == SiloUtil.trackPp
+                || person2.getId() == SiloUtil.trackPp
+                || person1.getHh().getId() == SiloUtil.trackHh
+                || person2.getHh().getId() == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("Person " + person1.getId() +
+                    " and person " + person2.getId() + " got married and moved into household "
+                    + moveTo.getId() + ".");
+        }
+
+        if(moveTo.getDwellingId() == -1) {
+            final int newDwellingId = movesModel.searchForNewDwelling(ImmutableList.of(person1 , person2));
             if (newDwellingId < 0) {
-                modelContainer.getIomig().outMigrateHh(newHhId, true);
-                if (partner1.getId() == SiloUtil.trackPp || partner2.getId() == SiloUtil.trackPp || newHhId == SiloUtil.trackHh)
-                    SiloUtil.trackWriter.println("Person " + partner1.getId() + " and person " + partner2.getId() +
-                            " of household " + newHhId + " got married but could not find an appropriate vacant dwelling. " +
-                            "Household outmigrated.");
-                IssueCounter.countLackOfDwellingFailedMarriage();
-                return;
-            }
-            modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
-            if (Properties.get().main.implementation == Implementation.MUNICH) {
-                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+                iomig.outMigrateHh(moveTo.getId(), true);
+                return false;
+            } else {
+                movesModel.moveHousehold(moveTo, -1, newDwellingId);
+                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                    carOwnership.simulateCarOwnership(moveTo); // set initial car ownership of new household
+                }
             }
         }
-        partner1.setRole(PersonRole.MARRIED);
-        partner2.setRole(PersonRole.MARRIED);
-        EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
-        householdData.addHouseholdThatChanged(hhOfPartner1);
-        householdData.addHouseholdThatChanged(hhOfPartner2);
+        return true;
     }
 
-    private void moveMarriedPersons(Person movingPerson, Person stayingPerson) {
-        Household movingHousehold = movingPerson.getHh();
-        dataContainer.getHouseholdData().removePersonFromHousehold(movingPerson);
-        dataContainer.getHouseholdData().addPersonToHousehold(movingPerson, stayingPerson.getHh());
-        if (movingHousehold.checkIfOnlyChildrenRemaining()) {
-            moveRemainingChildren(movingHousehold, stayingPerson.getHh());
+    private void movePerson(Person person1, Household moveTo) {
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Household household1 = person1.getHh();
+        if(!moveTo.equals(household1)) {
+            householdData.removePersonFromHousehold(person1);
+            householdData.addPersonToHousehold(person1, moveTo);
+            if(household1.checkIfOnlyChildrenRemaining()) {
+                moveRemainingChildren(household1, moveTo);
+            }
         }
-        if (movingPerson.getId() == SiloUtil.trackPp || stayingPerson.getId() == SiloUtil.trackPp || movingPerson.getHh().getId() == SiloUtil.trackHh ||
-                stayingPerson.getHh().getId() == SiloUtil.trackHh)
-            SiloUtil.trackWriter.println("Person " + stayingPerson.getId() +
-                    " and person " + movingPerson.getId() + " got married and moved into household " + stayingPerson.getId() + ".");
     }
-
 
     private void moveRemainingChildren(Household oldHh, Household newHh) {
         List<Person> remainingPersons = new ArrayList<>(oldHh.getPersons());
@@ -344,7 +375,7 @@ public class MarryDivorceModel extends AbstractModel {
             newHh.setType();
             newHh.determineHouseholdRace();
             // move divorced person into new dwelling
-            modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId, dataContainer);
+            modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId);
             if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +

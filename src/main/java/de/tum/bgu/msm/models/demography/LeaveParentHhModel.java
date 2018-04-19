@@ -96,7 +96,7 @@ public class LeaveParentHhModel extends AbstractModel {
             per.setRole(PersonRole.SINGLE);
 
             // Move new household
-            modelContainer.getMove().moveHousehold(household, -1, newDwellingId, dataContainer);
+            modelContainer.getMove().moveHousehold(household, -1, newDwellingId);
             EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
             dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
             if(Properties.get().main.implementation == Implementation.MUNICH) {
