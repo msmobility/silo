@@ -144,7 +144,7 @@ public class SiloUtil {
     }
 
 
-    public static int findPositionInArray (Object element, Object array[]) {
+    public static <T> int findPositionInArray (T element, T array[]) {
         int ind = -1;
         for (int a = 0; a < array.length; a++) if (array[a].equals(element)) ind = a;
         if (ind == -1) logger.error ("Could not find element " + element +
