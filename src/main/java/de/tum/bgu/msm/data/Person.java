@@ -58,57 +58,11 @@ public final class Person {
 		this.occupation = occupation;
         this.workplace = workplace;
 		this.income = income; 
-		setType(age, gender);
+		setType();
     }
 
-    public void setType (int age, int gender) {
-        if (gender == 1) {
-        if (age==0) type = PersonType.menAge0;
-        else if (age<=4) type = PersonType.menAge1to4;
-        else if (age<=9) type = PersonType.menAge5to9;
-		else if (age<=14) type = PersonType.menAge10to14;
-        else if (age<=19) type = PersonType.menAge15to19;
-        else if (age<=24) type = PersonType.menAge20to24;
-        else if (age<=29) type = PersonType.menAge25to29;
-        else if (age<=34) type = PersonType.menAge30to34;
-        else if (age<=39) type = PersonType.menAge35to39;
-        else if (age<=44) type = PersonType.menAge40to44;
-        else if (age<=49) type = PersonType.menAge45to49;
-        else if (age<=54) type = PersonType.menAge50to54;
-        else if (age<=59) type = PersonType.menAge55to59;
-        else if (age<=64) type = PersonType.menAge60to64;
-        else if (age<=69) type = PersonType.menAge65to69;
-        else if (age<=74) type = PersonType.menAge70to74;
-        else if (age<=79) type = PersonType.menAge75to79;
-        else if (age<=84) type = PersonType.menAge80to84;
-        else if (age<=89) type = PersonType.menAge85to89;
-        else if (age<=94) type = PersonType.menAge90to94;
-        else if (age<=99) type = PersonType.menAge95to99;
-        else type = PersonType.menAge100plus;
-        } else {
-            if (age==0) type = PersonType.womenAge0;
-            else if (age<=4) type = PersonType.womenAge1to4;
-            else if (age<=9) type = PersonType.womenAge5to9;
-            else if (age<=14) type = PersonType.womenAge10to14;
-            else if (age<=19) type = PersonType.womenAge15to19;
-            else if (age<=24) type = PersonType.womenAge20to24;
-            else if (age<=29) type = PersonType.womenAge25to29;
-            else if (age<=34) type = PersonType.womenAge30to34;
-            else if (age<=39) type = PersonType.womenAge35to39;
-            else if (age<=44) type = PersonType.womenAge40to44;
-            else if (age<=49) type = PersonType.womenAge45to49;
-            else if (age<=54) type = PersonType.womenAge50to54;
-            else if (age<=59) type = PersonType.womenAge55to59;
-            else if (age<=64) type = PersonType.womenAge60to64;
-            else if (age<=69) type = PersonType.womenAge65to69;
-            else if (age<=74) type = PersonType.womenAge70to74;
-            else if (age<=79) type = PersonType.womenAge75to79;
-            else if (age<=84) type = PersonType.womenAge80to84;
-            else if (age<=89) type = PersonType.womenAge85to89;
-            else if (age<=94) type = PersonType.womenAge90to94;
-            else if (age<=99) type = PersonType.womenAge95to99;
-            else type = PersonType.womenAge100plus;
-        }
+    private void setType () {
+        PersonType.defineType(this);
     }
 
     void setHousehold(Household household) {
@@ -123,8 +77,9 @@ public final class Person {
         this.role = pr;
     }
 
-    public void setAge(int newAge) {
-        this.age = newAge;
+    public void birthday() {
+        this.age++;
+        setType();
     }
 
     public void setIncome (int newIncome) {

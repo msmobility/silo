@@ -100,14 +100,14 @@ public class BirthModel extends AbstractModel {
         // increase age of this person by one year
         Person per = dataContainer.getHouseholdData().getPersonFromId(personId);
 
-        if (!EventRules.ruleBirthday(per)) return;  // Person has died or moved away
-        int age = per.getAge() + 1;
-        per.setAge(age);
-        per.setType(age, per.getGender());
+        if (!EventRules.ruleBirthday(per)){
+            return;  // Person has died or moved away
+        }
+        per.birthday();
         EventManager.countEvent(EventTypes.BIRTHDAY);
         if (personId == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
-                    personId + ". New age is " + age + ".");
+                    personId + ". New age is " + per.getAge() + ".");
         }
     }
 }
