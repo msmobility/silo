@@ -62,7 +62,7 @@ public final class Person {
     }
 
     private void setType () {
-        PersonType.defineType(this);
+        this.type = PersonType.defineType(this);
     }
 
     void setHousehold(Household household) {
@@ -191,7 +191,6 @@ public final class Person {
         +"\nWorkplace ID         " + workplace
         +"\nIncome               " + income
         +"\nPerson type          " + type.toString();
-        // cannot log person role here because when persons are read, the role is not defined yet.
     }
 
     static class PersonByAgeComparator implements Comparator<Person> {
