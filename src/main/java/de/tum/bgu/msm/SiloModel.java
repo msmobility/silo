@@ -214,7 +214,7 @@ public final class SiloModel {
 							event[1]);
 				if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getBirth().celebrateBirthday(event[1]);
+					modelContainer.getBirth().checkBirthday(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

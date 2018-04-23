@@ -63,5 +63,6 @@ public class DeathModelTest {
         final int[] listOfVacantDwellingsInRegionAfter = RealEstateDataManager.getListOfVacantDwellingsInRegion(
                 dataContainer.getGeoData().getZones().get(1).getRegion().getId());
         Assert.assertEquals(1,Arrays.stream(listOfVacantDwellingsInRegionAfter).filter(value -> value == 1).count());
+        Assert.assertEquals(false, dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
     }
 }

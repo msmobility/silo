@@ -85,7 +85,6 @@ public class DeathModel extends AbstractModel {
         }
 
         EventManager.countEvent(EventTypes.CHECK_DEATH);
-        householdData.addHouseholdThatChanged(hhOfPersonToDie);
         if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
                     " has passed away.");

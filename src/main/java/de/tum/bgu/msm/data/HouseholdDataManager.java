@@ -52,7 +52,7 @@ public class HouseholdDataManager {
     private final Map<Integer,Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
-    private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
+    private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
@@ -106,6 +106,7 @@ public class HouseholdDataManager {
             person.setHousehold(null);
             if (!household.getPersons().isEmpty()) {
                 householdCharacteristicsChanged(household);
+                addHouseholdThatChanged(household);
             } else {
                 removeHousehold(household.getId());
             }
@@ -130,25 +131,10 @@ public class HouseholdDataManager {
         }
     }
 
-    public void addNewbornPersonToHousehold(Household household) {
-        // create new Person for this household
-        final int id = getNextPersonId();
-        int gender = 1;
-        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) {
-            gender = 2;
-        }
-        final Person person = createPerson(id, 0, gender, household.getRace(), 0, 0, 0);
-        person.setRole(PersonRole.CHILD);
-        addPersonToHousehold(person, household);
-        if (id == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("For unto us a child was born... A child named "
-                    + id + " was born and added to household " + household.getId() + ".");
-        }
-    }
-
     private void householdCharacteristicsChanged(Household household) {
         household.setType();
         household.determineHouseholdRace();
+        addHouseholdThatChanged(household);
     }
 
     public int getTotalPopulation () {
@@ -469,6 +455,7 @@ public class HouseholdDataManager {
             person.setHousehold(null);
             persons.remove(person.getId());
         }
+        updatedHouseholds.remove(householdId);
         households.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
