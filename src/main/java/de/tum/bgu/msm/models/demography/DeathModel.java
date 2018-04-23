@@ -71,6 +71,7 @@ public class DeathModel extends AbstractModel {
             widow.setRole(PersonRole.SINGLE);
         }
         householdData.removePerson(person.getId());
+        householdData.addHouseholdThatChanged(hhOfPersonToDie);
 
         final boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
         if (onlyChildrenLeft) {

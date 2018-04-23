@@ -68,6 +68,7 @@ public class BirthModel extends AbstractModel {
         if (person.getGender() == 1) {
             return;            // Exclude males, model should never get here
         }
+        // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
         double birthProb = calculator.calculateBirthProbability(person.getAge());
         if (person.getRole() == PersonRole.MARRIED) {
             birthProb *= Properties.get().demographics.marriedScaler;
@@ -81,7 +82,6 @@ public class BirthModel extends AbstractModel {
     }
 
     void giveBirth(Person person) {
-        // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Household household = householdData.getHouseholdFromId(person.getHh().getId());
@@ -94,6 +94,7 @@ public class BirthModel extends AbstractModel {
                 0, 0, 0);
         child.setRole(PersonRole.CHILD);
         householdData.addPersonToHousehold(child, household);
+        householdData.addHouseholdThatChanged(household);
         if (id == SiloUtil.trackPp
                 || household.getId() == SiloUtil.trackHh
                 || person.getId() == SiloUtil.trackPp) {

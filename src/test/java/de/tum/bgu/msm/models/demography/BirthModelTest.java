@@ -50,5 +50,6 @@ public class BirthModelTest {
         final int before = person.getAge();
         model.celebrateBirthday(person);
         final int after = person.getAge();
+        Assert.assertTrue(after > before);
     }
 }

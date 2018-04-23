@@ -106,7 +106,6 @@ public class HouseholdDataManager {
             person.setHousehold(null);
             if (!household.getPersons().isEmpty()) {
                 householdCharacteristicsChanged(household);
-                addHouseholdThatChanged(household);
             } else {
                 removeHousehold(household.getId());
             }
@@ -134,7 +133,6 @@ public class HouseholdDataManager {
     private void householdCharacteristicsChanged(Household household) {
         household.setType();
         household.determineHouseholdRace();
-        addHouseholdThatChanged(household);
     }
 
     public int getTotalPopulation () {
@@ -455,8 +453,8 @@ public class HouseholdDataManager {
             person.setHousehold(null);
             persons.remove(person.getId());
         }
-        updatedHouseholds.remove(householdId);
         households.remove(householdId);
+        updatedHouseholds.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
         }

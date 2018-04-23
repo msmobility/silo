@@ -49,6 +49,7 @@ public class DeathModelTest {
 
     @Test
     public void testDeathOfParent() {
+        dataContainer.getHouseholdData().clearUpdatedHouseholds();
         final int[] listOfVacantDwellingsInRegion = RealEstateDataManager.getListOfVacantDwellingsInRegion(
                 dataContainer.getGeoData().getZones().get(1).getRegion().getId());
         Assert.assertEquals(0,Arrays.stream(listOfVacantDwellingsInRegion).filter(value -> value == 1).count());
