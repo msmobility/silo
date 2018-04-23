@@ -235,7 +235,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getMardiv().chooseDivorce(event[1], modelContainer);
+					modelContainer.getMardiv().chooseDivorce(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_SCHOOL_UNIV.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

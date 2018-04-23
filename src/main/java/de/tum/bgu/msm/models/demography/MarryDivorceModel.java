@@ -338,7 +338,7 @@ public class MarryDivorceModel extends AbstractModel {
     }
 
 
-    public void chooseDivorce(int perId, SiloModelContainer modelContainer) {
+    public void chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -349,7 +349,7 @@ public class MarryDivorceModel extends AbstractModel {
         double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
         if (SiloUtil.getRandomNumberAsDouble() < probability) {
             // check if vacant dwelling is available
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per));
+            int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
             if (newDwellingId < 0) {
                 if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println(
@@ -375,7 +375,7 @@ public class MarryDivorceModel extends AbstractModel {
             newHh.setType();
             newHh.determineHouseholdRace();
             // move divorced person into new dwelling
-            modelContainer.getMove().moveHousehold(newHh, -1, newDwellingId);
+            movesModel.moveHousehold(newHh, -1, newDwellingId);
             if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +
@@ -383,7 +383,7 @@ public class MarryDivorceModel extends AbstractModel {
             EventManager.countEvent(EventTypes.CHECK_DIVORCE);
             householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
             if (Properties.get().main.implementation == Implementation.MUNICH) {
-                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(newHh); // set initial car ownership of new household
+                carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
             }
         }
     }

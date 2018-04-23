@@ -182,7 +182,7 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getMardiv().chooseDivorce(event[1], modelContainer);
+	                modelContainer.getMardiv().chooseDivorce(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
