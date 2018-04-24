@@ -83,8 +83,8 @@ public class BirthModel extends AbstractModel {
 
     void giveBirth(Person person) {
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Household household = householdData.getHouseholdFromId(person.getHh().getId());
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
         int gender = 1;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {

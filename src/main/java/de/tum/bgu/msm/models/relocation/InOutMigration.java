@@ -161,10 +161,7 @@ public class InOutMigration extends AbstractModel {
                 boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
                 if (!success) per.setOccupation(2);
             }
-            if (per.getAge() > 17){
-               boolean license = modelContainer.getChangeDriversLicense().createDriversLicense(per.getId());
-               if (license) per.setDriverLicense(true);
-            }
+            modelContainer.getDriversLicense().checkLicenseCreation(per.getId());
         }
         hh.setType();
         hh.determineHouseholdRace();

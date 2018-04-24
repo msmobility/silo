@@ -216,7 +216,7 @@ public class EventManager {
         int dlc = eventCounter.count(EventTypes.CHECK_DRIVERS_LICENSE);
         logger.info("  Simulated change of drivers license: " + dlc + " (" +
                 SiloUtil.rounder((100f * dlc / pp), 1) + "% of pp)");
-        SummarizeData.resultFile("ChangeDriversLicense,"+dlc);
+        SummarizeData.resultFile("DriversLicense,"+dlc);
         int sj = eventCounter.count(EventTypes.FIND_NEW_JOB);
         logger.info("  Simulated start new job:     " + sj + " (" +
                 SiloUtil.rounder((100f * sj / pp), 1) + "% of pp)");

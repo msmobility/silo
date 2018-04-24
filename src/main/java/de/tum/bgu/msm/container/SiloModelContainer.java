@@ -51,7 +51,7 @@ public class SiloModelContainer {
     private final MovesModelI move;
     private final ChangeEmploymentModel changeEmployment;
     private final ChangeSchoolUnivModel changeSchoolUniv;
-    private final ChangeDriversLicense changeDriversLicense;
+    private final DriversLicense driversLicense;
     private final Accessibility acc;
     private final CreateCarOwnershipModel carOwnershipModel;
     private final UpdateJobs updateJobs;
@@ -75,7 +75,7 @@ public class SiloModelContainer {
      * @param move
      * @param changeEmployment
      * @param changeSchoolUniv
-     * @param changeDriversLicense
+     * @param driversLicense
      * @param acc
      * @param carOwnershipModel
      * @param updateJobs
@@ -85,7 +85,7 @@ public class SiloModelContainer {
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
-                               ChangeSchoolUnivModel changeSchoolUniv, ChangeDriversLicense changeDriversLicense,
+                               ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
                                Accessibility acc, CreateCarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
                                de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
         this.iomig = iomig;
@@ -101,7 +101,7 @@ public class SiloModelContainer {
         this.move = move;
         this.changeEmployment = changeEmployment;
         this.changeSchoolUniv = changeSchoolUniv;
-        this.changeDriversLicense = changeDriversLicense;
+        this.driversLicense = driversLicense;
         this.acc = acc;
         this.carOwnershipModel = carOwnershipModel;
         this.updateJobs = updateJobs;
@@ -146,7 +146,7 @@ public class SiloModelContainer {
         BirthModel birth = new BirthModel(dataContainer);
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
-        ChangeDriversLicense changeDriversLicense = new ChangeDriversLicense(dataContainer);
+        DriversLicense driversLicense = new DriversLicense(dataContainer);
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
@@ -178,7 +178,7 @@ public class SiloModelContainer {
         carOwnershipModel.initialize();
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, changeDriversLicense, acc,
+                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
                 carOwnershipModel, updateJobs, createCarOwnershipModel, transportModel);
     }
 
@@ -235,8 +235,8 @@ public class SiloModelContainer {
         return changeSchoolUniv;
     }
 
-    public ChangeDriversLicense getChangeDriversLicense() {
-        return changeDriversLicense;
+    public DriversLicense getDriversLicense() {
+        return driversLicense;
     }
 
     public Accessibility getAcc() {
