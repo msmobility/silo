@@ -18,8 +18,7 @@ import java.io.Reader;
 
 public class DriversLicense extends AbstractModel {
 
-    private ChangeDriversLicenseJSCalculator changeCalculator;
-    private CreateDriversLicenseJSCalculator createCalculator;
+    private LicenseJSCalculator calculator;
 
     public DriversLicense(SiloDataContainer dataContainer) {
         super(dataContainer);
@@ -27,10 +26,9 @@ public class DriversLicense extends AbstractModel {
     }
 
     private void setup() {
-        final Reader createReader = new InputStreamReader(this.getClass().getResourceAsStream("CreateDriversLicenseCalc"));
-        createCalculator = new CreateDriversLicenseJSCalculator(createReader);
-        final Reader changeReader = new InputStreamReader(this.getClass().getResourceAsStream("ChangeDriversLicenseCalc"));
-        changeCalculator = new ChangeDriversLicenseJSCalculator(changeReader);
+        final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DriverLicenseCalc"));
+        calculator = new LicenseJSCalculator(reader);
+
     }
 
     public void checkLicenseChange(int perId) {
@@ -38,7 +36,7 @@ public class DriversLicense extends AbstractModel {
         if (pp == null || pp.hasDriverLicense() || pp.getAge() < 18) {
             return;
         }
-        final double changeProb = changeCalculator.calculateChangeDriversLicenseProbability(pp.getType());
+        final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
         if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
             createLicense(pp);
         }
@@ -49,7 +47,7 @@ public class DriversLicense extends AbstractModel {
         if (pp == null || pp.getAge() < 17) {
             return;
         }
-        final double createProb = createCalculator.calculateCreateDriversLicenseProbability(pp.getType());
+        final double createProb = calculator.calculateCreateDriversLicenseProbability(pp.getType());
         if (SiloUtil.getRandomNumberAsDouble() < createProb) {
             createLicense(pp);
         }

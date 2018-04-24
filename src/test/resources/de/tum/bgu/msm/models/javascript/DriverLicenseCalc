@@ -1,0 +1,156 @@
+//Probability of having drivers license
+
+var calculateChangeDriversLicenseProbability = function(personType) {
+    if (personType.name() == "menAge15to19"){
+        return 0.86;
+    } else if (personType.name() == "menAge20to24"){
+        return 0.86;
+    } else if (personType.name() == "menAge25to29"){
+         return 0.86;
+    } else if (personType.name() == "menAge30to34"){
+         return 0.95;
+    } else if (personType.name() == "menAge35to39"){
+         return 0.50;
+    } else if (personType.name() == "menAge40to44"){
+         return 0.30;
+    } else if (personType.name() == "menAge45to49"){
+         return 0.20;
+    } else if (personType.name() == "menAge50to54"){
+         return 0.15;
+    } else if (personType.name() == "menAge55to59"){
+         return 0.15;
+    } else if (personType.name() == "menAge60to64"){
+         return 0.15;
+    } else if (personType.name() == "menAge65to69"){
+         return 0.05;
+    } else if (personType.name() == "menAge70to74"){
+         return 0.05;
+    } else if (personType.name() == "menAge75to79"){
+         return 0.00;
+    } else if (personType.name() == "menAge80to84"){
+         return 0.00;
+    } else if (personType.name() == "menAge85to89"){
+         return 0.00;
+    } else if (personType.name() == "menAge90to94"){
+         return 0.00;
+    } else if (personType.name() == "menAge95to99"){
+         return 0.00;
+    } else if (personType.name() == "menAge100plus"){
+         return 0.00;
+    } else if (personType.name() == "womenAge15to19"){
+         return 0.87;
+    } else if (personType.name() == "womenAge20to24"){
+        return 0.87;
+    } else if (personType.name() == "womenAge25to29"){
+        return 0.87;
+    } else if (personType.name() == "womenAge30to34"){
+        return 0.94;
+    } else if (personType.name() == "womenAge35to39"){
+        return 0.50;
+    } else if (personType.name() == "womenAge40to44"){
+        return 0.30;
+    } else if (personType.name() == "womenAge45to49"){
+        return 0.20;
+    } else if (personType.name() == "womenAge50to54"){
+        return 0.15;
+    } else if (personType.name() == "womenAge55to59"){
+        return 0.15;
+    } else if (personType.name() == "womenAge60to64"){
+        return 0.15;
+    } else if (personType.name() == "womenAge65to69"){
+        return 0.05;
+    } else if (personType.name() == "womenAge70to74"){
+        return 0.00;
+    } else if (personType.name() == "womenAge75to79"){
+        return 0.00;
+    } else if (personType.name() == "womenAge80to84"){
+        return 0.00;
+    } else if (personType.name() == "womenAge85to89"){
+        return 0.00;
+    } else if (personType.name() == "womenAge90to94"){
+        return 0.00;
+    } else if (personType.name() == "womenAge95to99"){
+        return 0.00;
+    } else if (personType.name() == "womenAge100plus"){
+        return 0.00;
+    }
+    return 0;
+}
+
+//Probability of having drivers license
+var calculateCreateDriversLicenseProbability = function(personType) {
+    if (personType.name() == "menAge15to19"){
+        return 0.86;
+    } else if (personType.name() == "menAge20to24"){
+        return 0.86;
+    } else if (personType.name() == "menAge25to29"){
+         return 0.86;
+    } else if (personType.name() == "menAge30to34"){
+         return 0.95;
+    } else if (personType.name() == "menAge35to39"){
+         return 0.95;
+    } else if (personType.name() == "menAge40to44"){
+         return 0.97;
+    } else if (personType.name() == "menAge45to49"){
+         return 0.97;
+    } else if (personType.name() == "menAge50to54"){
+         return 0.96;
+    } else if (personType.name() == "menAge55to59"){
+         return 0.96;
+    } else if (personType.name() == "menAge60to64"){
+         return 0.95;
+    } else if (personType.name() == "menAge65to69"){
+         return 0.95;
+    } else if (personType.name() == "menAge70to74"){
+         return 0.95;
+    } else if (personType.name() == "menAge75to79"){
+         return 0.88;
+    } else if (personType.name() == "menAge80to84"){
+         return 0.88;
+    } else if (personType.name() == "menAge85to89"){
+         return 0.88;
+    } else if (personType.name() == "menAge90to94"){
+         return 0.88;
+    } else if (personType.name() == "menAge95to99"){
+         return 0.88;
+    } else if (personType.name() == "menAge100plus"){
+         return 0.88;
+    } else if (personType.name() == "womenAge15to19"){
+         return 0.87;
+    } else if (personType.name() == "womenAge20to24"){
+        return 0.87;
+    } else if (personType.name() == "womenAge25to29"){
+        return 0.87;
+    } else if (personType.name() == "womenAge30to34"){
+        return 0.94;
+    } else if (personType.name() == "womenAge35to39"){
+        return 0.94;
+    } else if (personType.name() == "womenAge40to44"){
+        return 0.95;
+    } else if (personType.name() == "womenAge45to49"){
+        return 0.95;
+    } else if (personType.name() == "womenAge50to54"){
+        return 0.89;
+    } else if (personType.name() == "womenAge55to59"){
+        return 0.89;
+    } else if (personType.name() == "womenAge60to64"){
+        return 0.86;
+    } else if (personType.name() == "womenAge65to69"){
+        return 0.71;
+    } else if (personType.name() == "womenAge70to74"){
+        return 0.71;
+    } else if (personType.name() == "womenAge75to79"){
+        return 0.44;
+    } else if (personType.name() == "womenAge80to84"){
+        return 0.44;
+    } else if (personType.name() == "womenAge85to89"){
+        return 0.44;
+    } else if (personType.name() == "womenAge90to94"){
+        return 0.44;
+    } else if (personType.name() == "womenAge95to99"){
+        return 0.44;
+    } else if (personType.name() == "womenAge100plus"){
+        return 0.44;
+    }
+    return 0;
+}
