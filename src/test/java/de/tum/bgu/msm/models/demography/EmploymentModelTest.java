@@ -55,6 +55,7 @@ public class EmploymentModelTest {
 
     @Test
     public void testTakeJob() {
+        dataContainer.getHouseholdData().clearUpdatedHouseholds();
         final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
         Assert.assertEquals(-1, person.getWorkplace());
         Assert.assertEquals(-1, person.getOccupation());
@@ -67,5 +68,24 @@ public class EmploymentModelTest {
         Assert.assertEquals(1, person.getOccupation());
         Assert.assertEquals(1022, person.getIncome());
         Assert.assertTrue(dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
+    }
+
+    @Test
+    public void testTakeAndQuitJob() {
+        dataContainer.getHouseholdData().clearUpdatedHouseholds();
+        final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
+        Assert.assertEquals(-1, person.getWorkplace());
+        Assert.assertEquals(-1, person.getOccupation());
+        Assert.assertEquals(0, person.getIncome());
+
+        final Job job = dataContainer.getJobData().createJob(2, 1, -1, "dummy");
+        model.takeNewJob(person, job);
+
+        int income = person.getIncome();
+        model.quitJob(1);
+        Assert.assertTrue(dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
+        Assert.assertEquals(-1, job.getWorkerId());
+        Assert.assertEquals(2, person.getOccupation());
+        Assert.assertEquals((int)(income * 0.6 + 0.5), person.getIncome());
     }
 }

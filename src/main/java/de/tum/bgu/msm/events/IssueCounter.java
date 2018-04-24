@@ -113,10 +113,15 @@ public class IssueCounter {
         }
         if (SiloUtil.getSum(exceededVacantJobStorage) > 0) {
             logger.warn("  Could not store all vacant jobs in vacantJobsByRegion[][] for regions:");
-            for (int region: geoData.getRegionIdsArray()) if (exceededVacantJobStorage[region] > 0)
-                logger.warn("  - Region " + region + ": " + exceededVacantJobStorage[region] + " vacant jobs");
+            for (int region: geoData.getRegions().keySet()) {
+                if (exceededVacantJobStorage[region] > 0) {
+                    logger.warn("  - Region " + region + ": " + exceededVacantJobStorage[region] + " vacant jobs");
+                }
+            }
         }
-        if (missingJob > 0) logger.warn("  Encountered " + missingJob + " cases where a person should have started a " +
-                "new job to keep constant labor participation rates but could not find a job.");
+        if (missingJob > 0) {
+            logger.warn("  Encountered " + missingJob + " cases where a person should have started a " +
+                    "new job to keep constant labor participation rates but could not find a job.");
+        }
     }
 }
