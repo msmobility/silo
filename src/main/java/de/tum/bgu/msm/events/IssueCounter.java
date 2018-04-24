@@ -105,8 +105,11 @@ public class IssueCounter {
                 "where a household had to outmigrate because its dwelling was demolished and no other vacant dwelling could be found.");
         if (SiloUtil.getSum(exceededVacantDwellingStorage) > 0) {
             logger.warn("  Could not store all vacant dwellings in vacDwellingsByRegion[][] for regions:");
-            for (int region: geoData.getRegionIdsArray()) if (exceededVacantDwellingStorage[region] > 0)
-                logger.warn("  - Region " + region + ": " + exceededVacantDwellingStorage[region] + " vacant dwellings");
+            for (int region: geoData.getRegions().keySet()) {
+                if (exceededVacantDwellingStorage[region] > 0) {
+                    logger.warn("  - Region " + region + ": " + exceededVacantDwellingStorage[region] + " vacant dwellings");
+                }
+            }
         }
         if (SiloUtil.getSum(exceededVacantJobStorage) > 0) {
             logger.warn("  Could not store all vacant jobs in vacantJobsByRegion[][] for regions:");

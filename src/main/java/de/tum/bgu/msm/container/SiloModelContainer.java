@@ -49,7 +49,7 @@ public class SiloModelContainer {
     private final MarryDivorceModel mardiv;
     private final LeaveParentHhModel lph;
     private final MovesModelI move;
-    private final ChangeEmploymentModel changeEmployment;
+    private final EmploymentModel changeEmployment;
     private final ChangeSchoolUnivModel changeSchoolUniv;
     private final DriversLicense driversLicense;
     private final Accessibility acc;
@@ -84,7 +84,7 @@ public class SiloModelContainer {
     private SiloModelContainer(InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
-                               LeaveParentHhModel lph, MovesModelI move, ChangeEmploymentModel changeEmployment,
+                               LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
                                Accessibility acc, CreateCarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
                                de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
@@ -174,7 +174,7 @@ public class SiloModelContainer {
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
         MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
-        ChangeEmploymentModel changeEmployment = new ChangeEmploymentModel(dataContainer, acc);
+        EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
@@ -227,7 +227,7 @@ public class SiloModelContainer {
         return move;
     }
 
-    public ChangeEmploymentModel getChangeEmployment() {
+    public EmploymentModel getEmployment() {
         return changeEmployment;
     }
 

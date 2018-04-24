@@ -158,8 +158,10 @@ public class InOutMigration extends AbstractModel {
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
-                if (!success) per.setOccupation(2);
+                modelContainer.getEmployment().lookForJob(per.getId());
+                if (per.getWorkplace() < 1 ) {
+                    per.setOccupation(2);
+                }
             }
             modelContainer.getDriversLicense().checkLicenseCreation(per.getId());
         }

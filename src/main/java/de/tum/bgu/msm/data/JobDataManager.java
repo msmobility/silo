@@ -45,9 +45,9 @@ public class JobDataManager {
     private final Map<Integer, Job> jobs = new ConcurrentHashMap<>();
 
     private int highestJobIdInUse;
-    private static int[][] vacantJobsByRegion;
-    private static int[] vacantJobsByRegionPos;
-    private static int numberOfStoredVacantJobs;
+    private int[][] vacantJobsByRegion;
+    private int[] vacantJobsByRegionPos;
+    private int numberOfStoredVacantJobs;
     private final Map<Integer, Double> zonalJobDensity;
 
 
@@ -333,11 +333,12 @@ public class JobDataManager {
         jb.setWorkerID(-1);
         person.setWorkplace(-1);
         person.setOccupation(2);
-        person.setIncome((int) (person.getIncome() * 0.6 + 0.5));  //  todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
+        person.setIncome((int) (person.getIncome() * 0.6 + 0.5));
+        //todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
     }
 
 
-    public static int getNumberOfVacantJobsByRegion(int region) {
+    public int getNumberOfVacantJobsByRegion(int region) {
         return vacantJobsByRegionPos[region];
     }
 
@@ -368,7 +369,7 @@ public class JobDataManager {
 //    }
 
 
-    public static int findVacantJob(int homeZone, Collection<Integer> regionIds, Accessibility accessibility) {
+    public int findVacantJob(int homeZone, Collection<Integer> regionIds, Accessibility accessibility) {
         // select vacant job for person living in homeZone
 
         double[] regionProbability = new double[SiloUtil.getHighestVal(regionIds.stream().mapToInt(Integer::intValue).toArray()) + 1];

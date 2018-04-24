@@ -44,7 +44,7 @@ public class HouseholdDataManager {
     private int highestPersonIdInUse;
 
     private float[][] laborParticipationShares;
-    private static float[][][] initialIncomeDistribution;              // income by age, gender and occupation
+    private float[][][] initialIncomeDistribution;              // income by age, gender and occupation
     public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
@@ -731,19 +731,22 @@ public class HouseholdDataManager {
         executor.execute();
     }
 
-    public static int selectIncomeForPerson (int gender, int age, int occupation) {
-        // select income for household based on gender, age and occupation
-        float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
-        double[] prob = new double[21];
-        int[] change = new int[21];
+    public void selectIncomeForPerson (Person person) {
+        final int gender = person.getGender() - 1;
+        final int age = Math.min(99, person.getAge());
+        final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
+        final double[] prob = new double[21];
+        final int[] change = new int[21];
         for (int i = 0; i < prob.length; i++) {
             // normal distribution to calculate change of income
+            //TODO: Use normal distribution from library (e.g. commons math)
             change[i] = (int) (-5000f + 10000f * (float) i / (prob.length - 1f));
             prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) *
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
-        int sel = SiloUtil.select(prob);
-        return Math.max((int) initialIncomeDistribution[gender][age][occupation] + change[sel], 0);
+        final int sel = SiloUtil.select(prob);
+        final int inc = Math.max((int) initialIncomeDistribution[gender][age][person.getOccupation()] + change[sel], 0);
+        person.setIncome(inc);
     }
 
 
