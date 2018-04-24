@@ -5,8 +5,9 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SkimUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,8 +17,8 @@ public class EmploymentModelTest {
 
     private static EmploymentModel model;
 
-    private static SiloModelContainer modelContainer;
     private static SiloDataContainer dataContainer;
+    private static SiloModelContainer modelContainer;
 
     @BeforeClass
     public static void setupModel() {
@@ -31,26 +32,13 @@ public class EmploymentModelTest {
 
     @Before
     public void setupMicroData() {
-        Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1, 0);
-        dataContainer.getRealEstateData().createDwelling(1, 1, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        Household household1 = dataContainer.getHouseholdData().createHousehold(1, -1, 0);
         Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
-    }
+        SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(), 2000, Properties.get());
+        modelContainer.getAcc().initialize();
 
-    @Test
-    public void testNewJob() {
-        model.lookForJob(1);
-        final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
-        final int job = person.getWorkplace();
-        Assert.assertEquals(-1, job);
-    }
-
-    @Test
-    public void testFindJob() {
-        final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
-        final Job job = model.findJob(person);
-        Assert.assertNull(job);
     }
 
     @Test
