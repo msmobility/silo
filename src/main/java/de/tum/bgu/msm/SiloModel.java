@@ -18,6 +18,7 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.Couple;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
@@ -165,7 +166,7 @@ public final class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 3][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-            List<int[]> couples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+            List<Couple> couples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
 			if (trackTime) timeCounter[EventTypes.values().length + 5][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();

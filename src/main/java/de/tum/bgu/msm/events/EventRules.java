@@ -41,8 +41,11 @@ public class EventRules {
     public static boolean ruleGetMarried (Person per) {
         if (per == null) return false;
         PersonRole role = per.getRole();
-        return (role == PersonRole.SINGLE || role == PersonRole.CHILD) && per.getAge() >= Properties.get().demographics.minMarryAge &&
-                Properties.get().eventRules.marriage && Properties.get().eventRules.allDemography;
+        return (role == PersonRole.SINGLE || role == PersonRole.CHILD)
+                && per.getAge() >= Properties.get().demographics.minMarryAge
+                && Properties.get().eventRules.marriage
+                && Properties.get().eventRules.allDemography
+                && per.getAge() < 100;
     }
 
     public static boolean ruleGetDivorced (Person per) {

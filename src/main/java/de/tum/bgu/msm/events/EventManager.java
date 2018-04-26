@@ -35,7 +35,7 @@ public class EventManager {
     }
 
 
-    public void createListOfEvents (List<int[]> plannedMarriages) {
+    public void createListOfEvents (List<Couple> plannedMarriages) {
         // create an array list that contains all land use events
 
         events = new ArrayList<>();
@@ -84,8 +84,9 @@ public class EventManager {
 
 
         // wedding events
-        for (int[] couple: plannedMarriages) {
-            events.add(new int[]{EventTypes.CHECK_MARRIAGE.ordinal(), couple[0], couple[1]});
+        for (Couple couple: plannedMarriages) {
+            events.add(new int[]{EventTypes.CHECK_MARRIAGE.ordinal(),
+                    couple.getPartner1().getId(), couple.getPartner2().getId()});
             numEvents++;
         }
 

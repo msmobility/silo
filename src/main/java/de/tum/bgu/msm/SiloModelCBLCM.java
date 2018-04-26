@@ -5,6 +5,7 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.Couple;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
@@ -113,7 +114,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        List<int[]> plannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+	        List<Couple> plannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
 	        if (trackTime) timeCounter[EventTypes.values().length + 5][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
