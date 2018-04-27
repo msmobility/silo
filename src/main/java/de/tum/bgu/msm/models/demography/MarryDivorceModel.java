@@ -46,6 +46,7 @@ import java.util.*;
 public class MarryDivorceModel extends AbstractModel {
 
     private final static Logger LOGGER = Logger.getLogger(MarryDivorceModel.class);
+
     private final MovesModelI movesModel;
     private final InOutMigration iomig;
     private final CreateCarOwnershipModel carOwnership;
@@ -87,14 +88,14 @@ public class MarryDivorceModel extends AbstractModel {
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
-    public List<Couple> selectCouplesToGetMarriedThisYear() {
+    public List<Couple> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
         if (!EventRules.runMarriages()) {
             return Collections.emptyList();
         }
         LOGGER.info("  Selecting couples to get married this year");
 
         final List<Couple> couplesToMarryThisYear = new ArrayList<>();
-        final MarriageMarket market = defineMarriageMarket();
+        final MarriageMarket market = defineMarriageMarket(persons);
 
         for (Person person : market.activePartners) {
             final Person partner = findPartner(market, person);
@@ -110,13 +111,16 @@ public class MarryDivorceModel extends AbstractModel {
         return couplesToMarryThisYear;
     }
 
-    private MarriageMarket defineMarriageMarket() {
+    private MarriageMarket defineMarriageMarket(Collection<Person> persons) {
+
         LOGGER.info("Defining Marriage Market");
+
         final List<Person> activePartners = new ArrayList<>();
         final Table<Integer, Integer, List<Person>> partnersByAgeAndGender = ArrayTable.create(
                 ContiguousSet.create(Range.closed(16, 100), DiscreteDomain.integers()),
                 ContiguousSet.create(Range.closed(1, 2), DiscreteDomain.integers()));
-        for (final Person pp : dataContainer.getHouseholdData().getPersons()) {
+
+        for (final Person pp : persons) {
             if (EventRules.ruleGetMarried(pp)) {
                 final double marryProb = getMarryProb(pp);
                 if (SiloUtil.getRandomNumberAsDouble() <= marryProb) {
@@ -136,6 +140,7 @@ public class MarryDivorceModel extends AbstractModel {
     }
 
     private Person findPartner(MarriageMarket market, Person person) {
+
         final MarriagePreference preference = defineMarriagePreference(person, market);
         final List<Person> possiblePartners = market.getFittingPartners(preference);
 
@@ -157,6 +162,7 @@ public class MarryDivorceModel extends AbstractModel {
             sum += prob;
             probabilities.put(p, prob);
         }
+
         final Person selectedPartner = SiloUtil.select(probabilities, sum);
         possiblePartners.remove(selectedPartner);
         return selectedPartner;
@@ -168,6 +174,7 @@ public class MarryDivorceModel extends AbstractModel {
         final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
 
         final Map<Integer, Double> probabilityByAge = new HashMap<>();
+
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
@@ -207,36 +214,15 @@ public class MarryDivorceModel extends AbstractModel {
         return SiloUtil.getRandomNumberAsFloat() < share;
     }
 
-    private Table<Integer, Integer, Double> calculateAgeDiffProbabilities() {
-
-        final Table<Integer, Integer, Double> probabilitiesByAgeDiffAndGender =
-                ArrayTable.create(AGE_DIFF_RANGE, Lists.newArrayList(1, 2));
-
-        for (int ageDiff : AGE_DIFF_RANGE) {
-            int ageFactor = ageDiff;
-            for (int gender : probabilitiesByAgeDiffAndGender.columnKeySet()) {
-                if (gender == 1) {
-                    // man searches woman
-                    ageFactor += Properties.get().demographics.marryAbsAgeDiff;
-                } else {
-                    // woman searches man
-                    ageFactor -= Properties.get().demographics.marryAbsAgeDiff;
-                }
-                final double probability =
-                        1 / Math.exp(Math.pow(ageFactor, 2) * Properties.get().demographics.marryAgeSpreadFac);
-                probabilitiesByAgeDiffAndGender.put(ageDiff, gender, probability);
-            }
-        }
-        return probabilitiesByAgeDiffAndGender;
-    }
-
-
     public void marryCouple(int[] couple) {
+
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person partner1 = householdData.getPersonFromId(couple[0]);
+
         if (!EventRules.ruleGetMarried(partner1)) {
             return;  // Person got already married this simulation period or died or moved away
         }
+
         final Person partner2 = householdData.getPersonFromId(couple[1]);
         if (!EventRules.ruleGetMarried(partner2)) {
             return;  // Person got already married this simulation period or died or moved away
@@ -270,12 +256,14 @@ public class MarryDivorceModel extends AbstractModel {
     }
 
     private Household chooseRelocationTarget(Person partner1, Person partner2, Household household1, Household household2) {
+
         final int hhSize1 = household1.getHhSize();
         final int hhSize2 = household2.getHhSize();
         final PersonRole role1 = partner1.getRole();
         final PersonRole role2 = partner2.getRole();
 
         Household moveTo = household1;
+
         if (role1.equals(PersonRole.CHILD) && !role2.equals(PersonRole.CHILD)) {
             moveTo = household2; // if one is not a child, move into that household
         } else if (!role1.equals(PersonRole.CHILD) && role2.equals(PersonRole.CHILD)) {
@@ -293,6 +281,7 @@ public class MarryDivorceModel extends AbstractModel {
                 }
             }
         }
+
         // if household is already crowded, move couple into new household
         if (moveTo.getHhSize() > 3) {
             final int newHhId = dataContainer.getHouseholdData().getNextHouseholdId();
@@ -357,6 +346,29 @@ public class MarryDivorceModel extends AbstractModel {
         }
     }
 
+    private Table<Integer, Integer, Double> calculateAgeDiffProbabilities() {
+
+        final Table<Integer, Integer, Double> probabilitiesByAgeDiffAndGender =
+                ArrayTable.create(AGE_DIFF_RANGE, Lists.newArrayList(1, 2));
+
+        for (int ageDiff : AGE_DIFF_RANGE) {
+            int ageFactor = ageDiff;
+            for (int gender : probabilitiesByAgeDiffAndGender.columnKeySet()) {
+                if (gender == 1) {
+                    // man searches woman
+                    ageFactor += Properties.get().demographics.marryAbsAgeDiff;
+                } else {
+                    // woman searches man
+                    ageFactor -= Properties.get().demographics.marryAbsAgeDiff;
+                }
+                final double probability =
+                        1 / Math.exp(Math.pow(ageFactor, 2) * Properties.get().demographics.marryAgeSpreadFac);
+                probabilitiesByAgeDiffAndGender.put(ageDiff, gender, probability);
+            }
+        }
+        return probabilitiesByAgeDiffAndGender;
+    }
+
 
     public void chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
@@ -408,7 +420,7 @@ public class MarryDivorceModel extends AbstractModel {
         }
     }
 
-    private static class MarriagePreference {
+    private final static class MarriagePreference {
 
         private final boolean sameRace;
         private final int age;
@@ -421,7 +433,7 @@ public class MarryDivorceModel extends AbstractModel {
         }
     }
 
-    private static class MarriageMarket {
+    private final static class MarriageMarket {
         final List<Person> activePartners;
         final Table<Integer, Integer, List<Person>> partnersByAgeAndGender;
 

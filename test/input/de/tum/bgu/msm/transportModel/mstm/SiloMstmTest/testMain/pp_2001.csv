@@ -49,13 +49,13 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 48,24,45,2,"single","black",2,0,-1,36600
 49,25,87,2,"single","white",0,0,-1,11100
 50,26,87,2,"single","white",0,0,-1,11100
-51,27,87,2,"single","white",0,0,-1,11100
 52,28,87,2,"single","white",0,0,-1,11100
 53,29,87,2,"single","white",0,0,-1,11100
 54,30,87,2,"single","white",0,0,-1,11100
 55,31,87,2,"single","white",0,0,-1,11100
 56,32,87,2,"single","white",0,0,-1,11100
 57,33,87,2,"single","white",0,0,-1,11100
+58,34,87,2,"single","white",0,0,-1,11100
 59,35,87,2,"single","white",0,0,-1,11100
 60,36,87,2,"single","white",0,0,-1,11100
 61,37,87,2,"single","white",0,0,-1,11100
@@ -141,6 +141,7 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 142,61,1,1,"child","white",0,0,-1,0
 143,62,38,2,"married","white",1,0,1649283,47300
 144,62,38,1,"married","white",1,0,1071663,57300
+145,62,5,1,"child","white",0,0,-1,0
 146,62,1,1,"child","white",0,0,-1,0
 147,63,38,2,"married","white",2,0,-1,28380
 148,63,38,1,"married","white",1,0,1526756,57300
@@ -224,7 +225,6 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 226,82,31,2,"married","black",1,0,4614602,22000
 227,83,24,1,"married","black",1,0,4617948,25000
 228,83,18,2,"child","black",1,0,2524935,7000
-229,83,9,1,"child","black",0,0,-1,0
 230,83,31,2,"married","black",1,0,5145698,22000
 231,84,82,2,"single","black",0,0,-1,7400
 232,85,82,2,"single","black",0,0,-1,7400
@@ -243,5 +243,10 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 245,98,82,2,"single","black",0,0,-1,7400
 246,99,82,2,"single","black",0,0,-1,7400
 247,100,82,2,"single","black",0,0,-1,7400
-248,50,0,1,"child","white",0,0,0,0
-249,73,0,2,"child","black",0,0,0,0
+248,49,0,2,"child","white",0,0,0,0
+249,80,0,1,"child","black",0,0,0,0
+250,62,0,1,"child","white",0,0,0,0
+251,61,0,1,"child","white",0,0,0,0
+252,83,0,1,"child","black",0,0,0,0
+253,81,0,2,"child","black",0,0,0,0
+254,56,0,1,"child","white",0,0,0,0

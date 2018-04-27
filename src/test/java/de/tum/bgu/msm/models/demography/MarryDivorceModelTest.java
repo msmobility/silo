@@ -10,6 +10,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 public class MarryDivorceModelTest {
 
     private static MarryDivorceModel model;
@@ -20,6 +25,7 @@ public class MarryDivorceModelTest {
 
     private static SiloModelContainer modelContainer;
     private static SiloDataContainer dataContainer;
+    private static HouseholdDataManager singleHouseholds;
 
     @BeforeClass
     public static void setupModel() {
@@ -108,6 +114,20 @@ public class MarryDivorceModelTest {
         dataContainer.getRealEstateData().setHighestVariables();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         modelContainer.getMove().calculateRegionalUtilities();
+
+        Random rnd = new Random(42);
+        singleHouseholds = new HouseholdDataManager(dataContainer);
+        PrimitiveIterator.OfInt ages = rnd.ints(20, 60).iterator();
+        PrimitiveIterator.OfInt genders = rnd.ints(1,3).iterator();
+        Iterator<Race> races = rnd.ints(0, 4).mapToObj(i -> Race.values()[i]).iterator();
+        PrimitiveIterator.OfInt occupations = rnd.ints(0,4).iterator();
+        for(int i = 0; i < 10000; i++) {
+            final Household household = singleHouseholds.createHousehold(i, i, 0);
+            final Person p = singleHouseholds.createPerson(i, ages.nextInt(), genders.nextInt(), races.next(), occupations.nextInt(), 0, 0);
+            p.setRole(PersonRole.SINGLE);
+            singleHouseholds.addPersonToHousehold(p, household);
+        }
+
     }
 
     @Test
@@ -154,5 +174,24 @@ public class MarryDivorceModelTest {
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(8));
         Assert.assertNull(dataContainer.getHouseholdData().getHouseholdFromId(7));
         Assert.assertNull(dataContainer.getHouseholdData().getHouseholdFromId(8));
+    }
+
+    @Test
+    public void testSelectMarryingCouples() {
+        SiloUtil.getRandomObject().setSeed(42);
+        final List<Couple> couples = model.selectCouplesToGetMarriedThisYear(singleHouseholds.getPersons());
+        Assert.assertEquals(689, couples.size());
+        final long manMarriesYoungerWoman = couples.stream()
+                .filter(couple ->
+                        (couple.getPartner1().getGender() == 1
+                                && couple.getPartner1().getAge() > couple.getPartner2().getAge())
+                        || (couple.getPartner2().getGender() == 1
+                                && couple.getPartner1().getAge() < couple.getPartner2().getAge())
+                ).count();
+        final long sameSexMarriages = couples.stream().filter(couple ->
+                couple.getPartner1().getGender() == couple.getPartner2().getGender()).count();
+        Assert.assertEquals(0, sameSexMarriages);
+        Assert.assertEquals(440, manMarriesYoungerWoman);
+        Assert.assertTrue(model.selectCouplesToGetMarriedThisYear(Collections.EMPTY_LIST).isEmpty());
     }
 }

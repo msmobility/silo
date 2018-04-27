@@ -19,6 +19,7 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Couple;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
@@ -144,7 +145,8 @@ public final class SiloModel {
 			LOGGER.info("Simulating changes from year " + year + " to year " + (year + 1));
 			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-			EventManager em = new EventManager(dataContainer);
+			final EventManager em = new EventManager(dataContainer);
+			final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
 			if (trackTime) startTime = System.currentTimeMillis();
 			modelContainer.getIomig().setupInOutMigration(year);
@@ -162,11 +164,11 @@ public final class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 2][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			dataContainer.getHouseholdData().setUpChangeOfJob(year);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
+			householdData.setUpChangeOfJob(year);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
 			if (trackTime) timeCounter[EventTypes.values().length + 3][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-            List<Couple> couples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+            List<Couple> couples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear(householdData.getPersons());
 			if (trackTime) timeCounter[EventTypes.values().length + 5][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
@@ -198,7 +200,7 @@ public final class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 6][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			if (year != Properties.get().main.implementation.BASE_YEAR) dataContainer.getHouseholdData().adjustIncome();
+			if (year != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
 			if (trackTime) timeCounter[EventTypes.values().length + 9][year] += System.currentTimeMillis() - startTime;
 
 			if (trackTime) startTime = System.currentTimeMillis();
@@ -284,8 +286,8 @@ public final class SiloModel {
 			}
 
 			if (trackTime) startTime = System.currentTimeMillis();
-			int[] carChangeCounter = modelContainer.getCarOwnershipModel().updateCarOwnership(dataContainer.getHouseholdData().getUpdatedHouseholds());
-			dataContainer.getHouseholdData().clearUpdatedHouseholds();
+			int[] carChangeCounter = modelContainer.getCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
+			householdData.clearUpdatedHouseholds();
 			if (trackTime) timeCounter[EventTypes.values().length + 11][year] += System.currentTimeMillis() - startTime;
 
 			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
@@ -303,8 +305,8 @@ public final class SiloModel {
 			EventManager.logEvents(carChangeCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
-			LOGGER.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getPersonCount() +
-					" persons, " + dataContainer.getHouseholdData().getHouseholds().size() + " households and "  +
+			LOGGER.info("  Finished this simulation period with " + householdData.getPersonCount() +
+					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 			if (SiloUtil.modelStopper("check")) break;
 		}

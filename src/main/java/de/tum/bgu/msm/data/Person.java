@@ -45,7 +45,6 @@ public final class Person {
     private int educationLevel = 0;
     private Nationality nationality = Nationality.german;
     private float travelTime = 0;
-    private int hhSize = 0;
     private int jobTAZ = 0;
     private boolean driverLicense = false;
     private int schoolType = 0;
@@ -158,10 +157,6 @@ public final class Person {
     public void setTravelTime(float travelTime){ this.travelTime = travelTime;}
 
     public float getTravelTime() { return travelTime; }
-
-    public void setHhSize(int hhSize){ this.hhSize = hhSize;}
-
-    public int getHhSize() { return hhSize; }
 
     public void setJobTAZ(int jobTAZ){ this.jobTAZ = jobTAZ;}
 
