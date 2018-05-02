@@ -229,7 +229,7 @@ public final class SiloModel {
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();
-					modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer);
+					modelContainer.getLph().chooseLeaveParentHh(event[1]);
 					if (trackTime) timeCounter[event[0]][year] += System.currentTimeMillis() - startTime;
 				} else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 					if (trackTime) startTime = System.currentTimeMillis();

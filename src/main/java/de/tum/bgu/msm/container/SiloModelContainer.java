@@ -144,7 +144,6 @@ public class SiloModelContainer {
 
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer);
-        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         DriversLicense driversLicense = new DriversLicense(dataContainer);
 
@@ -176,6 +175,7 @@ public class SiloModelContainer {
         MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
+        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,

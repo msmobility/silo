@@ -23,7 +23,7 @@ public class ChangeSchoolUnivModelTest {
     }
 
     @Test
-    public void testLicenseChange() {
+    public void testSchoolChange() {
         Person person = dataContainer.getHouseholdData().createPerson(0, 20, 2, Race.other, 1, 0, 0);
         person.setSchoolPlace(10);
         Assert.assertEquals(0, person.getEducationLevel());

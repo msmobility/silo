@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
+import de.tum.bgu.msm.data.PersonType;
 import de.tum.bgu.msm.models.demography.LeaveParentHhJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,17 +20,7 @@ public class LeaveParentHhTest {
 
     @Test
     public void testModelOne() {
-        Assert.assertEquals(0.0003, calculator.calculateLeaveParentsProbability(31), 0.);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testModelFailures() {
-        calculator.calculateLeaveParentsProbability(200);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testModelFailuresTwo() {
-        calculator.calculateLeaveParentsProbability(-2);
+        Assert.assertEquals(0.0003, calculator.calculateLeaveParentsProbability(PersonType.WOMEN_AGE_40_TO_44), 0.);
     }
 
 }
