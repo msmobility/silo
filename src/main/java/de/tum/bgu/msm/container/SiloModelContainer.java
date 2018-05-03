@@ -2,14 +2,25 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
-import de.tum.bgu.msm.models.demography.*;
+import de.tum.bgu.msm.models.demography.BirthModel;
+import de.tum.bgu.msm.models.demography.ChangeSchoolUnivModel;
+import de.tum.bgu.msm.models.demography.DeathModel;
+import de.tum.bgu.msm.models.demography.DriversLicense;
+import de.tum.bgu.msm.models.demography.EmploymentModel;
+import de.tum.bgu.msm.models.demography.LeaveParentHhModel;
+import de.tum.bgu.msm.models.demography.MarryDivorceModel;
 import de.tum.bgu.msm.models.jobmography.UpdateJobs;
-import de.tum.bgu.msm.models.realEstate.*;
+import de.tum.bgu.msm.models.realEstate.ConstructionModel;
+import de.tum.bgu.msm.models.realEstate.ConstructionOverwrite;
+import de.tum.bgu.msm.models.realEstate.DemolitionModel;
+import de.tum.bgu.msm.models.realEstate.PricingModel;
+import de.tum.bgu.msm.models.realEstate.RenovationModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
@@ -17,9 +28,9 @@ import de.tum.bgu.msm.models.relocation.munich.MovesModelMuc;
 import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.core.config.Config;
 
 /**
@@ -127,8 +138,9 @@ public class SiloModelContainer {
         }
         if (runMatsim) {
             LOGGER.info("  MATSim is used as the transport model");
-            travelTimes = new MatsimTravelTimes();
-            transportModel = new MatsimTransportModel(dataContainer, matsimConfig, (MatsimTravelTimes) travelTimes);
+            MatsimTransportModel tmpModel = new MatsimTransportModel(dataContainer, matsimConfig);
+            transportModel = tmpModel ;
+            travelTimes = tmpModel.getTravelTimes() ;
         } else {
             travelTimes = new SkimTravelTimes();
             if (runTravelDemandModel) {

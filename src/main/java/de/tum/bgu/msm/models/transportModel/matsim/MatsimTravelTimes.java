@@ -1,13 +1,20 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import de.tum.bgu.msm.data.Person ;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.TripRouter;
+import org.matsim.facilities.Facility;
+import org.matsim.pt.router.FakeFacility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -16,19 +23,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MatsimTravelTimes extends SkimTravelTimes {
+/* deliberately package */ final class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
+	private SkimTravelTimes delegate = new SkimTravelTimes() ;
 	private LeastCostPathTree leastCoastPathTree;
 	private Network network;
+	private TripRouter tripRouter;
 	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
-	public void update(LeastCostPathTree leastCoastPathTree, Map<Integer,SimpleFeature> zoneFeatureMap, Network network) {
+	void update(LeastCostPathTree leastCoastPathTree, Map<Integer, SimpleFeature> zoneFeatureMap, Network network, TripRouter tripRouter) {
         this.leastCoastPathTree = leastCoastPathTree;
         this.network = network;
-        this.treesForNodesByTimes.clear();
+		this.tripRouter = tripRouter;
+		this.treesForNodesByTimes.clear();
         updateZoneConnections(zoneFeatureMap);
     }
 
@@ -52,7 +62,7 @@ public class MatsimTravelTimes extends SkimTravelTimes {
 
 	@Override
 	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
-
+		
 		if(TransportMode.car.equals(mode)) {
 			double sumTravelTime_min = 0.;
 
@@ -83,8 +93,23 @@ public class MatsimTravelTimes extends SkimTravelTimes {
 			}
 			return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
 		} else {
-		    //TODO: reconsider matsim pt travel times. nk apr'18
-            return super.getTravelTime(origin, destination, timeOfDay_s, mode);
+			
+//			// yyyyyy should work as follows (if we had the information). kai, may'18
+//			Facility fromFacility = null ;
+//			Facility toFacility = null ;
+//			org.matsim.api.core.v01.population.Person person = null ;
+//			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
+//			double ttime = 0. ;
+//			for ( PlanElement pe : trip ) {
+//				if ( pe instanceof Leg) {
+//					ttime += ((Leg) pe).getTravelTime() ;
+//				}
+//			}
+//			return ttime ;
+			
+			//TODO: reconsider matsim pt travel times. nk apr'18
+            return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
 		}
 	}
+	
 }

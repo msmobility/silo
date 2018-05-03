@@ -8,7 +8,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.pt.router.TransitRouterConfig;
 import org.matsim.pt.router.TransitRouterNetwork;
 
-public class MatsimPTDistances {
+/* deliberately package */ class MatsimPTDistances {
 
 	private final TransitRouterNetwork transitRouterNetwork;
 	private final GeoDataMuc geoData;
