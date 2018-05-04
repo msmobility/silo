@@ -6,7 +6,7 @@ package de.tum.bgu.msm.events;
  * Created on 8 December 2009 in Santa Fe
 **/
 
-public enum EventTypes {
+public enum EventType {
 
     // person events
     BIRTHDAY,

@@ -3,8 +3,10 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.EventHandler;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.models.AbstractModel;
 
 /**
@@ -12,21 +14,24 @@ import de.tum.bgu.msm.models.AbstractModel;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-public class ChangeSchoolUnivModel extends AbstractModel {
+public class ChangeSchoolUnivModel extends AbstractModel implements EventHandler{
 
     public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
         super(dataContainer);
     }
 
-    public void updateSchoolUniv (int perId) {
-        // check if person needs to find a new school
-        Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
-        if (pp == null) {
-            return;  // person has died or moved away
-        }
+    @Override
+    public void handleEvent(Event event) {
+        if(event.getType() == EventType.CHECK_SCHOOL_UNIV) {
+            // check if person needs to find a new school
+            Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getId());
+            if (pp == null) {
+                return;  // person has died or moved away
+            }
 
-        if (pp.getAge() == 19) {
-            updateEducation(pp);
+            if (pp.getAge() == 19) {
+                updateEducation(pp);
+            }
         }
     }
 
@@ -37,7 +42,7 @@ public class ChangeSchoolUnivModel extends AbstractModel {
         // todo if 2 is the right code for someone who graduates from high school
         //todo also check occupation transition to worker? 'nk
         person.setEducationLevel(2);
-        EventManager.countEvent(EventTypes.CHECK_SCHOOL_UNIV);
+        EventManager.countEvent(EventType.CHECK_SCHOOL_UNIV);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school. New school place (0 = left school) " + schoolId);

@@ -21,10 +21,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -43,7 +40,7 @@ import java.util.*;
  * Revised on 5 March 2015 in Wheaton, MD
  **/
 
-public class MarryDivorceModel extends AbstractModel {
+public class MarryDivorceModel extends AbstractModel implements EventHandler{
 
     private final static Logger LOGGER = Logger.getLogger(MarryDivorceModel.class);
 
@@ -64,6 +61,8 @@ public class MarryDivorceModel extends AbstractModel {
     // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
+
+    private final Map<Integer, Integer> plannedCouples = new HashMap<>();
 
     public MarryDivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel,
                              InOutMigration iomig, CreateCarOwnershipModel carOwnership) {
@@ -88,19 +87,20 @@ public class MarryDivorceModel extends AbstractModel {
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
-    public List<Couple> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
+    public List<Event> selectCouplesToGetMarriedThisYear(Collection<Person> persons, int year) {
         if (!EventRules.runMarriages()) {
             return Collections.emptyList();
         }
         LOGGER.info("  Selecting couples to get married this year");
 
-        final List<Couple> couplesToMarryThisYear = new ArrayList<>();
+        final List<Event> couplesToMarryThisYear = new ArrayList<>();
         final MarriageMarket market = defineMarriageMarket(persons);
 
         for (Person person : market.activePartners) {
             final Person partner = findPartner(market, person);
             if (partner != null) {
-                couplesToMarryThisYear.add(new Couple(person, partner));
+                couplesToMarryThisYear.add(new EventImpl(EventType.CHECK_MARRIAGE, person.getId(),year));
+                plannedCouples.put(person.getId(), partner.getId());
                 if (person.getId() == SiloUtil.trackPp || partner.getId() == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Person " + person.getId() + " chose " +
                             "person " + partner + " to marry and they were scheduled as a couple to marry this year.");
@@ -214,16 +214,16 @@ public class MarryDivorceModel extends AbstractModel {
         return SiloUtil.getRandomNumberAsFloat() < share;
     }
 
-    public void marryCouple(int[] couple) {
+    public void marryCouple(int id1, int id2) {
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Person partner1 = householdData.getPersonFromId(couple[0]);
+        final Person partner1 = householdData.getPersonFromId(id1);
 
         if (!EventRules.ruleGetMarried(partner1)) {
             return;  // Person got already married this simulation period or died or moved away
         }
 
-        final Person partner2 = householdData.getPersonFromId(couple[1]);
+        final Person partner2 = householdData.getPersonFromId(id2);
         if (!EventRules.ruleGetMarried(partner2)) {
             return;  // Person got already married this simulation period or died or moved away
         }
@@ -238,7 +238,7 @@ public class MarryDivorceModel extends AbstractModel {
         if (success) {
             partner1.setRole(PersonRole.MARRIED);
             partner2.setRole(PersonRole.MARRIED);
-            EventManager.countEvent(EventTypes.CHECK_MARRIAGE);
+            EventManager.countEvent(EventType.CHECK_MARRIAGE);
             householdData.addHouseholdThatChanged(hhOfPartner1);
             householdData.addHouseholdThatChanged(hhOfPartner2);
         } else {
@@ -412,11 +412,26 @@ public class MarryDivorceModel extends AbstractModel {
                     oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                     " has divorced from household " + oldHh + " and established the new household " +
                     newHhId + ".");
-            EventManager.countEvent(EventTypes.CHECK_DIVORCE);
+            EventManager.countEvent(EventType.CHECK_DIVORCE);
             householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
             if (Properties.get().main.implementation == Implementation.MUNICH) {
                 carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
             }
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        EventType type = event.getType();
+        switch (type) {
+            case CHECK_DIVORCE:
+                chooseDivorce(event.getId());
+                break;
+            case CHECK_MARRIAGE:
+                int id1 = event.getId();
+                int id2 = plannedCouples.get(id1);
+                marryCouple(id1, id2);
+                break;
         }
     }
 

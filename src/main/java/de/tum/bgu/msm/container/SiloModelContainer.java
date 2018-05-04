@@ -2,7 +2,6 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
@@ -30,7 +29,6 @@ import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.core.config.Config;
 
 /**
@@ -161,10 +159,7 @@ public class SiloModelContainer {
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        InOutMigration iomig = new InOutMigration(dataContainer);
-        ConstructionModel cons = new ConstructionModel(dataContainer);
         RenovationModel renov = new RenovationModel(dataContainer);
-        DemolitionModel demol = new DemolitionModel(dataContainer);
         PricingModel prm = new PricingModel(dataContainer);
         UpdateJobs updateJobs = new UpdateJobs(dataContainer);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
@@ -184,10 +179,13 @@ public class SiloModelContainer {
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
-        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
+        ConstructionModel cons = new ConstructionModel(dataContainer, move);
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
+        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense);
+        DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
+        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,

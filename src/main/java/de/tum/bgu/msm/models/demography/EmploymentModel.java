@@ -2,11 +2,8 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 
 /**
@@ -15,7 +12,7 @@ import de.tum.bgu.msm.models.AbstractModel;
  * Created on 1 March 2013 in Santa Fe
  **/
 
-public class EmploymentModel extends AbstractModel {
+public class EmploymentModel extends AbstractModel implements EventHandler{
     private final Accessibility accessibility;
 
     public EmploymentModel(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -53,7 +50,7 @@ public class EmploymentModel extends AbstractModel {
         person.setWorkplace(job.getId());
         person.setOccupation(1);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
-        EventManager.countEvent(EventTypes.FIND_NEW_JOB);
+        EventManager.countEvent(EventType.FIND_NEW_JOB);
         dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
@@ -66,10 +63,22 @@ public class EmploymentModel extends AbstractModel {
             return;  // person has died or moved away
         }
         dataContainer.getJobData().quitJob(true, person);
-        EventManager.countEvent(EventTypes.QUIT_JOB);
+        EventManager.countEvent(EventType.QUIT_JOB);
         dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
         if (perId == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        switch(event.getType()) {
+            case FIND_NEW_JOB:
+                lookForJob(event.getId());
+                break;
+            case QUIT_JOB:
+                quitJob(event.getId());
+                break;
         }
     }
 }

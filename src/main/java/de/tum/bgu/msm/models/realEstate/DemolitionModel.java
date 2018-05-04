@@ -3,14 +3,12 @@ package de.tum.bgu.msm.models.realEstate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.relocation.InOutMigration;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
@@ -22,12 +20,16 @@ import java.io.Reader;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel extends AbstractModel {
+public class DemolitionModel extends AbstractModel implements EventHandler{
 
     private final DemolitionJSCalculator calculator;
+    private final MovesModelI moves;
+    private final InOutMigration inOutMigration;
 
-    public DemolitionModel(SiloDataContainer dataContainer) {
+    public DemolitionModel(SiloDataContainer dataContainer, MovesModelI moves, InOutMigration inOutMigration) {
         super(dataContainer);
+        this.moves = moves;
+        this.inOutMigration = inOutMigration;
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
@@ -38,39 +40,42 @@ public class DemolitionModel extends AbstractModel {
         calculator = new DemolitionJSCalculator(reader);
     }
 
-    public void checkDemolition (int dwellingId, SiloModelContainer modelContainer, int year) {
+    @Override
+    public void handleEvent(Event event) {
+        if(event.getType() == EventType.DD_DEMOLITION) {
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
+            if (!EventRules.ruleDemolishDwelling(dd)) {
+                return;  // Dwelling not available for demolition
+            }
 
-        Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
-        if (!EventRules.ruleDemolishDwelling(dd)) {
-            return;  // Dwelling not available for demolition
-        }
-
-        if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, year)) {
-            demolishDwelling(dwellingId, modelContainer, dd);
+            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, event.getYear())) {
+                demolishDwelling(dd);
+            }
         }
     }
 
-    private void demolishDwelling(int dwellingId, SiloModelContainer modelContainer, Dwelling dd) {
+    private void demolishDwelling(Dwelling dd) {
+        int dwellingId = dd.getId();
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(dd.getResidentId());
         if (hh != null) {
-            moveOutHousehold(dwellingId, modelContainer, dataContainer, hh);
+            moveOutHousehold(dwellingId, hh);
         } else {
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
         }
         dataContainer.getRealEstateData().removeDwelling(dwellingId);
-        EventManager.countEvent(EventTypes.DD_DEMOLITION);
+        EventManager.countEvent(EventType.DD_DEMOLITION);
         if (dwellingId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " +
                     dwellingId + " was demolished.");
         }
     }
 
-    private void moveOutHousehold(int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer, Household hh) {
-        int idNewDD = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
+    private void moveOutHousehold(int dwellingId, Household hh) {
+        int idNewDD = moves.searchForNewDwelling(hh.getPersons());
         if (idNewDD > 0) {
-            modelContainer.getMove().moveHousehold(hh, -1, idNewDD);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
+            moves.moveHousehold(hh, -1, idNewDD);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
         } else {
-            modelContainer.getIomig().outMigrateHh(hh.getId(), true);
+            inOutMigration.outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             IssueCounter.countLackOfDwellingForcedOutmigration();
         }

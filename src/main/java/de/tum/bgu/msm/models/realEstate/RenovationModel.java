@@ -4,9 +4,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -19,7 +17,7 @@ import java.io.Reader;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel extends AbstractModel {
+public class RenovationModel extends AbstractModel implements EventHandler{
 
 	private double[][] renovationProbability;
 
@@ -27,7 +25,6 @@ public class RenovationModel extends AbstractModel {
         super(dataContainer);
         setupRenovationModel();
 	}
-
 
 	private void setupRenovationModel() {
 
@@ -44,42 +41,43 @@ public class RenovationModel extends AbstractModel {
         }
 	}
 
+    @Override
+    public void handleEvent(Event event) {
+        if (event.getType()==EventType.DD_CHANGE_QUAL) {
+            //check if dwelling is renovated or deteriorates
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
+            if (!EventRules.ruleChangeDwellingQuality(dd)) return;  // Dwelling not available for renovation
+            int currentQuality = dd.getQuality();
+            int selected = SiloUtil.select(getProbabilities(currentQuality));
 
-    public void checkRenovation(int dwellingId) {
-        //check if dwelling is renovated or deteriorates
-        Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
-        if (!EventRules.ruleChangeDwellingQuality(dd)) return;  // Dwelling not available for renovation
-        int currentQuality = dd.getQuality();
-        int selected = SiloUtil.select(getProbabilities(currentQuality));
-
-        if (selected != 2) {
-            EventManager.countEvent(EventTypes.DD_CHANGE_QUAL);
-            RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
-        }
-        switch (selected) {
-            case (0): {
-                RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
-                dd.setQuality(currentQuality - 2);
-                break;
+            if (selected != 2) {
+                EventManager.countEvent(EventType.DD_CHANGE_QUAL);
+                RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
             }
-            case (1): {
-                RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
-                dd.setQuality(currentQuality - 1);
-                break;
-            }
-            case (3): {
-                RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
-                dd.setQuality(currentQuality + 1);
-                break;
-            }
-            case (4): {
-                RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
-                dd.setQuality(currentQuality + 2);
-                break;
+            switch (selected) {
+                case (0): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
+                    dd.setQuality(currentQuality - 2);
+                    break;
+                }
+                case (1): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
+                    dd.setQuality(currentQuality - 1);
+                    break;
+                }
+                case (3): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
+                    dd.setQuality(currentQuality + 1);
+                    break;
+                }
+                case (4): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
+                    dd.setQuality(currentQuality + 2);
+                    break;
+                }
             }
         }
     }
-
 
     private double[] getProbabilities (int currentQual) {
         // return probabilities to upgrade or deteriorate based on current quality of dwelling and average

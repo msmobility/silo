@@ -7,10 +7,9 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -1048,7 +1047,7 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
 	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
 		pw.print("Year");
-		for (EventTypes et : EventTypes.values()) pw.print("," + et.toString());
+		for (EventType et : EventType.values()) pw.print("," + et.toString());
 		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
 				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
 				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
@@ -1056,22 +1055,22 @@ static void writeOutTimeTracker (long[][] timeCounter) {
 	}
 	for (int year = startYear; year < Properties.get().main.endYear; year ++) {
 		pw.print(year);
-		for (EventTypes et: EventTypes.values()) {
+		for (EventType et: EventType.values()) {
 			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
 			pw.print("," + timeInMinutes);
 		}
-		pw.print("," + timeCounter[EventTypes.values().length][year] / 60000f);       // setup inmigration/outmigration
-		pw.print("," + timeCounter[EventTypes.values().length + 1][year] / 60000f);   // setup construction of new dwellings
-		pw.print("," + timeCounter[EventTypes.values().length + 2][year] / 60000f);   // update job inventory
-		pw.print("," + timeCounter[EventTypes.values().length + 3][year] / 60000f);   // setup job change model
-		pw.print("," + timeCounter[EventTypes.values().length + 4][year] / 60000f);   // setup list of events
-		pw.print("," + timeCounter[EventTypes.values().length + 5][year] / 60000f);   // fill marriage market
-		pw.print("," + timeCounter[EventTypes.values().length + 6][year] / 60000f);   // calculate average housing satisfaction
-		pw.print("," + timeCounter[EventTypes.values().length + 7][year] / 60000f);   // summarize data
-		pw.print("," + timeCounter[EventTypes.values().length + 8][year] / 60000f);   // update real estate prices
-		pw.print("," + timeCounter[EventTypes.values().length + 9][year] / 60000f);   // plan income change
-		pw.print("," + timeCounter[EventTypes.values().length + 10][year] / 60000f);  // add dwellings from overwrite
-        pw.print("," + timeCounter[EventTypes.values().length + 11][year] / 60000f);  // add or relinquish cars
+		pw.print("," + timeCounter[EventType.values().length][year] / 60000f);       // setup inmigration/outmigration
+		pw.print("," + timeCounter[EventType.values().length + 1][year] / 60000f);   // setup construction of new dwellings
+		pw.print("," + timeCounter[EventType.values().length + 2][year] / 60000f);   // update job inventory
+		pw.print("," + timeCounter[EventType.values().length + 3][year] / 60000f);   // setup job change model
+		pw.print("," + timeCounter[EventType.values().length + 4][year] / 60000f);   // setup list of events
+		pw.print("," + timeCounter[EventType.values().length + 5][year] / 60000f);   // fill marriage market
+		pw.print("," + timeCounter[EventType.values().length + 6][year] / 60000f);   // calculate average housing satisfaction
+		pw.print("," + timeCounter[EventType.values().length + 7][year] / 60000f);   // summarize data
+		pw.print("," + timeCounter[EventType.values().length + 8][year] / 60000f);   // update real estate prices
+		pw.print("," + timeCounter[EventType.values().length + 9][year] / 60000f);   // plan income change
+		pw.print("," + timeCounter[EventType.values().length + 10][year] / 60000f);  // add dwellings from overwrite
+        pw.print("," + timeCounter[EventType.values().length + 11][year] / 60000f);  // add or relinquish cars
 		pw.println();
 	}
 	pw.close();

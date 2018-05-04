@@ -4,14 +4,13 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.demography.DriversLicense;
+import de.tum.bgu.msm.models.demography.EmploymentModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -23,9 +22,14 @@ import java.util.HashMap;
  * Created on 15 January 2010 in Albuquerque
  **/
 
-public class InOutMigration extends AbstractModel {
+public class InOutMigration extends AbstractModel implements EventHandler{
 
     private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
+
+    private final EmploymentModel employment;
+    private final MovesModelI movesModel;
+    private final CreateCarOwnershipModel carOwnership;
+    private final DriversLicense driversLicense;
 
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
@@ -37,8 +41,12 @@ public class InOutMigration extends AbstractModel {
     public static int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainer dataContainer) {
+    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, DriversLicense driversLicense) {
         super(dataContainer);
+        this.employment = employment;
+        this.movesModel = movesModel;
+        this.carOwnership = carOwnership;
+        this.driversLicense = driversLicense;
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
@@ -132,7 +140,7 @@ public class InOutMigration extends AbstractModel {
     }
 
 
-    public void inmigrateHh(int hhId, SiloModelContainer modelContainer) {
+    public void inmigrateHh(int hhId) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
         if (!EventRules.ruleInmigrate()) return;
@@ -158,29 +166,29 @@ public class InOutMigration extends AbstractModel {
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                modelContainer.getEmployment().lookForJob(per.getId());
+                employment.lookForJob(per.getId());
                 if (per.getWorkplace() < 1 ) {
                     per.setOccupation(2);
                 }
             }
-            modelContainer.getDriversLicense().checkLicenseCreation(per.getId());
+            driversLicense.checkLicenseCreation(per.getId());
         }
         hh.setType();
         hh.determineHouseholdRace();
         HouseholdDataManager.findMarriedCouple(hh);
         HouseholdDataManager.defineUnmarriedPersons(hh);
-        int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
+        int newDdId = movesModel.searchForNewDwelling(hh.getPersons());
         if (newDdId > 0) {
-            modelContainer.getMove().moveHousehold(hh, -1, newDdId);
+            movesModel.moveHousehold(hh, -1, newDdId);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);
             return;
         }
 
-        EventManager.countEvent(EventTypes.INMIGRATION);
+        EventManager.countEvent(EventType.INMIGRATION);
         if(Properties.get().main.implementation == Implementation.MUNICH) {
-            modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(hh); // set initial car ownership of new household
+            carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
         }
         inMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
@@ -198,7 +206,7 @@ public class InOutMigration extends AbstractModel {
         if (!EventRules.ruleOutmigrate(hh) && !overwriteEventRules) {
             return;
         }
-        EventManager.countEvent(EventTypes.OUT_MIGRATION);
+        EventManager.countEvent(EventType.OUT_MIGRATION);
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         JobDataManager jobData = dataContainer.getJobData();
@@ -213,4 +221,16 @@ public class InOutMigration extends AbstractModel {
         dataContainer.getHouseholdData().removeHousehold(hhId);
     }
 
+    @Override
+    public void handleEvent(Event event) {
+        EventType type = event.getType();
+        switch (type) {
+            case INMIGRATION:
+                inmigrateHh(event.getId());
+                break;
+            case OUT_MIGRATION:
+                outMigrateHh(event.getId(), true);
+                break;
+        }
+    }
 }

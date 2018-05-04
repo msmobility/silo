@@ -19,12 +19,8 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
@@ -39,7 +35,7 @@ import java.util.Collections;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-public class LeaveParentHhModel extends AbstractModel {
+public class LeaveParentHhModel extends AbstractModel implements EventHandler{
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
@@ -62,15 +58,18 @@ public class LeaveParentHhModel extends AbstractModel {
         calculator = new LeaveParentHhJSCalculator(reader);
     }
 
-    public void chooseLeaveParentHh(int perId) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Person per = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleLeaveParHousehold(per)){
-            return;
-        }
-        final double prob = calculator.calculateLeaveParentsProbability(per.getType());
-        if (SiloUtil.getRandomNumberAsDouble() < prob) {
-            leaveHousehold(per);
+    @Override
+    public void handleEvent(Event event) {
+        if(event.getType() == EventType.CHECK_LEAVE_PARENT_HH) {
+            final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+            final Person per = householdData.getPersonFromId(event.getId());
+            if (!EventRules.ruleLeaveParHousehold(per)){
+                return;
+            }
+            final double prob = calculator.calculateLeaveParentsProbability(per.getType());
+            if (SiloUtil.getRandomNumberAsDouble() < prob) {
+                leaveHousehold(per);
+            }
         }
     }
 
@@ -98,7 +97,7 @@ public class LeaveParentHhModel extends AbstractModel {
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
-        EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
+        EventManager.countEvent(EventType.CHECK_LEAVE_PARENT_HH);
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
         }

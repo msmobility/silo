@@ -7,9 +7,7 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -22,7 +20,7 @@ import java.io.Reader;
  * Revised on Jan 19, 2018
  *
  */
-public class DeathModel extends AbstractModel {
+public class DeathModel extends AbstractModel implements EventHandler{
 
     private DeathJSCalculator calculator;
 
@@ -40,23 +38,6 @@ public class DeathModel extends AbstractModel {
         }
         calculator = new DeathJSCalculator(reader);
 	}
-
-
-	public void chooseDeath(int perId) {
-        // simulate if person with ID perId dies in this simulation period
-
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Person person = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleDeath(person)) {
-            return;  // Person has moved away
-        }
-
-        int age = Math.min(person.getAge(), 100);
-        int sexIndex = person.getGender();
-        if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, sexIndex)) {
-            die(person);
-        }
-    }
 
     void die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -85,10 +66,28 @@ public class DeathModel extends AbstractModel {
             householdData.removeHousehold(hhOfPersonToDie.getId());
         }
 
-        EventManager.countEvent(EventTypes.CHECK_DEATH);
+        EventManager.countEvent(EventType.CHECK_DEATH);
         if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
                     " has passed away.");
+        }
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        if(event.getType() == EventType.CHECK_DEATH) {
+            // simulate if person with ID perId dies in this simulation period
+
+            HouseholdDataManager householdData = dataContainer.getHouseholdData();
+            final Person person = householdData.getPersonFromId(event.getId());
+            if (!EventRules.ruleDeath(person)) {
+                return;  // Person has moved away
+            }
+
+            final int age = Math.min(person.getAge(), 100);
+            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+                die(person);
+            }
         }
     }
 }

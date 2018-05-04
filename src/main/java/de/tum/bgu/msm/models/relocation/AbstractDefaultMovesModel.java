@@ -4,9 +4,10 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.events.Event;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -80,27 +81,32 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     @Override
-    public void chooseMove (int hhId) {
-        // simulates (a) if this household moves and (b) where this household moves
+    public void handleEvent (Event event) {
+        if(event.getType() == EventType.HOUSEHOLD_MOVE) {
+            // simulates (a) if this household moves and (b) where this household moves
 
-        Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-        if (!EventRules.ruleHouseholdMove(household)) {
-            return;  // Household does not exist anymore
-        }
-        if (!moveOrNot(household)) {
-            return;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
-        }
+            int hhId = event.getId();
+            Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
+            if (!EventRules.ruleHouseholdMove(household)) {
+                return;  // Household does not exist anymore
+            }
+            if (!moveOrNot(household)) {
+                return;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+            }
 
-        int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
-        if (idNewDD > 0) {
-            moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
-            EventManager.countEvent(EventTypes.HOUSEHOLD_MOVE);
-            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
-            if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                    household.getDwellingId());
-        } else {
-            if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
-                    "could not find an adequate dwelling.");
+            int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
+            if (idNewDD > 0) {
+                moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
+                EventManager.countEvent(EventType.HOUSEHOLD_MOVE);
+                dataContainer.getHouseholdData().addHouseholdThatMoved(household);
+                if (hhId == SiloUtil.trackHh)
+                    SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+                            household.getDwellingId());
+            } else {
+                if (hhId == SiloUtil.trackHh)
+                    SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
+                            "could not find an adequate dwelling.");
+            }
         }
     }
 

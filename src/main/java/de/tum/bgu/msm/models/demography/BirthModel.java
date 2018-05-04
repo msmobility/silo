@@ -23,9 +23,7 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -38,7 +36,7 @@ import java.io.Reader;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel {
+public class BirthModel extends AbstractModel implements EventHandler{
 
     private static BirthJSCalculator calculator;
 
@@ -56,6 +54,19 @@ public class BirthModel extends AbstractModel {
         }
         float localScaler = Properties.get().demographics.localScaler;
         calculator = new BirthJSCalculator(reader, localScaler);
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        EventType type = event.getType();
+        switch(type) {
+            case BIRTHDAY:
+                checkBirthday(event);
+                break;
+            case CHECK_BIRTH:
+                chooseBirth(event.getId());
+                break;
+        }
     }
 
 
@@ -101,23 +112,12 @@ public class BirthModel extends AbstractModel {
             SiloUtil.trackWriter.println("For unto us a child was born... " + person.getId() + " gave birth" +
                     "to a child named " + id + ". Added to household " + household.getId() + ".");
         }
-        EventManager.countEvent(EventTypes.CHECK_BIRTH);
-    }
-
-
-    public void checkBirthday(int personId) {
-        // increase age of this person by one year
-        Person per = dataContainer.getHouseholdData().getPersonFromId(personId);
-
-        if (!EventRules.ruleBirthday(per)) {
-            return;  // Person has died or moved away
-        }
-        celebrateBirthday(per);
+        EventManager.countEvent(EventType.CHECK_BIRTH);
     }
 
     void celebrateBirthday(Person per) {
         per.birthday();
-        EventManager.countEvent(EventTypes.BIRTHDAY);
+        EventManager.countEvent(EventType.BIRTHDAY);
         if (per.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
                     per.getId() + ". New age is " + per.getAge() + ".");
@@ -132,4 +132,17 @@ public class BirthModel extends AbstractModel {
         return (calculator.calculateBirthProbability(age) > 0);
     }
 
+    private void checkBirthday(Event event) {
+        if(event.getType() == EventType.BIRTHDAY) {
+            // increase age of this person by one year
+            Person per = dataContainer.getHouseholdData().getPersonFromId(event.getId());
+
+            if (!EventRules.ruleBirthday(per)) {
+                return;  // Person has died or moved away
+            }
+            celebrateBirthday(per);
+        } else {
+
+        }
+    }
 }

@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.events.EventHandler;
 
 import java.util.List;
 
@@ -12,15 +13,13 @@ import java.util.List;
  * @author Rolf Moeckel
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
  */
-public interface MovesModelI {
+public interface MovesModelI extends EventHandler{
 
     void calculateAverageHousingSatisfaction();
 
     double[] updateUtilitiesOfVacantDwelling (Dwelling dd);
 
     void calculateRegionalUtilities();
-
-    void chooseMove (int hhId);
 
     int searchForNewDwelling(List<Person> persons);
 
