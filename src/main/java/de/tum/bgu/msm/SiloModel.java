@@ -142,14 +142,14 @@ public final class SiloModel {
 	}
 
 	private void runYearByYear() {
-		for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
-			if (scalingYears.contains(year)) {
-				SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
-			}
-			LOGGER.info("Simulating changes from year " + year + " to year " + (year + 1));
-			IssueCounter.setUpCounter();    // setup issue counter for this simulation period
-			SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-			final EventManager em = new EventManager(dataContainer);
+        final EventManager em = new EventManager(dataContainer);
+        for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
+            if (scalingYears.contains(year)) {
+                SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
+            }
+            LOGGER.info("Simulating changes from year " + year + " to year " + (year + 1));
+            IssueCounter.setUpCounter();    // setup issue counter for this simulation period
+            SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
 			final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
 			timer.start();
@@ -176,7 +176,7 @@ public final class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 5][year] += timer.millis();
 
 			if (trackTime) timer.reset();
-			em.createListOfEvents(couples);
+
 			if (trackTime) timeCounter[EventTypes.values().length + 4][year] += timer.millis();
 
 			if (skimYears.contains(year) && !tdmYears.contains(year) &&
@@ -212,6 +212,7 @@ public final class SiloModel {
 			if (trackTime) timeCounter[EventTypes.values().length + 7][year] += timer.millis();
 
 			LOGGER.info("  Simulating events");
+            em.createListOfEvents(couples);
 			// walk through all events
 			for (int i = 1; i <= em.getNumberOfEvents(); i++) {
 				int[] event = em.selectNextEvent();
@@ -274,6 +275,7 @@ public final class SiloModel {
                     modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
                 }
             }
+
 
 			if (trackTime) timer.reset();
 			modelContainer.getPrm().updatedRealEstatePrices();
