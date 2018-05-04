@@ -115,9 +115,11 @@ public final class SiloModel {
         } else {
             SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
                     Properties.get().main.startYear, Properties.get());
+			SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+					Properties.get().main.startYear, Properties.get());
+			// updateTransitSkim was outside the bracket before, but central code should not decide how matsim updates
+			// travel times.  If necessary, should be done inside the matsim adapter class. kai, may'18
         }
-        SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
-                Properties.get().main.startYear, Properties.get());
         modelContainer.getAcc().initialize();
         modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
     }

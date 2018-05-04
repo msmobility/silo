@@ -2,6 +2,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SkimUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -40,7 +42,12 @@ import java.util.Map;
 		this.tripRouter = tripRouter;
 		this.treesForNodesByTimes.clear();
         updateZoneConnections(zoneFeatureMap);
-    }
+		
+		
+		SkimUtil.updateTransitSkim(delegate,
+				Properties.get().main.startYear, Properties.get());
+		
+	}
 
 	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
 	    zoneCalculationNodesMap.clear();
