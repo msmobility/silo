@@ -13,6 +13,9 @@ import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Simulates demolition of dwellings
@@ -20,7 +23,7 @@ import java.io.Reader;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel extends AbstractModel implements EventHandler{
+public class DemolitionModel extends AbstractModel implements EventHandler, EventCreator{
 
     private final DemolitionJSCalculator calculator;
     private final MovesModelI moves;
@@ -41,10 +44,19 @@ public class DemolitionModel extends AbstractModel implements EventHandler{
     }
 
     @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
+            events.add(new EventImpl(EventType.DD_DEMOLITION, dwelling.getId(), year));
+        }
+        return events;
+    }
+
+    @Override
     public void handleEvent(Event event) {
         if(event.getType() == EventType.DD_DEMOLITION) {
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (!EventRules.ruleDemolishDwelling(dd)) {
+            if (dd == null) {
                 return;  // Dwelling not available for demolition
             }
 

@@ -5,8 +5,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.EventImpl;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,19 +31,16 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected String uecFileName;
     protected int dataSheetNumber;
     protected int numAltsMoveOrNot;
-//    protected int[] evalDwellingAvail;
-//    protected MovesDMU evaluateDwellingDmu;
+
     protected double[][][] utilityRegion;
 
     protected boolean logCalculationDwelling;
     protected boolean logCalculationRegion;
 
-    private int numAltsEvalDwelling;
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
     private double[] averageHousingSatisfaction;
 
-//    protected UtilityExpressionCalculator ddUtilityModel;
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -51,9 +49,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         this.accessibility = accessibility;
         uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
         dataSheetNumber = Properties.get().moves.dataSheet;
-//        logCalculationDwelling = Properties.get().moves.logHhRelocation;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
-        //evaluateDwellingDmu = new MovesDMU();
         setupMoveOrNotMove();
         setupEvaluateDwellings();
         setupSelectRegionModel();
@@ -73,11 +69,17 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht: HouseholdType.values()) {
             utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
-//            if (logCalculationDwelling) {
-//                ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
-//            }
         }
         return utilByHhType;
+    }
+
+    @Override
+    public List<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
+            events.add(new EventImpl(EventType.HOUSEHOLD_MOVE, hh.getId(), year));
+        }
+        return events;
     }
 
     @Override
@@ -87,7 +89,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
             int hhId = event.getId();
             Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-            if (!EventRules.ruleHouseholdMove(household)) {
+            if (household == null) {
                 return;  // Household does not exist anymore
             }
             if (!moveOrNot(household)) {
@@ -112,13 +114,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
 
     private void setupEvaluateDwellings() {
-//        int ddUtilityModelSheetNumber = Properties.get().moves.dwellingUtilSheet;
-//        ddUtilityModel = new UtilityExpressionCalculator(new File(uecFileName),
-//                ddUtilityModelSheetNumber,
-//                dataSheetNumber,
-//                SiloUtil.getRbHashMap(),
-//                MovesDMU.class);
-        //configure the JS calculator here here
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
         dwellingUtilityJSCalculator = new DwellingUtilityJSCalculator(reader);
     }
@@ -151,13 +146,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
         LOGGER.info("  Evaluating utility of dwellings for current residents and utility of vacant dwellings for all " +
                 "household types");
-        // everything is available
-        //obtain the number of alternatives
-//        numAltsEvalDwelling = ddUtilityModel.getNumberOfAlternatives();
-//        evalDwellingAvail = new int[numAltsEvalDwelling + 1];
-//        for (int i = 1; i < evalDwellingAvail.length; i++) {
-//            evalDwellingAvail[i] = 1;
-//        }
+
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getResidentId() == -1) {
@@ -169,10 +158,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
                 Household hh = householdData.getHouseholdFromId(dd.getResidentId());
                 double util = calculateDwellingUtilityOfHousehold(hh.getHouseholdType(), hh.getHhIncome(), dd);
                 dd.setUtilOfResident(util);
-                // log UEC values for each household
-//                if (logCalculationDwelling)
-//                    //return the alternatives
-//                    ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
             }
         }
     }

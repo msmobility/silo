@@ -3,14 +3,14 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.Event;
-import de.tum.bgu.msm.events.EventHandler;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventType;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Simulates if someone obtains a drivers license
@@ -18,7 +18,7 @@ import java.io.Reader;
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
 
-public class DriversLicense extends AbstractModel implements EventHandler{
+public class DriversLicense extends AbstractModel implements EventHandler, EventCreator{
 
     private LicenseJSCalculator calculator;
 
@@ -30,6 +30,15 @@ public class DriversLicense extends AbstractModel implements EventHandler{
     private void setup() {
         final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DriverLicenseCalc"));
         calculator = new LicenseJSCalculator(reader);
+    }
+
+    @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+            events.add(new EventImpl(EventType.CHECK_DRIVERS_LICENSE, person.getId(), year));
+        }
+        return events;
     }
 
     @Override

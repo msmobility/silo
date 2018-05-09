@@ -5,14 +5,11 @@ import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.models.realEstate.ConstructionModel;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,17 +24,16 @@ public class EventManager {
 
     private final static Logger LOGGER = Logger.getLogger(EventManager.class);
 
-    private final SiloDataContainer dataContainer;
-    private final SiloModelContainer modelContainer;
     private final long[][] timeCounter;
     private static Multiset<EventType> eventCounter = EnumMultiset.create(EventType.class);
+
     private final List<EventHandler> handlers = new ArrayList<>();
+    private final List<EventCreator> creators = new ArrayList<>();
+
     private final List<Event> events = new ArrayList<>();
     private final Timer timer = new Timer().start();
 
-    public EventManager(SiloDataContainer dataContainer, SiloModelContainer modelContainer, long[][] timeCounter) {
-        this.dataContainer = dataContainer;
-        this.modelContainer = modelContainer;
+    public EventManager(long[][] timeCounter) {
         this.timeCounter = timeCounter;
     }
 
@@ -45,112 +41,25 @@ public class EventManager {
         this.handlers.add(handler);
     }
 
+    public void registerEventCreator(EventCreator creator) {
+        this.creators.add(creator);
+    }
+
     public void simulateEvents(int year) {
-        createListOfEvents(year);
+        createEvents(year);
         processEvents();
     }
 
-    private void createListOfEvents(int year) {
+    private void createEvents(int year) {
         LOGGER.info("  Simulating events");
         events.clear();
-        final Collection<Person> persons = dataContainer.getHouseholdData().getPersons();
 
-        // create person events
-        for (Person per : persons) {
-            int id = per.getId();
-            // Birthday
-            if (EventRules.ruleBirthday(per)) {
-                events.add(new EventImpl(EventType.BIRTHDAY, id, year));
-            }
-            // Death
-            if (EventRules.ruleDeath(per)) {
-                events.add(new EventImpl(EventType.CHECK_DEATH, id, year));
-            }
-            // Birth
-            if (EventRules.ruleGiveBirth(per)) {
-                events.add(new EventImpl(EventType.CHECK_BIRTH, id, year));
-            }
-            // Leave parental household
-            if (EventRules.ruleLeaveParHousehold(per)) {
-                events.add(new EventImpl(EventType.CHECK_LEAVE_PARENT_HH, id, year));
-            }
-            // Divorce
-            if (EventRules.ruleGetDivorced(per)) {
-                events.add(new EventImpl(EventType.CHECK_DIVORCE, id, year));
-            }
-            // Change school
-            if (EventRules.ruleChangeSchoolUniversity(per)) {
-                events.add(new EventImpl(EventType.CHECK_SCHOOL_UNIV, id, year));
-            }
-            // Change drivers license
-            if (EventRules.ruleChangeDriversLicense(per)) {
-                events.add(new EventImpl(EventType.CHECK_DRIVERS_LICENSE, id, year));
-            }
-        }
-
-        // wedding events
-        timer.reset();
-        final List<Event> marriageEvents = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear(persons, year);
-        timeCounter[EventType.values().length + 5][year] += timer.millis();
-        events.addAll(marriageEvents);
-
-        // employment events
-        if (EventRules.ruleStartNewJob()) {
-            for (int ppId : HouseholdDataManager.getStartNewJobPersonIds()) {
-                events.add(new EventImpl(EventType.FIND_NEW_JOB, ppId, year));
-            }
-        }
-
-        if (EventRules.ruleQuitJob()) {
-            for (int ppId : HouseholdDataManager.getQuitJobPersonIds()) {
-                events.add(new EventImpl(EventType.QUIT_JOB, ppId, year));
-            }
-        }
-
-        // create household events
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        for (Household hh : householdData.getHouseholds()) {
-            if (EventRules.ruleHouseholdMove(hh)) {
-                int id = hh.getId();
-                events.add(new EventImpl(EventType.HOUSEHOLD_MOVE, id, year));
-            }
-        }
-
-        if (EventRules.ruleOutmigrate()) {
-            for (int hhId : InOutMigration.outMigratingHhId) {
-                if (EventRules.ruleOutmigrate(householdData.getHouseholdFromId(hhId))) {
-                    events.add(new EventImpl(EventType.OUT_MIGRATION, hhId, year));
-                }
-            }
-        }
-
-        if (EventRules.ruleInmigrate()) {
-            for (int hhId : InOutMigration.inmigratingHhId) {
-                events.add(new EventImpl(EventType.INMIGRATION, hhId, year));
-            }
-        }
-
-        // update dwelling events
-        Collection<Dwelling> dwellings = dataContainer.getRealEstateData().getDwellings();
-        for (Dwelling dd : dwellings) {
-            int id = dd.getId();
-            // renovate dwelling or deteriorate
-            if (EventRules.ruleChangeDwellingQuality(dd)) {
-                events.add(new EventImpl(EventType.DD_CHANGE_QUAL, id, year));
-            }
-            // demolish
-            if (EventRules.ruleDemolishDwelling(dd)) {
-                events.add(new EventImpl(EventType.DD_DEMOLITION, id, year));
-            }
-        }
-        // build new dwellings
-        if (EventRules.ruleBuildDwelling()) {
-            for (int constructionCase : ConstructionModel.listOfPlannedConstructions) {
-                events.add(new EventImpl(EventType.DD_CONSTRUCTION, constructionCase, year));
-            }
+        for(EventCreator creator: creators) {
+            events.addAll(creator.createEvents(year));
         }
 
         LOGGER.info("  Created " + events.size() + " events to simulate");
+
         LOGGER.info("  Events are randomized");
         Collections.shuffle(events);
 
@@ -165,13 +74,8 @@ public class EventManager {
                 handler.handleEvent(event);
             }
             timeCounter[event.getType().ordinal()][event.getYear()] += timer.millis();
-//            if (event[1] == SiloUtil.trackPp || event[1] == SiloUtil.trackHh || event[1] == SiloUtil.trackDd)
-//                SiloUtil.trackWriter.println("Check event " + EventType.values()[event[0]] + " for pp/hh/dd " +
-//                        event[1]);
-
         }
     }
-
 
     public static void countEvent(EventType et) {
         eventCounter.add(et);

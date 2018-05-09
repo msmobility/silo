@@ -13,6 +13,9 @@ import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Greg Erhardt, Rolf Moeckel
@@ -20,7 +23,7 @@ import java.io.Reader;
  * Revised on Jan 19, 2018
  *
  */
-public class DeathModel extends AbstractModel implements EventHandler{
+public class DeathModel extends AbstractModel implements EventHandler, EventCreator{
 
     private DeathJSCalculator calculator;
 
@@ -38,6 +41,33 @@ public class DeathModel extends AbstractModel implements EventHandler{
         }
         calculator = new DeathJSCalculator(reader);
 	}
+
+    @Override
+    public void handleEvent(Event event) {
+        if(event.getType() == EventType.CHECK_DEATH) {
+            // simulate if person with ID perId dies in this simulation period
+
+            HouseholdDataManager householdData = dataContainer.getHouseholdData();
+            final Person person = householdData.getPersonFromId(event.getId());
+            if (person == null) {
+                return;  // Person has moved away
+            }
+
+            final int age = Math.min(person.getAge(), 100);
+            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+                die(person);
+            }
+        }
+    }
+
+    @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+            events.add(new EventImpl(EventType.CHECK_DEATH, person.getId(), year));
+        }
+        return events;
+    }
 
     void die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -70,24 +100,6 @@ public class DeathModel extends AbstractModel implements EventHandler{
         if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
                     " has passed away.");
-        }
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.CHECK_DEATH) {
-            // simulate if person with ID perId dies in this simulation period
-
-            HouseholdDataManager householdData = dataContainer.getHouseholdData();
-            final Person person = householdData.getPersonFromId(event.getId());
-            if (!EventRules.ruleDeath(person)) {
-                return;  // Person has moved away
-            }
-
-            final int age = Math.min(person.getAge(), 100);
-            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
-                die(person);
-            }
         }
     }
 }

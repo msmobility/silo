@@ -4,7 +4,6 @@ import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -15,6 +14,8 @@ import org.apache.log4j.Logger;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -24,18 +25,18 @@ import java.util.ArrayList;
  * Created on 4 December 2012 in Santa Fe
  **/
 
-public class ConstructionModel extends AbstractModel implements EventHandler{
+public class ConstructionModel extends AbstractModel implements EventHandler, EventCreator{
 
     private final static Logger LOGGER = Logger.getLogger(ConstructionModel.class);
 
     private final GeoData geoData;
     private final MovesModelI moves;
+    private final Accessibility accessibility;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private ArrayList<Integer[]> plannedDwellings;
-    public static int[] listOfPlannedConstructions;
     private boolean makeSomeNewDdAffordable;
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
@@ -43,9 +44,10 @@ public class ConstructionModel extends AbstractModel implements EventHandler{
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
 
-    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves) {
+    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
+        this.accessibility = accessibility;
         this.moves = moves;
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);
@@ -102,104 +104,6 @@ public class ConstructionModel extends AbstractModel implements EventHandler{
             }
         }
     }
-
-
-    public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
-        // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
-
-        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
-        dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
-        if (!EventRules.ruleBuildDwelling()) return;
-        LOGGER.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
-
-        // calculate demand by region
-        double[][] vacancyByRegion = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
-        double[][] demandByRegion = new double[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
-        float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
-        float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
-        for (DwellingType dt: DwellingType.values()) {
-            int dto = dt.ordinal();
-            for (int region: geoData.getRegionIdsArray()) {
-                demandByRegion[dto][region] = constructionDemandCalculator.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
-            }
-        }
-        // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
-        int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
-        DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
-        plannedDwellings = new ArrayList<>();
-        for (DwellingType dt : dtOrder) {
-            int dto = dt.ordinal();
-            float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
-            for (int region : geoData.getRegionIdsArray()) {
-                int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
-                if (demand == 0) {
-                    continue;
-                }
-                int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getId).toArray();
-                double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
-                for (int zone : zonesInThisRegion) {
-                    float avePrice = avePriceByTypeAndZone[dto][zone];
-                    if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                    if (avePrice == 0)
-                        LOGGER.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
-                    // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = constructionLocationJSCalculator.calculateConstructionProbability(dt, avePrice, modelContainer.getAcc().getAutoAccessibilityForZone(zone));
-                }
-                double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
-                // walk through every dwelling to be built
-                for (int i = 1; i <= demand; i++) {
-                    double probSum = 0;
-                    for (int zone : zonesInThisRegion) {
-                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
-                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
-                        if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
-                                (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
-                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
-                            prob[zone] = 0.;
-                        } else {
-                            prob[zone] = betaForZoneChoice * availableLand * util[zone];
-                            probSum += prob[zone];
-                        }
-                    }
-                    if (probSum == 0) continue;
-                    for (int zone : zonesInThisRegion) {
-                        prob[zone] = prob[zone] / probSum;
-                    }
-                    int zone = SiloUtil.select(prob);
-                    Integer[] attributes = new Integer[6];
-                    attributes[0] = zone;
-                    attributes[1] = dto;
-                    attributes[2] = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    attributes[3] = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
-                    attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
-                    if (makeSomeNewDdAffordable) {
-                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
-                            attributes[4] = (int) (restrictionForAffordableDd * 100);
-                    }
-                    if (attributes[4] == 0) {
-                        // dwelling is unrestricted, generate free-market price
-                        float avePrice = avePriceByTypeAndZone[dto][zone];
-                        if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                        if (avePrice == 0)
-                            LOGGER.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
-                        attributes[5] = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
-                    } else {
-                        // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
-                        // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoData.getZones().get(zone).getMsa();
-                        attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
-                    }
-
-                    plannedDwellings.add(attributes);
-                    dataContainer.getRealEstateData().convertLand(zone, acresNeededForOneDwelling);
-                }
-            }
-        }
-        listOfPlannedConstructions = new int[plannedDwellings.size()];
-        for (int i = 0; i < listOfPlannedConstructions.length; i++) listOfPlannedConstructions[i] = i;
-    }
-
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
@@ -322,5 +226,106 @@ public class ConstructionModel extends AbstractModel implements EventHandler{
             sortedDwellingTypes[prices.length - i - 1] = DwellingType.values()[sortedPrices[i]];
         }
         return sortedDwellingTypes;
+    }
+
+    @Override
+    public Collection<Event> createEvents(int year) {
+        List<Event> events = new ArrayList<>();
+
+
+        // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
+
+        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
+        dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
+        LOGGER.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
+
+        // calculate demand by region
+        double[][] vacancyByRegion = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
+        double[][] demandByRegion = new double[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
+        float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
+        float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
+        for (DwellingType dt: DwellingType.values()) {
+            int dto = dt.ordinal();
+            for (int region: geoData.getRegionIdsArray()) {
+                demandByRegion[dto][region] = constructionDemandCalculator.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
+            }
+        }
+        // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
+        int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
+        DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
+        plannedDwellings = new ArrayList<>();
+        for (DwellingType dt : dtOrder) {
+            int dto = dt.ordinal();
+            float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
+            for (int region : geoData.getRegionIdsArray()) {
+                int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
+                if (demand == 0) {
+                    continue;
+                }
+                int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getId).toArray();
+                double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
+                for (int zone : zonesInThisRegion) {
+                    float avePrice = avePriceByTypeAndZone[dto][zone];
+                    if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
+                    if (avePrice == 0)
+                        LOGGER.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                    // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
+                    util[zone] = constructionLocationJSCalculator.calculateConstructionProbability(dt, avePrice,accessibility.getAutoAccessibilityForZone(zone));
+                }
+                double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
+                // walk through every dwelling to be built
+                for (int i = 1; i <= demand; i++) {
+                    double probSum = 0;
+                    for (int zone : zonesInThisRegion) {
+                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
+                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
+                        if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
+                                (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
+                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
+                            prob[zone] = 0.;
+                        } else {
+                            prob[zone] = betaForZoneChoice * availableLand * util[zone];
+                            probSum += prob[zone];
+                        }
+                    }
+                    if (probSum == 0) continue;
+                    for (int zone : zonesInThisRegion) {
+                        prob[zone] = prob[zone] / probSum;
+                    }
+                    int zone = SiloUtil.select(prob);
+                    Integer[] attributes = new Integer[6];
+                    attributes[0] = zone;
+                    attributes[1] = dto;
+                    attributes[2] = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
+                    attributes[3] = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
+                    attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
+                    if (makeSomeNewDdAffordable) {
+                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
+                            attributes[4] = (int) (restrictionForAffordableDd * 100);
+                    }
+                    if (attributes[4] == 0) {
+                        // dwelling is unrestricted, generate free-market price
+                        float avePrice = avePriceByTypeAndZone[dto][zone];
+                        if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
+                        if (avePrice == 0)
+                            LOGGER.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+                        attributes[5] = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
+                    } else {
+                        // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
+                        // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
+                        int msa = geoData.getZones().get(zone).getMsa();
+                        attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
+                    }
+
+                    plannedDwellings.add(attributes);
+                    dataContainer.getRealEstateData().convertLand(zone, acresNeededForOneDwelling);
+                }
+            }
+        }
+        for (int i = 0; i < plannedDwellings.size(); i++) {
+            events.add(new EventImpl(EventType.DD_CONSTRUCTION, i, year));
+        }
+        return  events;
     }
 }

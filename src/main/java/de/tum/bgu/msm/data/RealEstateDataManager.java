@@ -40,6 +40,7 @@ public class RealEstateDataManager {
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
+        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     public void saveDwellings (Dwelling[] dds) {

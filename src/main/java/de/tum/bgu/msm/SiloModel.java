@@ -139,20 +139,60 @@ public final class SiloModel {
 	}
 
 	private void setupEventManager() {
-        em = new EventManager(dataContainer, modelContainer, timeCounter);
-        em.registerEventHandler(modelContainer.getDeath());
-        em.registerEventHandler(modelContainer.getMove());
-        em.registerEventHandler(modelContainer.getIomig());
-        em.registerEventHandler(modelContainer.getMardiv());
-        em.registerEventHandler(modelContainer.getEmployment());
-        em.registerEventHandler(modelContainer.getBirth());
-        em.registerEventHandler(modelContainer.getCons());
-        em.registerEventHandler(modelContainer.getDeath());
-        em.registerEventHandler(modelContainer.getLph());
-        em.registerEventHandler(modelContainer.getDemol());
-        em.registerEventHandler(modelContainer.getDriversLicense());
-        em.registerEventHandler(modelContainer.getRenov());
-        em.registerEventHandler(modelContainer.getChangeSchoolUniv());
+        em = new EventManager(timeCounter);
+
+		if(Properties.get().eventRules.allDemography) {
+			if (Properties.get().eventRules.birthday || Properties.get().eventRules.birth) {
+                em.registerEventHandler(modelContainer.getBirth());
+                em.registerEventCreator(modelContainer.getBirth());
+            }
+            if(Properties.get().eventRules.death) {
+                em.registerEventHandler(modelContainer.getDeath());
+                em.registerEventCreator(modelContainer.getDeath());
+            }
+            if(Properties.get().eventRules.leaveParentHh) {
+                em.registerEventHandler(modelContainer.getLph());
+                em.registerEventCreator(modelContainer.getLph());
+            }
+            if(Properties.get().eventRules.divorce ||Properties.get().eventRules.marriage) {
+			    em.registerEventHandler(modelContainer.getMardiv());
+                em.registerEventCreator(modelContainer.getMardiv());
+            }
+            if(Properties.get().eventRules.schoolUniversity) {
+                em.registerEventCreator(modelContainer.getChangeSchoolUniv());
+                em.registerEventHandler(modelContainer.getChangeSchoolUniv());
+            }
+            if(Properties.get().eventRules.driversLicense) {
+                em.registerEventHandler(modelContainer.getDriversLicense());
+                em.registerEventCreator(modelContainer.getDriversLicense());
+            }
+            if (Properties.get().eventRules.quitJob || Properties.get().eventRules.startNewJob ) {
+                em.registerEventHandler(modelContainer.getEmployment());
+                em.registerEventCreator(modelContainer.getEmployment());
+            }
+            if(Properties.get().eventRules.allHhMoves) {
+                em.registerEventHandler(modelContainer.getMove());
+                em.registerEventCreator(modelContainer.getMove());
+                if(Properties.get().eventRules.outMigration) {
+                    em.registerEventHandler(modelContainer.getIomig());
+                    em.registerEventCreator(modelContainer.getIomig());
+                }
+            }
+            if(Properties.get().eventRules.allDwellingDevelopments) {
+                if(Properties.get().eventRules.dwellingChangeQuality) {
+                    em.registerEventHandler(modelContainer.getRenov());
+                    em.registerEventCreator(modelContainer.getRenov());
+                }
+                if(Properties.get().eventRules.dwellingDemolition) {
+                    em.registerEventHandler(modelContainer.getDemol());
+                    em.registerEventCreator(modelContainer.getDemol());
+                }
+            }
+            if(Properties.get().eventRules.dwellingConstruction) {
+                em.registerEventHandler(modelContainer.getCons());
+                em.registerEventCreator(modelContainer.getCons());
+            }
+        }
     }
 
 	private void runYearByYear() {
@@ -165,24 +205,12 @@ public final class SiloModel {
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
 			final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
-			timer.start();
-			modelContainer.getIomig().setupInOutMigration(year);
-			if (trackTime) timeCounter[EventType.values().length][year] += timer.millis();
-
-			if (trackTime) timer.reset();
-			modelContainer.getCons().planNewDwellingsForThisComingYear(year, modelContainer, dataContainer);
-			if (trackTime) timeCounter[EventType.values().length + 1][year] += timer.millis();
-
 			if (trackTime) timer.reset();
 			if (year != Properties.get().main.implementation.BASE_YEAR) {
 				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
 				dataContainer.getJobData().identifyVacantJobs();
 			}
 			if (trackTime) timeCounter[EventType.values().length + 2][year] += timer.millis();
-
-			if (trackTime) timer.reset();
-			householdData.setUpChangeOfJob(year);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
-			if (trackTime) timeCounter[EventType.values().length + 3][year] += timer.millis();
 
 			if (trackTime) timer.reset();
 

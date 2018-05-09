@@ -7,19 +7,9 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
-import de.tum.bgu.msm.models.demography.BirthModel;
-import de.tum.bgu.msm.models.demography.ChangeSchoolUnivModel;
-import de.tum.bgu.msm.models.demography.DeathModel;
-import de.tum.bgu.msm.models.demography.DriversLicense;
-import de.tum.bgu.msm.models.demography.EmploymentModel;
-import de.tum.bgu.msm.models.demography.LeaveParentHhModel;
-import de.tum.bgu.msm.models.demography.MarryDivorceModel;
+import de.tum.bgu.msm.models.demography.*;
 import de.tum.bgu.msm.models.jobmography.UpdateJobs;
-import de.tum.bgu.msm.models.realEstate.ConstructionModel;
-import de.tum.bgu.msm.models.realEstate.ConstructionOverwrite;
-import de.tum.bgu.msm.models.realEstate.DemolitionModel;
-import de.tum.bgu.msm.models.realEstate.PricingModel;
-import de.tum.bgu.msm.models.realEstate.RenovationModel;
+import de.tum.bgu.msm.models.realEstate.*;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
@@ -179,7 +169,7 @@ public class SiloModelContainer {
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
-        ConstructionModel cons = new ConstructionModel(dataContainer, move);
+        ConstructionModel cons = new ConstructionModel(dataContainer, move, acc);
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);

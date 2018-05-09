@@ -19,7 +19,10 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -28,14 +31,17 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Simulates children that leave the parental household
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-public class LeaveParentHhModel extends AbstractModel implements EventHandler{
+public class LeaveParentHhModel extends AbstractModel implements EventHandler, EventCreator{
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
@@ -59,11 +65,22 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler{
     }
 
     @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+            if (qualifiesForParentalHHLeave(person)) {
+                events.add(new EventImpl(EventType.CHECK_LEAVE_PARENT_HH, person.getId(), year));
+            }
+        }
+        return events;
+    }
+
+    @Override
     public void handleEvent(Event event) {
         if(event.getType() == EventType.CHECK_LEAVE_PARENT_HH) {
             final HouseholdDataManager householdData = dataContainer.getHouseholdData();
             final Person per = householdData.getPersonFromId(event.getId());
-            if (!EventRules.ruleLeaveParHousehold(per)){
+            if (per == null || !qualifiesForParentalHHLeave(per)){
                 return;
             }
             final double prob = calculator.calculateLeaveParentsProbability(per.getType());
@@ -108,5 +125,9 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler{
                     " has left the parental newHousehold " + hhOfThisPerson.getId() +
                     " and established the new newHousehold " + newHhId + ".");
         }
+    }
+
+    private boolean qualifiesForParentalHHLeave(Person person) {
+        return (person.getHh().getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
     }
 }

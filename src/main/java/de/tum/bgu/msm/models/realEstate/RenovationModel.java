@@ -10,6 +10,9 @@ import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Simulates renovation and deterioration of dwellings
@@ -17,7 +20,7 @@ import java.io.Reader;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel extends AbstractModel implements EventHandler{
+public class RenovationModel extends AbstractModel implements EventHandler, EventCreator{
 
 	private double[][] renovationProbability;
 
@@ -42,11 +45,22 @@ public class RenovationModel extends AbstractModel implements EventHandler{
 	}
 
     @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
+            events.add(new EventImpl(EventType.DD_CHANGE_QUAL, dwelling.getId(), year));
+        }
+        return events;
+    }
+
+    @Override
     public void handleEvent(Event event) {
         if (event.getType()==EventType.DD_CHANGE_QUAL) {
             //check if dwelling is renovated or deteriorates
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (!EventRules.ruleChangeDwellingQuality(dd)) return;  // Dwelling not available for renovation
+            if (dd == null) {
+                return;  // Dwelling not available for renovation
+            }
             int currentQuality = dd.getQuality();
             int selected = SiloUtil.select(getProbabilities(currentQuality));
 

@@ -29,6 +29,9 @@ import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Simulates birth of children
@@ -36,7 +39,7 @@ import java.io.Reader;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel implements EventHandler{
+public class BirthModel extends AbstractModel implements EventHandler, EventCreator {
 
     private static BirthJSCalculator calculator;
 
@@ -59,7 +62,7 @@ public class BirthModel extends AbstractModel implements EventHandler{
     @Override
     public void handleEvent(Event event) {
         EventType type = event.getType();
-        switch(type) {
+        switch (type) {
             case BIRTHDAY:
                 checkBirthday(event);
                 break;
@@ -69,11 +72,10 @@ public class BirthModel extends AbstractModel implements EventHandler{
         }
     }
 
-
-    public void chooseBirth(int perId) {
+    private void chooseBirth(int perId) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleGiveBirth(person)) {
+        if (person == null && personCanGiveBirth(person)) {
             return;  // Person has died or moved away
         }
         if (person.getGender() == 1) {
@@ -124,25 +126,38 @@ public class BirthModel extends AbstractModel implements EventHandler{
         }
     }
 
-    public static double getProbabilityForGirl() {
+    private static double getProbabilityForGirl() {
         return calculator.getProbabilityForGirl();
     }
 
-    public static boolean personCanGiveBirth(int age) {
-        return (calculator.calculateBirthProbability(age) > 0);
+    private boolean personCanGiveBirth(Person person) {
+        return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
     }
 
     private void checkBirthday(Event event) {
-        if(event.getType() == EventType.BIRTHDAY) {
-            // increase age of this person by one year
-            Person per = dataContainer.getHouseholdData().getPersonFromId(event.getId());
+        // increase age of this person by one year
+        Person per = dataContainer.getHouseholdData().getPersonFromId(event.getId());
 
-            if (!EventRules.ruleBirthday(per)) {
-                return;  // Person has died or moved away
-            }
-            celebrateBirthday(per);
-        } else {
-
+        if (per == null) {
+            return;  // Person has died or moved away
         }
+        celebrateBirthday(per);
+    }
+
+    @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for (Person per : dataContainer.getHouseholdData().getPersons()) {
+            final int id = per.getId();
+            // Birthday
+            if(Properties.get().eventRules.birthday) {
+                events.add(new EventImpl(EventType.BIRTHDAY, id, year));
+            }
+            // Birth
+            if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
+                events.add(new EventImpl(EventType.CHECK_BIRTH, id, year));
+            }
+        }
+        return events;
     }
 }

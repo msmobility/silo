@@ -5,7 +5,6 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Couple;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -20,9 +19,7 @@ import de.tum.bgu.msm.utils.SkimUtil;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -93,16 +90,14 @@ public class SiloModelCBLCM {
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-	        EventManager em = new EventManager(dataContainer, modelContainer, timeCounter);
+	        EventManager em = new EventManager(timeCounter);
             final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 			long startTime = 0;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getIomig().setupInOutMigration(currentYear);
 	        if (trackTime) timeCounter[EventType.values().length][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        modelContainer.getCons().planNewDwellingsForThisComingYear(currentYear, modelContainer, dataContainer);
 	        if (trackTime) timeCounter[EventType.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
@@ -113,7 +108,6 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventType.values().length + 2][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-			householdData.setUpChangeOfJob(currentYear);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
 	        if (trackTime) timeCounter[EventType.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (skimYears.contains(currentYear)) {

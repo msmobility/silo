@@ -40,7 +40,7 @@ import java.util.*;
  * Revised on 5 March 2015 in Wheaton, MD
  **/
 
-public class MarryDivorceModel extends AbstractModel implements EventHandler{
+public class MarryDivorceModel extends AbstractModel implements EventHandler, EventCreator{
 
     private final static Logger LOGGER = Logger.getLogger(MarryDivorceModel.class);
 
@@ -87,10 +87,21 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler{
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
-    public List<Event> selectCouplesToGetMarriedThisYear(Collection<Person> persons, int year) {
-        if (!EventRules.runMarriages()) {
-            return Collections.emptyList();
+    @Override
+    public Collection<Event> createEvents(int year) {
+        final List<Event> events = new ArrayList<>();
+        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+            if (person.getRole() == PersonRole.MARRIED) {
+                events.add(new EventImpl(EventType.CHECK_DIVORCE, person.getId(), year));
+            }
         }
+        if(Properties.get().eventRules.marriage) {
+            events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons(), year));
+        }
+        return events;
+    }
+
+    private List<Event> selectCouplesToGetMarriedThisYear(Collection<Person> persons, int year) {
         LOGGER.info("  Selecting couples to get married this year");
 
         final List<Event> couplesToMarryThisYear = new ArrayList<>();
@@ -121,7 +132,7 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler{
                 ContiguousSet.create(Range.closed(1, 2), DiscreteDomain.integers()));
 
         for (final Person pp : persons) {
-            if (EventRules.ruleGetMarried(pp)) {
+            if (ruleGetMarried(pp)) {
                 final double marryProb = getMarryProb(pp);
                 if (SiloUtil.getRandomNumberAsDouble() <= marryProb) {
                     activePartners.add(pp);
@@ -219,12 +230,12 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler{
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person partner1 = householdData.getPersonFromId(id1);
 
-        if (!EventRules.ruleGetMarried(partner1)) {
+        if (ruleGetMarried(partner1)) {
             return;  // Person got already married this simulation period or died or moved away
         }
 
         final Person partner2 = householdData.getPersonFromId(id2);
-        if (!EventRules.ruleGetMarried(partner2)) {
+        if (ruleGetMarried(partner2)) {
             return;  // Person got already married this simulation period or died or moved away
         }
 
@@ -370,12 +381,12 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler{
     }
 
 
-    public void chooseDivorce(int perId) {
+    private void chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Person per = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleGetDivorced(per)) {
+        if (per != null || per.getRole() != PersonRole.MARRIED) {
             return;
         }
         double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
@@ -433,6 +444,16 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler{
                 marryCouple(id1, id2);
                 break;
         }
+    }
+
+    private boolean ruleGetMarried (Person per) {
+        if (per == null) {
+            return false;
+        }
+        PersonRole role = per.getRole();
+        return (role == PersonRole.SINGLE || role == PersonRole.CHILD)
+                && per.getAge() >= Properties.get().demographics.minMarryAge
+                && per.getAge() < 100;
     }
 
     private final static class MarriagePreference {
