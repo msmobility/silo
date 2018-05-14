@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.realEstate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
@@ -20,7 +21,7 @@ import java.util.List;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel extends AbstractModel implements EventHandler, EventCreator{
+public class RenovationModel extends AbstractModel implements MicroEventModel {
 
 	private double[][] renovationProbability;
 
@@ -45,52 +46,57 @@ public class RenovationModel extends AbstractModel implements EventHandler, Even
 	}
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
-            events.add(new EventImpl(EventType.DD_CHANGE_QUAL, dwelling.getId(), year));
+            events.add(new EventImpl(EventType.DWELLIG_RENOVATION, dwelling.getId(), year));
         }
         return events;
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if (event.getType()==EventType.DD_CHANGE_QUAL) {
+    public EventResult handleEvent(Event event) {
+        if (event.getType()==EventType.DWELLIG_RENOVATION) {
             //check if dwelling is renovated or deteriorates
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (dd == null) {
-                return;  // Dwelling not available for renovation
-            }
-            int currentQuality = dd.getQuality();
-            int selected = SiloUtil.select(getProbabilities(currentQuality));
+            if (dd != null) {
+                int currentQuality = dd.getQuality();
+                int selected = SiloUtil.select(getProbabilities(currentQuality));
 
-            if (selected != 2) {
-                EventManager.countEvent(EventType.DD_CHANGE_QUAL);
-                RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
-            }
-            switch (selected) {
-                case (0): {
-                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
-                    dd.setQuality(currentQuality - 2);
-                    break;
+                if (selected != 2) {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
                 }
-                case (1): {
-                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
-                    dd.setQuality(currentQuality - 1);
-                    break;
+                switch (selected) {
+                    case (0): {
+                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
+                        dd.setQuality(currentQuality - 2);
+                        break;
+                    }
+                    case (1): {
+                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
+                        dd.setQuality(currentQuality - 1);
+                        break;
+                    }
+                    case (3): {
+                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
+                        dd.setQuality(currentQuality + 1);
+                        break;
+                    }
+                    case (4): {
+                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
+                        dd.setQuality(currentQuality + 2);
+                        break;
+                    }
                 }
-                case (3): {
-                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
-                    dd.setQuality(currentQuality + 1);
-                    break;
-                }
-                case (4): {
-                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
-                    dd.setQuality(currentQuality + 2);
-                    break;
-                }
+                return new RenovationResult(event.getId(), dd.getQuality());
             }
         }
+        return null;
+    }
+
+    @Override
+    public void finishYear(int year) {
+
     }
 
     private double[] getProbabilities (int currentQual) {
@@ -114,6 +120,23 @@ public class RenovationModel extends AbstractModel implements EventHandler, Even
             } else probs[i] = renovationProbability[currentQual - 1][i] * ratio;
         }
         return probs;
+    }
+
+    public static class RenovationResult implements EventResult {
+        @JsonProperty("id")
+        public final int dd;
+        @JsonProperty("qual")
+        public final int quality;
+
+        public RenovationResult(int dd, int quality) {
+            this.dd = dd;
+            this.quality = quality;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DWELLIG_RENOVATION;
+        }
     }
 }
 

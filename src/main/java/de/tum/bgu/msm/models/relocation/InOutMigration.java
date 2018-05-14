@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.relocation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
@@ -21,7 +22,7 @@ import java.util.*;
  * Created on 15 January 2010 in Albuquerque
  **/
 
-public class InOutMigration extends AbstractModel implements EventHandler, EventCreator {
+public class InOutMigration extends AbstractModel implements MicroEventModel {
 
     private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
 
@@ -34,8 +35,8 @@ public class InOutMigration extends AbstractModel implements EventHandler, Event
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
     private Map<Integer, int[]> inmigratingHhData;
-    public static int outMigrationPPCounter;
-    public static int inMigrationPPCounter;
+    private int outMigrationPPCounter;
+    private int inMigrationPPCounter;
 
 
     public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, DriversLicense driversLicense) {
@@ -59,7 +60,7 @@ public class InOutMigration extends AbstractModel implements EventHandler, Event
         }
     }
 
-    private void inmigrateHh(int hhId) {
+    private EventResult inmigrateHh(int hhId) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
         int[] imData = inmigratingHhData.get(hhId);
@@ -98,35 +99,37 @@ public class InOutMigration extends AbstractModel implements EventHandler, Event
         int newDdId = movesModel.searchForNewDwelling(hh.getPersons());
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
+            if (Properties.get().main.implementation == Implementation.MUNICH) {
+                carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
+            }
+            inMigrationPPCounter += hh.getHhSize();
+            if (hhId == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
+            }
+            for (Person pp : hh.getPersons()) {
+                if (pp.getId() == SiloUtil.trackPp) {
+                    SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
+                }
+            }
+            return new InmigrationResult(hh, newDdId);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);
-            return;
-        }
-
-        EventManager.countEvent(EventType.INMIGRATION);
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
-        }
-        inMigrationPPCounter += hh.getHhSize();
-        if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
-        for (Person pp : householdData.getHouseholdFromId(hhId).getPersons()) {
-            if (pp.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
-            }
+            return null;
         }
     }
 
 
-    public void outMigrateHh(int hhId, boolean overwriteEventRules) {
+    public OutmigrationResult outMigrateHh(int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
         if (Properties.get().eventRules.outMigration && !overwriteEventRules) {
-            return;
+            return null;
         }
-        EventManager.countEvent(EventType.OUT_MIGRATION);
         outMigrationPPCounter += hh.getHhSize();
-        if (hhId == SiloUtil.trackHh) SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
+        if (hhId == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
+        }
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp : hh.getPersons()) {
             if (pp.getWorkplace() > 0) {
@@ -137,23 +140,29 @@ public class InOutMigration extends AbstractModel implements EventHandler, Event
             }
         }
         dataContainer.getHouseholdData().removeHousehold(hhId);
+        return new OutmigrationResult(hh);
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public EventResult handleEvent(Event event) {
         EventType type = event.getType();
         switch (type) {
             case INMIGRATION:
-                inmigrateHh(event.getId());
-                break;
+                return inmigrateHh(event.getId());
             case OUT_MIGRATION:
-                outMigrateHh(event.getId(), true);
-                break;
+                return outMigrateHh(event.getId(), true);
         }
+        return null;
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public void finishYear(int year) {
+        SummarizeData.resultFile("InmigrantsPP," + inMigrationPPCounter);
+        SummarizeData.resultFile("OutmigrantsPP," + outMigrationPPCounter);
+    }
+
+    @Override
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
 
         LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
@@ -224,5 +233,41 @@ public class InOutMigration extends AbstractModel implements EventHandler, Event
         inMigrationPPCounter = 0;
 
         return events;
+    }
+
+    private static class InmigrationResult implements EventResult {
+
+        @JsonProperty("hh")
+        public final int hhId;
+        @JsonProperty("pps")
+        public final int[] ppIds;
+        @JsonProperty("dd")
+        public final int dwellingId;
+
+        private InmigrationResult(Household household, int dwellingId) {
+            this.hhId = household.getId();
+            this.ppIds = household.getPersons().stream().mapToInt(Person::getId).toArray();
+            this.dwellingId = dwellingId;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.INMIGRATION;
+        }
+    }
+
+    private static class OutmigrationResult implements EventResult {
+
+        @JsonProperty("hh")
+        public final int hhId;
+
+        private OutmigrationResult(Household household) {
+            this.hhId = household.getId();
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.OUT_MIGRATION;
+        }
     }
 }

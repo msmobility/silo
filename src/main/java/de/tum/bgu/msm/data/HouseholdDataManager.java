@@ -363,24 +363,6 @@ public class HouseholdDataManager {
         return incCats.length + 1;  // if income is larger than highest category
     }
 
-
-    public static int getNumberOfWorkersInHousehold(Household hh) {
-        // return number of workers in household hh
-        int numberOfWorkers = 0;
-        for (Person pp: hh.getPersons()) {
-            if (pp.getOccupation() == 1) numberOfWorkers++;
-        }
-        return numberOfWorkers;
-    }
-
-
-    public static void definePersonRolesInHousehold (Household hh) {
-        // define roles in this household
-        findMarriedCouple(hh);
-        defineUnmarriedPersons(hh);
-    }
-
-
     public static void findMarriedCouple(Household hh) {
         // define role of person with ageMain in household where members have ageAll[]
         int[] ages = new int[hh.getHhSize()];

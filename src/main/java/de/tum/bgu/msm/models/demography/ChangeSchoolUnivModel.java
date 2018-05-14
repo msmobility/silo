@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
@@ -15,46 +16,67 @@ import java.util.List;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-public class ChangeSchoolUnivModel extends AbstractModel implements EventHandler, EventCreator{
+public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel {
 
     public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
         super(dataContainer);
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.CHECK_SCHOOL_UNIV) {
+    public EventResult handleEvent(Event event) {
+        if(event.getType() == EventType.EDUCATION_UPDATE) {
             Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-            if (pp == null) {
-                return;  // person has died or moved away
-            }
-
-            if (pp.getAge() == 19) {
-                updateEducation(pp);
+            if (pp != null) {
+                if (pp.getAge() == 19) {
+                    return updateEducation(pp);
+                }
             }
         }
+        return null;
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public void finishYear(int year) {}
+
+    @Override
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
-            events.add(new EventImpl(EventType.CHECK_SCHOOL_UNIV, person.getId(), year));
+            events.add(new EventImpl(EventType.EDUCATION_UPDATE, person.getId(), year));
         }
         return events;
     }
 
     // todo: Implement logical rules how students change from one school type to another or graduate from school/university
-    void updateEducation(Person person) {
+    EducationUpdateResult updateEducation(Person person) {
         int schoolId = 0;
         person.setSchoolPlace(schoolId);
         // todo if 2 is the right code for someone who graduates from high school
         //todo also check occupation transition to worker? 'nk
         person.setEducationLevel(2);
-        EventManager.countEvent(EventType.CHECK_SCHOOL_UNIV);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school. New school place (0 = left school) " + schoolId);
+        }
+        return new EducationUpdateResult(person.getId(), person.getEducationLevel());
+    }
+
+    public static class EducationUpdateResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int personId;
+
+        @JsonProperty("ed-lvl")
+        public final int educationLevel;
+
+        public EducationUpdateResult(int personId, int educationLevel) {
+            this.personId = personId;
+            this.educationLevel = educationLevel;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.EDUCATION_UPDATE;
         }
     }
 }

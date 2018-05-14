@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.realEstate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -23,7 +24,7 @@ import java.util.List;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel extends AbstractModel implements EventHandler, EventCreator{
+public class DemolitionModel extends AbstractModel implements MicroEventModel {
 
     private final DemolitionJSCalculator calculator;
     private final MovesModelI moves;
@@ -44,42 +45,46 @@ public class DemolitionModel extends AbstractModel implements EventHandler, Even
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
-            events.add(new EventImpl(EventType.DD_DEMOLITION, dwelling.getId(), year));
+            events.add(new EventImpl(EventType.DWELLING_DEMOLITION, dwelling.getId(), year));
         }
         return events;
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.DD_DEMOLITION) {
+    public EventResult handleEvent(Event event) {
+        if(event.getType() == EventType.DWELLING_DEMOLITION) {
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (dd == null) {
-                return;  // Dwelling not available for demolition
-            }
-
-            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, event.getYear())) {
-                demolishDwelling(dd);
+            if (dd != null) {
+                if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, event.getYear())) {
+                    return demolishDwelling(dd);
+                }
             }
         }
+        return null;
     }
 
-    private void demolishDwelling(Dwelling dd) {
+    @Override
+    public void finishYear(int year) {
+    }
+
+    private DemolitionResult demolishDwelling(Dwelling dd) {
         int dwellingId = dd.getId();
-        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(dd.getResidentId());
+        int hhId = dd.getResidentId();
+        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
         if (hh != null) {
             moveOutHousehold(dwellingId, hh);
         } else {
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
         }
         dataContainer.getRealEstateData().removeDwelling(dwellingId);
-        EventManager.countEvent(EventType.DD_DEMOLITION);
         if (dwellingId == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Dwelling " +
                     dwellingId + " was demolished.");
         }
+        return new DemolitionResult(dwellingId, hhId);
     }
 
     private void moveOutHousehold(int dwellingId, Household hh) {
@@ -90,6 +95,24 @@ public class DemolitionModel extends AbstractModel implements EventHandler, Even
             inOutMigration.outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             IssueCounter.countLackOfDwellingForcedOutmigration();
+        }
+    }
+
+    public static class DemolitionResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+        @JsonProperty("hhid")
+        public final int hhId;
+
+        public DemolitionResult(int id, int hhId) {
+            this.id = id;
+            this.hhId = hhId;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DWELLING_DEMOLITION;
         }
     }
 }

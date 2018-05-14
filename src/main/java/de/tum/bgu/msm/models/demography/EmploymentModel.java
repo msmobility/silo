@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
@@ -20,7 +21,7 @@ import java.util.List;
  * Created on 1 March 2013 in Santa Fe
  **/
 
-public class EmploymentModel extends AbstractModel implements EventHandler, EventCreator{
+public class EmploymentModel extends AbstractModel implements MicroEventModel {
 
     private final static Logger LOGGER = Logger.getLogger(EmploymentModel.class);
 
@@ -33,18 +34,17 @@ public class EmploymentModel extends AbstractModel implements EventHandler, Even
         calculateInitialLaborParticipation();
     }
 
-    public void lookForJob(int perId) {
+    public NewJobResult lookForJob(int perId) {
         final Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
-        if (pp == null) {
-            return;  // person has died or moved away
+        if (pp != null) {
+            final Job jj = findJob(pp);
+            if (jj != null) {
+                return takeNewJob(pp, jj);
+            } else {
+                IssueCounter.countMissingJob();
+            }
         }
-
-        final Job jj = findJob(pp);
-        if (jj != null) {
-            takeNewJob(pp, jj);
-        } else {
-            IssueCounter.countMissingJob();
-        }
+        return null;
     }
 
     private Job findJob(Person pp) {
@@ -58,45 +58,50 @@ public class EmploymentModel extends AbstractModel implements EventHandler, Even
         return dataContainer.getJobData().getJobFromId(idVacantJob);
     }
 
-    void takeNewJob(Person person, Job job) {
+    NewJobResult takeNewJob(Person person, Job job) {
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
         person.setOccupation(1);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
-        EventManager.countEvent(EventType.FIND_NEW_JOB);
         dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
         }
+        return new NewJobResult(person.getId(), job.getId());
     }
 
-    public void quitJob(int perId) {
+    public QuitJobResult quitJob(int perId) {
         final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
-        if (person == null) {
-            return;  // person has died or moved away
+        if (person != null) {
+            int jj = person.getWorkplace();
+            dataContainer.getJobData().quitJob(true, person);
+            dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
+            if (perId == SiloUtil.trackPp) {
+                SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+            }
+            return new QuitJobResult(perId, jj);
         }
-        dataContainer.getJobData().quitJob(true, person);
-        EventManager.countEvent(EventType.QUIT_JOB);
-        dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
-        if (perId == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
-        }
+        return null;
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public EventResult handleEvent(Event event) {
         switch(event.getType()) {
             case FIND_NEW_JOB:
-                lookForJob(event.getId());
-                break;
+                return lookForJob(event.getId());
             case QUIT_JOB:
-                quitJob(event.getId());
-                break;
+                return quitJob(event.getId());
         }
+        return null;
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public void finishYear(int year) {
+
+    }
+
+    @Override
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
 
         // select people that will lose employment or start new job
@@ -186,6 +191,42 @@ public class EmploymentModel extends AbstractModel implements EventHandler, Even
                         laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
                         laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
             }
+        }
+    }
+
+    public static class NewJobResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+        @JsonProperty("jj")
+        public final int jj;
+
+        public NewJobResult(int id, int jj) {
+            this.id = id;
+            this.jj = jj;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.FIND_NEW_JOB;
+        }
+    }
+
+    public static class QuitJobResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+        @JsonProperty("jj")
+        public final int jj;
+
+        public QuitJobResult(int id, int jj) {
+            this.id = id;
+            this.jj = jj;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.QUIT_JOB;
         }
     }
 }

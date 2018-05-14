@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -26,6 +27,7 @@ import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -39,9 +41,11 @@ import java.util.List;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel implements EventHandler, EventCreator {
+public class BirthModel extends AbstractModel implements MicroEventModel {
 
-    private static BirthJSCalculator calculator;
+    private BirthJSCalculator calculator;
+    private final static Logger LOGGER = Logger.getLogger(BirthModel.class);
+
 
     public BirthModel(SiloDataContainer dataContainer) {
         super(dataContainer);
@@ -49,7 +53,7 @@ public class BirthModel extends AbstractModel implements EventHandler, EventCrea
     }
 
     private void setupBirthModel() {
-        Reader reader;
+        final Reader reader;
         if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
         } else {
@@ -60,42 +64,40 @@ public class BirthModel extends AbstractModel implements EventHandler, EventCrea
     }
 
     @Override
-    public void handleEvent(Event event) {
+    public EventResult handleEvent(Event event) {
         EventType type = event.getType();
         switch (type) {
             case BIRTHDAY:
-                checkBirthday(event);
-                break;
-            case CHECK_BIRTH:
-                chooseBirth(event.getId());
-                break;
+                return checkBirthday(event);
+            case BIRTH:
+                return chooseBirth(event.getId());
         }
+        return null;
     }
 
-    private void chooseBirth(int perId) {
+    @Override
+    public void finishYear(int year) {}
+
+    private BirthResult chooseBirth(int perId) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(perId);
-        if (person == null && personCanGiveBirth(person)) {
-            return;  // Person has died or moved away
+        if (person != null && personCanGiveBirth(person)) {
+            // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
+            double birthProb = calculator.calculateBirthProbability(person.getAge());
+            if (person.getRole() == PersonRole.MARRIED) {
+                birthProb *= Properties.get().demographics.marriedScaler;
+            } else {
+                birthProb *= Properties.get().demographics.singleScaler;
+            }
+            if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
+                Person child = giveBirth(person);
+                return new BirthResult(perId, child.getId(), child.getGender());
+            }
         }
-        if (person.getGender() == 1) {
-            return;            // Exclude males, model should never get here
-        }
-        // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
-        double birthProb = calculator.calculateBirthProbability(person.getAge());
-        if (person.getRole() == PersonRole.MARRIED) {
-            birthProb *= Properties.get().demographics.marriedScaler;
-        } else {
-            birthProb *= Properties.get().demographics.singleScaler;
-        }
-        if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
-            giveBirth(person);
-        }
-
+        return null;
     }
 
-    void giveBirth(Person person) {
-
+    Person giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
@@ -114,19 +116,18 @@ public class BirthModel extends AbstractModel implements EventHandler, EventCrea
             SiloUtil.trackWriter.println("For unto us a child was born... " + person.getId() + " gave birth" +
                     "to a child named " + id + ". Added to household " + household.getId() + ".");
         }
-        EventManager.countEvent(EventType.CHECK_BIRTH);
+        return child;
     }
 
     void celebrateBirthday(Person per) {
         per.birthday();
-        EventManager.countEvent(EventType.BIRTHDAY);
         if (per.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
                     per.getId() + ". New age is " + per.getAge() + ".");
         }
     }
 
-    private static double getProbabilityForGirl() {
+    private double getProbabilityForGirl() {
         return calculator.getProbabilityForGirl();
     }
 
@@ -134,18 +135,18 @@ public class BirthModel extends AbstractModel implements EventHandler, EventCrea
         return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
     }
 
-    private void checkBirthday(Event event) {
+    private BirthdayResult checkBirthday(Event event) {
         // increase age of this person by one year
         Person per = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-
         if (per == null) {
-            return;  // Person has died or moved away
+            return null;  // Person has died or moved away
         }
         celebrateBirthday(per);
+        return new BirthdayResult(event.getId());
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
@@ -155,9 +156,47 @@ public class BirthModel extends AbstractModel implements EventHandler, EventCrea
             }
             // Birth
             if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
-                events.add(new EventImpl(EventType.CHECK_BIRTH, id, year));
+                events.add(new EventImpl(EventType.BIRTH, id, year));
             }
         }
         return events;
+    }
+
+    public static class BirthdayResult implements EventResult {
+
+        @JsonProperty("person")
+        public final int personId;
+
+        private BirthdayResult(int personId) {
+            this.personId = personId;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.BIRTHDAY;
+        }
+    }
+
+    public static class BirthResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int personId;
+
+        @JsonProperty("child")
+        public final int childId;
+
+        @JsonProperty("sex")
+        public final int gender;
+
+        private BirthResult(int personId, int childId, int gender) {
+            this.personId = personId;
+            this.childId = childId;
+            this.gender = gender;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.BIRTH;
+        }
     }
 }

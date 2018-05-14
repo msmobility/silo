@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.*;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
@@ -40,7 +41,7 @@ import java.util.*;
  * Revised on 5 March 2015 in Wheaton, MD
  **/
 
-public class MarryDivorceModel extends AbstractModel implements EventHandler, EventCreator{
+public class MarryDivorceModel extends AbstractModel implements MicroEventModel {
 
     private final static Logger LOGGER = Logger.getLogger(MarryDivorceModel.class);
 
@@ -88,17 +89,37 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             if (person.getRole() == PersonRole.MARRIED) {
-                events.add(new EventImpl(EventType.CHECK_DIVORCE, person.getId(), year));
+                events.add(new EventImpl(EventType.DIVORCE, person.getId(), year));
             }
         }
         if(Properties.get().eventRules.marriage) {
             events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons(), year));
         }
         return events;
+    }
+
+    @Override
+    public EventResult handleEvent(Event event) {
+        EventType type = event.getType();
+        switch (type) {
+            case DIVORCE:
+                return chooseDivorce(event.getId());
+            case MARRIAGE:
+                int id1 = event.getId();
+                int id2 = plannedCouples.get(id1);
+                return marryCouple(id1, id2);
+        }
+        return null;
+    }
+
+    @Override
+    public void finishYear(int year) {
+        plannedCouples.clear();
+        return;
     }
 
     private List<Event> selectCouplesToGetMarriedThisYear(Collection<Person> persons, int year) {
@@ -110,7 +131,7 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
         for (Person person : market.activePartners) {
             final Person partner = findPartner(market, person);
             if (partner != null) {
-                couplesToMarryThisYear.add(new EventImpl(EventType.CHECK_MARRIAGE, person.getId(),year));
+                couplesToMarryThisYear.add(new EventImpl(EventType.MARRIAGE, person.getId(),year));
                 plannedCouples.put(person.getId(), partner.getId());
                 if (person.getId() == SiloUtil.trackPp || partner.getId() == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Person " + person.getId() + " chose " +
@@ -225,18 +246,18 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
         return SiloUtil.getRandomNumberAsFloat() < share;
     }
 
-    public void marryCouple(int id1, int id2) {
+    public MarriageResult marryCouple(int id1, int id2) {
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person partner1 = householdData.getPersonFromId(id1);
 
         if (ruleGetMarried(partner1)) {
-            return;  // Person got already married this simulation period or died or moved away
+            return null;  // Person got already married this simulation period or died or moved away
         }
 
         final Person partner2 = householdData.getPersonFromId(id2);
         if (ruleGetMarried(partner2)) {
-            return;  // Person got already married this simulation period or died or moved away
+            return null;  // Person got already married this simulation period or died or moved away
         }
 
         final Household hhOfPartner1 = partner1.getHh();
@@ -249,9 +270,9 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
         if (success) {
             partner1.setRole(PersonRole.MARRIED);
             partner2.setRole(PersonRole.MARRIED);
-            EventManager.countEvent(EventType.CHECK_MARRIAGE);
             householdData.addHouseholdThatChanged(hhOfPartner1);
             householdData.addHouseholdThatChanged(hhOfPartner2);
+            return new MarriageResult(id1, id2, moveTo.getId());
         } else {
             if (partner1.getId() == SiloUtil.trackPp
                     || partner2.getId() == SiloUtil.trackPp
@@ -261,8 +282,9 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
                         + " of household " + moveTo.getId()
                         + " got married but could not find an appropriate vacant dwelling. "
                         + "Household outmigrated.");
-                IssueCounter.countLackOfDwellingFailedMarriage();
             }
+            IssueCounter.countLackOfDwellingFailedMarriage();
+            return null;
         }
     }
 
@@ -381,69 +403,54 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
     }
 
 
-    private void chooseDivorce(int perId) {
+    private DivorceResult chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Person per = householdData.getPersonFromId(perId);
-        if (per != null || per.getRole() != PersonRole.MARRIED) {
-            return;
-        }
-        double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
-        if (SiloUtil.getRandomNumberAsDouble() < probability) {
-            // check if vacant dwelling is available
-            int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
-            if (newDwellingId < 0) {
-                if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println(
-                            "Person " + perId + " wanted to but could not divorce from household " + per.getHh().getId() +
-                                    " because no appropriate vacant dwelling was found.");
+        if (per != null && per.getRole() == PersonRole.MARRIED) {
+            final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
+            if (SiloUtil.getRandomNumberAsDouble() < probability) {
+                // check if vacant dwelling is available
+                int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
+                if (newDwellingId < 0) {
+                    if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) {
+                        SiloUtil.trackWriter.println(
+                                "Person " + perId + " wanted to but could not divorce from household " + per.getHh().getId() +
+                                        " because no appropriate vacant dwelling was found.");
+                    }
+                    IssueCounter.countLackOfDwellingFailedDivorce();
+                    return null;
                 }
-                IssueCounter.countLackOfDwellingFailedDivorce();
-                return;
-            }
 
-            // divorce
-            Household oldHh = per.getHh();
-            Person divorcedPerson = HouseholdDataManager.findMostLikelyPartner(per, oldHh);
-            divorcedPerson.setRole(PersonRole.SINGLE);
-            per.setRole(PersonRole.SINGLE);
-            householdData.removePersonFromHousehold(per);
-            oldHh.determineHouseholdRace();
-            oldHh.setType();
+                // divorce
+                Household oldHh = per.getHh();
+                Person divorcedPerson = HouseholdDataManager.findMostLikelyPartner(per, oldHh);
+                divorcedPerson.setRole(PersonRole.SINGLE);
+                per.setRole(PersonRole.SINGLE);
+                householdData.removePersonFromHousehold(per);
+                oldHh.determineHouseholdRace();
+                oldHh.setType();
 
-            int newHhId = householdData.getNextHouseholdId();
-            Household newHh = householdData.createHousehold(newHhId, -1, 0);
-            householdData.addPersonToHousehold(per, newHh);
-            newHh.setType();
-            newHh.determineHouseholdRace();
-            // move divorced person into new dwelling
-            movesModel.moveHousehold(newHh, -1, newDwellingId);
-            if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
-                    oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
-                    " has divorced from household " + oldHh + " and established the new household " +
-                    newHhId + ".");
-            EventManager.countEvent(EventType.CHECK_DIVORCE);
-            householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
-            if (Properties.get().main.implementation == Implementation.MUNICH) {
-                carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
+                int newHhId = householdData.getNextHouseholdId();
+                Household newHh = householdData.createHousehold(newHhId, -1, 0);
+                householdData.addPersonToHousehold(per, newHh);
+                newHh.setType();
+                newHh.determineHouseholdRace();
+                // move divorced person into new dwelling
+                movesModel.moveHousehold(newHh, -1, newDwellingId);
+                if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
+                        oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
+                        " has divorced from household " + oldHh + " and established the new household " +
+                        newHhId + ".");
+                householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
+                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                    carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
+                }
+                return new DivorceResult(perId, divorcedPerson.getId(), newHhId, oldHh.getId(), newDwellingId);
             }
         }
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        EventType type = event.getType();
-        switch (type) {
-            case CHECK_DIVORCE:
-                chooseDivorce(event.getId());
-                break;
-            case CHECK_MARRIAGE:
-                int id1 = event.getId();
-                int id2 = plannedCouples.get(id1);
-                marryCouple(id1, id2);
-                break;
-        }
+        return null;
     }
 
     private boolean ruleGetMarried (Person per) {
@@ -493,6 +500,55 @@ public class MarryDivorceModel extends AbstractModel implements EventHandler, Ev
                 return Collections.emptyList();
             }
             return entry;
+        }
+    }
+
+    public static class DivorceResult implements EventResult {
+
+        @JsonProperty("id1")
+        public final int id1;
+        @JsonProperty("id2")
+        public final int id2;
+        @JsonProperty("hh1")
+        public final int oldHH;
+        @JsonProperty("hh2")
+        public final int newHH;
+        @JsonProperty("dd1")
+        public final int dd;
+
+        public DivorceResult(int id1, int id2, int oldHH, int newHH, int dd) {
+            this.id1 = id1;
+            this.id2 = id2;
+            this.oldHH = oldHH;
+            this.newHH = newHH;
+            this.dd = dd;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DIVORCE;
+        }
+    }
+
+    public static class MarriageResult implements EventResult {
+
+        @JsonProperty("id1")
+        public final int id1;
+        @JsonProperty("id2")
+        public final int id2;
+        @JsonProperty("moveTo")
+        public final int hh;
+
+
+        public MarriageResult(int id1, int id2, int hh) {
+            this.id1 = id1;
+            this.id2 = id2;
+            this.hh = hh;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.MARRIAGE;
         }
     }
 }

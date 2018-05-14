@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -21,55 +22,56 @@ import java.util.List;
  * @author Greg Erhardt, Rolf Moeckel
  * Created on Dec 2, 2009
  * Revised on Jan 19, 2018
- *
  */
-public class DeathModel extends AbstractModel implements EventHandler, EventCreator{
+public class DeathModel extends AbstractModel implements MicroEventModel {
 
     private DeathJSCalculator calculator;
 
     public DeathModel(SiloDataContainer dataContainer) {
         super(dataContainer);
-		setupDeathModel();
-	}
+        setupDeathModel();
+    }
 
-	private void setupDeathModel() {
+    private void setupDeathModel() {
         Reader reader;
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
+        if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
         }
         calculator = new DeathJSCalculator(reader);
-	}
-
-    @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.CHECK_DEATH) {
-            // simulate if person with ID perId dies in this simulation period
-
-            HouseholdDataManager householdData = dataContainer.getHouseholdData();
-            final Person person = householdData.getPersonFromId(event.getId());
-            if (person == null) {
-                return;  // Person has moved away
-            }
-
-            final int age = Math.min(person.getAge(), 100);
-            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
-                die(person);
-            }
-        }
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public EventResult handleEvent(Event event) {
+        if (event.getType() == EventType.DEATH) {
+            // simulate if person with ID perId dies in this simulation period
+            HouseholdDataManager householdData = dataContainer.getHouseholdData();
+            final Person person = householdData.getPersonFromId(event.getId());
+            if (person != null) {
+                final int age = Math.min(person.getAge(), 100);
+                if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+                    return die(person);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void finishYear(int year) {
+    }
+
+    @Override
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
-        for(Person person: dataContainer.getHouseholdData().getPersons()) {
-            events.add(new EventImpl(EventType.CHECK_DEATH, person.getId(), year));
+        for (Person person : dataContainer.getHouseholdData().getPersons()) {
+            events.add(new EventImpl(EventType.DEATH, person.getId(), year));
         }
         return events;
     }
 
-    void die(Person person) {
+    DeathResult die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         if (person.getWorkplace() > 0) {
@@ -86,7 +88,7 @@ public class DeathModel extends AbstractModel implements EventHandler, EventCrea
 
         final boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
         if (onlyChildrenLeft) {
-            for (Person pp: hhOfPersonToDie.getPersons()) {
+            for (Person pp : hhOfPersonToDie.getPersons()) {
                 if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
                             " to foster care as remaining child just before head of household (ID " +
@@ -96,10 +98,26 @@ public class DeathModel extends AbstractModel implements EventHandler, EventCrea
             householdData.removeHousehold(hhOfPersonToDie.getId());
         }
 
-        EventManager.countEvent(EventType.CHECK_DEATH);
         if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
                     " has passed away.");
+        }
+
+        return new DeathResult(person.getId());
+    }
+
+    public static class DeathResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+
+        public DeathResult(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DEATH;
         }
     }
 }

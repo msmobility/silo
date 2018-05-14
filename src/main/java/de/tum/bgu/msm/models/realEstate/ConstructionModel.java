@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.realEstate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
@@ -25,7 +26,7 @@ import java.util.List;
  * Created on 4 December 2012 in Santa Fe
  **/
 
-public class ConstructionModel extends AbstractModel implements EventHandler, EventCreator{
+public class ConstructionModel extends AbstractModel implements MicroEventModel {
 
     private final static Logger LOGGER = Logger.getLogger(ConstructionModel.class);
 
@@ -79,8 +80,8 @@ public class ConstructionModel extends AbstractModel implements EventHandler, Ev
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.DD_CONSTRUCTION) {
+    public EventResult handleEvent(Event event) {
+        if(event.getType() == EventType.DWELLING_CONSTRUCTION) {
             // realize dwelling project id
             Integer[] attributes = plannedDwellings.get(event.getId());
             int ddId = RealEstateDataManager.getNextDwellingId();
@@ -96,13 +97,19 @@ public class ConstructionModel extends AbstractModel implements EventHandler, Ev
             double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
             dd.setUtilitiesOfVacantDwelling(utils);
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
-            EventManager.countEvent(EventType.DD_CONSTRUCTION);
 
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
                 SiloUtil.trackWriter.println(dd.toString());
             }
+            return new ConstructionResult(ddId);
         }
+        return null;
+    }
+
+    @Override
+    public void finishYear(int year) {
+
     }
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
@@ -229,7 +236,7 @@ public class ConstructionModel extends AbstractModel implements EventHandler, Ev
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         List<Event> events = new ArrayList<>();
 
 
@@ -324,8 +331,23 @@ public class ConstructionModel extends AbstractModel implements EventHandler, Ev
             }
         }
         for (int i = 0; i < plannedDwellings.size(); i++) {
-            events.add(new EventImpl(EventType.DD_CONSTRUCTION, i, year));
+            events.add(new EventImpl(EventType.DWELLING_CONSTRUCTION, i, year));
         }
         return  events;
+    }
+
+    public static class ConstructionResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+
+        public ConstructionResult(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DWELLING_CONSTRUCTION;
+        }
     }
 }

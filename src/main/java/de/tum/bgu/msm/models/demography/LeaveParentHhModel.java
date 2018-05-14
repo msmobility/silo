@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -41,7 +42,7 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-public class LeaveParentHhModel extends AbstractModel implements EventHandler, EventCreator{
+public class LeaveParentHhModel extends AbstractModel implements MicroEventModel {
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
@@ -65,32 +66,37 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler, E
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             if (qualifiesForParentalHHLeave(person)) {
-                events.add(new EventImpl(EventType.CHECK_LEAVE_PARENT_HH, person.getId(), year));
+                events.add(new EventImpl(EventType.LEAVE_PARENTAL_HOUSEHOLD, person.getId(), year));
             }
         }
         return events;
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.CHECK_LEAVE_PARENT_HH) {
+    public EventResult handleEvent(Event event) {
+        if(event.getType() == EventType.LEAVE_PARENTAL_HOUSEHOLD) {
             final HouseholdDataManager householdData = dataContainer.getHouseholdData();
             final Person per = householdData.getPersonFromId(event.getId());
-            if (per == null || !qualifiesForParentalHHLeave(per)){
-                return;
-            }
-            final double prob = calculator.calculateLeaveParentsProbability(per.getType());
-            if (SiloUtil.getRandomNumberAsDouble() < prob) {
-                leaveHousehold(per);
+            if (per != null && qualifiesForParentalHHLeave(per)) {
+                final double prob = calculator.calculateLeaveParentsProbability(per.getType());
+                if (SiloUtil.getRandomNumberAsDouble() < prob) {
+                    return leaveHousehold(per);
+                }
             }
         }
+        return null;
     }
 
-    void leaveHousehold(Person per) {
+    @Override
+    public void finishYear(int year) {
+
+    }
+
+    LeaveParentsResult leaveHousehold(Person per) {
         // search if dwelling is available
         final int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
         if (newDwellingId < 0) {
@@ -100,7 +106,7 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler, E
                                 " because no appropriate vacant dwelling was found.");
             }
             IssueCounter.countLackOfDwellingFailedLeavingChild();
-            return;
+            return null;
         }
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
@@ -114,7 +120,6 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler, E
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
-        EventManager.countEvent(EventType.CHECK_LEAVE_PARENT_HH);
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
         }
@@ -125,9 +130,34 @@ public class LeaveParentHhModel extends AbstractModel implements EventHandler, E
                     " has left the parental newHousehold " + hhOfThisPerson.getId() +
                     " and established the new newHousehold " + newHhId + ".");
         }
+        return new LeaveParentsResult(per.getId(), hhOfThisPerson.getId(), newHhId, newDwellingId);
     }
 
     private boolean qualifiesForParentalHHLeave(Person person) {
         return (person.getHh().getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
+    }
+
+    public static class LeaveParentsResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+        @JsonProperty("hhOld")
+        public final int hhOld;
+        @JsonProperty("hhNew")
+        public final int hhNew;
+        @JsonProperty("ddId")
+        public final int ddId;
+
+        public LeaveParentsResult(int id, int hhOld, int hhNew, int ddId) {
+            this.id = id;
+            this.hhOld = hhOld;
+            this.hhNew = hhNew;
+            this.ddId = ddId;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.LEAVE_PARENTAL_HOUSEHOLD;
+        }
     }
 }

@@ -143,54 +143,42 @@ public final class SiloModel {
 
 		if(Properties.get().eventRules.allDemography) {
 			if (Properties.get().eventRules.birthday || Properties.get().eventRules.birth) {
-                em.registerEventHandler(modelContainer.getBirth());
-                em.registerEventCreator(modelContainer.getBirth());
+				em.registerEventHandler(modelContainer.getBirth());
+			}
+			if (Properties.get().eventRules.death) {
+				em.registerEventHandler(modelContainer.getDeath());
+			}
+			if (Properties.get().eventRules.leaveParentHh) {
+				em.registerEventHandler(modelContainer.getLph());
+			}
+			if (Properties.get().eventRules.divorce || Properties.get().eventRules.marriage) {
+				em.registerEventHandler(modelContainer.getMardiv());
+			}
+			if (Properties.get().eventRules.schoolUniversity) {
+				em.registerEventHandler(modelContainer.getChangeSchoolUniv());
+			}
+			if (Properties.get().eventRules.driversLicense) {
+				em.registerEventHandler(modelContainer.getDriversLicense());
+			}
+			if (Properties.get().eventRules.quitJob || Properties.get().eventRules.startNewJob) {
+				em.registerEventHandler(modelContainer.getEmployment());
+			}
+		}
+        if(Properties.get().eventRules.allHhMoves) {
+            em.registerEventHandler(modelContainer.getMove());
+            if(Properties.get().eventRules.outMigration) {
+                em.registerEventHandler(modelContainer.getIomig());
             }
-            if(Properties.get().eventRules.death) {
-                em.registerEventHandler(modelContainer.getDeath());
-                em.registerEventCreator(modelContainer.getDeath());
+        }
+        if(Properties.get().eventRules.allDwellingDevelopments) {
+            if(Properties.get().eventRules.dwellingChangeQuality) {
+                em.registerEventHandler(modelContainer.getRenov());
             }
-            if(Properties.get().eventRules.leaveParentHh) {
-                em.registerEventHandler(modelContainer.getLph());
-                em.registerEventCreator(modelContainer.getLph());
-            }
-            if(Properties.get().eventRules.divorce ||Properties.get().eventRules.marriage) {
-			    em.registerEventHandler(modelContainer.getMardiv());
-                em.registerEventCreator(modelContainer.getMardiv());
-            }
-            if(Properties.get().eventRules.schoolUniversity) {
-                em.registerEventCreator(modelContainer.getChangeSchoolUniv());
-                em.registerEventHandler(modelContainer.getChangeSchoolUniv());
-            }
-            if(Properties.get().eventRules.driversLicense) {
-                em.registerEventHandler(modelContainer.getDriversLicense());
-                em.registerEventCreator(modelContainer.getDriversLicense());
-            }
-            if (Properties.get().eventRules.quitJob || Properties.get().eventRules.startNewJob ) {
-                em.registerEventHandler(modelContainer.getEmployment());
-                em.registerEventCreator(modelContainer.getEmployment());
-            }
-            if(Properties.get().eventRules.allHhMoves) {
-                em.registerEventHandler(modelContainer.getMove());
-                em.registerEventCreator(modelContainer.getMove());
-                if(Properties.get().eventRules.outMigration) {
-                    em.registerEventHandler(modelContainer.getIomig());
-                    em.registerEventCreator(modelContainer.getIomig());
-                }
-            }
-            if(Properties.get().eventRules.allDwellingDevelopments) {
-                if(Properties.get().eventRules.dwellingChangeQuality) {
-                    em.registerEventHandler(modelContainer.getRenov());
-                    em.registerEventCreator(modelContainer.getRenov());
-                }
-                if(Properties.get().eventRules.dwellingDemolition) {
-                    em.registerEventHandler(modelContainer.getDemol());
-                    em.registerEventCreator(modelContainer.getDemol());
-                }
+            if(Properties.get().eventRules.dwellingDemolition) {
+                em.registerEventHandler(modelContainer.getDemol());
             }
             if(Properties.get().eventRules.dwellingConstruction) {
                 em.registerEventHandler(modelContainer.getCons());
-                em.registerEventCreator(modelContainer.getCons());
             }
         }
     }
@@ -268,7 +256,7 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			if (trackTime) timeCounter[EventType.values().length + 8][year] += timer.millis();
 
-			EventManager.logEvents(carChangeCounter, dataContainer);
+			em.finishYear(year, carChangeCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
 			LOGGER.info("  Finished this simulation period with " + householdData.getPersonCount() +

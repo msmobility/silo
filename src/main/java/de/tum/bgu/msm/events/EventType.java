@@ -10,20 +10,24 @@ public enum EventType {
 
     // person events
     BIRTHDAY,
-    CHECK_DEATH,
-    CHECK_BIRTH,
-    CHECK_LEAVE_PARENT_HH,
-    CHECK_MARRIAGE,
-    CHECK_DIVORCE,
-    CHECK_SCHOOL_UNIV,
-    CHECK_DRIVERS_LICENSE,
+    DEATH,
+    BIRTH,
+    LEAVE_PARENTAL_HOUSEHOLD,
+    MARRIAGE,
+    DIVORCE,
+    EDUCATION_UPDATE,
+    DRIVERS_LICENSE_UPDATE,
+
+    //household events
     HOUSEHOLD_MOVE,
     INMIGRATION,
     OUT_MIGRATION,
+
     // dwelling events
-    DD_CHANGE_QUAL,
-    DD_DEMOLITION,
-    DD_CONSTRUCTION,
+    DWELLIG_RENOVATION,
+    DWELLING_DEMOLITION,
+    DWELLING_CONSTRUCTION,
+
     // employment events
     FIND_NEW_JOB,
     QUIT_JOB

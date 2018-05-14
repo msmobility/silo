@@ -1,12 +1,13 @@
 package de.tum.bgu.msm.models.relocation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.Event;
 import de.tum.bgu.msm.events.EventImpl;
-import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventResult;
 import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -74,7 +75,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     @Override
-    public List<Event> createEvents(int year) {
+    public List<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new EventImpl(EventType.HOUSEHOLD_MOVE, hh.getId(), year));
@@ -83,34 +84,39 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     @Override
-    public void handleEvent (Event event) {
+    public EventResult handleEvent (Event event) {
         if(event.getType() == EventType.HOUSEHOLD_MOVE) {
             // simulates (a) if this household moves and (b) where this household moves
 
             int hhId = event.getId();
             Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
             if (household == null) {
-                return;  // Household does not exist anymore
+                return null;  // Household does not exist anymore
             }
             if (!moveOrNot(household)) {
-                return;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+                return null;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
             }
-
+            int oldDd = household.getDwellingId();
             int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
             if (idNewDD > 0) {
                 moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
-                EventManager.countEvent(EventType.HOUSEHOLD_MOVE);
                 dataContainer.getHouseholdData().addHouseholdThatMoved(household);
-                if (hhId == SiloUtil.trackHh)
+                if (hhId == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                             household.getDwellingId());
+                }
+                return new MovesResult(hhId, oldDd, idNewDD);
             } else {
                 if (hhId == SiloUtil.trackHh)
                     SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
                             "could not find an adequate dwelling.");
             }
         }
+        return null;
     }
+
+    @Override
+    public void finishYear(int year){}
 
 
     private void setupEvaluateDwellings() {
@@ -277,6 +283,27 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (hh.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Household " +
                     hh.getId() + " moved from dwelling " + idOldDD + " to dwelling " + idNewDD + ".");
+        }
+    }
+
+    public static class MovesResult implements EventResult {
+
+        @JsonProperty("hh")
+        public final int hh;
+        @JsonProperty("oldDd")
+        public final int ddOld;
+        @JsonProperty("newDd")
+        public final int ddNew;
+
+        public MovesResult(int hh, int ddOld, int ddNew) {
+            this.hh = hh;
+            this.ddOld = ddOld;
+            this.ddNew = ddNew;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.HOUSEHOLD_MOVE;
         }
     }
 }

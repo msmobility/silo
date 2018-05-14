@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
@@ -18,7 +19,7 @@ import java.util.List;
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
 
-public class DriversLicense extends AbstractModel implements EventHandler, EventCreator{
+public class DriversLicense extends AbstractModel implements MicroEventModel {
 
     private LicenseJSCalculator calculator;
 
@@ -33,27 +34,30 @@ public class DriversLicense extends AbstractModel implements EventHandler, Event
     }
 
     @Override
-    public Collection<Event> createEvents(int year) {
+    public Collection<Event> prepareYear(int year) {
         final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
-            events.add(new EventImpl(EventType.CHECK_DRIVERS_LICENSE, person.getId(), year));
+            events.add(new EventImpl(EventType.DRIVERS_LICENSE_UPDATE, person.getId(), year));
         }
         return events;
     }
 
     @Override
-    public void handleEvent(Event event) {
-        if(event.getType() == EventType.CHECK_DRIVERS_LICENSE) {
+    public EventResult handleEvent(Event event) {
+        if(event.getType() == EventType.DRIVERS_LICENSE_UPDATE) {
             Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-            if (pp == null || pp.hasDriverLicense() || pp.getAge() < 18) {
-                return;
-            }
-            final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
-            if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
-                createLicense(pp);
+            if (pp != null && pp.hasDriverLicense() && pp.getAge() < 18) {
+                final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
+                if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
+                    return createLicense(pp);
+                }
             }
         }
+        return null;
     }
+
+    @Override
+    public void finishYear(int year) {}
 
     public void checkLicenseCreation(int perId) {
         Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
@@ -66,12 +70,27 @@ public class DriversLicense extends AbstractModel implements EventHandler, Event
         }
     }
 
-    void createLicense(Person person) {
+    LicenseResult createLicense(Person person) {
         person.setDriverLicense(true);
-        EventManager.countEvent(EventType.CHECK_DRIVERS_LICENSE);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " obtained a drivers license.");
+        }
+        return new LicenseResult(person.getId());
+    }
+
+    public static class LicenseResult implements EventResult {
+
+        @JsonProperty("id")
+        public final int id;
+
+        public LicenseResult(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public EventType getType() {
+            return EventType.DRIVERS_LICENSE_UPDATE;
         }
     }
 }
