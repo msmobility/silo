@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
+import de.tum.bgu.msm.data.IncomeCategory;
 import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import org.junit.Assert;
@@ -22,13 +23,13 @@ public class SelectRegionTest {
 
     @Test
     public void testMovesModelOne() throws ScriptException {
-        Assert.assertEquals(227.225, calculator.calculateSelectRegionProbability(2,
-                Nationality.german, 500, 100, 0.5f), 0.);
+        Assert.assertEquals(227.225, calculator.calculateSelectRegionProbability(IncomeCategory.HIGH,
+                Nationality.GERMAN, 500, 100, 0.5f), 0.);
     }
 
     @Test
     public void testMovesModelTwo() throws ScriptException {
-        Assert.assertEquals(359.125, calculator.calculateSelectRegionProbability(0,
-                Nationality.other, 500, 100, 0.5f), 0.);
+        Assert.assertEquals(359.125, calculator.calculateSelectRegionProbability(IncomeCategory.LOW,
+                Nationality.OTHER, 500, 100, 0.5f), 0.);
     }
 }

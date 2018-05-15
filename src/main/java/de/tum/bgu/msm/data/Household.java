@@ -105,8 +105,8 @@ public final class Household {
     }
 
     public void setType() {
-        int incCat = HouseholdDataManager.getIncomeCategoryForIncome(getHhIncome());
-        this.type = HouseholdDataManager.defineHouseholdType(persons.size(), incCat);
+        IncomeCategory incCat = HouseholdDataManager.getIncomeCategoryForIncome(getHhIncome());
+        this.type = HouseholdType.defineHouseholdType(persons.size(), incCat);
     }
 
     public void determineHouseholdRace() {

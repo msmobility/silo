@@ -121,17 +121,18 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         LOGGER.info("Calculating regional utilities");
         calculateShareOfForeignersByZoneAndRegion();
         final int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-        utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Nationality.values().length][highestRegion+1];
+        utilityRegion = new double[IncomeCategory.values().length][Nationality.values().length][highestRegion+1];
 
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
 
         for (int region: geoData.getRegions().keySet()) {
             final int averageRegionalRent = rentsByRegion.get(region).intValue();
             final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
-                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, income);
+            for (IncomeCategory incomeCategory: IncomeCategory.values()) {
+                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                 for (Nationality nationality: Nationality.values()) {
-                    utilityRegion[income - 1][nationality.getNationalityCode()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
+                    utilityRegion[incomeCategory.ordinal()][nationality.getNationalityCode()][region-1] =
+                            regionCalculator.calculateSelectRegionProbability(incomeCategory,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region));
                 }
             }
@@ -199,8 +200,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         } else if (householdRace == Race.hispanic){
             householdRace = Race.black;
         }
-        int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
+        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
+        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
 
         // Step 1: select region
         int[] regions = geoData.getRegionIdsArray();

@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.relocation;
 
+import de.tum.bgu.msm.data.IncomeCategory;
 import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
@@ -11,7 +12,7 @@ public class SelectRegionJSCalculator extends JavaScriptCalculator<Double> {
         super(reader);
     }
 
-    public double calculateSelectRegionProbability(int group, Nationality nationality, float price, float accessibility, float share) {
-        return super.calculate("calculateSelectRegionProbability", group, nationality.getNationalityCode(), price, accessibility, share);
+    public double calculateSelectRegionProbability(IncomeCategory incomeCategory, Nationality nationality, float price, float accessibility, float share) {
+        return super.calculate("calculateSelectRegionProbability", incomeCategory, nationality.getNationalityCode(), price, accessibility, share);
     }
 }

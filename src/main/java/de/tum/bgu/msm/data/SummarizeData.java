@@ -124,8 +124,8 @@ public class SummarizeData {
         DoubleMatrix1D pop = getPopulationByZone(dataContainer);
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getZone();
-            int incGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
-            hhInc[incGroup - 1][zone]++;
+            int incGroup = hh.getHouseholdType().getIncomeCategory().ordinal();
+            hhInc[incGroup][zone]++;
             hhs[zone] ++;
         }
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {

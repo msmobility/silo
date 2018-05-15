@@ -97,7 +97,7 @@ public final class SiloModel {
 		dataContainer.getJobData().identifyVacantJobs();
 		dataContainer.getJobData().calculateJobDensityByZone();
 		dataContainer.getRealEstateData().fillQualityDistribution();
-		dataContainer.getRealEstateData().setHighestVariables();
+		dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
 		dataContainer.getRealEstateData().identifyVacantDwellings();
 
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, matsimConfig);
@@ -313,8 +313,6 @@ public final class SiloModel {
 		if (scalingYears.contains(Properties.get().main.endYear)) {
             SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
         }
-
-		dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
 
 		if (Properties.get().main.endYear != 2040) {
 			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);

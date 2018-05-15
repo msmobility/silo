@@ -189,24 +189,24 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             }
             selectRegionDmu.setRegionalRace(race, regionalRacialShare);
         }
-        utilityRegion = new double[Properties.get().main.incomeBrackets.length + 1][Race.values().length][numAltsSelReg];
-        for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
+        utilityRegion = new double[IncomeCategory.values().length][Race.values().length][numAltsSelReg];
+        for (IncomeCategory incomeCategory: IncomeCategory.values()) {
             // set DMU attributes
             float[] priceUtil = new float[highestRegion + 1];
             for (int regionId: geoData.getRegions().keySet()) {
-                priceUtil[regionId] = (float) convertPriceToUtility(regPrice[regionId], income);
+                priceUtil[regionId] = (float) convertPriceToUtility(regPrice[regionId], incomeCategory);
             }
             selectRegionDmu.setMedianRegionPrice(priceUtil);
-            selectRegionDmu.setIncomeGroup(income - 1);
+            selectRegionDmu.setIncomeGroup(incomeCategory.ordinal());
             for (Race race: Race.values()) {
                 selectRegionDmu.setRace(race);
                 double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
                 for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
-                    utilityRegion[income - 1][race.getId()][alternative] = util[alternative];
+                    utilityRegion[incomeCategory.ordinal()][race.getId()][alternative] = util[alternative];
                 }
                 if (logCalculationRegion)
                     selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
-                            income + " with race " + race);
+                            incomeCategory + " with race " + race);
             }
         }
     }
@@ -283,8 +283,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 if (pp.getRace() != householdRace) householdRace = Race.other;
             }
         }
-        int incomeBracket = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdDataManager.defineHouseholdType(persons.size(), incomeBracket);
+        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
+        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
 
         // Step 1: select region
         int[] regions = geoData.getRegionIdsArray();
