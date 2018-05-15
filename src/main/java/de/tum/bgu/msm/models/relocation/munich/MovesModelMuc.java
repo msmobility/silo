@@ -46,7 +46,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
-            if(dwelling != null) {
+            if (dwelling != null) {
                 zone = dwelling.getZone();
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
@@ -59,7 +59,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         }
 
         zonalShare.assign(hhByZone, (foreignerShare, numberOfHouseholds) -> {
-            if(numberOfHouseholds > 0) {
+            if (numberOfHouseholds > 0) {
                 return foreignerShare / numberOfHouseholds;
             } else {
                 return 0;
@@ -67,7 +67,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         });
 
         regionalShareForeigners.assign(hhByRegion, (foreignerShare, numberOfHouseholds) -> {
-            if(numberOfHouseholds > 0) {
+            if (numberOfHouseholds > 0) {
                 return foreignerShare / numberOfHouseholds;
             } else {
                 return 0;
@@ -128,11 +128,10 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (int region: geoData.getRegions().keySet()) {
             final int averageRegionalRent = rentsByRegion.get(region).intValue();
             final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            for (IncomeCategory incomeCategory: IncomeCategory.values()) {
-                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
+            for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
+                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, income);
                 for (Nationality nationality: Nationality.values()) {
-                    utilityRegion[incomeCategory.ordinal()][nationality.getNationalityCode()][region-1] =
-                            regionCalculator.calculateSelectRegionProbability(incomeCategory,
+                    utilityRegion[income - 1][nationality.ordinal()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region));
                 }
             }
@@ -195,9 +194,9 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
                 }
             }
         }
-        if (householdRace == Race.other){
+        if (householdRace == Race.other) {
             householdRace = Race.black;
-        } else if (householdRace == Race.hispanic){
+        } else if (householdRace == Race.hispanic) {
             householdRace = Race.black;
         }
         IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
@@ -258,18 +257,30 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     @Override
     protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd) {
-        evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
-        evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
-        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone())));
+        //evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
+        //evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
+        //evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone())));
+        //evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone())));
+        //int price = dd.getPrice();
+        //evaluateDwellingDmu.setUtilityDwellingPrice(convertPriceToUtility(price, ht));
+        //evaluateDwellingDmu.setType(ht);
 
-        int price = dd.getPrice();
-        evaluateDwellingDmu.setUtilityDwellingPrice(convertPriceToUtility(price, ht));
-        evaluateDwellingDmu.setType(ht);
-        double util[] = ddUtilityModel.solve(evaluateDwellingDmu.getDmuIndexValues(), evaluateDwellingDmu, evalDwellingAvail);
-        if (logCalculationDwelling)
-            ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
-        return util[0];
+        double ddQualityUtility = convertQualityToUtility(dd.getQuality());
+        double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+        double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
+
+        //double util[] = ddUtilityModel.solve(evaluateDwellingDmu.getDmuIndexValues(), evaluateDwellingDmu, evalDwellingAvail);
+        double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+                ddQualityUtility, ddAutoAccessibilityUtility,
+                transitAccessibilityUtility, 0.0, 0.0);
+
+
+//        if (logCalculationDwelling)
+//        ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
+
+        return ddUtility;
     }
 
 }

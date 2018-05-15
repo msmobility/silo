@@ -32,11 +32,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU selectRegionDmu;
-    private final DoubleMatrix2D zonalRacialComposition;
-    private final DoubleMatrix2D regionalRacialComposition;
+    private DoubleMatrix2D zonalRacialComposition;
+    private DoubleMatrix2D regionalRacialComposition;
+    private DoubleMatrix1D hhByRegion;
     private double selectDwellingRaceRelevance;
     private boolean provideRentSubsidyToLowIncomeHh;
-    private final DoubleMatrix1D hhByRegion;
 
 
     public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -46,9 +46,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         if (provideRentSubsidyToLowIncomeHh) {
             dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
-        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
-        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
     }
 
     private void calculateRacialCompositionByZoneAndRegion() {
@@ -58,6 +55,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     private void resetMatrices() {
+        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
+        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
+        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalRacialComposition.assign(0);
         zonalRacialComposition.assign(0);
         hhByRegion.assign(0);
@@ -356,12 +356,17 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     @Override
     protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd) {
-        evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
-        evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
-        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone())));
-        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((MstmZone) geoData.getZones().get(dd.getZone())).getSchoolQuality());
-        evaluateDwellingDmu.setUtilityDwellingCrimeRate(((MstmZone) geoData.getZones().get(dd.getZone())).getCounty().getCrimeRate());
+//        evaluateDwellingDmu.setUtilityDwellingQuality(convertQualityToUtility(dd.getQuality()));
+//        evaluateDwellingDmu.setUtilityDwellingSize(convertAreaToUtility(dd.getBedrooms()));
+//        evaluateDwellingDmu.setUtilityDwellingAutoAccessibility(convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone())));
+//        evaluateDwellingDmu.setUtilityDwellingTransitAccessibility(convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone())));
+//        evaluateDwellingDmu.setUtilityDwellingSchoolQuality(((MstmZone) geoData.getZones().get(dd.getZone())).getSchoolQuality());
+//        evaluateDwellingDmu.setUtilityDwellingCrimeRate(((MstmZone) geoData.getZones().get(dd.getZone())).getCounty().getCrimeRate());
+
+        double ddQualityUtility = convertQualityToUtility(dd.getQuality());
+        double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
 
         int price = dd.getPrice();
         if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
@@ -374,13 +379,19 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             }
         }
 
-        evaluateDwellingDmu.setUtilityDwellingPrice(convertPriceToUtility(price, ht));
-        evaluateDwellingDmu.setType(ht);
-        double util[] = ddUtilityModel.solve(evaluateDwellingDmu.getDmuIndexValues(), evaluateDwellingDmu, evalDwellingAvail);
-        // log UEC values for each household type
-        if (logCalculationDwelling)
-            ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
-        return util[0];
+        double ddPriceUtility = convertPriceToUtility(price, ht);
+
+        double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+                ddQualityUtility, ddAutoAccessibilityUtility,
+                transitAccessibilityUtility, 0.0, 0.0);
+
+//        evaluateDwellingDmu.setUtilityDwellingPrice(convertPriceToUtility(price, ht));
+//        evaluateDwellingDmu.setType(ht);
+//        double util[] = ddUtilityModel.solve(evaluateDwellingDmu.getDmuIndexValues(), evaluateDwellingDmu, evalDwellingAvail);
+//         log UEC values for each household type
+//        if (logCalculationDwelling)
+//            ddUtilityModel.logAnswersArray(traceLogger, "Quality of dwelling " + dd.getId());
+        return ddUtility;
     }
 
 

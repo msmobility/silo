@@ -161,7 +161,7 @@ public class RealEstateDataManager {
         // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
 
         final GeoData geoData = dataContainer.getGeoData();
-        int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+        int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
         numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];

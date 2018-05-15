@@ -5,7 +5,9 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.Couple;
 import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
@@ -92,7 +94,9 @@ public class SiloModelCBLCM {
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        EventManager em = new EventManager(dataContainer);
-	        long startTime = 0;
+            final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+			long startTime = 0;
+
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getIomig().setupInOutMigration(currentYear);
 	        if (trackTime) timeCounter[EventTypes.values().length][currentYear] += System.currentTimeMillis() - startTime;
@@ -109,11 +113,11 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 2][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        dataContainer.getHouseholdData().setUpChangeOfJob(currentYear);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
+			householdData.setUpChangeOfJob(currentYear);   // has to run after updateJobInventoryThisYear, as updateJobInventoryThisYear may remove jobs
 	        if (trackTime) timeCounter[EventTypes.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        List<int[]> plannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear();
+	        List<Couple> plannedCouples = modelContainer.getMardiv().selectCouplesToGetMarriedThisYear(householdData.getPersons());
 	        if (trackTime) timeCounter[EventTypes.values().length + 5][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
@@ -142,7 +146,7 @@ public class SiloModelCBLCM {
 	        if (trackTime) timeCounter[EventTypes.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) dataContainer.getHouseholdData().adjustIncome();
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
 	        if (trackTime) timeCounter[EventTypes.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
@@ -161,7 +165,7 @@ public class SiloModelCBLCM {
 	                        event[1]);
 	            if (event[0] == EventTypes.BIRTHDAY.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getBirth().celebrateBirthday(event[1]);
+	                modelContainer.getBirth().checkBirthday(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_DEATH.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
@@ -173,24 +177,24 @@ public class SiloModelCBLCM {
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_LEAVE_PARENT_HH.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getLph().chooseLeaveParentHh(event[1], modelContainer);
+	                modelContainer.getLph().chooseLeaveParentHh(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_MARRIAGE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
 	                int[] couple = Arrays.copyOfRange(event, 1,2);
-					modelContainer.getMardiv().marryCouple(couple, modelContainer);
+					modelContainer.getMardiv().marryCouple(couple);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.CHECK_DIVORCE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getMardiv().chooseDivorce(event[1], modelContainer);
+	                modelContainer.getMardiv().chooseDivorce(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getChangeEmployment().findNewJob(event[1]);
+	                modelContainer.getEmployment().lookForJob(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
-	                modelContainer.getChangeEmployment().quitJob(event[1]);
+	                modelContainer.getEmployment().quitJob(event[1]);
 	                if (trackTime) timeCounter[event[0]][currentYear] += System.currentTimeMillis() - startTime;
 	            } else if (event[0] == EventTypes.HOUSEHOLD_MOVE.ordinal()) {
 	                if (trackTime) startTime = System.currentTimeMillis();
@@ -234,8 +238,8 @@ public class SiloModelCBLCM {
 	        EventManager.logEvents(new int[] {0,0}, dataContainer);
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
-	        logger.info("  Finished this simulation period with " + dataContainer.getHouseholdData().getPersonCount() +
-	                " persons, " + dataContainer.getHouseholdData().getHouseholds().size() +" households and "  +
+	        logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
+	                " persons, " + householdData.getHouseholds().size() +" households and "  +
 	                dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 	        currentYear++;
 	        if (SiloUtil.modelStopper("check")) finishModel();

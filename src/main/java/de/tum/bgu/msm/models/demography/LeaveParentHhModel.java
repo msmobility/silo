@@ -26,7 +26,9 @@ import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -37,77 +39,75 @@ import java.util.Collections;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-
 public class LeaveParentHhModel extends AbstractModel {
 
-    private double[] lphProbability;
+    private LeaveParentHhJSCalculator calculator;
+    private final CreateCarOwnershipModel createCarOwnershipModel;
+    private final MovesModelI movesModel;
 
-    public LeaveParentHhModel(SiloDataContainer dataContainer) {
+    public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move, CreateCarOwnershipModel createCarOwnershipModel) {
         super(dataContainer);
+        this.movesModel = move;
+        this.createCarOwnershipModel = createCarOwnershipModel;
         setupLPHModel();
     }
 
     private void setupLPHModel() {
-
         Reader reader;
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
         }
-        LeaveParentHhJSCalculator calculator = new LeaveParentHhJSCalculator(reader);
+        calculator = new LeaveParentHhJSCalculator(reader);
+    }
 
-        // initialize results for each alternative
-        PersonType[] types = PersonType.values();
-        lphProbability = new double[types.length];
-
-        //apply the calculator to each alternative
-        for (int i = 0; i < types.length; i++) {
-            lphProbability[i] = calculator.calculateLeaveParentsProbability(i);
+    public void chooseLeaveParentHh(int perId) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Person per = householdData.getPersonFromId(perId);
+        if (!EventRules.ruleLeaveParHousehold(per)){
+            return;
+        }
+        final double prob = calculator.calculateLeaveParentsProbability(per.getType());
+        if (SiloUtil.getRandomNumberAsDouble() < prob) {
+            leaveHousehold(per);
         }
     }
 
-
-    public void chooseLeaveParentHh(int perId, SiloModelContainer modelContainer) {
-        // remove person with perId from its household and create new household with this person
-
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Person per = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleLeaveParHousehold(per)) return;   // Person got married this simulation period
-        if (SiloUtil.getRandomNumberAsDouble() < lphProbability[per.getType().ordinal()]) {
-
-            // search if dwelling is available
-            int newDwellingId = modelContainer.getMove().searchForNewDwelling(Collections.singletonList(per));
-            if (newDwellingId < 0) {
-                if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println(
-                        "Person " + perId + " wanted to but could not leave parental household " + per.getHh().getId() +
-                        " because no appropriate vacant dwelling was found.");
-                IssueCounter.countLackOfDwellingFailedLeavingChild();
-                return;
+    void leaveHousehold(Person per) {
+        // search if dwelling is available
+        final int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
+        if (newDwellingId < 0) {
+            if (per.getId() == SiloUtil.trackPp || (per.getHh() != null && per.getHh().getId() == SiloUtil.trackHh)) {
+                SiloUtil.trackWriter.println(
+                        "Person " + per.getId() + " wanted to but could not leave parental Household " + per.getHh().getId() +
+                                " because no appropriate vacant dwelling was found.");
             }
+            IssueCounter.countLackOfDwellingFailedLeavingChild();
+            return;
+        }
 
-            // create new household
-            Household hhOfThisPerson = per.getHh();
-            householdData.removePersonFromHousehold(per);
-            hhOfThisPerson.setType();
-            int newHhId = householdData.getNextHouseholdId();
-            Household household = householdData.createHousehold(newHhId, -1,  0);
-            householdData.addPersonToHousehold(per, household);
-            per.setRole(PersonRole.SINGLE);
+        final HouseholdDataManager households = dataContainer.getHouseholdData();
+        final Household hhOfThisPerson = per.getHh();
+        households.removePersonFromHousehold(per);
 
-            // Move new household
-            modelContainer.getMove().moveHousehold(household, -1, newDwellingId, dataContainer);
-            EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original household for update in car ownership
-            if(Properties.get().main.implementation == Implementation.MUNICH) {
-                modelContainer.getCreateCarOwnershipModel().simulateCarOwnership(household); // set initial car ownership of new household
-            }
-            if (perId == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
-                    household.getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Person " + perId +
-                        " has left the parental household " + hhOfThisPerson.getId() +
-                        " and established the new household " + newHhId + ".");
-            }
+        final int newHhId = households.getNextHouseholdId();
+        final Household newHousehold = households.createHousehold(newHhId, -1,  0);
+        households.addPersonToHousehold(per, newHousehold);
+        per.setRole(PersonRole.SINGLE);
+        dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
+
+        movesModel.moveHousehold(newHousehold, -1, newDwellingId);
+        EventManager.countEvent(EventTypes.CHECK_LEAVE_PARENT_HH);
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
+        }
+
+        if (per.getId() == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
+                newHousehold.getId() == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("Person " + per.getId() +
+                    " has left the parental newHousehold " + hhOfThisPerson.getId() +
+                    " and established the new newHousehold " + newHhId + ".");
         }
     }
 }

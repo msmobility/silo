@@ -4,6 +4,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 import com.google.common.collect.ArrayTable;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
@@ -39,9 +40,9 @@ public class Accessibility {
 
     private final Table<Integer, Integer, Double> travelTimeToRegion;
 
-    private final DoubleMatrix1D autoAccessibilities;
-    private final DoubleMatrix1D transitAccessibilities;
-    private final DoubleMatrix1D regionalAccessibilities;
+    private DoubleMatrix1D autoAccessibilities;
+    private DoubleMatrix1D transitAccessibilities;
+    private DoubleMatrix1D regionalAccessibilities;
 
     private final float autoOperatingCosts;
     private final float alphaAuto;
@@ -57,17 +58,17 @@ public class Accessibility {
         this.travelTimes = travelTimes;
         this.geoData = dataContainer.getGeoData();
         this.dataContainer = dataContainer;
-        this.travelTimeToRegion = ArrayTable.create(geoData.getZones().keySet(), geoData.getRegions().keySet());
+        this.travelTimeToRegion = HashBasedTable.create();
+
+        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
 
         this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
         this.alphaAuto = Properties.get().accessibility.alphaAuto;
         this.betaAuto = Properties.get().accessibility.betaAuto;
         this.alphaTransit = Properties.get().accessibility.alphaTransit;
         this.betaTransit = Properties.get().accessibility.betaTransit;
-
-        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
     }
 
     /**

@@ -44,7 +44,7 @@ public class HouseholdDataManager {
     private int highestPersonIdInUse;
 
     private float[][] laborParticipationShares;
-    private static float[][][] initialIncomeDistribution;              // income by age, gender and occupation
+    private float[][][] initialIncomeDistribution;              // income by age, gender and occupation
     public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
@@ -52,7 +52,7 @@ public class HouseholdDataManager {
     private final Map<Integer,Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
-    private HashMap<Integer, int[]> updatedHouseholds = new HashMap<>();
+    private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
@@ -127,22 +127,6 @@ public class HouseholdDataManager {
         if (person.getId() == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("A person " +
                     "(not a child) named " + person.getId() + " was added to household " + household.getId() + ".");
-        }
-    }
-
-    public void addNewbornPersonToHousehold(Household household) {
-        // create new Person for this household
-        final int id = getNextPersonId();
-        int gender = 1;
-        if (SiloUtil.getRandomNumberAsDouble() <= BirthModel.getProbabilityForGirl()) {
-            gender = 2;
-        }
-        final Person person = createPerson(id, 0, gender, household.getRace(), 0, 0, 0);
-        person.setRole(PersonRole.CHILD);
-        addPersonToHousehold(person, household);
-        if (id == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("For unto us a child was born... A child named "
-                    + id + " was born and added to household " + household.getId() + ".");
         }
     }
 
@@ -415,6 +399,7 @@ public class HouseholdDataManager {
             persons.remove(person.getId());
         }
         households.remove(householdId);
+        updatedHouseholds.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
         }
@@ -691,19 +676,22 @@ public class HouseholdDataManager {
         executor.execute();
     }
 
-    public static int selectIncomeForPerson (int gender, int age, int occupation) {
-        // select income for household based on gender, age and occupation
-        float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
-        double[] prob = new double[21];
-        int[] change = new int[21];
+    public void selectIncomeForPerson (Person person) {
+        final int gender = person.getGender() - 1;
+        final int age = Math.min(99, person.getAge());
+        final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
+        final double[] prob = new double[21];
+        final int[] change = new int[21];
         for (int i = 0; i < prob.length; i++) {
             // normal distribution to calculate change of income
+            //TODO: Use normal distribution from library (e.g. commons math)
             change[i] = (int) (-5000f + 10000f * (float) i / (prob.length - 1f));
             prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) *
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
-        int sel = SiloUtil.select(prob);
-        return Math.max((int) initialIncomeDistribution[gender][age][occupation] + change[sel], 0);
+        final int sel = SiloUtil.select(prob);
+        final int inc = Math.max((int) initialIncomeDistribution[gender][age][person.getOccupation()] + change[sel], 0);
+        person.setIncome(inc);
     }
 
 

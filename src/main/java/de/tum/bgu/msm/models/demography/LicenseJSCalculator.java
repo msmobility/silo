@@ -1,17 +1,21 @@
 package de.tum.bgu.msm.models.demography;
 
-import java.io.Reader;
-
 import de.tum.bgu.msm.data.PersonType;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
+
+import java.io.Reader;
 
 /**
  * Created by matthewokrah on 13/11/2017.
  */
-public class ChangeDriversLicenseJSCalculator extends JavaScriptCalculator<Double> {
+public class LicenseJSCalculator extends JavaScriptCalculator<Double> {
 
-    public ChangeDriversLicenseJSCalculator (Reader reader) {
+    public LicenseJSCalculator(Reader reader) {
         super(reader);
+    }
+
+    public double calculateCreateDriversLicenseProbability(PersonType type) {
+        return super.calculate("calculateCreateDriversLicenseProbability", type);
     }
 
     public double calculateChangeDriversLicenseProbability(PersonType type) {

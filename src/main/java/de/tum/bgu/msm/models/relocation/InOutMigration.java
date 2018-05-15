@@ -158,13 +158,12 @@ public class InOutMigration extends AbstractModel {
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
         for (Person per: hh.getPersons()) {
             if (per.getOccupation() == 1) {
-                boolean success = modelContainer.getChangeEmployment().findNewJob(per.getId());
-                if (!success) per.setOccupation(2);
+                modelContainer.getEmployment().lookForJob(per.getId());
+                if (per.getWorkplace() < 1 ) {
+                    per.setOccupation(2);
+                }
             }
-            if (per.getAge() > 17){
-               boolean license = modelContainer.getChangeDriversLicense().createDriversLicense(per.getId());
-               if (license) per.setDriverLicense(true);
-            }
+            modelContainer.getDriversLicense().checkLicenseCreation(per.getId());
         }
         hh.setType();
         hh.determineHouseholdRace();
@@ -172,7 +171,7 @@ public class InOutMigration extends AbstractModel {
         HouseholdDataManager.defineUnmarriedPersons(hh);
         int newDdId = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
         if (newDdId > 0) {
-            modelContainer.getMove().moveHousehold(hh, -1, newDdId, dataContainer);
+            modelContainer.getMove().moveHousehold(hh, -1, newDdId);
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);

@@ -35,7 +35,7 @@ public class EventManager {
     }
 
 
-    public void createListOfEvents (List<int[]> plannedMarriages) {
+    public void createListOfEvents (List<Couple> plannedMarriages) {
         // create an array list that contains all land use events
 
         events = new ArrayList<>();
@@ -84,8 +84,9 @@ public class EventManager {
 
 
         // wedding events
-        for (int[] couple: plannedMarriages) {
-            events.add(new int[]{EventTypes.CHECK_MARRIAGE.ordinal(), couple[0], couple[1]});
+        for (Couple couple: plannedMarriages) {
+            events.add(new int[]{EventTypes.CHECK_MARRIAGE.ordinal(),
+                    couple.getPartner1().getId(), couple.getPartner2().getId()});
             numEvents++;
         }
 
@@ -216,7 +217,7 @@ public class EventManager {
         int dlc = eventCounter.count(EventTypes.CHECK_DRIVERS_LICENSE);
         logger.info("  Simulated change of drivers license: " + dlc + " (" +
                 SiloUtil.rounder((100f * dlc / pp), 1) + "% of pp)");
-        SummarizeData.resultFile("ChangeDriversLicense,"+dlc);
+        SummarizeData.resultFile("DriversLicense,"+dlc);
         int sj = eventCounter.count(EventTypes.FIND_NEW_JOB);
         logger.info("  Simulated start new job:     " + sj + " (" +
                 SiloUtil.rounder((100f * sj / pp), 1) + "% of pp)");

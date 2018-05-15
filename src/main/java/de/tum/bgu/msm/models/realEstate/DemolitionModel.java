@@ -68,7 +68,7 @@ public class DemolitionModel extends AbstractModel {
     private void moveOutHousehold(int dwellingId, SiloModelContainer modelContainer, SiloDataContainer dataContainer, Household hh) {
         int idNewDD = modelContainer.getMove().searchForNewDwelling(hh.getPersons());
         if (idNewDD > 0) {
-            modelContainer.getMove().moveHousehold(hh, -1, idNewDD, dataContainer);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
+            modelContainer.getMove().moveHousehold(hh, -1, idNewDD);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
         } else {
             modelContainer.getIomig().outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);

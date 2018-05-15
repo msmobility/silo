@@ -17,54 +17,150 @@
 package de.tum.bgu.msm.data;
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
- *
  */
 public enum PersonType {
 
-    menAge0,
-    menAge1to4,
-    menAge5to9,
-    menAge10to14,
-    menAge15to19,
-    menAge20to24,
-    menAge25to29,
-    menAge30to34,
-    menAge35to39,
-    menAge40to44,
-    menAge45to49,
-    menAge50to54,
-    menAge55to59,
-    menAge60to64,
-    menAge65to69,
-    menAge70to74,
-    menAge75to79,
-    menAge80to84,
-    menAge85to89,
-    menAge90to94,
-    menAge95to99,
-    menAge100plus,
-    womenAge0,
-    womenAge1to4,
-    womenAge5to9,
-    womenAge10to14,
-    womenAge15to19,
-    womenAge20to24,
-    womenAge25to29,
-    womenAge30to34,
-    womenAge35to39,
-    womenAge40to44,
-    womenAge45to49,
-    womenAge50to54,
-    womenAge55to59,
-    womenAge60to64,
-    womenAge65to69,
-    womenAge70to74,
-    womenAge75to79,
-    womenAge80to84,
-    womenAge85to89,
-    womenAge90to94,
-    womenAge95to99,
-    womenAge100plus
+    MEN_AGE_0,
+    MEN_AGE_1_TO_4,
+    MEN_AGE_5_TO_9,
+    MEN_AGE_10_TO_14,
+    MEN_AGE_15_TO_19,
+    MEN_AGE_20_TO_24,
+    MEN_AGE_25_TO_29,
+    MEN_AGE_30_TO_34,
+    MEN_AGE_35_TO_39,
+    MEN_AGE_40_TO_44,
+    MEN_AGE_45_TO_49,
+    MEN_AGE_50_TO_54,
+    MEN_AGE_55_TO_59,
+    MEN_AGE_60_TO_64,
+    MEN_AGE_65_TO_69,
+    MEN_AGE_70_TO_74,
+    MEN_AGE_75_TO_79,
+    MEN_AGE_80_TO_84,
+    MEN_AGE_85_TO_89,
+    MEN_AGE_90_TO_94,
+    MEN_AGE_95_TO_99,
+    MEN_AGE_100_PLUS,
+    WOMEN_AGE_0,
+    WOMEN_AGE_1_TO_4,
+    WOMEN_AGE_5_TO_9,
+    WOMEN_AGE_10_TO_14,
+    WOMEN_AGE_15_TO_19,
+    WOMEN_AGE_20_TO_24,
+    WOMEN_AGE_25_TO_29,
+    WOMEN_AGE_30_TO_34,
+    WOMEN_AGE_35_TO_39,
+    WOMEN_AGE_40_TO_44,
+    WOMEN_AGE_45_TO_49,
+    WOMEN_AGE_50_TO_54,
+    WOMEN_AGE_55_TO_59,
+    WOMEN_AGE_60_TO_64,
+    WOMEN_AGE_65_TO_69,
+    WOMEN_AGE_70_TO_74,
+    WOMEN_AGE_75_TO_79,
+    WOMEN_AGE_80_TO_84,
+    WOMEN_AGE_85_TO_89,
+    WOMEN_AGE_90_TO_94,
+    WOMEN_AGE_95_TO_99,
+    WOMEN_AGE_100_PLUS;
+
+    public static PersonType defineType(Person person) {
+        final int age = person.getAge();
+        if (person.getGender() == 1) {
+            if (age == 0) {
+                return PersonType.MEN_AGE_0;
+            } else if (age <= 4) {
+                return PersonType.MEN_AGE_1_TO_4;
+            } else if (age <= 9) {
+                return PersonType.MEN_AGE_5_TO_9;
+            } else if (age <= 14) {
+                return PersonType.MEN_AGE_10_TO_14;
+            } else if (age <= 19) {
+                return PersonType.MEN_AGE_15_TO_19;
+            } else if (age <= 24) {
+                return PersonType.MEN_AGE_20_TO_24;
+            } else if (age <= 29) {
+                return PersonType.MEN_AGE_25_TO_29;
+            } else if (age <= 34) {
+                return PersonType.MEN_AGE_30_TO_34;
+            } else if (age <= 39) {
+                return PersonType.MEN_AGE_35_TO_39;
+            } else if (age <= 44) {
+                return PersonType.MEN_AGE_40_TO_44;
+            } else if (age <= 49) {
+                return PersonType.MEN_AGE_45_TO_49;
+            } else if (age <= 54) {
+                return PersonType.MEN_AGE_50_TO_54;
+            } else if (age <= 59) {
+                return PersonType.MEN_AGE_55_TO_59;
+            } else if (age <= 64) {
+                return PersonType.MEN_AGE_60_TO_64;
+            } else if (age <= 69) {
+                return PersonType.MEN_AGE_65_TO_69;
+            } else if (age <= 74) {
+                return PersonType.MEN_AGE_70_TO_74;
+            } else if (age <= 79) {
+                return PersonType.MEN_AGE_75_TO_79;
+            } else if (age <= 84) {
+                return PersonType.MEN_AGE_80_TO_84;
+            } else if (age <= 89) {
+                return PersonType.MEN_AGE_85_TO_89;
+            } else if (age <= 94) {
+                return PersonType.MEN_AGE_90_TO_94;
+            } else if (age <= 99) {
+                return PersonType.MEN_AGE_95_TO_99;
+            } else {
+                return PersonType.MEN_AGE_100_PLUS;
+            }
+        } else {
+            if (age == 0) {
+                return PersonType.WOMEN_AGE_0;
+            } else if (age <= 4) {
+                return PersonType.WOMEN_AGE_1_TO_4;
+            } else if (age <= 9) {
+                return PersonType.WOMEN_AGE_5_TO_9;
+            } else if (age <= 14) {
+                return PersonType.WOMEN_AGE_10_TO_14;
+            } else if (age <= 19) {
+                return PersonType.WOMEN_AGE_15_TO_19;
+            } else if (age <= 24) {
+                return PersonType.WOMEN_AGE_20_TO_24;
+            } else if (age <= 29) {
+                return PersonType.WOMEN_AGE_25_TO_29;
+            } else if (age <= 34) {
+                return PersonType.WOMEN_AGE_30_TO_34;
+            } else if (age <= 39) {
+                return PersonType.WOMEN_AGE_35_TO_39;
+            } else if (age <= 44) {
+                return PersonType.WOMEN_AGE_40_TO_44;
+            } else if (age <= 49) {
+                return PersonType.WOMEN_AGE_45_TO_49;
+            } else if (age <= 54) {
+                return PersonType.WOMEN_AGE_50_TO_54;
+            } else if (age <= 59) {
+                return PersonType.WOMEN_AGE_55_TO_59;
+            } else if (age <= 64) {
+                return PersonType.WOMEN_AGE_60_TO_64;
+            } else if (age <= 69) {
+                return PersonType.WOMEN_AGE_65_TO_69;
+            } else if (age <= 74) {
+                return PersonType.WOMEN_AGE_70_TO_74;
+            } else if (age <= 79) {
+                return PersonType.WOMEN_AGE_75_TO_79;
+            } else if (age <= 84) {
+                return PersonType.WOMEN_AGE_80_TO_84;
+            } else if (age <= 89) {
+                return PersonType.WOMEN_AGE_85_TO_89;
+            } else if (age <= 94) {
+                return PersonType.WOMEN_AGE_90_TO_94;
+            } else if (age <= 99) {
+                return PersonType.WOMEN_AGE_95_TO_99;
+            } else {
+                return PersonType.WOMEN_AGE_100_PLUS;
+            }
+        }
+    }
 }

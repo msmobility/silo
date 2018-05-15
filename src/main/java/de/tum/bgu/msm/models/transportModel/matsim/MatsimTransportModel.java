@@ -21,9 +21,9 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
-import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
@@ -48,20 +48,20 @@ import java.util.Random;
 /**
  * @author dziemke
  */
-public class MatsimTransportModel extends AbstractModel implements TransportModelI {
+public final class MatsimTransportModel implements TransportModelI  {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
 
 	private final Config initialMatsimConfig;
-	private final MatsimTravelTimes travelTimes;
-
-
-	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig, MatsimTravelTimes travelTimes) {
-		super(dataContainer);
+	private final MatsimTravelTimes travelTimes = new MatsimTravelTimes() ;
+	private final SiloDataContainer dataContainer;
+	
+	
+	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
+		this.dataContainer = dataContainer;
 		Gbl.assertNotNull(dataContainer);
-		this.initialMatsimConfig = matsimConfig;
-		this.travelTimes = travelTimes;
+		this.initialMatsimConfig = matsimConfig ;
 	}
 
 	@Override
@@ -90,7 +90,8 @@ public class MatsimTransportModel extends AbstractModel implements TransportMode
 		
 		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
 		for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-			int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
+			Integer zoneId = (Integer) feature.getAttribute("SMZRMZ");
+			// (may fail, then go back to first converting to string and then Integer.valueOf(...)) ;
 			zoneFeatureMap.put(zoneId,feature);
 		}
 		
@@ -122,7 +123,7 @@ public class MatsimTransportModel extends AbstractModel implements TransportMode
 		
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
 		
-		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork());
+		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
 		// for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
 		// potentially revise this later; nk/dz, nov'17
 		//TODO: Optimize pt travel time query
@@ -134,10 +135,10 @@ public class MatsimTransportModel extends AbstractModel implements TransportMode
 		}
 	}
 
-    public MatsimTravelTimes getTravelTimes() {
-	    if(travelTimes == null) {
-	        throw new RuntimeException("MATSim Transport Model needs to run at least once before querying travel times!");
-        }
-        return travelTimes;
-    }
+	public final TravelTimes getTravelTimes() {
+		if(travelTimes == null) {
+			throw new RuntimeException("MATSim Transport Model needs to run at least once before querying travel times!");
+		}
+		return travelTimes ;
+	}
 }
