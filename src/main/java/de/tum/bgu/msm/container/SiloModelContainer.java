@@ -2,7 +2,6 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
@@ -30,7 +29,6 @@ import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.core.config.Config;
 
 /**

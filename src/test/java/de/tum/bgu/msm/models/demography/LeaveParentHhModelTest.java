@@ -38,7 +38,7 @@ public class LeaveParentHhModelTest {
         dataContainer.getHouseholdData().addPersonToHousehold(parent2, household);
 
         dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
-        dataContainer.getRealEstateData().setHighestVariables();
+        dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());

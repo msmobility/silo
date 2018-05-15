@@ -128,10 +128,12 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (int region: geoData.getRegions().keySet()) {
             final int averageRegionalRent = rentsByRegion.get(region).intValue();
             final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
-                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, income);
+            //for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
+            for (IncomeCategory incomeCategory: IncomeCategory.values()) {
+                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                 for (Nationality nationality: Nationality.values()) {
-                    utilityRegion[income - 1][nationality.ordinal()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
+                    utilityRegion[incomeCategory.ordinal()][nationality.ordinal()][region-1] =
+                            regionCalculator.calculateSelectRegionProbability(incomeCategory,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region));
                 }
             }
