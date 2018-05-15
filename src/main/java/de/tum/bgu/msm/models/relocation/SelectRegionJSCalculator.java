@@ -12,6 +12,6 @@ public class SelectRegionJSCalculator extends JavaScriptCalculator<Double> {
     }
 
     public double calculateSelectRegionProbability(int group, Nationality nationality, float price, float accessibility, float share) {
-        return super.calculate("calculateSelectRegionProbability", group, nationality.ordinal(), price, accessibility, share);
+        return super.calculate("calculateSelectRegionProbability", group, nationality.getNationalityCode(), price, accessibility, share);
     }
 }

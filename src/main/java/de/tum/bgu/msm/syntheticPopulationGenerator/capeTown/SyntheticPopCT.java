@@ -1644,9 +1644,9 @@ public class SyntheticPopCT implements SyntheticPopI {
             if (persons.getValueAt(i,"driversLicense") == 1) pp.setDriverLicense(true);
             int nationality = (int) persons.getValueAt(i,"nationality");
             if (nationality == 1) {
-                pp.setNationality(Nationality.german);
+                pp.setNationality(Nationality.GERMAN);
             } else {
-                pp.setNationality(Nationality.other);
+                pp.setNationality(Nationality.OTHER);
             }
             pp.setSchoolType((int) persons.getValueAt(i,"schoolDE"));
             pp.setWorkplace((int) persons.getValueAt(i,"workplace"));
@@ -1922,9 +1922,9 @@ public class SyntheticPopCT implements SyntheticPopI {
                     pers.setRole(role);
                     int nationality = (int) microDataPerson.getValueAt(personCounter,"nationality");
                     if (nationality == 1) {
-                        pers.setNationality(Nationality.german);
+                        pers.setNationality(Nationality.GERMAN);
                     } else {
-                        pers.setNationality(Nationality.other);
+                        pers.setNationality(Nationality.OTHER);
                     }
                     pers.setTelework((int) microDataPerson.getValueAt(personCounter, "telework"));
                     //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
@@ -2628,7 +2628,7 @@ public class SyntheticPopCT implements SyntheticPopI {
     public static TableDataSet updateCountersPerson (Person person, TableDataSet attributesCount,int mun, int[] ageBracketsPerson) {
         /* method to update the counters with the characteristics of the generated person in a private household*/
         attributesCount.setIndexedValueAt(mun, "population", attributesCount.getIndexedValueAt(mun, "population") + 1);
-        if (person.getNationality() == Nationality.other) {
+        if (person.getNationality() == Nationality.OTHER) {
             attributesCount.setIndexedValueAt(mun, "foreigners", attributesCount.getIndexedValueAt(mun, "foreigners") + 1);
         }
         if (person.getGender() == 1) {

@@ -8,6 +8,17 @@ package de.tum.bgu.msm.data;
  **/
 
 public enum Nationality {
-    german,         // German national, either born or naturalized German
-    other           // Any other nationality, including mixed households
+
+    GERMAN(0),         // German national, either born or naturalized German
+    OTHER(1);          // Any other nationality, including mixed households
+
+    private final int nationalityCode;
+
+    Nationality(int nationalityCode) {
+        this.nationalityCode = nationalityCode;
+    }
+
+    public int getNationalityCode() {
+        return nationalityCode;
+    }
 }

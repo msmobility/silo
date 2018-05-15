@@ -121,9 +121,9 @@ public class ReadPopulation {
                 pp.setRole(pr);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
-                Nationality nat = Nationality.german;
+                Nationality nat = Nationality.GERMAN;
                 if (nationality.equals("other")){
-                    nat = Nationality.other;
+                    nat = Nationality.OTHER;
                 }
                 int education = Integer.parseInt(lineElements[posEducation]);int workZone = Integer.parseInt(lineElements[posWorkZone]);
                 String licenseStr = lineElements[posLicense];

@@ -394,9 +394,9 @@ public class MicroDataManager {
 
 
     public Nationality translateNationality (int nationality){
-        Nationality nationality1 = Nationality.german;
+        Nationality nationality1 = Nationality.GERMAN;
         if (nationality == 8){
-            nationality1 = Nationality.other;
+            nationality1 = Nationality.OTHER;
         }
         return nationality1;
     }

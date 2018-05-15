@@ -52,7 +52,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             final int region = geoData.getZones().get(zone).getRegion().getId();
             hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
             hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
-            if (hh.getNationality() != Nationality.german) {
+            if (hh.getNationality() != Nationality.GERMAN) {
                 zonalShare.setQuick(zone, zonalShare.getQuick(zone)+1);
                 regionalShareForeigners.setQuick(region, zonalShare.getQuick(region)+1);
             }
@@ -131,7 +131,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             for (int income = 1; income <= Properties.get().main.incomeBrackets.length + 1; income++) {
                 float priceUtil = (float) convertPriceToUtility(averageRegionalRent, income);
                 for (Nationality nationality: Nationality.values()) {
-                    utilityRegion[income - 1][nationality.ordinal()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
+                    utilityRegion[income - 1][nationality.getNationalityCode()][region-1] = regionCalculator.calculateSelectRegionProbability(income-1,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region));
                 }
             }
