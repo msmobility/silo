@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.events;
 
 import cern.colt.Timer;
-import com.google.common.collect.EnumMultiset;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.SiloUtil;
@@ -45,10 +44,10 @@ public class EventManager {
 
     private void createEvents(int year) {
         LOGGER.info("  Simulating events");
-        for(MicroEventModel<? extends Event> model: models.values().stream().distinct().collect(Collectors.toList())) {
+
+        for(@SuppressWarnings("unchecked") MicroEventModel<? extends Event> model: models.values()) {
             events.addAll(model.prepareYear(year));
         }
-
         LOGGER.info("  Created " + events.size() + " events to simulate.");
         LOGGER.info("  Shuffling events...");
         Collections.shuffle(events);
@@ -60,8 +59,12 @@ public class EventManager {
         for (Event event : events) {
             timer.reset();
             Class<? extends Event> klass= event.getClass();
-            final EventResult result = this.models.get(klass).handleEvent(event);
 
+            //unchecked is justified here, as
+            //<T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model)
+            // checks for the right type of model handlers
+            @SuppressWarnings("unchecked")
+            final EventResult result = this.models.get(klass).handleEvent(event);
             if(result!= null) {
                 eventCounter.add(event.getClass());
                 results.add(result);
