@@ -7,7 +7,11 @@ import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.EventResult;
+import de.tum.bgu.msm.events.EventType;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import org.apache.log4j.Logger;
 
@@ -21,7 +25,7 @@ import java.util.List;
  * Created on 1 March 2013 in Santa Fe
  **/
 
-public class EmploymentModel extends AbstractModel implements MicroEventModel {
+public class EmploymentModel extends AbstractModel implements MicroEventModel<EmploymentEvent> {
 
     private final static Logger LOGGER = Logger.getLogger(EmploymentModel.class);
 
@@ -85,12 +89,12 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
+    public EventResult handleEvent(EmploymentEvent event) {
         switch(event.getType()) {
-            case FIND_NEW_JOB:
-                return lookForJob(event.getId());
-            case QUIT_JOB:
-                return quitJob(event.getId());
+            case FIND:
+                return lookForJob(event.getPersonId());
+            case QUIT:
+                return quitJob(event.getPersonId());
         }
         return null;
     }
@@ -101,8 +105,8 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<EmploymentEvent> prepareYear(int year) {
+        final List<EmploymentEvent> events = new ArrayList<>();
 
         // select people that will lose employment or start new job
         LOGGER.info("  Planning job changes (hire and fire) for the year " + year);
@@ -149,17 +153,16 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel {
             // find job
             if (changeRate[gen][age] > 0 && !employed) {
                 if (SiloUtil.getRandomNumberAsFloat() < changeRate[gen][age]) {
-                    events.add(new EventImpl(EventType.FIND_NEW_JOB, pp.getId(), year));
+                    events.add(new EmploymentEvent(pp.getId(), EmploymentEvent.Type.FIND));
                 }
             }
             // lose job
             if (changeRate[gen][age] < 0 && employed) {
                 if (SiloUtil.getRandomNumberAsFloat() < Math.abs(changeRate[gen][age])) {
-                    events.add(new EventImpl(EventType.QUIT_JOB, pp.getId(), year));
+                    events.add(new EmploymentEvent(pp.getId(), EmploymentEvent.Type.QUIT));
                 }
             }
         }
-
         return events;
     }
 

@@ -7,6 +7,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -24,18 +25,20 @@ import java.util.List;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel extends AbstractModel implements MicroEventModel {
+public class DemolitionModel extends AbstractModel implements MicroEventModel<DemolitionEvent> {
 
     private final DemolitionJSCalculator calculator;
     private final MovesModelI moves;
     private final InOutMigration inOutMigration;
+
+    private int currentYear = -1;
 
     public DemolitionModel(SiloDataContainer dataContainer, MovesModelI moves, InOutMigration inOutMigration) {
         super(dataContainer);
         this.moves = moves;
         this.inOutMigration = inOutMigration;
         Reader reader;
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
+        if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
@@ -45,22 +48,21 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
-        for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
-            events.add(new EventImpl(EventType.DWELLING_DEMOLITION, dwelling.getId(), year));
+    public Collection<DemolitionEvent> prepareYear(int year) {
+        currentYear = year;
+        final List<DemolitionEvent> events = new ArrayList<>();
+        for (Dwelling dwelling : dataContainer.getRealEstateData().getDwellings()) {
+            events.add(new DemolitionEvent(dwelling.getId()));
         }
         return events;
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        if(event.getType() == EventType.DWELLING_DEMOLITION) {
-            Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (dd != null) {
-                if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, event.getYear())) {
-                    return demolishDwelling(dd);
-                }
+    public EventResult handleEvent(DemolitionEvent event) {
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getDwellingId());
+        if (dd != null) {
+            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, currentYear)) {
+                return demolishDwelling(dd);
             }
         }
         return null;

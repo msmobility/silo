@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.person.LicenseEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 
 import java.io.InputStreamReader;
@@ -19,7 +20,7 @@ import java.util.List;
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
 
-public class DriversLicense extends AbstractModel implements MicroEventModel {
+public class DriversLicense extends AbstractModel implements MicroEventModel<LicenseEvent> {
 
     private LicenseJSCalculator calculator;
 
@@ -34,30 +35,29 @@ public class DriversLicense extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
-        for(Person person: dataContainer.getHouseholdData().getPersons()) {
-            events.add(new EventImpl(EventType.DRIVERS_LICENSE_UPDATE, person.getId(), year));
+    public Collection<LicenseEvent> prepareYear(int year) {
+        final List<LicenseEvent> events = new ArrayList<>();
+        for (Person person : dataContainer.getHouseholdData().getPersons()) {
+            events.add(new LicenseEvent(person.getId()));
         }
         return events;
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        if(event.getType() == EventType.DRIVERS_LICENSE_UPDATE) {
-            Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-            if (pp != null && pp.hasDriverLicense() && pp.getAge() < 18) {
-                final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
-                if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
-                    return createLicense(pp);
-                }
+    public EventResult handleEvent(LicenseEvent event) {
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
+        if (pp != null && pp.hasDriverLicense() && pp.getAge() < 18) {
+            final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
+            if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
+                return createLicense(pp);
             }
         }
         return null;
     }
 
     @Override
-    public void finishYear(int year) {}
+    public void finishYear(int year) {
+    }
 
     public void checkLicenseCreation(int perId) {
         Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);

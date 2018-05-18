@@ -5,10 +5,9 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.Event;
-import de.tum.bgu.msm.events.EventImpl;
 import de.tum.bgu.msm.events.EventResult;
 import de.tum.bgu.msm.events.EventType;
+import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -48,7 +47,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
+        uecFileName = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
         dataSheetNumber = Properties.get().moves.dataSheet;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         setupMoveOrNotMove();
@@ -64,59 +63,60 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected abstract double calculateDwellingUtilityOfHousehold(HouseholdType hhType, int income, Dwelling dwelling);
 
     @Override
-    public double[] updateUtilitiesOfVacantDwelling (Dwelling dd) {
+    public double[] updateUtilitiesOfVacantDwelling(Dwelling dd) {
         // Calculate utility of this dwelling for each household type
 
         double[] utilByHhType = new double[HouseholdType.values().length];
-        for (HouseholdType ht: HouseholdType.values()) {
+        for (HouseholdType ht : HouseholdType.values()) {
             utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
         }
         return utilByHhType;
     }
 
     @Override
-    public List<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public List<MoveEvent> prepareYear(int year) {
+        final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            events.add(new EventImpl(EventType.HOUSEHOLD_MOVE, hh.getId(), year));
+            events.add(new MoveEvent(hh.getId()));
         }
         return events;
     }
 
     @Override
-    public EventResult handleEvent (Event event) {
-        if(event.getType() == EventType.HOUSEHOLD_MOVE) {
-            // simulates (a) if this household moves and (b) where this household moves
+    public EventResult handleEvent(MoveEvent event) {
 
-            int hhId = event.getId();
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-            if (household == null) {
-                return null;  // Household does not exist anymore
-            }
-            if (!moveOrNot(household)) {
-                return null;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
-            }
-            int oldDd = household.getDwellingId();
-            int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
-            if (idNewDD > 0) {
-                moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
-                dataContainer.getHouseholdData().addHouseholdThatMoved(household);
-                if (hhId == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                            household.getDwellingId());
-                }
-                return new MovesResult(hhId, oldDd, idNewDD);
-            } else {
-                if (hhId == SiloUtil.trackHh)
-                    SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
-                            "could not find an adequate dwelling.");
-            }
+        // simulates (a) if this household moves and (b) where this household moves
+
+        int hhId = event.getHouseholdId();
+        Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
+        if (household == null) {
+            return null;  // Household does not exist anymore
         }
+        if (!moveOrNot(household)) {
+            return null;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+        }
+        int oldDd = household.getDwellingId();
+        int idNewDD = searchForNewDwelling(household.getPersons());  // Step 2: Choose new dwelling
+        if (idNewDD > 0) {
+            moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
+            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
+            if (hhId == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+                        household.getDwellingId());
+            }
+            return new MovesResult(hhId, oldDd, idNewDD);
+        } else {
+            if (hhId == SiloUtil.trackHh)
+                SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
+                        "could not find an adequate dwelling.");
+        }
+
         return null;
     }
 
     @Override
-    public void finishYear(int year){}
+    public void finishYear(int year) {
+    }
 
 
     private void setupEvaluateDwellings() {
@@ -224,7 +224,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
                 dataContainer.getRealEstateData().getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
                         zones.get(d.getZone()).getRegion().getId()));
         final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream().collect(Collectors.toMap(e ->
-                e.getKey(), e-> e.getValue().stream().mapToDouble(d -> d.getPrice()).average().getAsDouble()));
+                e.getKey(), e -> e.getValue().stream().mapToDouble(d -> d.getPrice()).average().getAsDouble()));
         return rentsByRegion;
     }
 

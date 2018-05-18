@@ -25,6 +25,7 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -41,11 +42,9 @@ import java.util.List;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel implements MicroEventModel {
+public class BirthModel extends AbstractModel implements MicroEventModel<BirthEvent> {
 
     private BirthJSCalculator calculator;
-    private final static Logger LOGGER = Logger.getLogger(BirthModel.class);
-
 
     public BirthModel(SiloDataContainer dataContainer) {
         super(dataContainer);
@@ -64,19 +63,25 @@ public class BirthModel extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        EventType type = event.getType();
-        switch (type) {
-            case BIRTHDAY:
-                return checkBirthday(event);
-            case BIRTH:
-                return chooseBirth(event.getId());
+    public Collection<BirthEvent> prepareYear(int year) {
+        final List<BirthEvent> events = new ArrayList<>();
+        for (Person per : dataContainer.getHouseholdData().getPersons()) {
+            final int id = per.getId();
+            if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
+                events.add(new BirthEvent(id));
+            }
         }
-        return null;
+        return events;
     }
 
     @Override
-    public void finishYear(int year) {}
+    public EventResult handleEvent(BirthEvent event) {
+        return chooseBirth(event.getPersonId());
+    }
+
+    @Override
+    public void finishYear(int year) {
+    }
 
     private BirthResult chooseBirth(int perId) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -119,13 +124,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel {
         return child;
     }
 
-    void celebrateBirthday(Person per) {
-        per.birthday();
-        if (per.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
-                    per.getId() + ". New age is " + per.getAge() + ".");
-        }
-    }
 
     private double getProbabilityForGirl() {
         return calculator.getProbabilityForGirl();
@@ -133,48 +131,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel {
 
     private boolean personCanGiveBirth(Person person) {
         return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
-    }
-
-    private BirthdayResult checkBirthday(Event event) {
-        // increase age of this person by one year
-        Person per = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-        if (per == null) {
-            return null;  // Person has died or moved away
-        }
-        celebrateBirthday(per);
-        return new BirthdayResult(event.getId());
-    }
-
-    @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
-        for (Person per : dataContainer.getHouseholdData().getPersons()) {
-            final int id = per.getId();
-            // Birthday
-            if(Properties.get().eventRules.birthday) {
-                events.add(new EventImpl(EventType.BIRTHDAY, id, year));
-            }
-            // Birth
-            if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
-                events.add(new EventImpl(EventType.BIRTH, id, year));
-            }
-        }
-        return events;
-    }
-
-    public static class BirthdayResult implements EventResult {
-
-        @JsonProperty("person")
-        public final int personId;
-
-        private BirthdayResult(int personId) {
-            this.personId = personId;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.BIRTHDAY;
-        }
     }
 
     public static class BirthResult implements EventResult {

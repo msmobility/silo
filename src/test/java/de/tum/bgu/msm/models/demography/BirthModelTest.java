@@ -10,8 +10,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Arrays;
-
 public class BirthModelTest {
 
     private static BirthModel model;
@@ -42,14 +40,5 @@ public class BirthModelTest {
         Assert.assertTrue(dataContainer.getHouseholdData().getHouseholdFromId(1).getPersons().stream()
                 .anyMatch(person -> person.getRole() == PersonRole.CHILD));
         Assert.assertEquals(true, dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
-    }
-
-    @Test
-    public void testBirthDay() {
-        final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
-        final int before = person.getAge();
-        model.celebrateBirthday(person);
-        final int after = person.getAge();
-        Assert.assertTrue(after > before);
     }
 }

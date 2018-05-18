@@ -18,7 +18,7 @@ public class EventWriter {
             ObjectMapper mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
             JsonFactory f = mapper.getFactory();
-            File jsonFile = new File("C:/Users/nkueh/Desktop/json_" + year + ".json");
+            File jsonFile = new File("C:/Users/Nico/Desktop/events_" + year + ".json.gz");
             FileOutputStream fos = new FileOutputStream(jsonFile);
             GZIPOutputStream gzipOS = new GZIPOutputStream(fos);
             JsonGenerator g = f.createGenerator(gzipOS, JsonEncoding.UTF8);

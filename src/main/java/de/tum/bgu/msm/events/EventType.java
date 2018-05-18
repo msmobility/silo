@@ -24,7 +24,7 @@ public enum EventType {
     OUT_MIGRATION,
 
     // dwelling events
-    DWELLIG_RENOVATION,
+    DWELLING_RENOVATION,
     DWELLING_DEMOLITION,
     DWELLING_CONSTRUCTION,
 

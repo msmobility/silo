@@ -24,7 +24,11 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.EventResult;
+import de.tum.bgu.msm.events.EventType;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
@@ -42,7 +46,7 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-public class LeaveParentHhModel extends AbstractModel implements MicroEventModel {
+public class LeaveParentHhModel extends AbstractModel implements MicroEventModel<LeaveParentsEvent> {
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
@@ -57,7 +61,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     private void setupLPHModel() {
         Reader reader;
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
+        if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
         } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
@@ -66,26 +70,24 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
-        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+    public Collection<LeaveParentsEvent> prepareYear(int year) {
+        final List<LeaveParentsEvent> events = new ArrayList<>();
+        for (Person person : dataContainer.getHouseholdData().getPersons()) {
             if (qualifiesForParentalHHLeave(person)) {
-                events.add(new EventImpl(EventType.LEAVE_PARENTAL_HOUSEHOLD, person.getId(), year));
+                events.add(new LeaveParentsEvent(person.getId()));
             }
         }
         return events;
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        if(event.getType() == EventType.LEAVE_PARENTAL_HOUSEHOLD) {
-            final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-            final Person per = householdData.getPersonFromId(event.getId());
-            if (per != null && qualifiesForParentalHHLeave(per)) {
-                final double prob = calculator.calculateLeaveParentsProbability(per.getType());
-                if (SiloUtil.getRandomNumberAsDouble() < prob) {
-                    return leaveHousehold(per);
-                }
+    public EventResult handleEvent(LeaveParentsEvent event) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Person per = householdData.getPersonFromId(event.getPersonId());
+        if (per != null && qualifiesForParentalHHLeave(per)) {
+            final double prob = calculator.calculateLeaveParentsProbability(per.getType());
+            if (SiloUtil.getRandomNumberAsDouble() < prob) {
+                return leaveHousehold(per);
             }
         }
         return null;
@@ -114,13 +116,13 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         households.removePersonFromHousehold(per);
 
         final int newHhId = households.getNextHouseholdId();
-        final Household newHousehold = households.createHousehold(newHhId, -1,  0);
+        final Household newHousehold = households.createHousehold(newHhId, -1, 0);
         households.addPersonToHousehold(per, newHousehold);
         per.setRole(PersonRole.SINGLE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
+        if (Properties.get().main.implementation == Implementation.MUNICH) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
         }
 

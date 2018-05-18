@@ -5,20 +5,15 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.Event;
 import de.tum.bgu.msm.properties.Properties;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-public class MarryDivorceModelTest {
+public class MarriageModelTest {
 
-    private static MarryDivorceModel model;
+    private static MarriageModel model;
     private static int[] couple1;
     private static int[] couple2;
     private static int[] couple3;
@@ -34,7 +29,7 @@ public class MarryDivorceModelTest {
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
-        model = modelContainer.getMardiv();
+        model = modelContainer.getMarriage();
 
         couple1 = new int[]{1,2};
         Household household1 = dataContainer.getHouseholdData().createHousehold(1,  1, 0);

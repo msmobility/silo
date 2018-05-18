@@ -7,6 +7,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.demography.DriversLicense;
 import de.tum.bgu.msm.models.demography.EmploymentModel;
@@ -22,7 +23,7 @@ import java.util.*;
  * Created on 15 January 2010 in Albuquerque
  **/
 
-public class InOutMigration extends AbstractModel implements MicroEventModel {
+public class InOutMigration extends AbstractModel implements MicroEventModel<MigrationEvent> {
 
     private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
 
@@ -123,7 +124,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel {
     public OutmigrationResult outMigrateHh(int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-        if (Properties.get().eventRules.outMigration && !overwriteEventRules) {
+        if (Properties.get().eventRules.outMigration && !overwriteEventRules || hh == null) {
             return null;
         }
         outMigrationPPCounter += hh.getHhSize();
@@ -144,13 +145,13 @@ public class InOutMigration extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        EventType type = event.getType();
+    public EventResult handleEvent(MigrationEvent event) {
+        MigrationEvent.Type type = event.getType();
         switch (type) {
-            case INMIGRATION:
-                return inmigrateHh(event.getId());
-            case OUT_MIGRATION:
-                return outMigrateHh(event.getId(), true);
+            case IN:
+                return inmigrateHh(event.getHouseholdId());
+            case OUT:
+                return outMigrateHh(event.getHouseholdId(), true);
         }
         return null;
     }
@@ -162,8 +163,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel {
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<MigrationEvent> prepareYear(int year) {
+        final List<MigrationEvent> events = new ArrayList<>();
 
         LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -184,7 +185,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel {
         if (outmigrants > 0) {
             do {
                 int selected = (int) (hhs.length * SiloUtil.getRandomNumberAsDouble());
-                events.add(new EventImpl(EventType.OUT_MIGRATION, hhs[selected].getId(), year));
+                events.add(new MigrationEvent(hhs[selected].getId(), MigrationEvent.Type.OUT));
                 createdOutMigrants += hhs[selected].getHhSize();
             } while (createdOutMigrants < outmigrants);
         }
@@ -223,7 +224,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel {
                 k += 6;
             }
             int hhId = householdData.getNextHouseholdId();
-            events.add(new EventImpl(EventType.INMIGRATION, hhId, year));
+            events.add(new MigrationEvent(hhId, MigrationEvent.Type.IN));
             inmigratingHhData.put(hhId, inData);  // create new hhId for inmigrating households and save in HashMap
             createdInmigrants += hhs[selected].getHhSize();
         } while (createdInmigrants < inmigrants);

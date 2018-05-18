@@ -25,6 +25,13 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.events.impls.household.MigrationEvent;
+import de.tum.bgu.msm.events.impls.household.MoveEvent;
+import de.tum.bgu.msm.events.impls.person.*;
+import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
+import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
+import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SkimUtil;
 import org.apache.log4j.Logger;
@@ -142,43 +149,49 @@ public final class SiloModel {
         em = new EventManager(timeCounter);
 
 		if(Properties.get().eventRules.allDemography) {
-			if (Properties.get().eventRules.birthday || Properties.get().eventRules.birth) {
-				em.registerEventHandler(modelContainer.getBirth());
+			if (Properties.get().eventRules.birthday ) {
+				em.registerEventHandler(BirthDayEvent.class, modelContainer.getBirthday());
+            }
+            if(Properties.get().eventRules.birth) {
+				em.registerEventHandler(BirthEvent.class, modelContainer.getBirth());
 			}
 			if (Properties.get().eventRules.death) {
-				em.registerEventHandler(modelContainer.getDeath());
+				em.registerEventHandler(DeathEvent.class, modelContainer.getDeath());
 			}
 			if (Properties.get().eventRules.leaveParentHh) {
-				em.registerEventHandler(modelContainer.getLph());
+				em.registerEventHandler(LeaveParentsEvent.class, modelContainer.getLph());
 			}
-			if (Properties.get().eventRules.divorce || Properties.get().eventRules.marriage) {
-				em.registerEventHandler(modelContainer.getMardiv());
+			if (Properties.get().eventRules.divorce) {
+				em.registerEventHandler(MarriageEvent.class, modelContainer.getMarriage());
+			}
+			if(Properties.get().eventRules.marriage) {
+				em.registerEventHandler(DivorceEvent.class, modelContainer.getDivorce());
 			}
 			if (Properties.get().eventRules.schoolUniversity) {
-				em.registerEventHandler(modelContainer.getChangeSchoolUniv());
+				em.registerEventHandler(EducationEvent.class, modelContainer.getChangeSchoolUniv());
 			}
 			if (Properties.get().eventRules.driversLicense) {
-				em.registerEventHandler(modelContainer.getDriversLicense());
+				em.registerEventHandler(LicenseEvent.class, modelContainer.getDriversLicense());
 			}
 			if (Properties.get().eventRules.quitJob || Properties.get().eventRules.startNewJob) {
-				em.registerEventHandler(modelContainer.getEmployment());
-			}
+				em.registerEventHandler(EmploymentEvent.class, modelContainer.getEmployment());
+            }
 		}
         if(Properties.get().eventRules.allHhMoves) {
-            em.registerEventHandler(modelContainer.getMove());
-            if(Properties.get().eventRules.outMigration) {
-                em.registerEventHandler(modelContainer.getIomig());
+            em.registerEventHandler(MoveEvent.class, modelContainer.getMove());
+            if(Properties.get().eventRules.outMigration || Properties.get().eventRules.inmigration) {
+                em.registerEventHandler(MigrationEvent.class, modelContainer.getIomig());
             }
         }
         if(Properties.get().eventRules.allDwellingDevelopments) {
             if(Properties.get().eventRules.dwellingChangeQuality) {
-                em.registerEventHandler(modelContainer.getRenov());
+                em.registerEventHandler(RenovationEvent.class, modelContainer.getRenov());
             }
             if(Properties.get().eventRules.dwellingDemolition) {
-                em.registerEventHandler(modelContainer.getDemol());
+                em.registerEventHandler(DemolitionEvent.class, modelContainer.getDemol());
             }
             if(Properties.get().eventRules.dwellingConstruction) {
-                em.registerEventHandler(modelContainer.getCons());
+                em.registerEventHandler(ConstructionEvent.class, modelContainer.getCons());
             }
         }
     }
@@ -259,6 +272,7 @@ public final class SiloModel {
 			em.finishYear(year, carChangeCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
+			SummarizeData.writeOutSyntheticPopulation(year, dataContainer);
 			LOGGER.info("  Finished this simulation period with " + householdData.getPersonCount() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");

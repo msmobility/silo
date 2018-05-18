@@ -6,6 +6,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -21,75 +22,74 @@ import java.util.List;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel extends AbstractModel implements MicroEventModel {
+public class RenovationModel extends AbstractModel implements MicroEventModel<RenovationEvent> {
 
-	private double[][] renovationProbability;
+    private double[][] renovationProbability;
 
     public RenovationModel(SiloDataContainer dataContainer) {
         super(dataContainer);
         setupRenovationModel();
-	}
+    }
 
-	private void setupRenovationModel() {
+    private void setupRenovationModel() {
 
-		// read properties
+        // read properties
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
         RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader);
 
         //set renovation probabilities
         renovationProbability = new double[Properties.get().main.qualityLevels][5];
         for (int oldQual = 0; oldQual < Properties.get().main.qualityLevels; oldQual++) {
-            for (int alternative = 0; alternative < 5; alternative++){
-                renovationProbability[oldQual][alternative] = renovationCalculator.calculateRenovationProbability(oldQual+1, alternative+1);
+            for (int alternative = 0; alternative < 5; alternative++) {
+                renovationProbability[oldQual][alternative] = renovationCalculator.calculateRenovationProbability(oldQual + 1, alternative + 1);
             }
         }
-	}
+    }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
-        for(Dwelling dwelling: dataContainer.getRealEstateData().getDwellings()) {
-            events.add(new EventImpl(EventType.DWELLIG_RENOVATION, dwelling.getId(), year));
+    public Collection<RenovationEvent> prepareYear(int year) {
+        final List<RenovationEvent> events = new ArrayList<>();
+        for (Dwelling dwelling : dataContainer.getRealEstateData().getDwellings()) {
+            events.add(new RenovationEvent(dwelling.getId()));
         }
         return events;
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        if (event.getType()==EventType.DWELLIG_RENOVATION) {
-            //check if dwelling is renovated or deteriorates
-            Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getId());
-            if (dd != null) {
-                int currentQuality = dd.getQuality();
-                int selected = SiloUtil.select(getProbabilities(currentQuality));
+    public EventResult handleEvent(RenovationEvent event) {
 
-                if (selected != 2) {
-                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
-                }
-                switch (selected) {
-                    case (0): {
-                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
-                        dd.setQuality(currentQuality - 2);
-                        break;
-                    }
-                    case (1): {
-                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
-                        dd.setQuality(currentQuality - 1);
-                        break;
-                    }
-                    case (3): {
-                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
-                        dd.setQuality(currentQuality + 1);
-                        break;
-                    }
-                    case (4): {
-                        RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
-                        dd.setQuality(currentQuality + 2);
-                        break;
-                    }
-                }
-                return new RenovationResult(event.getId(), dd.getQuality());
+        //check if dwelling is renovated or deteriorates
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getDwellingId());
+        if (dd != null) {
+            int currentQuality = dd.getQuality();
+            int selected = SiloUtil.select(getProbabilities(currentQuality));
+
+            if (selected != 2) {
+                RealEstateDataManager.dwellingsByQuality[currentQuality - 1] -= 1;
             }
+            switch (selected) {
+                case (0): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 2] += 1;
+                    dd.setQuality(currentQuality - 2);
+                    break;
+                }
+                case (1): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 - 1] += 1;
+                    dd.setQuality(currentQuality - 1);
+                    break;
+                }
+                case (3): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 1] += 1;
+                    dd.setQuality(currentQuality + 1);
+                    break;
+                }
+                case (4): {
+                    RealEstateDataManager.dwellingsByQuality[currentQuality - 1 + 2] += 1;
+                    dd.setQuality(currentQuality + 2);
+                    break;
+                }
+            }
+            return new RenovationResult(event.getDwellingId(), dd.getQuality());
         }
         return null;
     }
@@ -99,7 +99,7 @@ public class RenovationModel extends AbstractModel implements MicroEventModel {
 
     }
 
-    private double[] getProbabilities (int currentQual) {
+    private double[] getProbabilities(int currentQual) {
         // return probabilities to upgrade or deteriorate based on current quality of dwelling and average
         // quality of all dwellings
         double[] currentShare = RealEstateDataManager.getCurrentQualShares();
@@ -111,7 +111,8 @@ public class RenovationModel extends AbstractModel implements MicroEventModel {
         for (int i = 0; i < probs.length; i++) {
             int potentialNewQual = currentQual + i - 2;  // translate into new quality level this alternative would generate
             double ratio;
-            if (potentialNewQual >= 1 && potentialNewQual <= 4) ratio = initialShare[potentialNewQual - 1] / currentShare[potentialNewQual - 1];
+            if (potentialNewQual >= 1 && potentialNewQual <= 4)
+                ratio = initialShare[potentialNewQual - 1] / currentShare[potentialNewQual - 1];
             else ratio = 0.;
             if (i <= 1) {
                 probs[i] = renovationProbability[currentQual - 1][i] * ratio;
@@ -135,7 +136,7 @@ public class RenovationModel extends AbstractModel implements MicroEventModel {
 
         @Override
         public EventType getType() {
-            return EventType.DWELLIG_RENOVATION;
+            return EventType.DWELLING_RENOVATION;
         }
     }
 }

@@ -2,15 +2,15 @@ package de.tum.bgu.msm.events;
 
 import cern.colt.Timer;
 import com.google.common.collect.EnumMultiset;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Generates a series of events in random order
@@ -22,9 +22,9 @@ public class EventManager {
     private final static Logger LOGGER = Logger.getLogger(EventManager.class);
 
     private final long[][] timeCounter;
-    private final Multiset<EventType> eventCounter = EnumMultiset.create(EventType.class);
+    private final Multiset<Class<? extends Event>> eventCounter = HashMultiset.create();
 
-    private final List<MicroEventModel> models = new ArrayList<>();
+    private final Map<Class<? extends Event>, MicroEventModel> models = new HashMap<>();
 
     private final List<Event> events = new ArrayList<>();
     private final Timer timer = new Timer().start();
@@ -34,8 +34,8 @@ public class EventManager {
         this.timeCounter = timeCounter;
     }
 
-    public void registerEventHandler(MicroEventModel model) {
-        this.models.add(model);
+    public <T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model) {
+        this.models.put(klass, model);
     }
 
     public void simulateEvents(int year) {
@@ -45,41 +45,43 @@ public class EventManager {
 
     private void createEvents(int year) {
         LOGGER.info("  Simulating events");
-        for(MicroEventModel model: models) {
+        for(MicroEventModel<? extends Event> model: models.values().stream().distinct().collect(Collectors.toList())) {
             events.addAll(model.prepareYear(year));
         }
 
-        LOGGER.info("  Created " + events.size() + " events to simulate");
-        LOGGER.info("  Shuffling events.");
+        LOGGER.info("  Created " + events.size() + " events to simulate.");
+        LOGGER.info("  Shuffling events...");
         Collections.shuffle(events);
         eventCounter.clear();
     }
 
     private void processEvents() {
+        LOGGER.info("  Processing events...");
         for (Event event : events) {
             timer.reset();
-            for(MicroEventModel model: models) {
-                final EventResult result = model.handleEvent(event);
-                if(result!= null) {
-                    eventCounter.add(event.getType());
-                    results.add(result);
-                }
+            Class<? extends Event> klass= event.getClass();
+            final EventResult result = this.models.get(klass).handleEvent(event);
+
+            if(result!= null) {
+                eventCounter.add(event.getClass());
+                results.add(result);
             }
-            timeCounter[event.getType().ordinal()][event.getYear()] += timer.millis();
+//            timeCounter[event.getType().ordinal()][event.getYear()] += timer.millis();
         }
     }
 
     public void finishYear(int year, int[] carChangeCounter, SiloDataContainer dataContainer) {
-        for(MicroEventModel model: models) {
+        for(MicroEventModel model: models.values()) {
             model.finishYear(year);
         }
+        LOGGER.info("Writing out events...");
         EventWriter.writeEvents(results, year);
         SummarizeData.resultFile("Count of simulated events");
         LOGGER.info("Simulated " + results.size() + " events in total.");
-        for(EventType type: eventCounter.elementSet()) {
-            final int count = eventCounter.count(type);
-            SummarizeData.resultFile(type.name() + "," + count);
-            LOGGER.info("Simulated " + type.name() + ": " + count);
+        for(Class<? extends Event> event: eventCounter.elementSet()) {
+            final int count = eventCounter.count(event);
+            SummarizeData.resultFile(event.getName() + "," + count);
+            LOGGER.info("Simulated " + event.getName() + ": " + count);
         }
         float hh = dataContainer.getHouseholdData().getHouseholds().size();
         LOGGER.info("  Simulated household added a car" + carChangeCounter[0] + " (" +

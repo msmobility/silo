@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 
 import java.util.ArrayList;
@@ -16,20 +17,18 @@ import java.util.List;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel {
+public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel<EducationEvent> {
 
     public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
         super(dataContainer);
     }
 
     @Override
-    public EventResult handleEvent(Event event) {
-        if(event.getType() == EventType.EDUCATION_UPDATE) {
-            Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getId());
-            if (pp != null) {
-                if (pp.getAge() == 19) {
-                    return updateEducation(pp);
-                }
+    public EventResult handleEvent(EducationEvent event) {
+        Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
+        if (pp != null) {
+            if (pp.getAge() == 19) {
+                return updateEducation(pp);
             }
         }
         return null;
@@ -39,10 +38,10 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
     public void finishYear(int year) {}
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<EducationEvent> prepareYear(int year) {
+        final List<EducationEvent> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
-            events.add(new EventImpl(EventType.EDUCATION_UPDATE, person.getId(), year));
+            events.add(new EducationEvent(person.getId()));
         }
         return events;
     }
