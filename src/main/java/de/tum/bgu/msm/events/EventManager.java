@@ -50,8 +50,8 @@ public class EventManager {
         }
 
         LOGGER.info("  Created " + events.size() + " events to simulate");
+        LOGGER.info("  Shuffling events.");
         Collections.shuffle(events);
-        LOGGER.info("  Shuffled events.");
         eventCounter.clear();
     }
 
