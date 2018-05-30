@@ -2,9 +2,11 @@ package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.data.IncomeCategory;
 import de.tum.bgu.msm.data.Nationality;
+import de.tum.bgu.msm.data.Race;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.script.ScriptException;
@@ -14,11 +16,16 @@ import java.io.Reader;
 public class SelectRegionTest {
 
     private SelectRegionJSCalculator calculator;
+    private SelectRegionJSCalculator calculatorMstm;
 
     @Before
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
         calculator = new SelectRegionJSCalculator(reader);
+
+        Reader readerMstm = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalcMstm"));
+        calculatorMstm = new SelectRegionJSCalculator(readerMstm);
+
     }
 
     @Test
@@ -31,5 +38,12 @@ public class SelectRegionTest {
     public void testMovesModelTwo() throws ScriptException {
         Assert.assertEquals(359.125, calculator.calculateSelectRegionProbability(IncomeCategory.LOW,
                 Nationality.OTHER, 500, 100, 0.5f), 0.);
+    }
+
+    @Ignore
+    //this test should be ignore until the SelectRegionMstm javascript is updated and compatible with races
+    public void testMovesModelMaryland() throws ScriptException {
+        Assert.assertEquals(359.125, calculatorMstm.calculateSelectRegionProbability(IncomeCategory.LOW,
+                Race.white, 500, 100, 0.5f), 0.);
     }
 }

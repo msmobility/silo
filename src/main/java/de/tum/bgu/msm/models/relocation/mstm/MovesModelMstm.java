@@ -14,12 +14,16 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
+import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.MovesDMU;
 import de.tum.bgu.msm.util.matrices.Matrices;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +32,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private int numAltsSelReg;
 
-    private double parameter_SelectDD;
+    //private double parameter_SelectDD;
+
+    private SelectRegionJSCalculator regionCalculator;
 
     private UtilityExpressionCalculator selectRegionModel;
     private MovesDMU selectRegionDmu;
@@ -37,6 +43,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private DoubleMatrix1D hhByRegion;
     private double selectDwellingRaceRelevance;
     private boolean provideRentSubsidyToLowIncomeHh;
+
+    private SelectDwellingJSCalculator dwellingCalculator;
 
 
     public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -150,6 +158,10 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 MovesDMU.class);
         selectRegionDmu = new MovesDMU();
         numAltsSelReg = selectRegionModel.getNumberOfAlternatives();
+
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalcMstm"));
+        regionCalculator = new SelectRegionJSCalculator(reader);
+
     }
 
     @Override
@@ -203,6 +215,14 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
                 for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
                     utilityRegion[incomeCategory.ordinal()][race.getId()][alternative] = util[alternative];
+//                  cannot be switched on until the javascript SelectRegionCalc is updated with MSTM data
+//                    double jsValue =
+//                            regionCalculator.calculateSelectRegionProbability(incomeCategory,
+//                                    race, priceUtil[alternative], regAcc[alternative],
+//                                    (float) regionalRacialComposition.getQuick(alternative, race.getId()));
+
+
+
                 }
                 if (logCalculationRegion)
                     selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
@@ -216,7 +236,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     protected void setupSelectDwellingModel() {
         // set up model for choice of dwelling
 
-        int selectDwellingSheetNumber = Properties.get().moves.selectDwellingSheet;
+        /*int selectDwellingSheetNumber = Properties.get().moves.selectDwellingSheet;
         // initialize UEC
         UtilityExpressionCalculator selectDwellingModel = new UtilityExpressionCalculator(new File(uecFileName),
                 selectDwellingSheetNumber,
@@ -235,7 +255,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         if (logCalculationDwelling) {
             // log UEC values for each household type
             selectDwellingModel.logAnswersArray(traceLogger, "Select-Dwelling Model");
-        }
+        }*/
+
+        // set up model for choice of dwelling (JS)
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        dwellingCalculator = new SelectDwellingJSCalculator(reader);
+
     }
 
 
@@ -345,7 +370,14 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 adjProb = Math.pow(dd.getUtilByHhType()[ht.ordinal()], (1 - selectDwellingRaceRelevance)) *
                         Math.pow(racialShare, selectDwellingRaceRelevance);
             }
-            expProbs[i] = Math.exp(parameter_SelectDD * adjProb);
+            //expProbs[i] = Math.exp(parameter_SelectDD * adjProb);
+
+            //adjProbability is the adjusted dwelling utility
+            expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(adjProb);
+
+
+
+
         }
         if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
         int selected = SiloUtil.select(expProbs);

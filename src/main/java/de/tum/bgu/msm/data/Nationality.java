@@ -7,7 +7,7 @@ package de.tum.bgu.msm.data;
  * Created on 20 May 2017 near Greenland at an altitude of 35,000 feet
  **/
 
-public enum Nationality {
+public enum Nationality implements PersonDiscrimination {
 
     GERMAN(0),         // German national, either born or naturalized German
     OTHER(1);          // Any other nationality, including mixed households
@@ -21,4 +21,5 @@ public enum Nationality {
     public int getNationalityCode() {
         return nationalityCode;
     }
+
 }

@@ -26,8 +26,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    protected String uecFileName;
-    protected int dataSheetNumber;
+    //protected String uecFileName;
+    //protected int dataSheetNumber;
     protected int numAltsMoveOrNot;
 //    protected int[] evalDwellingAvail;
 //    protected MovesDMU evaluateDwellingDmu;
@@ -40,6 +40,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
     private double[] averageHousingSatisfaction;
+    private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
 //    protected UtilityExpressionCalculator ddUtilityModel;
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
@@ -48,8 +49,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
-        dataSheetNumber = Properties.get().moves.dataSheet;
+        //uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
+        //dataSheetNumber = Properties.get().moves.dataSheet;
 //        logCalculationDwelling = Properties.get().moves.logHhRelocation;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         //evaluateDwellingDmu = new MovesDMU();
@@ -118,7 +119,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     private void setupMoveOrNotMove() {
-        int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
+        /*int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
         UtilityExpressionCalculator moveOrNotModel = new UtilityExpressionCalculator(new File(uecFileName),
                 moveOrNotModelSheetNumber,
                 dataSheetNumber,
@@ -137,6 +138,10 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (logCalculationDwelling) {
             moveOrNotModel.logAnswersArray(traceLogger, "Move-Or-Not Model");
         }
+*/
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
+        movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
+
     }
 
     private void evaluateAllDwellingUtilities() {
@@ -241,9 +246,12 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         double currentUtil = dd.getUtilOfResident();
 
         double[] prop = new double[2];
-        prop[0] = 1. - 1. / (1. + parameter_MoveOrNotShift *
-                Math.exp(parameter_MoveOrNotSlope * (averageHousingSatisfaction[hhType.ordinal()] - currentUtil)));
+//        prop[0] = 1. - 1. / (1. + parameter_MoveOrNotShift *
+//                Math.exp(parameter_MoveOrNotSlope * (averageHousingSatisfaction[hhType.ordinal()] - currentUtil)));
+
+        prop[0] = movesOrNotJSCalculator.getMovingProbability(averageHousingSatisfaction[hhType.ordinal()], currentUtil);
         prop[1] = 1. - prop[0];
+
         return SiloUtil.select(prop) == 0;
     }
 
