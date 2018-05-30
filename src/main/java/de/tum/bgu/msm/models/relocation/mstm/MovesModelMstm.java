@@ -37,6 +37,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private SelectRegionJSCalculator regionCalculator;
 
     private UtilityExpressionCalculator selectRegionModel;
+    protected String uecFileName;
+    protected int dataSheetNumber;
     private MovesDMU selectRegionDmu;
     private DoubleMatrix2D zonalRacialComposition;
     private DoubleMatrix2D regionalRacialComposition;
