@@ -9,6 +9,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.file.Paths;
 import java.util.*;
 
 public class MarriageModelTest {
@@ -25,7 +26,7 @@ public class MarriageModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);

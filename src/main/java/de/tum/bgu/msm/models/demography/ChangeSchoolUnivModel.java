@@ -38,8 +38,8 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
     public void finishYear(int year) {}
 
     @Override
-    public Collection<EducationEvent> prepareYear(int year) {
-        final List<EducationEvent> events = new ArrayList<>();
+    public Collection<Event> prepareYear(int year) {
+        final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             events.add(new EducationEvent(person.getId()));
         }

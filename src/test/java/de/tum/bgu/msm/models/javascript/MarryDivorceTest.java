@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Paths;
 
 public class MarryDivorceTest {
 
@@ -23,7 +24,7 @@ public class MarryDivorceTest {
 
     @BeforeClass
     public static void intitializeProperties() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
     }
 
     @Before

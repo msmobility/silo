@@ -63,8 +63,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     @Override
-    public Collection<BirthEvent> prepareYear(int year) {
-        final List<BirthEvent> events = new ArrayList<>();
+    public Collection<Event> prepareYear(int year) {
+        final List<Event> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
             if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {

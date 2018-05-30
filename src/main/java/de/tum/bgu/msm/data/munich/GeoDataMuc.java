@@ -8,6 +8,16 @@ import de.tum.bgu.msm.data.RegionImpl;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
+import org.matsim.pt.transitSchedule.TransitScheduleImpl;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
+
+import java.nio.file.Path;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
@@ -23,8 +33,8 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
 
     @Override
     protected void readZones() {
-        String fileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalDataFile;
-        TableDataSet zonalData = SiloUtil.readCSVfile(fileName);
+        Path filePath= Properties.get().basePath.resolve(Properties.get().geo.zonalDataFile);
+        TableDataSet zonalData = SiloUtil.readCSVfile(filePath);
         int[] zoneIds = zonalData.getColumnAsInt(zoneIdColumnName);
         int[] zoneMsa = zonalData.getColumnAsInt("msa");
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
@@ -42,7 +52,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
 
     @Override
     protected void readRegionDefinition() {
-        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
+        Path regFileName = Properties.get().basePath.resolve(Properties.get().geo.regionDefinitionFile);
         TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
         for (int row = 1; row <= regDef.getRowCount(); row++) {
             int taz = (int) regDef.getValueAt(row, zoneIdColumnName);

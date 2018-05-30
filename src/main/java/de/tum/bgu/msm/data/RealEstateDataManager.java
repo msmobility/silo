@@ -84,7 +84,7 @@ public class RealEstateDataManager {
 
         logger.info("Reading dwelling micro data from ascii file");
         int year = Properties.get().main.startYear;
-        String fileName = properties.main.baseDirectory + properties.realEstate.dwellingsFile;
+        String fileName = properties.propertiesPath.getParent().toString() + properties.realEstate.dwellingsFile;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -136,7 +136,7 @@ public class RealEstateDataManager {
     private void readAcresNeededByDwellingType () {
         // read in the area needed to build a dwelling
 
-        String fileNameAcres = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingTypeAcresFile;
+        String fileNameAcres = Properties.get().propertiesPath.getParent() + Properties.get().realEstate.dwellingTypeAcresFile;
         TableDataSet tblAcresByDwellingType =  SiloUtil.readCSVfile(fileNameAcres);
         acresByDwellingType = new HashMap<>();
         for (int row = 1; row <= tblAcresByDwellingType.getRowCount(); row++) {
@@ -184,7 +184,7 @@ public class RealEstateDataManager {
 
     public void writeBinaryDwellingDataObjects() {
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryDwellingsFile;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().householdData.binaryDwellingsFile;
         logger.info("  Writing dwelling data to binary file.");
         Object[] data = dwellings.values().toArray(new Dwelling[0]);
         try {
@@ -200,7 +200,7 @@ public class RealEstateDataManager {
 
     private void readBinaryDwellingDataObjects() {
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.binaryDwellingsFile;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().realEstate.binaryDwellingsFile;
         logger.info("  Reading dwelling data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));

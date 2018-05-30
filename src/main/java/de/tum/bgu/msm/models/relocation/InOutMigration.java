@@ -48,11 +48,11 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         this.driversLicense = driversLicense;
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
-            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
+            String fileName = Properties.get().propertiesPath.getParent() + Properties.get().moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
         } else if (populationControlMethod.equalsIgnoreCase("migration")) {
-            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.migrationFile;
+            String fileName = Properties.get().propertiesPath.getParent() + Properties.get().moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
         } else {
@@ -163,8 +163,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     }
 
     @Override
-    public Collection<MigrationEvent> prepareYear(int year) {
-        final List<MigrationEvent> events = new ArrayList<>();
+    public Collection<Event> prepareYear(int year) {
+        final List<Event> events = new ArrayList<>();
 
         LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();

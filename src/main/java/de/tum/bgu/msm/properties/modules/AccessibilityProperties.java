@@ -64,11 +64,11 @@ public class AccessibilityProperties {
     }
 
     public String autoSkimFile(int year) {
-        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(AUTO_PEAK_SKIM + year);
+        return Properties.get().propertiesPath.getParent() + "skims/" +  bundle.getString(AUTO_PEAK_SKIM + year);
     }
 
     public String transitSkimFile(int year) {
-        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(TRANSIT_PEAK_SKIM + year);
+        return Properties.get().propertiesPath.getParent() + "skims/" +  bundle.getString(TRANSIT_PEAK_SKIM + year);
     }
 
 }

@@ -35,7 +35,7 @@ public final class PricingModel extends AbstractModel {
 
     public PricingModel (SiloDataContainer dataContainer) {
         super(dataContainer);
-        uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
+        uecFileName     = Properties.get().propertiesPath.getParent() + Properties.get().realEstate.uecFile;
         dataSheetNumber = Properties.get().realEstate.dataSheet;
         setupPricingModel();
     }

@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 /**
@@ -27,7 +28,7 @@ public final class SiloMatsim {
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
 	public SiloMatsim(String args, Config config) {
-		rb = SiloUtil.siloInitialization(args, Implementation.MARYLAND);
+		rb = SiloUtil.siloInitialization(Paths.get(args), Implementation.MARYLAND);
 
 		matsimConfig = config ;
 	}	    

@@ -13,6 +13,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.file.Paths;
+
 public class EmploymentModelTest {
 
     private static EmploymentModel model;
@@ -22,7 +24,7 @@ public class EmploymentModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         dataContainer.getHouseholdData().calculateInitialSettings();
         dataContainer.getJobData().identifyVacantJobs();

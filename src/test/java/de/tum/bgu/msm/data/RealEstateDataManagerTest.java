@@ -12,13 +12,14 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 public class RealEstateDataManagerTest {
 
     @BeforeClass
     public static void setup() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
     }
 
     @Test

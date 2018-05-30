@@ -128,7 +128,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     protected abstract void readRegionDefinition();
 
     private void readDeveloperData() {
-        String baseDirectory = Properties.get().main.baseDirectory;
+        String baseDirectory = Properties.get().propertiesPath.getParent().toString();
         int startYear = Properties.get().main.startYear;
         developableLUtypes = Properties.get().geo.developableLandUseTypes;
 
@@ -153,7 +153,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     private void readLandUse() {
         logger.info("Reading land use data");
         String fileName;
-        String baseDirectory = Properties.get().main.baseDirectory;
+        String baseDirectory = Properties.get().propertiesPath.getParent().toString();
         int startYear = Properties.get().main.startYear;
         if (startYear == Properties.get().main.implementation.BASE_YEAR) {  // start in year 2000
             fileName = baseDirectory + "input/" + Properties.get().geo.landUseAreaFile + ".csv";
@@ -170,7 +170,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
         // write out development capacity file to allow model run to be continued from this point later
 
         boolean useCapacityAsNumberOfDwellings = Properties.get().geo.useCapacityForDwellings;
-        String baseDirectory = Properties.get().main.baseDirectory;
+        String baseDirectory = Properties.get().propertiesPath.getParent().toString();
         String scenarioName = Properties.get().main.scenarioName;
         int endYear = Properties.get().main.endYear;
         if(useCapacityAsNumberOfDwellings)	{

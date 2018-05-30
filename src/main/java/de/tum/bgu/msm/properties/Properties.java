@@ -1,8 +1,11 @@
 package de.tum.bgu.msm.properties;
 
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.modules.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public final class Properties {
@@ -16,11 +19,11 @@ public final class Properties {
         return instance;
     }
 
-    public static void initializeProperties(ResourceBundle bundle, Implementation implementation) {
+    public static void initializeProperties(Path path, Implementation implementation) {
         if(instance != null) {
             throw new RuntimeException("Already initialized properties!");
         }
-        instance = new Properties(bundle, implementation);
+        instance = new Properties(path, implementation);
     }
 
     public final MainProperties main;
@@ -34,8 +37,12 @@ public final class Properties {
     public final DemographicsProperties demographics;
     public final AccessibilityProperties accessibility;
     public final MovesProperties moves;
+//    public final Path propertiesPath;
+    public final Path outputPath;
+    public final Path basePath;
 
-    private Properties(ResourceBundle bundle, Implementation implementation) {
+    private Properties(Path path, Implementation implementation) {
+        ResourceBundle bundle = ResourceUtil.getPropertyBundle(path.toFile());
         main = new MainProperties(bundle, implementation);
         cblcm = new CblcmProperties(bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
@@ -47,5 +54,8 @@ public final class Properties {
         demographics = new DemographicsProperties(bundle);
         accessibility = new AccessibilityProperties(bundle);
         moves = new MovesProperties(bundle);
+//        this.propertiesPath = path;
+        this.basePath = path.getParent().getParent();
+        this.outputPath = basePath.resolve("scenOutput\\" + main.scenarioName);
     }
 }

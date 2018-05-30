@@ -17,13 +17,14 @@
 package de.tum.bgu.msm;
 
 import cern.colt.Timer;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -51,10 +52,11 @@ public final class SiloModel {
 	private final Set<Integer> skimYears = new HashSet<>();
     private final Set<Integer> scalingYears = new HashSet<>();
 
-    private boolean trackTime;
-    private long[][] timeCounter;
+    private final boolean trackTime = Properties.get().main.trackTime;
 
-    private Timer timer = new Timer();
+    private final Table<Integer, String, Integer> timeTrackerTable = HashBasedTable.create();
+
+    private final Timer timer = new Timer();
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
@@ -86,7 +88,6 @@ public final class SiloModel {
         setupContainer();
         setupYears();
         setupAccessibility();
-        setupTimeTracker();
         setupEventManager();
         IssueCounter.logIssues(dataContainer.getGeoData());
 
@@ -130,12 +131,6 @@ public final class SiloModel {
         modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
     }
 
-    private void setupTimeTracker() {
-		trackTime = Properties.get().main.trackTime;
-		timeCounter = new long[EventType.values().length + 12][Properties.get().main.endYear + 1];
-		timer = new Timer();
-	}
-
 	private void setupYears() {
 		scalingYears.addAll(Properties.get().main.scalingYears);
 		if (!scalingYears.isEmpty()) {
@@ -146,7 +141,7 @@ public final class SiloModel {
 	}
 
 	private void setupEventManager() {
-        em = new EventManager(timeCounter);
+        em = new EventManager(timeTrackerTable);
 
 		if(Properties.get().eventRules.allDemography) {
 			if (Properties.get().eventRules.birthday ) {
@@ -211,11 +206,9 @@ public final class SiloModel {
 				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
 				dataContainer.getJobData().identifyVacantJobs();
 			}
-			if (trackTime) timeCounter[EventType.values().length + 2][year] += timer.millis();
-
-			if (trackTime) timer.reset();
-
-			if (trackTime) timeCounter[EventType.values().length + 4][year] += timer.millis();
+			if (trackTime) {
+			    timeTrackerTable.put(year, "updateJobInventory", (int) timer.millis());
+            }
 
 			if (skimYears.contains(year) && !tdmYears.contains(year) &&
 					!Properties.get().transportModel.runTravelDemandModel &&
@@ -231,30 +224,49 @@ public final class SiloModel {
                 modelContainer.getAcc().calculateHansenAccessibilities(year);
             }
 
-			if (trackTime) timer.reset();
+			if (trackTime) {
+			    timer.reset();
+            }
 			modelContainer.getDdOverwrite().addDwellings(year);
-			if (trackTime) timeCounter[EventType.values().length + 10][year] += timer.millis();
+			if (trackTime) {
+                timeTrackerTable.put(year, "addOverwriteDwellings", (int) timer.millis());
+            }
 
 			if (trackTime) timer.reset();
 			modelContainer.getMove().calculateRegionalUtilities();
 			modelContainer.getMove().calculateAverageHousingSatisfaction();
-			if (trackTime) timeCounter[EventType.values().length + 6][year] += timer.millis();
+			if (trackTime) {
+                timeTrackerTable.put(year, "calcAveHousingSatisfaction", (int) timer.millis());
+            }
+
+			if (trackTime) {
+			    timer.reset();
+            }
+			if (year != Properties.get().main.implementation.BASE_YEAR) {
+			    householdData.adjustIncome();
+            }
+			if (trackTime) {
+                timeTrackerTable.put(year, "planIncomeChange", (int) timer.millis());
+            }
 
 			if (trackTime) timer.reset();
-			if (year != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
-			if (trackTime) timeCounter[EventType.values().length + 9][year] += timer.millis();
-
-			if (trackTime) timer.reset();
-			if (year == Properties.get().main.implementation.BASE_YEAR || year != Properties.get().main.startYear)
-				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
-			if (trackTime) timeCounter[EventType.values().length + 7][year] += timer.millis();
+			if (year == Properties.get().main.implementation.BASE_YEAR || year != Properties.get().main.startYear) {
+                SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
+            }
+			if (trackTime) {
+                timeTrackerTable.put(year, "SummarizeData", (int) timer.millis());
+            }
 
             em.simulateEvents(year);
 
-			if (trackTime) timer.reset();
+			if (trackTime) {
+			    timer.reset();
+            }
 			int[] carChangeCounter = modelContainer.getCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
 			householdData.clearUpdatedHouseholds();
-			if (trackTime) timeCounter[EventType.values().length + 11][year] += timer.millis();
+			if (trackTime) {
+                timeTrackerTable.put(year, "updateCarOwnership", (int) timer.millis());
+            }
 
 			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
                     || Properties.get().main.createMstmOutput) {
@@ -264,10 +276,13 @@ public final class SiloModel {
                 }
             }
 
-
-			if (trackTime) timer.reset();
+			if (trackTime) {
+			    timer.reset();
+            }
 			modelContainer.getPrm().updatedRealEstatePrices();
-			if (trackTime) timeCounter[EventType.values().length + 8][year] += timer.millis();
+			if (trackTime) {
+                timeTrackerTable.put(year, "updateRealEstatePrices", (int) timer.millis());
+            }
 
 			em.finishYear(year, carChangeCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
@@ -296,7 +311,7 @@ public final class SiloModel {
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
 		if (trackTime) {
-		    SiloUtil.writeOutTimeTracker(timeCounter);
+		    SiloUtil.writeOutTimeTracker(timeTrackerTable);
         }
 		LOGGER.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}

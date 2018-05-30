@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 /**
@@ -26,7 +27,7 @@ public class SiloMstm {
     public static void main(String[] args) {
         // main run method
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MARYLAND);
+        ResourceBundle rb = SiloUtil.siloInitialization(Paths.get(args[0]), Implementation.MARYLAND);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");

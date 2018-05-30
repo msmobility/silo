@@ -6,13 +6,13 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -44,21 +44,19 @@ public class SummarizeData {
 
     public static void openResultFile(ResourceBundle rb) {
         // open summary file
-
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-        SiloUtil.createDirectoryIfNotExistingYet(directory);
         String resultFileName = rb.getString(PROPERTIES_RESULT_FILE_NAME);
-        resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
-                Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
-        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + Properties.get().main.endYear + ".csv", false);
+        Path resultFile = Properties.get().outputPath.resolve(resultFileName + "_" + Properties.get().main.gregorianIterator + ".csv");
+        Path resultFileFinal = Properties.get().outputPath.resolve(resultFileName + "_" + Properties.get().main.endYear + ".csv");
+        resultWriter = SiloUtil.openFileForSequentialWriting(resultFile, Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
+        resultWriterFinal = SiloUtil.openFileForSequentialWriting(resultFileFinal, false);
     }
 
 
     public static void readScalingYearControlTotals () {
         // read file with control totals to scale synthetic population to exogenous assumptions for selected output years
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().main.scalingControlTotals;
-        scalingControlTotals = SiloUtil.readCSVfile(fileName);
+        Path filePath = Properties.get().basePath.resolve("assumptions\\" + Properties.get().main.scalingControlTotals);
+        scalingControlTotals = SiloUtil.readCSVfile(filePath);
         scalingControlTotals.buildIndex(scalingControlTotals.getColumnPosition("Zone"));
     }
 
@@ -89,12 +87,10 @@ public class SummarizeData {
         // handle summary file
         switch (action) {
             case "open":
-                String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                SiloUtil.createDirectoryIfNotExistingYet(directory);
-                String resultFileName = Properties.get().main.spatialResultFileName;
-                spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
-                        Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
-                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +"_"+ Properties.get().main.endYear + ".csv", false);
+                Path resultFile = Properties.get().outputPath.resolve(Properties.get().main.spatialResultFileName+ "_" + Properties.get().main.gregorianIterator + ".csv").normalize();
+                Path resultFileFinal = Properties.get().outputPath.resolve(Properties.get().main.spatialResultFileName+ ("_"+ Properties.get().main.endYear + ".csv")).normalize();
+                spatialResultWriter = SiloUtil.openFileForSequentialWriting(resultFile, Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
+                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(resultFileFinal, false);
                 break;
             case "close":
                 spatialResultWriter.close();
@@ -332,14 +328,14 @@ public class SummarizeData {
     public static void summarizeHousing (int year, SiloDataContainer dataContainer) {
         // summarize housing data for housing environmental impact calculations
 
-        if (!SiloUtil.containsElement(Properties.get().main.bemModelYears, year)) return;
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/bem/";
-        SiloUtil.createDirectoryIfNotExistingYet(directory);
-
-        String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + "_" +
+        if (!SiloUtil.containsElement(Properties.get().main.bemModelYears, year)) {
+            return;
+        }
+        Path outputPath = Properties.get().outputPath.resolve("bem\\"+ Properties.get().main.housingEnvironmentImpactFile + "_" + year + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
+        SiloUtil.createDirectoryIfNotExistingYet(outputPath.getParent());
 
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting(outputPath, false);
         pw.println("id,zone,type,size,yearBuilt,occupied");
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()){
             pw.print(dd.getId());
@@ -362,9 +358,9 @@ public class SummarizeData {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName + "_" +
-                year + ".csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        Path pathHh = Properties.get().basePath.resolve(Properties.get().householdData.householdFileName + "_" +
+                year + ".csv");
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(pathHh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
@@ -389,9 +385,9 @@ public class SummarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + "_" +
-                year + ".csv";
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        Path pathPp = Properties.get().basePath.resolve(Properties.get().householdData.personFileName + "_" +
+                year + ".csv");
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(pathPp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
@@ -420,9 +416,9 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
-                year + ".csv";
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        Path pathDd = Properties.get().basePath.resolve(Properties.get().householdData.dwellingsFileName + "_" +
+                year + ".csv");
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(pathDd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             pwd.print(dd.getId());
@@ -471,9 +467,9 @@ public class SummarizeData {
 
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + "_" +
-                year + ".csv";
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        Path pathJj = Properties.get().basePath.resolve(Properties.get().householdData.jobsFileName + "_" +
+                year + ".csv");
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(pathJj, false);
         pwj.println("id,zone,personId,type");
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
@@ -507,9 +503,9 @@ public class SummarizeData {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName + "_" +
-                year + ".csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        Path pathHh = Properties.get().basePath.resolve(Properties.get().householdData.householdFileName + "_" +
+                year + ".csv");
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(pathHh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
@@ -536,9 +532,9 @@ public class SummarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + "_" +
-                year + ".csv";
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        Path pathPp = Properties.get().basePath.resolve(Properties.get().householdData.personFileName + "_" +
+                year + ".csv");
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(pathPp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
@@ -585,9 +581,9 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
-                year + ".csv";
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        Path pathDd = Properties.get().basePath.resolve(Properties.get().householdData.dwellingsFileName + "_" +
+                year + ".csv");
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(pathDd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
         for (Dwelling dd : realEstate.getDwellings()) {
             pwd.print(dd.getId());
@@ -629,9 +625,9 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + "_" +
-                year + ".csv";
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        Path pathJj = Properties.get().basePath.resolve(Properties.get().householdData.jobsFileName + "_" +
+                year + ".csv");
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(pathJj, false);
         pwj.println("id,zone,personId,type");
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
@@ -660,14 +656,13 @@ public class SummarizeData {
     }
 
 
-
     public static void writeOutSyntheticPopulationDE (int year, String file, SiloDataContainer dataContainer) {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName + file +
-                year + ".csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        Path pathHh = Properties.get().basePath.resolve(Properties.get().householdData.householdFileName + file +
+                year + ".csv");
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(pathHh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
@@ -694,9 +689,9 @@ public class SummarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + file +
-                year + ".csv";
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        Path pathPp = Properties.get().basePath.resolve(Properties.get().householdData.personFileName + file +
+                year + ".csv");
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(pathPp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
@@ -747,9 +742,9 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + file +
-                year + ".csv";
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        Path pathDd = Properties.get().basePath.resolve(Properties.get().householdData.dwellingsFileName + file +
+                year + ".csv");
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(pathDd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
         for (Dwelling dd : realEstate.getDwellings()) {
             pwd.print(dd.getId());
@@ -785,9 +780,9 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + file +
-                year + ".csv";
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        Path pathJj = Properties.get().basePath.resolve(Properties.get().householdData.jobsFileName + file +
+                year + ".csv");
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(pathJj, false);
         pwj.println("id,zone,personId,type");
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
@@ -821,11 +816,11 @@ public class SummarizeData {
         String fileEnding = "_" + step + "k_" + year + ".csv";
 
         logger.info("  Writing household file");
-        String filehh = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName + fileEnding;
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        Path pathHh = Properties.get().basePath.resolve(Properties.get().householdData.householdFileName + fileEnding);
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(pathHh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
-        String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + fileEnding;
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        Path pathPp = Properties.get().basePath.resolve(Properties.get().householdData.personFileName + fileEnding);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(pathPp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,license,schoolDE");
         Household[] households = dataContainer.getHouseholdData().getHouseholds().toArray(new Household[0]);
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
@@ -889,8 +884,8 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + fileEnding;
-        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        Path pathDd = Properties.get().basePath.resolve(Properties.get().householdData.dwellingsFileName + fileEnding);
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(pathDd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
         for (Dwelling dd: realEstate.getDwellings()) {
             pwd.print(dd.getId());
@@ -926,8 +921,8 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + fileEnding;
-        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        Path pathJj = Properties.get().basePath.resolve(Properties.get().householdData.jobsFileName + fileEnding);
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(pathJj, false);
         pwj.println("id,zone,personId,type");
         for (Job jj: dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
@@ -984,7 +979,7 @@ public class SummarizeData {
 
     public static void preparePrestoSummary (GeoData geoData) {
 
-        String prestoZoneFile = Properties.get().main.baseDirectory + Properties.get().main.prestoZoneFile;
+        Path prestoZoneFile = Properties.get().basePath.resolve(Properties.get().main.prestoZoneFile);
         TableDataSet regionDefinition = SiloUtil.readCSVfile(prestoZoneFile);
         regionDefinition.buildIndex(regionDefinition.getColumnPosition("aggFips"));
 
@@ -1005,8 +1000,8 @@ public class SummarizeData {
     public static void summarizePrestoRegion (int year, SiloDataContainer dataContainer) {
         // summarize housing costs by income group in SILO region
 
-        String fileName = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
-                Properties.get().main.prestoSummaryFile + Properties.get().main.gregorianIterator + ".csv");
+        Path fileName = (Properties.get().outputPath.resolve("/" +
+                Properties.get().main.prestoSummaryFile + Properties.get().main.gregorianIterator + ".csv"));
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != Properties.get().main.implementation.BASE_YEAR);
         pw.println(year + ",Housing costs by income group");
         pw.print("Income");
@@ -1046,9 +1041,9 @@ public class SummarizeData {
         // write out files with synthetic population
 
         logger.info("  Writing household file");
-        String filehh = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName + "_" +
-                year + ".csv";
-        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        Path pathHh = Properties.get().basePath.resolve(Properties.get().householdData.householdFileName + "_" +
+                year + ".csv");
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(pathHh, false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
@@ -1074,9 +1069,9 @@ public class SummarizeData {
         pwh.close();
 
         logger.info("  Writing person file");
-        String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + "_" +
-                year + ".csv";
-        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        Path pathPp = Properties.get().basePath.resolve(Properties.get().householdData.personFileName + "_" +
+                year + ".csv");
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(pathPp, false);
         pwp.println("id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());

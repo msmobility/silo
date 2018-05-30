@@ -6,6 +6,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.events.Event;
 import de.tum.bgu.msm.events.EventResult;
 import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.MicroEventModel;
@@ -84,9 +85,9 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     @Override
-    public Collection<ConstructionEvent> prepareYear(int year) {
+    public Collection<Event> prepareYear(int year) {
         currentYear = year;
-        List<ConstructionEvent> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
         dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)

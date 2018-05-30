@@ -22,10 +22,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
-import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
@@ -91,8 +88,8 @@ public class MarriageModel extends AbstractModel implements MicroEventModel<Marr
     }
 
     @Override
-    public Collection<MarriageEvent> prepareYear(int year) {
-        final List<MarriageEvent> events = new ArrayList<>();
+    public Collection<Event> prepareYear(int year) {
+        final List<Event> events = new ArrayList<>();
         if(Properties.get().eventRules.marriage) {
             events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons(), year));
         }

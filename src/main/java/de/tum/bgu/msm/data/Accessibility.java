@@ -3,25 +3,18 @@ package de.tum.bgu.msm.data;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
-import com.google.common.collect.ArrayTable;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
-import omx.OmxFile;
-import omx.OmxMatrix;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Calculates and stores accessibilities
@@ -166,13 +159,13 @@ public class Accessibility {
     }
 
     private void readWorkTripLengthFrequencyDistribution() {
-        String fileName = Properties.get().main.baseDirectory + Properties.get().accessibility.htsWorkTLFD;
+        String fileName = Properties.get().propertiesPath.getParent().toString() + Properties.get().accessibility.htsWorkTLFD;
         TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
         workTLFD = new float[tlfd.getRowCount() + 1];
         for (int row = 1; row <= tlfd.getRowCount(); row++) {
             int tt = (int) tlfd.getValueAt(row, "TravelTime");
             if (tt > workTLFD.length) {
-                LOGGER.error("Inconsistent trip length frequency in " + Properties.get().main.baseDirectory +
+                LOGGER.error("Inconsistent trip length frequency in " + Properties.get().propertiesPath.getParent() +
                         Properties.get().accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
             }
             workTLFD[tt] = tlfd.getValueAt(row, "utility");

@@ -21,7 +21,6 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
@@ -94,9 +93,6 @@ public class JobDataManager {
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
                 switch (Properties.get().main.implementation) {
-                    case MARYLAND:
-                        mitoJobType = MarylandJobType.valueOf(type);
-                        break;
                     case MUNICH:
                         mitoJobType = MunichJobType.valueOf(type);
                         break;
@@ -127,7 +123,7 @@ public class JobDataManager {
         logger.info("Reading job micro data from ascii file");
 
         int year = Properties.get().main.startYear;
-        String fileName = properties.main.baseDirectory + properties.jobData.jobsFileName;
+        String fileName = properties.propertiesPath.getParent().toString() + properties.jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -168,7 +164,7 @@ public class JobDataManager {
     public void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryJobFile;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().householdData.binaryJobFile;
         logger.info("  Writing job data to binary file.");
         Object[] data = jobs.values().toArray(new Job[]{});
         try {
@@ -184,7 +180,7 @@ public class JobDataManager {
 
     private void readBinaryJobDataObjects() {
         // read jobs from binary file
-        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().jobData.binaryJobsFileName;
         logger.info("Reading job data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -239,7 +235,7 @@ public class JobDataManager {
                 (2000 + highestYear));
         TableDataSet jobs;
         try {
-            final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
+            final String filename = Properties.get().propertiesPath.getParent() + "/" + Properties.get().jobData.jobControlTotalsFileName;
             jobs = SiloUtil.readCSVfile(filename);
         } catch (Exception ee) {
             throw new RuntimeException(ee);
@@ -247,7 +243,7 @@ public class JobDataManager {
         jobs.buildIndex(jobs.getColumnPosition("SMZ"));
         new JobType(Properties.get().jobData.jobTypes);
 
-        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
+        String dir = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
 
         int previousFixedYear = Integer.parseInt(yearsGiven[0]);

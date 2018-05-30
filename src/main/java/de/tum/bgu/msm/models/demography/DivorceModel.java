@@ -8,10 +8,7 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
-import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -50,8 +47,8 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     }
 
     @Override
-    public Collection<DivorceEvent> prepareYear(int year) {
-        final List<DivorceEvent> events = new ArrayList<>();
+    public Collection<Event> prepareYear(int year) {
+        final List<Event> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             if (person.getRole() == PersonRole.MARRIED) {
                 events.add(new DivorceEvent(person.getId()));

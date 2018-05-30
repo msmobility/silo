@@ -25,7 +25,7 @@ public class summarizeDataCblcm {
         // create summary files for Chesapeake Bay Land Change Model
 
         if (!SiloUtil.containsElement(Properties.get().cblcm.years, year)) return;
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/cblcm";
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName + "/cblcm";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
         summarizePopulation(year, dataContainer);
         summarizeEmployment(year, dataContainer);
@@ -38,7 +38,7 @@ public class summarizeDataCblcm {
     private static void summarizePopulation (int year, SiloDataContainer dataContainer) {
         // summarize households by type and zone for selected years
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] households = new int[dataContainer.getGeoData().getZones().size()][Properties.get().main.incomeBrackets.length + 1];
@@ -94,7 +94,7 @@ public class summarizeDataCblcm {
     private static void summarizeEmployment (int year, SiloDataContainer dataContainer) {
         // summarize employment by type for selected years
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         String emplFileName = (directory + "/cblcm/" + Properties.get().cblcm.employmentFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] jobs = new int[dataContainer.getGeoData().getZoneIdsArray().length][JobType.getNumberOfJobTypes()];
@@ -134,7 +134,7 @@ public class summarizeDataCblcm {
     private static void summarizeDwellings (int year, SiloDataContainer dataContainer) {
         // summarize dwellings by type and zone for selected years
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         String ddFileName = (directory + "/cblcm/" + Properties.get().cblcm.dwellingsFile +
                 Properties.get().main.gregorianIterator + ".csv");
         int[][] dwellings = new int[dataContainer.getGeoData().getZoneIdsArray().length][DwellingType.values().length];
@@ -174,7 +174,7 @@ public class summarizeDataCblcm {
                                                   SiloDataContainer dataContainer) {
         // summarize accessibilities by type (transit/highway) and zone for selected years
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         String accFileName = (directory + "/cblcm/" + Properties.get().cblcm.accessibilityFile +
                 Properties.get().main.gregorianIterator + ".csv");
 
@@ -207,7 +207,7 @@ public class summarizeDataCblcm {
         String countyOrderFile = Properties.get().cblcm.countyOrderFile;
         int[] countyOrder = SiloUtil.readCSVfile(countyOrderFile).getColumnAsInt("fips");
         int[] countyOrderIndex = SiloUtil.createIndexArray(countyOrder);
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         String hhFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyPopulationFile +
                 Properties.get().main.gregorianIterator + ".txt");
         String jobFileName = (directory + "/cblcm/" + Properties.get().cblcm.countyEmployMentFile +

@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 /**
@@ -23,7 +24,7 @@ public class SiloMuc {
     
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
+        ResourceBundle rb = SiloUtil.siloInitialization(Paths.get(args[0]), Implementation.MUNICH);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");

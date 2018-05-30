@@ -27,7 +27,7 @@ public class MainProperties {
     public final boolean createHousingEnvironmentImpactFile;
     public final boolean createPrestoSummary;
     public final String scalingControlTotals;
-    public final String baseDirectory;
+//    public final String baseDirectory;
     public final int startYear;
     public final int endYear;
     public final int gregorianIterator;
@@ -60,7 +60,7 @@ public class MainProperties {
         createPrestoSummary = ResourceUtil.getBooleanProperty(bundle, "create.presto.summary.file", false);
         scalingControlTotals = ResourceUtil.getProperty(bundle, "scaling.years.control.totals");
         scenarioName = ResourceUtil.getProperty(bundle, "scenario.name");
-        baseDirectory = ResourceUtil.getProperty(bundle, "base.directory");
+//        baseDirectory = ResourceUtil.getProperty(bundle, "base.directory");
         startYear = ResourceUtil.getIntegerProperty(bundle, "start.year");
         endYear = ResourceUtil.getIntegerProperty(bundle, "end.year");
         gregorianIterator = ResourceUtil.getIntegerProperty(bundle, "this.gregorian.iterator");

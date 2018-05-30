@@ -168,7 +168,7 @@ public class HouseholdDataManager {
         LOGGER.info("Reading household micro data from ascii file");
 
         int year = properties.main.startYear;
-        String fileName = properties.main.baseDirectory + properties.householdData.householdFileName;
+        String fileName = properties.propertiesPath.getParent().toString() + properties.householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -210,7 +210,7 @@ public class HouseholdDataManager {
 
     public void writeBinaryPopulationDataObjects() {
         // Store population object data in binary file
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryPopulationFile;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().householdData.binaryPopulationFile;
         LOGGER.info("  Writing population data to binary file.");
         Object[] data = {households.values().toArray(new Household[0]),
                 persons.values().toArray(new Person[0])};
@@ -227,7 +227,7 @@ public class HouseholdDataManager {
 
     private void readBinaryPopulationDataObjects() {
         // read households and persons from binary file
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryPopulationFile;
+        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().householdData.binaryPopulationFile;
         LOGGER.info("Reading population data from binary file.");
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
@@ -246,7 +246,7 @@ public class HouseholdDataManager {
         LOGGER.info("Reading person micro data from ascii file");
 
         int year = Properties.get().main.startYear;
-        String fileName = properties.main.baseDirectory +  properties.householdData.personFileName;
+        String fileName = properties.propertiesPath.getParent() +  properties.householdData.personFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -765,7 +765,7 @@ public class HouseholdDataManager {
         }
         TableDataSet selectedMetro = SiloUtil.readCSVfile(Properties.get().householdData.selectedMetroStopsFile);
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
         String fileName = (directory + "/" + Properties.get().householdData.householdsNearMetroFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
@@ -829,7 +829,7 @@ public class HouseholdDataManager {
 
     public void writeOutSmallSynPop() {
         // write out numberOfHh number of households to have small file for running tests
-        String baseDirectory = Properties.get().main.baseDirectory;
+        String baseDirectory = Properties.get().propertiesPath.getParent().toString();
         int startYear = Properties.get().main.startYear;
 
         int numberOfHh = Properties.get().main.smallSynPopSize;
