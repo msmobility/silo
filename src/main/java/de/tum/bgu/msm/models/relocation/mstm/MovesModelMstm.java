@@ -24,9 +24,7 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
@@ -37,8 +35,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private SelectRegionJSCalculator regionCalculator;
 
     private UtilityExpressionCalculator selectRegionModel;
-    protected String uecFileName;
-    protected int dataSheetNumber;
     private MovesDMU selectRegionDmu;
     private DoubleMatrix2D zonalRacialComposition;
     private DoubleMatrix2D regionalRacialComposition;
@@ -47,6 +43,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private boolean provideRentSubsidyToLowIncomeHh;
 
     private SelectDwellingJSCalculator dwellingCalculator;
+    private EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
 
     public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
@@ -231,6 +228,48 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                             incomeCategory + " with race " + race);
             }
         }
+        //second loop using the JS and maps
+        //when deleted the UEC rename this variable removing JS
+
+//        utilityRegionJS = new double[IncomeCategory.values().length][Race.values().length][highestRegion+1];
+        Map<Integer, Integer> priceByRegion = new HashMap<>();
+        Map<Integer, Float> accessibilityByRegion = new  HashMap<>();
+        Map<Integer, Float> schoolQualityByRegion = new  HashMap<>();
+        Map<Integer, Float> crimeRateByRegion = new  HashMap<>();
+        for (Region region: geoData.getRegions().values()) {
+            final int id = region.getId();
+            int price;
+            if(rentsByRegion.containsKey(id)) {
+                price = rentsByRegion.get(id).intValue();
+            } else {
+                price = 0;
+            }
+            priceByRegion.put(id, price);
+            accessibilityByRegion.put(id, (float) convertAccessToUtility(accessibility.getRegionalAccessibility(id)));
+            schoolQualityByRegion.put(id,  (float) ((MstmRegion) region).getSchoolQuality());
+            crimeRateByRegion.put(id , (float) (1f - ((MstmRegion) region).getCrimeRate()));  // invert utility, as lower crime rate has higher utility
+        }
+        for (IncomeCategory incomeCategory: IncomeCategory.values()) {
+            EnumMap<Race, Map<Integer, Double>> utilitiesByRaceRegionForThisIncome = new EnumMap(Race.class);
+            Map<Integer, Float> priceUtilitiesByRegion = new HashMap<>();
+            for (Race race: Race.values()) {
+                Map<Integer, Double> utilitiesByRegionForThisRaceIncome = new HashMap<>();
+                selectRegionDmu.setRace(race);
+                for (Region region : geoData.getRegions().values()){
+                    priceUtilitiesByRegion.put(region.getId(), (float) convertPriceToUtility(priceByRegion.get(region.getId()), incomeCategory));
+
+                    utilitiesByRegionForThisRaceIncome.put(region.getId(),
+                            regionCalculator.calculateSelectRegionProbabilityMstm(incomeCategory,
+                                    race, priceUtilitiesByRegion.get(region.getId()), accessibilityByRegion.get(region.getId()),
+                                    (float) regionalRacialComposition.get(region.getId(), race.getId()), schoolQualityByRegion.get(region.getId()),
+                                    crimeRateByRegion.get(region.getId())));
+
+                }
+                utilitiesByRaceRegionForThisIncome.put(race, utilitiesByRegionForThisRaceIncome);
+            }
+            utilityByIncomeRaceRegion.put(incomeCategory, utilitiesByRaceRegionForThisIncome);
+        }
+
     }
 
 
@@ -265,6 +304,23 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
+
+
+    private Map<Integer, Double> getUtilitiesByRegionForHouesehold(HouseholdType ht, Race race, int[] workZones){
+        Map<Integer, Double> utilitiesForThisHousheold = utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race);
+
+        for(Region region : geoData.getRegions().values()){
+            double thisRegionFactor = 1;
+            for (int workZone : workZones) {
+                int smallestDistInMin = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, region.getId());
+                thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(smallestDistInMin);
+            }
+            utilitiesForThisHousheold.put(region.getId(), utilitiesForThisHousheold.get(region.getId())*thisRegionFactor);
+
+        }
+
+        return utilitiesForThisHousheold;
+    }
 
     private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
         // return utility of regions based on household type and based on work location of workers in household
@@ -316,6 +372,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         // Step 1: select region
         int[] regions = geoData.getRegionIdsArray();
         double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones);
+
+        Map<Integer, Double> regionUtilitiesForThisHousehold = getUtilitiesByRegionForHouesehold(ht, householdRace, workZones);
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
@@ -345,8 +403,24 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 }
             }
         }
+
+        double sum = 0;
+        for (Region region : geoData.getRegions().values()){
+            //case "population"
+            double thisRegionUtility = regionUtilitiesForThisHousehold.get(region.getId())*hhByRegion.getQuick(region.getId());
+            sum+= thisRegionUtility;
+            regionUtilitiesForThisHousehold.put(region.getId(),
+                    thisRegionUtility);
+        }
+
+
         if (SiloUtil.getSum(regionUtilities) == 0) return -1;
         int selectedRegion = SiloUtil.select(regionUtilities);
+
+//        if (sum == 0) return -1;
+//        int selectedRegionJS = SiloUtil.select(regionUtilitiesForThisHousehold);
+
+
 
         // Step 2: select vacant dwelling in selected region
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(regions[selectedRegion]);

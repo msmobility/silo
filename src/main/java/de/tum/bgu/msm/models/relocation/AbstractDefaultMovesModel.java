@@ -26,8 +26,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    //protected String uecFileName;
-    //protected int dataSheetNumber;
+    protected String uecFileName;
+    protected int dataSheetNumber;
     protected int numAltsMoveOrNot;
 //    protected int[] evalDwellingAvail;
 //    protected MovesDMU evaluateDwellingDmu;
@@ -49,8 +49,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        //uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
-        //dataSheetNumber = Properties.get().moves.dataSheet;
+        uecFileName     = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
+        dataSheetNumber = Properties.get().moves.dataSheet;
 //        logCalculationDwelling = Properties.get().moves.logHhRelocation;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         //evaluateDwellingDmu = new MovesDMU();

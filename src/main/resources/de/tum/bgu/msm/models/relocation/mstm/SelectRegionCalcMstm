@@ -1,50 +1,62 @@
-var calculateSelectRegionProbability = function (incomeGroup, nationality, price, accessibility, share) {
+var calculateSelectRegionProbability = function (incomeGroup, race, price, accessibility, racialShare, schoolQuality, crimeRate) {
 
-    if(nationality == 0 || nationality == 1) {
-        if(incomeGroup.name().equals("LOW")) {
-            alpha = 0.04;
-            if(nationality == 0) {
-                delta = 0.55;
-            } else if(nationality == 1) {
-                delta = 0.25;
-            }
-        } else if(incomeGroup.name().equals("MEDIUM")) {
-            alpha = 0.08;
-            if(nationality == 0) {
-                delta = 0.5;
-            } else if(nationality == 1) {
-                delta = 0.2;
-            }
-        } else if(incomeGroup.name().equals("HIGH")) {
-            alpha = 0.120;
-            if(nationality == 0) {
-                delta = 0.45;
-            } else if(nationality == 1) {
-                delta = 0.15;
-            }
-        } else if(incomeGroup.name().equals("VERY_HIGH")) {
-            alpha = 0.16;
-            if(nationality == 0) {
-                delta = 0.25;
-            } else if(nationality == 1) {
-                delta = 0.1;
-            }
-        } else {
-            throw new Error("Undefined income group: " + incomeGroup);
+    delta = 0;
+    if(incomeGroup.name().equals("LOW")){
+        alpha = 0.04;
+        beta = 0.05;
+        gamma = 0.05;
+        if(race.name().equals("white")){
+             delta = 0.55;
+        }else if(race.name().equals("black")){
+             delta = 0.25;
+        }else if(race.name().equals("hispanic")){
+             delta = 0.5;
         }
-    } else {
-        throw new Error("Undefined nationality: " + nationality);
+    }else if(incomeGroup.name().equals("MEDIUM")){
+        alpha = 0.08;
+        beta = 0.1;
+        gamma = 0.1;
+         if(race.name().equals("white")){
+              delta = 0.5;
+         }else if(race.name().equals("black")){
+              delta = 0.25;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.45;
+         }
+    }else if(incomeGroup.name().equals("HIGH")){
+        alpha = 0.12;
+        beta = 0.2;
+        gamma = 0.15;
+         if(race.name().equals("white")){
+              delta = 0.45;
+         }else if(race.name().equals("black")){
+              delta = 0.15;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.25;
+         }
+    }else if(incomeGroup.name().equals("VERY_HIGH")){
+        alpha = 0.16;
+        beta = 0.3;
+        gamma = 0.25;
+         if(race.name().equals("white")){
+             delta = 0.25;
+         }else if(race.name().equals("black")){
+             delta = 0.1;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.15;
+         }
+    }else{
+        throw new Error("Undefined income group: " + incomeGroup);
     }
 
-    if(share > 1 || share < 0) {
-        throw new Error("Foreigner share must be between 0 and 1!")
+    if(race.name().equals("white")|| race.name().equals("black") || race.name().equals("hispanic")){
+        relevantShare = racialShare;
+    }else if (race.name().equals("other")){
+        relevantShare = 1;
+    }else{
+        throw new Error("Undefined race: " + race);
     }
 
-    if(nationality == 1) {
-        relevantShare = share;
-    } else {
-        relevantShare = 1 - share;
-    }
 
-    return (1 - alpha - delta) * price + alpha * accessibility + delta * relevantShare;
+    return (1 - alpha - delta) * price + alpha * accessibility + beta * schoolQuality + gamma * crimeRate + delta * relevantShare;
 }
