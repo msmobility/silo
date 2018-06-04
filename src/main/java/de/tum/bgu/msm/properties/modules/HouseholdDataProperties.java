@@ -49,10 +49,10 @@ public final class HouseholdDataProperties {
         binaryJobFile = ResourceUtil.getProperty(bundle, "job.file.bin");
 
 
-        householdFinalFileName = ResourceUtil.getProperty(bundle, "household.final.file.ascii", "microData/output/hh");
-        personFinalFileName = ResourceUtil.getProperty(bundle, "person.final.file.ascii", "microData/output/pp");
-        jobsFinalFileName = ResourceUtil.getProperty(bundle, "job.final.file.ascii", "microData/output/jj");
-        dwellingsFinalFileName = ResourceUtil.getProperty(bundle, "dwelling.final.file.ascii", "microData/output/dd");
+        householdFinalFileName = ResourceUtil.getProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
+        personFinalFileName = ResourceUtil.getProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
+        jobsFinalFileName = ResourceUtil.getProperty(bundle, "job.final.file.ascii", "microData/futureYears/jj");
+        dwellingsFinalFileName = ResourceUtil.getProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
 
 
     }
