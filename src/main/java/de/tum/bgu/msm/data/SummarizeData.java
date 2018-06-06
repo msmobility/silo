@@ -642,7 +642,7 @@ public class SummarizeData {
             pwd.print(",");
             pwd.print(dd.getRestriction());
             pwd.print(",");
-            pwd.print(dd.getYearBuilt());
+            pwd.print(dd.getYearConstructionDE());
             pwd.print(",");
             pwd.print(dd.getFloorSpace());
             pwd.print(",");
