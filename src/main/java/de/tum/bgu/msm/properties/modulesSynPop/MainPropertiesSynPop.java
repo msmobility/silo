@@ -15,6 +15,7 @@ public class MainPropertiesSynPop {
     public final boolean runAllocation;
     public final boolean runJobAllocation;
     public final boolean twoGeographicalAreasIPU;
+    public final boolean disability;
     public final String[] attributesMunicipality;
     public final TableDataSet marginalsMunicipality;
     public final String[] attributesCounty;
@@ -69,6 +70,7 @@ public class MainPropertiesSynPop {
         runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.population.allocation", false);
         runJobAllocation = ResourceUtil.getBooleanProperty(bundle, "run.job.allocation", false);
         twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
+        disability = ResourceUtil.getBooleanProperty(bundle, "run.disability", false);
 
         attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.municipality");
         marginalsMunicipality = SiloUtil.readCSVfile(bundle.getString("marginals.municipality"));

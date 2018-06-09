@@ -30,6 +30,9 @@ public class Allocation extends ModuleSynPop{
         } else {
             readPopulation();
         }
+        if (PropertiesSynPop.get().main.disability){
+            baseYearDisability();
+        }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
             assignSchools();
@@ -101,4 +104,6 @@ public class Allocation extends ModuleSynPop{
     private void generateVacantDwellings(){
         new GenerateVacantDwellings(dataContainer, dataSetSynPop).run();
     }
+
+    private void baseYearDisability(){new BaseYearDisabilityModel(dataContainer).run();}
 }

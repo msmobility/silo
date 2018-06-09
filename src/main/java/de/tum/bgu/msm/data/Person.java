@@ -48,6 +48,7 @@ public final class Person {
     private int jobTAZ = 0;
     private boolean driverLicense = false;
     private int schoolType = 0;
+    private Disability disability = Disability.without;
 
     Person(int id, int age, int gender, Race race, int occupation, int workplace, int income) {
 		this.id = id;
@@ -173,6 +174,10 @@ public final class Person {
     public void setSchoolPlace(int schoolPlace) {this.schoolPlace = schoolPlace;}
 
     public int getSchoolPlace() {return schoolPlace;}
+
+    public Disability getDisability() {return disability;}
+
+    public void setDisability(Disability disability) {this.disability = disability;}
     
     @Override
     public String toString() {
