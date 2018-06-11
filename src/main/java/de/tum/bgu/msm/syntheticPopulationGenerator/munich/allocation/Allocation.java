@@ -1,7 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
+import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -9,6 +14,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Allocation extends ModuleSynPop{
 
@@ -24,18 +30,19 @@ public class Allocation extends ModuleSynPop{
     public void run(){
         logger.info("   Started allocation model.");
         if (PropertiesSynPop.get().main.runAllocation) {
-            generateHouseholdsPersonsDwellings();
             generateJobs();
+            generateHouseholdsPersonsDwellings();
+            checkMarriages();
+            if (PropertiesSynPop.get().main.disability){
+                baseYearDisability();
+            }
+            if (PropertiesSynPop.get().main.runJobAllocation) {
+                assignJobs();
+                assignSchools();
+                validateTripLengths();
+            }
         } else {
             readPopulation();
-        }
-        if (PropertiesSynPop.get().main.disability){
-            baseYearDisability();
-        }
-        if (PropertiesSynPop.get().main.runJobAllocation) {
-            assignJobs();
-            assignSchools();
-            validateTripLengths();
         }
         logger.info("   Completed allocation model.");
 
@@ -113,4 +120,9 @@ public class Allocation extends ModuleSynPop{
 
 
     private void baseYearDisability(){new BaseYearDisabilityModel(dataContainer).run();}
+
+    private void checkMarriages(){
+        new CheckMarriage(dataContainer, dataSetSynPop).run();
+    }
+
 }
