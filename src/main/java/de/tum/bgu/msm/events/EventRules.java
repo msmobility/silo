@@ -60,6 +60,10 @@ public class EventRules {
         return (per != null) && Properties.get().eventRules.driversLicense && Properties.get().eventRules.allDemography;
     }
 
+    public static boolean ruleDisability (Person per){
+        return (per !=null) && Properties.get().eventRules.disability && Properties.get().eventRules.allDemography;
+    }
+
     // Conditions for change-of-job events
     public static boolean ruleStartNewJob() {
         return Properties.get().eventRules.startNewJob && Properties.get().eventRules.allDemography;

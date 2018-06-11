@@ -15,6 +15,7 @@ public class EventRulesProperties {
     public final boolean divorce;
     public final boolean schoolUniversity;
     public final boolean driversLicense;
+    public final boolean disability;
     public final boolean startNewJob;
     public final boolean quitJob;
     public final boolean allHhMoves;
@@ -35,6 +36,7 @@ public class EventRulesProperties {
         divorce = ResourceUtil.getBooleanProperty(bundle, "event.checkDivorce");
         schoolUniversity = ResourceUtil.getBooleanProperty(bundle, "event.checkSchoolUniv", false);
         driversLicense = ResourceUtil.getBooleanProperty(bundle, "event.checkDriversLicense", false);
+        disability = ResourceUtil.getBooleanProperty(bundle,"event.disability",false);
         startNewJob = ResourceUtil.getBooleanProperty(bundle, "event.startJob");
         quitJob = ResourceUtil.getBooleanProperty(bundle, "event.quitJob");
         allHhMoves = ResourceUtil.getBooleanProperty(bundle, "event.all.hhMoves");

@@ -7,13 +7,7 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
-import de.tum.bgu.msm.models.demography.BirthModel;
-import de.tum.bgu.msm.models.demography.ChangeSchoolUnivModel;
-import de.tum.bgu.msm.models.demography.DeathModel;
-import de.tum.bgu.msm.models.demography.DriversLicense;
-import de.tum.bgu.msm.models.demography.EmploymentModel;
-import de.tum.bgu.msm.models.demography.LeaveParentHhModel;
-import de.tum.bgu.msm.models.demography.MarryDivorceModel;
+import de.tum.bgu.msm.models.demography.*;
 import de.tum.bgu.msm.models.jobmography.UpdateJobs;
 import de.tum.bgu.msm.models.realEstate.ConstructionModel;
 import de.tum.bgu.msm.models.realEstate.ConstructionOverwrite;
@@ -61,6 +55,7 @@ public class SiloModelContainer {
     private final EmploymentModel changeEmployment;
     private final ChangeSchoolUnivModel changeSchoolUniv;
     private final DriversLicense driversLicense;
+    private final DisabilityModel disability;
     private final Accessibility acc;
     private final CreateCarOwnershipModel carOwnershipModel;
     private final UpdateJobs updateJobs;
@@ -95,6 +90,7 @@ public class SiloModelContainer {
                                PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
                                LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
+                               DisabilityModel disability,
                                Accessibility acc, CreateCarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
                                de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
         this.iomig = iomig;
@@ -111,6 +107,7 @@ public class SiloModelContainer {
         this.changeEmployment = changeEmployment;
         this.changeSchoolUniv = changeSchoolUniv;
         this.driversLicense = driversLicense;
+        this.disability = disability;
         this.acc = acc;
         this.carOwnershipModel = carOwnershipModel;
         this.updateJobs = updateJobs;
@@ -156,6 +153,7 @@ public class SiloModelContainer {
         BirthModel birth = new BirthModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         DriversLicense driversLicense = new DriversLicense(dataContainer);
+        DisabilityModel disability = new DisabilityModel(dataContainer);
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
@@ -188,7 +186,7 @@ public class SiloModelContainer {
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
+                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, disability,acc,
                 carOwnershipModel, updateJobs, createCarOwnershipModel, transportModel);
     }
 
@@ -247,6 +245,10 @@ public class SiloModelContainer {
 
     public DriversLicense getDriversLicense() {
         return driversLicense;
+    }
+
+    public DisabilityModel getDisability(){
+        return disability;
     }
 
     public Accessibility getAcc() {

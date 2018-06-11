@@ -239,6 +239,8 @@ public final class SiloModel {
 					modelContainer.getChangeSchoolUniv().updateSchoolUniv(event[1]);
 				} else if (event[0] == EventTypes.CHECK_DRIVERS_LICENSE.ordinal()) {
 					modelContainer.getDriversLicense().checkLicenseChange(event[1]);
+				} else if (event[0] == EventTypes.DISABILITY.ordinal()) {
+					modelContainer.getDisability().chooseDisability(event[1]);
 				} else if (event[0] == EventTypes.FIND_NEW_JOB.ordinal()) {
 					modelContainer.getEmployment().lookForJob(event[1]);
 				} else if (event[0] == EventTypes.QUIT_JOB.ordinal()) {
@@ -288,6 +290,7 @@ public final class SiloModel {
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 			if (SiloUtil.modelStopper("check")) break;
+			SummarizeData.writeOutSyntheticPopulationDE(year*10,dataContainer);
 		}
 	}
 

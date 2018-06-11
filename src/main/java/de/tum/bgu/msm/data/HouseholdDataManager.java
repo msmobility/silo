@@ -271,6 +271,10 @@ public class HouseholdDataManager {
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
+            int posDisability = 0;
+            if (Properties.get().eventRules.disability){
+                posDisability = SiloUtil.findPositionInArray("disability", header);
+            }
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -287,10 +291,10 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                boolean license = true;
-                if (Integer.parseInt(lineElements[posDriver]) == 0){
+                boolean license = Boolean.parseBoolean(lineElements[posDriver]);
+/*                if (Integer.parseInt(lineElements[posDriver]) == 0){
                     license = false;
-                }
+                }*/
                 Household household = households.get(hhid);
                 if(household == null) {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
@@ -299,6 +303,16 @@ public class HouseholdDataManager {
                 addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
+                if (Properties.get().eventRules.disability){
+                    int disability = Integer.parseInt(lineElements[posDisability]);
+                    if (disability == 1) {
+                        pp.setDisability(Disability.physical);
+                    } else if (disability == 2){
+                        pp.setDisability(Disability.mental);
+                    } else{
+                        pp.setDisability(Disability.without);
+                    }
+                }
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(pp.toString());
