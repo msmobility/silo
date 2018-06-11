@@ -76,7 +76,7 @@ var calculateDisabilityProbability = function(personAge, personSex) {
     return alpha;
 }
 
-var calculateDisabilityProbability = function(personAge, personSex) {
+var probabilityForPhysicalDisability = function(personAge, personSex) {
 
  alpha = 0.;
 

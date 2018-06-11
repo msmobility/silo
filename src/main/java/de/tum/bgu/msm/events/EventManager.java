@@ -80,6 +80,11 @@ public class EventManager {
                 events.add(new int[]{EventTypes.CHECK_DRIVERS_LICENSE.ordinal(), id});
                 numEvents++;
             }
+            // Get disability
+            if (EventRules.ruleDisability(per)) {
+                events.add(new int[]{EventTypes.DISABILITY.ordinal(), id});
+                numEvents++;
+            }
         }
 
 

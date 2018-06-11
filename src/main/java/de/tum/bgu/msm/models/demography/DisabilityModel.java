@@ -46,7 +46,7 @@ public class DisabilityModel extends AbstractModel {
         }
         final double disabilityProb = calculator.calculateDisabilityProbability(person.getAge(), person.getGender());
         if (SiloUtil.getRandomNumberAsDouble() < disabilityProb){
-        final double disabilityTypeProb = calculator.calculateDisabilityTypeProbability(person.getAge(), person.getGender());
+            final double disabilityTypeProb = calculator.probabilityForPhysicalDisability(person.getAge(), person.getGender());
             if (SiloUtil.getRandomNumberAsDouble() < disabilityTypeProb) {
                 createDisability(person, Disability.physical);
             } else {
