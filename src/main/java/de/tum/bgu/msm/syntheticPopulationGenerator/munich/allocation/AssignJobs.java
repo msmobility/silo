@@ -46,6 +46,7 @@ public class AssignJobs {
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        int count = 0;
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
             int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
@@ -54,13 +55,16 @@ public class AssignJobs {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
                 updateMaps(selectedJobType, workplace);
+            } else {
+                pp.setWorkplace(-2);
+                count++;
             }
             if (LongMath.isPowerOfTwo(assignedJobs)){
-                logger.info("   Assigned " + assignedJobs + " jobs.");
+                logger.info("   Assigned " + assignedJobs + " jobs. ");
             }
             assignedJobs++;
         }
-        logger.info("   Finished job allocation. Assigned " + assignedJobs + " jobs.");
+        logger.info("   Finished job allocation. Assigned " + assignedJobs + " jobs." + count + " jobs are assigned outside the study area.");
     }
 
 

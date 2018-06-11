@@ -6,13 +6,20 @@ package de.tum.bgu.msm.data;
  * Created on 09 June 2018 in Munich
  **/
 
-public enum Disability implements Id{
-    without,
-    mental,
-    physical;
+public enum Disability {
+    without(0),
+    mental(1),
+    physical(2);
 
-    @Override
-    public int getId(){return this.ordinal();}
+    private final int disabilityCode;
+
+    Disability(int disabilityCode) {
+        this.disabilityCode = disabilityCode;
+    }
+
+    public int getDisabilityCode() {
+        return disabilityCode;
+    }
 }
 
 

@@ -23,14 +23,14 @@ public class ReadPopulation {
 
     public void run(){
         logger.info("   Running module: read population");
-        readHouseholdData(Properties.get().main.startYear);
+/*        readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
         readDwellingData(Properties.get().main.startYear);
-        readJobData(Properties.get().main.startYear);
-        readHouseholdData(1992);
-        readPersonData(1992);
-        readDwellingData(1992);
-        readJobData(1992);
+        readJobData(Properties.get().main.startYear);*/
+        readHouseholdData(1990);
+        readPersonData(1990);
+        readDwellingData(1990);
+        //readJobData(1991);
     }
 
 

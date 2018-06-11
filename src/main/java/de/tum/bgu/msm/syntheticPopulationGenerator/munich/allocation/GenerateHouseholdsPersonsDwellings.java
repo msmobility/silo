@@ -8,10 +8,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class GenerateHouseholdsPersonsDwellings {
 
@@ -58,11 +55,11 @@ public class GenerateHouseholdsPersonsDwellings {
             initializeMunicipalityData(municipality);
             double logging = 2;
             int it = 12;
-            int[] hhSelection = selectMultipleHouseholds(totalHouseholds);
-            int[] tazSelection = selectMultipleTAZ(totalHouseholds);
+            ArrayList<Integer> hhSelection = selectMultipleHouseholds(totalHouseholds);
+            ArrayList<Integer> tazSelection = selectMultipleTAZ(totalHouseholds);
             for (int draw = 0; draw < totalHouseholds; draw++) {
-                int hhSelected = hhSelection[draw];
-                int tazSelected = tazSelection[draw];
+                int hhSelected = hhSelection.get(draw);
+                int tazSelected = tazSelection.get(draw);
                 Household household = generateHousehold();
                 generateDwelling(hhSelected, household.getId(), tazSelected, municipality);
                 generatePersons(hhSelected, household);
@@ -191,10 +188,9 @@ public class GenerateHouseholdsPersonsDwellings {
     }
 
 
-    public int[] selectMultipleHouseholds(int selections) {
+    public ArrayList<Integer> selectMultipleHouseholds(int selections) {
 
-        int[] selected;
-        selected = new int[selections];
+        ArrayList<Integer> selectedArrayList = new ArrayList<>();
         int completed = 0;
         for (int iteration = 0; iteration < 100; iteration++){
             int m = selections - completed;
@@ -213,20 +209,19 @@ public class GenerateHouseholdsPersonsDwellings {
                     cumulative += probabilityId[p];
                 }
                 if (probabilityId[p] > 0) {
-                    selected[completed] = ids[p];
+                    selectedArrayList.add(ids[p]);
                     completed++;
                 }
             }
         }
-        Arrays.sort(selected);
-        return selected;
+        Collections.shuffle(selectedArrayList);
+        return selectedArrayList;
 
     }
 
-    private int[] selectMultipleTAZ(int selections){
+    private ArrayList<Integer> selectMultipleTAZ(int selections){
 
-        int[] selected;
-        selected = new int[selections];
+        ArrayList<Integer> selectedArrayList = new ArrayList<>();
         int completed = 0;
         for (int iteration = 0; iteration < 100; iteration++){
             int m = selections - completed;
@@ -246,12 +241,12 @@ public class GenerateHouseholdsPersonsDwellings {
                     cumulative += probabilityTAZ[p];
                 }
                 if (probabilityTAZ[p] > 0) {
-                    selected[completed] = idTAZs[p];
+                    selectedArrayList.add(idTAZs[p]);
                     completed++;
                 }
             }
         }
-        Arrays.sort(selected);
-        return selected;
+        Collections.shuffle(selectedArrayList);
+        return selectedArrayList;
     }
 }
