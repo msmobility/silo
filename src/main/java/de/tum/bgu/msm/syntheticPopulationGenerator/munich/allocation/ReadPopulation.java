@@ -4,6 +4,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -25,6 +27,10 @@ public class ReadPopulation {
         readPersonData(Properties.get().main.startYear);
         readDwellingData(Properties.get().main.startYear);
         readJobData(Properties.get().main.startYear);
+        readHouseholdData(1992);
+        readPersonData(1992);
+        readDwellingData(1992);
+        readJobData(1992);
     }
 
 
@@ -101,6 +107,10 @@ public class ReadPopulation {
             int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
             int posSchoolDE = SiloUtil.findPositionInArray("schoolDE",header);
             int posSchoolTAZ = SiloUtil.findPositionInArray("schoolTAZ",header);
+            int posDisability = 0;
+            if (PropertiesSynPop.get().main.disability){
+                posDisability = SiloUtil.findPositionInArray("disability", header);
+            }
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -139,6 +149,14 @@ public class ReadPopulation {
                 pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
+                if (posDisability > 0){
+                    int disability = Integer.parseInt(lineElements[posDisability]);
+                    if (disability == 1){
+                        pp.setDisability(Disability.physical);
+                    } else if (disability == 2){
+                        pp.setDisability(Disability.mental);
+                    }
+                }
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                 }

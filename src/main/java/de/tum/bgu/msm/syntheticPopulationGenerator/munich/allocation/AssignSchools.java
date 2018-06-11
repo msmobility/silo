@@ -135,13 +135,12 @@ public class AssignSchools {
 
     private void shuffleStudents(){
 
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         studentArrayList = new ArrayList<>();
-        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
-            if (pair.getValue().getOccupation() == 3){
-                studentArrayList.add(pair.getValue());
-                pair.getValue().setSchoolPlace(-1);
-                pair.getValue().setJobTAZ(-1);
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            if (pp.getOccupation() == 3){
+                studentArrayList.add(pp);
+                pp.setSchoolPlace(-1);
+                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(studentArrayList);

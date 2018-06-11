@@ -40,9 +40,13 @@ public class BaseYearDisabilityModel {
 
     private void initializeSummary() {
         counts = new TableDataSet();
-        SiloUtil.addIntegerColumnToTableDataSet(counts, "without",100);
-        SiloUtil.addIntegerColumnToTableDataSet(counts, "mental",100);
-        SiloUtil.addIntegerColumnToTableDataSet(counts, "physical",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "withoutMale",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "mentalMale",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "physicalMale",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "withoutFemale",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "mentalFemale",100);
+        SiloUtil.addIntegerColumnToTableDataSet(counts, "physicalFemale",100);
+
 
     }
 
@@ -61,12 +65,22 @@ public class BaseYearDisabilityModel {
 
     private void updateSummary(Person person){
         String column = "";
-        if (person.getDisability().equals(Disability.physical)){
-            column = "physical";
-        } else if (person.getDisability().equals(Disability.mental)){
-            column = "mental";
-        } else if (person.getDisability().equals(Disability.without)){
-            column = "without";
+        if (person.getGender() == 1) {
+            if (person.getDisability().equals(Disability.physical)) {
+                column = "physicalMale";
+            } else if (person.getDisability().equals(Disability.mental)) {
+                column = "mentalMale";
+            } else if (person.getDisability().equals(Disability.without)) {
+                column = "withoutMale";
+            }
+        } else if (person.getGender() == 2){
+            if (person.getDisability().equals(Disability.physical)) {
+                column = "physicalFemale";
+            } else if (person.getDisability().equals(Disability.mental)) {
+                column = "mentalFemale";
+            } else if (person.getDisability().equals(Disability.without)) {
+                column = "withoutFemale";
+            }
         }
         int row = person.getAge();
         row = Math.min(row, 100);

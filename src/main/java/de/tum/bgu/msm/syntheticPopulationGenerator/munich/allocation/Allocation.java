@@ -25,7 +25,6 @@ public class Allocation extends ModuleSynPop{
         logger.info("   Started allocation model.");
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersonsDwellings();
-            generateVacantDwellings();
             generateJobs();
         } else {
             readPopulation();
@@ -49,6 +48,7 @@ public class Allocation extends ModuleSynPop{
             }
         }
         new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop).run();
+        new GenerateVacantDwellings(dataContainer, dataSetSynPop).run();
         if (PropertiesSynPop.get().main.boroughIPU){
             for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
                 removeBoroughsAsCities(county);
@@ -58,7 +58,17 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void generateJobs(){
+        if (PropertiesSynPop.get().main.boroughIPU){
+            for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
+                addBoroughsAsCities(county);
+            }
+        }
         new GenerateJobs(dataContainer, dataSetSynPop).run();
+        if (PropertiesSynPop.get().main.boroughIPU){
+            for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
+                removeBoroughsAsCities(county);
+            }
+        }
         SummarizeData.writeOutSyntheticPopulationDE(1991, dataContainer);
     }
 
@@ -101,9 +111,6 @@ public class Allocation extends ModuleSynPop{
         dataSetSynPop.setMunicipalities(newCities);
     }
 
-    private void generateVacantDwellings(){
-        new GenerateVacantDwellings(dataContainer, dataSetSynPop).run();
-    }
 
     private void baseYearDisability(){new BaseYearDisabilityModel(dataContainer).run();}
 }

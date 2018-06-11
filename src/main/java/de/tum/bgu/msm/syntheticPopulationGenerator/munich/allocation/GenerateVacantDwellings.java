@@ -190,6 +190,7 @@ public class GenerateVacantDwellings {
                 }
             }
         }
+        Arrays.sort(selected);
         return selected;
     }
 

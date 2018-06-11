@@ -218,6 +218,7 @@ public class GenerateHouseholdsPersonsDwellings {
                 }
             }
         }
+        Arrays.sort(selected);
         return selected;
 
     }
@@ -250,6 +251,7 @@ public class GenerateHouseholdsPersonsDwellings {
                 }
             }
         }
+        Arrays.sort(selected);
         return selected;
     }
 }
