@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -9,6 +11,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Keeps data of dwellings and non-residential floorspace
@@ -27,8 +30,9 @@ public class RealEstateDataManager {
     public static int[] dwellingsByQuality;
     private static double[] initialQualityShares;
     private static int highestDwellingIdInUse;
-    public static int rentCategories;
-    private static HashMap<Integer, float[]> ddPriceByHhType;
+    public static final int rentCategories = 25;
+    private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
+
     private static int[] dwellingsByRegion;
     private static int[][] vacDwellingsByRegion;
     private static int[] vacDwellingsByRegionPos;
@@ -233,7 +237,7 @@ public class RealEstateDataManager {
     }
 
 
-    public void setHighestVariables () {
+    public void setHighestVariablesAndCalculateRentShareByIncome() {
         // identify highest dwelling ID in use and largest bedrooms, also calculate share of rent paid by each hh type
         // only done initially when model starts
 
@@ -241,36 +245,39 @@ public class RealEstateDataManager {
         largestNoBedrooms = 0;
 
         // identify how much rent (specified by 25 rent categories) is paid by households of each income category
-        rentCategories = 25;
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        int[] incBrackets = Properties.get().main.incomeBrackets;
-        float[][] priceByIncome = new float[incBrackets.length + 1][rentCategories + 1];
+        Map<IncomeCategory, Multiset<Integer>> countOfHouseholdsByIncomeAndRentCategory = new EnumMap<>(IncomeCategory.class);
+        for (IncomeCategory incomeCat: IncomeCategory.values()) {
+            countOfHouseholdsByIncomeAndRentCategory.put(incomeCat, HashMultiset.create());
+        }
         for (Dwelling dd: dwellings.values()) {
             highestDwellingIdInUse = Math.max(highestDwellingIdInUse, dd.getId());
             largestNoBedrooms = Math.max(largestNoBedrooms, dd.getBedrooms());
             int hhId = dd.getResidentId();
             if (hhId > 0) {
                 int hhinc = householdData.getHouseholdFromId(hhId).getHhIncome();
-                int incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(hhinc);
+                IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(hhinc);
                 int rentCategory = (int) ((dd.getPrice() * 1.) / 200.);  // rent category defined as <rent/200>
                 rentCategory = Math.min(rentCategory, rentCategories);   // ensure that rent categories do not exceed max
-                priceByIncome[incomeCategory - 1][rentCategory]++;
+                countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).add(rentCategory);
             }
         }
-        priceByIncome[incBrackets.length][rentCategories]++;  // make sure that most expensive category can be afforded by richest households
-        ddPriceByHhType = new HashMap<>();
-        for (int incomeCategory = 1; incomeCategory <= incBrackets.length + 1; incomeCategory++) {
-            float[] vector = new float[rentCategories + 1];
-            System.arraycopy(priceByIncome[incomeCategory - 1], 0, vector, 0, vector.length);
-            float sum = SiloUtil.getSum(vector);
-            for (int i = 0; i < vector.length; i++) vector[i] = vector[i] / sum;
-            ddPriceByHhType.put(incomeCategory, vector);
+        IncomeCategory highestIncCat = IncomeCategory.values()[IncomeCategory.values().length-1];
+        countOfHouseholdsByIncomeAndRentCategory.get(highestIncCat).add(rentCategories);  // make sure that most expensive category can be afforded by richest households
+        for (IncomeCategory incomeCategory: IncomeCategory.values()) {
+            float sum = countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).size();
+            Map<Integer, Float> shareOfRentsForThisIncCat = new HashMap<>();
+            for (int rentCategory = 0; rentCategory <= rentCategories; rentCategory++) {
+                int thisRentAndIncomeCat = countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).count(rentCategory);
+                shareOfRentsForThisIncCat.put(rentCategory, thisRentAndIncomeCat/sum);
+            }
+            ddPriceByIncomeCategory.put(incomeCategory, shareOfRentsForThisIncCat);
         }
     }
 
 
-    public static float[] getRentPaymentsForIncomeGroup (int incomeCategory) {
-        return ddPriceByHhType.get(incomeCategory);
+    public static Map<Integer, Float> getRentPaymentsForIncomeGroup (IncomeCategory incomeCategory) {
+        return ddPriceByIncomeCategory.get(incomeCategory);
     }
 
 

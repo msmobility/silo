@@ -43,7 +43,7 @@ public final class Person implements Id {
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int telework = 0;
     private int educationLevel = 0;
-    private Nationality nationality = Nationality.german;
+    private Nationality nationality = Nationality.GERMAN;
     private float travelTime = 0;
     private int jobTAZ = 0;
     private boolean driverLicense = false;

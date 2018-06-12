@@ -37,6 +37,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     private double parameter_MoveOrNotSlope;
     private double parameter_MoveOrNotShift;
     private double[] averageHousingSatisfaction;
+    private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
@@ -122,7 +123,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     private void setupMoveOrNotMove() {
-        int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
+        /*int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
         UtilityExpressionCalculator moveOrNotModel = new UtilityExpressionCalculator(new File(uecFileName),
                 moveOrNotModelSheetNumber,
                 dataSheetNumber,
@@ -141,6 +142,10 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (logCalculationDwelling) {
             moveOrNotModel.logAnswersArray(traceLogger, "Move-Or-Not Model");
         }
+*/
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
+        movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
+
     }
 
     private void evaluateAllDwellingUtilities() {
@@ -167,22 +172,22 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     protected double convertPriceToUtility(int price, HouseholdType ht) {
 
-        int incCategory = HouseholdType.convertHouseholdTypeToIncomeCategory(ht);
-        float[] shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
+        IncomeCategory incCategory = ht.getIncomeCategory();
+        Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
         int priceCategory = (int) (price / 200f + 0.5);   // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
         priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
         double util = 0;
-        for (int i = 0; i <= priceCategory; i++) util += shares[i];
+        for (int i = 0; i <= priceCategory; i++) util += shares.get(i);
         return (1f - util);   // invert utility, as lower price has higher utility
     }
 
-    protected double convertPriceToUtility(int price, int incCategory) {
+    protected double convertPriceToUtility(int price, IncomeCategory incCategory) {
 
-        float[] shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
+        Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
         int priceCategory = (int) (price / 200f);   // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
         priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
         double util = 0;
-        for (int i = 0; i <= priceCategory; i++) util += shares[i];
+        for (int i = 0; i <= priceCategory; i++) util += shares.get(i);
         return (1f - util);   // invert utility, as lower price has higher utility
     }
 
@@ -235,9 +240,12 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         double currentUtil = dd.getUtilOfResident();
 
         double[] prop = new double[2];
-        prop[0] = 1. - 1. / (1. + parameter_MoveOrNotShift *
-                Math.exp(parameter_MoveOrNotSlope * (averageHousingSatisfaction[hhType.ordinal()] - currentUtil)));
+//        prop[0] = 1. - 1. / (1. + parameter_MoveOrNotShift *
+//                Math.exp(parameter_MoveOrNotSlope * (averageHousingSatisfaction[hhType.ordinal()] - currentUtil)));
+
+        prop[0] = movesOrNotJSCalculator.getMovingProbability(averageHousingSatisfaction[hhType.ordinal()], currentUtil);
         prop[1] = 1. - prop[0];
+
         return SiloUtil.select(prop) == 0;
     }
 

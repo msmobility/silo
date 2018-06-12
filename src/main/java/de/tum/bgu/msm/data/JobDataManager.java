@@ -21,7 +21,6 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.jobTypes.maryland.MarylandJobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
@@ -94,9 +93,6 @@ public class JobDataManager {
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
                 switch (Properties.get().main.implementation) {
-                    case MARYLAND:
-                        mitoJobType = MarylandJobType.valueOf(type);
-                        break;
                     case MUNICH:
                         mitoJobType = MunichJobType.valueOf(type);
                         break;

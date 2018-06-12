@@ -109,7 +109,7 @@ public class MarriageModelTest {
         person8Child3.setRole(PersonRole.CHILD);
 
         dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
-        dataContainer.getRealEstateData().setHighestVariables();
+        dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         modelContainer.getMove().calculateRegionalUtilities();
 

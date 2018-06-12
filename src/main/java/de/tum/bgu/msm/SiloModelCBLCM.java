@@ -154,8 +154,6 @@ public class SiloModelCBLCM {
 	        if (scalingYears.contains(Properties.get().main.endYear))
 	            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
 
-	        dataContainer.getHouseholdData().summarizeHouseholdsNearMetroStations(modelContainer);
-
 	        if (Properties.get().main.endYear != 2040) {
 	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);
 	            geoData.writeOutDevelopmentCapacityFile(dataContainer);

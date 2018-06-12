@@ -10,6 +10,8 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 
 /**
@@ -22,8 +24,8 @@ public final class PricingModel extends AbstractModel {
 
     static Logger logger = Logger.getLogger(PricingModel.class);
 
-    private String uecFileName;
-    private int dataSheetNumber;
+    private PricingJSCalculator pricingCalculator;
+
     private double inflectionLow;
     private double inflectionHigh;
     private double slopeLow;
@@ -35,43 +37,21 @@ public final class PricingModel extends AbstractModel {
 
     public PricingModel (SiloDataContainer dataContainer) {
         super(dataContainer);
-        uecFileName     = Properties.get().main.baseDirectory + Properties.get().realEstate.uecFile;
-        dataSheetNumber = Properties.get().realEstate.dataSheet;
         setupPricingModel();
     }
 
 
     private void setupPricingModel() {
 
-        int pricingModelSheetNumber = Properties.get().realEstate.modelSheet;
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("PricingCalc"));
+        pricingCalculator = new PricingJSCalculator(reader);
 
-        // initialize UEC
-        UtilityExpressionCalculator pricingModel = new UtilityExpressionCalculator(new File(uecFileName),
-                pricingModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                PricingDMU.class);
-        PricingDMU pricingDmu = new PricingDMU();
-
-        int[] availability = {1, 1};
-        pricingDmu.setToken(1);
-        double utila[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        inflectionLow = utila[0];
-        pricingDmu.setToken(2);
-        double utilb1[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        inflectionHigh = utilb1[0];
-        pricingDmu.setToken(3);
-        double utilb2[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        slopeLow = utilb2[0];
-        pricingDmu.setToken(4);
-        double utill[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        slopeMain = utill[0];
-        pricingDmu.setToken(5);
-        double utilm[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        slopeHigh = utilm[0];
-        pricingDmu.setToken(6);
-        double utild[] = pricingModel.solve(pricingDmu.getDmuIndexValues(), pricingDmu, availability);
-        maxDelta = utild[0];
+        inflectionLow = pricingCalculator.getLowInflectionPoint();
+        inflectionHigh = pricingCalculator.getHighInflectionPoint();
+        slopeLow = pricingCalculator.getLowerSlope();
+        slopeMain = pricingCalculator.getMainSlope();
+        slopeHigh = pricingCalculator.getHighSlope();
+        maxDelta = pricingCalculator.getMaximumChange();
         structuralVacancy = Properties.get().realEstate.structuralVacancy;
     }
 

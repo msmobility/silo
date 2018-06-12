@@ -128,7 +128,7 @@ public class MovesDMU {
     }
 
     public void setRegionalNationality(Nationality nationality, float[] regionalNationalityShare){
-        if (nationality == Nationality.other){
+        if (nationality == Nationality.OTHER){
             this.regionalShareForeigners = regionalNationalityShare;
         }
     }

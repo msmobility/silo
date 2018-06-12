@@ -1,8 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
@@ -19,6 +22,9 @@ public class ValidateTripLengthDistribution {
 
     private final DataSetSynPop dataSetSynPop;
     private final SiloDataContainer dataContainer;
+    private TableDataSet cellsMatrix;
+    private TableDataSet municipalityODMatrix;
+    private TableDataSet countyODMatrix;
 
     public ValidateTripLengthDistribution(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -27,6 +33,7 @@ public class ValidateTripLengthDistribution {
 
     public void run(){
         logger.info("   Running module: read population");
+        initializeODmatrices();
         summarizeCommutersTripLength();
         summarizeStudentsTripLength();
     }
@@ -36,6 +43,8 @@ public class ValidateTripLengthDistribution {
         ArrayList<Person> workerArrayList = obtainWorkers();
         Frequency travelTimes = obtainFlows(workerArrayList);
         summarizeFlows(travelTimes, "microData/interimFiles/tripLengthDistributionWork.csv");
+        SiloUtil.writeTableDataSet(municipalityODMatrix, "microData/interimFiles/odMatrixMunicipalityFinal.csv");
+        SiloUtil.writeTableDataSet(countyODMatrix, "microData/interimFiles/odMatrixCountyFinal.csv");
     }
 
 
@@ -111,6 +120,24 @@ public class ValidateTripLengthDistribution {
             }
         }
         return workerArrayList;
+    }
+
+
+    private void initializeODmatrices(){
+        cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
+        municipalityODMatrix = new TableDataSet();
+        municipalityODMatrix.appendColumn(dataSetSynPop.getCityIDs(),"id");
+        for (int municipality : dataSetSynPop.getMunicipalities()){
+            SiloUtil.addIntegerColumnToTableDataSet(municipalityODMatrix, Integer.toString(municipality));
+        }
+        municipalityODMatrix.buildIndex(municipalityODMatrix.getColumnPosition("id"));
+        countyODMatrix = new TableDataSet();
+        countyODMatrix.appendColumn(dataSetSynPop.getCountyIDs(), "id");
+        for (int county : dataSetSynPop.getCounties()){
+            SiloUtil.addIntegerColumnToTableDataSet(countyODMatrix, Integer.toString(county));
+        }
+        countyODMatrix.buildIndex(countyODMatrix.getColumnPosition("id"));
     }
 
 }

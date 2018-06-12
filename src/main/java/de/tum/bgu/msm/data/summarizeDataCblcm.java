@@ -41,21 +41,21 @@ public class summarizeDataCblcm {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String popFileName = (directory + "/cblcm/" + Properties.get().cblcm.populationFile +
                 Properties.get().main.gregorianIterator + ".csv");
-        int[][] households = new int[dataContainer.getGeoData().getZones().size()][Properties.get().main.incomeBrackets.length + 1];
+        int[][] households = new int[dataContainer.getGeoData().getZones().size()][IncomeCategory.values().length];
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            int hhIncomeGroup = HouseholdDataManager.getIncomeCategoryForIncome(hh.getHhIncome());
+            IncomeCategory hhIncomeGroup = hh.getHouseholdType().getIncomeCategory();
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
                 zone = dwelling.getZone();
             }
-            households[dataContainer.getGeoData().getZoneIndex(zone)][hhIncomeGroup - 1]++;
+            households[dataContainer.getGeoData().getZoneIndex(zone)][hhIncomeGroup.ordinal()]++;
         }
 
         if (SiloUtil.checkIfFileExists(popFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
             TableDataSet pop = SiloUtil.readCSVfile(popFileName);
-            for (int income = 0; income <= Properties.get().main.incomeBrackets.length; income++) {
+            for (int income = 0; income < IncomeCategory.values().length; income++) {
                 int[] hh = new int[dataContainer.getGeoData().getZones().size()];
                 for (int i = 0; i < dataContainer.getGeoData().getZones().size(); i++) hh[i] = households[i][income];
                 String columnName;
@@ -81,7 +81,7 @@ public class summarizeDataCblcm {
 
             for (int zn: dataContainer.getGeoData().getZones().keySet()) {
                 pw.print(zn);
-                for (int i = 0; i <= Properties.get().main.incomeBrackets.length; i++) {
+                for (int i = 0; i < IncomeCategory.values().length; i++) {
                     pw.print("," + households[zn][i]);
                 }
                 pw.println();

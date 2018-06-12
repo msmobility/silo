@@ -315,53 +315,16 @@ public class HouseholdDataManager {
     }
 
 
-    public static HouseholdType defineHouseholdType (int hhSize, int hhIncome) {
-        // define household type based on size and income
-
-        HouseholdType ht = null;
-        if (hhSize == 1) {
-            if (hhIncome == 1) ht = HouseholdType.size1inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size1inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size1inc3;
-            else ht = HouseholdType.size1inc4;
-        } else if (hhSize == 2) {
-            if (hhIncome == 1) ht = HouseholdType.size2inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size2inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size2inc3;
-            else ht = HouseholdType.size2inc4;
-        } else if (hhSize == 3) {
-            if (hhIncome == 1) ht = HouseholdType.size3inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size3inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size3inc3;
-            else ht = HouseholdType.size3inc4;
-        } else if (hhSize > 3) {
-            if (hhIncome == 1) ht = HouseholdType.size4inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size4inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size4inc3;
-            else ht = HouseholdType.size4inc4;
-        }
-        return ht;
-    }
-
-
-    public static int getIncomeCategoryForIncome(int hhInc) {
+    public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
         // return income category defined exogenously
 
-        for (int category = 1; category <= Properties.get().main.incomeBrackets.length; category++) {
-            if (hhInc <= Properties.get().main.incomeBrackets[category - 1]) return category;
+        for (int i = 0; i < Properties.get().main.incomeBrackets.length; i++) {
+            if (hhInc < Properties.get().main.incomeBrackets[i]) return IncomeCategory.values()[i];
         }
-        return Properties.get().main.incomeBrackets.length + 1;  // if income is larger than highest category
+        // if income is larger than highest category
+        return IncomeCategory.values()[IncomeCategory.values().length-1];
     }
 
-
-    public static int getSpecifiedIncomeCategoryForIncome(int[] incCats, int hhInc) {
-        // return income category defined exogenously
-
-        for (int category = 1; category <= incCats.length; category++) {
-            if (hhInc <= incCats[category - 1]) return category;
-        }
-        return incCats.length + 1;  // if income is larger than highest category
-    }
 
     public static void findMarriedCouple(Household hh) {
         // define role of person with ageMain in household where members have ageAll[]
@@ -754,76 +717,6 @@ public class HouseholdDataManager {
 
     public static float getMedianIncome(int msa) {
         return medianIncome[msa];
-    }
-
-
-    public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
-        // summarize households in the vicinity of selected Metro stops
-
-        if (!Properties.get().householdData.summarizeMetro){
-            return;
-        }
-        TableDataSet selectedMetro = SiloUtil.readCSVfile(Properties.get().householdData.selectedMetroStopsFile);
-
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-        SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String fileName = (directory + "/" + Properties.get().householdData.householdsNearMetroFile + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
-        PrintWriter pw = openFileForSequentialWriting(fileName, false);
-        pw.print("income,dist");
-        for (int row = 1; row <= selectedMetro.getRowCount(); row++) pw.print("," +
-                selectedMetro.getStringValueAt(row, "MetroStation") + " (" + (int) selectedMetro.getValueAt(row, "Zone") + ")");
-        pw.println();
-
-        // summarize households by distance from Metro stop and income group
-        int[][][] hhCounter = new int[selectedMetro.getRowCount()][11][4];
-        HashMap<Integer, ArrayList> hhByDistToMetro = new HashMap<>();
-        for (Integer dist = 0; dist <= 20; dist++) {
-            hhByDistToMetro.put(dist, new ArrayList<Integer>());
-        }
-
-        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-        for (Household hh: households.values()) {
-            int incCat = getIncomeCategoryForIncome(hh.getHhIncome());
-            Integer smallestDist = 21;
-            for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
-                int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int zone = -1;
-                Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
-                if(dwelling != null) {
-                    zone = dwelling.getZone();
-                }
-                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(zone, metroZone), 0);
-                smallestDist = Math.min(smallestDist, dist);
-                if (dist > 10) continue;
-                hhCounter[row-1][dist][incCat-1]++;
-            }
-            if (smallestDist <= 20) {
-                ArrayList<Integer> al = hhByDistToMetro.get(smallestDist);
-                al.add(hh.getHhIncome());
-                hhByDistToMetro.put(smallestDist, al);
-            }
-        }
-
-        // write out summary by Metro Stop
-        for (int inc = 1; inc <= 4; inc++) {
-            for (int dist = 0; dist <= 10; dist++) {
-                pw.print(inc + "," + dist);
-                for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
-                    pw.print("," + hhCounter[row - 1][dist][inc - 1]);
-                }
-                pw.println();
-            }
-        }
-
-        // write out summary by distance bin
-        pw.println("distanceRing,householdCount,medianIncome");
-        for (int dist = 0; dist <= 20; dist++) {
-            int[] incomes = SiloUtil.convertIntegerArrayListToArray(hhByDistToMetro.get(dist));
-            pw.println(dist + "," + incomes.length + "," + SiloUtil.getMedian(incomes));
-        }
-
-        pw.close();
     }
 
 

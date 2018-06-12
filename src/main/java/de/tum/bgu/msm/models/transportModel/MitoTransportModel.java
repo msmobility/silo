@@ -29,7 +29,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     	super(dataContainer);
     	this.travelTimes = travelTimes;
 		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
-        this.mito = MitoModel.standAloneModel(propertiesPath, Implementation.valueOf(Properties.get().main.implementation.name()));
+        this.mito = MitoModel.standAloneModel(propertiesPath);
         this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         setBaseDirectory(baseDirectory);
 	}

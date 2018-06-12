@@ -25,6 +25,7 @@ public class Allocation extends ModuleSynPop{
         logger.info("   Started allocation model.");
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersonsDwellings();
+            generateVacantDwellings();
             generateJobs();
         } else {
             readPopulation();
@@ -45,6 +46,11 @@ public class Allocation extends ModuleSynPop{
             }
         }
         new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop).run();
+        if (PropertiesSynPop.get().main.boroughIPU){
+            for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
+                removeBoroughsAsCities(county);
+            }
+        }
         SummarizeData.writeOutSyntheticPopulationDE(1990, dataContainer);
     }
 
@@ -84,4 +90,15 @@ public class Allocation extends ModuleSynPop{
         dataSetSynPop.setMunicipalities(newCities);
     }
 
+    public void removeBoroughsAsCities(int county){
+        //Remove to the list of boroughs at the municipality, because they have weights for household generation but are not on the job allocation explicitly
+        //Only if the option of running IPU with three areas is true
+        ArrayList<Integer> newCities = dataSetSynPop.getMunicipalitiesByCounty().get(county);
+        newCities.removeAll(dataSetSynPop.getBoroughsByCounty().get(county));
+        dataSetSynPop.setMunicipalities(newCities);
+    }
+
+    private void generateVacantDwellings(){
+        new GenerateVacantDwellings(dataContainer, dataSetSynPop).run();
+    }
 }
