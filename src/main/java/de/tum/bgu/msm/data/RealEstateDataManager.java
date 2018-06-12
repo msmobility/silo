@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.BiFunction;
 
 /**
  * Keeps data of dwellings and non-residential floorspace
@@ -44,6 +43,7 @@ public class RealEstateDataManager {
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
+        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     public void saveDwellings (Dwelling[] dds) {

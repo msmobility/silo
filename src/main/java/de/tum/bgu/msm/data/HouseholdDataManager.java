@@ -16,12 +16,9 @@
  */
 package de.tum.bgu.msm.data;
 
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.models.demography.BirthModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -43,9 +40,7 @@ public class HouseholdDataManager {
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
 
-    private float[][] laborParticipationShares;
     private float[][][] initialIncomeDistribution;              // income by age, gender and occupation
-    public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
 
@@ -599,37 +594,7 @@ public class HouseholdDataManager {
 
 
     public void calculateInitialSettings () {
-        calculateInitialLaborParticipation();
         initialIncomeDistribution = calculateIncomeDistribution();
-    }
-
-
-    private void calculateInitialLaborParticipation() {
-        // calculate share of people employed by age and gender
-
-        laborParticipationShares = new float[2][100];
-        int[][] count = new int[2][100];
-        for (Person pp: persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gender = pp.getGender();
-            boolean employed = pp.getWorkplace() > 0;
-            if (employed) laborParticipationShares[gender-1][age]++;
-            count[gender-1][age]++;
-        }
-        // calculate shares
-        for (int gen = 0; gen <=1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
-            }
-
-            // smooth out shares
-            for (int age = 18; age < 98; age++) {
-                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
-                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
-                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
-            }
-        }
     }
 
 
@@ -692,80 +657,6 @@ public class HouseholdDataManager {
         final int sel = SiloUtil.select(prob);
         final int inc = Math.max((int) initialIncomeDistribution[gender][age][person.getOccupation()] + change[sel], 0);
         person.setIncome(inc);
-    }
-
-
-    public void setUpChangeOfJob(int year) {
-        // select people that will lose employment or start new job
-
-        if (!EventRules.ruleQuitJob() && !EventRules.ruleStartNewJob()) return;
-        LOGGER.info("  Planning job changes (hire and fire) for the year " + year);
-
-        // count currently employed people
-        final float[][] currentlyEmployed = new float[2][100];
-        final float[][] currentlyUnemployed = new float[2][100];
-        for (Person pp : persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gender = pp.getGender();
-            boolean employed = pp.getWorkplace() > 0;
-            if (employed) {
-                currentlyEmployed[gender - 1][age]++;
-            } else {
-                currentlyUnemployed[gender - 1][age]++;
-            }
-        }
-
-        // calculate change rates
-        float[][] changeRate = new float[2][100];
-        for (int gen = 0; gen <= 1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                float change = laborParticipationShares[gen][age] *
-                        (currentlyEmployed[gen][age] + currentlyUnemployed[gen][age]) - currentlyEmployed[gen][age];
-                if (change > 0) {
-                    // probability to find job
-                    changeRate[gen][age] = (change / (1f * currentlyUnemployed[gen][age]));
-                } else {
-                    // probability to lose job
-                    changeRate[gen][age] = (change / (1f * currentlyEmployed[gen][age]));
-                }
-            }
-        }
-
-        int[][] testCounter = new int[2][100];
-        // plan employment changes
-        ArrayList<Integer> alFindJob = new ArrayList<>();
-        ArrayList<Integer> alQuitJob = new ArrayList<>();
-        for (Person pp : persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gen = pp.getGender() - 1;
-            boolean employed = pp.getWorkplace() > 0;
-
-            // find job
-            if (changeRate[gen][age] > 0 && !employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < changeRate[gen][age]) {
-                    alFindJob.add(pp.getId());
-                    testCounter[gen][age]++;
-                }
-            }
-            // lose job
-            if (changeRate[gen][age] < 0 && employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < Math.abs(changeRate[gen][age])) {
-                    alQuitJob.add(pp.getId());
-                    testCounter[gen][age]--;
-                }
-            }
-        }
-
-        quitJobPersonIds = SiloUtil.convertIntegerArrayListToArray(alQuitJob);
-        startNewJobPersonIds = SiloUtil.convertIntegerArrayListToArray(alFindJob);
-
-    }
-
-
-    public static int[] getStartNewJobPersonIds() {
-        return startNewJobPersonIds;
     }
 
     public static int[] getQuitJobPersonIds() {

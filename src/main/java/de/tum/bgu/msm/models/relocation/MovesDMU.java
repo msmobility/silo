@@ -2,12 +2,11 @@ package de.tum.bgu.msm.models.relocation;
 
 //import java.util.HashMap;
 
+import com.pb.common.calculator.IndexValues;
+import de.tum.bgu.msm.data.HouseholdType;
 import de.tum.bgu.msm.data.Nationality;
 import de.tum.bgu.msm.data.Race;
 import org.apache.log4j.Logger;
-
-import com.pb.common.calculator.IndexValues;
-import de.tum.bgu.msm.data.HouseholdType;
 
 /**
  * @author Rolf Moeckel (PB Albuquerque)

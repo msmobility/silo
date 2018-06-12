@@ -6,7 +6,6 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.JobType;
-import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
@@ -31,10 +30,6 @@ public class UpdateJobs extends AbstractModel {
 
     public void updateJobInventoryMultiThreadedThisYear(int year) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
-
-        if (!EventRules.ruleStartNewJob() && !EventRules.ruleQuitJob()) {
-            return;
-        }
 
         LOGGER.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
         final int highestId = dataContainer.getGeoData().getZones().keySet()
