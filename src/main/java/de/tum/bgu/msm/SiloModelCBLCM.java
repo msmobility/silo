@@ -10,12 +10,12 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroSimulation;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
 import de.tum.bgu.msm.utils.SkimUtil;
+import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -36,7 +36,6 @@ public class SiloModelCBLCM {
 
 	private int currentYear;
 	private boolean trackTime;
-	private long[][] timeCounter;
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	public GeoData geoData;
@@ -68,7 +67,6 @@ public class SiloModelCBLCM {
 		modelContainer.getAcc().initialize();
 
 	        trackTime = Properties.get().main.trackTime;
-	        timeCounter = new long[EventType.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
 
@@ -90,25 +88,16 @@ public class SiloModelCBLCM {
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-	        EventManager em = new EventManager(timeCounter);
+	        MicroSimulation em = new MicroSimulation(new TimeTracker());
             final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 			long startTime = 0;
 
-	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (trackTime) timeCounter[EventType.values().length][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (trackTime) timeCounter[EventType.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
-
-	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) {
 	            modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(currentYear);
 	            dataContainer.getJobData().identifyVacantJobs();
 	        }
-	        if (trackTime) timeCounter[EventType.values().length + 2][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (trackTime) startTime = System.currentTimeMillis();
-	        if (trackTime) timeCounter[EventType.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (skimYears.contains(currentYear)) {
 	            if (currentYear != Properties.get().main.startYear && !tdmYears.contains(currentYear)) {
@@ -122,25 +111,20 @@ public class SiloModelCBLCM {
 	            }
 	        }
 
-	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getDdOverwrite().addDwellings(currentYear);
-	        if (trackTime) timeCounter[EventType.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getMove().calculateRegionalUtilities();
 	        modelContainer.getMove().calculateAverageHousingSatisfaction();
-	        if (trackTime) timeCounter[EventType.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
-	        if (trackTime) timeCounter[EventType.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear == Properties.get().main.implementation.BASE_YEAR || currentYear != Properties.get().main.startYear)
 	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
-	        if (trackTime) timeCounter[EventType.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
-		    em.simulateEvents((int) year);
+		    em.simulate((int) year);
 
 	        int nextYearForTransportModel = currentYear + 1;
 	        if (tdmYears.contains(nextYearForTransportModel)) {
@@ -150,7 +134,6 @@ public class SiloModelCBLCM {
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getPrm().updatedRealEstatePrices();
-	        if (trackTime) timeCounter[EventType.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
 
 	        em.finishYear((int) year, new int[] {0,0}, dataContainer);
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
@@ -199,7 +182,7 @@ public class SiloModelCBLCM {
 				}
 	        }
 	        
-	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
+//	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
 	        logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
 }

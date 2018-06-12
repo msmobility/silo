@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthDayEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -32,7 +31,7 @@ public class BirthdayModel extends AbstractModel implements MicroEventModel<Birt
     }
 
     @Override
-    public EventResult handleEvent(BirthDayEvent event) {
+    public boolean handleEvent(BirthDayEvent event) {
         return checkBirthday(event);
     }
 
@@ -41,14 +40,14 @@ public class BirthdayModel extends AbstractModel implements MicroEventModel<Birt
 
     }
 
-    private BirthdayResult checkBirthday(BirthDayEvent event) {
+    private boolean checkBirthday(BirthDayEvent event) {
         // increase age of this person by one year
         Person per = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
         if (per == null) {
-            return null;  // Person has died or moved away
+            return false;  // Person has died or moved away
         }
         celebrateBirthday(per);
-        return new BirthdayResult(event.getPersonId());
+        return true;
     }
 
     void celebrateBirthday(Person per) {
@@ -56,21 +55,6 @@ public class BirthdayModel extends AbstractModel implements MicroEventModel<Birt
         if (per.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
                     per.getId() + ". New age is " + per.getAge() + ".");
-        }
-    }
-
-    public static class BirthdayResult implements EventResult {
-
-        @JsonProperty("person")
-        public final int personId;
-
-        private BirthdayResult(int personId) {
-            this.personId = personId;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.BIRTHDAY;
         }
     }
 }

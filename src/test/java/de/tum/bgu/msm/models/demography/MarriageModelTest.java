@@ -9,11 +9,13 @@ import de.tum.bgu.msm.properties.Properties;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.PrimitiveIterator;
+import java.util.Random;
 
 public class MarriageModelTest {
 
-    private static MarriageModel model;
+    private static DefaultMarriageModel model;
     private static int[] couple1;
     private static int[] couple2;
     private static int[] couple3;
@@ -29,7 +31,7 @@ public class MarriageModelTest {
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
-        model = modelContainer.getMarriage();
+        model = (DefaultMarriageModel) modelContainer.getMarriage();
 
         couple1 = new int[]{1,2};
         Household household1 = dataContainer.getHouseholdData().createHousehold(1,  1, 0);

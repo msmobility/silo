@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 
@@ -24,14 +23,14 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
     }
 
     @Override
-    public EventResult handleEvent(EducationEvent event) {
+    public boolean handleEvent(EducationEvent event) {
         Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
         if (pp != null) {
             if (pp.getAge() == 19) {
                 return updateEducation(pp);
             }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -47,7 +46,7 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
     }
 
     // todo: Implement logical rules how students change from one school type to another or graduate from school/university
-    EducationUpdateResult updateEducation(Person person) {
+    boolean updateEducation(Person person) {
         int schoolId = 0;
         person.setSchoolPlace(schoolId);
         // todo if 2 is the right code for someone who graduates from high school
@@ -57,25 +56,6 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school. New school place (0 = left school) " + schoolId);
         }
-        return new EducationUpdateResult(person.getId(), person.getEducationLevel());
-    }
-
-    public static class EducationUpdateResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int personId;
-
-        @JsonProperty("ed-lvl")
-        public final int educationLevel;
-
-        public EducationUpdateResult(int personId, int educationLevel) {
-            this.personId = personId;
-            this.educationLevel = educationLevel;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.EDUCATION_UPDATE;
-        }
+        return true;
     }
 }

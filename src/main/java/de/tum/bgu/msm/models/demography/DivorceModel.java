@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -8,8 +7,6 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
@@ -61,7 +58,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     }
 
     @Override
-    public EventResult handleEvent(DivorceEvent event) {
+    public boolean handleEvent(DivorceEvent event) {
         return chooseDivorce(event.getPersonId());    }
 
     @Override
@@ -69,7 +66,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
     }
 
-    private DivorceResult chooseDivorce(int perId) {
+    private boolean chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -86,7 +83,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                                         " because no appropriate vacant dwelling was found.");
                     }
                     IssueCounter.countLackOfDwellingFailedDivorce();
-                    return null;
+                    return false;
                 }
 
                 // divorce
@@ -113,36 +110,9 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 if (Properties.get().main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }
-                return new DivorceResult(perId, divorcedPerson.getId(), newHhId, oldHh.getId(), newDwellingId);
+                return true;
             }
         }
-        return null;
-    }
-
-    public static class DivorceResult implements EventResult {
-
-        @JsonProperty("id1")
-        public final int id1;
-        @JsonProperty("id2")
-        public final int id2;
-        @JsonProperty("hh1")
-        public final int oldHH;
-        @JsonProperty("hh2")
-        public final int newHH;
-        @JsonProperty("dd1")
-        public final int dd;
-
-        public DivorceResult(int id1, int id2, int oldHH, int newHH, int dd) {
-            this.id1 = id1;
-            this.id2 = id2;
-            this.oldHH = oldHH;
-            this.newHH = newHH;
-            this.dd = dd;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DIVORCE;
-        }
+        return false;
     }
 }

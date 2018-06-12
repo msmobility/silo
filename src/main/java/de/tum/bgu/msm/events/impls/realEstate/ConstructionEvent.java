@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.events.impls.realEstate;
 
-import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.MicroEvent;
 
-public class ConstructionEvent implements Event {
+public class ConstructionEvent implements MicroEvent {
     private final int id;
 
     public ConstructionEvent(int id) {

@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.relocation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.demography.DriversLicense;
@@ -61,7 +61,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         }
     }
 
-    private EventResult inmigrateHh(int hhId) {
+    private boolean inmigrateHh(int hhId) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
         int[] imData = inmigratingHhData.get(hhId);
@@ -112,20 +112,20 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                     SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
                 }
             }
-            return new InmigrationResult(hh, newDdId);
+            return true;
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);
-            return null;
+            return false;
         }
     }
 
 
-    public OutmigrationResult outMigrateHh(int hhId, boolean overwriteEventRules) {
+    public boolean outMigrateHh(int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
         if (Properties.get().eventRules.outMigration && !overwriteEventRules || hh == null) {
-            return null;
+            return false;
         }
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) {
@@ -141,19 +141,20 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             }
         }
         dataContainer.getHouseholdData().removeHousehold(hhId);
-        return new OutmigrationResult(hh);
+        return true;
     }
 
     @Override
-    public EventResult handleEvent(MigrationEvent event) {
+    public boolean handleEvent(MigrationEvent event) {
         MigrationEvent.Type type = event.getType();
         switch (type) {
             case IN:
                 return inmigrateHh(event.getHouseholdId());
             case OUT:
                 return outMigrateHh(event.getHouseholdId(), true);
+            default:
+                return false;
         }
-        return null;
     }
 
     @Override
@@ -234,41 +235,5 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         inMigrationPPCounter = 0;
 
         return events;
-    }
-
-    private static class InmigrationResult implements EventResult {
-
-        @JsonProperty("hh")
-        public final int hhId;
-        @JsonProperty("pps")
-        public final int[] ppIds;
-        @JsonProperty("dd")
-        public final int dwellingId;
-
-        private InmigrationResult(Household household, int dwellingId) {
-            this.hhId = household.getId();
-            this.ppIds = household.getPersons().stream().mapToInt(Person::getId).toArray();
-            this.dwellingId = dwellingId;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.INMIGRATION;
-        }
-    }
-
-    private static class OutmigrationResult implements EventResult {
-
-        @JsonProperty("hh")
-        public final int hhId;
-
-        private OutmigrationResult(Household household) {
-            this.hhId = household.getId();
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.OUT_MIGRATION;
-        }
     }
 }

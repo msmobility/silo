@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -24,11 +23,10 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -75,7 +73,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     @Override
-    public EventResult handleEvent(BirthEvent event) {
+    public boolean handleEvent(BirthEvent event) {
         return chooseBirth(event.getPersonId());
     }
 
@@ -83,7 +81,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     public void finishYear(int year) {
     }
 
-    private BirthResult chooseBirth(int perId) {
+    private boolean chooseBirth(int perId) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(perId);
         if (person != null && personCanGiveBirth(person)) {
@@ -95,11 +93,11 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
                 birthProb *= Properties.get().demographics.singleScaler;
             }
             if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
-                Person child = giveBirth(person);
-                return new BirthResult(perId, child.getId(), child.getGender());
+                giveBirth(person);
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     Person giveBirth(Person person) {
@@ -131,28 +129,5 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
     private boolean personCanGiveBirth(Person person) {
         return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
-    }
-
-    public static class BirthResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int personId;
-
-        @JsonProperty("child")
-        public final int childId;
-
-        @JsonProperty("sex")
-        public final int gender;
-
-        private BirthResult(int personId, int childId, int gender) {
-            this.personId = personId;
-            this.childId = childId;
-            this.gender = gender;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.BIRTH;
-        }
     }
 }

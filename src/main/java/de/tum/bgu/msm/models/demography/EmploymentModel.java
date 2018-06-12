@@ -1,14 +1,11 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
@@ -38,7 +35,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         calculateInitialLaborParticipation();
     }
 
-    public NewJobResult lookForJob(int perId) {
+    public boolean lookForJob(int perId) {
         final Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp != null) {
             final Job jj = findJob(pp);
@@ -48,7 +45,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
                 IssueCounter.countMissingJob();
             }
         }
-        return null;
+        return false;
     }
 
     private Job findJob(Person pp) {
@@ -62,7 +59,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         return dataContainer.getJobData().getJobFromId(idVacantJob);
     }
 
-    NewJobResult takeNewJob(Person person, Job job) {
+    boolean takeNewJob(Person person, Job job) {
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
         person.setOccupation(1);
@@ -71,32 +68,32 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
         }
-        return new NewJobResult(person.getId(), job.getId());
+        return true;
     }
 
-    public QuitJobResult quitJob(int perId) {
+    public boolean quitJob(int perId) {
         final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (person != null) {
-            int jj = person.getWorkplace();
             dataContainer.getJobData().quitJob(true, person);
             dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
             }
-            return new QuitJobResult(perId, jj);
+            return true;
         }
-        return null;
+        return false;
     }
 
     @Override
-    public EventResult handleEvent(EmploymentEvent event) {
+    public boolean handleEvent(EmploymentEvent event) {
         switch(event.getType()) {
             case FIND:
                 return lookForJob(event.getPersonId());
             case QUIT:
                 return quitJob(event.getPersonId());
+            default:
+                throw new RuntimeException("Unknown employment event type: " + event.getType());
         }
-        return null;
     }
 
     @Override
@@ -194,42 +191,6 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
                         laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
                         laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
             }
-        }
-    }
-
-    public static class NewJobResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-        @JsonProperty("jj")
-        public final int jj;
-
-        public NewJobResult(int id, int jj) {
-            this.id = id;
-            this.jj = jj;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.FIND_NEW_JOB;
-        }
-    }
-
-    public static class QuitJobResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-        @JsonProperty("jj")
-        public final int jj;
-
-        public QuitJobResult(int id, int jj) {
-            this.id = id;
-            this.jj = jj;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.QUIT_JOB;
         }
     }
 }

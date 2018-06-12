@@ -23,7 +23,7 @@ import java.util.Comparator;
  * Created on Dec 2, 2009
  *
  */
-public final class Person {
+public final class Person implements Id {
 
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated

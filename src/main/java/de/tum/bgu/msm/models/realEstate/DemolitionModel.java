@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
@@ -58,21 +58,21 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
     }
 
     @Override
-    public EventResult handleEvent(DemolitionEvent event) {
+    public boolean handleEvent(DemolitionEvent event) {
         Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getDwellingId());
         if (dd != null) {
             if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDemolitionProbability(dd, currentYear)) {
                 return demolishDwelling(dd);
             }
         }
-        return null;
+        return false;
     }
 
     @Override
     public void finishYear(int year) {
     }
 
-    private DemolitionResult demolishDwelling(Dwelling dd) {
+    private boolean demolishDwelling(Dwelling dd) {
         int dwellingId = dd.getId();
         int hhId = dd.getResidentId();
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
@@ -86,7 +86,7 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
             SiloUtil.trackWriter.println("Dwelling " +
                     dwellingId + " was demolished.");
         }
-        return new DemolitionResult(dwellingId, hhId);
+        return true;
     }
 
     private void moveOutHousehold(int dwellingId, Household hh) {
@@ -97,24 +97,6 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
             inOutMigration.outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateData().removeDwellingFromVacancyList(dwellingId);
             IssueCounter.countLackOfDwellingForcedOutmigration();
-        }
-    }
-
-    public static class DemolitionResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-        @JsonProperty("hhid")
-        public final int hhId;
-
-        public DemolitionResult(int id, int hhId) {
-            this.id = id;
-            this.hhId = hhId;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DWELLING_DEMOLITION;
         }
     }
 }

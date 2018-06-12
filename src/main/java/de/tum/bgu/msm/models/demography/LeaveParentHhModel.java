@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -24,8 +23,6 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
@@ -81,7 +78,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     @Override
-    public EventResult handleEvent(LeaveParentsEvent event) {
+    public boolean handleEvent(LeaveParentsEvent event) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person per = householdData.getPersonFromId(event.getPersonId());
         if (per != null && qualifiesForParentalHHLeave(per)) {
@@ -90,7 +87,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
                 return leaveHousehold(per);
             }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -98,7 +95,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     }
 
-    LeaveParentsResult leaveHousehold(Person per) {
+    boolean leaveHousehold(Person per) {
         // search if dwelling is available
         final int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
         if (newDwellingId < 0) {
@@ -108,7 +105,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
                                 " because no appropriate vacant dwelling was found.");
             }
             IssueCounter.countLackOfDwellingFailedLeavingChild();
-            return null;
+            return false;
         }
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
@@ -132,34 +129,10 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
                     " has left the parental newHousehold " + hhOfThisPerson.getId() +
                     " and established the new newHousehold " + newHhId + ".");
         }
-        return new LeaveParentsResult(per.getId(), hhOfThisPerson.getId(), newHhId, newDwellingId);
+        return true;
     }
 
     private boolean qualifiesForParentalHHLeave(Person person) {
         return (person.getHh().getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
-    }
-
-    public static class LeaveParentsResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-        @JsonProperty("hhOld")
-        public final int hhOld;
-        @JsonProperty("hhNew")
-        public final int hhNew;
-        @JsonProperty("ddId")
-        public final int ddId;
-
-        public LeaveParentsResult(int id, int hhOld, int hhNew, int ddId) {
-            this.id = id;
-            this.hhOld = hhOld;
-            this.hhNew = hhNew;
-            this.ddId = ddId;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.LEAVE_PARENTAL_HOUSEHOLD;
-        }
     }
 }

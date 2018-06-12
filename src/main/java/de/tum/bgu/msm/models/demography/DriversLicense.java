@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.LicenseEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 
@@ -44,7 +43,7 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
     }
 
     @Override
-    public EventResult handleEvent(LicenseEvent event) {
+    public boolean handleEvent(LicenseEvent event) {
         Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
         if (pp != null && pp.hasDriverLicense() && pp.getAge() < 18) {
             final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
@@ -52,7 +51,7 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
                 return createLicense(pp);
             }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -70,27 +69,12 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
         }
     }
 
-    LicenseResult createLicense(Person person) {
+    boolean createLicense(Person person) {
         person.setDriverLicense(true);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " obtained a drivers license.");
         }
-        return new LicenseResult(person.getId());
-    }
-
-    public static class LicenseResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-
-        public LicenseResult(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DRIVERS_LICENSE_UPDATE;
-        }
+        return true;
     }
 }

@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.events.impls;
 
-import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.MicroEvent;
 
-public class MarriageEvent implements Event{
+public class MarriageEvent implements MicroEvent {
 
     private final int firstId;
     private final int secondId;

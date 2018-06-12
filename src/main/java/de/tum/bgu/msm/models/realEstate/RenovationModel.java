@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -56,7 +55,7 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
     }
 
     @Override
-    public EventResult handleEvent(RenovationEvent event) {
+    public boolean handleEvent(RenovationEvent event) {
 
         //check if dwelling is renovated or deteriorates
         Dwelling dd = dataContainer.getRealEstateData().getDwelling(event.getDwellingId());
@@ -89,9 +88,9 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
                     break;
                 }
             }
-            return new RenovationResult(event.getDwellingId(), dd.getQuality());
+            return true;
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -121,23 +120,6 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
             } else probs[i] = renovationProbability[currentQual - 1][i] * ratio;
         }
         return probs;
-    }
-
-    public static class RenovationResult implements EventResult {
-        @JsonProperty("id")
-        public final int dd;
-        @JsonProperty("qual")
-        public final int quality;
-
-        public RenovationResult(int dd, int quality) {
-            this.dd = dd;
-            this.quality = quality;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DWELLING_RENOVATION;
-        }
     }
 }
 

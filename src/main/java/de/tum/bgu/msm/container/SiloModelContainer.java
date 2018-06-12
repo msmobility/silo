@@ -181,7 +181,8 @@ public class SiloModelContainer {
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
         InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense);
         DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
-        MarriageModel marriage = new MarriageModel(dataContainer, move, iomig, createCarOwnershipModel);
+        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel);
+//        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);
         DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,

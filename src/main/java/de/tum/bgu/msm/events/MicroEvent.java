@@ -1,5 +1,5 @@
 package de.tum.bgu.msm.events;
 
-public interface Event {
+public interface MicroEvent {
 
 }

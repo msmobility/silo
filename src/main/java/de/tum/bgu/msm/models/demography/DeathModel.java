@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -8,7 +7,7 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -44,7 +43,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     }
 
     @Override
-    public EventResult handleEvent(DeathEvent event) {
+    public boolean handleEvent(DeathEvent event) {
 
         // simulate if person with ID perId dies in this simulation period
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
@@ -55,7 +54,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
                 return die(person);
             }
         }
-        return null;
+        return false;
     }
 
     @Override
@@ -71,7 +70,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         return events;
     }
 
-    DeathResult die(Person person) {
+    boolean die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         if (person.getWorkplace() > 0) {
@@ -103,21 +102,6 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
                     " has passed away.");
         }
 
-        return new DeathResult(person.getId());
-    }
-
-    public static class DeathResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-
-        public DeathResult(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DEATH;
-        }
+        return true;
     }
 }

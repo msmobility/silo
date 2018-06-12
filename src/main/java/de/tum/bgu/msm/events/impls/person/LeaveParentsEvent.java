@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.events.impls.person;
 
-import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.MicroEvent;
 
-public class LeaveParentsEvent implements Event {
+public class LeaveParentsEvent implements MicroEvent {
     private final int id;
 
     public LeaveParentsEvent(int id) {

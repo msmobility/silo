@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.events.impls.person;
 
-import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.MicroEvent;
 
-public class EmploymentEvent implements Event {
+public class EmploymentEvent implements MicroEvent {
 
     public enum Type {FIND, QUIT};
 

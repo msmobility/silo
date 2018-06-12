@@ -9,11 +9,11 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
+import de.tum.bgu.msm.utils.TimeTracker;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
@@ -970,109 +970,82 @@ public class SiloUtil {
     }
 
 
-static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties properties) {
-	// run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
-	trackingFile("close");
-	SummarizeData.resultFile("close");
-	SummarizeData.resultFileSpatial("close");
-	float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
-	int hours = (int) (endTime / 60);
-	int min = (int) (endTime - 60 * hours);
-	logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-	if (Properties.get().main.trackTime) {
-		String fileName = Properties.get().main.trackTimeFile;
-		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
-			out.println("Runtime: " + hours + " hours and " + min + " minutes.");
-			out.close();
-		} catch (IOException e) {
-			logger.warn("Could not add run-time statement to time-tracking file.");
-		}
-	}
-}
-
-
-static boolean modelStopper (String action) {
-	// provide option for a clean model stop after every simulation period is completed
-	String fileName = Properties.get().main.baseDirectory + "status.csv";
-	if (action.equalsIgnoreCase("initialize")) {
-		PrintWriter pw = openFileForSequentialWriting(fileName, false);
-		pw.println("Status");
-		pw.println("continue");
-		pw.close();
-	} else if (action.equalsIgnoreCase("removeFile")) {
-		deleteFile (fileName);
-	} else {
-		TableDataSet status = readCSVfile(fileName);
-		if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) {
-		    return true;
+    static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties properties) {
+        // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
+        trackingFile("close");
+        SummarizeData.resultFile("close");
+        SummarizeData.resultFileSpatial("close");
+        float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
+        int hours = (int) (endTime / 60);
+        int min = (int) (endTime - 60 * hours);
+        logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
+        if (Properties.get().main.trackTime) {
+            String fileName = Properties.get().main.trackTimeFile;
+            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
+                out.println("Runtime: " + hours + " hours and " + min + " minutes.");
+                out.close();
+            } catch (IOException e) {
+                logger.warn("Could not add run-time statement to time-tracking file.");
+            }
         }
-	}
-	return false;
-}
-
-
-static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
-	// "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
-
-
-	// aggregate micro data
-
-	if (trackHh != -1 || trackPp != -1 || trackDd != -1)
-		trackWriter.println("Started simulation for year " + year);
-	logger.info("  Summarizing micro data for year " + year);
-
-	SummarizeData.resultFile("Year " + year, false);
-	dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
-	dataContainer.getRealEstateData().summarizeDwellings();
-	dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
-
-	SummarizeData.resultFileSpatial("Year " + year, false);
-	SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
-	if (Properties.get().cblcm.createCblcmFiles) {
-        summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
     }
-	if (Properties.get().main.createHousingEnvironmentImpactFile) {
-        SummarizeData.summarizeHousing(year, dataContainer);
+
+
+    static boolean modelStopper (String action) {
+        // provide option for a clean model stop after every simulation period is completed
+        String fileName = Properties.get().main.baseDirectory + "status.csv";
+        if (action.equalsIgnoreCase("initialize")) {
+            PrintWriter pw = openFileForSequentialWriting(fileName, false);
+            pw.println("Status");
+            pw.println("continue");
+            pw.close();
+        } else if (action.equalsIgnoreCase("removeFile")) {
+            deleteFile (fileName);
+        } else {
+            TableDataSet status = readCSVfile(fileName);
+            if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) {
+                return true;
+            }
+        }
+        return false;
     }
-	if (Properties.get().main.createPrestoSummary) {
-		SummarizeData.summarizePrestoRegion(year, dataContainer);
-	}
-}
 
 
-static void writeOutTimeTracker (long[][] timeCounter) {
-	// write file summarizing run times
+    static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+        // "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
-	int startYear = Properties.get().main.startYear;
-	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
-	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
-		pw.print("Year");
-		for (EventType et : EventType.values()) pw.print("," + et.toString());
-		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
-				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
-				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
-		pw.println();
-	}
-	for (int year = startYear; year < Properties.get().main.endYear; year ++) {
-		pw.print(year);
-		for (EventType et: EventType.values()) {
-			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
-			pw.print("," + timeInMinutes);
-		}
-		pw.print("," + timeCounter[EventType.values().length][year] / 60000f);       // setup inmigration/outmigration
-		pw.print("," + timeCounter[EventType.values().length + 1][year] / 60000f);   // setup construction of new dwellings
-		pw.print("," + timeCounter[EventType.values().length + 2][year] / 60000f);   // update job inventory
-		pw.print("," + timeCounter[EventType.values().length + 3][year] / 60000f);   // setup job change model
-		pw.print("," + timeCounter[EventType.values().length + 4][year] / 60000f);   // setup list of events
-		pw.print("," + timeCounter[EventType.values().length + 5][year] / 60000f);   // fill marriage market
-		pw.print("," + timeCounter[EventType.values().length + 6][year] / 60000f);   // calculate average housing satisfaction
-		pw.print("," + timeCounter[EventType.values().length + 7][year] / 60000f);   // summarize data
-		pw.print("," + timeCounter[EventType.values().length + 8][year] / 60000f);   // update real estate prices
-		pw.print("," + timeCounter[EventType.values().length + 9][year] / 60000f);   // plan income change
-		pw.print("," + timeCounter[EventType.values().length + 10][year] / 60000f);  // add dwellings from overwrite
-        pw.print("," + timeCounter[EventType.values().length + 11][year] / 60000f);  // add or relinquish cars
-		pw.println();
-	}
-	pw.close();
-}
+
+        // aggregate micro data
+
+        if (trackHh != -1 || trackPp != -1 || trackDd != -1)
+            trackWriter.println("Started simulation for year " + year);
+        logger.info("  Summarizing micro data for year " + year);
+
+        SummarizeData.resultFile("Year " + year, false);
+        dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
+        dataContainer.getRealEstateData().summarizeDwellings();
+        dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
+
+        SummarizeData.resultFileSpatial("Year " + year, false);
+        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+        if (Properties.get().cblcm.createCblcmFiles) {
+            summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
+        }
+        if (Properties.get().main.createHousingEnvironmentImpactFile) {
+            SummarizeData.summarizeHousing(year, dataContainer);
+        }
+        if (Properties.get().main.createPrestoSummary) {
+            SummarizeData.summarizePrestoRegion(year, dataContainer);
+        }
+    }
+
+
+    static void writeOutTimeTracker (TimeTracker timeTracker) {
+        // write file summarizing run times
+
+        int startYear = Properties.get().main.startYear;
+        PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile + "lol", startYear != Properties.get().main.implementation.BASE_YEAR);
+        pw.write(timeTracker.toString());
+        pw.close();
+    }
 }

@@ -1,75 +1,77 @@
 package de.tum.bgu.msm.events;
 
-import cern.colt.Timer;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Generates a series of events in random order
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 8 December 2009 in Santa Fe
  **/
-public class EventManager {
+public final class MicroSimulation {
 
-    private final static Logger LOGGER = Logger.getLogger(EventManager.class);
+    private final static Logger LOGGER = Logger.getLogger(MicroSimulation.class);
 
-    private final long[][] timeCounter;
-    private final Multiset<Class<? extends Event>> eventCounter = HashMultiset.create();
+    private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 
-    private final Map<Class<? extends Event>, MicroEventModel> models = new HashMap<>();
+    private final Map<Class<? extends MicroEvent>, MicroEventModel> models = new LinkedHashMap<>();
 
-    private final List<Event> events = new ArrayList<>();
-    private final Timer timer = new Timer().start();
-    private final List<EventResult> results = new ArrayList<>();
+    private final List<MicroEvent> events = new ArrayList<>();
+    private final TimeTracker timeTracker;
+    private final Multiset<Class<? extends MicroEvent>> eventTimeRecorder = HashMultiset.create();
 
-    public EventManager(long[][] timeCounter) {
-        this.timeCounter = timeCounter;
+
+    public MicroSimulation(TimeTracker timeTracker) {
+        this.timeTracker = timeTracker;
     }
 
-    public <T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model) {
+    public <T extends MicroEvent> void registerModel(Class<T> klass, MicroEventModel<T> model) {
         this.models.put(klass, model);
+        LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
 
-    public void simulateEvents(int year) {
+    public void simulate(int year) {
         createEvents(year);
         processEvents();
     }
 
     private void createEvents(int year) {
-        LOGGER.info("  Simulating events");
-
-        for(@SuppressWarnings("unchecked") MicroEventModel<? extends Event> model: models.values()) {
+        LOGGER.info("  Creating events");
+        timeTracker.reset();
+        for(@SuppressWarnings("unchecked") MicroEventModel<? extends MicroEvent> model: models.values()) {
             events.addAll(model.prepareYear(year));
         }
         LOGGER.info("  Created " + events.size() + " events to simulate.");
         LOGGER.info("  Shuffling events...");
-        Collections.shuffle(events);
+        Collections.shuffle(events, SiloUtil.getRandomObject());
+        timeTracker.record("EventCreation");
         eventCounter.clear();
     }
 
     private void processEvents() {
         LOGGER.info("  Processing events...");
-        for (Event event : events) {
-            timer.reset();
-            Class<? extends Event> klass= event.getClass();
-
+        for (Iterator<MicroEvent> it = events.iterator(); it.hasNext();) {
+            timeTracker.reset();
+            MicroEvent event = it.next();
+            Class<? extends MicroEvent> klass= event.getClass();
             //unchecked is justified here, as
-            //<T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model)
+            //<T extends Event> void registerModel(Class<T> klass, MicroEventModel<T> model)
             // checks for the right type of model handlers
             @SuppressWarnings("unchecked")
-            final EventResult result = this.models.get(klass).handleEvent(event);
-            if(result!= null) {
+            boolean success = this.models.get(klass).handleEvent(event);
+            if(success) {
                 eventCounter.add(event.getClass());
-                results.add(result);
+            } else {
+                it.remove();
             }
-//            timeCounter[event.getType().ordinal()][event.getYear()] += timer.millis();
+            timeTracker.record(klass.getSimpleName());
         }
     }
 
@@ -77,14 +79,12 @@ public class EventManager {
         for(MicroEventModel model: models.values()) {
             model.finishYear(year);
         }
-        LOGGER.info("Writing out events...");
-        EventWriter.writeEvents(results, year);
         SummarizeData.resultFile("Count of simulated events");
-        LOGGER.info("Simulated " + results.size() + " events in total.");
-        for(Class<? extends Event> event: eventCounter.elementSet()) {
+        LOGGER.info("Simulated " + events.size() + " events in total.");
+        for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
-            SummarizeData.resultFile(event.getName() + "," + count);
-            LOGGER.info("Simulated " + event.getName() + ": " + count);
+            SummarizeData.resultFile(event.getSimpleName() + "," + count);
+            LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
         }
         float hh = dataContainer.getHouseholdData().getHouseholds().size();
         LOGGER.info("  Simulated household added a car" + carChangeCounter[0] + " (" +
@@ -95,6 +95,5 @@ public class EventManager {
         SummarizeData.resultFile("RelinquishedCar," + carChangeCounter[1]);
 
         events.clear();
-        results.clear();
     }
 }

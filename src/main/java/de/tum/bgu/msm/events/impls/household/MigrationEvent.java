@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.events.impls.household;
 
-import de.tum.bgu.msm.events.Event;
+import de.tum.bgu.msm.events.MicroEvent;
 
-public class MigrationEvent implements Event {
+public class MigrationEvent implements MicroEvent {
 
     public enum Type {IN, OUT}
 

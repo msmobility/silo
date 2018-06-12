@@ -1,13 +1,10 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.EventResult;
-import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -184,7 +181,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     @Override
-    public EventResult handleEvent(ConstructionEvent event) {
+    public boolean handleEvent(ConstructionEvent event) {
 
         // realize dwelling project id
         Integer[] attributes = plannedDwellings.get(event.getDwellingId());
@@ -208,10 +205,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
             SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
             SiloUtil.trackWriter.println(dd.toString());
         }
-        return new ConstructionResult(ddId);
+        return true;
     }
-
-
 
     @Override
     public void finishYear(int year) {
@@ -339,20 +334,5 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
             sortedDwellingTypes[prices.length - i - 1] = DwellingType.values()[sortedPrices[i]];
         }
         return sortedDwellingTypes;
-    }
-
-    public static class ConstructionResult implements EventResult {
-
-        @JsonProperty("id")
-        public final int id;
-
-        public ConstructionResult(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public EventType getType() {
-            return EventType.DWELLING_CONSTRUCTION;
-        }
     }
 }
