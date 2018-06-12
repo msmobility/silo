@@ -2,11 +2,22 @@ package de.tum.bgu.msm.data.munich;
 
 import de.tum.bgu.msm.data.ZoneImpl;
 import org.matsim.api.core.v01.Coord;
+import org.opengis.feature.simple.SimpleFeature;
 
 public class MunichZone extends ZoneImpl {
 
     private final Coord coord;
     private double ptDistance;
+
+    //Qin
+    private SimpleFeature zoneFeature;
+    public SimpleFeature getZoneFeature() {
+        return zoneFeature;
+    }
+    public void setZoneFeature(SimpleFeature zoneFeature) {
+        this.zoneFeature = zoneFeature;
+    }
+    //Qin
 
     public MunichZone(int id, int msa, float area, Coord coord, double initialPTDistance) {
         super(id, msa, area);

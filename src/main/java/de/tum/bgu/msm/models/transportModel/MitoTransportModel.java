@@ -11,6 +11,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
+
+import javax.measure.unit.SI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,10 +78,16 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
 			if(dwelling != null) {
 				zoneId = dwelling.getZone();
+
 			}
 			MitoZone zone = zones.get(zoneId);
+
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
+			//Qin
+			household.setHomeCoord(dwelling.getCoord());
+			//Qin
 			thhs.put(household.getId(), household);
+
 		}
 		return thhs;
 	}

@@ -61,6 +61,15 @@ public class MainPropertiesSynPop {
     public final TableDataSet selectedBoroughs;
     public final GammaDistributionImpl incomeGammaDistribution;
 
+    //Qin
+    public final boolean runDwellingMicrolocation;
+    public final boolean runJobMicrolocation;
+    public final boolean runSchoolMicrolocation;
+    public final TableDataSet buildingLocationlist;
+    public final TableDataSet jobLocationlist;
+    public final TableDataSet schoolLocationlist;
+    //Qin
+
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
         runSyntheticPopulation = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
@@ -145,6 +154,16 @@ public class MainPropertiesSynPop {
             ageBracketsBorough = null;
             cellsMatrixBoroughs = null;
         }
+
+
+        //Qin
+        runDwellingMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
+        runJobMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.job.microlocation", false);
+        runSchoolMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.school.microlocation", false);
+        buildingLocationlist = SiloUtil.readCSVfile(bundle.getString("buildingLocation.list"));
+        jobLocationlist = SiloUtil.readCSVfile(bundle.getString("jobLocation.list"));
+        schoolLocationlist = SiloUtil.readCSVfile(bundle.getString("schoolLocation.list"));
+        //Qin
 
     }
 

@@ -6,12 +6,16 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.events.EventManager;
 import de.tum.bgu.msm.events.EventRules;
 import de.tum.bgu.msm.events.EventTypes;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -310,6 +314,15 @@ public class ConstructionModel extends AbstractModel {
         int price = attributes[5];
 
         Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+
+        //Qin
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
+                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+            }
+        }
+        //Qin
+
         double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);

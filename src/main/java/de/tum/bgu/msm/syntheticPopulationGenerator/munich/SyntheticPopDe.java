@@ -10,6 +10,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microlocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization.Optimization;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import org.apache.log4j.Logger;
@@ -51,10 +52,15 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Preparation(dataSetSynPop).run();
 
         logger.info("Running Module: Optimization IPU");
-        new Optimization(dataSetSynPop).run();
+        //new Optimization(dataSetSynPop).run();
 
         logger.info("Running Module: Allocation");
         new Allocation(dataSetSynPop, dataContainer).run();
+
+        //Qin
+        logger.info("Running Module: Microlocation");
+        new Microlocation(dataSetSynPop,dataContainer).run();
+        //Qin
 
         logger.info("Running Module: Car ownership");
         new CreateCarOwnershipModel(dataContainer).run();
