@@ -7,8 +7,6 @@ import de.tum.bgu.msm.util.concurrent.RandomizableConcurrentFunction;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.file.Paths;
-
 public class ThreadSafeRandomsTest {
 
     private final Double[] REF_RESULTS = {0.017514838216565187, 0.7257102896080766,
@@ -17,7 +15,7 @@ public class ThreadSafeRandomsTest {
 
     @Test
     public void test() {
-        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
+        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for(int i= 0; i<5; i++) {

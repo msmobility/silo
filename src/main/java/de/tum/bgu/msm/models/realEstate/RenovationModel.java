@@ -47,8 +47,8 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<RenovationEvent> prepareYear(int year) {
+        final List<RenovationEvent> events = new ArrayList<>();
         for (Dwelling dwelling : dataContainer.getRealEstateData().getDwellings()) {
             events.add(new RenovationEvent(dwelling.getId()));
         }

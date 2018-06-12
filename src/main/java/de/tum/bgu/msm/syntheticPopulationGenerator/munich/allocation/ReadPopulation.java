@@ -32,7 +32,7 @@ public class ReadPopulation {
         logger.info("Reading household micro data from ascii file");
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().householdData.householdFileName;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -74,7 +74,7 @@ public class ReadPopulation {
         logger.info("Reading person micro data from ascii file");
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        String fileName = Properties.get().propertiesPath.getParent() +  Properties.get().householdData.personFileName;
+        String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -156,7 +156,7 @@ public class ReadPopulation {
 
         logger.info("Reading dwelling micro data from ascii file");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().realEstate.dwellingsFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -217,7 +217,7 @@ public class ReadPopulation {
         logger.info("Reading job micro data from ascii file");
 
         JobDataManager jobDataManager = dataContainer.getJobData();
-        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().jobData.jobsFileName;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";

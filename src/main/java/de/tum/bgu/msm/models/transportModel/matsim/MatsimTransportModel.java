@@ -71,7 +71,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		String scenarioName = Properties.get().main.scenarioName;
 
 		initialMatsimConfig.global().setCoordinateSystem(Properties.get().transportModel.matsimZoneCRS);
-		String zoneShapeFile = Properties.get().propertiesPath.getParent() + "/" + Properties.get().transportModel.matsimZoneShapeFile;
+		String zoneShapeFile = Properties.get().main.baseDirectory + "/" + Properties.get().transportModel.matsimZoneShapeFile;
 		
 		// In the current implementation, MATSim is used to reflect the functionality that was previously
 		// covered by MSTM. As such, based on the MATSim transport simulation, a travel time matrix (skim)

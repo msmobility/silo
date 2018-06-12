@@ -33,7 +33,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     }
 
     private void readSchoolQuality() {
-        String sqFileName = Properties.get().propertiesPath.getParent() + Properties.get().geo.zonalSchoolQualityFile;
+        String sqFileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalSchoolQualityFile;
         TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
         for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
             int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
@@ -47,7 +47,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     }
 
     private void readCrimeData() {
-        String crimeFileName = Properties.get().propertiesPath.getParent() + Properties.get().geo.countyCrimeFile;
+        String crimeFileName = Properties.get().main.baseDirectory + Properties.get().geo.countyCrimeFile;
         TableDataSet tblCrimeIndex = SiloUtil.readCSVfile(crimeFileName);
         for (int row = 1; row <= tblCrimeIndex.getRowCount(); row++) {
             int county = (int) tblCrimeIndex.getValueAt(row, "FIPS");
@@ -73,7 +73,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
 
     @Override
     protected void readZones() {
-        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().geo.zonalDataFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalDataFile;
         TableDataSet zonalData = SiloUtil.readCSVfile(fileName);
         int[] zoneIds = zonalData.getColumnAsInt(zoneIdColumnName);
         int[] zoneMsa = zonalData.getColumnAsInt("msa");
@@ -97,7 +97,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
 
     @Override
     protected void readRegionDefinition() {
-        String regFileName = Properties.get().propertiesPath.getParent() + Properties.get().geo.regionDefinitionFile;
+        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
         TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
         for (int row = 1; row <= regDef.getRowCount(); row++) {
             int taz = (int) regDef.getValueAt(row, zoneIdColumnName);

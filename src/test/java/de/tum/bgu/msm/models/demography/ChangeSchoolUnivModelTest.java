@@ -10,8 +10,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.nio.file.Paths;
-
 public class ChangeSchoolUnivModelTest {
 
     private static ChangeSchoolUnivModel model;
@@ -19,7 +17,7 @@ public class ChangeSchoolUnivModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization(Paths.get("./test/scenarios/annapolis/javaFiles/siloMstm.properties"), Implementation.MARYLAND);
+        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         model = new ChangeSchoolUnivModel(dataContainer);
     }

@@ -3,9 +3,6 @@ package de.tum.bgu.msm;
  * 
  */
 
-import cern.colt.Timer;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.GeoData;
@@ -14,6 +11,7 @@ import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.EventManager;
+import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.CblcmDiffGenerator;
@@ -35,13 +33,10 @@ public class SiloModelCBLCM {
     private final Set<Integer> tdmYears = new HashSet<>();
 	private final Set<Integer> skimYears = new HashSet<>();
 	private final Set<Integer> scalingYears = new HashSet<>();
-    private final Timer timer = new Timer();
-
-
-    private final Table<Integer, String, Integer> timeTrackerTable = HashBasedTable.create();
 
 	private int currentYear;
 	private boolean trackTime;
+	private long[][] timeCounter;
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer dataContainer;
 	public GeoData geoData;
@@ -73,7 +68,7 @@ public class SiloModelCBLCM {
 		modelContainer.getAcc().initialize();
 
 	        trackTime = Properties.get().main.trackTime;
-
+	        timeCounter = new long[EventType.values().length + 11][Properties.get().main.endYear + 1];
 	        IssueCounter.logIssues(geoData);           // log any potential issues during initial setup
 
 
@@ -95,20 +90,25 @@ public class SiloModelCBLCM {
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
-	        EventManager em = new EventManager(timeTrackerTable);
+	        EventManager em = new EventManager(timeCounter);
             final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 			long startTime = 0;
 
+	        if (trackTime) startTime = System.currentTimeMillis();
+	        if (trackTime) timeCounter[EventType.values().length][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (trackTime) timer.reset();
+	        if (trackTime) startTime = System.currentTimeMillis();
+	        if (trackTime) timeCounter[EventType.values().length + 1][currentYear] += System.currentTimeMillis() - startTime;
+
+	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) {
 	            modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(currentYear);
 	            dataContainer.getJobData().identifyVacantJobs();
 	        }
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "updateJobInventory", (int) timer.millis());
-            }
+	        if (trackTime) timeCounter[EventType.values().length + 2][currentYear] += System.currentTimeMillis() - startTime;
 
+	        if (trackTime) startTime = System.currentTimeMillis();
+	        if (trackTime) timeCounter[EventType.values().length + 3][currentYear] += System.currentTimeMillis() - startTime;
 
 	        if (skimYears.contains(currentYear)) {
 	            if (currentYear != Properties.get().main.startYear && !tdmYears.contains(currentYear)) {
@@ -122,30 +122,23 @@ public class SiloModelCBLCM {
 	            }
 	        }
 
-	        if (trackTime) timer.reset();
+	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getDdOverwrite().addDwellings(currentYear);
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "addOverwriteDwellings", (int) timer.millis());
-            }
+	        if (trackTime) timeCounter[EventType.values().length + 10][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (trackTime) timer.reset();
+	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getMove().calculateRegionalUtilities();
 	        modelContainer.getMove().calculateAverageHousingSatisfaction();
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "calcAveHousingSatisfaction", (int) timer.millis());
-            }
-	        if (trackTime) timer.reset();
-	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "planIncomeChange", (int) timer.millis());
-            }
+	        if (trackTime) timeCounter[EventType.values().length + 6][currentYear] += System.currentTimeMillis() - startTime;
 
-	        if (trackTime) timer.reset();
+	        if (trackTime) startTime = System.currentTimeMillis();
+	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) householdData.adjustIncome();
+	        if (trackTime) timeCounter[EventType.values().length + 9][currentYear] += System.currentTimeMillis() - startTime;
+
+	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear == Properties.get().main.implementation.BASE_YEAR || currentYear != Properties.get().main.startYear)
 	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "SummarizeData", (int) timer.millis());
-            }
+	        if (trackTime) timeCounter[EventType.values().length + 7][currentYear] += System.currentTimeMillis() - startTime;
 
 		    em.simulateEvents((int) year);
 
@@ -155,11 +148,10 @@ public class SiloModelCBLCM {
 	                modelContainer.getTransportModel().runTransportModel(nextYearForTransportModel);
 	        }
 
-	        if (trackTime) timer.reset();
+	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getPrm().updatedRealEstatePrices();
-            if (trackTime) {
-                timeTrackerTable.put((int) year, "updateRealEstatePrices", (int) timer.millis());
-            }
+	        if (trackTime) timeCounter[EventType.values().length + 8][currentYear] += System.currentTimeMillis() - startTime;
+
 	        em.finishYear((int) year, new int[] {0,0}, dataContainer);
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
@@ -191,12 +183,12 @@ public class SiloModelCBLCM {
 	        SiloUtil.modelStopper("removeFile");
 	        
 	        if(Properties.get().cblcm.createCblcmFiles){
-	        	 String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
+	        	 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
 	             SiloUtil.createDirectoryIfNotExistingYet(directory);
 	             String outputFile = (directory + "/" + Properties.get().main.spatialResultFileName + "_" + Properties.get().main.endYear + "VS" + Properties.get().cblcm.baseYear + ".csv");
 	             String[] inputFiles = new String[2];
 	             inputFiles[0] = (directory + "/" + Properties.get().main.spatialResultFileName + Properties.get().main.gregorianIterator + ".csv");
-	             inputFiles[1] = (Properties.get().propertiesPath.getParent() + Properties.get().cblcm.baseFile);
+	             inputFiles[1] = (Properties.get().main.baseDirectory+ Properties.get().cblcm.baseFile);
 
 	             try {
 					CblcmDiffGenerator.generateCblcmDiff(inputFiles, outputFile, Integer.valueOf(Properties.get().cblcm.baseYear) , Properties.get().main.endYear);
@@ -207,7 +199,7 @@ public class SiloModelCBLCM {
 				}
 	        }
 	        
-	        if (trackTime) SiloUtil.writeOutTimeTracker(timeTrackerTable);
+	        if (trackTime) SiloUtil.writeOutTimeTracker(timeCounter);
 	        logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
 }

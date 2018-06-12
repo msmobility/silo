@@ -3,7 +3,6 @@ package de.tum.bgu.msm.events;
 import cern.colt.Timer;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Table;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -21,19 +20,17 @@ public class EventManager {
 
     private final static Logger LOGGER = Logger.getLogger(EventManager.class);
 
-    private final Table<Integer, String, Integer> timeTracker;
-    private final Multiset<Class<? extends Event>> timeAggregator = HashMultiset.create();
-    private final Timer timer = new Timer().start();
-
+    private final long[][] timeCounter;
     private final Multiset<Class<? extends Event>> eventCounter = HashMultiset.create();
-    private final List<Event> events = new ArrayList<>();
 
     private final Map<Class<? extends Event>, MicroEventModel> models = new HashMap<>();
 
+    private final List<Event> events = new ArrayList<>();
+    private final Timer timer = new Timer().start();
     private final List<EventResult> results = new ArrayList<>();
 
-    public EventManager(Table<Integer, String, Integer> timeTracker) {
-        this.timeTracker = timeTracker;
+    public EventManager(long[][] timeCounter) {
+        this.timeCounter = timeCounter;
     }
 
     public <T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model) {
@@ -55,7 +52,6 @@ public class EventManager {
         LOGGER.info("  Shuffling events...");
         Collections.shuffle(events);
         eventCounter.clear();
-        timeAggregator.clear();
     }
 
     private void processEvents() {
@@ -66,24 +62,18 @@ public class EventManager {
 
             //unchecked is justified here, as
             //<T extends Event> void registerEventHandler(Class<T> klass, MicroEventModel<T> model)
-            // checks for the right type of model handlers. nico, May'18
+            // checks for the right type of model handlers
             @SuppressWarnings("unchecked")
             final EventResult result = this.models.get(klass).handleEvent(event);
             if(result!= null) {
                 eventCounter.add(event.getClass());
                 results.add(result);
             }
-            timeAggregator.add(klass, (int) timer.millis());
+//            timeCounter[event.getType().ordinal()][event.getYear()] += timer.millis();
         }
     }
 
     public void finishYear(int year, int[] carChangeCounter, SiloDataContainer dataContainer) {
-
-        for(Class<? extends Event> klass: timeAggregator.elementSet()) {
-            timeTracker.put(year, klass.getSimpleName(), (int) timer.millis());
-        }
-
-
         for(MicroEventModel model: models.values()) {
             model.finishYear(year);
         }

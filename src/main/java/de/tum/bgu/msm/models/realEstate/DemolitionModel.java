@@ -48,9 +48,9 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
+    public Collection<DemolitionEvent> prepareYear(int year) {
         currentYear = year;
-        final List<Event> events = new ArrayList<>();
+        final List<DemolitionEvent> events = new ArrayList<>();
         for (Dwelling dwelling : dataContainer.getRealEstateData().getDwellings()) {
             events.add(new DemolitionEvent(dwelling.getId()));
         }

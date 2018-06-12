@@ -20,8 +20,8 @@ public class BirthdayModel extends AbstractModel implements MicroEventModel<Birt
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        List<Event> events = new ArrayList<>();
+    public Collection<BirthDayEvent> prepareYear(int year) {
+        List<BirthDayEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
             if(Properties.get().eventRules.birthday) {

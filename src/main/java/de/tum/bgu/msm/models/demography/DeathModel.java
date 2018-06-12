@@ -63,8 +63,8 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<DeathEvent> prepareYear(int year) {
+        final List<DeathEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
             events.add(new DeathEvent(person.getId()));
         }

@@ -138,7 +138,7 @@ public class SiloModelContainer {
             travelTimes = new SkimTravelTimes();
             if (runTravelDemandModel) {
                 LOGGER.info("  MITO is used as the transport model");
-                transportModel = new MitoTransportModel(Properties.get().propertiesPath.getParent().toString(), dataContainer, travelTimes);
+                transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, travelTimes);
             } else {
                 LOGGER.info(" No transport model is used");
                 transportModel = null;

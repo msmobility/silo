@@ -2771,7 +2771,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
         double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
         GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
-        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().propertiesPath.getParent() + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
+        String pumsFileName = de.tum.bgu.msm.properties.Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
         String recString = "";
         int recCount = 0;
         int hhCountTotal = 0;

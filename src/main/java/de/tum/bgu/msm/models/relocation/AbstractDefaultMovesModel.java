@@ -5,7 +5,6 @@ import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.events.Event;
 import de.tum.bgu.msm.events.EventResult;
 import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
@@ -48,7 +47,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        uecFileName = Properties.get().propertiesPath.getParent() + Properties.get().moves.uecFileName;
+        uecFileName = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
         dataSheetNumber = Properties.get().moves.dataSheet;
         logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         setupMoveOrNotMove();
@@ -75,8 +74,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     @Override
-    public List<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public List<MoveEvent> prepareYear(int year) {
+        final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
         }

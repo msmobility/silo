@@ -1,7 +1,5 @@
 package de.tum.bgu.msm;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Table;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -11,6 +9,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.summarizeDataCblcm;
+import de.tum.bgu.msm.events.EventType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -20,7 +19,7 @@ import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -43,38 +42,33 @@ public class SiloUtil {
     private static ResourceBundle rb;
     private static HashMap rbHashMap;
 
-    private final static Logger logger = Logger.getLogger(SiloUtil.class);
+    static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static ResourceBundle siloInitialization(Path propertiesPath, Implementation implementation) {
-        rb = ResourceUtil.getPropertyBundle(propertiesPath.toFile());
-        Properties.initializeProperties(propertiesPath, implementation);
+    public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
+        File propFile = new File(resourceBundleNames);
+        rb = ResourceUtil.getPropertyBundle(propFile);
+        Properties.initializeProperties(rb, implementation);
         if (Properties.get().main.runSynPop){
             PropertiesSynPop.initializePropertiesSynPop(rb, implementation);
         }
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
-        prepareOutputFolder(propertiesPath);
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");
+
+        // create scenarios output directory if it does not exist yet
+        createDirectoryIfNotExistingYet(Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName);
+        // copy properties file into scenarios directory
+        String[] prop = resourceBundleNames.split("/");
+
+//        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
+        // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
+        // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
+        // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
+        copyFile(resourceBundleNames, Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber(Properties.get().main.randomSeed);
         trackingFile("open");
         return rb;
-    }
-
-    private static void prepareOutputFolder(Path propertiesPath) {
-        // create scenarios output directory if it does not exist yet
-        Path destination = Properties.get().outputPath;
-        createDirectoryIfNotExistingYet(destination);
-        // copy properties file into scenarios directory
-        try {
-            Files.copy(propertiesPath, destination.resolve(propertiesPath.getFileName()), REPLACE_EXISTING);
-        } catch (Exception e) {
-            final String msg = "Unable to copy properties file " + propertiesPath + " to scenarios output directory.";
-            logger.warn(msg);
-            e.printStackTrace();
-            throw new RuntimeException(msg) ;
-            // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16
-        }
     }
 
 
@@ -82,24 +76,13 @@ public class SiloUtil {
         return rbHashMap;
     }
 
-    public static void createDirectoryIfNotExistingYet (Path path) {
-        if (!Files.exists(path)) {
-            logger.info("   Creating Directory: "+path);
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                logger.error("Could not create scenarios directory " + path);
-                e.printStackTrace();
-            }
-        }
-    }
 
-    public static void createDirectoryIfNotExistingYet (String path) {
-        File file = new File(path);
+    public static void createDirectoryIfNotExistingYet (String directory) {
+        File file = new File (directory);
         if (!file.exists()) {
-            logger.info("   Creating Directory: "+path);
+            logger.info("   Creating Directory: "+directory);
             boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenarios directory " + path);
+            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenarios directory " + directory);
         }
     }
 
@@ -191,28 +174,6 @@ public class SiloUtil {
         return dataTable;
     }
 
-    public static TableDataSet readCSVfile (Path path) {
-        // read csv file and return as TableDataSet
-        File dataFile = path.toFile();
-        TableDataSet dataTable;
-        boolean exists = dataFile.exists();
-        if (!exists) {
-            final String msg = "File not found: " + path.toString();
-
-            logger.error(msg);
-            throw new RuntimeException(msg) ;
-        }
-        try {
-            TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
-            dataTable = reader.readFile(dataFile);
-            reader.close();
-        } catch (Exception e) {
-            logger.error("Error reading file " + dataFile);
-            throw new RuntimeException(e);
-        }
-        return dataTable;
-    }
-
     public static TableDataSet readCSVfile2 (String fileName) {
         // read csv file and return as TableDataSet
         File dataFile = new File(fileName);
@@ -258,9 +219,9 @@ public class SiloUtil {
                 trackJj = ResourceUtil.getIntegerProperty(rb, "track.job");
                 if (trackHh == -1 && trackPp == -1 && trackDd == -1 && trackJj == -1) return;
                 String fileName = ResourceUtil.getProperty(rb, "track.file.name");
-                Path filePath = Properties.get().outputPath.resolve(fileName+".txt");
+                String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(filePath, startYear != Properties.get().main.implementation.BASE_YEAR);
+                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);
@@ -289,24 +250,6 @@ public class SiloUtil {
             return new PrintWriter(bw);
         } catch (IOException e) {
             logger.error("Could not open file <" + fileName + ">.");
-            return null;
-        }
-    }
-
-    public static PrintWriter openFileForSequentialWriting(Path path, boolean append) {
-        // open file and return PrintWriter object
-        try {
-            if(!Files.exists(path.getParent())) {
-                Files.createDirectories(path.getParent());
-            }
-            OpenOption option = StandardOpenOption.CREATE;
-            if(append) {
-                option = StandardOpenOption.APPEND;
-            }
-            BufferedWriter bw = Files.newBufferedWriter(path, option);
-            return new PrintWriter(bw);
-        } catch (IOException e) {
-            logger.error(e);
             return null;
         }
     }
@@ -879,14 +822,20 @@ public class SiloUtil {
         if (!couldDelete) logger.warn("Could not delete file " + fileName);
     }
 
-    public static void deleteFile (Path path) {
+
+    public static void copyFile (String source, String destination) {
+        File src = new File (source);
+        File dst = new File (destination);
         try {
-            Files.delete(path);
-        } catch (IOException e) {
-            logger.warn("Could not delete file " + path.toString());
-            e.printStackTrace();
+            Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
+        } catch (Exception e) {
+            final String msg = "Unable to copy properties file " + source + " to scenarios output directory.";
+		logger.warn(msg);
+            throw new RuntimeException(msg) ;
+            // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16
         }
     }
+
 
     public static void copyDirectoryAndFiles (String sourceDirectory, String destinationDirectory) {
         // source: http://www.mkyong.com/java/how-to-copy-directory-in-java/
@@ -1044,16 +993,16 @@ static void closeAllFiles (long startTime, ResourceBundle rbLandUse, Properties 
 
 static boolean modelStopper (String action) {
 	// provide option for a clean model stop after every simulation period is completed
-	Path filePath = Properties.get().outputPath.resolve("status.csv");
+	String fileName = Properties.get().main.baseDirectory + "status.csv";
 	if (action.equalsIgnoreCase("initialize")) {
-		PrintWriter pw = openFileForSequentialWriting(filePath, false);
+		PrintWriter pw = openFileForSequentialWriting(fileName, false);
 		pw.println("Status");
 		pw.println("continue");
 		pw.close();
 	} else if (action.equalsIgnoreCase("removeFile")) {
-		deleteFile (filePath);
+		deleteFile (fileName);
 	} else {
-		TableDataSet status = readCSVfile(filePath);
+		TableDataSet status = readCSVfile(fileName);
 		if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) {
 		    return true;
         }
@@ -1091,39 +1040,39 @@ static void summarizeMicroData (int year, SiloModelContainer modelContainer, Sil
 }
 
 
-static void writeOutTimeTracker (Table<Integer, String, Integer> timeTrackerTable) {
+static void writeOutTimeTracker (long[][] timeCounter) {
 	// write file summarizing run times
 
 	int startYear = Properties.get().main.startYear;
 	PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
-
-
-    pw.print("year,");
-    pw.print(Joiner.on(",").join(timeTrackerTable.columnKeySet()));
-    pw.println();
-
-    for(Integer year: timeTrackerTable.rowKeySet()) {
-        pw.print(year+",");
-        for(String entry: timeTrackerTable.columnKeySet()) {
-            Integer value = timeTrackerTable.get(year, entry);
-            float timeInMinutes = 0;
-            if(value != null) {
-                timeInMinutes = value / 60000f;
-            }
-            pw.print(timeInMinutes+",");
-        }
-        pw.println();
-    }
-
-//	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
-//		pw.print("Year");
-//		for (EventType et : EventType.values()) pw.print("," + et.toString());
-//		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
-//				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
-//				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
-//		pw.println();
-//	}
-
+	if (startYear == Properties.get().main.implementation.BASE_YEAR) {
+		pw.print("Year");
+		for (EventType et : EventType.values()) pw.print("," + et.toString());
+		pw.print(",setupInOutMigration,setupConstructionOfNewDwellings,updateJobInventory,setupJobChange," +
+				"setupListOfEvents,fillMarriageMarket,calcAveHousingSatisfaction,SummarizeData,updateRealEstatePrices," +
+				"planIncomeChange,addOverwriteDwellings,updateCarOwnership");
+		pw.println();
+	}
+	for (int year = startYear; year < Properties.get().main.endYear; year ++) {
+		pw.print(year);
+		for (EventType et: EventType.values()) {
+			float timeInMinutes = timeCounter[et.ordinal()][year] / 60000f;
+			pw.print("," + timeInMinutes);
+		}
+		pw.print("," + timeCounter[EventType.values().length][year] / 60000f);       // setup inmigration/outmigration
+		pw.print("," + timeCounter[EventType.values().length + 1][year] / 60000f);   // setup construction of new dwellings
+		pw.print("," + timeCounter[EventType.values().length + 2][year] / 60000f);   // update job inventory
+		pw.print("," + timeCounter[EventType.values().length + 3][year] / 60000f);   // setup job change model
+		pw.print("," + timeCounter[EventType.values().length + 4][year] / 60000f);   // setup list of events
+		pw.print("," + timeCounter[EventType.values().length + 5][year] / 60000f);   // fill marriage market
+		pw.print("," + timeCounter[EventType.values().length + 6][year] / 60000f);   // calculate average housing satisfaction
+		pw.print("," + timeCounter[EventType.values().length + 7][year] / 60000f);   // summarize data
+		pw.print("," + timeCounter[EventType.values().length + 8][year] / 60000f);   // update real estate prices
+		pw.print("," + timeCounter[EventType.values().length + 9][year] / 60000f);   // plan income change
+		pw.print("," + timeCounter[EventType.values().length + 10][year] / 60000f);  // add dwellings from overwrite
+        pw.print("," + timeCounter[EventType.values().length + 11][year] / 60000f);  // add or relinquish cars
+		pw.println();
+	}
 	pw.close();
 }
 }

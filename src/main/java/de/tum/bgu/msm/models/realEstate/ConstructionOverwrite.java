@@ -35,7 +35,7 @@ public class ConstructionOverwrite extends AbstractModel {
         if (!useOverwrite) return;
         traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
         if (traceOverwriteDwellings) {
-            String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
+            String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
             SiloUtil.createDirectoryIfNotExistingYet(directory);
             String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                     Properties.get().main.gregorianIterator + ".csv");
@@ -52,7 +52,7 @@ public class ConstructionOverwrite extends AbstractModel {
 
         logger.info("  Reading dwelling overwrite file");
 
-        String fileName = Properties.get().propertiesPath.getParent() + Properties.get().realEstate.constructionOverwriteDwellingFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.constructionOverwriteDwellingFile;
         TableDataSet overwrite = SiloUtil.readCSVfile(fileName);
         plannedDwellings = new HashMap<>();
 
@@ -98,7 +98,7 @@ public class ConstructionOverwrite extends AbstractModel {
         if (!plannedDwellings.containsKey(year)) return;
         logger.info("  Adding dwellings that are given exogenously as an overwrite for the year " + year);
 
-        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
         PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, true);
@@ -142,7 +142,7 @@ public class ConstructionOverwrite extends AbstractModel {
             return;  // if overwrite is not used, now overwrite dwellings can be traced
         }
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        String directory = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
                 Properties.get().main.gregorianIterator + ".csv");
         TableDataSet overwriteDwellings = SiloUtil.readCSVfile(fileName);

@@ -15,6 +15,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
+import javax.sql.rowset.spi.TransactionalWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -151,14 +152,14 @@ public class SyntheticPopUs implements SyntheticPopI {
         // read control totals of households by size and dwellings
 
         logger.info("  Reading control total data for households and dwellings");
-        TableDataSet pop = SiloUtil.readCSVfile(Properties.get().propertiesPath.getParent() + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
+        TableDataSet pop = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
         householdTarget = new HashMap<>();
         for (int row = 1; row <= pop.getRowCount(); row++) {
             String fips = String.valueOf(pop.getValueAt(row, "Fips"));
             // note: doesn't make much sense to store these data in a HashMap. It's legacy code.
             householdTarget.put(fips, (int) pop.getValueAt(row, "TotalHouseholds"));
         }
-        hhDistribution = SiloUtil.readCSVfile(Properties.get().propertiesPath.getParent() +
+        hhDistribution = SiloUtil.readCSVfile(Properties.get().main.baseDirectory +
                 ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
         hhDistribution.buildIndex(hhDistribution.getColumnPosition(";SMZ_N"));
     }
@@ -240,7 +241,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info ("  Reading PUMS data");
 
-        String baseDirectory = Properties.get().propertiesPath.getParent().toString();
+        String baseDirectory = Properties.get().main.baseDirectory;
         String partlyCovered = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PARTLY_COVERED_PUMAS);
         TableDataSet partlyCoveredPumas = SiloUtil.readCSVfile(partlyCovered);
         int highestPUMA = 5500000;
@@ -800,7 +801,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
     private void validateHHandDD () {
         // compare number of generated households and dwellings with target data
-        String dir = Properties.get().propertiesPath.getParent() + "scenOutput/" + Properties.get().main.scenarioName + "/validation/";
+        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/validation/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
 //        String hhFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_HH_VALIDATION);
 //        String ddFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_DD_VALIDATION);

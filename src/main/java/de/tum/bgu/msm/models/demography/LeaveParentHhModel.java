@@ -24,7 +24,10 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.*;
+import de.tum.bgu.msm.events.EventResult;
+import de.tum.bgu.msm.events.EventType;
+import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -67,8 +70,8 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<LeaveParentsEvent> prepareYear(int year) {
+        final List<LeaveParentsEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
             if (qualifiesForParentalHHLeave(person)) {
                 events.add(new LeaveParentsEvent(person.getId()));

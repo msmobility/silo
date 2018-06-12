@@ -35,8 +35,8 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
     }
 
     @Override
-    public Collection<Event> prepareYear(int year) {
-        final List<Event> events = new ArrayList<>();
+    public Collection<LicenseEvent> prepareYear(int year) {
+        final List<LicenseEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
             events.add(new LicenseEvent(person.getId()));
         }
