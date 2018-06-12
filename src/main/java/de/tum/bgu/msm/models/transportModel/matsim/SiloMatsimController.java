@@ -41,7 +41,7 @@ import org.opengis.feature.simple.SimpleFeature;
 /**
  * @author dziemke
  */
-public class SiloMatsimController {
+/* deliberately package */ class SiloMatsimController {
 	
 	public static Map<Tuple<Integer, Integer>, Float> runMatsimToCreateTravelTimes(int numberOfCalcPoints, Map<Integer,SimpleFeature> zoneFeatureMap,
 			Population population, String runId, Config config, String outputDirectoryRoot) {

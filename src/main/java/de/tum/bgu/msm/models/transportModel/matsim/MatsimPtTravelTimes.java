@@ -1,10 +1,6 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -22,10 +18,13 @@ import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.opengis.feature.simple.SimpleFeature;
 
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Deprecated // yyyyyy rather than having a separate class for each mode, add the mode to the "getTravelTime" query. kai, apr'18
-public class MatsimPtTravelTimes implements TravelTimes {
+/* deliberately package */ class MatsimPtTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimPtTravelTimes.class);
 
 	private final TripRouter tripRouter;

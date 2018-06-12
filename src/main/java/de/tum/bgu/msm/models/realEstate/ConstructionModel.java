@@ -4,13 +4,12 @@ import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.munich.MunichZone;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -20,6 +19,8 @@ import org.matsim.api.core.v01.Coord;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -29,27 +30,31 @@ import java.util.ArrayList;
  * Created on 4 December 2012 in Santa Fe
  **/
 
-public class ConstructionModel extends AbstractModel {
+public class ConstructionModel extends AbstractModel implements MicroEventModel<ConstructionEvent> {
 
-    static Logger logger = Logger.getLogger(ConstructionModel.class);
+    private final static Logger LOGGER = Logger.getLogger(ConstructionModel.class);
 
     private final GeoData geoData;
+    private final MovesModelI moves;
+    private final Accessibility accessibility;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private ArrayList<Integer[]> plannedDwellings;
-    public static int[] listOfPlannedConstructions;
     private boolean makeSomeNewDdAffordable;
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
 
+    private int currentYear = -1;
+
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
-
-    public ConstructionModel(SiloDataContainer dataContainer) {
+    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
+        this.accessibility = accessibility;
+        this.moves = moves;
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);
         setupConstructionModel();
@@ -58,9 +63,9 @@ public class ConstructionModel extends AbstractModel {
 
     private void setupConstructionModel() {
         Reader reader;
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
+        if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
-        } else{
+        } else {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
         }
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader);
@@ -79,14 +84,15 @@ public class ConstructionModel extends AbstractModel {
         priceIncreaseForNewDwelling = Properties.get().realEstate.constructionLogModelInflator;
     }
 
+    @Override
+    public Collection<ConstructionEvent> prepareYear(int year) {
+        currentYear = year;
+        List<ConstructionEvent> events = new ArrayList<>();
 
-    public void planNewDwellingsForThisComingYear(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
-
         dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
         dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
-        if (!EventRules.ruleBuildDwelling()) return;
-        logger.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
+        LOGGER.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
 
         // calculate demand by region
         double[][] vacancyByRegion = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
@@ -94,9 +100,9 @@ public class ConstructionModel extends AbstractModel {
         float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegionIdsArray()) {
+            for (int region : geoData.getRegionIdsArray()) {
                 demandByRegion[dto][region] = constructionDemandCalculator.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
             }
         }
@@ -118,9 +124,9 @@ public class ConstructionModel extends AbstractModel {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
                     if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                     if (avePrice == 0)
-                        logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                        LOGGER.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
                     // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = constructionLocationJSCalculator.calculateConstructionProbability(dt, avePrice, modelContainer.getAcc().getAutoAccessibilityForZone(zone));
+                    util[zone] = constructionLocationJSCalculator.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(zone));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
@@ -158,7 +164,7 @@ public class ConstructionModel extends AbstractModel {
                         float avePrice = avePriceByTypeAndZone[dto][zone];
                         if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                         if (avePrice == 0)
-                            logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+                            LOGGER.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
                         attributes[5] = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
@@ -172,10 +178,44 @@ public class ConstructionModel extends AbstractModel {
                 }
             }
         }
-        listOfPlannedConstructions = new int[plannedDwellings.size()];
-        for (int i = 0; i < listOfPlannedConstructions.length; i++) listOfPlannedConstructions[i] = i;
+        for (int i = 0; i < plannedDwellings.size(); i++) {
+            events.add(new ConstructionEvent(i));
+        }
+        return events;
     }
 
+    @Override
+    public boolean handleEvent(ConstructionEvent event) {
+
+        // realize dwelling project id
+        Integer[] attributes = plannedDwellings.get(event.getDwellingId());
+        int ddId = RealEstateDataManager.getNextDwellingId();
+        int zoneId = attributes[0];
+        int dto = attributes[1];
+        int size = attributes[2];
+        int quality = attributes[3];
+        float restriction = attributes[4] / 100f;
+        int price = attributes[5];
+
+        Dwelling dd = dataContainer.getRealEstateData()
+                .createDwelling(ddId, zoneId, -1,
+                        DwellingType.values()[dto], size,
+                        quality, price, restriction, currentYear);
+        double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
+        dd.setUtilitiesOfVacantDwelling(utils);
+        dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
+
+        if (ddId == SiloUtil.trackDd) {
+            SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
+            SiloUtil.trackWriter.println(dd.toString());
+        }
+        return true;
+    }
+
+    @Override
+    public void finishYear(int year) {
+
+    }
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
@@ -271,9 +311,9 @@ public class ConstructionModel extends AbstractModel {
             }
             totalAveSizeByType[dto] = totalAveSizeByType[dto] / validRegions;
         }
-        for (DwellingType dt: DwellingType.values()) {
+        for (DwellingType dt : DwellingType.values()) {
             int dto = dt.ordinal();
-            for (int region: geoData.getRegions().keySet()) {
+            for (int region : geoData.getRegions().keySet()) {
                 if (aveSize[dto][region] == 0) aveSize[dto][region] = totalAveSizeByType[dto];
             }
         }
@@ -281,14 +321,14 @@ public class ConstructionModel extends AbstractModel {
     }
 
 
-    private DwellingType[] findOrderOfDwellingTypes (SiloDataContainer dataContainer) {
+    private DwellingType[] findOrderOfDwellingTypes(SiloDataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
         double[] prices = dataContainer.getRealEstateData().getAveragePriceByDwellingType();
         int[] scaledPrices = new int[prices.length];
         for (int i = 0; i < prices.length; i++) {
             if (prices[i] * 10000 > Integer.MAX_VALUE)
-                logger.error("Average housing price for " + DwellingType.values()[i] +
+                LOGGER.error("Average housing price for " + DwellingType.values()[i] +
                         " with " + prices[i] + " is too large to be sorted. Adjust code.");
             scaledPrices[i] = (int) prices[i] * 10000;
         }
@@ -298,39 +338,5 @@ public class ConstructionModel extends AbstractModel {
             sortedDwellingTypes[prices.length - i - 1] = DwellingType.values()[sortedPrices[i]];
         }
         return sortedDwellingTypes;
-    }
-
-
-    public void buildDwelling(int id, int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
-        // realize dwelling project id
-
-        Integer[] attributes = plannedDwellings.get(id);
-        int ddId = RealEstateDataManager.getNextDwellingId();
-        int zoneId = attributes[0];
-        int dto = attributes[1];
-        int size = attributes[2];
-        int quality = attributes[3];
-        float restriction = attributes[4] / 100f;
-        int price = attributes[5];
-
-        Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
-
-        //Qin
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
-            if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
-                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
-            }
-        }
-        //Qin
-
-        double utils[] = modelContainer.getMove().updateUtilitiesOfVacantDwelling(dd);
-        dd.setUtilitiesOfVacantDwelling(utils);
-        dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
-        EventManager.countEvent(EventTypes.DD_CONSTRUCTION);
-
-        if (ddId == SiloUtil.trackDd) {
-            SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
-            SiloUtil.trackWriter.println(dd.toString());
-        }
     }
 }

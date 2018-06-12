@@ -91,7 +91,7 @@ public class MainPropertiesSynPop {
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
         cellsMatrix = SiloUtil.readCSVfile(bundle.getString("taz.definition"));
-        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_borough"));
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
         omxFileName = ResourceUtil.getProperty(bundle,"distanceODmatrix");
 

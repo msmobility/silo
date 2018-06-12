@@ -17,7 +17,6 @@ import de.tum.bgu.msm.models.relocation.munich.MovesModelMuc;
 import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -45,8 +44,10 @@ public class SiloModelContainer {
     private final DemolitionModel demol;
     private final PricingModel prm;
     private final BirthModel birth;
+    private final BirthdayModel birthday;
     private final DeathModel death;
-    private final MarryDivorceModel mardiv;
+    private final MarriageModel marriage;
+    private final DivorceModel divorce;
     private final LeaveParentHhModel lph;
     private final MovesModelI move;
     private final EmploymentModel changeEmployment;
@@ -70,7 +71,8 @@ public class SiloModelContainer {
      * @param prm
      * @param birth
      * @param death
-     * @param mardiv
+     * @param marriage
+     * @param divorce
      * @param lph
      * @param move
      * @param changeEmployment
@@ -83,8 +85,8 @@ public class SiloModelContainer {
      */
     private SiloModelContainer(InOutMigration iomig, ConstructionModel cons,
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
-                               PricingModel prm, BirthModel birth, DeathModel death, MarryDivorceModel mardiv,
-                               LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
+                               PricingModel prm, BirthModel birth, BirthdayModel birthday, DeathModel death, MarriageModel marriage,
+                               DivorceModel divorce, LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
                                Accessibility acc, CreateCarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
                                de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel createCarOwnershipModel, TransportModelI transportModel) {
@@ -95,8 +97,10 @@ public class SiloModelContainer {
         this.demol = demol;
         this.prm = prm;
         this.birth = birth;
+        this.birthday = birthday;
         this.death = death;
-        this.mardiv = mardiv;
+        this.marriage = marriage;
+        this.divorce = divorce;
         this.lph = lph;
         this.move = move;
         this.changeEmployment = changeEmployment;
@@ -127,8 +131,9 @@ public class SiloModelContainer {
         }
         if (runMatsim) {
             LOGGER.info("  MATSim is used as the transport model");
-            travelTimes = new MatsimTravelTimes();
-            transportModel = new MatsimTransportModel(dataContainer, matsimConfig, (MatsimTravelTimes) travelTimes);
+            MatsimTransportModel tmpModel = new MatsimTransportModel(dataContainer, matsimConfig);
+            transportModel = tmpModel ;
+            travelTimes = tmpModel.getTravelTimes() ;
         } else {
             travelTimes = new SkimTravelTimes();
             if (runTravelDemandModel) {
@@ -144,15 +149,13 @@ public class SiloModelContainer {
 
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer);
+        BirthdayModel birthday = new BirthdayModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         DriversLicense driversLicense = new DriversLicense(dataContainer);
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        InOutMigration iomig = new InOutMigration(dataContainer);
-        ConstructionModel cons = new ConstructionModel(dataContainer);
         RenovationModel renov = new RenovationModel(dataContainer);
-        DemolitionModel demol = new DemolitionModel(dataContainer);
         PricingModel prm = new PricingModel(dataContainer);
         UpdateJobs updateJobs = new UpdateJobs(dataContainer);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
@@ -172,13 +175,18 @@ public class SiloModelContainer {
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
-        MarryDivorceModel mardiv = new MarryDivorceModel(dataContainer, move, iomig, createCarOwnershipModel);
+        ConstructionModel cons = new ConstructionModel(dataContainer, move, acc);
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         carOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
+        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense);
+        DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
+        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel);
+//        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);
+        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, death, mardiv, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
+                prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
                 carOwnershipModel, updateJobs, createCarOwnershipModel, transportModel);
     }
 
@@ -211,12 +219,20 @@ public class SiloModelContainer {
         return birth;
     }
 
+    public BirthdayModel getBirthday() {
+        return birthday;
+    }
+
     public DeathModel getDeath() {
         return death;
     }
 
-    public MarryDivorceModel getMardiv() {
-        return mardiv;
+    public MarriageModel getMarriage() {
+        return marriage;
+    }
+
+    public DivorceModel getDivorce() {
+        return divorce;
     }
 
     public LeaveParentHhModel getLph() {

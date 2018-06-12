@@ -16,12 +16,9 @@
  */
 package de.tum.bgu.msm.data;
 
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.models.demography.BirthModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -43,9 +40,7 @@ public class HouseholdDataManager {
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
 
-    private float[][] laborParticipationShares;
     private float[][][] initialIncomeDistribution;              // income by age, gender and occupation
-    public static int[] startNewJobPersonIds;
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
 
@@ -319,69 +314,14 @@ public class HouseholdDataManager {
     }
 
 
-    public static HouseholdType defineHouseholdType (int hhSize, int hhIncome) {
-        // define household type based on size and income
-
-        HouseholdType ht = null;
-        if (hhSize == 1) {
-            if (hhIncome == 1) ht = HouseholdType.size1inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size1inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size1inc3;
-            else ht = HouseholdType.size1inc4;
-        } else if (hhSize == 2) {
-            if (hhIncome == 1) ht = HouseholdType.size2inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size2inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size2inc3;
-            else ht = HouseholdType.size2inc4;
-        } else if (hhSize == 3) {
-            if (hhIncome == 1) ht = HouseholdType.size3inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size3inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size3inc3;
-            else ht = HouseholdType.size3inc4;
-        } else if (hhSize > 3) {
-            if (hhIncome == 1) ht = HouseholdType.size4inc1;
-            else if (hhIncome == 2) ht = HouseholdType.size4inc2;
-            else if (hhIncome == 3) ht = HouseholdType.size4inc3;
-            else ht = HouseholdType.size4inc4;
-        }
-        return ht;
-    }
-
-
-    public static int getIncomeCategoryForIncome(int hhInc) {
+    public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
         // return income category defined exogenously
 
-        for (int category = 1; category <= Properties.get().main.incomeBrackets.length; category++) {
-            if (hhInc <= Properties.get().main.incomeBrackets[category - 1]) return category;
+        for (int i = 0; i < Properties.get().main.incomeBrackets.length; i++) {
+            if (hhInc < Properties.get().main.incomeBrackets[i]) return IncomeCategory.values()[i];
         }
-        return Properties.get().main.incomeBrackets.length + 1;  // if income is larger than highest category
-    }
-
-
-    public static int getSpecifiedIncomeCategoryForIncome(int[] incCats, int hhInc) {
-        // return income category defined exogenously
-
-        for (int category = 1; category <= incCats.length; category++) {
-            if (hhInc <= incCats[category - 1]) return category;
-        }
-        return incCats.length + 1;  // if income is larger than highest category
-    }
-
-
-    public static int getNumberOfWorkersInHousehold(Household hh) {
-        // return number of workers in household hh
-        int numberOfWorkers = 0;
-        for (Person pp: hh.getPersons()) {
-            if (pp.getOccupation() == 1) numberOfWorkers++;
-        }
-        return numberOfWorkers;
-    }
-
-
-    public static void definePersonRolesInHousehold (Household hh) {
-        // define roles in this household
-        findMarriedCouple(hh);
-        defineUnmarriedPersons(hh);
+        // if income is larger than highest category
+        return IncomeCategory.values()[IncomeCategory.values().length-1];
     }
 
 
@@ -654,37 +594,7 @@ public class HouseholdDataManager {
 
 
     public void calculateInitialSettings () {
-        calculateInitialLaborParticipation();
         initialIncomeDistribution = calculateIncomeDistribution();
-    }
-
-
-    private void calculateInitialLaborParticipation() {
-        // calculate share of people employed by age and gender
-
-        laborParticipationShares = new float[2][100];
-        int[][] count = new int[2][100];
-        for (Person pp: persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gender = pp.getGender();
-            boolean employed = pp.getWorkplace() > 0;
-            if (employed) laborParticipationShares[gender-1][age]++;
-            count[gender-1][age]++;
-        }
-        // calculate shares
-        for (int gen = 0; gen <=1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
-            }
-
-            // smooth out shares
-            for (int age = 18; age < 98; age++) {
-                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
-                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
-                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
-            }
-        }
     }
 
 
@@ -749,80 +659,6 @@ public class HouseholdDataManager {
         person.setIncome(inc);
     }
 
-
-    public void setUpChangeOfJob(int year) {
-        // select people that will lose employment or start new job
-
-        if (!EventRules.ruleQuitJob() && !EventRules.ruleStartNewJob()) return;
-        LOGGER.info("  Planning job changes (hire and fire) for the year " + year);
-
-        // count currently employed people
-        final float[][] currentlyEmployed = new float[2][100];
-        final float[][] currentlyUnemployed = new float[2][100];
-        for (Person pp : persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gender = pp.getGender();
-            boolean employed = pp.getWorkplace() > 0;
-            if (employed) {
-                currentlyEmployed[gender - 1][age]++;
-            } else {
-                currentlyUnemployed[gender - 1][age]++;
-            }
-        }
-
-        // calculate change rates
-        float[][] changeRate = new float[2][100];
-        for (int gen = 0; gen <= 1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                float change = laborParticipationShares[gen][age] *
-                        (currentlyEmployed[gen][age] + currentlyUnemployed[gen][age]) - currentlyEmployed[gen][age];
-                if (change > 0) {
-                    // probability to find job
-                    changeRate[gen][age] = (change / (1f * currentlyUnemployed[gen][age]));
-                } else {
-                    // probability to lose job
-                    changeRate[gen][age] = (change / (1f * currentlyEmployed[gen][age]));
-                }
-            }
-        }
-
-        int[][] testCounter = new int[2][100];
-        // plan employment changes
-        ArrayList<Integer> alFindJob = new ArrayList<>();
-        ArrayList<Integer> alQuitJob = new ArrayList<>();
-        for (Person pp : persons.values()) {
-            int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            int gen = pp.getGender() - 1;
-            boolean employed = pp.getWorkplace() > 0;
-
-            // find job
-            if (changeRate[gen][age] > 0 && !employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < changeRate[gen][age]) {
-                    alFindJob.add(pp.getId());
-                    testCounter[gen][age]++;
-                }
-            }
-            // lose job
-            if (changeRate[gen][age] < 0 && employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < Math.abs(changeRate[gen][age])) {
-                    alQuitJob.add(pp.getId());
-                    testCounter[gen][age]--;
-                }
-            }
-        }
-
-        quitJobPersonIds = SiloUtil.convertIntegerArrayListToArray(alQuitJob);
-        startNewJobPersonIds = SiloUtil.convertIntegerArrayListToArray(alFindJob);
-
-    }
-
-
-    public static int[] getStartNewJobPersonIds() {
-        return startNewJobPersonIds;
-    }
-
     public static int[] getQuitJobPersonIds() {
         return quitJobPersonIds;
     }
@@ -880,76 +716,6 @@ public class HouseholdDataManager {
 
     public static float getMedianIncome(int msa) {
         return medianIncome[msa];
-    }
-
-
-    public void summarizeHouseholdsNearMetroStations (SiloModelContainer siloModelContainer) {
-        // summarize households in the vicinity of selected Metro stops
-
-        if (!Properties.get().householdData.summarizeMetro){
-            return;
-        }
-        TableDataSet selectedMetro = SiloUtil.readCSVfile(Properties.get().householdData.selectedMetroStopsFile);
-
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-        SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String fileName = (directory + "/" + Properties.get().householdData.householdsNearMetroFile + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
-        PrintWriter pw = openFileForSequentialWriting(fileName, false);
-        pw.print("income,dist");
-        for (int row = 1; row <= selectedMetro.getRowCount(); row++) pw.print("," +
-                selectedMetro.getStringValueAt(row, "MetroStation") + " (" + (int) selectedMetro.getValueAt(row, "Zone") + ")");
-        pw.println();
-
-        // summarize households by distance from Metro stop and income group
-        int[][][] hhCounter = new int[selectedMetro.getRowCount()][11][4];
-        HashMap<Integer, ArrayList> hhByDistToMetro = new HashMap<>();
-        for (Integer dist = 0; dist <= 20; dist++) {
-            hhByDistToMetro.put(dist, new ArrayList<Integer>());
-        }
-
-        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-        for (Household hh: households.values()) {
-            int incCat = getIncomeCategoryForIncome(hh.getHhIncome());
-            Integer smallestDist = 21;
-            for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
-                int metroZone = (int) selectedMetro.getValueAt(row, "Zone");
-                int zone = -1;
-                Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
-                if(dwelling != null) {
-                    zone = dwelling.getZone();
-                }
-                int dist = (int) SiloUtil.rounder((float) siloModelContainer.getAcc().getPeakAutoTravelTime(zone, metroZone), 0);
-                smallestDist = Math.min(smallestDist, dist);
-                if (dist > 10) continue;
-                hhCounter[row-1][dist][incCat-1]++;
-            }
-            if (smallestDist <= 20) {
-                ArrayList<Integer> al = hhByDistToMetro.get(smallestDist);
-                al.add(hh.getHhIncome());
-                hhByDistToMetro.put(smallestDist, al);
-            }
-        }
-
-        // write out summary by Metro Stop
-        for (int inc = 1; inc <= 4; inc++) {
-            for (int dist = 0; dist <= 10; dist++) {
-                pw.print(inc + "," + dist);
-                for (int row = 1; row <= selectedMetro.getRowCount(); row++) {
-                    pw.print("," + hhCounter[row - 1][dist][inc - 1]);
-                }
-                pw.println();
-            }
-        }
-
-        // write out summary by distance bin
-        pw.println("distanceRing,householdCount,medianIncome");
-        for (int dist = 0; dist <= 20; dist++) {
-            int[] incomes = SiloUtil.convertIntegerArrayListToArray(hhByDistToMetro.get(dist));
-            pw.println(dist + "," + incomes.length + "," + SiloUtil.getMedian(incomes));
-        }
-
-        pw.close();
     }
 
 

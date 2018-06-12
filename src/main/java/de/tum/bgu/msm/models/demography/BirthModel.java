@@ -23,14 +23,16 @@ import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
-import de.tum.bgu.msm.events.EventManager;
-import de.tum.bgu.msm.events.EventRules;
-import de.tum.bgu.msm.events.EventTypes;
+import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Simulates birth of children
@@ -38,9 +40,9 @@ import java.io.Reader;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel {
+public class BirthModel extends AbstractModel implements MicroEventModel<BirthEvent> {
 
-    private static BirthJSCalculator calculator;
+    private BirthJSCalculator calculator;
 
     public BirthModel(SiloDataContainer dataContainer) {
         super(dataContainer);
@@ -48,7 +50,7 @@ public class BirthModel extends AbstractModel {
     }
 
     private void setupBirthModel() {
-        Reader reader;
+        final Reader reader;
         if (Properties.get().main.implementation == Implementation.MUNICH) {
             reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
         } else {
@@ -58,31 +60,47 @@ public class BirthModel extends AbstractModel {
         calculator = new BirthJSCalculator(reader, localScaler);
     }
 
-
-    public void chooseBirth(int perId) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Person person = householdData.getPersonFromId(perId);
-        if (!EventRules.ruleGiveBirth(person)) {
-            return;  // Person has died or moved away
+    @Override
+    public Collection<BirthEvent> prepareYear(int year) {
+        final List<BirthEvent> events = new ArrayList<>();
+        for (Person per : dataContainer.getHouseholdData().getPersons()) {
+            final int id = per.getId();
+            if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
+                events.add(new BirthEvent(id));
+            }
         }
-        if (person.getGender() == 1) {
-            return;            // Exclude males, model should never get here
-        }
-        // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
-        double birthProb = calculator.calculateBirthProbability(person.getAge());
-        if (person.getRole() == PersonRole.MARRIED) {
-            birthProb *= Properties.get().demographics.marriedScaler;
-        } else {
-            birthProb *= Properties.get().demographics.singleScaler;
-        }
-        if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
-            giveBirth(person);
-        }
-
+        return events;
     }
 
-    void giveBirth(Person person) {
+    @Override
+    public boolean handleEvent(BirthEvent event) {
+        return chooseBirth(event.getPersonId());
+    }
 
+    @Override
+    public void finishYear(int year) {
+    }
+
+    private boolean chooseBirth(int perId) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Person person = householdData.getPersonFromId(perId);
+        if (person != null && personCanGiveBirth(person)) {
+            // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
+            double birthProb = calculator.calculateBirthProbability(person.getAge());
+            if (person.getRole() == PersonRole.MARRIED) {
+                birthProb *= Properties.get().demographics.marriedScaler;
+            } else {
+                birthProb *= Properties.get().demographics.singleScaler;
+            }
+            if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
+                giveBirth(person);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    Person giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
@@ -101,35 +119,15 @@ public class BirthModel extends AbstractModel {
             SiloUtil.trackWriter.println("For unto us a child was born... " + person.getId() + " gave birth" +
                     "to a child named " + id + ". Added to household " + household.getId() + ".");
         }
-        EventManager.countEvent(EventTypes.CHECK_BIRTH);
+        return child;
     }
 
 
-    public void checkBirthday(int personId) {
-        // increase age of this person by one year
-        Person per = dataContainer.getHouseholdData().getPersonFromId(personId);
-
-        if (!EventRules.ruleBirthday(per)) {
-            return;  // Person has died or moved away
-        }
-        celebrateBirthday(per);
-    }
-
-    void celebrateBirthday(Person per) {
-        per.birthday();
-        EventManager.countEvent(EventTypes.BIRTHDAY);
-        if (per.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
-                    per.getId() + ". New age is " + per.getAge() + ".");
-        }
-    }
-
-    public static double getProbabilityForGirl() {
+    private double getProbabilityForGirl() {
         return calculator.getProbabilityForGirl();
     }
 
-    public static boolean personCanGiveBirth(int age) {
-        return (calculator.calculateBirthProbability(age) > 0);
+    private boolean personCanGiveBirth(Person person) {
+        return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
     }
-
 }

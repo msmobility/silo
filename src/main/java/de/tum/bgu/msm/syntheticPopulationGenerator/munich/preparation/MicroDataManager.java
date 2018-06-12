@@ -90,6 +90,10 @@ public class MicroDataManager {
                 school.put("initial", 307);
                 school.put("end", 309);
                 attributesIPU.put("school", school);
+            Map<String, Integer> disability = new HashMap<>();
+                disability.put("initial", 237);
+                disability.put("end", 239);
+                attributesIPU.put("disability", disability);
             return attributesIPU;
     }
 
@@ -394,9 +398,9 @@ public class MicroDataManager {
 
 
     public Nationality translateNationality (int nationality){
-        Nationality nationality1 = Nationality.german;
+        Nationality nationality1 = Nationality.GERMAN;
         if (nationality == 8){
-            nationality1 = Nationality.other;
+            nationality1 = Nationality.OTHER;
         }
         return nationality1;
     }
@@ -655,5 +659,20 @@ public class MicroDataManager {
             }
         }
         return cumProbability.length - 1;
+    }
+
+    public int dwellingYearfromBracket(int yearBracket){
+
+        int year = 0;
+        if (yearBracket < 3) {
+            year = (int) (1900 + SiloUtil.getRandomNumberAsFloat() * 29);
+        } else if (yearBracket < 6) {
+            year = (int) (1949 + SiloUtil.getRandomNumberAsFloat() * 41);
+        } else if (yearBracket < 7) {
+            year = (int) (1991 + SiloUtil.getRandomNumberAsFloat() * 9);
+        } else {
+            year = (int) (2001 + SiloUtil.getRandomNumberAsFloat() * 9);
+        }
+        return year;
     }
 }

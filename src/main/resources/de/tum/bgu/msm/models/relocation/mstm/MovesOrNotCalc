@@ -1,0 +1,5 @@
+var calculateMovingProbability = function (householdSatisfaction, dwellingUtility) {
+
+return 1 - 1/(1+0.03 * Math.exp(10*(householdSatisfaction - dwellingUtility)))
+
+}

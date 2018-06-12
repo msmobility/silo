@@ -5,25 +5,22 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-public class MarryDivorceModelTest {
+public class MarriageModelTest {
 
-    private static MarryDivorceModel model;
+    private static DefaultMarriageModel model;
     private static int[] couple1;
     private static int[] couple2;
     private static int[] couple3;
     private static int[] couple4;
 
-    private static SiloModelContainer modelContainer;
     private static SiloDataContainer dataContainer;
     private static HouseholdDataManager singleHouseholds;
 
@@ -32,8 +29,8 @@ public class MarryDivorceModelTest {
         SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
-        model = modelContainer.getMardiv();
+        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
+        model = (DefaultMarriageModel) modelContainer.getMarriage();
 
         couple1 = new int[]{1,2};
         Household household1 = dataContainer.getHouseholdData().createHousehold(1,  1, 0);
@@ -111,7 +108,7 @@ public class MarryDivorceModelTest {
         person8Child3.setRole(PersonRole.CHILD);
 
         dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
-        dataContainer.getRealEstateData().setHighestVariables();
+        dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         modelContainer.getMove().calculateRegionalUtilities();
 
@@ -132,7 +129,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageGroomMovingToBride() {
-        model.marryCouple(couple1);
+        model.handleEvent(new MarriageEvent(couple1[0], couple1[1]));
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(1).getRole());
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(2).getRole());
@@ -144,7 +141,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageBrideMovingToGroom() {
-        model.marryCouple(couple2);
+        model.handleEvent(new MarriageEvent(couple2[0], couple2[1]));
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(3).getRole());
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(4).getRole());
@@ -156,7 +153,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageBrideMovingToGroomWithChild() {
-        model.marryCouple(couple3);
+        model.handleEvent(new MarriageEvent(couple3[0], couple3[1]));
         //both persons should be married
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(5).getRole());
         Assert.assertEquals(PersonRole.MARRIED, dataContainer.getHouseholdData().getPersonFromId(6).getRole());
@@ -168,7 +165,7 @@ public class MarryDivorceModelTest {
 
     @Test
     public void testMarriageOutmigratingNewHousehold() {
-        model.marryCouple(couple4);
+        model.handleEvent(new MarriageEvent(couple4[0], couple4[1]));
         //new household outmigrated
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(7));
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(8));
@@ -179,18 +176,19 @@ public class MarryDivorceModelTest {
     @Test
     public void testSelectMarryingCouples() {
         SiloUtil.getRandomObject().setSeed(42);
-        final List<Couple> couples = model.selectCouplesToGetMarriedThisYear(singleHouseholds.getPersons());
+        final List<MarriageEvent> couples = model.selectCouplesToGetMarriedThisYear(singleHouseholds.getPersons());
         Assert.assertEquals(689, couples.size());
         final long manMarriesYoungerWoman = couples.stream()
-                .filter(couple ->
-                        (couple.getPartner1().getGender() == 1
-                                && couple.getPartner1().getAge() > couple.getPartner2().getAge())
-                        || (couple.getPartner2().getGender() == 1
-                                && couple.getPartner1().getAge() < couple.getPartner2().getAge())
+                .filter(couple -> {
+                            Person partner1 = singleHouseholds.getPersonFromId(couple.getFirstId());
+                            Person partner2 = singleHouseholds.getPersonFromId(couple.getSecondId());
+                    return (partner1.getGender() == 1
+                            && partner1.getAge() > partner2.getAge())
+                            || (partner2.getGender() == 1
+                            && partner1.getAge() < partner2.getAge());
+                        }
                 ).count();
-        final long sameSexMarriages = couples.stream().filter(couple ->
-                couple.getPartner1().getGender() == couple.getPartner2().getGender()).count();
-        Assert.assertEquals(0, sameSexMarriages);
+
         Assert.assertEquals(440, manMarriesYoungerWoman);
         Assert.assertTrue(model.selectCouplesToGetMarriedThisYear(Collections.EMPTY_LIST).isEmpty());
     }
