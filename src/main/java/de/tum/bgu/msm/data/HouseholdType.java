@@ -1,8 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import static de.tum.bgu.msm.data.IncomeCategory.HIGH;
-import static de.tum.bgu.msm.data.IncomeCategory.LOW;
-import static de.tum.bgu.msm.data.IncomeCategory.MEDIUM;
+import static de.tum.bgu.msm.data.IncomeCategory.*;
 
 /**
  * @author Rolf Moeckel, PB Albuquerque

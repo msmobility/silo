@@ -2,8 +2,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -11,10 +12,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-
-import static de.tum.bgu.msm.data.RealEstateDataManager.rentCategories;
 
 public class GenerateVacantDwellings {
 

@@ -13,12 +13,11 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
-import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
+import de.tum.bgu.msm.models.relocation.MovesDMU;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
-import de.tum.bgu.msm.models.relocation.MovesDMU;
 import de.tum.bgu.msm.util.matrices.Matrices;
 
 import java.io.File;

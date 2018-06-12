@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import de.tum.bgu.msm.data.DwellingType;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;

@@ -90,7 +90,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     public Collection<MarriageEvent> prepareYear(int year) {
         final List<MarriageEvent> events = new ArrayList<>();
         if(Properties.get().eventRules.marriage) {
-            events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons(), year));
+            events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons()));
         }
         return events;
     }
@@ -106,7 +106,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     public void finishYear(int year) {
     }
 
-    private List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons, int year) {
+    List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
         LOGGER.info("  Selecting couples to get married this year");
 
         final List<MarriageEvent> couplesToMarryThisYear = new ArrayList<>();
@@ -229,7 +229,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         return SiloUtil.getRandomNumberAsFloat() < share;
     }
 
-    public boolean marryCouple(int id1, int id2) {
+    private boolean marryCouple(int id1, int id2) {
 
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person partner1 = householdData.getPersonFromId(id1);

@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.transportModel;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -45,7 +44,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private void updateData() {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
-			AreaType areaType = AreaType.RURAL; //TODO: put real area type in here
+			AreaTypes.SGType areaType = AreaTypes.SGType.RURAL; //TODO: put real area type in here
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
 			zones.put(zone.getId(), zone);
 		}
