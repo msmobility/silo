@@ -165,7 +165,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     @Override
     public void calculateRegionalUtilities() {
-        // everything is available
+        // this method calculates generic utilities by household type, race and region and stores them in utilityRegion
 
         calculateRacialCompositionByZoneAndRegion();
         int[] selRegAvail = new int[numAltsSelReg + 1];
@@ -201,6 +201,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             selectRegionDmu.setRegionalRace(race, regionalRacialShare);
         }
         utilityRegion = new double[IncomeCategory.values().length][Race.values().length][numAltsSelReg];
+        //ordered by region name -1 (0 to 30)
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
             // set DMU attributes
             float[] priceUtil = new float[highestRegion + 1];
@@ -214,14 +215,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 double util[] = selectRegionModel.solve(selectRegionDmu.getDmuIndexValues(), selectRegionDmu, selRegAvail);
                 for (int alternative = 0; alternative < numAltsSelReg; alternative++) {
                     utilityRegion[incomeCategory.ordinal()][race.getId()][alternative] = util[alternative];
-//                  cannot be switched on until the javascript SelectRegionCalc is updated with MSTM data
-//                    double jsValue =
-//                            regionCalculator.calculateSelectRegionProbability(incomeCategory,
-//                                    race, priceUtil[alternative], regAcc[alternative],
-//                                    (float) regionalRacialComposition.getQuick(alternative, race.getId()));
-
-
-
                 }
                 if (logCalculationRegion)
                     selectRegionModel.logAnswersArray(traceLogger, "Select-Region Model for HH of income group " +
@@ -270,6 +263,21 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             utilityByIncomeRaceRegion.put(incomeCategory, utilitiesByRaceRegionForThisIncome);
         }
 
+        //todo created for debugging only - compares JS and UEC - the utilityRegion 3rd dimension is ordered by region id -1!
+        /*for (Region region : geoData.getRegions().values()){
+            for (IncomeCategory incomeCategory : IncomeCategory.values()){
+                for (Race race : Race.values()){
+                    System.out.println("Region: " + region.getId() + " Category: " + incomeCategory + " Race: " +
+                            race + " Old utility:  " + utilityRegion[incomeCategory.ordinal()][race.getId()][region.getId()-1] +
+                            " JavaScript utility: " + utilityByIncomeRaceRegion.get(incomeCategory).get(race).get(region.getId()));
+
+                }
+            }
+        }
+
+        System.out.println("Done");*/
+
+
     }
 
 
@@ -306,24 +314,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
 
 
-    private Map<Integer, Double> getUtilitiesByRegionForHouesehold(HouseholdType ht, Race race, int[] workZones){
-        Map<Integer, Double> utilitiesForThisHousheold = utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race);
 
-        for(Region region : geoData.getRegions().values()){
-            double thisRegionFactor = 1;
-            for (int workZone : workZones) {
-                int smallestDistInMin = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, region.getId());
-                thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(smallestDistInMin);
-            }
-            utilitiesForThisHousheold.put(region.getId(), utilitiesForThisHousheold.get(region.getId())*thisRegionFactor);
-
-        }
-
-        return utilitiesForThisHousheold;
-    }
 
     private double[] getRegionUtilities (HouseholdType ht, Race race, int[] workZones) {
         // return utility of regions based on household type and based on work location of workers in household
+        // ordered by the region Index stored in geoData.getRegionIdsArray which
 
         int[] regions = geoData.getRegionIdsArray();
         double[] util = new double[numAltsSelReg];
@@ -342,6 +337,26 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             util[i] = utilityRegion[incomeCat - 1][race.getId()][i] * workDistanceFactor[i];
         }
         return util;
+    }
+
+    private Map<Integer, Double> getUtilitiesByRegionForHouesehold(HouseholdType ht, Race race, int[] workZones){
+        Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
+        utilitiesForThisHousheold.putAll(utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race));
+
+        for(Region region : geoData.getRegions().values()){
+            double thisRegionFactor = 1;
+            if (workZones != null) {
+                for (int workZone : workZones) {
+                    int smallestDistInMin = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, region.getId());
+                    thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(smallestDistInMin);
+                }
+            }
+            double currentValue = utilitiesForThisHousheold.get(region.getId());
+            utilitiesForThisHousheold.put(region.getId(),currentValue*thisRegionFactor);
+
+        }
+
+        return utilitiesForThisHousheold;
     }
 
     @Override
@@ -372,8 +387,10 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         // Step 1: select region
         int[] regions = geoData.getRegionIdsArray();
         double[] regionUtilities = getRegionUtilities(ht, householdRace, workZones);
+        //ordered by id - 1
 
-        Map<Integer, Double> regionUtilitiesForThisHousehold = getUtilitiesByRegionForHouesehold(ht, householdRace, workZones);
+        Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForHouesehold(ht, householdRace, workZones));
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
         int totalVacantDd = 0;
@@ -404,13 +421,10 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             }
         }
 
-        double sum = 0;
+
         for (Region region : geoData.getRegions().values()){
             //case "population"
-            double thisRegionUtility = regionUtilitiesForThisHousehold.get(region.getId())*hhByRegion.getQuick(region.getId());
-            sum+= thisRegionUtility;
-            regionUtilitiesForThisHousehold.put(region.getId(),
-                    thisRegionUtility);
+            regionUtilitiesForThisHousehold.put(region.getId(),regionUtilitiesForThisHousehold.get(region.getId())*hhByRegion.getQuick(region.getId()));
         }
 
 

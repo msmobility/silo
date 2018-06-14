@@ -1,6 +1,6 @@
 var calculateSelectRegionProbability = function (incomeGroup, race, price, accessibility, racialShare, schoolQuality, crimeRate) {
 
-    delta = 0;
+    delta = 0.;
     if(incomeGroup.name().equals("LOW")){
         alpha = 0.04;
         beta = 0.05;
@@ -52,11 +52,11 @@ var calculateSelectRegionProbability = function (incomeGroup, race, price, acces
     if(race.name().equals("white")|| race.name().equals("black") || race.name().equals("hispanic")){
         relevantShare = racialShare;
     }else if (race.name().equals("other")){
-        relevantShare = 1;
+        relevantShare = 1.0;
     }else{
         throw new Error("Undefined race: " + race);
     }
 
 
-    return (1 - alpha - delta) * price + alpha * accessibility + beta * schoolQuality + gamma * crimeRate + delta * relevantShare;
+    return (1 - alpha - beta - gamma - delta) * price + alpha * accessibility + beta * schoolQuality + gamma * crimeRate + delta * relevantShare;
 }
