@@ -6,7 +6,6 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -642,7 +641,7 @@ public class SummarizeData {
             pwd.print(",");
             pwd.print(dd.getRestriction());
             pwd.print(",");
-            pwd.print(dd.getYearBuilt());
+            pwd.print(dd.getYearConstructionDE());
             pwd.print(",");
             pwd.print(dd.getFloorSpace());
             pwd.print(",");

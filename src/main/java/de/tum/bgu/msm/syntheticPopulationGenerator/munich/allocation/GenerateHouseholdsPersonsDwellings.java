@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class GenerateHouseholdsPersonsDwellings {
@@ -53,7 +52,6 @@ public class GenerateHouseholdsPersonsDwellings {
         logger.info("   Running module: household, person and dwelling generation");
         previousHouseholds = 0;
         previousPersons = 0;
-        //initializeQualityAndIncomeDistributions();
         householdDataManager = dataContainer.getHouseholdData();
         for (int municipality : dataSetSynPop.getMunicipalities()){
             initializeMunicipalityData(municipality);
@@ -74,7 +72,6 @@ public class GenerateHouseholdsPersonsDwellings {
                 }
             }
         }
-        generateVacantDwellings();
     }
 
 
@@ -119,8 +116,10 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private void generateDwelling(int hhSelected, int idHousehold, int tazSelected, int municipality){
 
-        int newDdId = RealEstateDataManager.getNextDwellingId();
-        int year = dataSetSynPop.getDwellingTable().get(hhSelected, "ddYear");
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        int newDdId = realEstate.getNextDwellingId();
+        int yearBracket = dataSetSynPop.getDwellingTable().get(hhSelected, "ddYear");
+        int year = microDataManager.dwellingYearfromBracket(yearBracket);
         int floorSpace = dataSetSynPop.getDwellingTable().get(hhSelected, "ddFloor");
         int useInteger = dataSetSynPop.getDwellingTable().get(hhSelected, "ddUse");
         Dwelling.Usage usage = Dwelling.Usage.valueOf(useInteger);
@@ -128,45 +127,15 @@ public class GenerateHouseholdsPersonsDwellings {
         int ddHeatingEnergy = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingEnergy");
         int ddHeatingType = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingType");
         int ddAdHeating = dataSetSynPop.getDwellingTable().get(hhSelected, "ddAdHeating");
-        int quality = microDataManager.guessDwellingQuality(ddHeatingType, ddHeatingEnergy, ddAdHeating, year);
+        int quality = microDataManager.guessDwellingQuality(ddHeatingType, ddHeatingEnergy, ddAdHeating, yearBracket);
         DwellingType type = microDataManager.translateDwellingType(buildingSize, ddTypeProbOfSFAorSFD, ddTypeProbOfMF234orMF5plus);
         int bedRooms = microDataManager.guessBedrooms(floorSpace);
         int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
         int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, usage);
-        Dwelling dwell = dataContainer.getRealEstateData().createDwelling(newDdId, tazSelected, idHousehold, type , bedRooms, quality, price, 0, year);
+        Dwelling dwell = realEstate.createDwelling(newDdId, tazSelected, idHousehold, type , bedRooms, quality, price, 0, year);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
         dwell.setBuildingSize(buildingSize);
-        updateQualityMap(municipality, year, quality);
-    }
-
-
-    private void generateVacantDwellings(){
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        for (int municipality : dataSetSynPop.getMunicipalities()){
-            int vacantDwellings =(int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "totalDwellingsVacant");
-            initializeVacantDwellingData(municipality);
-            int vacantCounter = 0;
-            int[] tazSelection = selectMultipleTAZ(vacantDwellings);
-
-            for (int draw = 0; draw < vacantDwellings; draw++){
-                int tazSelected = tazSelection[draw];
-                int newDdId = RealEstateDataManager.getNextDwellingId();
-                int floorSpace = microDataManager.guessFloorSpace(SiloUtil.select(probVacantFloor));
-                int buildingYear = SiloUtil.select(probVacantBuildingSize);
-                int year = extractYear(buildingYear);
-                DwellingType type = extractDwellingType(buildingYear, ddTypeProbOfSFAorSFD, ddTypeProbOfMF234orMF5plus);
-                int bedRooms = microDataManager.guessBedrooms(floorSpace);
-                int quality = selectQualityVacant(municipality, year);
-                int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
-                int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, Dwelling.Usage.VACANT);
-                Dwelling dwell = realEstate.createDwelling(newDdId, tazSelected, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                dwell.setUsage(Dwelling.Usage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
-                dwell.setFloorSpace(floorSpace);
-                vacantCounter++;
-            }
-            logger.info("Municipality " + municipality + ". Generated vacant dwellings: " + vacantCounter);
-        }
     }
 
 
@@ -204,8 +173,6 @@ public class GenerateHouseholdsPersonsDwellings {
             probMicroData.put(id, dataSetSynPop.getWeights().getValueAt(id, Integer.toString(municipality)));
         }
         for (int i = 0; i < probabilityId.length; i++){
-/*            sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
-            probabilityId[i] = sumProbabilities;*/
             sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
             probabilityId[i] = dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
             ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i+1, "ID");
@@ -220,123 +187,6 @@ public class GenerateHouseholdsPersonsDwellings {
         sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
         personCounter = 0;
         householdCounter = 0;
-    }
-
-
-    private void initializeQualityAndIncomeDistributions(){
-
-        previousHouseholds = 0;
-        previousPersons = 0;
-
-        ddQuality = new HashMap<>();
-        for (int year : PropertiesSynPop.get().main.yearBracketsDwelling){
-            Iterator<Integer> iterator = dataSetSynPop.getMunicipalities().iterator();
-            while (iterator.hasNext()) {
-                Integer municipality = iterator.next();
-                HashMap<Integer, Float> qualities = new HashMap<>();
-                for (int quality = 1; quality <= PropertiesSynPop.get().main.numberofQualityLevels; quality++){
-                    qualities.put(quality, 0f);
-                }
-                int key = year * 10000000 + municipality;
-                ddQuality.put(key, qualities);
-            }
-        }
-    }
-
-
-    private void updateQualityMap(int municipality, int year, int quality){
-
-        int yearBracket = microDataManager.dwellingYearBracket(year);
-        int key = yearBracket * 10000000 + municipality;
-        if (ddQuality != null) {
-            if (ddQuality.get(key) != null) {
-                Map<Integer, Float> qualities = ddQuality.get(key);
-                if (qualities.get(quality) != null) {
-                    float prev = 1 + qualities.get(quality);
-                    qualities.put(quality, prev);
-                } else {
-                    qualities.put(quality, 1f);
-                }
-                ddQuality.put(key, qualities);
-            } else {
-                Map<Integer, Float> qualities = new HashMap<>();
-                qualities.put(quality, 1f);
-                ddQuality.put(key, qualities);
-            }
-        } else {
-            ddQuality = new HashMap<>();
-            Map<Integer, Float> qualities = new HashMap<>();
-            qualities.put(quality, 1f);
-            ddQuality.put(key, qualities);
-        }
-    }
-
-
-    private void initializeVacantDwellingData(int municipality){
-
-        probVacantFloor = new HashMap<>();
-        for (int floor : PropertiesSynPop.get().main.sizeBracketsDwelling) {
-            probVacantFloor.put(floor, PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "vacantDwellings" + floor));
-        }
-        probVacantBuildingSize = new HashMap<>();
-        for (int year : PropertiesSynPop.get().main.yearBracketsDwelling){
-            int sizeYear = year;
-            String label = "vacantSmallDwellings" + year;
-            probVacantBuildingSize.put(sizeYear, PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, label));
-            sizeYear = year + 10;
-            label = "vacantMediumDwellings" + year;
-            probVacantBuildingSize.put(sizeYear, PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, label));
-
-        }
-        ddTypeProbOfSFAorSFD = PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality,"ddProbSFAorSFD");
-        ddTypeProbOfMF234orMF5plus = PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality,"ddProbMF234orMF5plus");
-    }
-
-
-    private int extractYear(int buildingYear){
-
-        int year = 0;
-        if (buildingYear < 10){
-            year = buildingYear;
-        } else {
-            year = buildingYear - 10;
-        }
-        return year;
-    }
-
-
-    private DwellingType extractDwellingType (int buildingYear, float ddType1Prob, float ddType3Prob){
-
-        DwellingType type = DwellingType.SFA;
-
-        if (buildingYear < 10){
-            if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
-                type = DwellingType.SFD;
-            } else {
-                type = DwellingType.SFA;
-            }
-        } else {
-            if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
-                type = DwellingType.MF5plus;
-            }
-        }
-
-
-        return type;
-    }
-
-
-    private int selectQualityVacant(int municipality, int year){
-        int result = 0;
-        if (ddQuality.get(year * 10000000 + municipality) == null) {
-            HashMap<Integer, Float> qualities = new HashMap<>();
-            for (int quality = 1; quality <= PropertiesSynPop.get().main.numberofQualityLevels; quality++){
-                qualities.put(quality, 1f);
-            }
-            ddQuality.put(year * 10000000 + municipality, qualities);
-        }
-        result = SiloUtil.select(ddQuality.get(year * 10000000 + municipality));
-        return result;
     }
 
 

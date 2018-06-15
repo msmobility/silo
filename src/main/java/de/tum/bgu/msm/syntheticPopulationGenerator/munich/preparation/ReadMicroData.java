@@ -116,6 +116,9 @@ public class ReadMicroData {
         dataSetSynPop.setPersonDataSet(personDataSet);
         dataSetSynPop.setHouseholdDataSet(householdDataSet);
         dataSetSynPop.setDwellingDataSet(dwellingDataSet);
+        SiloUtil.writeTableDataSet(personDataSet,"microData/interimFiles/persons.csv");
+        SiloUtil.writeTableDataSet(householdDataSet,"microData/interimFiles/households.csv");
+        SiloUtil.writeTableDataSet(dwellingDataSet,"microData/interimFiles/dwellings.csv");
     }
 
 
@@ -226,5 +229,22 @@ public class ReadMicroData {
             }
         }
     }
+
+    private float convertToFloat(String s){
+        try {
+            return Float.parseFloat(s.trim());
+        } catch (Exception e) {
+            boolean spacesOnly = true;
+            for (int pos = 0; pos < s.length(); pos++) {
+                if (!s.substring(pos, pos+1).equals(" ")) spacesOnly = false;
+            }
+            if (spacesOnly) return -999;
+            else {
+                logger.fatal("String " + s + " cannot be converted into an integer.");
+                return 0;
+            }
+        }
+    }
+
 
 }
