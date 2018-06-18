@@ -53,7 +53,7 @@ public class BaseYearDisabilityModel {
     private void assignDisability(Person person){
         double disabilityProb = calculator.calculateBaseYearDisabilityProbability(person.getAge(), person.getGender());
         if (SiloUtil.getRandomNumberAsDouble() < disabilityProb){
-            double disabilityTypeProb = calculator.calculateDisabilityTypeProbability(person.getAge(), person.getGender());
+            double disabilityTypeProb = calculator.probabilityForPhysicalDisability(person.getAge(), person.getGender());
             if (SiloUtil.getRandomNumberAsDouble() < disabilityTypeProb){
                 person.setDisability(Disability.physical);
             } else {

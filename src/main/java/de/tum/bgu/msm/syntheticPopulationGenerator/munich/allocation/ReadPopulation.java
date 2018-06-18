@@ -138,11 +138,11 @@ public class ReadPopulation {
                     license = true;
                 }
                 int schoolDE = Integer.parseInt(lineElements[posSchoolDE]);
-                int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
+                //int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
                 pp.setEducationLevel(education);
                 pp.setJobTAZ(workZone);
-                pp.setSchoolPlace(schoolTAZ);
+                //pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
                 if (posDisability > 0){

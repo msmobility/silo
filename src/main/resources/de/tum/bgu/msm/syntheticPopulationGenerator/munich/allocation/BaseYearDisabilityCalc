@@ -77,7 +77,7 @@ var calculateBaseYearDisabilityProbability = function(personAge, personSex) {
 }
 
 
-var calculateDisabilityTypeProbability = function(personAge, personSex) {
+var probabilityForPhysicalDisability = function(personAge, personSex) {
 
  alpha = 0.;
 

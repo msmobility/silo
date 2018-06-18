@@ -14,7 +14,7 @@ public class BaseYearDisabilityJSCalculator extends JavaScriptCalculator<Double>
         return super.calculate("calculateBaseYearDisabilityProbability", personAge, personSex);
     }
 
-    public double calculateDisabilityTypeProbability(int personAge, int personSex){
+    public double probabilityForPhysicalDisability(int personAge, int personSex){
         return super.calculate("probabilityForPhysicalDisability", personAge, personSex);
     }
 }

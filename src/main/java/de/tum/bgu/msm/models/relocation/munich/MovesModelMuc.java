@@ -177,7 +177,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         // data preparation
         int wrkCount = 0;
         for (Person pp: persons) {
-            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() > 0) {
                 wrkCount++;
             }
         }
@@ -187,7 +187,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         Race householdRace = persons.get(0).getRace();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
-            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() > 0) {
                 workZones[pos] = jobData.getJobFromId(pp.getWorkplace()).getZone();
                 pos++;
                 householdIncome += pp.getIncome();
@@ -195,6 +195,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
                     householdRace = Race.black; //changed this so race is a proxy of nationality
                 }
             }
+
         }
         if (householdRace == Race.other) {
             householdRace = Race.black;
