@@ -39,7 +39,7 @@ public class GenerateSchoolMicrolocation {
         //Select the school to allocate the student
         int errorSchool = 0;
         
-        Iterator<Person> studentList = dataContainer.getHouseholdData().getPersons().stream().filter(person -> person.isStudent(person)).iterator();
+        Iterator<Person> studentList = dataContainer.getHouseholdData().getPersons().stream().filter(person -> person.getOccupation() == 3).iterator();
         while (studentList.hasNext()){
             Person student = studentList.next();
             int zoneID = student.getSchoolPlace();
@@ -61,7 +61,6 @@ public class GenerateSchoolMicrolocation {
 
         }
         logger.info("Number of errorschool:" + errorSchool);
-
 
         logger.info("   Finished school microlocation.");
     }
@@ -99,14 +98,5 @@ public class GenerateSchoolMicrolocation {
             }
 
         }
-    }
-
-
-    private static float getSum(Collection<? extends Number> values) {
-        float sm = 0.f;
-        for (Number value : values) {
-            sm += value.doubleValue();
-        }
-        return sm;
     }
 }

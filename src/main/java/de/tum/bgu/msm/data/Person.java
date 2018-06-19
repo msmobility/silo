@@ -187,19 +187,6 @@ public final class Person implements Id {
         this.schoolCoord = schoolCoord;
     }
 
-
-    //Qin
-    private boolean isStudent;
-
-    public void setStudent(boolean student) {
-        isStudent = student;
-    }
-
-    public boolean isStudent(Person person) {
-        return isStudent;
-    }
-    //Qin
-
     @Override
     public String toString() {
         return "Attributes of person " + id

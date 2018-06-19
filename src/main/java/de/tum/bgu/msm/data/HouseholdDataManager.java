@@ -265,7 +265,7 @@ public class HouseholdDataManager {
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
-            //int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
+            int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -282,10 +282,10 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-//                boolean license = true;
-//                if (Integer.parseInt(lineElements[posDriver]) == 0){
-//                    license = false;
-//                }
+                boolean license = true;
+                if (Integer.parseInt(lineElements[posDriver]) == 0){
+                    license = false;
+                }
                 Household household = households.get(hhid);
                 if(household == null) {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
@@ -293,7 +293,7 @@ public class HouseholdDataManager {
                 Person pp = createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
                 addPersonToHousehold(pp, household);
                 pp.setRole(pr);
-                //pp.setDriverLicense(license);
+                pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(pp.toString());

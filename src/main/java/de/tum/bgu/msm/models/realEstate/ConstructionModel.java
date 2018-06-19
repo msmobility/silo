@@ -201,6 +201,13 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 .createDwelling(ddId, zoneId, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
+
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
+                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+            }
+        }
+
         double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
@@ -213,9 +220,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     @Override
-    public void finishYear(int year) {
-
-    }
+    public void finishYear(int year) {}
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone

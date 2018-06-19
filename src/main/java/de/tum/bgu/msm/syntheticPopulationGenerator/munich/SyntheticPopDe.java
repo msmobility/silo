@@ -52,7 +52,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Preparation(dataSetSynPop).run();
 
         logger.info("Running Module: Optimization IPU");
-        //new Optimization(dataSetSynPop).run();
+        new Optimization(dataSetSynPop).run();
 
         logger.info("Running Module: Allocation");
         new Allocation(dataSetSynPop, dataContainer).run();

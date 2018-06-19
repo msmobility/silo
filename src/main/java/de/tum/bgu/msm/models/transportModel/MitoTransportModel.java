@@ -57,6 +57,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
+				//set mitoPerson's work/school microlocation
+				mitoPerson.setOccupationCoord(person.getOccupation()==3?person.getSchoolCoord(): dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
@@ -82,9 +84,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			MitoZone zone = zones.get(zoneId);
 
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
-			//Qin
+			//set mitoHousehold's microlocation
 			household.setHomeCoord(dwelling.getCoord());
-			//Qin
 			thhs.put(household.getId(), household);
 
 		}
