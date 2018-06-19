@@ -267,21 +267,24 @@ public class SiloUtil {
         }
     }
 
-    //TODO REFACTOR SELECT METHODS TO USE GENERICS
+    @Deprecated
     public static int select (double[] probabilities) {
         // select item based on probabilities (for zero-based double array)
        return select(probabilities, getSum(probabilities), rand);
     }
 
+    @Deprecated
     public static int select(double[] probabilities, Random random) {
         return select(probabilities, getSum(probabilities), random);
     }
 
+    @Deprecated
     public static int select (double[] probabilities, double sumProb) {
         // select item based on probabilities (for zero-based double array)
         return select(probabilities, getSum(probabilities), rand);
     }
 
+    @Deprecated
     public static int select (double[] probabilities, double sumProb, Random random) {
         // select item based on probabilities (for zero-based double array)
         double selPos = sumProb * random.nextFloat();
@@ -295,6 +298,7 @@ public class SiloUtil {
         return probabilities.length - 1;
     }
 
+    @Deprecated
     public static int select (float[] probabilities) {
         // select item based on probabilities (for zero-based float array)
         float selPos = getSum(probabilities) * getRandomNumberAsFloat();
@@ -308,6 +312,7 @@ public class SiloUtil {
         return probabilities.length - 1;
     }
 
+    @Deprecated
     public static int select (double[] probabilities, int[] id) {
         // select item based on probabilities (for zero-based float array)
         double selPos = getSum(probabilities) * getRandomNumberAsFloat();
@@ -322,7 +327,7 @@ public class SiloUtil {
         return id[probabilities.length - 1];
     }
 
-
+    @Deprecated
     public static int select (float[] probabilities, int length, int[] name){
         //select item based on probabilities and return the name
         //probabilities and name have more items than the required (max number of required items is set on "length")
