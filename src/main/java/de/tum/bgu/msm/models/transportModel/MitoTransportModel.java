@@ -23,7 +23,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
 	private MitoModel mito;
-    private final TravelTimes travelTimes;
+    private TravelTimes travelTimes;
     private final String propertiesPath;
     private final String baseDirectory;
 
@@ -44,27 +44,16 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     	updateData(year);
     	logger.info("  Running travel demand model MITO for the year " + year);
     	mito.runModel();
-
-    	testChangesInTravelTimes();
+		travelTimes = mito.getData().getTravelTimes();
     }
 
-	private void testChangesInTravelTimes() {
-    	logger.warn("TESTING TRAVEL TIMES FROM MITO MATSim");
-    	int[] origins = new int[]{10,504,3400,2256};
-		int[] destinations = new int[]{45,39,117,3800,4500};
-
-		for (int origin: origins){
-			for (int destination : destinations){
-				logger.warn("Travel time between " + origin + " and " + destination +  " is " + travelTimes.getTravelTime(origin, destination, 8*3600, TransportMode.car));
-			}
-		}
 
 
-	}
 
 	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
+			//todo do we really need this area type? Later is read for mode choice at least
 			AreaTypes.SGType areaType = AreaTypes.SGType.RURAL; //TODO: put real area type in here
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
 			zones.put(zone.getId(), zone);
@@ -86,6 +75,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
         logger.info("  SILO data being sent to MITO");
         Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year);
         mito.feedData(feed);
+        travelTimes = null;
+
     }
 
 	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
