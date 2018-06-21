@@ -9,6 +9,7 @@ import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,29 +22,38 @@ import java.util.Map;
 public final class MitoTransportModel extends AbstractModel implements TransportModelI {
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-	private final MitoModel mito;
-    private final TravelTimes travelTimes;
+	private MitoModel mito;
+    private TravelTimes travelTimes;
+    private final String propertiesPath;
+    private final String baseDirectory;
 
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, TravelTimes travelTimes) {
     	super(dataContainer);
     	this.travelTimes = travelTimes;
-		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
-        this.mito = MitoModel.standAloneModel(propertiesPath);
-        this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
-        setBaseDirectory(baseDirectory);
+		this.propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
+		this.baseDirectory = baseDirectory;
+
 	}
 
     @Override
     public void runTransportModel(int year) {
+		this.mito = MitoModel.initializeModelFromSilo(propertiesPath);
+		this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+		setBaseDirectory(baseDirectory);
     	MitoModel.setScenarioName (Properties.get().main.scenarioName);
-    	updateData();
+    	updateData(year);
     	logger.info("  Running travel demand model MITO for the year " + year);
     	mito.runModel();
+		travelTimes = mito.getData().getTravelTimes();
     }
-    
-    private void updateData() {
+
+
+
+
+	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
+			//todo do we really need this area type? Later is read for mode choice at least
 			AreaTypes.SGType areaType = AreaTypes.SGType.RURAL; //TODO: put real area type in here
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
 			zones.put(zone.getId(), zone);
@@ -63,8 +73,10 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		}
 
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households);
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year);
         mito.feedData(feed);
+        travelTimes = null;
+
     }
 
 	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
