@@ -80,7 +80,7 @@ public class Accessibility {
         LOGGER.info("Initializing trip length frequency distributions");
         readWorkTripLengthFrequencyDistribution();
         LOGGER.info("Initializing travel times to regions");
-        calculateTravelTimesToRegions();
+        calculateMinTravelTimesToRegions();
     }
 
     public void calculateHansenAccessibilities(int year) {
@@ -162,7 +162,7 @@ public class Accessibility {
         final int size = Math.toIntExact(population.size());
         final DoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0, 0, size, size).copy();
         return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
-                Math.pow(population.getQuick(destination), alpha) * Math.exp(beta * travelTime));
+                travelTime > 0 ? Math.pow(population.getQuick(destination), alpha) * Math.exp(beta * travelTime) : 0);
     }
 
     private void readWorkTripLengthFrequencyDistribution() {
@@ -179,11 +179,22 @@ public class Accessibility {
         }
     }
 
-    private void calculateTravelTimesToRegions() {
+    private void calculateMinTravelTimesToRegions() {
         geoData.getZones().values(). forEach( z -> {
             geoData.getRegions().values().stream().forEach( r -> {
                 double min = r.getZones().stream().mapToDouble(zoneInRegion ->
                         getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+                travelTimeToRegion.put(z.getId(), r.getId(), min);
+            });
+        });
+    }
+
+    //this is method is proposed as an alternative for the calculation of time from zone to region
+    private void calculateAverageTravelTimesToRegions() {
+        geoData.getZones().values(). forEach( z -> {
+            geoData.getRegions().values().stream().forEach( r -> {
+                double min = r.getZones().stream().mapToDouble(zoneInRegion ->
+                        getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).average().getAsDouble();
                 travelTimeToRegion.put(z.getId(), r.getId(), min);
             });
         });

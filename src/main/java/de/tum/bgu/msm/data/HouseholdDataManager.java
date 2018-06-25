@@ -283,7 +283,7 @@ public class HouseholdDataManager {
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 boolean license = true;
-                if (Integer.parseInt(lineElements[posDriver]) == 0){
+                if (Boolean.parseBoolean(lineElements[posDriver])){
                     license = false;
                 }
                 Household household = households.get(hhid);
