@@ -44,15 +44,11 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             zones.put(zoneIds[i], zone);
         }
 
-        //Qin
         String zoneShapeFile = Properties.get().transportModel.matsimZoneShapeFile;
-        //Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
             int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-            //zoneFeatureMap.put(zoneId,feature);
             ((MunichZone)zones.get(zoneId)).setZoneFeature(feature);
         }
-        //Qin
 
     }
 
