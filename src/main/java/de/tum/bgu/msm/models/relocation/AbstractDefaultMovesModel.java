@@ -10,9 +10,7 @@ import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
@@ -23,29 +21,18 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    protected String uecFileName;
-    protected int dataSheetNumber;
-    protected int numAltsMoveOrNot;
 
-    protected double[][][] utilityRegion;
-
-    protected boolean logCalculationDwelling;
-    protected boolean logCalculationRegion;
-
-    private double parameter_MoveOrNotSlope;
-    private double parameter_MoveOrNotShift;
     private double[] averageHousingSatisfaction;
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
+    protected int year;
+
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        uecFileName = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
-        dataSheetNumber = Properties.get().moves.dataSheet;
-        logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         setupMoveOrNotMove();
         setupEvaluateDwellings();
         setupSelectRegionModel();
@@ -71,6 +58,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     @Override
     public List<MoveEvent> prepareYear(int year) {
+        this.year = year;
         final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
@@ -212,6 +200,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         }
         return (int) ((priceSum * 1f) / (counter * 1f) + 0.5f);
     }
+
+
 
 
     protected double convertAccessToUtility(double accessibility) {

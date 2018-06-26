@@ -25,8 +25,6 @@ public final class MicroSimulation {
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
-    private final Multiset<Class<? extends MicroEvent>> eventTimeRecorder = HashMultiset.create();
-
 
     public MicroSimulation(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
@@ -57,19 +55,16 @@ public final class MicroSimulation {
 
     private void processEvents() {
         LOGGER.info("  Processing events...");
-        for (Iterator<MicroEvent> it = events.iterator(); it.hasNext();) {
+        for (MicroEvent e: events) {
             timeTracker.reset();
-            MicroEvent event = it.next();
-            Class<? extends MicroEvent> klass= event.getClass();
+            Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
             //<T extends Event> void registerModel(Class<T> klass, MicroEventModel<T> model)
             // checks for the right type of model handlers
             @SuppressWarnings("unchecked")
-            boolean success = this.models.get(klass).handleEvent(event);
+            boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
-                eventCounter.add(event.getClass());
-            } else {
-                it.remove();
+                eventCounter.add(e.getClass());
             }
             timeTracker.record(klass.getSimpleName());
         }
@@ -80,7 +75,7 @@ public final class MicroSimulation {
             model.finishYear(year);
         }
         SummarizeData.resultFile("Count of simulated events");
-        LOGGER.info("Simulated " + events.size() + " events in total.");
+        LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
         for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
             SummarizeData.resultFile(event.getSimpleName() + "," + count);

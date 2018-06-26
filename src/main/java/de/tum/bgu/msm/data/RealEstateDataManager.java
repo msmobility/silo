@@ -268,7 +268,12 @@ public class RealEstateDataManager {
             Map<Integer, Float> shareOfRentsForThisIncCat = new HashMap<>();
             for (int rentCategory = 0; rentCategory <= rentCategories; rentCategory++) {
                 int thisRentAndIncomeCat = countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).count(rentCategory);
-                shareOfRentsForThisIncCat.put(rentCategory, thisRentAndIncomeCat/sum);
+                if (sum!=0) {
+                    shareOfRentsForThisIncCat.put(rentCategory, thisRentAndIncomeCat / sum);
+                } else {
+                    //todo if there is not a househould of this rent and this category the shares should be zero?
+                    shareOfRentsForThisIncCat.put(rentCategory, 0.f);
+                }
             }
             ddPriceByIncomeCategory.put(incomeCategory, shareOfRentsForThisIncCat);
         }

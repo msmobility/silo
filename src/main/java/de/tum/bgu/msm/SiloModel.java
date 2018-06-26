@@ -208,7 +208,7 @@ public final class SiloModel {
 			}
 			timeTracker.record("setupJobChange");
 
-
+			timeTracker.reset();
 			if (skimYears.contains(year) && !tdmYears.contains(year) &&
 					!Properties.get().transportModel.runTravelDemandModel &&
 					year != Properties.get().main.startYear) {
@@ -222,6 +222,7 @@ public final class SiloModel {
                         Properties.get().main.startYear, Properties.get());
                 modelContainer.getAcc().calculateHansenAccessibilities(year);
             }
+			timeTracker.record("calcAccessibilities");
 
             timeTracker.reset();
 			modelContainer.getDdOverwrite().addDwellings(year);
@@ -252,8 +253,12 @@ public final class SiloModel {
 			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
                     || Properties.get().main.createMstmOutput) {
                 if (tdmYears.contains(year + 1)) {
+					timeTracker.reset();
                     modelContainer.getTransportModel().runTransportModel(year + 1);
+					timeTracker.record("transportModel");
+					timeTracker.reset();
                     modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
+					timeTracker.record("calcAccessibilities");
                 }
             }
 

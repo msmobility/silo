@@ -13,8 +13,6 @@ public class SelectRegionJSCalculator extends JavaScriptCalculator<Double> {
         super(reader);
     }
 
-    //person discrimination can be race or nationality or any other attribute
-    // that implements PersonDiscrimination interface - this will need to be defined in the javascript
     public double calculateSelectRegionProbability(IncomeCategory incomeCategory, Nationality nationality, float price,
                                                    float accessibility, float share) {
         return super.calculate("calculateSelectRegionProbability", incomeCategory, nationality, price, accessibility, share);
