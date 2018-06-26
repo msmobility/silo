@@ -63,8 +63,6 @@ public final class Dwelling {
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
-
-    //Qin
     private Coord coord;
     public Coord getCoord() {
         return coord;
@@ -72,7 +70,6 @@ public final class Dwelling {
     public void setCoord(Coord coord) {
         this.coord = coord;
     }
-    //Qin
 
 
     Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,

@@ -57,10 +57,8 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("Running Module: Allocation");
         new Allocation(dataSetSynPop, dataContainer).run();
 
-        //Qin
         logger.info("Running Module: Microlocation");
         new Microlocation(dataSetSynPop,dataContainer).run();
-        //Qin
 
         logger.info("Running Module: Car ownership");
         new CreateCarOwnershipModel(dataContainer).run();

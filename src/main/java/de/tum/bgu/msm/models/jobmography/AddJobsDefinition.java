@@ -16,16 +16,12 @@ import java.util.concurrent.Callable;
 public class AddJobsDefinition extends EmploymentChangeDefinition implements Callable {
 
     public final List<Integer> ids;
-    //Qin
     public final GeoData geoData;
-    //Qin
 
     public AddJobsDefinition(int zone, int change, String jobType, SiloDataContainer dataContainer) {
         super(zone, change, jobType, dataContainer);
         this.ids = jobDataManager.getNextJobIds(change);
-        //Qin
         this.geoData = dataContainer.getGeoData();
-        //Qin
     }
 
     @Override
@@ -35,13 +31,11 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             int id = ids.get(i);
             synchronized (Job.class) {
                 jobDataManager.createJob(id, zone, -1, jobType);
-                //Qin
                 if(Properties.get().main.implementation == Implementation.MUNICH) {
                     if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
                         jobDataManager.getJobFromId(id).setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) geoData.getZones().get(zone)).getZoneFeature()));
                     }
                 }
-                //Qin
             }
             if (id == SiloUtil.trackJj) {
                 SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +

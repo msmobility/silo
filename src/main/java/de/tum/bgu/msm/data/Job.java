@@ -30,8 +30,6 @@ public final class Job {
     private final int zone;
     private int workerId;
     private final String type;
-
-    //Qin
     private Coord coord;
     public Coord getCoord() {
         return coord;
@@ -39,7 +37,6 @@ public final class Job {
     public void setCoord(Coord coord) {
         this.coord = coord;
     }
-    //Qin
 
     Job (int id, int zone, int workerId, String type) {
         this.id = id;

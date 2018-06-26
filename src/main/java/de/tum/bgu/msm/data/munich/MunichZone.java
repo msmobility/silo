@@ -8,8 +8,6 @@ public class MunichZone extends ZoneImpl {
 
     private final Coord coord;
     private double ptDistance;
-
-    //Qin
     private SimpleFeature zoneFeature;
     public SimpleFeature getZoneFeature() {
         return zoneFeature;
@@ -17,7 +15,6 @@ public class MunichZone extends ZoneImpl {
     public void setZoneFeature(SimpleFeature zoneFeature) {
         this.zoneFeature = zoneFeature;
     }
-    //Qin
 
     public MunichZone(int id, int msa, float area, Coord coord, double initialPTDistance) {
         super(id, msa, area);

@@ -124,13 +124,11 @@ public class ConstructionOverwrite extends AbstractModel {
             }
             Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
 
-            //Qin
             if(Properties.get().main.implementation == Implementation.MUNICH) {
                 if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
                     dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
                 }
             }
-            //Qin
 
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
