@@ -2,10 +2,7 @@ package de.tum.bgu.msm.data.munich;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.AbstractDefaultGeoData;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.RegionImpl;
-import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.Coord;
 
@@ -33,9 +30,12 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         double[] centroidY = zonalData.getColumnAsDouble("centroidY");
         double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
 
+        int[] areaTypes = zonalData.getColumnAsInt("BBSR");
+
         for(int i = 0; i < zoneIds.length; i++) {
             Coord centroid = new Coord(centroidX[i], centroidY[i]);
-            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
+            AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
+            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i]);
             zones.put(zoneIds[i], zone);
         }
     }
