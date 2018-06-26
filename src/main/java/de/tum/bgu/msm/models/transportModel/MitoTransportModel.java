@@ -77,7 +77,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		}
 
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year);
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year, dataContainer.getGeoData().getZoneFeatureMap());
         mito.feedData(feed);
         travelTimes = null;
 

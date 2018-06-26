@@ -48,6 +48,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
             int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
             ((MunichZone)zones.get(zoneId)).setZoneFeature(feature);
+            zoneFeatureMap.put(zoneId,feature);
         }
 
     }

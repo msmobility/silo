@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 
@@ -23,6 +24,11 @@ public interface GeoData {
      * Returns an immutable map of all regions mapped to their IDs
      */
     Map<Integer, Region> getRegions();
+
+    /**
+     * Returns an immutable map of all zoneFeatures mapped to their zone IDs
+     */
+    Map<Integer, SimpleFeature> getZoneFeatureMap();
 
     /**
      * @deprecated  As of jan'18. Use  {@link #getZones()} instead
