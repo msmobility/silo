@@ -5,12 +5,16 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -197,6 +201,13 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 .createDwelling(ddId, zoneId, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
+
+        if(Properties.get().main.implementation == Implementation.MUNICH) {
+            if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
+                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+            }
+        }
+
         double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesOfVacantDwelling(utils);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
@@ -209,9 +220,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     @Override
-    public void finishYear(int year) {
-
-    }
+    public void finishYear(int year) {}
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone

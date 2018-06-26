@@ -16,6 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
+import org.matsim.api.core.v01.Coord;
+
 /**
  * Class to hold job data
  * Author: Rolf Moeckel, PB Albuquerque
@@ -28,6 +30,13 @@ public final class Job {
     private final int zone;
     private int workerId;
     private final String type;
+    private Coord coord;
+    public Coord getCoord() {
+        return coord;
+    }
+    public void setCoord(Coord coord) {
+        this.coord = coord;
+    }
 
     Job (int id, int zone, int workerId, String type) {
         this.id = id;

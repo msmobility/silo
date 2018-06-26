@@ -16,6 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
+import org.matsim.api.core.v01.Coord;
+
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
@@ -61,6 +63,13 @@ public final class Dwelling {
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
+    private Coord coord;
+    public Coord getCoord() {
+        return coord;
+    }
+    public void setCoord(Coord coord) {
+        this.coord = coord;
+    }
 
 
     Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,

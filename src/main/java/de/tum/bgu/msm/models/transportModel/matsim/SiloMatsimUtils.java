@@ -150,6 +150,7 @@ public class SiloMatsimUtils {
     		matsimPerson.addPlan(matsimPlan);
 
     		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
+    		//TODO remove getRandomCoordinate when implementing microlocation
     		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
     		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
     		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
@@ -157,6 +158,7 @@ public class SiloMatsimUtils {
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
     		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
+			//TODO remove getRandomCoordinate when implementing microlocation
     		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
     		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
     		activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later

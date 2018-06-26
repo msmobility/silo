@@ -8,6 +8,11 @@ import de.tum.bgu.msm.data.RegionImpl;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.core.utils.gis.ShapeFileReader;
+import org.opengis.feature.simple.SimpleFeature;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
@@ -38,6 +43,14 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
             zones.put(zoneIds[i], zone);
         }
+
+        String zoneShapeFile = Properties.get().transportModel.matsimZoneShapeFile;
+        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
+            int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
+            ((MunichZone)zones.get(zoneId)).setZoneFeature(feature);
+            zoneFeatureMap.put(zoneId,feature);
+        }
+
     }
 
     @Override

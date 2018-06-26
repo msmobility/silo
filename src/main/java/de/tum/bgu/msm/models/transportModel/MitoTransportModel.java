@@ -11,6 +11,8 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
+
+import javax.measure.unit.SI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +67,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
+				//set mitoPerson's work/school microlocation
+				mitoPerson.setOccupationCoord(person.getOccupation()==3?person.getSchoolCoord(): dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
@@ -73,7 +77,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		}
 
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year);
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year, dataContainer.getGeoData().getZoneFeatureMap());
         mito.feedData(feed);
         travelTimes = null;
 
@@ -87,10 +91,15 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
 			if(dwelling != null) {
 				zoneId = dwelling.getZone();
+
 			}
 			MitoZone zone = zones.get(zoneId);
+
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
+			//set mitoHousehold's microlocation
+			household.setHomeCoord(dwelling.getCoord());
 			thhs.put(household.getId(), household);
+
 		}
 		return thhs;
 	}
