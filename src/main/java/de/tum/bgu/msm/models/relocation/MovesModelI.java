@@ -2,10 +2,12 @@ package de.tum.bgu.msm.models.relocation;
 
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdType;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 
+import java.util.EnumMap;
 import java.util.List;
 
 /**
@@ -17,7 +19,7 @@ public interface MovesModelI extends MicroEventModel<MoveEvent> {
 
     void calculateAverageHousingSatisfaction();
 
-    double[] updateUtilitiesOfVacantDwelling (Dwelling dd);
+    EnumMap<HouseholdType,Double> updateUtilitiesOfVacantDwelling (Dwelling dd);
 
     void calculateRegionalUtilities();
 

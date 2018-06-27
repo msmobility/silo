@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 
 /**
@@ -197,8 +198,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 .createDwelling(ddId, zoneId, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
-        double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
-        dd.setUtilitiesOfVacantDwelling(utils);
+        EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
+        dd.setUtilitiesByHouseholdType(utilities);
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
 
         if (ddId == SiloUtil.trackDd) {
