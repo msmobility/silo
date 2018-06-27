@@ -18,6 +18,8 @@ public class TransportModelPropertiesModule {
     public final boolean runMatsim;
     public final String matsimZoneShapeFile;
     public final String matsimZoneCRS;
+    public final String matsimZoneShapeIdField;
+
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
         modelYears = Arrays.stream(ResourceUtil.getIntegerArray(bundle, "transport.model.years"))
@@ -29,5 +31,6 @@ public class TransportModelPropertiesModule {
         runMatsim = ResourceUtil.getBooleanProperty(bundle, "matsim.run.travel.model", false);
         matsimZoneShapeFile = ResourceUtil.getProperty(bundle, "matsim.zones.shapefile");
         matsimZoneCRS = ResourceUtil.getProperty(bundle, "matsim.zones.crs");
+        matsimZoneShapeIdField = ResourceUtil.getProperty(bundle, "matsim.zones.sahape.id.field");
     }
 }

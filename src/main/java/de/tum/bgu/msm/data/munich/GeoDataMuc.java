@@ -44,13 +44,19 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             zones.put(zoneIds[i], zone);
         }
 
+        int countFeaturesWithoutCount = 0;
         String zoneShapeFile = Properties.get().transportModel.matsimZoneShapeFile;
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-            ((MunichZone)zones.get(zoneId)).setZoneFeature(feature);
-            zoneFeatureMap.put(zoneId,feature);
+            int zoneId = Integer.parseInt(feature.getAttribute(Properties.get().transportModel.matsimZoneShapeIdField).toString());
+            if(zones.containsKey(zoneId)) {
+                ((MunichZone) zones.get(zoneId)).setZoneFeature(feature);
+                zoneFeatureMap.put(zoneId,feature);
+            } else {
+                countFeaturesWithoutCount++;
+            }
         }
 
+        System.out.println("There are " + countFeaturesWithoutCount + " shp polygons not represented by SILO zones");
     }
 
     @Override
