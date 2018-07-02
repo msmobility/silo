@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 
 import java.io.*;
@@ -26,7 +27,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private SelectDwellingJSCalculator dwellingCalculator;
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
-    //private PrintWriter pw;
+//    private PrintWriter pw;
 //    private PrintWriter pw2;
 //    private PrintWriter pw3;
 
@@ -35,17 +36,16 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         super(dataContainer, accessibility);
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
-        /*try {
-            pw = new PrintWriter(new File("./listOfSelectedRegions.csv"));
-            pw2 = new PrintWriter(new File("./genericUtilitiesForDwellings.csv"));
-            pw3 = new PrintWriter(new File("./dwellingSelection.csv"));
-            pw.println("year,personId,hhId,workZone,region,timeRegionToWork");
-            pw2.println("year,dd,hhType,quality,bedrooms,auto_access,transit_access,price,genericUtil");
-            pw3.println("year,dd,dd_zone,genericUtility,workers,sum_commuting_time,workDistanceUtility,utility");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-*/
+//        try {
+//            pw = new PrintWriter(new File("./listOfSelectedRegions.csv"));
+//            pw2 = new PrintWriter(new File("./genericUtilitiesForDwellings.csv"));
+//            pw3 = new PrintWriter(new File("./dwellingSelection.csv"));
+//            pw.println("year,personId,hhId,workZone,region,timeRegionToWork");
+//            pw2.println("year,dd,hhType,quality,bedrooms,auto_access,transit_access,price,genericUtil");
+//            pw3.println("year,dd,dd_zone,genericUtility,workers,sum_commuting_time,workDistanceUtility,utility");
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
 
 
     }
@@ -246,14 +246,14 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         }
 
         //todo debugging
-        for(Person worker : workerZonesForThisHousehold.keySet()){
-           /* pw.println(year + "," +
-                    worker.getHh().getId() + "," +
-                    worker.getId() + "," +
-                    dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone() + "," +
-                    selectedRegionId  + "," +
-                    accessibility.getMinTravelTimeFromZoneToRegion(dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone(), selectedRegionId));*/
-        }
+//        for(Person worker : workerZonesForThisHousehold.keySet()){
+//            pw.println(year + "," +
+//                    worker.getHh().getId() + "," +
+//                    worker.getId() + "," +
+//                    dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone() + "," +
+//                    selectedRegionId  + "," +
+//                    accessibility.getMinTravelTimeFromZoneToRegion(dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone(), selectedRegionId));
+//        }
 
 
 
@@ -290,26 +290,26 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
                 transitAccessibilityUtility);
 
 
-       /* if(year == 2011) {
-            pw2.print(year);
-            pw2.print(",");
-            pw2.print(dd.getId());
-            pw2.print(",");
-            pw2.print(ht.toString());
-            pw2.print(",");
-            pw2.print(dd.getQuality());
-            pw2.print(",");
-            pw2.print(dd.getBedrooms());
-            pw2.print(",");
-            pw2.print(accessibility.getAutoAccessibilityForZone(dd.getZone()));
-            pw2.print(",");
-            pw2.print(accessibility.getTransitAccessibilityForZone(dd.getZone()));
-            pw2.print(",");
-            pw2.print(dd.getPrice());
-            pw2.print(",");
-            pw2.print(ddUtility);
-            pw2.println();
-        }*/
+//        if(year == 2011) {
+//            pw2.print(year);
+//            pw2.print(",");
+//            pw2.print(dd.getId());
+//            pw2.print(",");
+//            pw2.print(ht.toString());
+//            pw2.print(",");
+//            pw2.print(dd.getQuality());
+//            pw2.print(",");
+//            pw2.print(dd.getBedrooms());
+//            pw2.print(",");
+//            pw2.print(accessibility.getAutoAccessibilityForZone(dd.getZone()));
+//            pw2.print(",");
+//            pw2.print(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+//            pw2.print(",");
+//            pw2.print(dd.getPrice());
+//            pw2.print(",");
+//            pw2.print(ddUtility);
+//            pw2.println();
+//        }
 
         return ddUtility;
     }
@@ -340,26 +340,36 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double finalUtility = dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
 
-        /*pw3.print(year);
-        pw3.print(",");
-        pw3.print(dd.getId());
-        pw3.print(",");
-        pw3.print(dd.getZone());
-        pw3.print(",");
-        pw3.print(genericUtility);
-        pw3.print(",");
-        pw3.print(workerZonesForThisHousehold.size());
-        pw3.print(",");
-        pw3.print(sumOfCommutingTimeForThisHousehold);
-        pw3.print(",");
-        pw3.print(workDistanceUtility);
-        pw3.print(",");
-        pw3.print(finalUtility);
-        pw3.println();
-*/
+//        pw3.print(year);
+//        pw3.print(",");
+//        pw3.print(dd.getId());
+//        pw3.print(",");
+//        pw3.print(dd.getZone());
+//        pw3.print(",");
+//        pw3.print(genericUtility);
+//        pw3.print(",");
+//        pw3.print(workerZonesForThisHousehold.size());
+//        pw3.print(",");
+//        pw3.print(sumOfCommutingTimeForThisHousehold);
+//        pw3.print(",");
+//        pw3.print(workDistanceUtility);
+//        pw3.print(",");
+//        pw3.print(finalUtility);
+//        pw3.println();
 
         return finalUtility;
 
     }
+
+    @Override
+    public void finishYear(int year) {
+//        if (year == Properties.get().main.endYear){
+//            pw.close();
+//            pw2.close();
+//            pw3.close();
+//        }
+
+    }
+
 
 }
