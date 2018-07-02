@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.transportModel;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -9,6 +10,7 @@ import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.TransportMode;
 
 
@@ -67,8 +69,16 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
-				//set mitoPerson's work/school microlocation
-				mitoPerson.setOccupationCoord(person.getOccupation()==3?person.getSchoolCoord(): dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+
+				//TODO: remove it when we implement interface
+				if(Properties.get().main.implementation == Implementation.MUNICH){
+					if (person.getSchoolCoord() != null){
+						mitoPerson.setOccupationCoord(person.getSchoolCoord());
+					}else if(person.getWorkplace()>0){
+						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+					}
+				}
+
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
