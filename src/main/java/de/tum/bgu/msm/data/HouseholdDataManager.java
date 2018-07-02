@@ -16,6 +16,8 @@
  */
 package de.tum.bgu.msm.data;
 
+import com.sun.istack.internal.Pool;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -267,8 +269,6 @@ public class HouseholdDataManager {
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
-            int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
-            int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -285,7 +285,7 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Coord schoolCoord = new Coord(Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
+
                 boolean license = false;
                 if (Boolean.parseBoolean(lineElements[posDriver])){
                     license = true;
@@ -298,7 +298,15 @@ public class HouseholdDataManager {
                 addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
-                pp.setSchoolCoord(schoolCoord);
+
+                //TODO: remove it when we implement interface
+                if(Properties.get().main.implementation == Implementation.MUNICH){
+                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
+                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
+                    Coord schoolCoord = new Coord(Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
+                    pp.setSchoolCoord(schoolCoord);
+                }
+
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(pp.toString());

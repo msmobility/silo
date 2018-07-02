@@ -19,6 +19,7 @@ package de.tum.bgu.msm.data;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
@@ -139,8 +140,7 @@ public class JobDataManager {
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
-            int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
-            int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -150,9 +150,16 @@ public class JobDataManager {
                 int zone = Integer.parseInt(lineElements[posZone]);
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]),Double.parseDouble(lineElements[posCoordY]));
                 Job jj = createJob(id, zone, worker, type);
-                jj.setCoord(jobCoord);
+
+                //TODO: remove it when we implement interface
+                if(Properties.get().main.implementation == Implementation.MUNICH) {
+                    int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
+                    int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+                    Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+                    jj.setCoord(jobCoord);
+                }
+
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(jobs.get(id).toString());
