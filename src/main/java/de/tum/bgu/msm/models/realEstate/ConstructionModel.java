@@ -203,7 +203,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                         quality, price, restriction, currentYear);
 
         if(Properties.get().main.implementation == Implementation.MUNICH) {
-            if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
+            if(Properties.get().main.runDwellingMicrolocation) {
                 dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
             }
         }

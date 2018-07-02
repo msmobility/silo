@@ -8,6 +8,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.*;
 import java.util.*;
@@ -107,6 +108,8 @@ public class RealEstateDataManager {
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
             int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
+            int posCoordX = SiloUtil.findPositionInArray("coordX",header);
+            int posCoordY = SiloUtil.findPositionInArray("coordY",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -122,7 +125,9 @@ public class RealEstateDataManager {
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                createDwelling(id, zoneId, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Coord dwellingCoord = new Coord(Double.parseDouble(lineElements[posCoordX]),Double.parseDouble(lineElements[posCoordY]));
+                Dwelling dd = createDwelling(id, zoneId, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                dd.setCoord(dwellingCoord);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(dwellings.get(id).toString());

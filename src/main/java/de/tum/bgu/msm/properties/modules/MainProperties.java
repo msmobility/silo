@@ -45,6 +45,10 @@ public class MainProperties {
 
     public final Implementation implementation;
 
+    public final boolean runDwellingMicrolocation;
+    public final boolean runJobMicrolocation;
+    public final boolean runSchoolMicrolocation;
+
     public MainProperties(ResourceBundle bundle, Implementation implementation) {
         this.implementation = implementation;
         runSilo = ResourceUtil.getBooleanProperty(bundle, "run.silo.model", true);
@@ -75,5 +79,9 @@ public class MainProperties {
         bemModelYears = ResourceUtil.getIntegerArray(bundle, "bem.model.years");
         housingEnvironmentImpactFile = ResourceUtil.getProperty(bundle, "housing.environment.impact.file.name");
         prestoSummaryFile = ResourceUtil.getProperty(bundle, "presto.summary.file");
+
+        runDwellingMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
+        runJobMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.job.microlocation", false);
+        runSchoolMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.school.microlocation", false);
     }
 }

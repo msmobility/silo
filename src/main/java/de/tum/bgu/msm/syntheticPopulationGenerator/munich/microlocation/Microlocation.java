@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
@@ -18,15 +19,15 @@ public class Microlocation extends ModuleSynPop {
     @Override
     public void run(){
         logger.info("   Started microlocation model.");
-        if (PropertiesSynPop.get().main.runDwellingMicrolocation) {
+        if (Properties.get().main.runDwellingMicrolocation) {
             generateDwellingMicrolocation();
         }
 
-        if (PropertiesSynPop.get().main.runJobMicrolocation) {
+        if (Properties.get().main.runJobMicrolocation) {
             generateJobMicrolocation();
         }
 
-        if (PropertiesSynPop.get().main.runSchoolMicrolocation) {
+        if (Properties.get().main.runSchoolMicrolocation) {
             generateSchoolMicrolocation();
         }
 

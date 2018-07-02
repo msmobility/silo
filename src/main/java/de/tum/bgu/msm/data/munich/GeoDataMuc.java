@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.RegionImpl;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
@@ -21,6 +22,8 @@ import java.util.Map;
  **/
 
 public class GeoDataMuc extends AbstractDefaultGeoData {
+
+    private static final Logger logger = Logger.getLogger(GeoDataMuc.class);
 
     public GeoDataMuc() {
         super("Zone", "Region");
@@ -44,11 +47,16 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             zones.put(zoneIds[i], zone);
         }
 
-        String zoneShapeFile = Properties.get().transportModel.matsimZoneShapeFile;
+        String zoneShapeFile = Properties.get().geo.zoneShapeFile;
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("SMZRMZ").toString());
-            ((MunichZone)zones.get(zoneId)).setZoneFeature(feature);
-            zoneFeatureMap.put(zoneId,feature);
+            int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
+            MunichZone zone = (MunichZone) zones.get(zoneId);
+            if (zone != null){
+                zone.setZoneFeature(feature);
+                zoneFeatureMap.put(zoneId,feature);
+            }else{
+                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+            }
         }
 
     }

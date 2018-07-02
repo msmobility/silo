@@ -32,7 +32,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             synchronized (Job.class) {
                 jobDataManager.createJob(id, zone, -1, jobType);
                 if(Properties.get().main.implementation == Implementation.MUNICH) {
-                    if(PropertiesSynPop.get().main.runDwellingMicrolocation) {
+                    if(Properties.get().main.runDwellingMicrolocation) {
                         jobDataManager.getJobFromId(id).setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) geoData.getZones().get(zone)).getZoneFeature()));
                     }
                 }

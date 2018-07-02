@@ -25,6 +25,7 @@ import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.*;
 import java.util.*;
@@ -138,6 +139,8 @@ public class JobDataManager {
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
+            int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
+            int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -147,7 +150,9 @@ public class JobDataManager {
                 int zone = Integer.parseInt(lineElements[posZone]);
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                createJob(id, zone, worker, type);
+                Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]),Double.parseDouble(lineElements[posCoordY]));
+                Job jj = createJob(id, zone, worker, type);
+                jj.setCoord(jobCoord);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(jobs.get(id).toString());
