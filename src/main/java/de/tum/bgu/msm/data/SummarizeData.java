@@ -574,7 +574,7 @@ public class SummarizeData {
         String filepp = Properties.get().main.baseDirectory + Properties.get().householdData.personFileName + "_" +
                 year + ".csv";
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ,schoolX,schoolY");
+        pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ,schoolCoordX,schoolCoordY");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");

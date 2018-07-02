@@ -18,6 +18,7 @@ public class GeoProperties {
     public final String transitAccessTime;
     public final String zonalAttributesFile;
     public final String capacityFile;
+    public final String zoneShapeFile;
 
     public GeoProperties(ResourceBundle bundle, Implementation implementation) {
         zonalDataFile = ResourceUtil.getProperty(bundle, "zonal.data.file");
@@ -35,6 +36,7 @@ public class GeoProperties {
             zonalAttributesFile = null;
         }
         transitAccessTime = ResourceUtil.getProperty(bundle, "transit.access.time");
+        zoneShapeFile = ResourceUtil.getProperty(bundle, "zones.shapefile");
     }
 }
 

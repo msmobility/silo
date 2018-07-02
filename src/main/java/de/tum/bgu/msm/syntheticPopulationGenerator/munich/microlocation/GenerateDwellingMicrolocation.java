@@ -52,46 +52,9 @@ public class GenerateDwellingMicrolocation {
                 zoneBuildingMap.get(zoneID).put(selectedBuildingID, 0.0);
             }
             dd.setCoord(new Coord(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID)));
-
-            //for test
-            if (dwellingCount.get(selectedBuildingID) ==null){
-                dwellingCount.put(selectedBuildingID,0);
-            }
-
-            int count = dwellingCount.get(selectedBuildingID);
-            dwellingCount.put(selectedBuildingID,(count + 1));
-            //for test
-
         }
 
         logger.info("Number of errorBuilding:" + errorBuilding);
-
-
-        //for test
-        String filetest = "C:/Users/Qin/Desktop/dwellingMicrolocation.csv";
-        PrintWriter pwt = SiloUtil.openFileForSequentialWriting(filetest, false);
-        pwt.println("dwellingid,area,zone,x,y,count");
-        for (int id: buildingX.keySet()){
-            pwt.print(id);
-            pwt.print(",");
-            pwt.print(buildingArea.get(id));
-            pwt.print(",");
-            pwt.print(buildingZone.get(id));
-            pwt.print(",");
-            pwt.print(buildingX.get(id));
-            pwt.print(",");
-            pwt.print(buildingY.get(id));
-            pwt.print(",");
-            if(dwellingCount.get(id) ==null){
-                pwt.println(0);
-            }else{
-                pwt.println(dwellingCount.get(id));
-            }
-
-        }
-        pwt.close();
-        //for test
-
         logger.info("   Finished dwelling microlocation.");
     }
 

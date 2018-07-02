@@ -64,39 +64,8 @@ public class GenerateJobMicrolocation {
             }
             jj.setCoord(new Coord(jobX.get(selectedJobID),jobY.get(selectedJobID)));
 
-            //for test only
-            if (jobCount.get(selectedJobID) ==null){
-                jobCount.put(selectedJobID,0);
-            }
-            int count = jobCount.get(selectedJobID);
-            jobCount.put(selectedJobID,(count + 1));
-            //for test only
-            
         }
         logger.info("Number of errorjob:" + errorjob);
-
-        //for test only
-        String filetest = "C:/Users/Qin/Desktop/testJob.csv";
-        PrintWriter pwt = SiloUtil.openFileForSequentialWriting(filetest, false);
-        pwt.println("jobid,area,x,y,jobCount");
-        for (int id: jobX.keySet()){
-            pwt.print(id);
-            pwt.print(",");
-            pwt.print(jobArea.get(id));
-            pwt.print(",");
-            pwt.print(jobX.get(id));
-            pwt.print(",");
-            pwt.print(jobY.get(id));
-            pwt.print(",");
-            if(jobCount.get(id) ==null){
-                pwt.println(0);
-            }else{
-                pwt.println(jobCount.get(id));
-            }
-        }
-        pwt.close();
-        //for test only
-
         logger.info("   Finished job microlocation.");
     }
 

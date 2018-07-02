@@ -60,9 +60,7 @@ public class MainPropertiesSynPop {
     public final boolean boroughIPU;
     public final TableDataSet selectedBoroughs;
     public final GammaDistributionImpl incomeGammaDistribution;
-    public final boolean runDwellingMicrolocation;
-    public final boolean runJobMicrolocation;
-    public final boolean runSchoolMicrolocation;
+
     public final TableDataSet buildingLocationlist;
     public final TableDataSet jobLocationlist;
     public final TableDataSet schoolLocationlist;
@@ -153,9 +151,6 @@ public class MainPropertiesSynPop {
         }
 
 
-        runDwellingMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
-        runJobMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.job.microlocation", false);
-        runSchoolMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.school.microlocation", false);
         buildingLocationlist = SiloUtil.readCSVfile(bundle.getString("buildingLocation.list"));
         jobLocationlist = SiloUtil.readCSVfile(bundle.getString("jobLocation.list"));
         schoolLocationlist = SiloUtil.readCSVfile(bundle.getString("schoolLocation.list"));

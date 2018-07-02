@@ -16,12 +16,14 @@
  */
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.*;
 import java.util.*;
@@ -282,6 +284,7 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
+
                 boolean license = false;
                 if (Boolean.parseBoolean(lineElements[posDriver])){
                     license = true;
@@ -294,6 +297,15 @@ public class HouseholdDataManager {
                 addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
+
+                //TODO: remove it when we implement interface
+                if(Properties.get().main.implementation == Implementation.MUNICH){
+                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
+                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
+                    Coord schoolCoord = new Coord(Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
+                    pp.setSchoolCoord(schoolCoord);
+                }
+
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(pp.toString());
