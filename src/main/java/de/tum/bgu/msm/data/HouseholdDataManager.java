@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import com.sun.istack.internal.Pool;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
