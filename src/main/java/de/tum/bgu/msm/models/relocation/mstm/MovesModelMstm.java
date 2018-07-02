@@ -8,13 +8,13 @@ package de.tum.bgu.msm.models.relocation.mstm;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import com.pb.common.calculator.UtilityExpressionCalculator;
+//import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
-import de.tum.bgu.msm.models.relocation.MovesDMU;
+//import de.tum.bgu.msm.models.relocation.MovesDMU;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
@@ -32,8 +32,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     protected EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
 
-    private UtilityExpressionCalculator selectRegionModel;
-    private MovesDMU selectRegionDmu;
+//    private UtilityExpressionCalculator selectRegionModel;
+    //private MovesDMU selectRegionDmu;
     private DoubleMatrix2D zonalRacialComposition;
     private DoubleMatrix2D regionalRacialComposition;
     private DoubleMatrix1D hhByRegion;
