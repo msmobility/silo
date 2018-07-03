@@ -21,7 +21,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
     protected final Map<Integer, Region> regions = new LinkedHashMap<>();
-    public Map<Integer, SimpleFeature> zoneFeatureMap = new LinkedHashMap<>();
+    public Map<Integer, SimpleFeature> zoneFeatureMap = new LinkedHashMap<>();;
 
     private int[] developableLUtypes;
     private TableDataSet landUse;
