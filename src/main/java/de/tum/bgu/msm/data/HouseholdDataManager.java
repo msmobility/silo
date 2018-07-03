@@ -284,11 +284,7 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-
-                boolean license = false;
-                if (Boolean.parseBoolean(lineElements[posDriver])){
-                    license = true;
-                }
+                boolean license = Boolean.parseBoolean(lineElements[posDriver]);
                 Household household = households.get(hhid);
                 if(household == null) {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());

@@ -8,13 +8,13 @@ package de.tum.bgu.msm.models.relocation.mstm;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import com.pb.common.calculator.UtilityExpressionCalculator;
+//import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
-import de.tum.bgu.msm.models.relocation.MovesDMU;
+//import de.tum.bgu.msm.models.relocation.MovesDMU;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
@@ -32,8 +32,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     protected EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
 
-    private UtilityExpressionCalculator selectRegionModel;
-    private MovesDMU selectRegionDmu;
+//    private UtilityExpressionCalculator selectRegionModel;
+    //private MovesDMU selectRegionDmu;
     private DoubleMatrix2D zonalRacialComposition;
     private DoubleMatrix2D regionalRacialComposition;
     private DoubleMatrix1D hhByRegion;
@@ -194,7 +194,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHoueseholdType(HouseholdType ht, Race race, Collection<Integer> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Race race, Collection<Integer> workZones){
         Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race));
 
@@ -244,7 +244,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
         // Step 1: select region
         Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
-        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHoueseholdType(ht, householdRace, workerZonesForThisHousehold.values()));
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHouesehold(ht, householdRace, workerZonesForThisHousehold.values()));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
@@ -300,21 +300,16 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
                 racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZone()).getId(), householdRace);
             }
             // multiply by racial share to make zones with higher own racial share more attractive
-            double adjProb;
-            if (householdQualifiesForSubsidy(householdIncome, geoData.getZones().get(dd.getZone()).getId(), dd.getPrice())) {
-                adjProb = Math.pow(calculateDwellingUtilityOfHousehold(ht, householdIncome, dd), (1 - selectDwellingRaceRelevance)) *
-                        Math.pow(racialShare, selectDwellingRaceRelevance);
-            } else {
-                adjProb = Math.pow(dd.getUtilByHhType()[ht.ordinal()], (1 - selectDwellingRaceRelevance)) *
-                        Math.pow(racialShare, selectDwellingRaceRelevance);
-            }
-            //expProbs[i] = Math.exp(parameter_SelectDD * adjProb);
+
+            double utility = calculateDwellingUtilityForHouseholdType(ht, dd);
+            utility = personalizeDwellingUtilityForThisHousehold(persons, dd, householdIncome, utility);
+
+
+            double adjustedUtility = Math.pow(utility, (1 - selectDwellingRaceRelevance)) *
+                    Math.pow(racialShare, selectDwellingRaceRelevance);
 
             //adjProbability is the adjusted dwelling utility
-            expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(adjProb);
-
-
-
+            expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(adjustedUtility);
 
         }
         if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
@@ -325,33 +320,52 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
 
     @Override
-    protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd) {
+    protected double calculateDwellingUtilityForHouseholdType(HouseholdType ht, Dwelling dd) {
 
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+        double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 
-        int price = dd.getPrice();
-        if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
-            // housing subsidy program in place
-            int msa = geoData.getZones().get(dd.getZone()).getMsa();
-            if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
-                float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
-                float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;
-                price = Math.max(0, price - (int) (subsidy + 0.5));
-            }
-        }
-
-        double ddPriceUtility = convertPriceToUtility(price, ht);
-
-        double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+        return dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
-                transitAccessibilityUtility, 0.0, 0.0);
-
-        return ddUtility;
+                transitAccessibilityUtility);
     }
 
+    @Override
+    protected double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dd, int income, double genericUtility) {
+        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
+        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
+        if (householdQualifiesForSubsidy(income, geoData.getZones().get(dd.getZone()).getId(), dd.getPrice())) {
+            //need to recalculate the generic utility
+
+            double ddQualityUtility = convertQualityToUtility(dd.getQuality());
+            double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
+            double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
+            double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+
+            int price = dd.getPrice();
+            if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
+                // housing subsidy program in place
+                int msa = geoData.getZones().get(dd.getZone()).getMsa();
+                if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
+                    float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
+                    float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;
+                    price = Math.max(0, price - (int) (subsidy + 0.5));
+                }
+            }
+            double ddPriceUtility = convertPriceToUtility(price, ht);
+            genericUtility =  dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+                    ddQualityUtility, ddAutoAccessibilityUtility,
+                    transitAccessibilityUtility);
+        }
+
+        double workDistanceUtility = 1;
+        double travelCostUtility = 1; //do not have effect at the moment
+
+        return dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
+    }
 
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare

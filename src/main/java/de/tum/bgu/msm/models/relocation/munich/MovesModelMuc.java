@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 
 import java.io.*;
@@ -26,20 +27,25 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private SelectDwellingJSCalculator dwellingCalculator;
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
-    private PrintWriter pw;
+//    private PrintWriter pw;
+//    private PrintWriter pw2;
+//    private PrintWriter pw3;
 
 
     public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer, accessibility);
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
-        try {
-            pw = new PrintWriter(new File("./listOfSelectedRegions.csv"));
-            pw.println("year,personId,hhId,workZone,region,timeRegionToWork");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
+//        try {
+//            pw = new PrintWriter(new File("./listOfSelectedRegions.csv"));
+//            pw2 = new PrintWriter(new File("./genericUtilitiesForDwellings.csv"));
+//            pw3 = new PrintWriter(new File("./dwellingSelection.csv"));
+//            pw.println("year,personId,hhId,workZone,region,timeRegionToWork");
+//            pw2.println("year,dd,hhType,quality,bedrooms,auto_access,transit_access,price,genericUtil");
+//            pw3.println("year,dd,dd_zone,genericUtility,workers,sum_commuting_time,workDistanceUtility,utility");
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
 
 
     }
@@ -153,7 +159,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHoueseholdType(HouseholdType ht, Nationality nationality, Collection<Integer> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Integer> workZones){
         Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
 
@@ -199,7 +205,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         // Step 1: select region
         Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
-        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHoueseholdType(ht,nationality,workerZonesForThisHousehold.values()));
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHouesehold(ht,nationality,workerZonesForThisHousehold.values()));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "population";
@@ -240,14 +246,14 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         }
 
         //todo debugging
-        for(Person worker : workerZonesForThisHousehold.keySet()){
-            pw.println(year + "," +
-                    worker.getHh().getId() + "," +
-                    worker.getId() + "," +
-                    dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone() + "," +
-                    selectedRegionId  + "," +
-                    accessibility.getMinTravelTimeFromZoneToRegion(dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone(), selectedRegionId));
-        }
+//        for(Person worker : workerZonesForThisHousehold.keySet()){
+//            pw.println(year + "," +
+//                    worker.getHh().getId() + "," +
+//                    worker.getId() + "," +
+//                    dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone() + "," +
+//                    selectedRegionId  + "," +
+//                    accessibility.getMinTravelTimeFromZoneToRegion(dataContainer.getJobData().getJobFromId(worker.getWorkplace()).getZone(), selectedRegionId));
+//        }
 
 
 
@@ -260,7 +266,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
-            double util = calculateDwellingUtilityOfHousehold(ht, householdIncome, dd);
+            double util = calculateDwellingUtilityForHouseholdType(ht, dd);
+            util = personalizeDwellingUtilityForThisHousehold(persons, dd, householdIncome, util);
             expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
@@ -270,7 +277,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     }
 
     @Override
-    protected double calculateDwellingUtilityOfHousehold(HouseholdType ht, int income, Dwelling dd) {
+    protected double calculateDwellingUtilityForHouseholdType(HouseholdType ht, Dwelling dd) {
 
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
@@ -280,10 +287,89 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
-                transitAccessibilityUtility, 0.0, 0.0);
+                transitAccessibilityUtility);
 
+
+//        if(year == 2011) {
+//            pw2.print(year);
+//            pw2.print(",");
+//            pw2.print(dd.getId());
+//            pw2.print(",");
+//            pw2.print(ht.toString());
+//            pw2.print(",");
+//            pw2.print(dd.getQuality());
+//            pw2.print(",");
+//            pw2.print(dd.getBedrooms());
+//            pw2.print(",");
+//            pw2.print(accessibility.getAutoAccessibilityForZone(dd.getZone()));
+//            pw2.print(",");
+//            pw2.print(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+//            pw2.print(",");
+//            pw2.print(dd.getPrice());
+//            pw2.print(",");
+//            pw2.print(ddUtility);
+//            pw2.println();
+//        }
 
         return ddUtility;
     }
+
+    @Override
+    protected double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dd, int income, double genericUtility) {
+        //currently this is re-filtering persons to find workers (it was done previously in select region)
+        // This way looks more flexible to account for other trips, such as education, though.
+        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
+        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
+
+        double workDistanceUtility = 1;
+        double travelCostUtility = 1; //do not have effect at the moment;
+
+        Map<Person, Integer> workerZonesForThisHousehold = new HashMap<>();
+        JobDataManager jobData = dataContainer.getJobData();
+        for (Person pp: persons) {
+            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+                workerZonesForThisHousehold.put(pp,jobData.getJobFromId(pp.getWorkplace()).getZone());
+            }
+        }
+        double sumOfCommutingTimeForThisHousehold = 0;
+        for (int workZone : workerZonesForThisHousehold.values()){
+            sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
+            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getPeakAutoTravelTime(dd.getZone(), workZone)));
+            workDistanceUtility = workDistanceUtility * factorForThisZone;
+        }
+
+        double finalUtility = dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
+
+//        pw3.print(year);
+//        pw3.print(",");
+//        pw3.print(dd.getId());
+//        pw3.print(",");
+//        pw3.print(dd.getZone());
+//        pw3.print(",");
+//        pw3.print(genericUtility);
+//        pw3.print(",");
+//        pw3.print(workerZonesForThisHousehold.size());
+//        pw3.print(",");
+//        pw3.print(sumOfCommutingTimeForThisHousehold);
+//        pw3.print(",");
+//        pw3.print(workDistanceUtility);
+//        pw3.print(",");
+//        pw3.print(finalUtility);
+//        pw3.println();
+
+        return finalUtility;
+
+    }
+
+    @Override
+    public void finishYear(int year) {
+//        if (year == Properties.get().main.endYear){
+//            pw.close();
+//            pw2.close();
+//            pw3.close();
+//        }
+
+    }
+
 
 }

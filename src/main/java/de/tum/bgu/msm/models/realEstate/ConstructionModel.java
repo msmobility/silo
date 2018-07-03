@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 
 /**
@@ -201,6 +202,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 .createDwelling(ddId, zoneId, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
+        EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
+        dd.setUtilitiesByHouseholdType(utilities);
 
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             if(Properties.get().main.runDwellingMicrolocation) {
@@ -208,8 +211,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
             }
         }
 
-        double utils[] = moves.updateUtilitiesOfVacantDwelling(dd);
-        dd.setUtilitiesOfVacantDwelling(utils);
+
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
 
         if (ddId == SiloUtil.trackDd) {
