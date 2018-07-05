@@ -108,14 +108,13 @@ public class AssignJobs {
 
     private void shuffleWorkers(){
 
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
-        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
-            if (pair.getValue().getOccupation() == 1){
-                workerArrayList.add(pair.getValue());
-                pair.getValue().setWorkplace(-1);
-                pair.getValue().setJobTAZ(-1);
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            if (pp.getOccupation() == 1){
+                workerArrayList.add(pp);
+                pp.setWorkplace(-1);
+                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(workerArrayList);

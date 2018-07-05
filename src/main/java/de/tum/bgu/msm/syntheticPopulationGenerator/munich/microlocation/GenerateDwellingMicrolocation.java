@@ -3,7 +3,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 
@@ -15,32 +18,32 @@ public class GenerateDwellingMicrolocation {
     private static final Logger logger = Logger.getLogger(GenerateDwellingMicrolocation.class);
     private static final double PENALTY = 0.5;
     private final SiloDataContainer dataContainer;
+    private final DataSetSynPop dataSetSynPop;
     private HashMap<Integer, Float> buildingX = new HashMap<>();
     private HashMap<Integer, Float> buildingY = new HashMap<>();
     private HashMap<Integer, HashMap<Integer,Double>> zoneBuildingMap = new HashMap<>();
-    Map<Integer, Integer> dwellingCount = new HashMap<Integer, Integer>();
     Map<Integer, Integer> buildingZone = new HashMap<Integer, Integer>();
     Map<Integer, Double> buildingArea = new HashMap<>();
     Map<Integer, Float> zoneDensity = new HashMap<>();
     Map<Integer, Integer> dwellingsInTAZ = new HashMap<Integer, Integer>();
 
-    public GenerateDwellingMicrolocation(SiloDataContainer dataContainer){
+    public GenerateDwellingMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+        this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
 
     public void run() {
         logger.info("   Running module: dwelling microlocation");
-        logger.info("Start parsing buildings information to hashmap");
+        logger.info("   Start parsing buildings information to hashmap");
         readBuidlingFile();
-        densityCalculation();
-        logger.info("Start Selecting the building to allocate the dwelling");
+        calculateDensity();
+        logger.info("   Start Selecting the building to allocate the dwelling");
         //Select the building to allocate the dwelling
         int errorBuilding = 0;
-
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
             int zoneID = dd.getZone();
             if (zoneBuildingMap.get(zoneID) == null){
-                dd.setCoord(new Coord(0.0,0.0));
+                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
                 errorBuilding++;
                 continue;
             }
@@ -54,7 +57,7 @@ public class GenerateDwellingMicrolocation {
             dd.setCoord(new Coord(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID)));
         }
 
-        logger.info("Number of errorBuilding:" + errorBuilding);
+        logger.warn( errorBuilding +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished dwelling microlocation.");
     }
 
@@ -81,7 +84,7 @@ public class GenerateDwellingMicrolocation {
         }
     }
 
-    private void densityCalculation() {
+    private void calculateDensity() {
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
             int zoneID = dd.getZone();
 

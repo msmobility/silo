@@ -72,7 +72,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
 				//TODO: remove it when we implement interface
 				if(Properties.get().main.implementation == Implementation.MUNICH){
-					if (person.getSchoolCoord() != null){
+					if (person.getSchoolPlace() != 0){
 						mitoPerson.setOccupationCoord(person.getSchoolCoord());
 					}else if(person.getWorkplace()>0){
 						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
