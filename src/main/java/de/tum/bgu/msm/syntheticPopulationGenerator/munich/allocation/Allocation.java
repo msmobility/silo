@@ -32,7 +32,7 @@ public class Allocation extends ModuleSynPop{
             readPopulation();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
-            //assignJobs();
+            assignJobs();
             assignSchools();
             validateTripLengths();
         }
