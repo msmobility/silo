@@ -1,9 +1,13 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AccessibilityProperties {
 
@@ -13,9 +17,9 @@ public class AccessibilityProperties {
     private final ResourceBundle bundle;
 
     public final float autoOperatingCosts;
-    public final boolean usingAutoPeakSkim;
+    //public final boolean usingAutoPeakSkim;
     public final String autoPeakSkim;
-    public final boolean usingTransitPeakSkim;
+    //public final boolean usingTransitPeakSkim;
     public final String transitPeakSkim;
     public final float alphaAuto;
     public final float betaAuto;
@@ -36,39 +40,46 @@ public class AccessibilityProperties {
      * Default = 1.
      */
     public final double skimFileFactorTransit;
+    public final Set<Integer> skimYears;
 
-
-    public AccessibilityProperties(ResourceBundle bundle) {
+    public AccessibilityProperties(ResourceBundle bundle, int startYear) {
+        PropertiesUtil.printOutModuleTitle("Accessibility properties");
         this.bundle = bundle;
-        autoOperatingCosts = (float) ResourceUtil.getDoubleProperty(bundle, "auto.operating.costs");
-        usingAutoPeakSkim = bundle.containsKey("auto.peak.sov.skim.matrix.name");
-        skimFileFactorCar = ResourceUtil.getDoubleProperty(bundle, "skims.factor.car", 1.);
-        skimFileFactorTransit = ResourceUtil.getDoubleProperty(bundle, "skims.factor.transit", 1.);
+        autoOperatingCosts = (float) PropertiesUtil.getDoubleProperty(bundle, "auto.operating.costs", 8.4);
+        alphaAuto = (float) PropertiesUtil.getDoubleProperty(bundle, "auto.accessibility.alpha",1.2);
+        betaAuto = (float) PropertiesUtil.getDoubleProperty(bundle, "auto.accessibility.beta", -0.3);
+        alphaTransit = (float) PropertiesUtil.getDoubleProperty(bundle, "transit.accessibility.a", 1.2);
+        betaTransit = (float) PropertiesUtil.getDoubleProperty(bundle, "transit.accessibility.b", -0.3);
 
-        if(usingAutoPeakSkim) {
-            autoPeakSkim = bundle.getString("auto.peak.sov.skim.matrix.name");
-        } else {
-            autoPeakSkim = "HOVTime";
+        PropertiesUtil.printOutModuleTitle("Accessibility - travel time distribution");
+        htsWorkTLFD = PropertiesUtil.getStringProperty(bundle, "hts.work.tlfd", "input/hts_work_tripLengthFrequencyDistribution.csv");
+
+
+        PropertiesUtil.printOutModuleTitle("Accessibility - skim matrices");
+        skimYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "skim.years", new int[]{-1}))
+                .boxed().collect(Collectors.toSet());
+
+        Set<Integer> skimYearsForInput = new HashSet<>();
+        skimYearsForInput.addAll(skimYears);
+        skimYearsForInput.add(startYear);
+        for (int year : skimYearsForInput){
+            if (year != -1){
+                PropertiesUtil.getStringProperty(bundle, AUTO_PEAK_SKIM + year);
+                PropertiesUtil.getStringProperty(bundle, TRANSIT_PEAK_SKIM + year);
+            }
         }
-        usingTransitPeakSkim = bundle.containsKey("transit.peak.time.matrix.name");
-        if(usingTransitPeakSkim) {
-            transitPeakSkim = bundle.getString("transit.peak.time.matrix.name");
-        } else {
-            transitPeakSkim = "CheapJrnyTime";
-        }
-        alphaAuto = (float) ResourceUtil.getDoubleProperty(bundle, "auto.accessibility.alpha");
-        betaAuto = (float) ResourceUtil.getDoubleProperty(bundle, "auto.accessibility.beta");
-        alphaTransit = (float) ResourceUtil.getDoubleProperty(bundle, "transit.accessibility.a");
-        betaTransit = (float) ResourceUtil.getDoubleProperty(bundle, "transit.accessibility.b");
-        htsWorkTLFD = bundle.getString("hts.work.tlfd");
+        autoPeakSkim = PropertiesUtil.getStringProperty(bundle, "auto.peak.sov.skim.matrix.name", "HOVTime");
+        skimFileFactorCar = PropertiesUtil.getDoubleProperty(bundle, "skims.factor.car", 1.);
+        transitPeakSkim = PropertiesUtil.getStringProperty(bundle,"transit.peak.time.matrix.name", "CheapJrnyTime");
+        skimFileFactorTransit = PropertiesUtil.getDoubleProperty(bundle, "skims.factor.transit", 1.);
     }
 
     public String autoSkimFile(int year) {
-        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(AUTO_PEAK_SKIM + year);
+        return Properties.get().main.baseDirectory + "skims/" +  PropertiesUtil.getStringProperty(bundle, AUTO_PEAK_SKIM + year);
     }
 
     public String transitSkimFile(int year) {
-        return Properties.get().main.baseDirectory + "skims/" +  bundle.getString(TRANSIT_PEAK_SKIM + year);
+        return Properties.get().main.baseDirectory + "skims/" +  PropertiesUtil.getStringProperty(bundle, TRANSIT_PEAK_SKIM + year);
     }
 
 }

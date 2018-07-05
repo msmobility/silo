@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
@@ -22,20 +22,21 @@ public class CblcmProperties {
 
     public CblcmProperties(ResourceBundle bundle) {
         this.bundle = bundle;
-        createCblcmFiles = ResourceUtil.getBooleanProperty(bundle, "create.cblcm.files", false);
-        baseYear = ResourceUtil.getProperty(bundle, "cblcm.base.year");
-        baseFile = ResourceUtil.getProperty(bundle, "cblcm.base.file");
-        years = ResourceUtil.getIntegerArray(bundle, "cblcm.years");
-        populationFile = ResourceUtil.getProperty(bundle,"cblcm.population.file.name");
-        employmentFile = ResourceUtil.getProperty(bundle, "cblcm.employment.file.name");
-        dwellingsFile = ResourceUtil.getProperty(bundle, "cblcm.dwellings.file.name");
-        accessibilityFile = ResourceUtil.getProperty(bundle, "cblcm.accessibilities.file.name");
-        countyOrderFile = ResourceUtil.getProperty(bundle, "cblcm.county.order.list");
-        countyPopulationFile = ResourceUtil.getProperty(bundle, "cblcm.county.population.file.name");
-        countyEmployMentFile = ResourceUtil.getProperty(bundle, "cblcm.county.employment.file.name");
+        PropertiesUtil.printOutModuleTitle("CBLCM properties");
+        createCblcmFiles = PropertiesUtil.getBooleanProperty(bundle, "create.cblcm.files", false);
+        baseYear = PropertiesUtil.getStringProperty(bundle, "cblcm.base.year", "INSERT_DEFAULT_VALUE");
+        baseFile = PropertiesUtil.getStringProperty(bundle, "cblcm.base.file", "INSERT_DEFAULT_VALUE");
+        years = PropertiesUtil.getIntPropertyArray(bundle, "cblcm.years", new int[]{2000,2010,2020,2030,2040});
+        populationFile = PropertiesUtil.getStringProperty(bundle,"cblcm.population.file.name", "cblcmPopulation");
+        employmentFile = PropertiesUtil.getStringProperty(bundle, "cblcm.employment.file.name", "cblcmEmployment");
+        dwellingsFile = PropertiesUtil.getStringProperty(bundle, "cblcm.dwellings.file.name", "cblcmDwellings");
+        accessibilityFile = PropertiesUtil.getStringProperty(bundle, "cblcm.accessibilities.file.name", "cblcmAccessibilities");
+        countyOrderFile = PropertiesUtil.getStringProperty(bundle, "cblcm.county.order.list", "INSERT_DEFAULT_VALUE");
+        countyPopulationFile = PropertiesUtil.getStringProperty(bundle, "cblcm.county.population.file.name", "cblcm_HDemand.txt");
+        countyEmployMentFile = PropertiesUtil.getStringProperty(bundle, "cblcm.county.employment.file.name" , "cblcm_CDemand.txt");
     }
 
     public double multiplierPrefix(String column) {
-        return ResourceUtil.getDoubleProperty(bundle, "cblcm.multiplier" + "." + column);
+        return PropertiesUtil.getDoubleProperty(bundle, "cblcm.multiplier" + "." + column);
     }
 }

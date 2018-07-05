@@ -57,11 +57,6 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
 
     @Override
     public void finishYear(int year) {
-        double license = dataContainer.getHouseholdData().getPersons().parallelStream().filter(p -> p.hasDriverLicense()).count();
-        double pop = dataContainer.getHouseholdData().getPersons().size();
-        double share = license / pop *100;
-        System.out.println("% OF DRIVING LICENSES THIS YEAR: " + share );
-
     }
 
     public void checkLicenseCreation(int perId) {

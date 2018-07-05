@@ -48,6 +48,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         }
 
         String zoneShapeFile = Properties.get().geo.zoneShapeFile;
+        //coordinate system is read here? attribute name of "id" field should be stored as a property
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
             int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
             MunichZone zone = (MunichZone) zones.get(zoneId);

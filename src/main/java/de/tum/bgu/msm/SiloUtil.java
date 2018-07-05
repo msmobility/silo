@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
 import de.tum.bgu.msm.utils.TimeTracker;
 import omx.OmxMatrix;
@@ -58,6 +59,8 @@ public class SiloUtil {
 
         // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName);
+
+        PropertiesUtil.printOutPropertiesOfThisRun(Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName);
         // copy properties file into scenarios directory
         String[] prop = resourceBundleNames.split("/");
 
@@ -214,12 +217,12 @@ public class SiloUtil {
         switch (action) {
             case "open":
                 // track households and/or persons
-                trackHh = ResourceUtil.getIntegerProperty(rb, "track.household");
-                trackPp = ResourceUtil.getIntegerProperty(rb, "track.person");
-                trackDd = ResourceUtil.getIntegerProperty(rb, "track.dwelling");
-                trackJj = ResourceUtil.getIntegerProperty(rb, "track.job");
+                trackHh = Properties.get().track.trackedHh;
+                trackPp = Properties.get().track.trackedPp;
+                trackDd = Properties.get().track.trackedDd;
+                trackJj = Properties.get().track.trackedJj;
                 if (trackHh == -1 && trackPp == -1 && trackDd == -1 && trackJj == -1) return;
-                String fileName = ResourceUtil.getProperty(rb, "track.file.name");
+                String fileName = Properties.get().track.trackFile;
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
                 trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);

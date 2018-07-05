@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -26,9 +25,6 @@ import java.util.ResourceBundle;
 public class SummarizeData {
     static Logger logger = Logger.getLogger(SummarizeData.class);
 
-    protected static final String PROPERTIES_RESULT_FILE_NAME             = "result.file.name";
-
-    protected static final String PROPERTIES_USE_CAPACITY   = "use.growth.capacity.data";
 
     private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
@@ -46,7 +42,7 @@ public class SummarizeData {
 
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String resultFileName = rb.getString(PROPERTIES_RESULT_FILE_NAME);
+        String resultFileName = Properties.get().main.resultFileName;
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                 Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
         resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + Properties.get().main.endYear + ".csv", false);
@@ -1145,13 +1141,13 @@ public class SummarizeData {
         }
         pwp.close();
 
-        if (ResourceUtil.getBooleanProperty(rb, "write.binary.pop.files")) {
+        if (Properties.get().householdData.writeBinPopFile) {
             dataContainer.getHouseholdData().writeBinaryPopulationDataObjects();
         }
-        if (ResourceUtil.getBooleanProperty(rb, "write.binary.dd.file")) {
+        if (Properties.get().householdData.writeBinDwellingsFile) {
             realEstate.writeBinaryDwellingDataObjects();
         }
-        if (ResourceUtil.getBooleanProperty(rb, "write.binary.jj.file")) {
+        if (Properties.get().householdData.writeBinJobFile) {
             dataContainer.getJobData().writeBinaryJobDataObjects();
         }
     }

@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
@@ -29,30 +29,40 @@ public final class HouseholdDataProperties {
 
 
     public HouseholdDataProperties(ResourceBundle bundle) {
-        meanIncomeChange = (float) ResourceUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income");
-        readBinaryPopulation = ResourceUtil.getBooleanProperty(bundle, "read.binary.pop.files", false);
-        
-        binaryPopulationFile = ResourceUtil.getProperty(bundle, "population.file.bin");
-        
-        summarizeMetro = ResourceUtil.getBooleanProperty(bundle, "summarize.hh.near.selected.metro.stp");
-        selectedMetroStopsFile = ResourceUtil.getProperty(bundle, "selected.metro.stops");
-        householdsNearMetroFile = ResourceUtil.getProperty(bundle, "hh.near.selected.metro.stops.summary");
 
-        householdFileName = ResourceUtil.getProperty(bundle, "household.file.ascii");
-        personFileName =  ResourceUtil.getProperty(bundle, "person.file.ascii");
-        jobsFileName = ResourceUtil.getProperty(bundle, "job.file.ascii");
-        dwellingsFileName = ResourceUtil.getProperty(bundle, "dwelling.file.ascii");
-        writeBinPopFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.pop.files");
-        writeBinDwellingsFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.dd.file");
-        writeBinJobFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.jj.file");
-        binaryDwellingsFile = ResourceUtil.getProperty(bundle, "dwellings.file.bin");
-        binaryJobFile = ResourceUtil.getProperty(bundle, "job.file.bin");
+        PropertiesUtil.printOutModuleTitle("Synthetic population input files");
+        PropertiesUtil.printOutModuleTitle("Synthetic popualtion for the base year");
+        householdFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/hh");
+        personFileName =  PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/pp");
+        jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
+        //todo this property is doubled in Real State Properties
+        dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii","microData/dd");
+
+        PropertiesUtil.printOutModuleTitle("Synthetic popualtion output of the final year");
+        householdFinalFileName = PropertiesUtil.getStringProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
+        personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
+        jobsFinalFileName = PropertiesUtil.getStringProperty(bundle, "job.final.file.ascii", "microData/futureYears/jj");
+        dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
 
 
-        householdFinalFileName = ResourceUtil.getProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
-        personFinalFileName = ResourceUtil.getProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
-        jobsFinalFileName = ResourceUtil.getProperty(bundle, "job.final.file.ascii", "microData/futureYears/jj");
-        dwellingsFinalFileName = ResourceUtil.getProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
+        PropertiesUtil.printOutModuleTitle("Synthetic popualtion for the base year - binary files options");
+        readBinaryPopulation = PropertiesUtil.getBooleanProperty(bundle, "read.binary.pop.files", false);
+        writeBinPopFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.pop.files", false);
+        writeBinDwellingsFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.dd.file", false);
+        writeBinJobFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.jj.file", false);
+        binaryPopulationFile = PropertiesUtil.getStringProperty(bundle, "population.file.bin", "microData/popData.bin");
+        binaryDwellingsFile = PropertiesUtil.getStringProperty(bundle, "dwellings.file.bin","microData/ddData.bin" );
+        binaryJobFile = PropertiesUtil.getStringProperty(bundle, "job.file.bin", "microData/jjData.bin");
+
+        PropertiesUtil.printOutModuleTitle("Household data properties - additional models");
+        meanIncomeChange = (float) PropertiesUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income", 2000);
+        summarizeMetro = PropertiesUtil.getBooleanProperty(bundle, "summarize.hh.near.selected.metro.stp", false);
+        selectedMetroStopsFile = PropertiesUtil.getStringProperty(bundle, "selected.metro.stops","input/housingNearMetroTracer.csv" );
+        householdsNearMetroFile = PropertiesUtil.getStringProperty(bundle, "hh.near.selected.metro.stops.summary", "householdNearSelectedMetroStops");
+
+
+
+
 
 
     }

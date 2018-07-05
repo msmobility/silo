@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
@@ -18,19 +18,27 @@ public final class JobDataProperties {
     public final String interpolatedEmploymentForecast;
 
     public JobDataProperties(ResourceBundle bundle) {
-        maxStorageOfvacantJobs = ResourceUtil.getIntegerProperty(bundle, "vacant.job.by.reg.array");
-        jobTypes = ResourceUtil.getArray(bundle, "employment.types");
-        readBinaryJobFile = ResourceUtil.getBooleanProperty(bundle, "read.binary.jj.file", false);
-        jobsFileName = ResourceUtil.getProperty(bundle, "job.file.ascii");
-        binaryJobsFileName = ResourceUtil.getProperty(bundle, "job.file.bin");
+        PropertiesUtil.printOutModuleTitle("Job data properties");
+        maxStorageOfvacantJobs = PropertiesUtil.getIntProperty(bundle, "vacant.job.by.reg.array", 100000);
+        jobTypes = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
+
+        PropertiesUtil.printOutModuleTitle("Job - forecasts");
         hasControlYears = bundle.containsKey("job.control.total.years");
         if(hasControlYears) {
-            controlYears = ResourceUtil.getIntegerArray(bundle, "job.control.total.years");
+            //todo this values are read as 11 and 50 instead of 2011 and 2050!!!
+            controlYears = PropertiesUtil.getIntPropertyArray(bundle, "job.control.total.years", new int[]{11,50});
         } else {
             controlYears = new int[]{};
         }
-        jobControlTotalsFileName = ResourceUtil.getProperty(bundle, "job.control.total");
-        employmentForeCastFile = ResourceUtil.getProperty(bundle, "interpol.empl.forecast");
-        interpolatedEmploymentForecast = ResourceUtil.getProperty(bundle, "interpol.empl.forecast");
+        jobControlTotalsFileName = PropertiesUtil.getStringProperty(bundle, "job.control.total", "input/assumptions/employmentForecast.csv");
+        //todo the following two properties are equal
+        employmentForeCastFile = PropertiesUtil.getStringProperty(bundle, "interpol.empl.forecast", "interpolatedEmploymentForecast");
+        interpolatedEmploymentForecast = PropertiesUtil.getStringProperty(bundle, "interpol.empl.forecast", "interpolatedEmploymentForecast");
+
+        PropertiesUtil.printOutModuleTitle("Job - synthetic jobs input");
+        //todo this properties are doubled in household data properties
+        readBinaryJobFile = PropertiesUtil.getBooleanProperty(bundle, "read.binary.jj.file", false);
+        jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
+        binaryJobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.bin", "microData/jjData.bin");
     }
 }

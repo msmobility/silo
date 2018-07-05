@@ -416,13 +416,13 @@ public class MicroDataManager {
         return personRole;
     }
 
-    public boolean obtainLicense(int gender, int age){
+    public static boolean obtainLicense(int gender, int age){
         boolean license = false;
         int row = 1;
         int threshold = 0;
         if (age > 17) {
             if (age < 29) {
-                if (gender == 0) {
+                if (gender == 1) {
                     threshold = 86;
                 } else {
                     threshold = 87;

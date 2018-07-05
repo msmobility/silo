@@ -130,7 +130,7 @@ public final class SiloModel {
 			SummarizeData.readScalingYearControlTotals();
 		}
 		tdmYears.addAll(Properties.get().transportModel.modelYears);
-		skimYears.addAll(Properties.get().transportModel.skimYears);
+		skimYears.addAll(Properties.get().accessibility.skimYears);
 	}
 
 	private void setupMicroSim() {

@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.Implementation;
 
+import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -21,6 +21,7 @@ public class MainProperties {
     public final boolean readSmallSynpop;
     public final boolean writeSmallSynpop;
 
+    public final String resultFileName;
     public final String spatialResultFileName;
 
     public final boolean createMstmOutput;
@@ -50,38 +51,56 @@ public class MainProperties {
     public final boolean runSchoolMicrolocation;
 
     public MainProperties(ResourceBundle bundle, Implementation implementation) {
-        this.implementation = implementation;
-        runSilo = ResourceUtil.getBooleanProperty(bundle, "run.silo.model", true);
-        trackTime = ResourceUtil.getBooleanProperty(bundle, "track.time", false);
-        trackTimeFile = bundle.getString("track.time.file");
-        scalingYears = Arrays.stream(ResourceUtil.getIntegerArray(bundle, "scaling.years"))
-                .boxed().filter(i -> i > 0).collect(Collectors.toSet());
-        readSmallSynpop = ResourceUtil.getBooleanProperty(bundle, "read.small.syn.pop", false);
-        writeSmallSynpop = ResourceUtil.getBooleanProperty(bundle, "write.small.syn.pop", false);
-        spatialResultFileName = bundle.getString("spatial.result.file.name");
-        createMstmOutput = ResourceUtil.getBooleanProperty(bundle, "create.mstm.socio.econ.files", false);
-        createHousingEnvironmentImpactFile = ResourceUtil.getBooleanProperty(bundle, "create.housing.environm.impact.files", false);
-        createPrestoSummary = ResourceUtil.getBooleanProperty(bundle, "create.presto.summary.file", false);
-        scalingControlTotals = ResourceUtil.getProperty(bundle, "scaling.years.control.totals");
-        scenarioName = ResourceUtil.getProperty(bundle, "scenario.name");
-        baseDirectory = ResourceUtil.getProperty(bundle, "base.directory");
-        startYear = ResourceUtil.getIntegerProperty(bundle, "start.year");
-        endYear = ResourceUtil.getIntegerProperty(bundle, "end.year");
-        gregorianIterator = ResourceUtil.getIntegerProperty(bundle, "this.gregorian.iterator");
-        incomeBrackets = ResourceUtil.getIntegerArray(bundle, "income.brackets.hh.types");
-        qualityLevels = ResourceUtil.getIntegerProperty(bundle, "dwelling.quality.levels.distinguished");
-        randomSeed = ResourceUtil.getIntegerProperty(bundle, "random.seed", 42);
-        runSynPop = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
-        smallSynPopSize = ResourceUtil.getIntegerProperty(bundle, "size.small.syn.pop", 0);
-        prestoZoneFile = bundle.getString("presto.regions");
-        scaledMicroDataHh = bundle.getString("scaled.micro.data.hh");
-        scaledMicroDataPp = bundle.getString("scaled.micro.data.pp");
-        bemModelYears = ResourceUtil.getIntegerArray(bundle, "bem.model.years");
-        housingEnvironmentImpactFile = ResourceUtil.getProperty(bundle, "housing.environment.impact.file.name");
-        prestoSummaryFile = ResourceUtil.getProperty(bundle, "presto.summary.file");
 
-        runDwellingMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
-        runJobMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.job.microlocation", false);
-        runSchoolMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.school.microlocation", false);
+        this.implementation = implementation;
+
+        PropertiesUtil.printOutModuleTitle("Main properties");
+        runSilo = PropertiesUtil.getBooleanProperty(bundle, "run.silo.model", true);
+        scenarioName = PropertiesUtil.getStringProperty(bundle, "scenario.name");
+        //by omitting base directory one has to set up a working folder in intellij etc. which represents "." in the next line
+        baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", "./");
+        startYear = PropertiesUtil.getIntProperty(bundle, "start.year");
+        endYear = PropertiesUtil.getIntProperty(bundle, "end.year");
+        randomSeed = PropertiesUtil.getIntProperty(bundle, "random.seed", -1);
+
+        PropertiesUtil.printOutModuleTitle("Main - runtime tracking");
+        trackTime = PropertiesUtil.getBooleanProperty(bundle, "track.time", true);
+        trackTimeFile = PropertiesUtil.getStringProperty(bundle, "track.time.file","timeTracker.csv");
+
+        PropertiesUtil.printOutModuleTitle("Main - result files");
+        resultFileName = PropertiesUtil.getStringProperty(bundle, "result.file.name", "resultFile");
+        spatialResultFileName =  PropertiesUtil.getStringProperty(bundle,"spatial.result.file.name", "resultFileSpatial");
+
+        PropertiesUtil.printOutModuleTitle("Main - dwelling and income input data");
+        incomeBrackets = PropertiesUtil.getIntPropertyArray(bundle,"income.brackets.hh.types", new int[]{20000,40000,60000});
+        qualityLevels = PropertiesUtil.getIntProperty(bundle, "dwelling.quality.levels.distinguished", 4);
+
+        PropertiesUtil.printOutModuleTitle("Main synthetic population");
+        runSynPop = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
+        smallSynPopSize = PropertiesUtil.getIntProperty(bundle, "size.small.syn.pop", 0);
+        readSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "read.small.syn.pop", false);
+        writeSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "write.small.syn.pop", false);
+
+        PropertiesUtil.printOutModuleTitle("Main microlocation");
+        runDwellingMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
+        runJobMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.microlocation", false);
+        runSchoolMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.school.microlocation", false);
+
+        PropertiesUtil.printOutModuleTitle("Main = connection with other models and specific scenarios");
+        createMstmOutput = PropertiesUtil.getBooleanProperty(bundle, "create.mstm.socio.econ.files", false);
+        createHousingEnvironmentImpactFile = PropertiesUtil.getBooleanProperty(bundle, "create.housing.environm.impact.files", false);
+        scalingYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "scaling.years", new int[] {-1}))
+                .boxed().filter(i -> i > 0).collect(Collectors.toSet());
+        scalingControlTotals = PropertiesUtil.getStringProperty(bundle, "scaling.years.control.totals", "input/assumptions/scalingYearsControlTotals.csv");
+        scaledMicroDataHh = PropertiesUtil.getStringProperty(bundle, "scaled.micro.data.hh", "microdata/scaled/hh_");
+        scaledMicroDataPp = PropertiesUtil.getStringProperty(bundle, "scaled.micro.data.pp", "microdata/scaled/pp_");
+        createPrestoSummary = PropertiesUtil.getBooleanProperty(bundle, "create.presto.summary.file", false);
+        prestoZoneFile = PropertiesUtil.getStringProperty(bundle,"presto.regions", "input/prestoRegionDefinition");
+        prestoSummaryFile = PropertiesUtil.getStringProperty(bundle, "presto.summary.file", "prestoSummary");
+        bemModelYears = PropertiesUtil.getIntPropertyArray(bundle, "bem.model.years", new int[]{2000,2040});
+        housingEnvironmentImpactFile = PropertiesUtil.getStringProperty(bundle, "housing.environment.impact.file.name", "bemHousing");
+
+        PropertiesUtil.printOutModuleTitle("Main - gregorian iterator");
+        gregorianIterator = PropertiesUtil.getIntProperty(bundle, "this.gregorian.iterator", 1);
     }
 }

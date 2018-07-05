@@ -12,9 +12,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -71,7 +69,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         }
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader);
 
-        makeSomeNewDdAffordable = Properties.get().realEstate.makeSOmeNewDdAffordable;
+        makeSomeNewDdAffordable = Properties.get().realEstate.makeSomeNewDdAffordable;
         if (makeSomeNewDdAffordable) {
             shareOfAffordableDd = Properties.get().realEstate.affordableDwellingsShare;
             restrictionForAffordableDd = Properties.get().realEstate.levelOfAffordability;
