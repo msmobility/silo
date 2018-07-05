@@ -61,6 +61,10 @@ public class MainPropertiesSynPop {
     public final TableDataSet selectedBoroughs;
     public final GammaDistributionImpl incomeGammaDistribution;
 
+    public final TableDataSet buildingLocationlist;
+    public final TableDataSet jobLocationlist;
+    public final TableDataSet schoolLocationlist;
+
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
         runSyntheticPopulation = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
@@ -145,6 +149,11 @@ public class MainPropertiesSynPop {
             ageBracketsBorough = null;
             cellsMatrixBoroughs = null;
         }
+
+
+        buildingLocationlist = SiloUtil.readCSVfile(bundle.getString("buildingLocation.list"));
+        jobLocationlist = SiloUtil.readCSVfile(bundle.getString("jobLocation.list"));
+        schoolLocationlist = SiloUtil.readCSVfile(bundle.getString("schoolLocation.list"));
 
     }
 

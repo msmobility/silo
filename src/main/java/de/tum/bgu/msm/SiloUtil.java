@@ -1,5 +1,6 @@
 package de.tum.bgu.msm;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -1044,7 +1045,8 @@ public class SiloUtil {
         // write file summarizing run times
 
         int startYear = Properties.get().main.startYear;
-        PrintWriter pw = openFileForSequentialWriting(Properties.get().main.trackTimeFile + "lol", startYear != Properties.get().main.implementation.BASE_YEAR);
+        PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" +
+                Properties.get().main.scenarioName + "/" + Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
         pw.write(timeTracker.toString());
         pw.close();
     }

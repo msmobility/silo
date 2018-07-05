@@ -10,9 +10,7 @@ import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
@@ -23,29 +21,18 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    protected String uecFileName;
-    protected int dataSheetNumber;
-    protected int numAltsMoveOrNot;
 
-    protected double[][][] utilityRegion;
-
-    protected boolean logCalculationDwelling;
-    protected boolean logCalculationRegion;
-
-    private double parameter_MoveOrNotSlope;
-    private double parameter_MoveOrNotShift;
     private double[] averageHousingSatisfaction;
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
+    protected int year;
+
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
-        uecFileName = Properties.get().main.baseDirectory + Properties.get().moves.uecFileName;
-        dataSheetNumber = Properties.get().moves.dataSheet;
-        logCalculationRegion = Properties.get().moves.logHhRelocationRegion;
         setupMoveOrNotMove();
         setupEvaluateDwellings();
         setupSelectRegionModel();
@@ -56,21 +43,26 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     protected abstract void setupSelectDwellingModel();
 
-    protected abstract double calculateDwellingUtilityOfHousehold(HouseholdType hhType, int income, Dwelling dwelling);
+    protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
+    protected abstract double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dwelling, int income, double genericUtility);
+
 
     @Override
-    public double[] updateUtilitiesOfVacantDwelling(Dwelling dd) {
+    public EnumMap<HouseholdType,Double> updateUtilitiesOfVacantDwelling(Dwelling dd) {
         // Calculate utility of this dwelling for each household type
-
-        double[] utilByHhType = new double[HouseholdType.values().length];
+        EnumMap<HouseholdType,Double> utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
+        //double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht : HouseholdType.values()) {
-            utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
+            utilitiesByHouseholdType.put(ht, calculateDwellingUtilityForHouseholdType(ht,  dd));
+
+            //utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
         }
-        return utilByHhType;
+        return utilitiesByHouseholdType;
     }
 
     @Override
     public List<MoveEvent> prepareYear(int year) {
+        this.year = year;
         final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
@@ -157,12 +149,13 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getResidentId() == -1) {
                 // dwelling is vacant, evaluate for all household types
-                double utils[] = updateUtilitiesOfVacantDwelling(dd);
-                dd.setUtilitiesOfVacantDwelling(utils);
+                EnumMap<HouseholdType, Double> utilitiesByHhtype = updateUtilitiesOfVacantDwelling(dd);
+                dd.setUtilitiesByHouseholdType(utilitiesByHhtype);
             } else {
                 // dwelling is occupied, evaluate for the current household
                 Household hh = householdData.getHouseholdFromId(dd.getResidentId());
-                double util = calculateDwellingUtilityOfHousehold(hh.getHouseholdType(), hh.getHhIncome(), dd);
+                double util = calculateDwellingUtilityForHouseholdType(hh.getHouseholdType(), dd);
+                util = personalizeDwellingUtilityForThisHousehold(hh.getPersons(), dd, hh.getHhIncome(), util);
                 dd.setUtilOfResident(util);
             }
         }
@@ -212,6 +205,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         }
         return (int) ((priceSum * 1f) / (counter * 1f) + 0.5f);
     }
+
+
 
 
     protected double convertAccessToUtility(double accessibility) {

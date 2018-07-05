@@ -25,7 +25,7 @@ public class LeaveParentHhModelTest {
         model = modelContainer.getLph();
 
         Dwelling dd = dataContainer.getRealEstateData()
-                .createDwelling(999, 966, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
+                .createDwelling(999, 1093, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
 
         household = dataContainer.getHouseholdData().createHousehold(999, 1, 0);
         Person parent1 = dataContainer.getHouseholdData().createPerson(123, 40, 1, Race.other, 3, 0, 0);

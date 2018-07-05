@@ -1,16 +1,21 @@
 package de.tum.bgu.msm.models.transportModel;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.travelDistances.TravelDistances;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 
+
+import javax.measure.unit.SI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,48 +27,62 @@ import java.util.Map;
 public final class MitoTransportModel extends AbstractModel implements TransportModelI {
 
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-	private final MitoModel mito;
-    private final TravelTimes travelTimes;
+	private MitoModel mito;
+    private TravelTimes travelTimes;
+    private TravelDistances travelDistancesAuto;
+    private final String propertiesPath;
+    private final String baseDirectory;
 
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, TravelTimes travelTimes) {
     	super(dataContainer);
     	this.travelTimes = travelTimes;
-		String propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
-        this.mito = MitoModel.standAloneModel(propertiesPath);
-        this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
-        setBaseDirectory(baseDirectory);
+		this.propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
+		this.baseDirectory = baseDirectory;
+		this.travelDistancesAuto = null;
+
 	}
 
     @Override
     public void runTransportModel(int year) {
+		this.mito = MitoModel.initializeModelFromSilo(propertiesPath);
+		this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+		setBaseDirectory(baseDirectory);
     	MitoModel.setScenarioName (Properties.get().main.scenarioName);
-    	updateData();
+    	updateData(year);
     	logger.info("  Running travel demand model MITO for the year " + year);
     	mito.runModel();
+		travelTimes = mito.getData().getTravelTimes();
+		travelDistancesAuto = mito.getData().getTravelDistancesAuto();
     }
-    
-    private void updateData() {
+
+	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
 			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), ((MunichZone)siloZone).getAreaType());
 			zones.put(zone.getId(), zone);
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
-
 		Map<Integer, MitoHousehold> households = convertHhs(zones);
 		for(Person person: dataContainer.getHouseholdData().getPersons()) {
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
+				//TODO: remove it when we implement interface
+				if(Properties.get().main.implementation == Implementation.MUNICH){
+					if (person.getSchoolCoord() != null){
+						mitoPerson.setOccupationCoord(person.getSchoolCoord());
+					}else if(person.getWorkplace()>0){
+						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+					}
+				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
 						+ " and will thus NOT be considered in the transport model.");
 			}
 		}
-
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households);
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, travelDistancesAuto, households, year, dataContainer.getGeoData().getZoneFeatureMap());
         mito.feedData(feed);
     }
 
@@ -75,10 +94,15 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
 			if(dwelling != null) {
 				zoneId = dwelling.getZone();
+
 			}
 			MitoZone zone = zones.get(zoneId);
+
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
+			//set mitoHousehold's microlocation
+			household.setHomeCoord(dwelling.getCoord());
 			thhs.put(household.getId(), household);
+
 		}
 		return thhs;
 	}

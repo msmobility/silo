@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -20,6 +21,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
     protected final Map<Integer, Region> regions = new LinkedHashMap<>();
+    public Map<Integer, SimpleFeature> zoneFeatureMap = new LinkedHashMap<>();;
 
     private int[] developableLUtypes;
     private TableDataSet landUse;
@@ -50,6 +52,10 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     @Override
     public Map<Integer, Region> getRegions() {
         return Collections.unmodifiableMap(regions);
+    }
+
+    public Map<Integer, SimpleFeature> getZoneFeatureMap() {
+        return this.zoneFeatureMap;
     }
 
     @Override
