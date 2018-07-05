@@ -3,7 +3,7 @@ package de.tum.bgu.msm.models.autoOwnership.munich;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
@@ -17,7 +17,7 @@ import java.util.*;
  * @author Matthew Okrah
  * Created on 28/08/2017 in Munich, Germany.
  */
-public class MunichCarOwnerShipModel extends AbstractModel implements CreateCarOwnershipModel {
+public class MunichCarOwnerShipModel extends AbstractModel implements CarOwnershipModel {
 
     static Logger logger = Logger.getLogger(MunichCarOwnerShipModel.class);
 

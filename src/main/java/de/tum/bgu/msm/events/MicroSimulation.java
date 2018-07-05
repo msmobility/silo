@@ -75,7 +75,7 @@ public final class MicroSimulation {
         }
     }
 
-    public void finishYear(int year, int[] carChangeCounter, SiloDataContainer dataContainer) {
+    public void finishYear(int year, int[] carChangeCounter, int avSwitchCounter, SiloDataContainer dataContainer) {
         for(MicroEventModel model: models.values()) {
             model.finishYear(year);
         }
@@ -93,6 +93,9 @@ public final class MicroSimulation {
         LOGGER.info("  Simulated household relinquished a car" + carChangeCounter[1] + " (" +
                 SiloUtil.rounder((100f * carChangeCounter[1] / hh), 0) + "% of hh)");
         SummarizeData.resultFile("RelinquishedCar," + carChangeCounter[1]);
+        LOGGER.info(" Simulated household switched to AV" + avSwitchCounter + " (" +
+                SiloUtil.rounder((100f * avSwitchCounter / hh), 0) + "% of hh)");
+        SummarizeData.resultFile("SwitchedToAV," + avSwitchCounter);
 
         events.clear();
     }

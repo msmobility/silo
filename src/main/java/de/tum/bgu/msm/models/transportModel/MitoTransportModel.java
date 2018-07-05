@@ -4,6 +4,7 @@ import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -44,8 +45,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private void updateData() {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
-			AreaTypes.SGType areaType = AreaTypes.SGType.RURAL; //TODO: put real area type in here
-			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), areaType);
+			MitoZone zone = new MitoZone(siloZone.getId(), siloZone.getArea(), ((MunichZone)siloZone).getAreaType());
 			zones.put(zone.getId(), zone);
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
