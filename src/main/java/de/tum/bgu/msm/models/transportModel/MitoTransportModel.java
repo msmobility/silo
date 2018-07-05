@@ -1,9 +1,11 @@
 package de.tum.bgu.msm.models.transportModel;
 
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.travelDistances.TravelDistances;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -26,6 +28,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
 	private MitoModel mito;
     private TravelTimes travelTimes;
+    private TravelDistances travelDistancesAuto;
     private final String propertiesPath;
     private final String baseDirectory;
 
@@ -34,6 +37,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     	this.travelTimes = travelTimes;
 		this.propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
 		this.baseDirectory = baseDirectory;
+		this.travelDistancesAuto = null;
 
 	}
 
@@ -47,10 +51,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     	logger.info("  Running travel demand model MITO for the year " + year);
     	mito.runModel();
 		travelTimes = mito.getData().getTravelTimes();
+		travelDistancesAuto = mito.getData().getTravelDistancesAuto();
     }
-
-
-
 
 	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
@@ -61,26 +63,28 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			zones.put(zone.getId(), zone);
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
-
 		Map<Integer, MitoHousehold> households = convertHhs(zones);
 		for(Person person: dataContainer.getHouseholdData().getPersons()) {
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
-				//set mitoPerson's work/school microlocation
-				mitoPerson.setOccupationCoord(person.getOccupation()==3?person.getSchoolCoord(): dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+				//TODO: remove it when we implement interface
+				if(Properties.get().main.implementation == Implementation.MUNICH){
+					if (person.getSchoolCoord() != null){
+						mitoPerson.setOccupationCoord(person.getSchoolCoord());
+					}else if(person.getWorkplace()>0){
+						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+					}
+				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
 						+ " and will thus NOT be considered in the transport model.");
 			}
 		}
-
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, households,year, dataContainer.getGeoData().getZoneFeatureMap());
+        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, travelDistancesAuto, households, year, dataContainer.getGeoData().getZoneFeatureMap());
         mito.feedData(feed);
-        travelTimes = null;
-
     }
 
 	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
