@@ -58,11 +58,10 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainWorkers(){
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Map.Entry<Integer, Person> pair : personMap.entrySet()){
-            if (pair.getValue().getOccupation() == 1){
-                workerArrayList.add(pair.getValue());
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            if (pp.getOccupation() == 1){
+                workerArrayList.add(pp);
             }
         }
         return workerArrayList;
@@ -112,11 +111,10 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainStudents (int school){
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Map.Entry<Integer, Person> pair : personMap.entrySet()) {
-            if (pair.getValue().getOccupation() == 3 & pair.getValue().getSchoolType() == school) {
-                workerArrayList.add(pair.getValue());
+        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
+            if (pp.getOccupation() == 3 & pp.getSchoolType() == school) {
+                workerArrayList.add(pp);
             }
         }
         return workerArrayList;
