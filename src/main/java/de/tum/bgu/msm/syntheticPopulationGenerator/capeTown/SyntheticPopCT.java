@@ -3042,12 +3042,12 @@ public class SyntheticPopCT implements SyntheticPopI {
 
     }
 
-    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
+/*    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
         //method to estimate the number of cars per household
         //it must be run after generating the population
         CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer);
         createCarOwnershipModel.run( );
-    }
+    }*/
 
 
     public static int[] createConsecutiveArray (int arrayLength) {
