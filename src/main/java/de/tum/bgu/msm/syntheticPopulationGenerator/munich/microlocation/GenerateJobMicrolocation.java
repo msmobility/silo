@@ -3,6 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
+import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -21,8 +23,6 @@ public class GenerateJobMicrolocation {
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobX = new HashMap<>();
     private Map<Integer, Float> jobY = new HashMap<>();
-    Map<Integer, Integer> jobCount = new HashMap<Integer, Integer>();
-    Map<Integer, Float> jobArea = new HashMap<>();
     Map<Integer, Integer> jobZone = new HashMap<Integer, Integer>();
     Map<Integer, Map<String,Map<Integer,Float>>> zoneJobTypeJobLocationArea = new HashMap<>();
     Map<Integer, Map<String,Float>> zoneJobTypeDensity = new HashMap<>();
@@ -35,27 +35,21 @@ public class GenerateJobMicrolocation {
 
     public void run() {
         logger.info("   Running module: job microlocation");
-        logger.info("Start parsing jobs information to hashmap");
+        logger.info("   Start parsing jobs information to hashmap");
         readJobFile();
-        densityCalculation();
-        logger.info("Start Selecting the job to allocate the job");
-
+        calculateDensity();
+        logger.info("   Start Selecting the job to allocate the job");
         //Select the job to allocate the job
         int errorjob = 0;
-        
         for (Job jj: dataContainer.getJobData().getJobs()) {
             int zoneID = jj.getZone();
             String jobType = jj.getType();
-
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                jj.setCoord(new Coord(0.0,0.0));
+                jj.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
                 errorjob++;
                 continue;
             }
-
             int selectedJobID = SiloUtil.select(zoneJobTypeJobLocationArea.get(zoneID).get(jobType));
-
-
             float remainingArea = zoneJobTypeJobLocationArea.get(zoneID).get(jobType).get(selectedJobID)- zoneJobTypeDensity.get(zoneID).get(jobType);
             if (remainingArea > 0) {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, remainingArea);
@@ -63,9 +57,8 @@ public class GenerateJobMicrolocation {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
             }
             jj.setCoord(new Coord(jobX.get(selectedJobID),jobY.get(selectedJobID)));
-
         }
-        logger.info("Number of errorjob:" + errorjob);
+        logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");
     }
 
@@ -119,7 +112,7 @@ public class GenerateJobMicrolocation {
         }
     }
 
-    private void densityCalculation() {
+    private void calculateDensity() {
         for (int zone : dataSetSynPop.getTazs()){
             Map<String,Integer> jobsByJobType = new HashMap<>();
             Map<String,Float> densityByJobType = new HashMap<>();

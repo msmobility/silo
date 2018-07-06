@@ -5,6 +5,8 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -32,36 +34,28 @@ public class GenerateSchoolMicrolocation {
 
     public void run() {
         logger.info("   Running module: school microlocation");
-        logger.info("Start parsing schools information to hashmap");
+        logger.info("   Start parsing schools information to hashmap");
         readSchoolFile();
-        logger.info("Start Selecting the school to allocate the student");
-
+        logger.info("   Start Selecting the school to allocate the student");
         //Select the school to allocate the student
         int errorSchool = 0;
-        
-        Iterator<Person> studentList = dataContainer.getHouseholdData().getPersons().stream().filter(person -> person.getOccupation() == 3).iterator();
-        while (studentList.hasNext()){
-            Person student = studentList.next();
-            int zoneID = student.getSchoolPlace();
-            int schoolType = student.getSchoolType();
+        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
+            if (pp.getOccupation() == 3) {
+                int zoneID = pp.getSchoolPlace();
+                int schoolType = pp.getSchoolType();
 
-            if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType)==null){
-                student.setSchoolCoord(new Coord(0.0,0.0));
-                errorSchool++;
-                continue;
+                if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType)==null){
+                    pp.setSchoolCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                    errorSchool++;
+                    continue;
+                }
+                int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
+                int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
+                zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
+                pp.setSchoolCoord(new Coord(schoolY.get(selectedSchoolID), schoolY.get(selectedSchoolID)));
             }
-
-            int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
-
-            int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID)- 1;
-
-            zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID,remainingCapacity);
-
-            student.setSchoolCoord(new Coord(schoolY.get(selectedSchoolID),schoolY.get(selectedSchoolID)));
-
         }
-        logger.info("Number of errorschool:" + errorSchool);
-
+        logger.warn( errorSchool +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished school microlocation.");
     }
 

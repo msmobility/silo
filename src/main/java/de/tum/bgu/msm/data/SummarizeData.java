@@ -609,9 +609,16 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
             pwp.print(",");
-            pwp.print(pp.getSchoolCoord().getX());
-            pwp.print(",");
-            pwp.println(pp.getSchoolCoord().getY());
+            if (pp.getSchoolCoord() != null){
+                pwp.print(pp.getSchoolCoord().getX());
+                pwp.print(",");
+                pwp.println(pp.getSchoolCoord().getY());
+            }else{
+                pwp.print(0.0);
+                pwp.print(",");
+                pwp.println(0.0);
+            }
+
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(pp.toString());

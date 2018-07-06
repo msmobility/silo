@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
@@ -51,12 +52,10 @@ public class Allocation extends ModuleSynPop{
                 removeBoroughsAsCities(county);
             }
         }
-        SummarizeData.writeOutSyntheticPopulationDE(1990, dataContainer);
     }
 
     public void generateJobs(){
         new GenerateJobs(dataContainer, dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1991, dataContainer);
     }
 
     public void assignJobs(){
@@ -65,7 +64,6 @@ public class Allocation extends ModuleSynPop{
 
     public void assignSchools(){
         new AssignSchools(dataContainer, dataSetSynPop).run();
-        SummarizeData.writeOutSyntheticPopulationDE(1992, dataContainer);
     }
 
     public void readPopulation(){
