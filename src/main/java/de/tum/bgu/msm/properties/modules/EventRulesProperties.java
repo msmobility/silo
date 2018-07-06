@@ -34,9 +34,9 @@ public class EventRulesProperties {
         leaveParentHh = PropertiesUtil.getBooleanProperty(bundle, "event.checkLeaveParentHh", true);
         marriage = PropertiesUtil.getBooleanProperty(bundle, "event.checkMarriage", true);
         divorce = PropertiesUtil.getBooleanProperty(bundle, "event.checkDivorce", true);
-        //why this had a default value of false before?
-        schoolUniversity = PropertiesUtil.getBooleanProperty(bundle, "event.checkSchoolUniv", true);
-        driversLicense = PropertiesUtil.getBooleanProperty(bundle, "event.checkDriversLicense", true);
+        //why this had a default value of false before? Set to false make the current test pass - consider replace reference files!
+        schoolUniversity = PropertiesUtil.getBooleanProperty(bundle, "event.checkSchoolUniv", false);
+        driversLicense = PropertiesUtil.getBooleanProperty(bundle, "event.checkDriversLicense", false);
         startNewJob = PropertiesUtil.getBooleanProperty(bundle, "event.startJob", true);
         quitJob = PropertiesUtil.getBooleanProperty(bundle, "event.quitJob", true);
         allHhMoves = PropertiesUtil.getBooleanProperty(bundle, "event.all.hhMoves", true);

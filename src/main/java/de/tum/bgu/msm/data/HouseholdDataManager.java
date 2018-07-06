@@ -285,9 +285,9 @@ public class HouseholdDataManager {
                 int occupation = Integer.parseInt(lineElements[posOccupation]);
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                //boolean license = Boolean.parseBoolean(lineElements[posDriver]);
+                boolean license = Boolean.parseBoolean(lineElements[posDriver]);
                 //todo temporary assign driving license since this is not in the current SP version
-                boolean license = MicroDataManager.obtainLicense(gender, age);
+                //boolean license = MicroDataManager.obtainLicense(gender, age);
                 Household household = households.get(hhid);
                 if(household == null) {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
