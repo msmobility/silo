@@ -422,7 +422,7 @@ public class MicroDataManager {
         int threshold = 0;
         if (age > 17) {
             if (age < 29) {
-                if (gender == 0) {
+                if (gender == 1) {
                     threshold = 86;
                 } else {
                     threshold = 87;
