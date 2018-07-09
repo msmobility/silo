@@ -31,7 +31,6 @@ import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.Gbl;
-import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
@@ -43,7 +42,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * @author dziemke
@@ -51,8 +49,6 @@ import java.util.Random;
 public final class MatsimTransportModel implements TransportModelI  {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
-	private static final Random random = MatsimRandom.getLocalInstance(); // Make sure that stream of random variables is reproducible. kai, apr'16
-
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes = new MatsimTravelTimes() ;
 	private final SiloDataContainer dataContainer;
@@ -78,7 +74,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		// is computed. To do so, random coordinates in each zone are taken to measure the zone-to-zone
 		// travel times. <code>numberOfCalcPoints</code> states how many such points in each zone are used;
 		// in case multiple points are used; the average of all travel times of a given relation is used.
-		int numberOfCalcPoints = 1;
+//		int numberOfCalcPoints = 1;
 		boolean writePopulation = false;
 
 //		double populationScalingFactor = 0.01;
@@ -98,8 +94,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 		String matsimRunId = scenarioName + "_" + year;
 		
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor, workerScalingFactor);
-		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, zoneFeatureMap,
-				populationScalingFactor * workerScalingFactor);
+		
+		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, zoneFeatureMap, populationScalingFactor * workerScalingFactor);
 		
 		if (writePopulation) {
     		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
