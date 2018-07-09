@@ -1,7 +1,13 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
+//import com.vividsolutions.jts.geom.*;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -43,15 +49,13 @@ public class SiloMatsimUtils {
 		
 		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
 		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-		double storageCapacityFactor = Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.;
-		config.qsim().setStorageCapFactor(storageCapacityFactor);
+		config.qsim().setStorageCapFactor(Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.);
 		
 		String outputDirectoryRoot = initialConfig.controler().getOutputDirectory();
 		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
-		config.controler().setMobsim("qsim");
 		config.controler().setWritePlansInterval(config.controler().getLastIteration());
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration());
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
@@ -135,37 +139,42 @@ public class SiloMatsimUtils {
     			}
     		}
 
-    		int siloPersonId = siloPerson.getId();
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		int siloHomeTazId = dwelling.getZone();
+    		Coord dwellingCoord = dwelling.getCoord();
+//    		int siloHomeTazId = dwelling.getZone();
     		Job job = jobData.getJobFromId(siloWorkplaceId);
-    		int workZoneId = job.getZone();
+//    		int workZoneId = job.getZone();
+    		Coord getJobCoord = job.getCoord();
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here
     		org.matsim.api.core.v01.population.Person matsimPerson = 
-    				matsimPopulationFactory.createPerson(Id.create(siloPersonId, org.matsim.api.core.v01.population.Person.class));
+    				matsimPopulationFactory.createPerson(Id.create(siloPerson.getId(), org.matsim.api.core.v01.population.Person.class));
     		matsimPopulation.addPerson(matsimPerson);
 
     		Plan matsimPlan = matsimPopulationFactory.createPlan();
     		matsimPerson.addPlan(matsimPlan);
 
-    		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
-    		//TODO remove getRandomCoordinate when implementing microlocation
-    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
-    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+//    		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
+//    		//TODO remove getRandomCoordinate when implementing microlocation
+//    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
+//    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
     		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-    		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
-			//TODO remove getRandomCoordinate when implementing microlocation
-    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
-    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
+//    		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
+//			//TODO remove getRandomCoordinate when implementing microlocation
+//    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
+//    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
+    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", getJobCoord);
     		activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity2);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+//    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+
     		matsimPlan.addActivity(activity3);
     	}
     	LOG.info("Finished creating a MATSim population.");
