@@ -3,6 +3,7 @@ package de.tum.bgu.msm.properties.modulesSynPop;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 
 import java.util.ResourceBundle;
@@ -67,80 +68,100 @@ public class MainPropertiesSynPop {
 
     public MainPropertiesSynPop(ResourceBundle bundle) {
 
-        runSyntheticPopulation = ResourceUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
-        microDataFile = ResourceUtil.getProperty(bundle, "micro.data");
-        runIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop");
-        runAllocation = ResourceUtil.getBooleanProperty(bundle, "run.population.allocation", false);
-        runJobAllocation = ResourceUtil.getBooleanProperty(bundle, "run.job.allocation", false);
-        twoGeographicalAreasIPU = ResourceUtil.getBooleanProperty(bundle, "run.ipu.city.and.county");
+        runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
+        microDataFile = PropertiesUtil.getStringProperty(bundle, "micro.data", "PATH_TO_MICRO_DATA");
+        runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
+        runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
+        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", false);
+        twoGeographicalAreasIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.city.and.county", true);
 
-        attributesMunicipality = ResourceUtil.getArray(bundle, "attributes.municipality");
-        marginalsMunicipality = SiloUtil.readCSVfile(bundle.getString("marginals.municipality"));
+        //todo I would read these attributes from a file, probable, the same as read in the next property
+        attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality", new String[]{"smallDwellings","mediumDwellings",
+                "ddOwned","ddRented","foreigners","male4","female4","male9","female9","male14","female14","male19","female19","male24","female24","male29",
+                "female29","male34","female34","male39","female39","male44","female44","male49","female49","male54","female54","male59","female59","male64",
+                "female64","male69","female69","male74","female74","male79","female79","male99","female99","hhSize5","hhSize4","hhSize3","hhSize2","hhSize1",
+                "maleWorkers","femaleWorkers","population","hhTotal"});
+        marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "marginals.municipality", "input/syntheticPopulation/marginalsMunicipality.csv" ));
+
+        // todo this table is not a property but a data container, "ID_city" might be a property? (if this is applciable to other implementations)
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
-        attributesCounty = ResourceUtil.getArray(bundle, "attributes.county"); //attributes are decided on the properties file
-        marginalsCounty = SiloUtil.readCSVfile(bundle.getString("marginals.county")); //all the marginals from the region
+        //todo same as municipalities
+        attributesCounty = PropertiesUtil.getStringPropertyArray(bundle, "attributes.county", new String[]{"ddFloor60","ddFloor80",
+                        "ddFloor100","ddFloor120","ddFloor2000","smallDwellings2","smallDwellings5","smallDwellings6",
+                        "smallDwellings9","mediumDwellings2","mediumDwellings5","mediumDwellings6","mediumDwellings9"}); //attributes are decided on the properties file
+        marginalsCounty = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "marginals.county", "input/syntheticPopulation/marginalsCounty.csv")); //all the marginals from the region
         marginalsCounty.buildIndex(marginalsCounty.getColumnPosition("ID_county"));
 
-        selectedMunicipalities = SiloUtil.readCSVfile(bundle.getString("municipalities.list"));
+        selectedMunicipalities = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "municipalities.list", "input/syntheticPopulation/municipalitiesList.csv"));
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
-        cellsMatrix = SiloUtil.readCSVfile(bundle.getString("taz.definition"));
+        cellsMatrix = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "taz.definition", "input/syntheticPopulation/zoneAttributes.csv"));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
-        omxFileName = ResourceUtil.getProperty(bundle,"distanceODmatrix");
+        //todo this cannot be the final name of the matrix
+        omxFileName = PropertiesUtil.getStringProperty(bundle,"distanceODmatrix", "input/syntheticPopulation/tdTest.omx");
 
-        ageBracketsPerson = ResourceUtil.getIntegerArray(bundle, "age.brackets");
-        ageBracketsPersonQuarter = ResourceUtil.getIntegerArray(bundle, "age.brackets.quarter");
+        ageBracketsPerson = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets", new int[]{4,9,14,19,24,29,34,39,44,49,54,59,64,69,74,79,99});
+        ageBracketsPersonQuarter = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets.quarter", new int[]{64,120});
 
-        jobStringType = ResourceUtil.getArray(bundle, "employment.types");
-        alphaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
-        gammaJob = ResourceUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);
-        tripLengthDistributionFileName = ResourceUtil.getProperty(bundle, "trip.length.distribution");
+        jobStringType = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc",
+                "Rlst","Admn","Serv"});
+        alphaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
+        gammaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);
+        tripLengthDistributionFileName = PropertiesUtil.getStringProperty(bundle, "trip.length.distribution", "input/syntheticPopulation/tripLengthDistribution.csv");
 
-        schoolTypes = ResourceUtil.getIntegerArray(bundle, "school.types");
-        alphaUniversity = ResourceUtil.getDoubleProperty(bundle, "university.choice.alpha", 50);
-        gammaUniversity = ResourceUtil.getDoubleProperty(bundle, "university.choice.gamma", -0.003);
+        schoolTypes = PropertiesUtil.getIntPropertyArray(bundle, "school.types", new int[]{1,2,3});
+        alphaUniversity = PropertiesUtil.getDoubleProperty(bundle, "university.choice.alpha", 50);
+        gammaUniversity = PropertiesUtil.getDoubleProperty(bundle, "university.choice.gamma", -0.003);
 
-        householdSizes = ResourceUtil.getIntegerArray(bundle, "household.size.brackets");
-        numberofQualityLevels = ResourceUtil.getIntegerProperty(bundle, "dwelling.quality.levels.distinguished");
-        yearBracketsDwelling = ResourceUtil.getIntegerArray(bundle, "dd.year.brackets");
-        sizeBracketsDwelling = ResourceUtil.getIntegerArray(bundle, "dd.size.brackets");
+        householdSizes = PropertiesUtil.getIntPropertyArray(bundle, "household.size.brackets", new int[]{1,2,3,4,5});
+        numberofQualityLevels = PropertiesUtil.getIntProperty(bundle, "dwelling.quality.levels.distinguished", 4);
+        yearBracketsDwelling = PropertiesUtil.getIntPropertyArray(bundle, "dd.year.brackets", new int[]{2,5,6,9});
+        sizeBracketsDwelling = PropertiesUtil.getIntPropertyArray(bundle, "dd.size.brackets", new int[]{60,80,100,120,2000});
 
-        maxIterations = ResourceUtil.getIntegerProperty(bundle, "max.iterations.ipu",1000);
-        maxError = ResourceUtil.getDoubleProperty(bundle, "max.error.ipu", 0.0001);
-        improvementError = ResourceUtil.getDoubleProperty(bundle, "min.improvement.error.ipu", 0.001);
-        iterationError = ResourceUtil.getDoubleProperty(bundle, "iterations.improvement.ipu",2);
-        increaseError = ResourceUtil.getDoubleProperty(bundle, "increase.error.ipu",1.05);
-        initialError = ResourceUtil.getDoubleProperty(bundle, "ini.error.ipu", 1000);
+        maxIterations = PropertiesUtil.getIntProperty(bundle, "max.iterations.ipu",1000);
+        maxError = PropertiesUtil.getDoubleProperty(bundle, "max.error.ipu", 0.0001);
+        improvementError = PropertiesUtil.getDoubleProperty(bundle, "min.improvement.error.ipu", 0.001);
+        iterationError = PropertiesUtil.getDoubleProperty(bundle, "iterations.improvement.ipu",2);
+        increaseError = PropertiesUtil.getDoubleProperty(bundle, "increase.error.ipu",1.05);
+        initialError = PropertiesUtil.getDoubleProperty(bundle, "ini.error.ipu", 1000);
 
-        double incomeShape = ResourceUtil.getDoubleProperty(bundle, "income.gamma.shape", 1.0737036186);
-        double incomeRate = ResourceUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
-        incomeProbability = ResourceUtil.getDoubleArray(bundle, "income.probability");
+        double incomeShape = PropertiesUtil.getDoubleProperty(bundle, "income.gamma.shape", 1.0737036186);
+        double incomeRate = PropertiesUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
+        //todo consider to read it from another source e.g. a JS calculator or CSV file
+        incomeProbability = PropertiesUtil.getDoublePropertyArray(bundle, "income.probability", new double[]{0.07998391,0.15981282,
+                0.25837521,0.34694010,0.42580696,0.49569720,0.55744375,0.61188119,0.65980123,
+                0.72104215,0.77143538,0.81284178,0.84682585,0.87469331,0.90418202,0.92677087,
+                0.94770566,0.96267752,0.97337602,0.98101572,0.99313092,0.99874378,0.99999464});
+        //this is not a property but a variable?
         incomeGammaDistribution = new GammaDistributionImpl(incomeShape,1 / incomeRate);
 
-        weightsFileName = ResourceUtil.getProperty(bundle,"weights.matrix");
-        errorsMunicipalityFileName = ResourceUtil.getProperty(bundle, "errors.IPU.municipality.matrix");
-        errorsCountyFileName = ResourceUtil.getProperty(bundle, "errors.IPU.county.matrix");
-        errorsSummaryFileName = ResourceUtil.getProperty(bundle, "errors.IPU.summary.matrix");
+        weightsFileName = PropertiesUtil.getStringProperty(bundle,"weights.matrix", "microData/interimFiles/weigthsMatrix.csv");
+        errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/interimFiles/errorsIPUmunicipality.csv");
+        errorsCountyFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.county.matrix", "microData/interimFiles/errorsIPUcounty.csv");
+        errorsSummaryFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.summary.matrix", "microData/interimFiles/errorsIPUsummary.csv");
 
-        householdsFileName = ResourceUtil.getProperty(bundle,"household.file.ascii");
-        personsFileName = ResourceUtil.getProperty(bundle,"person.file.ascii");
-        dwellingsFileName = ResourceUtil.getProperty(bundle,"dwelling.file.ascii");
-        jobsFileName = ResourceUtil.getProperty(bundle,"job.file.ascii");
+        //todo this properties will be doubled with silo model run properties
+        householdsFileName = PropertiesUtil.getStringProperty(bundle,"household.file.ascii",  "microData/hh");
+        personsFileName = PropertiesUtil.getStringProperty(bundle,"person.file.ascii",  "microData/pp");
+        dwellingsFileName = PropertiesUtil.getStringProperty(bundle,"dwelling.file.ascii", "microData/dd");
+        jobsFileName = PropertiesUtil.getStringProperty(bundle,"job.file.ascii", "microData/jj");
 
-        microPersonsFileName = ResourceUtil.getProperty(bundle,"micro.persons");
-        microHouseholdsFileName = ResourceUtil.getProperty(bundle,"micro.households");
-        microDwellingsFileName = ResourceUtil.getProperty(bundle,"micro.dwellings");
+        microPersonsFileName = PropertiesUtil.getStringProperty(bundle,"micro.persons", "microData/interimFiles/microPersons.csv");
+        microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle,"micro.households", "microData/interimFiles/microHouseholds.csv");
+        microDwellingsFileName = PropertiesUtil.getStringProperty(bundle,"micro.dwellings", "microData/interimFiles/microDwellings.csv");
 
         boroughIPU = ResourceUtil.getBooleanProperty(bundle,"run.three.areas", false);
         if (boroughIPU){
-            selectedBoroughs = SiloUtil.readCSVfile(bundle.getString("municipalities.list.borough"));
-            attributesBorough = ResourceUtil.getArray(bundle, "attributes.borough");
-            marginalsBorough = SiloUtil.readCSVfile(bundle.getString("marginals.borough"));
+            selectedBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "municipalities.list.borough", "input/syntheticPopulation/municipalitiesListBorough.csv"));
+            attributesBorough = PropertiesUtil.getStringPropertyArray(bundle, "attributes.borough", new String[]{"MUCforeigners",
+                    "MUCage5", "MUCage17", "MUCage64", "MUCage99", "MUChhWithChildren", "MUChhSize1", "MUCfemaleWorkers", "MUCmaleWorkers",
+                    "MUCfemale", "MUCpopulation", "MUChhTotal"});
+            marginalsBorough = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "marginals.borough", "input/syntheticPopulation/marginalsBorough.csv"));
             marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
-            ageBracketsBorough = ResourceUtil.getIntegerArray(bundle, "age.brackets.borough");
-            cellsMatrixBoroughs = SiloUtil.readCSVfile(bundle.getString("taz.definition.borough"));
+            ageBracketsBorough = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets.borough", new int[]{5,17,64,99});
+            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "taz.definition.borough", "input/syntheticPopulation/zoneAttributesBorough.csv"));
             cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_borough"));
         } else {
             selectedBoroughs = null;
@@ -151,9 +172,9 @@ public class MainPropertiesSynPop {
         }
 
 
-        buildingLocationlist = SiloUtil.readCSVfile(bundle.getString("buildingLocation.list"));
-        jobLocationlist = SiloUtil.readCSVfile(bundle.getString("jobLocation.list"));
-        schoolLocationlist = SiloUtil.readCSVfile(bundle.getString("schoolLocation.list"));
+        buildingLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/buildingLocation.csv"));
+        jobLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/jobLocation.csv"));
+        schoolLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "schoolLocation.list", "input/syntheticPopulation/schoolLocation.csv"));
 
     }
 

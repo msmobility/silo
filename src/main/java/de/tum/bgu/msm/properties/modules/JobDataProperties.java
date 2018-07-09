@@ -23,7 +23,8 @@ public final class JobDataProperties {
         jobTypes = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
 
         PropertiesUtil.printOutModuleTitle("Job - forecasts");
-        hasControlYears = bundle.containsKey("job.control.total.years");
+        //todo this is not clear yet!!!
+        hasControlYears = true;
         if(hasControlYears) {
             //todo this values are read as 11 and 50 instead of 2011 and 2050!!!
             controlYears = PropertiesUtil.getIntPropertyArray(bundle, "job.control.total.years", new int[]{11,50});

@@ -1,6 +1,5 @@
 package de.tum.bgu.msm;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
@@ -42,13 +41,18 @@ public class SiloUtil {
     public static int trackJj;
     public static PrintWriter trackWriter;
     private static ResourceBundle rb;
+    //todo remove rbHashMap when Maryland Car Ownership UEC is not used any more
     private static HashMap rbHashMap;
 
     static Logger logger = Logger.getLogger(SiloUtil.class);
 
     public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
         File propFile = new File(resourceBundleNames);
-        rb = ResourceUtil.getPropertyBundle(propFile);
+        try {
+            rb = new PropertyResourceBundle(new FileReader(propFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Properties.initializeProperties(rb, implementation);
         if (Properties.get().main.runSynPop){
             PropertiesSynPop.initializePropertiesSynPop(rb, implementation);

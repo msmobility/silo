@@ -21,9 +21,6 @@ public final class PropertiesSynPop {
 
     public final MainPropertiesSynPop main;
 
-
-
-
     private PropertiesSynPop(ResourceBundle bundle, Implementation implementation){
         main = new MainPropertiesSynPop(bundle);
 
