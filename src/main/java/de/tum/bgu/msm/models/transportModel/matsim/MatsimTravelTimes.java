@@ -36,6 +36,7 @@ import java.util.Map;
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
+	@Deprecated
 	void update(LeastCostPathTree leastCoastPathTree, Map<Integer, SimpleFeature> zoneFeatureMap, Network network, TripRouter tripRouter) {
         this.leastCoastPathTree = leastCoastPathTree;
         this.network = network;
@@ -43,12 +44,19 @@ import java.util.Map;
 		this.treesForNodesByTimes.clear();
         updateZoneConnections(zoneFeatureMap);
 		
-		
 		SkimUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
-		
 	}
+	
+	
+	// New update methods, only based on TripRouter from last MATSim run
+	void update(TripRouter tripRouter) {
+		this.tripRouter = tripRouter;
+	}
+	//
+	
 
+	@Deprecated // Should not be required anymore in case MATSim is used
 	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
 	    zoneCalculationNodesMap.clear();
 		for (int zoneId : zoneFeatureMap.keySet()) {
@@ -67,7 +75,10 @@ import java.util.Map;
         logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
     }
 
+	
+	// TODO Remove content of whole method and just throw Exception that integer/zone-based travel time query is not available when MATSim is used
 	@Override
+	@Deprecated // Should not be required anymore in case MATSim is used
 	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
 		
 		if(TransportMode.car.equals(mode)) {
@@ -99,24 +110,24 @@ import java.util.Map;
 				}
 			}
 			return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
-		} else {
-			
-//			// yyyyyy should work as follows (if we had the information). kai, may'18
-//			Facility fromFacility = null ;
-//			Facility toFacility = null ;
-//			org.matsim.api.core.v01.population.Person person = null ;
-//			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
-//			double ttime = 0. ;
-//			for ( PlanElement pe : trip ) {
-//				if ( pe instanceof Leg) {
-//					ttime += ((Leg) pe).getTravelTime() ;
-//				}
-//			}
-//			return ttime ;
-			
+		} else {			
 			//TODO: reconsider matsim pt travel times. nk apr'18
             return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
 		}
 	}
 	
+	
+	public double getTravelTime(Coord origin, Coord destination, double timeOfDay_s, String mode) {
+		FakeFacility fromFacility = new FakeFacility(origin);
+		FakeFacility toFacility = new FakeFacility(destination);
+		org.matsim.api.core.v01.population.Person person = null ;
+		List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
+		double ttime = 0. ;
+		for ( PlanElement pe : trip ) {
+			if ( pe instanceof Leg) {
+				ttime += ((Leg) pe).getTravelTime() ;
+			}
+		}
+		return ttime ;
+	}
 }
