@@ -6,6 +6,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
@@ -18,6 +19,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.matsim.api.core.v01.Coord;
 
 public class DeferredAcceptanceMarriageModel implements MarriageModel {
 
@@ -84,11 +87,36 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 bachelorettes.stream().mapToInt(Integer::intValue).max().getAsInt()+1);
         for(Integer id: bachelors) {
             Person bachelor = dataContainer.getHouseholdData().getPersonFromId(id);
-            int bachelorZone = dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).getZone();
+//          int bachelorZone = dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).getZone();
+            //
+            Dwelling bachelorDwelling = dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId());
+            int bachelorZone = bachelorDwelling.getZone();
+            Coord bachelorCoord = null;
+            if (Properties.get().transportModel.runMatsim) {
+            	bachelorCoord = bachelorDwelling.getCoord();
+            }
+            //
             for(Integer id2: bachelorettes) {
                 Person bachelorette = dataContainer.getHouseholdData().getPersonFromId(id2);
-                int bacheloretteZone = dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).getZone();
-                double travelTime = accessibility.getPeakAutoTravelTime(bachelorZone, bacheloretteZone);
+//              int bacheloretteZone = dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).getZone();
+                //
+                Dwelling bacheloretteDwelling = dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId());
+                int bacheloretteZone = bachelorDwelling.getZone();
+                Coord bacheloretteCoord = null;
+                if (Properties.get().transportModel.runMatsim) {
+                	bacheloretteCoord = bacheloretteDwelling.getCoord();
+                }
+                //
+//              double travelTime = accessibility.getPeakAutoTravelTime(bachelorZone, bacheloretteZone);
+                // TODO Here it seems like specific coords should be used as specific homes of specific persons are considered
+                double travelTime;
+                if (Properties.get().transportModel.runMatsim) {
+                	travelTime = accessibility.getPeakAutoTravelTime(bachelorCoord, bacheloretteCoord);
+                } else {
+                	travelTime = accessibility.getPeakAutoTravelTime(bachelorZone, bacheloretteZone);
+                }
+                //
+                
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
                 double educationOffset = Math.abs(bachelor.getEducationLevel() - bachelorette.getEducationLevel());
                 double nationalityBias = bachelor.getNationality() == bachelorette.getNationality() ? 1: 0.5;
