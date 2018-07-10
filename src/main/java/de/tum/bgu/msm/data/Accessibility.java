@@ -16,7 +16,9 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import omx.OmxFile;
 import omx.OmxMatrix;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.core.router.TripRouter;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +58,7 @@ public class Accessibility {
 
     public Accessibility(SiloDataContainer dataContainer, TravelTimes travelTimes) {
         this.travelTimes = travelTimes;
+
         this.geoData = dataContainer.getGeoData();
         this.dataContainer = dataContainer;
         this.travelTimeToRegion = HashBasedTable.create();
@@ -182,8 +185,36 @@ public class Accessibility {
     private void calculateMinTravelTimesToRegions() {
         geoData.getZones().values(). forEach( z -> {
             geoData.getRegions().values().stream().forEach( r -> {
-                double min = r.getZones().stream().mapToDouble(zoneInRegion ->
-                        getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+            	// TODO Could switch
+//              double min = r.getZones().stream().mapToDouble(zoneInRegion ->
+//                        getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+            	double min = 0;
+            	if (Properties.get().transportModel.runMatsim) {
+            		double time = Double.MAX_VALUE;
+            		for (Zone zoneInRegion : r.getZones()) {
+            			// TODO apply translation mechanics here -- or ONCE on a higher level to determine ONE represenative coord
+            			Coord zoneCoord = null;
+            			Coord zoneInRegionCoord = null;
+            			
+            			double currentTime = getPeakAutoTravelTime(zoneCoord, zoneInRegionCoord);
+            			if (currentTime < time) {
+            				time = currentTime;
+            			}
+            		}
+	            	min = r.getZones().stream().mapToDouble(zoneInRegion ->
+	            		getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+            	} else {
+//            		min = r.getZones().stream().mapToDouble(zoneInRegion ->
+//            			getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).min().getAsDouble();
+            		// The same thing in non-lambda notation for the time being...
+            		double time = Double.MAX_VALUE;
+            		for (Zone zoneInRegion : r.getZones()) {
+            			double currentTime = getPeakAutoTravelTime(z.getId(), zoneInRegion.getId());
+            			if (currentTime < time) {
+            				time = currentTime;
+            			}
+            		}
+            	}
                 travelTimeToRegion.put(z.getId(), r.getId(), min);
             });
         });
@@ -193,6 +224,7 @@ public class Accessibility {
     private void calculateAverageTravelTimesToRegions() {
         geoData.getZones().values(). forEach( z -> {
             geoData.getRegions().values().stream().forEach( r -> {
+            	// TODO Change analogously to calculateMinTravelTimesToRegions
                 double min = r.getZones().stream().mapToDouble(zoneInRegion ->
                         getPeakAutoTravelTime(z.getId(), zoneInRegion.getId())).average().getAsDouble();
                 travelTimeToRegion.put(z.getId(), r.getId(), min);
@@ -234,18 +266,39 @@ public class Accessibility {
         return regionalAccessibilities.getQuick(region);
     }
 
-    public double getPeakAutoTravelTime(int i, int j) {
+    public double getPeakAutoTravelTime(int i, int j) { // TODO check further usages
         return travelTimes.getTravelTime(i, j, TIME_OF_DAY, TransportMode.car);
     }
+    
+    //
+    // Coord-based
+    public double getPeakAutoTravelTime(Coord i, Coord j) {
+        return travelTimes.getTravelTime(i, j, TIME_OF_DAY, TransportMode.car);
+    }
+    //
 
     public double getPeakTransitTravelTime(int i, int j) {
         return travelTimes.getTravelTime(i, j, TIME_OF_DAY, TransportMode.pt);
     }
-
+    
+    //
+ // Coord-based
+    public double getPeakTransitTravelTime(Coord i, Coord j) {
+        return travelTimes.getTravelTime(i, j, TIME_OF_DAY, TransportMode.pt);
+    }
+    //
+    
     public float getMinTravelTimeFromZoneToRegion(int zone, int region) {
         return travelTimeToRegion.get(zone, region).floatValue();
     }
-
+    
+    //
+    // Coord-based
+    public float getMinTravelTimeFromZoneToRegion(Coord zone, Coord region) {
+        return travelTimeToRegion.get(zone, region).floatValue();
+    }
+    //
+    
     public double getPeakTravelCosts(int i, int j) {
         return (autoOperatingCosts / 100) * getPeakAutoTravelTime(i, j);
         // Take costs provided by MATSim here? Should be possible
