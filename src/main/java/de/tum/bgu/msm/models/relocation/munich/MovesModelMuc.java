@@ -19,6 +19,8 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import java.io.*;
 import java.util.*;
 
+import org.matsim.api.core.v01.Coord;
+
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private SelectRegionJSCalculator regionCalculator;
@@ -333,7 +335,16 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         }
         double sumOfCommutingTimeForThisHousehold = 0;
         for (int workZone : workerZonesForThisHousehold.values()){
-            sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
+//        	sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
+        	//
+        	if (Properties.get().transportModel.runMatsim) {
+        		Coord workCoord = null; // How to provide this coord?
+        		sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getCoord(), workCoord);
+        	} else {
+        		sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
+        	}
+        	//
+        	// TODO Why is sumOfCommutingTimeForThisHousehold not used anywhere? (Was like this before my change)
             double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getPeakAutoTravelTime(dd.getZone(), workZone)));
             workDistanceUtility = workDistanceUtility * factorForThisZone;
         }
