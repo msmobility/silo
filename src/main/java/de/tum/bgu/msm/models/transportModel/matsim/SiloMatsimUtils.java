@@ -101,8 +101,9 @@ public class SiloMatsimUtils {
 		return config;
 	}
 
-	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
-			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
+//	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
+//			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
+	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
     	Collection<Person> siloPersons = dataContainer.getHouseholdData().getPersons();
     	
