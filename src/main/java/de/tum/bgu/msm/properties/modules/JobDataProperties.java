@@ -12,7 +12,7 @@ public final class JobDataProperties {
     public final String jobsFileName;
     public final String binaryJobsFileName;
     public final boolean hasControlYears;
-    public final int[] controlYears;
+    //public final int[] controlYears;
     public final String jobControlTotalsFileName;
     public final String employmentForeCastFile;
     public final String interpolatedEmploymentForecast;
@@ -24,13 +24,8 @@ public final class JobDataProperties {
 
         PropertiesUtil.printOutModuleTitle("Job - forecasts");
         //todo this is not clear yet!!!
-        hasControlYears = true;
-        if(hasControlYears) {
-            //todo this values are read as 11 and 50 instead of 2011 and 2050!!!
-            controlYears = PropertiesUtil.getIntPropertyArray(bundle, "job.control.total.years", new int[]{11,50});
-        } else {
-            controlYears = new int[]{};
-        }
+        hasControlYears = PropertiesUtil.getBooleanProperty(bundle, "use.job.control,years", true);
+
         jobControlTotalsFileName = PropertiesUtil.getStringProperty(bundle, "job.control.total", "input/assumptions/employmentForecast.csv");
         //todo the following two properties are equal
         employmentForeCastFile = PropertiesUtil.getStringProperty(bundle, "interpol.empl.forecast", "interpolatedEmploymentForecast");
