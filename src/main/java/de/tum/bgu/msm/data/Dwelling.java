@@ -50,7 +50,6 @@ public final class Dwelling {
 
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
-    private final int zone;
     private final DwellingType type;
     private final int bedrooms;
     private final int yearBuilt;
@@ -67,19 +66,13 @@ public final class Dwelling {
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
-    private Coord coord;
-    public Coord getCoord() {
-        return coord;
-    }
-    public void setCoord(Coord coord) {
-        this.coord = coord;
-    }
+    private Location location;
+    
 
-
-    Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
+    Dwelling (int id, Location location, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
                      int year) {
         this.id = id;
-        this.zone = zone;
+        this.location = location;
         this.hhId = hhId;
         this.type = type;
         this.bedrooms = bedrooms;
@@ -89,6 +82,16 @@ public final class Dwelling {
         this.yearBuilt = year;
         this.utilOfResident = 0.;
         this.utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
+    }
+    
+    public int determineZoneId() {
+    	if (location instanceof MicroLocation) {
+    		return ((MicroLocation) location).getZone().getId();
+    	} else if (location instanceof Zone) {
+    		return ((Zone) location).getId();
+    	} else {
+    		throw new IllegalStateException("No implementation for Location of type " + location.getClass().getName());
+    	}
     }
 
     public int getId () {
@@ -101,10 +104,6 @@ public final class Dwelling {
 
     public int getResidentId () {
         return hhId;
-    }
-
-    public int getZone() {
-        return zone;
     }
 
     public int getPrice() {
@@ -169,6 +168,15 @@ public final class Dwelling {
     }
 
     public int getFloorSpace() { return floorSpace; }
+    
+    public Location getLocation() {
+        return location;
+    }
+    
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
 
     //TODO: magic numbers
     public void setBuildingSize(int buildingSize) {
@@ -212,7 +220,8 @@ public final class Dwelling {
     @Override
     public String toString() {
         return "Attributes of dwelling  " + id
-                +"\nLocated in zone         "+(zone)
+//                +"\nLocated in zone         "+(zone)
+                +"\nLocated at		        "+(location.toString()) // TODO implement toString methods
                 +"\nOccupied by household   "+(hhId)
                 +"\nDwelling type           "+(type.toString())
                 +"\nNumber of bedrooms      "+(bedrooms)

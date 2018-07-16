@@ -40,7 +40,7 @@ public class UpdateJobs extends AbstractModel {
 
         for (Job jj :jobData.getJobs()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
-            jobsByZone[jobTypeId][jj.getZone()]++;
+            jobsByZone[jobTypeId][jj.determineZoneId()]++;
         }
 
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
@@ -50,7 +50,7 @@ public class UpdateJobs extends AbstractModel {
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
         for (Job jj : jobData.getJobs()) {
-            String token = jj.getType() + "." + jj.getZone() + "." + (jj.getWorkerId() == -1);
+            String token = jj.getType() + "." + jj.determineZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {
                 List<Integer> jobList = jobsAvailableForRemoval.get(token);
                 jobList.add(jj.getId());

@@ -207,7 +207,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             if(Properties.get().main.runDwellingMicrolocation) {
-                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+            	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
+            	dd.setLocation(microLocation);
             }
         }
 
@@ -231,7 +232,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][geoData.getHighestZonalId() + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int zone = geoData.getZones().get(dd.getZone()).getId();
+            int zone = geoData.getZones().get(dd.determineZoneId()).getId();
             counter[dt][zone]++;
             avePrice[dt][zone] += dd.getPrice();
         }
@@ -261,7 +262,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
+            int region = geoData.getZones().get(dd.determineZoneId()).getRegion().getId();
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();
         }
@@ -291,7 +292,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getZones().get(dd.getZone()).getRegion().getId();
+            int region = geoData.getZones().get(dd.determineZoneId()).getRegion().getId();
             counter[dt][region]++;
             aveSize[dt][region] += dd.getBedrooms();
         }

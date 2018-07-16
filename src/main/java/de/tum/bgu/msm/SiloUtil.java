@@ -360,7 +360,7 @@ public class SiloUtil {
     }
 
 
-    private static double getSum(Collection<? extends Number> values) {
+    public static double getSum(Collection<? extends Number> values) {
         double sm = 0;
         for (Number value : values) {
             sm += value.doubleValue();

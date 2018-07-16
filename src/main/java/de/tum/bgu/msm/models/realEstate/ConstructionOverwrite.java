@@ -126,7 +126,8 @@ public class ConstructionOverwrite extends AbstractModel {
 
             if(Properties.get().main.implementation == Implementation.MUNICH) {
                 if(Properties.get().main.runDwellingMicrolocation) {
-                    dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+                	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
+                    dd.setLocation(microLocation);
                 }
             }
 

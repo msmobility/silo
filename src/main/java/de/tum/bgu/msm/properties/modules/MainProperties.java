@@ -42,6 +42,7 @@ public class MainProperties {
     public final int[] bemModelYears;
     public final String housingEnvironmentImpactFile;
     public final String prestoSummaryFile;
+    public final double peakHour;
 
     public final Implementation implementation;
 
@@ -79,6 +80,7 @@ public class MainProperties {
         bemModelYears = ResourceUtil.getIntegerArray(bundle, "bem.model.years");
         housingEnvironmentImpactFile = ResourceUtil.getProperty(bundle, "housing.environment.impact.file.name");
         prestoSummaryFile = ResourceUtil.getProperty(bundle, "presto.summary.file");
+        peakHour = ResourceUtil.getDoubleProperty(bundle, "peak.hour", 8*60*60);
 
         runDwellingMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
         runJobMicrolocation = ResourceUtil.getBooleanProperty(bundle, "run.job.microlocation", false);

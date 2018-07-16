@@ -45,7 +45,7 @@ public class GenerateJobMicrolocation {
             int zoneID = jj.getZone();
             String jobType = jj.getType();
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                jj.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                jj.setLocation(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
                 errorjob++;
                 continue;
             }
@@ -56,7 +56,7 @@ public class GenerateJobMicrolocation {
             } else {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
             }
-            jj.setCoord(new Coord(jobX.get(selectedJobID),jobY.get(selectedJobID)));
+            jj.setLocation(new Coord(jobX.get(selectedJobID),jobY.get(selectedJobID)));
         }
         logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");

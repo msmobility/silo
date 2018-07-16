@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data;
 
-public interface Zone extends Id{
+public interface Zone extends Id, Location {
 
     void setRegion(Region region);
 

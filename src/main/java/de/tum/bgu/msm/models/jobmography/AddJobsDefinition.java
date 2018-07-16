@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.Job;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
@@ -33,7 +34,8 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
                 jobDataManager.createJob(id, zone, -1, jobType);
                 if(Properties.get().main.implementation == Implementation.MUNICH) {
                     if(Properties.get().main.runDwellingMicrolocation) {
-                        jobDataManager.getJobFromId(id).setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) geoData.getZones().get(zone)).getZoneFeature()));
+                    	MicroLocation microLocation = ((MunichZone) geoData.getZones().get(zone)).getRandomMicroLocation();
+                        jobDataManager.getJobFromId(id).setLocation(microLocation);
                     }
                 }
             }

@@ -43,7 +43,7 @@ public class GenerateDwellingMicrolocation {
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
             int zoneID = dd.getZone();
             if (zoneBuildingMap.get(zoneID) == null){
-                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                dd.setLocation(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
                 errorBuilding++;
                 continue;
             }
@@ -54,7 +54,7 @@ public class GenerateDwellingMicrolocation {
             } else {
                 zoneBuildingMap.get(zoneID).put(selectedBuildingID, 0.0);
             }
-            dd.setCoord(new Coord(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID)));
+            dd.setLocation(new Coord(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID)));
         }
 
         logger.warn( errorBuilding +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );

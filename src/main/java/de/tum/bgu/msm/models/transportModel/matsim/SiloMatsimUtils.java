@@ -141,11 +141,11 @@ public class SiloMatsimUtils {
     		}
 
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		Coord dwellingCoord = dwelling.getCoord();
+    		Coord dwellingCoord = dwelling.getLocation();
 //    		int siloHomeTazId = dwelling.getZone();
     		Job job = jobData.getJobFromId(siloWorkplaceId);
 //    		int workZoneId = job.getZone();
-    		Coord getJobCoord = job.getCoord();
+    		Coord getJobCoord = job.getLocation();
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here
     		org.matsim.api.core.v01.population.Person matsimPerson = 

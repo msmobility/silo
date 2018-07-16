@@ -668,9 +668,9 @@ public class SummarizeData {
             }
             pwd.print(use);
             pwd.print(",");
-            pwd.print(dd.getCoord().getX());
+            pwd.print(dd.getLocation().getX());
             pwd.print(",");
-            pwd.println(dd.getCoord().getY());
+            pwd.println(dd.getLocation().getY());
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(dd.toString());
@@ -692,9 +692,9 @@ public class SummarizeData {
             pwj.print(",");
             pwj.print(jj.getType());
             pwj.print(",");
-            pwj.print(jj.getCoord().getX());
+            pwj.print(jj.getLocation().getX());
             pwj.print(",");
-            pwj.println(jj.getCoord().getY());
+            pwj.println(jj.getLocation().getY());
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(jj.toString());

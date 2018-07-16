@@ -10,7 +10,13 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+
+import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Person ;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
+
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
@@ -19,6 +25,10 @@ import org.matsim.facilities.Facility;
 import org.matsim.pt.router.FakeFacility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.vividsolutions.jts.geom.Coordinate;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -36,6 +46,9 @@ import java.util.Map;
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
+	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
+
+	
 	@Deprecated
 	void update(LeastCostPathTree leastCoastPathTree, Map<Integer, SimpleFeature> zoneFeatureMap, Network network, TripRouter tripRouter) {
         this.leastCoastPathTree = leastCoastPathTree;
@@ -56,7 +69,6 @@ import java.util.Map;
 	//
 	
 
-	@Deprecated // Should not be required anymore in case MATSim is used
 	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
 	    zoneCalculationNodesMap.clear();
 		for (int zoneId : zoneFeatureMap.keySet()) {
@@ -75,16 +87,11 @@ import java.util.Map;
         logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
     }
 
-	
-	// TODO Remove content of whole method and just throw Exception that integer/zone-based travel time query is not available when MATSim is used
-	@Override
-	@Deprecated // Should not be required anymore in case MATSim is used
-	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
-		
+	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
 		if(TransportMode.car.equals(mode)) {
 			double sumTravelTime_min = 0.;
 
-			for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
+			for (Node originNode : zoneCalculationNodesMap.get(origin.getId())) { // Several points in a given origin zone
 				Map<Id<Node>, LeastCostPathTree.NodeData> tree;
 				if (treesForNodesByTimes.containsKey(originNode.getId())) {
 					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
@@ -103,7 +110,7 @@ import java.util.Map;
 					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 				}
 
-				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
+				for (Node destinationNode : zoneCalculationNodesMap.get(destination.getId())) {// Several points in a given destination zone
 
 					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
 					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
@@ -115,19 +122,52 @@ import java.util.Map;
             return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
 		}
 	}
-	
-	
-	public double getTravelTime(Coord origin, Coord destination, double timeOfDay_s, String mode) {
-		FakeFacility fromFacility = new FakeFacility(origin);
-		FakeFacility toFacility = new FakeFacility(destination);
-		org.matsim.api.core.v01.population.Person person = null ;
-		List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
-		double ttime = 0. ;
-		for ( PlanElement pe : trip ) {
-			if ( pe instanceof Leg) {
-				ttime += ((Leg) pe).getTravelTime() ;
+
+
+	@Override
+	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+		if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
+			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();
+			Coordinate destinationCoord = ((MicroLocation) destination).getCoordinate();
+			FakeFacility fromFacility = new FakeFacility(new Coord(originCoord.x, originCoord.y));
+			FakeFacility toFacility = new FakeFacility(new Coord(destinationCoord.x, destinationCoord.y));
+			org.matsim.api.core.v01.population.Person person = null;
+			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
+			double ttime = 0. ;
+			for ( PlanElement pe : trip ) {
+				if ( pe instanceof Leg) {
+					ttime += ((Leg) pe).getTravelTime() ;
+				}
+			}
+			// TODO take care of relevant interaction activities
+			return ttime;
+		}
+		else if (origin instanceof Zone) {
+			Zone originZone = (Zone) origin;
+			if (destination instanceof Zone) {
+				return getZoneToZoneTravelTime(originZone, (Zone) destination, timeOfDay_s, mode);
+			} else if (destination instanceof Region) {
+				Region destinationRegion = (Region) destination;
+				if (travelTimeToRegion.contains(originZone, destinationRegion)) {
+					return travelTimeToRegion.get(originZone, destinationRegion);
+				}
+				double min = Double.MAX_VALUE;
+        		for (Zone zoneInRegion : destinationRegion.getZones()) {
+        			double travelTime = getZoneToZoneTravelTime(originZone, zoneInRegion, timeOfDay_s, mode);
+        			if (travelTime < min) {
+        				min = travelTime;
+        			}
+        		}
+        		travelTimeToRegion.put(originZone, destinationRegion, min);
 			}
 		}
-		return ttime ;
+		throw new IllegalArgumentException("The combination with origin of type " + origin.getClass().getName() 
+					+ " and destination of type " + destination.getClass().getName() + " is not valid.");
+	}
+
+
+	@Override
+	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
+		throw new IllegalArgumentException("Not implemented in MATSim case.");
 	}
 }

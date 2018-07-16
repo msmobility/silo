@@ -24,6 +24,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.io.*;
 import java.util.*;
@@ -489,9 +490,12 @@ public class HouseholdDataManager {
                 if(dwelling != null) {
                     zone = geoData.getZones().get(dwelling.getZone());
                 }
-                double ds = siloModelContainer.getAcc()
-                        .getPeakAutoTravelTime(zone.getId(),
-                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
+//                double ds = siloModelContainer.getAcc()
+//                        .getPeakAutoTravelTime(zone.getId(),
+//                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
+                Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
+                double ds = siloModelContainer.getAcc().getTravelTimes().
+                		getTravelTime(zone, destination, Properties.get().main.peakHour, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()] ++;
             }

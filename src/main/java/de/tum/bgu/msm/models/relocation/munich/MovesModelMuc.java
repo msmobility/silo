@@ -20,6 +20,7 @@ import java.io.*;
 import java.util.*;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
@@ -65,7 +66,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if (dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
             hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
@@ -161,15 +162,16 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Integer> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
             if (workZones != null) {
-                for (int workZone : workZones) {
-                    int timeFromZoneToRegion = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, region.getId());
+                for (Zone workZone : workZones) {
+                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTime(
+                    		workZone, region, Properties.get().main.peakHour, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
@@ -192,11 +194,13 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         // data preparation
         int householdIncome = 0;
         Nationality nationality = persons.get(0).getNationality();
-        Map<Person, Integer> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
+        	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-                workerZonesForThisHousehold.put(pp,jobData.getJobFromId(pp.getWorkplace()).getZone());
+            	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).determineZoneId());
+                workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
             }
             if (pp.getNationality() != nationality) nationality = Nationality.OTHER;
@@ -283,8 +287,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
-        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.determineZoneId()));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.determineZoneId()));
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 
         double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
@@ -326,26 +330,21 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         double workDistanceUtility = 1;
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Integer> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-                workerZonesForThisHousehold.put(pp,jobData.getJobFromId(pp.getWorkplace()).getZone());
+            	Location workLocation = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).getLocation());
+                workerZonesForThisHousehold.put(pp, workLocation);
             }
         }
         double sumOfCommutingTimeForThisHousehold = 0;
-        for (int workZone : workerZonesForThisHousehold.values()){
-//        	sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
-        	//
-        	if (Properties.get().transportModel.runMatsim) {
-        		Coord workCoord = null; // How to provide this coord?
-        		sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getCoord(), workCoord);
-        	} else {
-        		sumOfCommutingTimeForThisHousehold += accessibility.getPeakAutoTravelTime(dd.getZone(), workZone);
-        	}
-        	//
-        	// TODO Why is sumOfCommutingTimeForThisHousehold not used anywhere? (Was like this before my change)
-            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getPeakAutoTravelTime(dd.getZone(), workZone)));
+        for (Location workLocation : workerZonesForThisHousehold.values()){
+        		sumOfCommutingTimeForThisHousehold += accessibility.getTravelTimes().getTravelTime(
+        				dd.getLocation(), workLocation, Properties.get().main.peakHour, TransportMode.car);
+        	// Why is sumOfCommutingTimeForThisHousehold not used anywhere? (Was like this before my change), dz, july'18 
+            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getTravelTimes().getTravelTime(
+            		dd.getLocation(), workLocation, Properties.get().main.peakHour, TransportMode.car)));
             workDistanceUtility = workDistanceUtility * factorForThisZone;
         }
 

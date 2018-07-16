@@ -198,7 +198,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         int counter = 0;
         for (Dwelling d : dataContainer.getRealEstateData().getDwellings()) {
 
-            if (geoData.getZones().get(d.getZone()).getRegion().getId() == region) {
+            if (geoData.getZones().get(d.determineZoneId()).getRegion().getId() == region) {
                 priceSum += d.getPrice();
                 counter++;
             }
@@ -217,7 +217,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         final Map<Integer, Zone> zones = geoData.getZones();
         final Map<Integer, List<Dwelling>> dwellingsByRegion =
                 dataContainer.getRealEstateData().getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
-                        zones.get(d.getZone()).getRegion().getId()));
+                        zones.get(d.determineZoneId()).getRegion().getId()));
         final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream().collect(Collectors.toMap(e ->
                 e.getKey(), e -> e.getValue().stream().mapToDouble(d -> d.getPrice()).average().getAsDouble()));
         return rentsByRegion;
@@ -247,7 +247,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (dd.getRestriction() <= 0) {
             return true;   // Dwelling is not income restricted
         }
-        int msa = geoData.getZones().get(dd.getZone()).getMsa();
+        int msa = geoData.getZones().get(dd.determineZoneId()).getMsa();
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 

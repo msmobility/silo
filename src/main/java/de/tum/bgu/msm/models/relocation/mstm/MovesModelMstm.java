@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.matsim.api.core.v01.TransportMode;
+
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
        private SelectRegionJSCalculator regionCalculator;
@@ -71,7 +73,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
 
@@ -194,15 +196,16 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Race race, Collection<Integer> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Race race, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
             if (workZones != null) {
-                for (int workZone : workZones) {
-                    int timeFromZoneToRegion = (int) accessibility.getMinTravelTimeFromZoneToRegion(workZone, region.getId());
+                for (Zone workZone : workZones) {
+                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTime(
+                    		workZone, region, Properties.get().main.peakHour, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
@@ -228,11 +231,13 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         // data preparation -- > count workers, store working zones, define income, define race
         int householdIncome = 0;
         Race householdRace = persons.get(0).getRace();
-        Map<Person, Integer> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
+        	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-                workerZonesForThisHousehold.put(pp,jobData.getJobFromId(pp.getWorkplace()).getZone());
+            	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).determineZoneId());
+                workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
             }
             if (pp.getRace() != householdRace) householdRace = Race.other;
@@ -292,12 +297,12 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
-            int msa = geoData.getZones().get(dd.getZone()).getMsa();
+            int msa = geoData.getZones().get(dd.determineZoneId()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
             double racialShare = 1;
             if (householdRace != Race.other) {
-                racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZone()).getId(), householdRace);
+                racialShare = getZonalRacialShare(geoData.getZones().get(dd.determineZoneId()).getId(), householdRace);
             }
             // multiply by racial share to make zones with higher own racial share more attractive
 
@@ -324,8 +329,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
-        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.determineZoneId()));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.determineZoneId()));
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 
         return dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
@@ -337,18 +342,18 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     protected double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dd, int income, double genericUtility) {
         IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
         HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
-        if (householdQualifiesForSubsidy(income, geoData.getZones().get(dd.getZone()).getId(), dd.getPrice())) {
+        if (householdQualifiesForSubsidy(income, geoData.getZones().get(dd.determineZoneId()).getId(), dd.getPrice())) {
             //need to recalculate the generic utility
 
             double ddQualityUtility = convertQualityToUtility(dd.getQuality());
             double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-            double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZone()));
-            double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZone()));
+            double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.determineZoneId()));
+            double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.determineZoneId()));
 
             int price = dd.getPrice();
             if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
                 // housing subsidy program in place
-                int msa = geoData.getZones().get(dd.getZone()).getMsa();
+                int msa = geoData.getZones().get(dd.determineZoneId()).getMsa();
                 if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                     float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
                     float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;

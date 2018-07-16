@@ -75,7 +75,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 					if (person.getSchoolPlace() != 0){
 						mitoPerson.setOccupationCoord(person.getSchoolCoord());
 					}else if(person.getWorkplace()>0){
-						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getCoord());
+						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getLocation());
 					}
 				}
 
@@ -104,7 +104,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
 			//set mitoHousehold's microlocation
-			household.setHomeCoord(dwelling.getCoord());
+			household.setHomeCoord(dwelling.getLocation());
 			thhs.put(household.getId(), household);
 
 		}
@@ -121,7 +121,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		final int workPlace = person.getWorkplace();
 		int workzone = -1;
 		if(workPlace > 0) {
-			workzone = dataContainer.getJobData().getJobFromId(workPlace).getZone();
+			workzone = dataContainer.getJobData().getJobFromId(workPlace).determineZoneId();
 		}
 		return new MitoPerson(person.getId(), mitoOccupation, workzone, person.getAge(), mitoGender, person.hasDriverLicense());
 	}

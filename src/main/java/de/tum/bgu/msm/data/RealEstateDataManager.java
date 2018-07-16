@@ -133,7 +133,7 @@ public class RealEstateDataManager {
                     int posCoordX = SiloUtil.findPositionInArray("coordX", header);
                     int posCoordY = SiloUtil.findPositionInArray("coordY", header);
                     Coord dwellingCoord = new Coord(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
-                    dd.setCoord(dwellingCoord);
+                    dd.setLocation(dwellingCoord);
                 }
 
                 if (id == SiloUtil.trackDd) {

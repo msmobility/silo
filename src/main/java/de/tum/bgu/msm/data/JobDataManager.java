@@ -27,6 +27,7 @@ import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.io.*;
 import java.util.*;
@@ -57,7 +58,7 @@ public class JobDataManager {
         this.zonalJobDensity = new HashMap<>();
     }
 
-    public Job createJob(int id, int zone, int workerId, String type) {
+    public Job createJob(int id, Location zone, int workerId, String type) {
         Job job = new Job(id, zone, workerId, type);
         this.jobs.put(id, job);
         return job;
@@ -157,7 +158,7 @@ public class JobDataManager {
                     int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
                     int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
                     Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
-                    jj.setCoord(jobCoord);
+                    jj.setLocation(jobCoord);
                 }
 
                 if (id == SiloUtil.trackJj) {
@@ -377,42 +378,44 @@ public class JobDataManager {
 //    }
 
 
-    public int findVacantJob(int homeZone, Collection<Integer> regionIds, Accessibility accessibility) {
+    public int findVacantJob(Zone homeZone, Collection<Region> regions, Accessibility accessibility) {
         // select vacant job for person living in homeZone
 
-        double[] regionProbability = new double[SiloUtil.getHighestVal(regionIds.stream().mapToInt(Integer::intValue).toArray()) + 1];
+        Map<Region, Double> regionProb = new HashMap<>();
 
-        if (homeZone > 0) {
+        if (homeZone != null) {
             // person has home location (i.e., is not inmigrating right now)
-            for (int reg : regionIds) {
-                if (vacantJobsByRegionPos[reg] > 0) {
-                    int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                    regionProbability[reg] = accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
+            for (Region reg : regions) {
+                if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                    int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg, 
+                    		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
-            if (SiloUtil.getSum(regionProbability) == 0) {
+            if (SiloUtil.getSum(regionProb.values()) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
-                for (int reg : regionIds) {
-                    if (vacantJobsByRegionPos[reg] > 0) {
-                        int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                        regionProbability[reg] = 1f / distance;
+                for (Region reg : regions) {
+                    if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                    	int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg, 
+                        		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    	regionProb.put(reg, 1. / distance);
                     }
                 }
             }
         } else {
             // person has no home location because (s)he is inmigrating right now and a dwelling has not been chosen yet
-            for (int reg : regionIds) {
-                if (vacantJobsByRegionPos[reg] > 0) {
-                    regionProbability[reg] = getNumberOfVacantJobsByRegion(reg);
+            for (Region reg : regions) {
+                if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                	regionProb.put(reg, (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
         }
 
-        if (SiloUtil.getSum(regionProbability) == 0) {
+        if (SiloUtil.getSum(regionProb.values()) == 0) {
             logger.warn("No jobs remaining. Could not find new job.");
             return -1;
         }
-        int selectedRegion = SiloUtil.select(regionProbability);
+        int selectedRegion = SiloUtil.select(regionProb).getId();
         if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
             logger.warn("Selected region "+ selectedRegion + " but could not find any jobs there.");
             return -1;
