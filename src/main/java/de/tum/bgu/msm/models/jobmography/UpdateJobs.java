@@ -44,7 +44,7 @@ public class UpdateJobs extends AbstractModel {
         }
 
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
-        String forecastFileName = dir + Properties.get().jobData.interpolatedEmploymentForecast + year + ".csv";
+        String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
         TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 

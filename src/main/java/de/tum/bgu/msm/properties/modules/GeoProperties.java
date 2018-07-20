@@ -21,7 +21,7 @@ public class GeoProperties {
     public final String zoneShapeFile;
 
     public GeoProperties(ResourceBundle bundle, Implementation implementation) {
-        PropertiesUtil.printOutModuleTitle("Geo properties");
+        PropertiesUtil.newPropertySubmodule("Geo properties");
         zonalDataFile = PropertiesUtil.getStringProperty(bundle, "zonal.data.file", "input/zoneSystem.csv");
         zoneShapeFile = PropertiesUtil.getStringProperty(bundle, "zones.shapefile", "input/zonesShapefile/zones.shp" );
         regionDefinitionFile = PropertiesUtil.getStringProperty(bundle, "region.definition.file", "input/regionDefinition.csv");
@@ -31,18 +31,10 @@ public class GeoProperties {
         developableLandUseTypes = PropertiesUtil.getIntPropertyArray(bundle, "developable.lu.category", new int[]{41});
         developmentRestrictionsFile = PropertiesUtil.getStringProperty(bundle, "development.restrictions", "input/developmentConstraints.csv");
 
-        PropertiesUtil.printOutModuleTitle("Geo - grwoth capacity model?");
+        PropertiesUtil.newPropertySubmodule("Geo - grwoth capacity model?");
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
         capacityFile = PropertiesUtil.getStringProperty(bundle, "growth.capacity.file", "INSERT_DEFAULT_VALUE");
 
-        //this property is doubled - in Munich, is equal to zonalDataFile
-        /*PropertiesUtil.printOutModuleTitle("Geo additional input data for zones");
-        if(implementation == Implementation.MUNICH) {
-            zonalAttributesFile = PropertiesUtil.getStringProperty(bundle, "raster.cells.definition","input/zoneSystem.csv");
-        } else {
-            zonalAttributesFile = null;
-        }*/
-        //transitAccessTime = PropertiesUtil.getStringProperty(bundle, "transit.access.time");
 
     }
 }

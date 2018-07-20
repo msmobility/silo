@@ -156,7 +156,7 @@ public class ReadPopulation {
 
         logger.info("Reading dwelling micro data from ascii file");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";

@@ -215,7 +215,7 @@ public class PropertiesUtil {
 
     }
 
-    public static void printOutModuleTitle(String line){
+    public static void newPropertySubmodule(String line){
         printOutLine("");
         printOutLine("#" + line);
 

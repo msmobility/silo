@@ -362,14 +362,14 @@ public class SummarizeData {
             //printing out files for the synthetic population at the base year - store as input files
             relativePathToHhFile = Properties.get().householdData.householdFileName;
             relativePathToPpFile = Properties.get().householdData.personFileName;
-            relativePathToDdFile = Properties.get().householdData.dwellingsFileName;
-            relativePathToJjFile = Properties.get().householdData.jobsFileName;
+            relativePathToDdFile = Properties.get().realEstate.dwellingsFileName;
+            relativePathToJjFile = Properties.get().jobData.jobsFileName;
         } else {
             //printing out files for the synthetic population at any other year - store as output files
             relativePathToHhFile = Properties.get().householdData.householdFinalFileName;
             relativePathToPpFile = Properties.get().householdData.personFinalFileName;
-            relativePathToDdFile = Properties.get().householdData.dwellingsFinalFileName;
-            relativePathToJjFile = Properties.get().householdData.jobsFinalFileName;
+            relativePathToDdFile = Properties.get().realEstate.dwellingsFinalFileName;
+            relativePathToJjFile = Properties.get().jobData.jobsFinalFileName;
         }
 
         String filehh = Properties.get().main.baseDirectory + relativePathToHhFile + "_" + year + ".csv";
@@ -387,10 +387,10 @@ public class SummarizeData {
         if (Properties.get().householdData.writeBinPopFile) {
             dataContainer.getHouseholdData().writeBinaryPopulationDataObjects();
         }
-        if (Properties.get().householdData.writeBinDwellingsFile) {
+        if (Properties.get().realEstate.writeBinDwellingsFile) {
             dataContainer.getRealEstateData().writeBinaryDwellingDataObjects();
         }
-        if (Properties.get().householdData.writeBinJobFile) {
+        if (Properties.get().jobData.writeBinJobFile) {
             dataContainer.getJobData().writeBinaryJobDataObjects();
         }
     }
@@ -627,7 +627,7 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
+        String filedd = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName + "_" +
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage,coordX,coordY");
@@ -675,7 +675,7 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + "_" +
+        String filejj = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName + "_" +
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type,coordX,coordY");
@@ -795,7 +795,7 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + file +
+        String filedd = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName + file +
                 year + ".csv";
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
@@ -833,7 +833,7 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + file +
+        String filejj = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName + file +
                 year + ".csv";
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
@@ -937,7 +937,7 @@ public class SummarizeData {
         pwp.close();
 
         logger.info("  Writing dwelling file");
-        String filedd = Properties.get().main.baseDirectory + Properties.get().householdData.dwellingsFileName + fileEnding;
+        String filedd = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName + fileEnding;
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt,floor,building,year,usage");
         for (Dwelling dd: realEstate.getDwellings()) {
@@ -974,7 +974,7 @@ public class SummarizeData {
         pwd.close();
 
         logger.info("  Writing job file");
-        String filejj = Properties.get().main.baseDirectory + Properties.get().householdData.jobsFileName + fileEnding;
+        String filejj = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName + fileEnding;
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.println("id,zone,personId,type");
         for (Job jj: dataContainer.getJobData().getJobs()) {
@@ -1151,10 +1151,10 @@ public class SummarizeData {
         if (Properties.get().householdData.writeBinPopFile) {
             dataContainer.getHouseholdData().writeBinaryPopulationDataObjects();
         }
-        if (Properties.get().householdData.writeBinDwellingsFile) {
+        if (Properties.get().realEstate.writeBinDwellingsFile) {
             realEstate.writeBinaryDwellingDataObjects();
         }
-        if (Properties.get().householdData.writeBinJobFile) {
+        if (Properties.get().jobData.writeBinJobFile) {
             dataContainer.getJobData().writeBinaryJobDataObjects();
         }
     }

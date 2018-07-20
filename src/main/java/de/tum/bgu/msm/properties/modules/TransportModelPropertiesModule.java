@@ -22,19 +22,19 @@ public class TransportModelPropertiesModule {
 
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
-        PropertiesUtil.printOutModuleTitle("Transport model properties");
-        modelYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "transport.model.years", new int[]{-1}))
+        PropertiesUtil.newPropertySubmodule("Transport model properties");
+        modelYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "transport.model.years", new int[]{2024,2037,2050}))
                 .boxed().collect(Collectors.toSet());
 
-
-        PropertiesUtil.printOutModuleTitle("Transport - mito");
+        PropertiesUtil.newPropertySubmodule("Transport - silo-mito-matsim");
         runTravelDemandModel = PropertiesUtil.getBooleanProperty(bundle, "mito.run.travel.model", false);
         demandModelPropertiesPath = PropertiesUtil.getStringProperty(bundle, "mito.properties.file","javaFiles/mito.properties");
 
-        PropertiesUtil.printOutModuleTitle("Transport - matsim");
+        PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         runMatsim = PropertiesUtil.getBooleanProperty(bundle, "matsim.run.travel.model", false);
         matsimZoneShapeFile = PropertiesUtil.getStringProperty(bundle, "matsim.zones.shapefile", "input/zonesShapefile/zones.shp");
         matsimZoneCRS = PropertiesUtil.getStringProperty(bundle, "matsim.zones.crs", "EPSG:4326");
         matsimZoneShapeIdField = PropertiesUtil.getStringProperty(bundle, "matsim.zones.sahape.id.field", "id");
     }
+
 }

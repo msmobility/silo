@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
@@ -22,7 +23,7 @@ public class CblcmProperties {
 
     public CblcmProperties(ResourceBundle bundle) {
         this.bundle = bundle;
-        PropertiesUtil.printOutModuleTitle("CBLCM properties");
+        PropertiesUtil.newPropertySubmodule("CBLCM properties");
         createCblcmFiles = PropertiesUtil.getBooleanProperty(bundle, "create.cblcm.files", false);
         baseYear = PropertiesUtil.getStringProperty(bundle, "cblcm.base.year", "INSERT_DEFAULT_VALUE");
         baseFile = PropertiesUtil.getStringProperty(bundle, "cblcm.base.file", "INSERT_DEFAULT_VALUE");

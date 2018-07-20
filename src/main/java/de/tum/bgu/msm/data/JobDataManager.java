@@ -176,7 +176,7 @@ public class JobDataManager {
     public void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryJobFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
         logger.info("  Writing job data to binary file.");
         Object[] data = jobs.values().toArray(new Job[]{});
         try {

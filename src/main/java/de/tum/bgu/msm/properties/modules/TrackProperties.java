@@ -13,7 +13,7 @@ public class TrackProperties {
     public final int trackedJj;
 
     public TrackProperties(ResourceBundle bundle) {
-        PropertiesUtil.printOutModuleTitle("Tracking individuals");
+        PropertiesUtil.newPropertySubmodule("Tracking individuals");
         trackFile = PropertiesUtil.getStringProperty(bundle, "track.file.name", "tracking");
         trackedHh = PropertiesUtil.getIntProperty(bundle, "track.household", -1);
         trackedPp = PropertiesUtil.getIntProperty(bundle, "track.person", -1);

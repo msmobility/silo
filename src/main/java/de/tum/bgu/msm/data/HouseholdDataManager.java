@@ -741,9 +741,9 @@ public class HouseholdDataManager {
                 numberOfHh + "_" + startYear + ".csv";
         String filepp = baseDirectory + Properties.get().householdData.personFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
-        String filedd = baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
+        String filedd = baseDirectory + Properties.get().realEstate.dwellingsFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
-        String filejj = baseDirectory + Properties.get().householdData.jobsFileName + "_" +
+        String filejj = baseDirectory + Properties.get().jobData.jobsFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
         PrintWriter pwh = openFileForSequentialWriting(filehh, false);
         PrintWriter pwp = openFileForSequentialWriting(filepp, false);

@@ -25,7 +25,7 @@ public class DemographicsProperties {
     public final int autoOwnershipUecUtility;
 
     public DemographicsProperties(ResourceBundle bundle) {
-        PropertiesUtil.printOutModuleTitle("Demographic properties");
+        PropertiesUtil.newPropertySubmodule("Demographic properties");
         marriedScaler = (float) PropertiesUtil.getDoubleProperty(bundle, "demographics.birth.scaler.married", 2.243);
         singleScaler = (float) PropertiesUtil.getDoubleProperty(bundle, "demographics.birth.scaler.single", 0.1);
         localScaler = (float) PropertiesUtil.getDoubleProperty(bundle, "demographics.local.birth.rate.adjuster", 0.87);
@@ -37,7 +37,7 @@ public class DemographicsProperties {
         interracialMarriageShare = (float) PropertiesUtil.getDoubleProperty(bundle, "demographics.interracial.marriage.share", 0.02);
 
         //will be removed soon
-        PropertiesUtil.printOutModuleTitle("Auto ownership UEC properties - to be removed");
+        PropertiesUtil.newPropertySubmodule("Auto ownership UEC properties - to be removed");
         autoOwnerShipUecFile = PropertiesUtil.getStringProperty(bundle, "AutoOwnership.UEC.FileName");
         autoOwnershipDataSheet = PropertiesUtil.getIntProperty(bundle, "AutoOwnership.UEC.DataSheetNumber");
         logAutoOwnership = PropertiesUtil.getBooleanProperty(bundle, "log.util.autoOwnership");
