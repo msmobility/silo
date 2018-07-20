@@ -30,6 +30,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.vividsolutions.jts.geom.Coordinate;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +43,7 @@ import java.util.Map;
 	private LeastCostPathTree leastCoastPathTree;
 	private Network network;
 	private TripRouter tripRouter;
-	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
+	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
@@ -50,12 +51,12 @@ import java.util.Map;
 
 	
 	@Deprecated
-	void update(LeastCostPathTree leastCoastPathTree, Map<Integer, SimpleFeature> zoneFeatureMap, Network network, TripRouter tripRouter) {
+	void update(LeastCostPathTree leastCoastPathTree, Collection<Zone> zones, Network network, TripRouter tripRouter) {
         this.leastCoastPathTree = leastCoastPathTree;
         this.network = network;
 		this.tripRouter = tripRouter;
 		this.treesForNodesByTimes.clear();
-        updateZoneConnections(zoneFeatureMap);
+        updateZoneConnections(zones);
 		
 		SkimUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
@@ -69,19 +70,18 @@ import java.util.Map;
 	//
 	
 
-	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
+	private void updateZoneConnections(Collection<Zone> zones) {
 	    zoneCalculationNodesMap.clear();
-		for (int zoneId : zoneFeatureMap.keySet()) {
-            SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
-
+	    for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-				Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
+            	MicroLocation originLocation = zone.getRandomMicroLocation();
+				Coord originCoord = new Coord(originLocation.getCoordinate().x, originLocation.getCoordinate().y);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
-				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
-					zoneCalculationNodesMap.put(zoneId, new LinkedList());
+				if (!zoneCalculationNodesMap.containsKey(zone)) {
+					zoneCalculationNodesMap.put(zone, new LinkedList<Node>());
 				}
-				zoneCalculationNodesMap.get(zoneId).add(originNode);
+				zoneCalculationNodesMap.get(zone).add(originNode);
 			}
 		}
         logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
@@ -169,5 +169,12 @@ import java.util.Map;
 	@Override
 	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
 		throw new IllegalArgumentException("Not implemented in MATSim case.");
+	}
+
+
+	@Override
+	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

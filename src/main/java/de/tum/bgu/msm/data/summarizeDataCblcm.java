@@ -48,7 +48,7 @@ public class summarizeDataCblcm {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             households[dataContainer.getGeoData().getZoneIndex(zone)][hhIncomeGroup.ordinal()]++;
         }
@@ -100,7 +100,7 @@ public class summarizeDataCblcm {
         int[][] jobs = new int[dataContainer.getGeoData().getZoneIdsArray().length][JobType.getNumberOfJobTypes()];
         for (Job jj : dataContainer.getJobData().getJobs()) {
             int jobType = JobType.getOrdinal(jj.getType());
-            jobs[dataContainer.getGeoData().getZoneIndex(jj.getZone())][jobType]++;
+            jobs[dataContainer.getGeoData().getZoneIndex(jj.determineZoneId())][jobType]++;
         }
 
         if (SiloUtil.checkIfFileExists(emplFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
@@ -140,7 +140,7 @@ public class summarizeDataCblcm {
         int[][] dwellings = new int[dataContainer.getGeoData().getZoneIdsArray().length][DwellingType.values().length];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int ddType = dd.getType().ordinal();
-            dwellings[dataContainer.getGeoData().getZoneIndex(dd.getZone())][ddType]++;
+            dwellings[dataContainer.getGeoData().getZoneIndex(dd.determineZoneId())][ddType]++;
         }
 
         if (SiloUtil.checkIfFileExists(ddFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
@@ -221,7 +221,7 @@ public class summarizeDataCblcm {
             int zoneId = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zoneId = dwelling.getZone();
+                zoneId = dwelling.determineZoneId();
             }
             MstmZone zone = (MstmZone) geoData.getZones().get(zoneId);
             int homeFips = zone.getCounty().getId();
@@ -230,7 +230,7 @@ public class summarizeDataCblcm {
             }
         }
         for (Job jj: dataContainer.getJobData().getJobs()) {
-            int jobFips = ((MstmZone) geoData.getZones().get(jj.getZone())).getCounty().getId();
+            int jobFips = ((MstmZone) geoData.getZones().get(jj.determineZoneId())).getCounty().getId();
             if (SiloUtil.containsElement(countyOrder, jobFips)) {
                 jobsByCounty[countyOrderIndex[jobFips]]++;
             }

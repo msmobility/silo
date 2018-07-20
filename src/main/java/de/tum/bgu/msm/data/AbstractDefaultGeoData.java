@@ -3,8 +3,10 @@ package de.tum.bgu.msm.data;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.PrintWriter;
@@ -38,10 +40,25 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     @Override
     public void readData() {
         readZones();
+        readShapes();
         readRegionDefinition();
         readLandUse();
         readDeveloperData();
     }
+
+	private void readShapes() {
+		String zoneShapeFile = Properties.get().geo.zoneShapeFile;
+        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
+            int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
+            MunichZone zone = (MunichZone) zones.get(zoneId);
+            if (zone != null){
+                zone.setZoneFeature(feature);
+                zoneFeatureMap.put(zoneId,feature);
+            }else{
+                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+            }
+        }
+	}
 
     @Override
     public Map<Integer, Zone> getZones() {

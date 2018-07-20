@@ -58,8 +58,8 @@ public class JobDataManager {
         this.zonalJobDensity = new HashMap<>();
     }
 
-    public Job createJob(int id, Location zone, int workerId, String type) {
-        Job job = new Job(id, zone, workerId, type);
+    public Job createJob(int id, Location location, int workerId, String type) {
+        Job job = new Job(id, location, workerId, type);
         this.jobs.put(id, job);
         return job;
     }
@@ -91,7 +91,7 @@ public class JobDataManager {
     public void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
 
         for (Job jj : jobs.values()) {
-            final MitoZone zone = zones.get(jj.getZone());
+            final MitoZone zone = zones.get(jj.determineZoneId());
             final String type = jj.getType().toUpperCase();
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
@@ -141,6 +141,13 @@ public class JobDataManager {
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
+            
+            int posCoordX = -1;
+            int posCoordY = -1;
+            if(Properties.get().main.implementation == Implementation.MUNICH) {
+                posCoordX = SiloUtil.findPositionInArray("CoordX", header);
+                posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+            }
 
 
             // read line
@@ -148,18 +155,19 @@ public class JobDataManager {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id = Integer.parseInt(lineElements[posId]);
-                int zone = Integer.parseInt(lineElements[posZone]);
+                int zoneId = Integer.parseInt(lineElements[posZone]);
+                Location location;
+                Zone zone = geoData.getZones().get(zoneId);
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                Job jj = createJob(id, zone, worker, type);
 
                 //TODO: remove it when we implement interface
                 if(Properties.get().main.implementation == Implementation.MUNICH) {
-                    int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
-                    int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
-                    Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
-                    jj.setLocation(jobCoord);
+                	location = new MicroLocation(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]), zone);
+                } else {
+                	location = zone;
                 }
+                Job jj = createJob(id, location, worker, type);
 
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
@@ -314,7 +322,7 @@ public class JobDataManager {
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
 
-                int region = geoData.getZones().get(jj.getZone()).getRegion().getId();
+                int region = geoData.getZones().get(jj.determineZoneId()).getRegion().getId();
                 if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
                     vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
                     vacantJobsByRegionPos[region]++;
@@ -337,7 +345,7 @@ public class JobDataManager {
         final int workplace = person.getWorkplace();
         Job jb = jobs.get(workplace);
         if (makeJobAvailableToOthers) {
-            addJobToVacancyList(jb.getZone(), workplace);
+            addJobToVacancyList(jb.determineZoneId(), workplace);
         }
         jb.setWorkerID(-1);
         person.setWorkplace(-1);
@@ -461,7 +469,7 @@ public class JobDataManager {
         final int highestId = regions.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][highestId + 1];
         for (Job job : jobs.values()) {
-            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.getZone()).getRegion().getId()]++;
+            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.determineZoneId()).getRegion().getId()]++;
         }
 
         for (int region : regions.keySet()) {
@@ -478,7 +486,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         Multiset<Integer> counter = ConcurrentHashMultiset.create();
-        jobs.values().parallelStream().forEach(j -> counter.add(j.getZone()));
+        jobs.values().parallelStream().forEach(j -> counter.add(j.determineZoneId()));
         geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
     }
 

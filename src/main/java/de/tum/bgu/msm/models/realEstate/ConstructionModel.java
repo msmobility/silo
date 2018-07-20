@@ -197,9 +197,11 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int quality = attributes[3];
         float restriction = attributes[4] / 100f;
         int price = attributes[5];
-
+        
+        Zone zone = geoData.getZones().get(zoneId);
+        
         Dwelling dd = dataContainer.getRealEstateData()
-                .createDwelling(ddId, zoneId, -1,
+                .createDwelling(ddId, zone, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
         EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);

@@ -34,39 +34,39 @@ public class MarriageModelTest {
 
         couple1 = new int[]{1,2};
         Household household1 = dataContainer.getHouseholdData().createHousehold(1,  1, 0);
-        dataContainer.getRealEstateData().createDwelling(1, 1, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(1, null, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000);
         Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
 
         Household household2 = dataContainer.getHouseholdData().createHousehold(2, 2, 0);
-        dataContainer.getRealEstateData().createDwelling(2, 1, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(2, null, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000);
         Person person2 = dataContainer.getHouseholdData().createPerson(2, 30, 2, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person2, household2);
         person2.setRole(PersonRole.SINGLE);
 
         couple2 = new int[]{3,4};
         Household household3 = dataContainer.getHouseholdData().createHousehold(3, 3,  0);
-        dataContainer.getRealEstateData().createDwelling(3, 1, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(3, null, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person3 = dataContainer.getHouseholdData().createPerson(3, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person3, household3);
         person3.setRole(PersonRole.SINGLE);
 
         Household household4 = dataContainer.getHouseholdData().createHousehold(4, 4,  0);
-        dataContainer.getRealEstateData().createDwelling(4, 1, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(4, null, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person4 = dataContainer.getHouseholdData().createPerson(4, 30, 2, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person4, household4);
         person4.setRole(PersonRole.SINGLE);
 
         couple3 = new int[]{5,6};
         Household household5 = dataContainer.getHouseholdData().createHousehold(5, 5,  0);
-        dataContainer.getRealEstateData().createDwelling(5, 1, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(5, null, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person5 = dataContainer.getHouseholdData().createPerson(5, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person5, household5);
         person5.setRole(PersonRole.SINGLE);
 
         Household household6 = dataContainer.getHouseholdData().createHousehold(6, 6,  0);
-        dataContainer.getRealEstateData().createDwelling(6, 1, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(6, null, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person6 = dataContainer.getHouseholdData().createPerson(6, 30, 2, Race.other, -1, -1, 0);
         person6.setRole(PersonRole.SINGLE);
         dataContainer.getHouseholdData().addPersonToHousehold(person6, household6);
@@ -76,7 +76,7 @@ public class MarriageModelTest {
 
         couple4 = new int[]{7,8};
         Household household7 = dataContainer.getHouseholdData().createHousehold(7, 7,  0);
-        dataContainer.getRealEstateData().createDwelling(7, 1, 7, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(7, null, 7, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person7 = dataContainer.getHouseholdData().createPerson(7, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person7, household7);
         person7.setRole(PersonRole.SINGLE);
@@ -92,7 +92,7 @@ public class MarriageModelTest {
         person7Child3.setRole(PersonRole.CHILD);
 
         Household household8 = dataContainer.getHouseholdData().createHousehold(8, 8,  0);
-        dataContainer.getRealEstateData().createDwelling(8, 1, 8, DwellingType.SFD, 2, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(8, null, 8, DwellingType.SFD, 2, 1, 1000, -1, 2000);
         Person person8 = dataContainer.getHouseholdData().createPerson(8, 30, 2, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person8, household8);
         person8.setRole(PersonRole.SINGLE);

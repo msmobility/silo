@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.DwellingType;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -65,7 +66,7 @@ public class GenerateVacantDwellings {
 
         realEstateDataManager = dataContainer.getRealEstateData();
         for (Dwelling dd: realEstateDataManager.getDwellings()){
-            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZone(),"ID_city");
+            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.determineZoneId(),"ID_city");
             updateQualityMap(municipality, dd.getYearBuilt(), dd.getQuality());
         }
         highestDwellingIdInUse = 0;
@@ -93,7 +94,8 @@ public class GenerateVacantDwellings {
                 int quality = selectQualityVacant(municipality, extractYear(buildingYearSize));
                 int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
                 int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, Dwelling.Usage.VACANT);
-                Dwelling dwell = realEstateDataManager.createDwelling(newDdId, tazSelected, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Zone zone = dataContainer.getGeoData().getZones().get(tazSelection);
+                Dwelling dwell = realEstateDataManager.createDwelling(newDdId, zone, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 dwell.setUsage(Dwelling.Usage.VACANT);
                 dwell.setFloorSpace(floorSpace);
                 dwell.setYearConstructionDE(year);

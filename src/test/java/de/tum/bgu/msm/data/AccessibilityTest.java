@@ -16,6 +16,7 @@ import de.tum.bgu.msm.utils.SkimUtil;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -103,7 +104,8 @@ public class AccessibilityTest {
 
         for(Zone zone: geoData.getZones().values()) {
             for(Region region: geoData.getRegions().values()) {
-                minTravelTimes.setQuick(zone.getId(), region.getId(), accessibility.getMinTravelTimeFromZoneToRegion(zone.getId(), region.getId()));
+                minTravelTimes.setQuick(zone.getId(), region.getId(),
+                		accessibility.getTravelTimes().getTravelTimeToRegion(zone, region, Properties.get().main.peakHour, TransportMode.car));
             }
         }
 

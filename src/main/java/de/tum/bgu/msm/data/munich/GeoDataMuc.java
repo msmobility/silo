@@ -46,19 +46,6 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
             zones.put(zoneIds[i], zone);
         }
-
-        String zoneShapeFile = Properties.get().geo.zoneShapeFile;
-        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
-            MunichZone zone = (MunichZone) zones.get(zoneId);
-            if (zone != null){
-                zone.setZoneFeature(feature);
-                zoneFeatureMap.put(zoneId,feature);
-            }else{
-                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
-            }
-        }
-
     }
 
     @Override

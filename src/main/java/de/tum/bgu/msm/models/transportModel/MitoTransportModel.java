@@ -69,14 +69,12 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
-
-				//TODO: remove it when we implement interface
-				if(Properties.get().main.implementation == Implementation.MUNICH){
-					if (person.getSchoolPlace() != 0){
-						mitoPerson.setOccupationCoord(person.getSchoolCoord());
-					}else if(person.getWorkplace()>0){
-						mitoPerson.setOccupationCoord(dataContainer.getJobData().getJobFromId(person.getWorkplace()).getLocation());
-					}
+				
+				Location workplaceLocation = dataContainer.getJobData().getJobFromId(person.getWorkplace()).getLocation();
+				if (person.getSchoolLocation() instanceof MicroLocation) {
+					mitoPerson.setOccupationLocation(person.getSchoolLocation());
+				} else if (workplaceLocation instanceof MicroLocation) {
+					mitoPerson.setOccupationLocation(((MicroLocation) workplaceLocation));
 				}
 
 				households.get(hhId).addPerson(mitoPerson);
@@ -97,14 +95,17 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int zoneId = -1;
 			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
 			if(dwelling != null) {
-				zoneId = dwelling.getZone();
+				zoneId = dwelling.determineZoneId();
 
 			}
 			MitoZone zone = zones.get(zoneId);
 
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
 			//set mitoHousehold's microlocation
-			household.setHomeCoord(dwelling.getLocation());
+			if (dwelling.getLocation() instanceof MicroLocation) {
+				household.setHomeLocation((MicroLocation) dwelling.getLocation());
+			}
+			
 			thhs.put(household.getId(), household);
 
 		}
