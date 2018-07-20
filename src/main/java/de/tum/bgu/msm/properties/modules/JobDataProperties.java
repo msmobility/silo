@@ -23,7 +23,7 @@ public final class JobDataProperties {
         jobTypes = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
 
         PropertiesUtil.printOutModuleTitle("Job - forecasts");
-        //todo this is not clear yet!!!
+        //not used now since it is provided directly from the file headers
         hasControlYears = PropertiesUtil.getBooleanProperty(bundle, "use.job.control,years", true);
 
         jobControlTotalsFileName = PropertiesUtil.getStringProperty(bundle, "job.control.total", "input/assumptions/employmentForecast.csv");
