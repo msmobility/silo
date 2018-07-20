@@ -24,7 +24,6 @@ public final class JobDataProperties {
 
         PropertiesUtil.newPropertySubmodule("Job - forecasts");
         jobControlTotalsFileName = PropertiesUtil.getStringProperty(bundle, "job.control.total", "input/assumptions/employmentForecast.csv");
-        //todo the following two properties are equal
         employmentForeCastFile = PropertiesUtil.getStringProperty(bundle, "interpol.empl.forecast", "interpolatedEmploymentForecast");
 
         PropertiesUtil.newPropertySubmodule("Job - synthetic jobs input");
