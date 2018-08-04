@@ -285,6 +285,14 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<!--MATSim test infrastructure.  Not transitive.-->
+			<groupId>org.matsim</groupId>
+			<artifactId>matsim</artifactId>
+			<type>test-jar</type>
+			<version>${matsimVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>accessibility</artifactId>
 			<version>${matsimVersion}</version>
@@ -350,7 +358,7 @@
 		<svnRevision>${buildNumber}</svnRevision>
 		<geotools.version>13.0</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-		<matsimVersion>0.10.0-SNAPSHOT</matsimVersion>
+		<matsimVersion>0.11.0-SNAPSHOT</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 	</properties>
 </project>

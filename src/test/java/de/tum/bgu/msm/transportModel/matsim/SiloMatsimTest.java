@@ -1,11 +1,7 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.nio.file.Paths;
-
+import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -18,10 +14,15 @@ import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.core.utils.misc.CRCChecksum;
+import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
-import de.tum.bgu.msm.SiloMatsim;
-import de.tum.bgu.msm.transportModel.SiloTestUtils;
+import java.io.File;
+import java.nio.file.Paths;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result.FILES_ARE_EQUAL;
 
 /**
  * @author dziemke, nagel
@@ -109,7 +110,7 @@ public class SiloMatsimTest {
 			log.info("Checking MATSim events file ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.output_events.xml.gz";
 			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001//test_matsim_2001.output_events.xml.gz";
-			assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
+			assertEquals("Different event files.", FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}
 		
 		// TODO Consider checking accessibilities (currently stored in "testing" directory)
