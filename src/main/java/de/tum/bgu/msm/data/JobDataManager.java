@@ -68,8 +68,8 @@ public class JobDataManager {
         return jobs.get(jobId);
     }
 
-    public void saveJobs (Job[] jjs) {
-        for (Job jj: jjs) jobs.put(jj.getId(), jj);
+    public void saveJobs(Job[] jjs) {
+        for (Job jj : jjs) jobs.put(jj.getId(), jj);
     }
 
     public int getJobCount() {
@@ -80,7 +80,7 @@ public class JobDataManager {
         return jobs.values();
     }
 
-    public Set<Integer> getJobMapIDs () {
+    public Set<Integer> getJobMapIDs() {
         return jobs.keySet();
     }
 
@@ -141,7 +141,7 @@ public class JobDataManager {
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
-            
+
             int posCoordX = -1;
             int posCoordY = -1;
             if(Properties.get().main.implementation == Implementation.MUNICH) {
@@ -162,7 +162,7 @@ public class JobDataManager {
                 String type = lineElements[posType].replace("\"", "");
 
                 //TODO: remove it when we implement interface
-                if(Properties.get().main.implementation == Implementation.MUNICH) {
+                if (Properties.get().main.implementation == Implementation.MUNICH) {
                 	location = new MicroLocation(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]), zone);
                 } else {
                 	location = zone;
@@ -185,7 +185,7 @@ public class JobDataManager {
     public void writeBinaryJobDataObjects() {
         // Store job object data in binary file
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryJobFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
         logger.info("  Writing job data to binary file.");
         Object[] data = jobs.values().toArray(new Job[]{});
         try {
@@ -240,20 +240,6 @@ public class JobDataManager {
 
     public void calculateEmploymentForecast() {
 
-        // TODO Would it be better to make this adjustable rather than hardcoded? dz, apr/16
-        String[] yearsGiven;
-        if (Properties.get().jobData.hasControlYears) {
-            int[] yearsInt = Properties.get().jobData.controlYears;
-            yearsGiven = new String[yearsInt.length];
-            for (int i = 0; i < yearsInt.length; i++) yearsGiven[i] = String.valueOf(yearsInt[i]);
-        } else {
-            yearsGiven = new String[]{"00", "07", "10", "30", "40"};  // Warning: if years are changed, also change interpolation loop below under "// interpolate employment data"
-        }
-        int highestYear = SiloUtil.getHighestVal(yearsGiven);
-        int smallestYear = SiloUtil.getLowestVal(yearsGiven);
-
-        logger.info("  Interpolating employment forecast for all years from " + (2000 + smallestYear) + " to " +
-                (2000 + highestYear));
         TableDataSet jobs;
         try {
             final String filename = Properties.get().main.baseDirectory + "/" + Properties.get().jobData.jobControlTotalsFileName;
@@ -263,6 +249,39 @@ public class JobDataManager {
         }
         jobs.buildIndex(jobs.getColumnPosition("SMZ"));
         new JobType(Properties.get().jobData.jobTypes);
+
+        //read the headers
+        String[] labels = jobs.getColumnLabels();
+        String[] jobTypes = JobType.getJobTypes();
+        List<String> years = new ArrayList<>();
+
+        //find the years that are defined in the job forecast
+        String jobTypeName = jobTypes[0];
+        for (String label : labels) {
+            if (label.contains(jobTypeName)) {
+                String year = (label.substring(jobTypeName.length(), label.length()));
+                if (!years.contains(year)) {
+                    years.add(year);
+                }
+            }
+
+        }
+        //proof the rest of job types are in the file
+        for (int i = 1; i < jobTypes.length; i++) {
+            for (String year : years) {
+                boolean found = false;
+                for (String label : labels) {
+                    if (label.equals(jobTypes[i] + year)) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    throw new RuntimeException("Not defined all job types for year " + year);
+                }
+            }
+        }
+
+        String[] yearsGiven = years.toArray(new String[0]);
 
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
@@ -336,10 +355,10 @@ public class JobDataManager {
         }
     }
 
-    public void quitJob (boolean makeJobAvailableToOthers, Person person) {
+    public void quitJob(boolean makeJobAvailableToOthers, Person person) {
         // Person quits job and the job is added to the vacantJobList
         // <makeJobAvailableToOthers> is false if this job disappears from the job market
-        if(person == null) {
+        if (person == null) {
             return;
         }
         final int workplace = person.getWorkplace();
@@ -404,7 +423,7 @@ public class JobDataManager {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (vacantJobsByRegionPos[reg.getId()] > 0) {
-                    	int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg, 
+                    	int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg,
                         		Properties.get().main.peakHour, TransportMode.car) + 0.5);
                     	regionProb.put(reg, 1. / distance);
                     }
@@ -425,7 +444,7 @@ public class JobDataManager {
         }
         int selectedRegion = SiloUtil.select(regionProb).getId();
         if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
-            logger.warn("Selected region "+ selectedRegion + " but could not find any jobs there.");
+            logger.warn("Selected region " + selectedRegion + " but could not find any jobs there.");
             return -1;
         }
         float[] jobProbability = new float[getNumberOfVacantJobsByRegion(selectedRegion)];

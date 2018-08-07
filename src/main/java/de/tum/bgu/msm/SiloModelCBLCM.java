@@ -53,7 +53,7 @@ public class SiloModelCBLCM {
 	        if (!scalingYears.isEmpty()) SummarizeData.readScalingYearControlTotals();
 	        currentYear = Properties.get().main.startYear;
 	        tdmYears.addAll(Properties.get().transportModel.modelYears);
-	        skimYears.addAll(Properties.get().transportModel.skimYears);
+	        skimYears.addAll(Properties.get().accessibility.skimYears);
 	        // Note: only implemented for MSTM:
 	        geoData = new GeoDataMstm();
 	        // Note: only implemented for MSTM:

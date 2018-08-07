@@ -34,6 +34,7 @@ public final class Properties {
     public final DemographicsProperties demographics;
     public final AccessibilityProperties accessibility;
     public final MovesProperties moves;
+    public final TrackProperties track;
 
     private Properties(ResourceBundle bundle, Implementation implementation) {
         main = new MainProperties(bundle, implementation);
@@ -45,7 +46,8 @@ public final class Properties {
         jobData = new JobDataProperties(bundle);
         eventRules = new EventRulesProperties(bundle);
         demographics = new DemographicsProperties(bundle);
-        accessibility = new AccessibilityProperties(bundle);
+        accessibility = new AccessibilityProperties(bundle, main.startYear);
         moves = new MovesProperties(bundle);
+        track = new TrackProperties(bundle);
     }
 }

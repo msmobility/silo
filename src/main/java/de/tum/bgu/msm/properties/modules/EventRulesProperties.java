@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
@@ -26,23 +26,24 @@ public class EventRulesProperties {
     public final boolean dwellingConstruction;
 
     public EventRulesProperties(ResourceBundle bundle) {
-        allDemography = ResourceUtil.getBooleanProperty(bundle, "event.all.demography");
-        birthday = ResourceUtil.getBooleanProperty(bundle, "event.birthday");
-        death = ResourceUtil.getBooleanProperty(bundle, "event.checkDeath");
-        birth = ResourceUtil.getBooleanProperty(bundle, "event.checkBirth");
-        leaveParentHh = ResourceUtil.getBooleanProperty(bundle, "event.checkLeaveParentHh");
-        marriage = ResourceUtil.getBooleanProperty(bundle, "event.checkMarriage");
-        divorce = ResourceUtil.getBooleanProperty(bundle, "event.checkDivorce");
-        schoolUniversity = ResourceUtil.getBooleanProperty(bundle, "event.checkSchoolUniv", false);
-        driversLicense = ResourceUtil.getBooleanProperty(bundle, "event.checkDriversLicense", false);
-        startNewJob = ResourceUtil.getBooleanProperty(bundle, "event.startJob");
-        quitJob = ResourceUtil.getBooleanProperty(bundle, "event.quitJob");
-        allHhMoves = ResourceUtil.getBooleanProperty(bundle, "event.all.hhMoves");
-        inmigration = ResourceUtil.getBooleanProperty(bundle, "event.inmigration");
-        outMigration = ResourceUtil.getBooleanProperty(bundle, "event.outMigration");
-        allDwellingDevelopments = ResourceUtil.getBooleanProperty(bundle, "event.all.developers");
-        dwellingChangeQuality = ResourceUtil.getBooleanProperty(bundle, "event.ddChangeQual");
-        dwellingDemolition = ResourceUtil.getBooleanProperty(bundle, "event.ddDemolition");
-        dwellingConstruction = ResourceUtil.getBooleanProperty(bundle, "event.ddConstruction");
+        PropertiesUtil.newPropertySubmodule("Event rule properties");
+        allDemography = PropertiesUtil.getBooleanProperty(bundle, "event.all.demography", true);
+        birthday = PropertiesUtil.getBooleanProperty(bundle, "event.birthday", true);
+        death = PropertiesUtil.getBooleanProperty(bundle, "event.checkDeath", true);
+        birth = PropertiesUtil.getBooleanProperty(bundle, "event.checkBirth", true);
+        leaveParentHh = PropertiesUtil.getBooleanProperty(bundle, "event.checkLeaveParentHh", true);
+        marriage = PropertiesUtil.getBooleanProperty(bundle, "event.checkMarriage", true);
+        divorce = PropertiesUtil.getBooleanProperty(bundle, "event.checkDivorce", true);
+        schoolUniversity = PropertiesUtil.getBooleanProperty(bundle, "event.checkSchoolUniv", true);
+        driversLicense = PropertiesUtil.getBooleanProperty(bundle, "event.checkDriversLicense", true);
+        startNewJob = PropertiesUtil.getBooleanProperty(bundle, "event.startJob", true);
+        quitJob = PropertiesUtil.getBooleanProperty(bundle, "event.quitJob", true);
+        allHhMoves = PropertiesUtil.getBooleanProperty(bundle, "event.all.hhMoves", true);
+        inmigration = PropertiesUtil.getBooleanProperty(bundle, "event.inmigration", true);
+        outMigration = PropertiesUtil.getBooleanProperty(bundle, "event.outMigration", true);
+        allDwellingDevelopments = PropertiesUtil.getBooleanProperty(bundle, "event.all.developers", true);
+        dwellingChangeQuality = PropertiesUtil.getBooleanProperty(bundle, "event.ddChangeQual", true);
+        dwellingDemolition = PropertiesUtil.getBooleanProperty(bundle, "event.ddDemolition", true);
+        dwellingConstruction = PropertiesUtil.getBooleanProperty(bundle, "event.ddConstruction", true);
     }
 }

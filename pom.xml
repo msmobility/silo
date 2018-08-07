@@ -285,6 +285,14 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<!--MATSim test infrastructure.  Not transitive.-->
+			<groupId>org.matsim</groupId>
+			<artifactId>matsim</artifactId>
+			<type>test-jar</type>
+			<version>${matsimVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>accessibility</artifactId>
 			<version>${matsimVersion}</version>

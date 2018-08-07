@@ -21,6 +21,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
@@ -286,6 +287,8 @@ public class HouseholdDataManager {
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
+                //todo temporary assign driving license since this is not in the current SP version
+                //boolean license = MicroDataManager.obtainLicense(gender, age);
                 Household household = households.get(hhid);
                 if(household == null) {
                     throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
@@ -744,9 +747,9 @@ public class HouseholdDataManager {
                 numberOfHh + "_" + startYear + ".csv";
         String filepp = baseDirectory + Properties.get().householdData.personFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
-        String filedd = baseDirectory + Properties.get().householdData.dwellingsFileName + "_" +
+        String filedd = baseDirectory + Properties.get().realEstate.dwellingsFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
-        String filejj = baseDirectory + Properties.get().householdData.jobsFileName + "_" +
+        String filejj = baseDirectory + Properties.get().jobData.jobsFileName + "_" +
                 numberOfHh + "_" + startYear + ".csv";
         PrintWriter pwh = openFileForSequentialWriting(filehh, false);
         PrintWriter pwp = openFileForSequentialWriting(filepp, false);

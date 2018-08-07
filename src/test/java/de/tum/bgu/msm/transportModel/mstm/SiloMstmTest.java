@@ -1,16 +1,15 @@
 package de.tum.bgu.msm.transportModel.mstm;
 
-import static org.junit.Assert.assertEquals;
-
+import de.tum.bgu.msm.SiloMstm;
+import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.core.utils.misc.CRCChecksum;
+import org.matsim.testcases.MatsimTestUtils;
 
-import de.tum.bgu.msm.SiloMstm;
-import de.tum.bgu.msm.transportModel.SiloTestUtils;
-import de.tum.bgu.msm.transportModel.matsim.MatsimTestUtils;
+import static org.junit.Assert.assertEquals;
 
 public class SiloMstmTest {
 	private static final Logger LOG = Logger.getLogger(SiloMstmTest.class);

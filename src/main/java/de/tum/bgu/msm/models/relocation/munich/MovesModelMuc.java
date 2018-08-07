@@ -214,7 +214,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHouesehold(ht,nationality,workerZonesForThisHousehold.values()));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
-        String normalizer = "population";
+        String normalizer = "powerOfPopulation";
         int totalVacantDd = 0;
         for (int region: geoData.getRegions().keySet()) {
             totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
@@ -241,9 +241,13 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getQuick(region));
                 } case ("noNormalization"): {
                     // do nothing
+                }case ("powerOfPopulation"): {
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getQuick(region),0.5));
                 }
             }
         }
+
+
         int selectedRegionId;
         if (regionUtilitiesForThisHousehold.values().stream().mapToDouble(i -> i).sum() == 0) {
             return -1;

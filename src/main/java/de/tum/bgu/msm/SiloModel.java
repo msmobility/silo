@@ -130,7 +130,7 @@ public final class SiloModel {
 			SummarizeData.readScalingYearControlTotals();
 		}
 		tdmYears.addAll(Properties.get().transportModel.modelYears);
-		skimYears.addAll(Properties.get().transportModel.skimYears);
+		skimYears.addAll(Properties.get().accessibility.skimYears);
 	}
 
 	private void setupMicroSim() {
@@ -220,8 +220,8 @@ public final class SiloModel {
 				}
                 SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
                         Properties.get().main.startYear, Properties.get());
-                modelContainer.getAcc().calculateHansenAccessibilities(year);
             }
+			modelContainer.getAcc().calculateHansenAccessibilities(year);
 			timeTracker.record("calcAccessibilities");
 
             timeTracker.reset();

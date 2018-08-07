@@ -89,7 +89,7 @@ public class RealEstateDataManager {
 
         logger.info("Reading dwelling micro data from ascii file");
         int year = Properties.get().main.startYear;
-        String fileName = properties.main.baseDirectory + properties.realEstate.dwellingsFile;
+        String fileName = properties.main.baseDirectory + properties.realEstate.dwellingsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -207,7 +207,7 @@ public class RealEstateDataManager {
 
     public void writeBinaryDwellingDataObjects() {
 
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.binaryDwellingsFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.binaryDwellingsFile;
         logger.info("  Writing dwelling data to binary file.");
         Object[] data = dwellings.values().toArray(new Dwelling[0]);
         try {
