@@ -4,6 +4,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.GeoData;
 import org.apache.log4j.Logger;
 
+import java.util.Comparator;
+
 /**
  * Keep track of cases that are undesirable
  * Author: Rolf Moeckel, PB Albuquerque
@@ -36,8 +38,9 @@ public class IssueCounter {
 
 
     public static void regionSpecificCounters(GeoData geoData) {
-        exceededVacantDwellingStorage = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
-        exceededVacantJobStorage = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray()) + 1];
+        final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
+        exceededVacantDwellingStorage = new int[highestRegionId + 1];
+        exceededVacantJobStorage = new int[highestRegionId + 1];
         SiloUtil.setArrayToValue(exceededVacantDwellingStorage, 0);
         SiloUtil.setArrayToValue(exceededVacantJobStorage, 0);
     }

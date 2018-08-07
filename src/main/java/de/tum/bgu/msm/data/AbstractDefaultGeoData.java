@@ -59,33 +59,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     @Override
-    public int[] getZoneIdsArray() {
-        return zones.keySet().stream().mapToInt(Integer::intValue).toArray();
-    }
-
-
-    @Override
-    public int[] getRegionIdsArray() {
-        return regions.keySet().stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    @Override
-    public int getZoneIndex(int zone) {
-        int[] zoneIds = getZoneIdsArray();
-        for(int i= 0; i < zoneIds.length; i++) {
-            if(zoneIds[i] == zone) {
-                return i;
-            }
-        }
-        throw new RuntimeException("Zone " + zone + " not found.");
-    }
-
-    @Override
-    public int getHighestZonalId() {
-        return zones.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-    }
-
-    @Override
     public float getAreaOfLandUse (String landUseType, int zone) {
         return landUse.getIndexedValueAt(zone, landUseType);
     }

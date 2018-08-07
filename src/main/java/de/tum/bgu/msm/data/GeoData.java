@@ -30,30 +30,6 @@ public interface GeoData {
      */
     Map<Integer, SimpleFeature> getZoneFeatureMap();
 
-    /**
-     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
-     */
-    @Deprecated
-    int[] getZoneIdsArray();
-
-    /**
-     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
-     */
-    @Deprecated
-    int[] getRegionIdsArray();
-
-    /**
-     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
-     */
-    @Deprecated
-    int getZoneIndex(int zone);
-
-    /**
-     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
-     */
-    @Deprecated
-    int getHighestZonalId();
-
     boolean useNumberOfDwellingsAsCapacity();
 
     float getDevelopmentCapacity(int zone);

@@ -129,18 +129,22 @@ public class SyntheticPopUs implements SyntheticPopI {
         tazByPuma = new HashMap<>();
         ArrayList<Integer> alHomePuma = new ArrayList<>();
         ArrayList<Integer> alWorkPuma = new ArrayList<>();
-        for (int taz: geoData.getZoneIdsArray()) {
-            int homePuma = geoData.getPUMAofZone(taz);
-            int workPuma = geoData.getSimplifiedPUMAofZone(taz);
-            if (!alHomePuma.contains(homePuma)) alHomePuma.add(homePuma);
-            if (!alWorkPuma.contains(workPuma)) alWorkPuma.add(workPuma);
+        for (Zone zone: geoData.getZones().values()) {
+            int homePuma = ((MstmZone)zone).getPuma();
+            int workPuma = ((MstmZone)zone).getSimplifiedPuma();
+            if (!alHomePuma.contains(homePuma)) {
+                alHomePuma.add(homePuma);
+            }
+            if (!alWorkPuma.contains(workPuma)) {
+                alWorkPuma.add(workPuma);
+            }
             if (tazByPuma.containsKey(homePuma)) {
                 int[] zones = tazByPuma.get(homePuma);
-                int[] newZones = SiloUtil.expandArrayByOneElement(zones, taz);
+                int[] newZones = SiloUtil.expandArrayByOneElement(zones, zone.getId());
                 tazByPuma.put(homePuma, newZones);
             } else {
-                int[] zone = {taz};
-                tazByPuma.put(homePuma, zone);
+                int[] zoneArray = {zone.getId()};
+                tazByPuma.put(homePuma, zoneArray);
             }
         }
         pumas = SiloUtil.convertIntegerArrayListToArray(alHomePuma);
@@ -173,7 +177,8 @@ public class SyntheticPopUs implements SyntheticPopI {
         new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][taz]
-        float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][geoData.getHighestZonalId() + 1];
+        final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
+        float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestZoneId + 1];
         tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
         // read employment data
@@ -196,7 +201,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 
         // create base year employment
-        for (int zone: geoData.getZoneIdsArray()) {
+        for (int zone: geoData.getZones().keySet()) {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 if (jobInventory[jobTp][zone] > 0) {
                     for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
@@ -569,35 +574,38 @@ public class SyntheticPopUs implements SyntheticPopI {
         // - School/University locations are not assigned as 'workplace' yet. Note that some worker have a job and go to school at the same time.
 
         int fullPumaZone = workState * 100000 + workPumaZone;
-        if (!checkIfSimplifiedPumaInStudyArea(fullPumaZone) && workPumaZone != 0) return -2;  // person does work in puma zone outside of study area
-        int[] zones = geoData.getZoneIdsArray();
-        double[] zoneProbability = new double[zones.length];
+        if (!checkIfSimplifiedPumaInStudyArea(fullPumaZone) && workPumaZone != 0) {
+            return -2;  // person does work in puma zone outside of study area
+        }
 
-        for (int zn = 0; zn < zones.length; zn++) {
-            if (vacantJobsByZone.containsKey(zones[zn])) {
-                int numberOfJobsInThisZone = vacantJobsByZone.get(zones[zn]).length;
+        Map<Zone, Double> zoneProbabilities = new HashMap<>();
+        for (Zone zone: geoData.getZones().values()) {
+            if (vacantJobsByZone.containsKey(zone.getId())) {
+                int numberOfJobsInThisZone = vacantJobsByZone.get(zone.getId()).length;
                 if (numberOfJobsInThisZone > 0) {
-                    int distance = (int) (accessibility.getPeakAutoTravelTime(homeTaz, zones[zn]) + 0.5);
-                    zoneProbability[zn] = accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone;
+                    int distance = (int) (accessibility.getPeakAutoTravelTime(homeTaz, zone.getId()) + 0.5);
+                    zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
-                    zoneProbability[zn] = 0;
+                    zoneProbabilities.put(zone, 0.);
                 }
             } else {
-                zoneProbability[zn] = 0;
+                zoneProbabilities.put(zone, 0.);
             }
         }
 
         // in rare cases, no job within the common commute distance is available. Assign job location outside of MSTM area.
-        if (SiloUtil.getSum(zoneProbability) == 0) return -2;
+        if (SiloUtil.getSum(zoneProbabilities.values()) == 0) {
+            return -2;
+        }
 
-        int selectedZoneID = SiloUtil.select(zoneProbability);
-        int[] jobsInThisZone = vacantJobsByZone.get(zones[selectedZoneID]);
+        Zone selectedZone = SiloUtil.select(zoneProbabilities);
+        int[] jobsInThisZone = vacantJobsByZone.get(selectedZone.getId());
         int selectedJobIndex = SiloUtil.select(jobsInThisZone.length) - 1;
         int[] newVacancies = SiloUtil.removeOneElementFromZeroBasedArray(jobsInThisZone, selectedJobIndex);
         if (newVacancies.length > 0) {
-            vacantJobsByZone.put(zones[selectedZoneID], newVacancies);
+            vacantJobsByZone.put(selectedZone.getId(), newVacancies);
         } else {
-            vacantJobsByZone.remove(zones[selectedZoneID]);
+            vacantJobsByZone.remove(selectedZone.getId());
         }
         return jobsInThisZone[selectedJobIndex];
     }
@@ -733,7 +741,8 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
         // summarize vacancy
-        int[][][] ddCount = new int [geoData.getHighestZonalId() + 1][DwellingType.values().length][2];
+        final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
+        int[][][] ddCount = new int [highestZoneId + 1][DwellingType.values().length][2];
         for (Dwelling dd: realEstateDataManager.getDwellings()) {
             int taz = dd.getZone();
             int occ = dd.getResidentId();
@@ -873,14 +882,17 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void summarizeVacantJobsByRegion () {
         // write out vacant jobs by region
         logger.info("----Vacant Jobs By Region Start----");
-        int[] vacantJobsByRegion = new int[SiloUtil.getHighestVal(geoData.getRegionIdsArray())+1];
+        final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
+        int[] vacantJobsByRegion = new int[highestRegionId + 1];
         for (Zone zone: geoData.getZones().values()) {
             if (vacantJobsByZone.containsKey(zone.getId())) {
                 vacantJobsByRegion[zone.getRegion().getId()] +=
                         vacantJobsByZone.get(zone).length;
             }
         }
-        for (int region: geoData.getRegionIdsArray()) logger.info("----,"+region+","+vacantJobsByRegion[region]);
+        for (int region: geoData.getRegions().keySet()) {
+            logger.info("----,"+region+","+vacantJobsByRegion[region]);
+        }
         logger.info("----Vacant Jobs By Region End----");
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
