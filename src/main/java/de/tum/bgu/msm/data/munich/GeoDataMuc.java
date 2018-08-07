@@ -26,7 +26,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
     private static final Logger logger = Logger.getLogger(GeoDataMuc.class);
 
     public GeoDataMuc() {
-        super("Zone", "Region");
+        super("Zone", "Region", "id");
     }
 
     @Override

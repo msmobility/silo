@@ -20,6 +20,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     protected final String zoneIdColumnName;
     protected final String regionColumnName;
+    private final String shapeIdentifier;
 
     protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
     protected final Map<Integer, Region> regions = new LinkedHashMap<>();
@@ -32,9 +33,10 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     private boolean useCapacityAsNumberOfDwellings;
 
-    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName) {
+    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName, String shapeIdentifier) {
         this.zoneIdColumnName = zoneIdColumnName;
         this.regionColumnName = regionColumnName;
+        this.shapeIdentifier = shapeIdentifier;
     }
 
     @Override
@@ -48,9 +50,13 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
 	private void readShapes() {
 		String zoneShapeFile = Properties.get().geo.zoneShapeFile;
+		if(zoneShapeFile == null) {
+		    logger.error("No shape file found!");
+		    throw new RuntimeException("No shape file found!");
+        }
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
-            MunichZone zone = (MunichZone) zones.get(zoneId);
+            int zoneId = Integer.parseInt(feature.getAttribute(shapeIdentifier).toString());
+            Zone zone = zones.get(zoneId);
             if (zone != null){
                 zone.setZoneFeature(feature);
                 zoneFeatureMap.put(zoneId,feature);

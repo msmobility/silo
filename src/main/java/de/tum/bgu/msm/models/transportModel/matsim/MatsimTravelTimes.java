@@ -49,29 +49,19 @@ import java.util.Map;
 
 	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
 
-	
-	@Deprecated
-	void update(LeastCostPathTree leastCoastPathTree, Collection<Zone> zones, Network network, TripRouter tripRouter) {
-        this.leastCoastPathTree = leastCoastPathTree;
-        this.network = network;
+	void update(TripRouter tripRouter, Collection<Zone> zones, Network network, LeastCostPathTree leastCoastPathTree) {
 		this.tripRouter = tripRouter;
+		this.network = network;
+		this.leastCoastPathTree = leastCoastPathTree;
+
+		updateZoneConnections(zones);
 		this.treesForNodesByTimes.clear();
-        updateZoneConnections(zones);
-		
 		SkimUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
 	}
-	
-	
-	// New update methods, only based on TripRouter from last MATSim run
-	void update(TripRouter tripRouter) {
-		this.tripRouter = tripRouter;
-	}
-	//
-	
+
 
 	private void updateZoneConnections(Collection<Zone> zones) {
-	    zoneCalculationNodesMap.clear();
 	    for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
             	MicroLocation originLocation = zone.getRandomMicroLocation();
@@ -79,7 +69,7 @@ import java.util.Map;
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
 				if (!zoneCalculationNodesMap.containsKey(zone)) {
-					zoneCalculationNodesMap.put(zone, new LinkedList<Node>());
+					zoneCalculationNodesMap.put(zone, new LinkedList<>());
 				}
 				zoneCalculationNodesMap.get(zone).add(originNode);
 			}
@@ -91,7 +81,7 @@ import java.util.Map;
 		if(TransportMode.car.equals(mode)) {
 			double sumTravelTime_min = 0.;
 
-			for (Node originNode : zoneCalculationNodesMap.get(origin.getId())) { // Several points in a given origin zone
+			for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
 				Map<Id<Node>, LeastCostPathTree.NodeData> tree;
 				if (treesForNodesByTimes.containsKey(originNode.getId())) {
 					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
@@ -110,7 +100,7 @@ import java.util.Map;
 					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 				}
 
-				for (Node destinationNode : zoneCalculationNodesMap.get(destination.getId())) {// Several points in a given destination zone
+				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// Several points in a given destination zone
 
 					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
 					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);

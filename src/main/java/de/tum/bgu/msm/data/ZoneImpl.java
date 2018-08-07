@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -64,7 +66,8 @@ public class ZoneImpl implements Zone {
     @Override
 	public MicroLocation getRandomMicroLocation() {
         // alternative and about 10 times faster way to generate random point inside a geometry. Amit Dec'17
-        RandomPointsBuilder randomPointsBuilder = new RandomPointsBuilder(new GeometryFactory());
+        RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(),
+                SiloUtil.getRandomObject());
         randomPointsBuilder.setNumPoints(1);
         randomPointsBuilder.setExtent((Geometry) zoneFeature.getDefaultGeometry());
         Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];

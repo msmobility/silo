@@ -2,6 +2,7 @@ package de.tum.bgu.msm.properties.modules;
 
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.util.ResourceBundle;
 
@@ -20,7 +21,7 @@ public class GeoProperties {
     public final String capacityFile;
     public final String zoneShapeFile;
 
-    public GeoProperties(ResourceBundle bundle, Implementation implementation) {
+    public GeoProperties(ResourceBundle bundle, Implementation implementation, MainProperties main) {
         zonalDataFile = ResourceUtil.getProperty(bundle, "zonal.data.file");
         regionDefinitionFile = ResourceUtil.getProperty(bundle, "region.definition.file");
         zonalSchoolQualityFile = ResourceUtil.getProperty(bundle, "school.quality.index");
@@ -36,7 +37,7 @@ public class GeoProperties {
             zonalAttributesFile = null;
         }
         transitAccessTime = ResourceUtil.getProperty(bundle, "transit.access.time");
-        zoneShapeFile = ResourceUtil.getProperty(bundle, "zones.shapefile");
+        zoneShapeFile = main.baseDirectory + ResourceUtil.getProperty(bundle, "zones.shapefile");
     }
 }
 

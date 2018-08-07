@@ -204,7 +204,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             double thisRegionFactor = 1;
             if (workZones != null) {
                 for (Zone workZone : workZones) {
-                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTime(
+                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTimeToRegion(
                     		workZone, region, Properties.get().main.peakHour, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }

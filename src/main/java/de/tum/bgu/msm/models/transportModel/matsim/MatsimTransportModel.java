@@ -34,8 +34,11 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.gbl.Gbl;
 //import org.matsim.core.router.util.TravelDisutility;
 //import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 //import org.matsim.core.utils.gis.ShapeFileReader;
 //import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 //import org.opengis.feature.simple.SimpleFeature;
@@ -51,7 +54,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private final Config initialMatsimConfig;
-	private final MatsimTravelTimes travelTimes = new MatsimTravelTimes();
+	private final MatsimTravelTimes travelTimes;
 //	private TripRouter tripRouter = null;
 	private final SiloDataContainer dataContainer;
 	
@@ -60,6 +63,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		this.dataContainer = dataContainer;
 		Gbl.assertNotNull(dataContainer);
 		this.initialMatsimConfig = matsimConfig ;
+		this.travelTimes =  new MatsimTravelTimes();
 	}
 
 	@Override
@@ -117,10 +121,10 @@ public final class MatsimTransportModel implements TransportModelI  {
 		controler.run();
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
 		
-//		TravelTime travelTime = controler.getLinkTravelTimes();
-//		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+		TravelTime travelTime = controler.getLinkTravelTimes();
+		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
 //		
-//		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
+		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
 //		
 ////		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
 //		// for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
@@ -132,7 +136,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
-		travelTimes.update(controler.getTripRouterProvider().get());
+		travelTimes.update(controler.getTripRouterProvider().get(), dataContainer.getGeoData().getZones().values(),
+				scenario.getNetwork(), leastCoastPathTree);
 		
 //		tripRouter = controler.getTripRouterProvider().get();
 	}

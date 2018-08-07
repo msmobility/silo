@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Paths;
 
+import de.tum.bgu.msm.Implementation;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -58,7 +59,7 @@ public class SiloMatsimTest {
 		config.qsim().setNumberOfThreads(1);
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(arg, config);
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MARYLAND);
 			siloMatsim.run();
 		} catch (Exception e) {
 			e.printStackTrace();

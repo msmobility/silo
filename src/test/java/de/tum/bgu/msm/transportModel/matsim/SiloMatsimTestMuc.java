@@ -6,8 +6,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.nio.file.Paths;
 
+import de.tum.bgu.msm.Implementation;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -31,7 +33,7 @@ public class SiloMatsimTestMuc {
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 	
-	@Test
+	@Test @Ignore
 	public final void testMain() {
 		SiloTestUtils.cleanUpMicrodataFiles();
 		SiloTestUtils.cleanUpOtherFiles();
@@ -53,7 +55,7 @@ public class SiloMatsimTestMuc {
 		config.qsim().setNumberOfThreads(1);
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(arg, config);
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MUNICH);
 			siloMatsim.run();
 		} catch (Exception e) {
 			e.printStackTrace();

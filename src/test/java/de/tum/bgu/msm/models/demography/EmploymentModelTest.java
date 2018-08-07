@@ -66,7 +66,7 @@ public class EmploymentModelTest {
         Assert.assertEquals(-1, person.getOccupation());
         Assert.assertEquals(0, person.getIncome());
 
-        final Job job = dataContainer.getJobData().createJob(2, null, -1, "dummy");
+        final Job job = dataContainer.getJobData().createJob(2, new ZoneImpl(999,1,1), -1, "dummy");
         model.takeNewJob(person, job);
 
         int income = person.getIncome();

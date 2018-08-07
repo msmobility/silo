@@ -28,8 +28,6 @@ public final class Job {
     private int workerId;
     private final String type;
     private Location location;
-    
-   
 
     Job (int id, Location location, int workerId, String type) {
         this.id = id;
@@ -55,10 +53,6 @@ public final class Job {
     public int getWorkerId() {
         return workerId;
     }
-
-//    public int getZone() {
-//        return zone;
-//    }
 
     public String getType() {
         return type;

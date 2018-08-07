@@ -26,10 +26,8 @@ public final class SiloMatsim {
 	/**
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
-	public SiloMatsim(String args, Config config) {
-//		rb = SiloUtil.siloInitialization(args, Implementation.MARYLAND);
-		rb = SiloUtil.siloInitialization(args, Implementation.MUNICH);
-
+	public SiloMatsim(String args, Config config, Implementation implementation) {
+		rb = SiloUtil.siloInitialization(args, implementation);
 		matsimConfig = config ;
 	}	    
 

@@ -22,7 +22,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     private final String COUNTY_COLUMN_NAME = "COUNTYFIPS";
 
     public GeoDataMstm() {
-        super("ZoneId", "Region");
+        super("ZoneId", "Region", "SMZRMZ");
     }
 
     @Override

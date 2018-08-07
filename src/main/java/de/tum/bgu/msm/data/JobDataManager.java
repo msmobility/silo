@@ -395,7 +395,7 @@ public class JobDataManager {
             // person has home location (i.e., is not inmigrating right now)
             for (Region reg : regions) {
                 if (vacantJobsByRegionPos[reg.getId()] > 0) {
-                    int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg, 
+                    int distance = (int) (accessibility.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
                     		Properties.get().main.peakHour, TransportMode.car) + 0.5);
                     regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }

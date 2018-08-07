@@ -170,7 +170,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             double thisRegionFactor = 1;
             if (workZones != null) {
                 for (Zone workZone : workZones) {
-                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTime(
+                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTimeToRegion(
                     		workZone, region, Properties.get().main.peakHour, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
@@ -334,7 +334,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
             if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
-            	Location workLocation = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).getLocation());
+            	Location workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()).getLocation());
                 workerZonesForThisHousehold.put(pp, workLocation);
             }
         }

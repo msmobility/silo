@@ -3,9 +3,6 @@ package de.tum.bgu.msm.data;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
-import com.google.common.collect.ArrayTable;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -13,17 +10,10 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
-import omx.OmxFile;
-import omx.OmxMatrix;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.core.router.TripRouter;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Calculates and stores accessibilities
@@ -87,8 +77,9 @@ public class Accessibility {
         final DoubleMatrix1D population = SummarizeData.getPopulationByZone(dataContainer);
 
         LOGGER.info("  Calculating zone zone accessibilities: auto");
+        final DoubleMatrix2D peakTravelTimeMatrix = getPeakTravelTimeMatrix(TransportMode.car);
         final DoubleMatrix2D autoAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, getPeakTravelTimeMatrix(TransportMode.car), alphaAuto, betaAuto);
+                calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrix, alphaAuto, betaAuto);
         LOGGER.info("  Calculating zone zone accessibilities: transit");
         final DoubleMatrix2D transitAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population, getPeakTravelTimeMatrix(TransportMode.pt), alphaTransit, betaTransit);
@@ -141,6 +132,7 @@ public class Accessibility {
     static void aggregateAccessibilities(DoubleMatrix2D autoAcessibilities, DoubleMatrix2D transitAccessibilities,
                                          DoubleMatrix1D aggregatedAuto, DoubleMatrix1D aggregatedTransit, Collection<Integer> keys) {
         keys.forEach(i -> {
+
             aggregatedAuto.setQuick(i, autoAcessibilities.viewRow(i).zSum());
             aggregatedTransit.setQuick(i, transitAccessibilities.viewRow(i).zSum());
         });
@@ -205,10 +197,10 @@ public class Accessibility {
         return matrix;
     }
 
-    public double getAutoAccessibilityForZone(int zoneId) {
+    public double getAutoAccessibilityForZone(int zone) {
     	// Can be combined with getTransitAccessibilityForZone into one method which get the mode
     	// as an argument, nk/dz, july'18
-        return this.autoAccessibilities.getQuick(zoneId);
+        return this.autoAccessibilities.getQuick(zone);
     }
 
     public double getTransitAccessibilityForZone(int zoneId) {
