@@ -21,10 +21,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.*;
