@@ -84,8 +84,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
-				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
-						+ " and will thus NOT be considered in the transport model.");
+				//logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
+				//		+ " and will thus NOT be considered in the transport model.");
 			}
 		}
         logger.info("  SILO data being sent to MITO");
@@ -96,6 +96,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
 		Map<Integer, MitoHousehold> thhs = new HashMap<>();
 		RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+		int householdsSkipped = 0;
 		for (Household siloHousehold : dataContainer.getHouseholdData().getHouseholds()) {
 			int zoneId = -1;
 			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
@@ -110,10 +111,15 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			if (dwelling.getLocation() instanceof MicroLocation) {
 				household.setHomeLocation((MicroLocation) dwelling.getLocation());
 			}
-			
-			thhs.put(household.getId(), household);
-
+            //todo if there are housholds without adults they cannot be processed
+			if (siloHousehold.getPersons().stream().filter(p -> p.getAge() >= 18).count() != 0){
+                thhs.put(household.getId(), household);
+            } else {
+                householdsSkipped++;
+            }
 		}
+        logger.warn("There are " + householdsSkipped + " households without adults that CANNOT be processed in MITO (" +
+                householdsSkipped/dataContainer.getHouseholdData().getHouseholds().size()*100 + "%)");
 		return thhs;
 	}
 
