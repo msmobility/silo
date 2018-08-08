@@ -250,6 +250,16 @@ public final class SiloModel {
 			householdData.clearUpdatedHouseholds();
 			timeTracker.record("updateCarOwnership");
 
+
+			int avSwitchCounter = 0;
+			if (Properties.get().main.implementation == Implementation.MUNICH){
+				timeTracker.reset();
+				avSwitchCounter = modelContainer.getSwitchToAutonomousVehicleModel().switchToAV(householdData.getConventionalCarsHouseholds(), year);
+				householdData.clearConventionalCarsHouseholds();
+				timeTracker.record("switchToAV");
+			}
+
+
 			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
                     || Properties.get().main.createMstmOutput) {
                 if (tdmYears.contains(year + 1)) {
@@ -266,7 +276,7 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			timeTracker.record("updateRealEstatePrices");
 
-			microSim.finishYear(year, carChangeCounter, dataContainer);
+			microSim.finishYear(year, carChangeCounter, avSwitchCounter, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +

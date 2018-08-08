@@ -8,7 +8,6 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.commons.math.MathException;
@@ -3042,12 +3041,12 @@ public class SyntheticPopCT implements SyntheticPopI {
 
     }
 
-    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
+/*    private void addCars(boolean flagSkipCreationOfSPforDebugging) {
         //method to estimate the number of cars per household
         //it must be run after generating the population
         CreateCarOwnershipModel createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer);
         createCarOwnershipModel.run( );
-    }
+    }*/
 
 
     public static int[] createConsecutiveArray (int arrayLength) {
