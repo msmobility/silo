@@ -203,10 +203,10 @@ public class SyntheticPopUs implements SyntheticPopI {
         // create base year employment
         for (int zone: geoData.getZones().keySet()) {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                if (jobInventory[jobTp][zoneId] > 0) {
-                    for (int i = 1; i <= jobInventory[jobTp][zoneId]; i++) {
+                if (jobInventory[jobTp][zone] > 0) {
+                    for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
                         int id = jobData.getNextJobId();
-                        jobData.createJob (id, zone, -1, JobType.getJobType(jobTp));
+                        jobData.createJob (id, geoData.getZones().get(zone), -1, JobType.getJobType(jobTp));
                         if (id == SiloUtil.trackJj) {
                             SiloUtil.trackWriter.println("Generated job with following attributes:");
                             SiloUtil.trackWriter.println(jobData.getJobFromId(id).toString());
@@ -585,8 +585,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zone.getId()).length;
                 if (numberOfJobsInThisZone > 0) {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
-                	Zone destinationZone = geoData.getZones().get(zones[zn]);
-                    int distance = (int) (accessibility.getPeakAutoTravelTime(homeTaz, zone.getId()) + 0.5);
+                	Zone destinationZone = zone;
+                    int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, destinationZone, Properties.get().main.peakHour, "car") + 0.5);
                     zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);

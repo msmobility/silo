@@ -120,7 +120,7 @@ public class summarizeDataCblcm {
             jobsByZoneAndType.put(zoneId, HashMultiset.create());
         }
         for (Job jj : dataContainer.getJobData().getJobs()) {
-            jobsByZoneAndType.get(jj.getZone()).add(jj.getType());
+            jobsByZoneAndType.get(jj.getLocation()).add(jj.getType());
         }
 
         if (SiloUtil.checkIfFileExists(emplFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
@@ -163,7 +163,7 @@ public class summarizeDataCblcm {
             dwellingsByZoneAndType.put(zone, EnumMultiset.create(DwellingType.class));
         }
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            dwellingsByZoneAndType.get(dd.getZone()).add(dd.getType());
+            dwellingsByZoneAndType.get(dd.getLocation()).add(dd.getType());
         }
 
         if (SiloUtil.checkIfFileExists(ddFileName) && year != Properties.get().main.implementation.BASE_YEAR) {
