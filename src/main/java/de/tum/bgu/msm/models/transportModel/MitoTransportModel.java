@@ -69,14 +69,19 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			int hhId = person.getHh().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
-				
-				Location workplaceLocation = dataContainer.getJobData().getJobFromId(person.getWorkplace()).getLocation();
-				if (person.getSchoolLocation() instanceof MicroLocation) {
+				Location workplaceLocation = null;
+				//todo need to mode the transitions between new born, student, unemployed and worker in a better way
+				if (person.getWorkplace()>0) {
+					//is a worker
+					workplaceLocation = dataContainer.getJobData().getJobFromId(person.getWorkplace()).getLocation();
+					if (workplaceLocation instanceof MicroLocation) {
+						//is a worker with a microlocated job
+						mitoPerson.setOccupationLocation(((MicroLocation) workplaceLocation));
+					}
+				} else if (person.getSchoolLocation() instanceof MicroLocation) {
+					//is a student with a microlocated school
 					mitoPerson.setOccupationLocation(person.getSchoolLocation());
-				} else if (workplaceLocation instanceof MicroLocation) {
-					mitoPerson.setOccupationLocation(((MicroLocation) workplaceLocation));
 				}
-
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
 				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
