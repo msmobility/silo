@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.data;
 
+
 import com.pb.common.datafile.TableDataSet;
+
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.gis.ShapeFileReader;
@@ -54,7 +55,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 		    logger.error("No shape file found!");
 		    throw new RuntimeException("No shape file found!");
         }
-        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
+        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(Properties.get().main.baseDirectory + zoneShapeFile)) {
             int zoneId = Integer.parseInt(feature.getAttribute(shapeIdentifier).toString());
             Zone zone = zones.get(zoneId);
             if (zone != null){
