@@ -29,7 +29,7 @@ import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

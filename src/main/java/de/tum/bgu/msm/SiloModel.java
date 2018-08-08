@@ -246,7 +246,7 @@ public final class SiloModel {
             microSim.simulate(year);
 
 			timeTracker.reset();
-			int[] carChangeCounter = modelContainer.getCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
+			int[] carChangeCounter = modelContainer.getUpdateCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
 			householdData.clearUpdatedHouseholds();
 			timeTracker.record("updateCarOwnership");
 

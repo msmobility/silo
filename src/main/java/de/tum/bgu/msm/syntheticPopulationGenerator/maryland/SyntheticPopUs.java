@@ -7,7 +7,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.properties.Properties;
@@ -15,7 +15,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
-import javax.sql.rowset.spi.TransactionalWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -729,7 +728,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void generateAutoOwnership (SiloDataContainer dataContainer) {
         // select number of cars for every household
         dataContainer.getJobData().calculateJobDensityByZone();
-        MaryLandCarOwnershipModel ao = new MaryLandCarOwnershipModel(dataContainer, accessibility);   // calculate auto-ownership probabilities
+        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility);   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: householdDataManager.getHouseholds()) {
             households.put(hh.getId(), null);

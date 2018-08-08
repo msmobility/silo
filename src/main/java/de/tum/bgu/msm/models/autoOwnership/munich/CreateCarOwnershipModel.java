@@ -1,12 +1,10 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
+package de.tum.bgu.msm.models.autoOwnership.munich;
 
 
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.Location;
-import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import org.apache.log4j.Logger;

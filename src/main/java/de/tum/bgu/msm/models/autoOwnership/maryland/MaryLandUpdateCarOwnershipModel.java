@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -20,8 +20,8 @@ import java.util.Map;
  * Created on 18 August 2014 in College Park, MD
  **/
 
-public class MaryLandCarOwnershipModel extends AbstractModel implements CarOwnershipModel {
-    static Logger logger = Logger.getLogger(MaryLandCarOwnershipModel.class);
+public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements UpdateCarOwnershipModel {
+    static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 
     private final Accessibility accessibility;
@@ -31,7 +31,7 @@ public class MaryLandCarOwnershipModel extends AbstractModel implements CarOwner
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
-    public MaryLandCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility) {
+    public MaryLandUpdateCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         logger.info("  Setting up probabilities for auto-ownership model");
         uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;

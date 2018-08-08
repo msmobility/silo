@@ -12,7 +12,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.demography.DriversLicense;
 import de.tum.bgu.msm.models.demography.EmploymentModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.util.*;

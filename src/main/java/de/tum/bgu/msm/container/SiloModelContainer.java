@@ -5,9 +5,9 @@ import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
-import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandCarOwnershipModel;
-import de.tum.bgu.msm.models.autoOwnership.munich.MunichCarOwnerShipModel;
+import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.munich.MunichUpdateCarOwnerShipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.SwitchToAutonomousVehicleModel;
 import de.tum.bgu.msm.models.demography.*;
 import de.tum.bgu.msm.models.jobmography.UpdateJobs;
@@ -20,7 +20,7 @@ import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
@@ -57,7 +57,7 @@ public class SiloModelContainer {
     private final ChangeSchoolUnivModel changeSchoolUniv;
     private final DriversLicense driversLicense;
     private final Accessibility acc;
-    private final CarOwnershipModel carOwnershipModel;
+    private final UpdateCarOwnershipModel updateCarOwnershipModel;
     private final UpdateJobs updateJobs;
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel;
@@ -83,7 +83,7 @@ public class SiloModelContainer {
      * @param changeSchoolUniv
      * @param driversLicense
      * @param acc
-     * @param carOwnershipModel
+     * @param updateCarOwnershipModel
      * @param updateJobs
      * @param createCarOwnershipModel
      * @param switchToAutonomousVehicleModel
@@ -93,7 +93,7 @@ public class SiloModelContainer {
                                PricingModel prm, BirthModel birth, BirthdayModel birthday, DeathModel death, MarriageModel marriage,
                                DivorceModel divorce, LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
                                ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
-                               Accessibility acc, CarOwnershipModel carOwnershipModel, UpdateJobs updateJobs,
+                               Accessibility acc, UpdateCarOwnershipModel updateCarOwnershipModel, UpdateJobs updateJobs,
                                CreateCarOwnershipModel createCarOwnershipModel, SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel,
                                TransportModelI transportModel) {
         this.iomig = iomig;
@@ -113,7 +113,7 @@ public class SiloModelContainer {
         this.changeSchoolUniv = changeSchoolUniv;
         this.driversLicense = driversLicense;
         this.acc = acc;
-        this.carOwnershipModel = carOwnershipModel;
+        this.updateCarOwnershipModel = updateCarOwnershipModel;
         this.updateJobs = updateJobs;
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.switchToAutonomousVehicleModel = switchToAutonomousVehicleModel;
@@ -167,18 +167,18 @@ public class SiloModelContainer {
         UpdateJobs updateJobs = new UpdateJobs(dataContainer);
         ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
 
-        CarOwnershipModel carOwnershipModel;
+        UpdateCarOwnershipModel updateCarOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
         SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel = null;
         switch (Properties.get().main.implementation) {
             case MARYLAND:
-                carOwnershipModel = new MaryLandCarOwnershipModel(dataContainer, acc);
+                updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc);
                 move = new MovesModelMstm(dataContainer, acc);
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
                         (GeoDataMuc)dataContainer.getGeoData());
-                carOwnershipModel = new MunichCarOwnerShipModel(dataContainer);
+                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
                 switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
                 move = new MovesModelMuc(dataContainer, acc);
                 break;
@@ -187,7 +187,7 @@ public class SiloModelContainer {
         }
         ConstructionModel cons = new ConstructionModel(dataContainer, move, acc);
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
-        carOwnershipModel.initialize();
+        updateCarOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
         InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense);
         DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
@@ -197,7 +197,7 @@ public class SiloModelContainer {
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
-                carOwnershipModel, updateJobs, createCarOwnershipModel, switchToAutonomousVehicleModel, transportModel);
+                updateCarOwnershipModel, updateJobs, createCarOwnershipModel, switchToAutonomousVehicleModel, transportModel);
     }
 
 
@@ -269,8 +269,8 @@ public class SiloModelContainer {
         return acc;
     }
 
-    public CarOwnershipModel getCarOwnershipModel() {
-        return carOwnershipModel;
+    public UpdateCarOwnershipModel getUpdateCarOwnershipModel() {
+        return updateCarOwnershipModel;
     }
 
     public UpdateJobs getUpdateJobs() {

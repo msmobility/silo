@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
