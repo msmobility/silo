@@ -5,6 +5,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import org.apache.log4j.Logger;
@@ -52,10 +54,11 @@ public class CreateCarOwnershipModel {
         int license = hh.getHHLicenseHolders();
         int workers = hh.getNumberOfWorkers();
         int income = hh.getHhIncome()/12;  // convert yearly into monthly income
-        double logDistanceToTransit = Math.log(((MunichZone)geoDataMuc.getZones().get(dataContainer.getRealEstateData().
-                getDwelling(hh.getDwellingId()).getZone())).getPTDistance() + 1); // add 1 to avoid taking log of 0
-        int areaType = ((MunichZone) geoDataMuc.getZones().get(dataContainer.getRealEstateData().
-                getDwelling(hh.getDwellingId()).getZone())).getAreaType().code();
+        MunichZone zone = (MunichZone) geoDataMuc.getZones().get(dataContainer.getRealEstateData().
+                getDwelling(hh.getDwellingId()).determineZoneId());
+
+        double logDistanceToTransit = Math.log(zone.getPTDistance() + 1); // add 1 to avoid taking log of 0
+        int areaType = zone.getAreaType().code();
 
         double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
         hh.setAutos(SiloUtil.select(prob));
