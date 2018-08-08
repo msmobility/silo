@@ -250,10 +250,15 @@ public final class SiloModel {
 			householdData.clearUpdatedHouseholds();
 			timeTracker.record("updateCarOwnership");
 
-			timeTracker.reset();
-			int avSwitchCounter = modelContainer.getSwitchToAutonomousVehicleModel().switchToAV(householdData.getConventionalCarsHouseholds(), year);
-			householdData.clearConventionalCarsHouseholds();
-			timeTracker.record("switchToAV");
+
+			int avSwitchCounter = 0;
+			if (Properties.get().main.implementation == Implementation.MUNICH){
+				timeTracker.reset();
+				avSwitchCounter = modelContainer.getSwitchToAutonomousVehicleModel().switchToAV(householdData.getConventionalCarsHouseholds(), year);
+				householdData.clearConventionalCarsHouseholds();
+				timeTracker.record("switchToAV");
+			}
+
 
 			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
                     || Properties.get().main.createMstmOutput) {

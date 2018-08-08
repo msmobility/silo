@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 
 

@@ -20,7 +20,7 @@ import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 

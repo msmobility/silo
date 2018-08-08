@@ -7,7 +7,6 @@ import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
@@ -15,7 +14,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microloc
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization.Optimization;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import org.apache.log4j.Logger;
-import sun.rmi.runtime.Log;
 
 import java.util.ResourceBundle;
 
