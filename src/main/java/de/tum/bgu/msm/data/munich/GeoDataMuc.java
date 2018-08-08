@@ -26,7 +26,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
     private static final Logger logger = Logger.getLogger(GeoDataMuc.class);
 
     public GeoDataMuc() {
-        super("Zone", "Region");
+        super("Zone", "Region", "id");
     }
 
     @Override
@@ -46,20 +46,6 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, ptDistances[i]);
             zones.put(zoneIds[i], zone);
         }
-
-        String zoneShapeFile = Properties.get().geo.zoneShapeFile;
-        //coordinate system is read here? attribute name of "id" field should be stored as a property
-        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
-            MunichZone zone = (MunichZone) zones.get(zoneId);
-            if (zone != null){
-                zone.setZoneFeature(feature);
-                zoneFeatureMap.put(zoneId,feature);
-            }else{
-                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
-            }
-        }
-
     }
 
     @Override

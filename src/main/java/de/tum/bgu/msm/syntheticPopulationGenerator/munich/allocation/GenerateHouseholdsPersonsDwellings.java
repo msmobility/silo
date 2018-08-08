@@ -132,7 +132,10 @@ public class GenerateHouseholdsPersonsDwellings {
         int bedRooms = microDataManager.guessBedrooms(floorSpace);
         int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
         int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, usage);
-        Dwelling dwell = realEstate.createDwelling(newDdId, tazSelected, idHousehold, type , bedRooms, quality, price, 0, year);
+        
+        Zone zone = dataContainer.getGeoData().getZones().get(tazSelected);
+        
+        Dwelling dwell = realEstate.createDwelling(newDdId, zone, idHousehold, type , bedRooms, quality, price, 0, year);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
         dwell.setBuildingSize(buildingSize);

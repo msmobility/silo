@@ -23,9 +23,10 @@ public class LeaveParentHhModelTest {
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
         model = modelContainer.getLph();
+        Zone zone = dataContainer.getGeoData().getZones().get(1093);
 
         Dwelling dd = dataContainer.getRealEstateData()
-                .createDwelling(999, 1093, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
+                .createDwelling(999, zone, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
 
         household = dataContainer.getHouseholdData().createHousehold(999, 1, 0);
         Person parent1 = dataContainer.getHouseholdData().createPerson(123, 40, 1, Race.other, 3, 0, 0);

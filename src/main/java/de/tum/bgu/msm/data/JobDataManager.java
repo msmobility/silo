@@ -27,6 +27,7 @@ import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.io.*;
 import java.util.*;
@@ -57,8 +58,8 @@ public class JobDataManager {
         this.zonalJobDensity = new HashMap<>();
     }
 
-    public Job createJob(int id, int zone, int workerId, String type) {
-        Job job = new Job(id, zone, workerId, type);
+    public Job createJob(int id, Location location, int workerId, String type) {
+        Job job = new Job(id, location, workerId, type);
         this.jobs.put(id, job);
         return job;
     }
@@ -90,7 +91,7 @@ public class JobDataManager {
     public void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
 
         for (Job jj : jobs.values()) {
-            final MitoZone zone = zones.get(jj.getZone());
+            final MitoZone zone = zones.get(jj.determineZoneId());
             final String type = jj.getType().toUpperCase();
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
@@ -141,24 +142,32 @@ public class JobDataManager {
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
 
+            int posCoordX = -1;
+            int posCoordY = -1;
+            if(Properties.get().main.implementation == Implementation.MUNICH) {
+                posCoordX = SiloUtil.findPositionInArray("CoordX", header);
+                posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+            }
+
 
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id = Integer.parseInt(lineElements[posId]);
-                int zone = Integer.parseInt(lineElements[posZone]);
+                int zoneId = Integer.parseInt(lineElements[posZone]);
+                Location location;
+                Zone zone = geoData.getZones().get(zoneId);
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                Job jj = createJob(id, zone, worker, type);
 
                 //TODO: remove it when we implement interface
                 if (Properties.get().main.implementation == Implementation.MUNICH) {
-                    int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
-                    int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
-                    Coord jobCoord = new Coord(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
-                    jj.setCoord(jobCoord);
+                	location = new MicroLocation(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]), zone);
+                } else {
+                	location = zone;
                 }
+                Job jj = createJob(id, location, worker, type);
 
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
@@ -332,7 +341,7 @@ public class JobDataManager {
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
 
-                int region = geoData.getZones().get(jj.getZone()).getRegion().getId();
+                int region = geoData.getZones().get(jj.determineZoneId()).getRegion().getId();
                 if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
                     vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
                     vacantJobsByRegionPos[region]++;
@@ -355,7 +364,7 @@ public class JobDataManager {
         final int workplace = person.getWorkplace();
         Job jb = jobs.get(workplace);
         if (makeJobAvailableToOthers) {
-            addJobToVacancyList(jb.getZone(), workplace);
+            addJobToVacancyList(jb.determineZoneId(), workplace);
         }
         jb.setWorkerID(-1);
         person.setWorkplace(-1);
@@ -396,42 +405,44 @@ public class JobDataManager {
 //    }
 
 
-    public int findVacantJob(int homeZone, Collection<Integer> regionIds, Accessibility accessibility) {
+    public int findVacantJob(Zone homeZone, Collection<Region> regions, Accessibility accessibility) {
         // select vacant job for person living in homeZone
 
-        double[] regionProbability = new double[SiloUtil.getHighestVal(regionIds.stream().mapToInt(Integer::intValue).toArray()) + 1];
+        Map<Region, Double> regionProb = new HashMap<>();
 
-        if (homeZone > 0) {
+        if (homeZone != null) {
             // person has home location (i.e., is not inmigrating right now)
-            for (int reg : regionIds) {
-                if (vacantJobsByRegionPos[reg] > 0) {
-                    int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                    regionProbability[reg] = accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg);
+            for (Region reg : regions) {
+                if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                    int distance = (int) (accessibility.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
+                    		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
-            if (SiloUtil.getSum(regionProbability) == 0) {
+            if (SiloUtil.getSum(regionProb.values()) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
-                for (int reg : regionIds) {
-                    if (vacantJobsByRegionPos[reg] > 0) {
-                        int distance = (int) (accessibility.getMinTravelTimeFromZoneToRegion(homeZone, reg) + 0.5);
-                        regionProbability[reg] = 1f / distance;
+                for (Region reg : regions) {
+                    if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                    	int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg,
+                        		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    	regionProb.put(reg, 1. / distance);
                     }
                 }
             }
         } else {
             // person has no home location because (s)he is inmigrating right now and a dwelling has not been chosen yet
-            for (int reg : regionIds) {
-                if (vacantJobsByRegionPos[reg] > 0) {
-                    regionProbability[reg] = getNumberOfVacantJobsByRegion(reg);
+            for (Region reg : regions) {
+                if (vacantJobsByRegionPos[reg.getId()] > 0) {
+                	regionProb.put(reg, (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
         }
 
-        if (SiloUtil.getSum(regionProbability) == 0) {
+        if (SiloUtil.getSum(regionProb.values()) == 0) {
             logger.warn("No jobs remaining. Could not find new job.");
             return -1;
         }
-        int selectedRegion = SiloUtil.select(regionProbability);
+        int selectedRegion = SiloUtil.select(regionProb).getId();
         if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
             logger.warn("Selected region " + selectedRegion + " but could not find any jobs there.");
             return -1;
@@ -477,7 +488,7 @@ public class JobDataManager {
         final int highestId = regions.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][highestId + 1];
         for (Job job : jobs.values()) {
-            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.getZone()).getRegion().getId()]++;
+            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.determineZoneId()).getRegion().getId()]++;
         }
 
         for (int region : regions.keySet()) {
@@ -494,7 +505,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         Multiset<Integer> counter = ConcurrentHashMultiset.create();
-        jobs.values().parallelStream().forEach(j -> counter.add(j.getZone()));
+        jobs.values().parallelStream().forEach(j -> counter.add(j.determineZoneId()));
         geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
     }
 

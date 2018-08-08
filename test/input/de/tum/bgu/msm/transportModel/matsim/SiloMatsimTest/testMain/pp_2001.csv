@@ -245,5 +245,6 @@ id,hhID,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 245,98,82,2,"single","black",0,0,-1,7400
 246,99,82,2,"single","black",0,0,-1,7400
 247,100,82,2,"single","black",0,0,-1,7400
-248,79,0,1,"child","black",0,0,0,0
-249,49,0,2,"child","white",0,0,0,0
+248,69,0,1,"child","black",0,0,0,0
+249,79,0,1,"child","black",0,0,0,0
+250,49,0,2,"child","white",0,0,0,0

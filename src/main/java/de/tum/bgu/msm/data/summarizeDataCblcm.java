@@ -64,7 +64,7 @@ public class summarizeDataCblcm {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             householdsByZoneAndIncome.get(zone).add(hhIncomeGroup);
         }
@@ -247,7 +247,7 @@ public class summarizeDataCblcm {
             int zoneId = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zoneId = dwelling.getZone();
+                zoneId = dwelling.determineZoneId();
             }
             MstmZone zone = (MstmZone) geoData.getZones().get(zoneId);
             int homeFips = zone.getCounty().getId();
@@ -256,7 +256,7 @@ public class summarizeDataCblcm {
             }
         }
         for (Job jj: dataContainer.getJobData().getJobs()) {
-            int jobFips = ((MstmZone) geoData.getZones().get(jj.getZone())).getCounty().getId();
+            int jobFips = ((MstmZone) geoData.getZones().get(jj.determineZoneId())).getCounty().getId();
             if (SiloUtil.containsElement(countyOrder, jobFips)) {
                 jobsByCounty[countyOrderIndex[jobFips]]++;
             }

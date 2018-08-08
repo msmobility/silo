@@ -1,0 +1,4925 @@
+Zone,JUR_NAME,STFIPS,STCOFIPS,SchoolQualityIndex
+1,"Dollnstein, M",9176,9176,0.9
+2,"Eichstätt, GKSt",9176,9176,0.9
+3,"Eichstätt, GKSt",9176,9176,0.9
+4,"Eichstätt, GKSt",9176,9176,0.9
+5,Schernfeld,9176,9176,0.9
+6,Schernfeld,9176,9176,0.9
+7,"Mörnsheim, M",9176,9176,0.9
+8,"Titting, M",9176,9176,0.9
+9,"Rennertshofen, M",9185,9185,0.9
+10,"Wellheim, M",9176,9176,0.9
+11,"Dollnstein, M",9176,9176,0.9
+12,"Wellheim, M",9176,9176,0.9
+13,"Nassenfels, M",9176,9176,0.9
+14,Adelschlag,9176,9176,0.9
+15,"Rennertshofen, M",9185,9185,0.9
+16,"Burgheim, M",9185,9185,0.9
+17,"Burgheim, M",9185,9185,0.9
+18,"Burgheim, M",9185,9185,0.9
+19,Oberhausen,9185,9185,0.9
+20,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+21,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+22,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+23,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+24,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+25,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+26,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+27,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+28,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+29,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+30,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+31,Oberhausen,9185,9185,0.9
+32,Ehekirchen,9185,9185,0.9
+33,Ehekirchen,9185,9185,0.9
+34,Ehekirchen,9185,9185,0.9
+35,Oberhausen,9185,9185,0.9
+36,Königsmoos,9185,9185,0.9
+38,Ellgau,9772,9772,0.9
+39,"Rennertshofen, M",9185,9185,0.9
+40,"Titting, M",9176,9176,0.9
+41,"Beilngries, St",9176,9176,0.9
+42,"Beilngries, St",9176,9176,0.9
+43,"Beilngries, St",9176,9176,0.9
+44,"Beilngries, St",9176,9176,0.9
+45,"Beilngries, St",9176,9176,0.9
+47,"Kipfenberg, M",9176,9176,0.9
+48,"Kinding, M",9176,9176,0.9
+50,"Kinding, M",9176,9176,0.9
+51,"Titting, M",9176,9176,0.9
+52,"Eichstätt, GKSt",9176,9176,0.9
+53,Pollenfeld,9176,9176,0.9
+54,"Eichstätt, GKSt",9176,9176,0.9
+55,"Eichstätt, GKSt",9176,9176,0.9
+56,"Eichstätt, GKSt",9176,9176,0.9
+57,"Eichstätt, GKSt",9176,9176,0.9
+58,"Eichstätt, GKSt",9176,9176,0.9
+59,"Eichstätt, GKSt",9176,9176,0.9
+60,"Eichstätt, GKSt",9176,9176,0.9
+61,"Eichstätt, GKSt",9176,9176,0.9
+62,Pollenfeld,9176,9176,0.9
+63,Walting,9176,9176,0.9
+64,Hitzhofen,9176,9176,0.9
+65,"Kinding, M",9176,9176,0.9
+66,Walting,9176,9176,0.9
+67,"Kipfenberg, M",9176,9176,0.9
+68,"Kipfenberg, M",9176,9176,0.9
+69,"Kinding, M",9176,9176,0.9
+70,Denkendorf,9176,9176,0.9
+71,Denkendorf,9176,9176,0.9
+72,Stammham,9176,9176,0.9
+73,"Kipfenberg, M",9176,9176,0.9
+74,Denkendorf,9176,9176,0.9
+75,"Dietfurt a.d.Altmühl, St",9373,9373,0.9
+76,"Dietfurt a.d.Altmühl, St",9373,9373,0.9
+77,"Dietfurt a.d.Altmühl, St",9373,9373,0.9
+78,"Dietfurt a.d.Altmühl, St",9373,9373,0.9
+79,"Dietfurt a.d.Altmühl, St",9373,9373,0.9
+80,"Beilngries, St",9176,9176,0.9
+81,"Riedenburg, St",9273,9273,0.9
+82,"Riedenburg, St",9273,9273,0.9
+83,"Riedenburg, St",9273,9273,0.9
+84,"Altmannstein, M",9176,9176,0.9
+85,"Altmannstein, M",9176,9176,0.9
+86,"Altmannstein, M",9176,9176,0.9
+87,"Altmannstein, M",9176,9176,0.9
+88,Mindelstetten,9176,9176,0.9
+89,"Beilngries, St",9176,9176,0.9
+90,"Pförring, M",9176,9176,0.9
+91,Buxheim,9176,9176,0.9
+92,Eitensheim,9176,9176,0.9
+93,Eitensheim,9176,9176,0.9
+94,Hitzhofen,9176,9176,0.9
+95,Adelschlag,9176,9176,0.9
+96,Egweil,9176,9176,0.9
+97,Ingolstadt,9161,9161,0.9
+98,Ingolstadt,9161,9161,0.9
+99,Ingolstadt,9161,9161,0.9
+100,Ingolstadt,9161,9161,0.9
+101,Ingolstadt,9161,9161,0.9
+102,Ingolstadt,9161,9161,0.9
+103,Ingolstadt,9161,9161,0.9
+104,Buxheim,9176,9176,0.9
+105,Wettstetten,9176,9176,0.9
+106,"Gaimersheim, M",9176,9176,0.9
+107,Böhmfeld,9176,9176,0.9
+108,"Gaimersheim, M",9176,9176,0.9
+109,"Gaimersheim, M",9176,9176,0.9
+110,"Gaimersheim, M",9176,9176,0.9
+111,"Gaimersheim, M",9176,9176,0.9
+112,Wettstetten,9176,9176,0.9
+113,Stammham,9176,9176,0.9
+114,Lenting,9176,9176,0.9
+115,Lenting,9176,9176,0.9
+116,Lenting,9176,9176,0.9
+117,Hepberg,9176,9176,0.9
+118,Hepberg,9176,9176,0.9
+119,Wettstetten,9176,9176,0.9
+120,"Kösching, M",9176,9176,0.9
+121,"Kösching, M",9176,9176,0.9
+122,"Kösching, M",9176,9176,0.9
+123,"Kösching, M",9176,9176,0.9
+124,"Kösching, M",9176,9176,0.9
+125,"Kösching, M",9176,9176,0.9
+126,"Gaimersheim, M",9176,9176,0.9
+127,"Gaimersheim, M",9176,9176,0.9
+128,"Gaimersheim, M",9176,9176,0.9
+129,"Gaimersheim, M",9176,9176,0.9
+130,"Gaimersheim, M",9176,9176,0.9
+131,"Gaimersheim, M",9176,9176,0.9
+132,"Gaimersheim, M",9176,9176,0.9
+133,"Gaimersheim, M",9176,9176,0.9
+134,Ingolstadt,9161,9161,0.9
+135,Ingolstadt,9161,9161,0.9
+136,Ingolstadt,9161,9161,0.9
+137,Ingolstadt,9161,9161,0.9
+138,Ingolstadt,9161,9161,0.9
+139,Ingolstadt,9161,9161,0.9
+140,Ingolstadt,9161,9161,0.9
+141,Ingolstadt,9161,9161,0.9
+142,Ingolstadt,9161,9161,0.9
+143,Ingolstadt,9161,9161,0.9
+144,Ingolstadt,9161,9161,0.9
+145,Ingolstadt,9161,9161,0.9
+146,Ingolstadt,9161,9161,0.9
+147,Ingolstadt,9161,9161,0.9
+148,Ingolstadt,9161,9161,0.9
+149,Ingolstadt,9161,9161,0.9
+150,Ingolstadt,9161,9161,0.9
+151,Ingolstadt,9161,9161,0.9
+152,Ingolstadt,9161,9161,0.9
+153,Ingolstadt,9161,9161,0.9
+154,Ingolstadt,9161,9161,0.9
+155,Ingolstadt,9161,9161,0.9
+156,Ingolstadt,9161,9161,0.9
+157,Ingolstadt,9161,9161,0.9
+158,Ingolstadt,9161,9161,0.9
+159,Ingolstadt,9161,9161,0.9
+160,Ingolstadt,9161,9161,0.9
+161,Ingolstadt,9161,9161,0.9
+162,Ingolstadt,9161,9161,0.9
+163,Ingolstadt,9161,9161,0.9
+164,Ingolstadt,9161,9161,0.9
+165,Ingolstadt,9161,9161,0.9
+166,Ingolstadt,9161,9161,0.9
+167,Ingolstadt,9161,9161,0.9
+168,Ingolstadt,9161,9161,0.9
+169,Ingolstadt,9161,9161,0.9
+170,Ingolstadt,9161,9161,0.9
+171,Ingolstadt,9161,9161,0.9
+172,Ingolstadt,9161,9161,0.9
+173,Ingolstadt,9161,9161,0.9
+174,Ingolstadt,9161,9161,0.9
+175,Ingolstadt,9161,9161,0.9
+176,Ingolstadt,9161,9161,0.9
+177,Ingolstadt,9161,9161,0.9
+178,Ingolstadt,9161,9161,0.9
+179,Ingolstadt,9161,9161,0.9
+180,Ingolstadt,9161,9161,0.9
+181,Ingolstadt,9161,9161,0.9
+182,Ingolstadt,9161,9161,0.9
+183,Ingolstadt,9161,9161,0.9
+184,Ingolstadt,9161,9161,0.9
+185,Ingolstadt,9161,9161,0.9
+186,Ingolstadt,9161,9161,0.9
+187,Ingolstadt,9161,9161,0.9
+188,Ingolstadt,9161,9161,0.9
+189,Ingolstadt,9161,9161,0.9
+190,Ingolstadt,9161,9161,0.9
+191,Ingolstadt,9161,9161,0.9
+192,Ingolstadt,9161,9161,0.9
+193,Ingolstadt,9161,9161,0.9
+194,Ingolstadt,9161,9161,0.9
+195,Ingolstadt,9161,9161,0.9
+196,Ingolstadt,9161,9161,0.9
+197,Ingolstadt,9161,9161,0.9
+198,Ingolstadt,9161,9161,0.9
+199,Ingolstadt,9161,9161,0.9
+200,Ingolstadt,9161,9161,0.9
+201,Ingolstadt,9161,9161,0.9
+202,Ingolstadt,9161,9161,0.9
+203,Ingolstadt,9161,9161,0.9
+204,Ingolstadt,9161,9161,0.9
+205,Ingolstadt,9161,9161,0.9
+206,Ingolstadt,9161,9161,0.9
+207,Ingolstadt,9161,9161,0.9
+208,Ingolstadt,9161,9161,0.9
+209,Ingolstadt,9161,9161,0.9
+210,Ingolstadt,9161,9161,0.9
+211,Ingolstadt,9161,9161,0.9
+212,Ingolstadt,9161,9161,0.9
+213,Ingolstadt,9161,9161,0.9
+214,Ingolstadt,9161,9161,0.9
+215,Ingolstadt,9161,9161,0.9
+216,Ingolstadt,9161,9161,0.9
+217,Ingolstadt,9161,9161,0.9
+218,Ingolstadt,9161,9161,0.9
+219,Ingolstadt,9161,9161,0.9
+220,Ingolstadt,9161,9161,0.9
+221,Ingolstadt,9161,9161,0.9
+222,Ingolstadt,9161,9161,0.9
+223,Ingolstadt,9161,9161,0.9
+224,Ingolstadt,9161,9161,0.9
+225,Ingolstadt,9161,9161,0.9
+226,Ingolstadt,9161,9161,0.9
+227,Ingolstadt,9161,9161,0.9
+228,Ingolstadt,9161,9161,0.9
+229,Ingolstadt,9161,9161,0.9
+230,Ingolstadt,9161,9161,0.9
+231,Ingolstadt,9161,9161,0.9
+232,Ingolstadt,9161,9161,0.9
+233,Ingolstadt,9161,9161,0.9
+234,Ingolstadt,9161,9161,0.9
+235,Ingolstadt,9161,9161,0.9
+236,Ingolstadt,9161,9161,0.9
+237,Ingolstadt,9161,9161,0.9
+238,Ingolstadt,9161,9161,0.9
+239,Ingolstadt,9161,9161,0.9
+240,Ingolstadt,9161,9161,0.9
+241,Ingolstadt,9161,9161,0.9
+242,Ingolstadt,9161,9161,0.9
+243,Ingolstadt,9161,9161,0.9
+244,Ingolstadt,9161,9161,0.9
+245,Ingolstadt,9161,9161,0.9
+246,Ingolstadt,9161,9161,0.9
+247,Ingolstadt,9161,9161,0.9
+248,Ingolstadt,9161,9161,0.9
+249,Ingolstadt,9161,9161,0.9
+250,Ingolstadt,9161,9161,0.9
+251,Ingolstadt,9161,9161,0.9
+252,Ingolstadt,9161,9161,0.9
+253,Ingolstadt,9161,9161,0.9
+254,Ingolstadt,9161,9161,0.9
+255,Großmehring,9176,9176,0.9
+256,Großmehring,9176,9176,0.9
+257,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+258,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+259,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+260,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+261,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+262,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+263,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+264,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+265,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+266,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+267,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+268,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+269,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+270,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+271,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+272,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+273,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+274,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+275,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+276,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+277,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+278,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+279,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+280,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+281,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+282,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+283,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+284,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+285,Bergheim,9185,9185,0.9
+286,Weichering,9185,9185,0.9
+287,Karlshuld,9185,9185,0.9
+288,Königsmoos,9185,9185,0.9
+289,Rohrenfels,9185,9185,0.9
+290,"Neuburg a.d.Donau, GKSt",9185,9185,0.9
+291,Karlshuld,9185,9185,0.9
+292,Karlshuld,9185,9185,0.9
+293,Karlshuld,9185,9185,0.9
+294,Karlskron,9185,9185,0.9
+295,Berg im Gau,9185,9185,0.9
+296,Ingolstadt,9161,9161,0.9
+297,Ingolstadt,9161,9161,0.9
+298,Ingolstadt,9161,9161,0.9
+299,Ingolstadt,9161,9161,0.9
+300,Ingolstadt,9161,9161,0.9
+301,Ingolstadt,9161,9161,0.9
+302,Ingolstadt,9161,9161,0.9
+303,Ingolstadt,9161,9161,0.9
+304,Ingolstadt,9161,9161,0.9
+305,Ingolstadt,9161,9161,0.9
+306,Ingolstadt,9161,9161,0.9
+307,Ingolstadt,9161,9161,0.9
+308,Ingolstadt,9161,9161,0.9
+309,Ingolstadt,9161,9161,0.9
+310,Ingolstadt,9161,9161,0.9
+311,Ingolstadt,9161,9161,0.9
+312,Ingolstadt,9161,9161,0.9
+313,Ingolstadt,9161,9161,0.9
+314,Ingolstadt,9161,9161,0.9
+315,Ingolstadt,9161,9161,0.9
+316,Ingolstadt,9161,9161,0.9
+317,Ingolstadt,9161,9161,0.9
+318,Ingolstadt,9161,9161,0.9
+319,Ingolstadt,9161,9161,0.9
+320,Ingolstadt,9161,9161,0.9
+321,Ingolstadt,9161,9161,0.9
+322,Ingolstadt,9161,9161,0.9
+323,Ingolstadt,9161,9161,0.9
+324,Ingolstadt,9161,9161,0.9
+325,Ingolstadt,9161,9161,0.9
+326,Ingolstadt,9161,9161,0.9
+327,Ingolstadt,9161,9161,0.9
+328,Weichering,9185,9185,0.9
+329,Ingolstadt,9161,9161,0.9
+330,Ingolstadt,9161,9161,0.9
+331,Ingolstadt,9161,9161,0.9
+332,Ingolstadt,9161,9161,0.9
+333,Ingolstadt,9161,9161,0.9
+334,Ingolstadt,9161,9161,0.9
+335,Ingolstadt,9161,9161,0.9
+336,Ingolstadt,9161,9161,0.9
+337,"Manching, M",9186,9186,0.9
+338,Ingolstadt,9161,9161,0.9
+339,Ingolstadt,9161,9161,0.9
+340,Ingolstadt,9161,9161,0.9
+341,Ingolstadt,9161,9161,0.9
+342,Ingolstadt,9161,9161,0.9
+343,Ingolstadt,9161,9161,0.9
+344,Ingolstadt,9161,9161,0.9
+345,Ingolstadt,9161,9161,0.9
+346,Ingolstadt,9161,9161,0.9
+347,Ingolstadt,9161,9161,0.9
+348,Ingolstadt,9161,9161,0.9
+349,Ingolstadt,9161,9161,0.9
+350,Ingolstadt,9161,9161,0.9
+351,"Manching, M",9186,9186,0.9
+352,"Manching, M",9186,9186,0.9
+353,"Manching, M",9186,9186,0.9
+354,"Manching, M",9186,9186,0.9
+355,"Manching, M",9186,9186,0.9
+356,"Manching, M",9186,9186,0.9
+357,"Manching, M",9186,9186,0.9
+358,"Manching, M",9186,9186,0.9
+359,"Manching, M",9186,9186,0.9
+360,"Manching, M",9186,9186,0.9
+361,"Manching, M",9186,9186,0.9
+362,"Manching, M",9186,9186,0.9
+363,"Manching, M",9186,9186,0.9
+364,Karlskron,9185,9185,0.9
+365,Karlskron,9185,9185,0.9
+366,Baar-Ebenhausen,9186,9186,0.9
+367,Baar-Ebenhausen,9186,9186,0.9
+368,Baar-Ebenhausen,9186,9186,0.9
+369,Karlskron,9185,9185,0.9
+370,Karlskron,9185,9185,0.9
+371,"Reichertshofen, M",9186,9186,0.9
+372,"Reichertshofen, M",9186,9186,0.9
+373,"Reichertshofen, M",9186,9186,0.9
+374,"Reichertshofen, M",9186,9186,0.9
+375,Oberdolling,9176,9176,0.9
+376,Großmehring,9176,9176,0.9
+377,Großmehring,9176,9176,0.9
+378,"Vohburg a.d.Donau, St",9186,9186,0.9
+379,"Vohburg a.d.Donau, St",9186,9186,0.9
+380,"Vohburg a.d.Donau, St",9186,9186,0.9
+381,"Vohburg a.d.Donau, St",9186,9186,0.9
+382,Münchsmünster,9186,9186,0.9
+384,"Neustadt a.d.Donau, St",9273,9273,0.9
+385,"Pförring, M",9176,9176,0.9
+386,"Vohburg a.d.Donau, St",9186,9186,0.9
+387,"Neustadt a.d.Donau, St",9273,9273,0.9
+388,"Neustadt a.d.Donau, St",9273,9273,0.9
+389,"Neustadt a.d.Donau, St",9273,9273,0.9
+390,"Neustadt a.d.Donau, St",9273,9273,0.9
+391,"Neustadt a.d.Donau, St",9273,9273,0.9
+392,"Neustadt a.d.Donau, St",9273,9273,0.9
+393,"Neustadt a.d.Donau, St",9273,9273,0.9
+394,"Neustadt a.d.Donau, St",9273,9273,0.9
+395,"Neustadt a.d.Donau, St",9273,9273,0.9
+396,"Neustadt a.d.Donau, St",9273,9273,0.9
+397,Münchsmünster,9186,9186,0.9
+399,"Vohburg a.d.Donau, St",9186,9186,0.9
+400,Ernsgaden,9186,9186,0.9
+401,"Geisenfeld, St",9186,9186,0.9
+402,"Geisenfeld, St",9186,9186,0.9
+403,"Geisenfeld, St",9186,9186,0.9
+404,"Geisenfeld, St",9186,9186,0.9
+405,Rohrbach,9186,9186,0.9
+406,"Geisenfeld, St",9186,9186,0.9
+407,"Geisenfeld, St",9186,9186,0.9
+408,"Geisenfeld, St",9186,9186,0.9
+409,"Wolnzach, M",9186,9186,0.9
+410,Train,9273,9273,0.9
+411,"Mainburg, St",9273,9273,0.9
+412,"Mainburg, St",9273,9273,0.9
+413,"Mainburg, St",9273,9273,0.9
+414,"Mainburg, St",9273,9273,0.9
+415,"Mainburg, St",9273,9273,0.9
+416,Aiglsbach,9273,9273,0.9
+417,"Mainburg, St",9273,9273,0.9
+418,"Mainburg, St",9273,9273,0.9
+419,Attenhofen,9273,9273,0.9
+421,"Neustadt a.d.Donau, St",9273,9273,0.9
+422,"Neustadt a.d.Donau, St",9273,9273,0.9
+423,Zusamaltheim,9773,9773,0.9
+424,Binswangen,9773,9773,0.9
+425,Nordendorf,9772,9772,0.9
+426,Allmannshofen,9772,9772,0.9
+427,Ehingen,9772,9772,0.9
+428,"Wertingen, St",9773,9773,0.9
+429,"Wertingen, St",9773,9773,0.9
+430,"Wertingen, St",9773,9773,0.9
+431,"Wertingen, St",9773,9773,0.9
+432,"Wertingen, St",9773,9773,0.9
+433,"Wertingen, St",9773,9773,0.9
+434,"Wertingen, St",9773,9773,0.9
+435,"Wertingen, St",9773,9773,0.9
+436,"Meitingen, M",9772,9772,0.9
+437,"Biberbach, M",9772,9772,0.9
+438,Kühlenthal,9772,9772,0.9
+439,Altenmünster,9772,9772,0.9
+440,Altenmünster,9772,9772,0.9
+441,"Zusmarshausen, M",9772,9772,0.9
+442,"Zusmarshausen, M",9772,9772,0.9
+443,Altenmünster,9772,9772,0.9
+444,"Welden, M",9772,9772,0.9
+445,"Zusmarshausen, M",9772,9772,0.9
+446,Villenbach,9773,9773,0.9
+447,"Welden, M",9772,9772,0.9
+448,Emersacker,9772,9772,0.9
+449,"Biberbach, M",9772,9772,0.9
+450,Laugna,9773,9773,0.9
+451,Adelsried,9772,9772,0.9
+452,Aystetten,9772,9772,0.9
+453,Gablingen,9772,9772,0.9
+454,"Gersthofen, St",9772,9772,0.9
+455,Adelsried,9772,9772,0.9
+456,"Gersthofen, St",9772,9772,0.9
+457,"Gersthofen, St",9772,9772,0.9
+458,"Neusäß, St",9772,9772,0.9
+459,"Neusäß, St",9772,9772,0.9
+460,"Neusäß, St",9772,9772,0.9
+461,Aystetten,9772,9772,0.9
+462,Heretsried,9772,9772,0.9
+463,Bonstetten,9772,9772,0.9
+465,Westendorf,9772,9772,0.9
+466,"Meitingen, M",9772,9772,0.9
+467,"Meitingen, M",9772,9772,0.9
+468,"Thierhaupten, M",9772,9772,0.9
+469,"Thierhaupten, M",9772,9772,0.9
+470,"Meitingen, M",9772,9772,0.9
+471,"Meitingen, M",9772,9772,0.9
+472,"Meitingen, M",9772,9772,0.9
+473,"Meitingen, M",9772,9772,0.9
+474,"Meitingen, M",9772,9772,0.9
+475,"Meitingen, M",9772,9772,0.9
+476,Petersdorf,9771,9771,0.9
+477,Todtenweis,9771,9771,0.9
+478,"Aindling, M",9771,9771,0.9
+479,Baar (Schwaben),9771,9771,0.9
+480,"Pöttmes, M",9771,9771,0.9
+481,"Pöttmes, M",9771,9771,0.9
+482,"Pöttmes, M",9771,9771,0.9
+483,Königsmoos,9185,9185,0.9
+484,Hollenbach,9771,9771,0.9
+485,"Pöttmes, M",9771,9771,0.9
+486,"Kühbach, M",9771,9771,0.9
+487,Langweid a.Lech,9772,9772,0.9
+488,Langweid a.Lech,9772,9772,0.9
+489,Langweid a.Lech,9772,9772,0.9
+490,Langweid a.Lech,9772,9772,0.9
+491,Gablingen,9772,9772,0.9
+492,Rehling,9771,9771,0.9
+493,Gablingen,9772,9772,0.9
+494,Langweid a.Lech,9772,9772,0.9
+495,"Gersthofen, St",9772,9772,0.9
+496,"Aindling, M",9771,9771,0.9
+497,Rehling,9771,9771,0.9
+498,"Gersthofen, St",9772,9772,0.9
+499,"Gersthofen, St",9772,9772,0.9
+500,Augsburg,9761,9761,0.9
+501,"Gersthofen, St",9772,9772,0.9
+502,"Gersthofen, St",9772,9772,0.9
+503,"Gersthofen, St",9772,9772,0.9
+504,"Gersthofen, St",9772,9772,0.9
+505,"Gersthofen, St",9772,9772,0.9
+506,"Gersthofen, St",9772,9772,0.9
+507,"Gersthofen, St",9772,9772,0.9
+508,"Gersthofen, St",9772,9772,0.9
+509,"Gersthofen, St",9772,9772,0.9
+510,"Gersthofen, St",9772,9772,0.9
+511,"Gersthofen, St",9772,9772,0.9
+512,"Gersthofen, St",9772,9772,0.9
+513,"Gersthofen, St",9772,9772,0.9
+514,"Gersthofen, St",9772,9772,0.9
+515,"Gersthofen, St",9772,9772,0.9
+516,Augsburg,9761,9761,0.9
+517,Augsburg,9761,9761,0.9
+518,Augsburg,9761,9761,0.9
+519,Augsburg,9761,9761,0.9
+520,Augsburg,9761,9761,0.9
+521,Augsburg,9761,9761,0.9
+522,Augsburg,9761,9761,0.9
+523,Affing,9771,9771,0.9
+524,Affing,9771,9771,0.9
+525,Affing,9771,9771,0.9
+526,"Inchenhofen, M",9771,9771,0.9
+527,Hollenbach,9771,9771,0.9
+528,"Aindling, M",9771,9771,0.9
+529,"Aichach, St",9771,9771,0.9
+530,"Aichach, St",9771,9771,0.9
+531,"Aichach, St",9771,9771,0.9
+532,"Aichach, St",9771,9771,0.9
+533,"Kühbach, M",9771,9771,0.9
+534,"Inchenhofen, M",9771,9771,0.9
+535,Obergriesbach,9771,9771,0.9
+536,"Aichach, St",9771,9771,0.9
+537,"Aichach, St",9771,9771,0.9
+538,"Aichach, St",9771,9771,0.9
+539,"Aichach, St",9771,9771,0.9
+540,"Aichach, St",9771,9771,0.9
+541,"Aichach, St",9771,9771,0.9
+542,"Aichach, St",9771,9771,0.9
+543,"Aichach, St",9771,9771,0.9
+544,"Aichach, St",9771,9771,0.9
+545,"Aichach, St",9771,9771,0.9
+546,"Aichach, St",9771,9771,0.9
+547,"Aichach, St",9771,9771,0.9
+548,"Aichach, St",9771,9771,0.9
+549,"Aichach, St",9771,9771,0.9
+550,"Aichach, St",9771,9771,0.9
+551,"Aichach, St",9771,9771,0.9
+552,"Aichach, St",9771,9771,0.9
+553,"Aichach, St",9771,9771,0.9
+554,"Aichach, St",9771,9771,0.9
+555,"Aichach, St",9771,9771,0.9
+556,"Aichach, St",9771,9771,0.9
+557,"Zusmarshausen, M",9772,9772,0.9
+558,"Dinkelscherben, M",9772,9772,0.9
+559,"Dinkelscherben, M",9772,9772,0.9
+560,"Dinkelscherben, M",9772,9772,0.9
+561,"Dinkelscherben, M",9772,9772,0.9
+562,Horgau,9772,9772,0.9
+563,"Fischach, M",9772,9772,0.9
+564,"Fischach, M",9772,9772,0.9
+565,"Fischach, M",9772,9772,0.9
+566,"Fischach, M",9772,9772,0.9
+567,Ustersbach,9772,9772,0.9
+568,"Dinkelscherben, M",9772,9772,0.9
+570,Kutzenhausen,9772,9772,0.9
+571,Kutzenhausen,9772,9772,0.9
+572,"Diedorf, M",9772,9772,0.9
+573,Horgau,9772,9772,0.9
+574,Horgau,9772,9772,0.9
+575,"Neusäß, St",9772,9772,0.9
+576,"Neusäß, St",9772,9772,0.9
+577,"Neusäß, St",9772,9772,0.9
+578,"Neusäß, St",9772,9772,0.9
+579,"Neusäß, St",9772,9772,0.9
+580,"Neusäß, St",9772,9772,0.9
+581,"Neusäß, St",9772,9772,0.9
+582,"Neusäß, St",9772,9772,0.9
+583,"Neusäß, St",9772,9772,0.9
+584,"Neusäß, St",9772,9772,0.9
+585,"Neusäß, St",9772,9772,0.9
+586,"Neusäß, St",9772,9772,0.9
+587,"Neusäß, St",9772,9772,0.9
+588,"Neusäß, St",9772,9772,0.9
+589,"Neusäß, St",9772,9772,0.9
+590,"Diedorf, M",9772,9772,0.9
+591,"Diedorf, M",9772,9772,0.9
+592,"Diedorf, M",9772,9772,0.9
+593,"Diedorf, M",9772,9772,0.9
+594,"Diedorf, M",9772,9772,0.9
+595,"Stadtbergen, St",9772,9772,0.9
+596,"Stadtbergen, St",9772,9772,0.9
+597,Horgau,9772,9772,0.9
+598,Gessertshausen,9772,9772,0.9
+599,Gessertshausen,9772,9772,0.9
+600,Augsburg,9761,9761,0.9
+601,Augsburg,9761,9761,0.9
+602,Augsburg,9761,9761,0.9
+603,Augsburg,9761,9761,0.9
+604,Langenneufnach,9772,9772,0.9
+605,Mickhausen,9772,9772,0.9
+606,Mittelneufnach,9772,9772,0.9
+607,Scherstetten,9772,9772,0.9
+608,Walkertshofen,9772,9772,0.9
+609,Gessertshausen,9772,9772,0.9
+610,Großaitingen,9772,9772,0.9
+611,"Bobingen, St",9772,9772,0.9
+612,"Bobingen, St",9772,9772,0.9
+613,"Bobingen, St",9772,9772,0.9
+614,"Bobingen, St",9772,9772,0.9
+615,"Bobingen, St",9772,9772,0.9
+616,"Bobingen, St",9772,9772,0.9
+617,"Bobingen, St",9772,9772,0.9
+618,"Bobingen, St",9772,9772,0.9
+619,"Bobingen, St",9772,9772,0.9
+620,"Bobingen, St",9772,9772,0.9
+621,"Bobingen, St",9772,9772,0.9
+622,"Bobingen, St",9772,9772,0.9
+623,"Bobingen, St",9772,9772,0.9
+624,"Bobingen, St",9772,9772,0.9
+625,Wehringen,9772,9772,0.9
+626,Wehringen,9772,9772,0.9
+627,"Bobingen, St",9772,9772,0.9
+628,Großaitingen,9772,9772,0.9
+629,"Schwabmünchen, St",9772,9772,0.9
+630,"Schwabmünchen, St",9772,9772,0.9
+631,"Schwabmünchen, St",9772,9772,0.9
+632,"Schwabmünchen, St",9772,9772,0.9
+633,"Schwabmünchen, St",9772,9772,0.9
+634,Hiltenfingen,9772,9772,0.9
+635,Großaitingen,9772,9772,0.9
+636,"Schwabmünchen, St",9772,9772,0.9
+637,"Schwabmünchen, St",9772,9772,0.9
+638,"Schwabmünchen, St",9772,9772,0.9
+639,"Schwabmünchen, St",9772,9772,0.9
+640,"Schwabmünchen, St",9772,9772,0.9
+641,Graben,9772,9772,0.9
+642,Augsburg,9761,9761,0.9
+643,Augsburg,9761,9761,0.9
+644,Augsburg,9761,9761,0.9
+645,Augsburg,9761,9761,0.9
+646,Augsburg,9761,9761,0.9
+647,Augsburg,9761,9761,0.9
+648,Augsburg,9761,9761,0.9
+649,Augsburg,9761,9761,0.9
+650,Augsburg,9761,9761,0.9
+651,Augsburg,9761,9761,0.9
+652,Augsburg,9761,9761,0.9
+653,Augsburg,9761,9761,0.9
+654,Augsburg,9761,9761,0.9
+655,Augsburg,9761,9761,0.9
+656,Augsburg,9761,9761,0.9
+657,Augsburg,9761,9761,0.9
+658,Augsburg,9761,9761,0.9
+659,"Stadtbergen, St",9772,9772,0.9
+660,Augsburg,9761,9761,0.9
+661,Augsburg,9761,9761,0.9
+662,Augsburg,9761,9761,0.9
+663,Augsburg,9761,9761,0.9
+664,Augsburg,9761,9761,0.9
+665,Augsburg,9761,9761,0.9
+666,Augsburg,9761,9761,0.9
+667,Augsburg,9761,9761,0.9
+668,Augsburg,9761,9761,0.9
+669,Augsburg,9761,9761,0.9
+670,Augsburg,9761,9761,0.9
+671,Augsburg,9761,9761,0.9
+672,Augsburg,9761,9761,0.9
+673,Augsburg,9761,9761,0.9
+674,Augsburg,9761,9761,0.9
+675,Augsburg,9761,9761,0.9
+676,Augsburg,9761,9761,0.9
+677,Augsburg,9761,9761,0.9
+678,Augsburg,9761,9761,0.9
+679,Augsburg,9761,9761,0.9
+680,Augsburg,9761,9761,0.9
+681,Augsburg,9761,9761,0.9
+682,Augsburg,9761,9761,0.9
+683,Augsburg,9761,9761,0.9
+684,Augsburg,9761,9761,0.9
+685,Augsburg,9761,9761,0.9
+686,Augsburg,9761,9761,0.9
+687,Augsburg,9761,9761,0.9
+688,Augsburg,9761,9761,0.9
+689,Augsburg,9761,9761,0.9
+690,Augsburg,9761,9761,0.9
+691,Augsburg,9761,9761,0.9
+692,Augsburg,9761,9761,0.9
+693,Augsburg,9761,9761,0.9
+694,Augsburg,9761,9761,0.9
+695,Augsburg,9761,9761,0.9
+696,Augsburg,9761,9761,0.9
+697,Augsburg,9761,9761,0.9
+698,Augsburg,9761,9761,0.9
+699,Augsburg,9761,9761,0.9
+700,Augsburg,9761,9761,0.9
+701,Augsburg,9761,9761,0.9
+702,Augsburg,9761,9761,0.9
+703,Augsburg,9761,9761,0.9
+704,Augsburg,9761,9761,0.9
+705,Augsburg,9761,9761,0.9
+706,Augsburg,9761,9761,0.9
+707,Augsburg,9761,9761,0.9
+708,Augsburg,9761,9761,0.9
+709,Augsburg,9761,9761,0.9
+710,Augsburg,9761,9761,0.9
+711,Augsburg,9761,9761,0.9
+712,Augsburg,9761,9761,0.9
+713,Augsburg,9761,9761,0.9
+714,Augsburg,9761,9761,0.9
+715,Augsburg,9761,9761,0.9
+716,Augsburg,9761,9761,0.9
+717,Augsburg,9761,9761,0.9
+718,Augsburg,9761,9761,0.9
+719,Augsburg,9761,9761,0.9
+720,Augsburg,9761,9761,0.9
+721,Augsburg,9761,9761,0.9
+722,Augsburg,9761,9761,0.9
+723,Augsburg,9761,9761,0.9
+724,Augsburg,9761,9761,0.9
+725,Augsburg,9761,9761,0.9
+726,Augsburg,9761,9761,0.9
+727,Augsburg,9761,9761,0.9
+728,Augsburg,9761,9761,0.9
+729,Augsburg,9761,9761,0.9
+730,Augsburg,9761,9761,0.9
+731,Augsburg,9761,9761,0.9
+732,Augsburg,9761,9761,0.9
+733,Augsburg,9761,9761,0.9
+734,Augsburg,9761,9761,0.9
+735,Augsburg,9761,9761,0.9
+736,Augsburg,9761,9761,0.9
+737,Augsburg,9761,9761,0.9
+738,Augsburg,9761,9761,0.9
+739,Augsburg,9761,9761,0.9
+740,Augsburg,9761,9761,0.9
+741,Augsburg,9761,9761,0.9
+742,Augsburg,9761,9761,0.9
+743,Augsburg,9761,9761,0.9
+744,Augsburg,9761,9761,0.9
+745,"Stadtbergen, St",9772,9772,0.9
+746,"Stadtbergen, St",9772,9772,0.9
+747,Augsburg,9761,9761,0.9
+748,"Stadtbergen, St",9772,9772,0.9
+749,Augsburg,9761,9761,0.9
+750,"Stadtbergen, St",9772,9772,0.9
+751,"Stadtbergen, St",9772,9772,0.9
+752,Augsburg,9761,9761,0.9
+753,Augsburg,9761,9761,0.9
+754,Augsburg,9761,9761,0.9
+755,Augsburg,9761,9761,0.9
+756,Augsburg,9761,9761,0.9
+757,Augsburg,9761,9761,0.9
+758,Augsburg,9761,9761,0.9
+759,Augsburg,9761,9761,0.9
+760,Augsburg,9761,9761,0.9
+761,Augsburg,9761,9761,0.9
+762,Augsburg,9761,9761,0.9
+763,Augsburg,9761,9761,0.9
+764,Augsburg,9761,9761,0.9
+765,Augsburg,9761,9761,0.9
+766,Augsburg,9761,9761,0.9
+767,Augsburg,9761,9761,0.9
+768,Augsburg,9761,9761,0.9
+769,"Stadtbergen, St",9772,9772,0.9
+770,Augsburg,9761,9761,0.9
+771,Augsburg,9761,9761,0.9
+772,Augsburg,9761,9761,0.9
+773,Augsburg,9761,9761,0.9
+774,Augsburg,9761,9761,0.9
+775,Augsburg,9761,9761,0.9
+776,Augsburg,9761,9761,0.9
+777,Augsburg,9761,9761,0.9
+778,Augsburg,9761,9761,0.9
+779,Augsburg,9761,9761,0.9
+780,Augsburg,9761,9761,0.9
+781,Augsburg,9761,9761,0.9
+782,Augsburg,9761,9761,0.9
+783,Augsburg,9761,9761,0.9
+784,Augsburg,9761,9761,0.9
+785,Augsburg,9761,9761,0.9
+786,Augsburg,9761,9761,0.9
+787,Augsburg,9761,9761,0.9
+788,Augsburg,9761,9761,0.9
+789,Augsburg,9761,9761,0.9
+790,Augsburg,9761,9761,0.9
+791,Augsburg,9761,9761,0.9
+792,Augsburg,9761,9761,0.9
+793,Augsburg,9761,9761,0.9
+794,Augsburg,9761,9761,0.9
+795,Augsburg,9761,9761,0.9
+796,Augsburg,9761,9761,0.9
+797,Augsburg,9761,9761,0.9
+798,Augsburg,9761,9761,0.9
+799,Augsburg,9761,9761,0.9
+800,Augsburg,9761,9761,0.9
+801,Augsburg,9761,9761,0.9
+802,Augsburg,9761,9761,0.9
+803,Augsburg,9761,9761,0.9
+804,Augsburg,9761,9761,0.9
+805,Augsburg,9761,9761,0.9
+806,Augsburg,9761,9761,0.9
+807,Augsburg,9761,9761,0.9
+808,Augsburg,9761,9761,0.9
+809,Augsburg,9761,9761,0.9
+810,Augsburg,9761,9761,0.9
+811,Augsburg,9761,9761,0.9
+812,Augsburg,9761,9761,0.9
+813,Augsburg,9761,9761,0.9
+814,Augsburg,9761,9761,0.9
+815,Augsburg,9761,9761,0.9
+816,Augsburg,9761,9761,0.9
+817,Augsburg,9761,9761,0.9
+818,Augsburg,9761,9761,0.9
+819,Augsburg,9761,9761,0.9
+820,Augsburg,9761,9761,0.9
+821,Augsburg,9761,9761,0.9
+822,Augsburg,9761,9761,0.9
+823,Augsburg,9761,9761,0.9
+824,Augsburg,9761,9761,0.9
+825,Augsburg,9761,9761,0.9
+826,Augsburg,9761,9761,0.9
+827,Augsburg,9761,9761,0.9
+828,Augsburg,9761,9761,0.9
+829,Augsburg,9761,9761,0.9
+830,Augsburg,9761,9761,0.9
+831,Augsburg,9761,9761,0.9
+832,Augsburg,9761,9761,0.9
+833,Augsburg,9761,9761,0.9
+834,Augsburg,9761,9761,0.9
+835,Augsburg,9761,9761,0.9
+836,Augsburg,9761,9761,0.9
+837,Augsburg,9761,9761,0.9
+838,Augsburg,9761,9761,0.9
+839,Augsburg,9761,9761,0.9
+840,Augsburg,9761,9761,0.9
+841,Augsburg,9761,9761,0.9
+842,Augsburg,9761,9761,0.9
+843,Augsburg,9761,9761,0.9
+844,Augsburg,9761,9761,0.9
+845,Augsburg,9761,9761,0.9
+846,Augsburg,9761,9761,0.9
+847,Augsburg,9761,9761,0.9
+848,Augsburg,9761,9761,0.9
+849,Augsburg,9761,9761,0.9
+850,Augsburg,9761,9761,0.9
+851,Augsburg,9761,9761,0.9
+852,Augsburg,9761,9761,0.9
+853,Augsburg,9761,9761,0.9
+854,Augsburg,9761,9761,0.9
+855,Augsburg,9761,9761,0.9
+856,Augsburg,9761,9761,0.9
+857,Augsburg,9761,9761,0.9
+858,Augsburg,9761,9761,0.9
+859,Augsburg,9761,9761,0.9
+860,Augsburg,9761,9761,0.9
+861,Augsburg,9761,9761,0.9
+862,Augsburg,9761,9761,0.9
+863,Augsburg,9761,9761,0.9
+864,Augsburg,9761,9761,0.9
+865,Augsburg,9761,9761,0.9
+866,Augsburg,9761,9761,0.9
+867,"Friedberg, St",9771,9771,0.9
+868,"Friedberg, St",9771,9771,0.9
+869,"Friedberg, St",9771,9771,0.9
+870,"Friedberg, St",9771,9771,0.9
+871,"Friedberg, St",9771,9771,0.9
+872,Augsburg,9761,9761,0.9
+873,Augsburg,9761,9761,0.9
+874,Augsburg,9761,9761,0.9
+875,Augsburg,9761,9761,0.9
+876,Augsburg,9761,9761,0.9
+877,Augsburg,9761,9761,0.9
+878,Augsburg,9761,9761,0.9
+879,Augsburg,9761,9761,0.9
+880,Augsburg,9761,9761,0.9
+881,Augsburg,9761,9761,0.9
+882,Augsburg,9761,9761,0.9
+883,Augsburg,9761,9761,0.9
+884,Augsburg,9761,9761,0.9
+885,"Friedberg, St",9771,9771,0.9
+886,"Friedberg, St",9771,9771,0.9
+887,Augsburg,9761,9761,0.9
+888,Augsburg,9761,9761,0.9
+889,Augsburg,9761,9761,0.9
+890,Augsburg,9761,9761,0.9
+891,Augsburg,9761,9761,0.9
+892,Augsburg,9761,9761,0.9
+893,Augsburg,9761,9761,0.9
+894,Augsburg,9761,9761,0.9
+895,Augsburg,9761,9761,0.9
+896,Augsburg,9761,9761,0.9
+897,Augsburg,9761,9761,0.9
+898,Augsburg,9761,9761,0.9
+899,Augsburg,9761,9761,0.9
+900,Augsburg,9761,9761,0.9
+901,Augsburg,9761,9761,0.9
+902,Augsburg,9761,9761,0.9
+903,Augsburg,9761,9761,0.9
+904,"Friedberg, St",9771,9771,0.9
+905,"Friedberg, St",9771,9771,0.9
+906,"Friedberg, St",9771,9771,0.9
+907,"Friedberg, St",9771,9771,0.9
+908,"Friedberg, St",9771,9771,0.9
+909,"Friedberg, St",9771,9771,0.9
+910,"Friedberg, St",9771,9771,0.9
+911,"Friedberg, St",9771,9771,0.9
+912,"Friedberg, St",9771,9771,0.9
+913,"Friedberg, St",9771,9771,0.9
+914,"Friedberg, St",9771,9771,0.9
+915,"Friedberg, St",9771,9771,0.9
+916,"Friedberg, St",9771,9771,0.9
+917,"Friedberg, St",9771,9771,0.9
+918,"Friedberg, St",9771,9771,0.9
+919,"Friedberg, St",9771,9771,0.9
+920,"Friedberg, St",9771,9771,0.9
+921,"Friedberg, St",9771,9771,0.9
+922,Augsburg,9761,9761,0.9
+923,Augsburg,9761,9761,0.9
+924,"Stadtbergen, St",9772,9772,0.9
+925,Augsburg,9761,9761,0.9
+926,Augsburg,9761,9761,0.9
+927,Augsburg,9761,9761,0.9
+928,Augsburg,9761,9761,0.9
+929,Augsburg,9761,9761,0.9
+930,Augsburg,9761,9761,0.9
+931,Augsburg,9761,9761,0.9
+932,Augsburg,9761,9761,0.9
+933,Augsburg,9761,9761,0.9
+934,Augsburg,9761,9761,0.9
+935,Augsburg,9761,9761,0.9
+936,Augsburg,9761,9761,0.9
+937,Augsburg,9761,9761,0.9
+938,Augsburg,9761,9761,0.9
+939,Augsburg,9761,9761,0.9
+940,Augsburg,9761,9761,0.9
+941,Augsburg,9761,9761,0.9
+942,Augsburg,9761,9761,0.9
+943,Augsburg,9761,9761,0.9
+944,Augsburg,9761,9761,0.9
+945,Augsburg,9761,9761,0.9
+946,Augsburg,9761,9761,0.9
+947,Augsburg,9761,9761,0.9
+948,Augsburg,9761,9761,0.9
+949,Augsburg,9761,9761,0.9
+950,Augsburg,9761,9761,0.9
+951,Augsburg,9761,9761,0.9
+952,Augsburg,9761,9761,0.9
+953,Augsburg,9761,9761,0.9
+954,Augsburg,9761,9761,0.9
+955,Augsburg,9761,9761,0.9
+956,Augsburg,9761,9761,0.9
+957,Augsburg,9761,9761,0.9
+958,Augsburg,9761,9761,0.9
+959,Augsburg,9761,9761,0.9
+960,Augsburg,9761,9761,0.9
+961,Augsburg,9761,9761,0.9
+962,Augsburg,9761,9761,0.9
+963,Augsburg,9761,9761,0.9
+964,Augsburg,9761,9761,0.9
+965,Augsburg,9761,9761,0.9
+966,Augsburg,9761,9761,0.9
+967,Augsburg,9761,9761,0.9
+968,Augsburg,9761,9761,0.9
+969,Augsburg,9761,9761,0.9
+970,Augsburg,9761,9761,0.9
+971,Augsburg,9761,9761,0.9
+972,Augsburg,9761,9761,0.9
+973,Augsburg,9761,9761,0.9
+974,Augsburg,9761,9761,0.9
+975,Augsburg,9761,9761,0.9
+976,Augsburg,9761,9761,0.9
+977,Augsburg,9761,9761,0.9
+978,Augsburg,9761,9761,0.9
+979,Augsburg,9761,9761,0.9
+980,Augsburg,9761,9761,0.9
+981,Augsburg,9761,9761,0.9
+982,Augsburg,9761,9761,0.9
+983,Augsburg,9761,9761,0.9
+984,Augsburg,9761,9761,0.9
+985,Augsburg,9761,9761,0.9
+986,Augsburg,9761,9761,0.9
+987,Augsburg,9761,9761,0.9
+988,Augsburg,9761,9761,0.9
+989,Augsburg,9761,9761,0.9
+990,Augsburg,9761,9761,0.9
+991,Augsburg,9761,9761,0.9
+992,Augsburg,9761,9761,0.9
+993,Augsburg,9761,9761,0.9
+994,Augsburg,9761,9761,0.9
+995,Augsburg,9761,9761,0.9
+996,Augsburg,9761,9761,0.9
+997,Augsburg,9761,9761,0.9
+998,Augsburg,9761,9761,0.9
+999,Augsburg,9761,9761,0.9
+1000,Augsburg,9761,9761,0.9
+1001,Augsburg,9761,9761,0.9
+1002,Augsburg,9761,9761,0.9
+1003,Augsburg,9761,9761,0.9
+1004,Augsburg,9761,9761,0.9
+1005,Augsburg,9761,9761,0.9
+1006,"Königsbrunn, St",9772,9772,0.9
+1007,Augsburg,9761,9761,0.9
+1008,Augsburg,9761,9761,0.9
+1009,Augsburg,9761,9761,0.9
+1010,Augsburg,9761,9761,0.9
+1011,"Friedberg, St",9771,9771,0.9
+1012,"Friedberg, St",9771,9771,0.9
+1013,"Friedberg, St",9771,9771,0.9
+1014,"Friedberg, St",9771,9771,0.9
+1015,Kissing,9771,9771,0.9
+1016,Kissing,9771,9771,0.9
+1017,Kissing,9771,9771,0.9
+1018,Kissing,9771,9771,0.9
+1019,Kissing,9771,9771,0.9
+1020,Kissing,9771,9771,0.9
+1021,Kissing,9771,9771,0.9
+1022,Kissing,9771,9771,0.9
+1023,Kissing,9771,9771,0.9
+1024,Dasing,9771,9771,0.9
+1025,Dasing,9771,9771,0.9
+1026,Dasing,9771,9771,0.9
+1027,Dasing,9771,9771,0.9
+1028,Eurasburg_MALO,9771,9771,0.9
+1029,Adelzhausen,9771,9771,0.9
+1030,Sielenbach,9771,9771,0.9
+1031,"Friedberg, St",9771,9771,0.9
+1032,Odelzhausen,9174,9174,0.9
+1033,Pfaffenhofen a.d.Glonn,9174,9174,0.9
+1034,"Bobingen, St",9772,9772,0.9
+1035,"Königsbrunn, St",9772,9772,0.9
+1036,"Königsbrunn, St",9772,9772,0.9
+1037,"Königsbrunn, St",9772,9772,0.9
+1038,"Königsbrunn, St",9772,9772,0.9
+1039,"Königsbrunn, St",9772,9772,0.9
+1040,"Königsbrunn, St",9772,9772,0.9
+1041,"Königsbrunn, St",9772,9772,0.9
+1042,"Königsbrunn, St",9772,9772,0.9
+1043,"Königsbrunn, St",9772,9772,0.9
+1044,"Königsbrunn, St",9772,9772,0.9
+1045,"Königsbrunn, St",9772,9772,0.9
+1046,"Königsbrunn, St",9772,9772,0.9
+1047,"Königsbrunn, St",9772,9772,0.9
+1048,"Königsbrunn, St",9772,9772,0.9
+1049,"Königsbrunn, St",9772,9772,0.9
+1050,"Königsbrunn, St",9772,9772,0.9
+1051,"Königsbrunn, St",9772,9772,0.9
+1052,"Königsbrunn, St",9772,9772,0.9
+1053,"Königsbrunn, St",9772,9772,0.9
+1054,Oberottmarshausen,9772,9772,0.9
+1055,"Königsbrunn, St",9772,9772,0.9
+1056,"Königsbrunn, St",9772,9772,0.9
+1057,"Königsbrunn, St",9772,9772,0.9
+1058,"Königsbrunn, St",9772,9772,0.9
+1059,Prittriching,9181,9181,0.9
+1060,"Mering, M",9771,9771,0.9
+1061,"Mering, M",9771,9771,0.9
+1062,"Mering, M",9771,9771,0.9
+1063,"Mering, M",9771,9771,0.9
+1064,"Mering, M",9771,9771,0.9
+1065,"Mering, M",9771,9771,0.9
+1066,"Mering, M",9771,9771,0.9
+1067,Merching,9771,9771,0.9
+1068,"Mering, M",9771,9771,0.9
+1069,Schmiechen,9771,9771,0.9
+1070,Kleinaitingen,9772,9772,0.9
+1071,Untermeitingen,9772,9772,0.9
+1072,Graben,9772,9772,0.9
+1073,Hattenhofen,9179,9179,0.9
+1074,Althegnenberg,9179,9179,0.9
+1075,Ried,9771,9771,0.9
+1076,Ried,9771,9771,0.9
+1077,Mittelstetten,9179,9179,0.9
+1078,Oberschweinbach,9179,9179,0.9
+1079,Merching,9771,9771,0.9
+1080,Steindorf,9771,9771,0.9
+1081,Adelshofen,9179,9179,0.9
+1082,Mammendorf,9179,9179,0.9
+1083,Mammendorf,9179,9179,0.9
+1084,Egenhofen,9179,9179,0.9
+1085,Mammendorf,9179,9179,0.9
+1086,Langenmosen,9185,9185,0.9
+1087,Brunnen,9185,9185,0.9
+1088,"Schrobenhausen, St",9185,9185,0.9
+1089,"Schrobenhausen, St",9185,9185,0.9
+1090,"Schrobenhausen, St",9185,9185,0.9
+1091,"Schrobenhausen, St",9185,9185,0.9
+1092,"Schrobenhausen, St",9185,9185,0.9
+1093,"Schrobenhausen, St",9185,9185,0.9
+1094,"Schrobenhausen, St",9185,9185,0.9
+1095,"Schrobenhausen, St",9185,9185,0.9
+1096,"Schrobenhausen, St",9185,9185,0.9
+1097,"Schrobenhausen, St",9185,9185,0.9
+1098,"Schrobenhausen, St",9185,9185,0.9
+1099,"Schrobenhausen, St",9185,9185,0.9
+1100,"Schrobenhausen, St",9185,9185,0.9
+1101,"Schrobenhausen, St",9185,9185,0.9
+1102,"Schrobenhausen, St",9185,9185,0.9
+1103,Aresing,9185,9185,0.9
+1104,Gerolsbach,9186,9186,0.9
+1105,"Hohenwart, M",9186,9186,0.9
+1106,Waidhofen,9185,9185,0.9
+1107,"Hohenwart, M",9186,9186,0.9
+1108,"Reichertshofen, M",9186,9186,0.9
+1109,"Hohenwart, M",9186,9186,0.9
+1110,Pörnbach,9186,9186,0.9
+1111,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1112,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1113,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1114,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1115,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1116,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1117,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1118,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1119,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1120,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1121,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1122,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1123,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1124,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1125,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1126,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1127,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1128,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1129,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1130,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1131,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1132,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1133,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1134,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1135,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1136,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1137,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1138,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1139,Aresing,9185,9185,0.9
+1140,Gachenbach,9185,9185,0.9
+1141,"Kühbach, M",9771,9771,0.9
+1142,Schiltberg,9771,9771,0.9
+1143,Hilgertshausen-Tandern,9174,9174,0.9
+1144,Hilgertshausen-Tandern,9174,9174,0.9
+1145,Gachenbach,9185,9185,0.9
+1146,Scheyern,9186,9186,0.9
+1147,Scheyern,9186,9186,0.9
+1148,Scheyern,9186,9186,0.9
+1149,"Pfaffenhofen a.d.Ilm, St",9186,9186,0.9
+1150,Reichertshausen,9186,9186,0.9
+1151,Ilmmünster,9186,9186,0.9
+1152,Reichertshausen,9186,9186,0.9
+1153,Gerolsbach,9186,9186,0.9
+1154,Petershausen,9174,9174,0.9
+1155,Jetzendorf,9186,9186,0.9
+1156,Reichertshausen,9186,9186,0.9
+1157,Petershausen,9174,9174,0.9
+1158,Petershausen,9174,9174,0.9
+1159,Jetzendorf,9186,9186,0.9
+1160,Hohenkammer,9178,9178,0.9
+1161,Rohrbach,9186,9186,0.9
+1162,Rohrbach,9186,9186,0.9
+1163,Rohrbach,9186,9186,0.9
+1164,"Wolnzach, M",9186,9186,0.9
+1165,"Wolnzach, M",9186,9186,0.9
+1166,"Wolnzach, M",9186,9186,0.9
+1167,"Wolnzach, M",9186,9186,0.9
+1168,"Wolnzach, M",9186,9186,0.9
+1169,"Wolnzach, M",9186,9186,0.9
+1170,"Wolnzach, M",9186,9186,0.9
+1171,"Wolnzach, M",9186,9186,0.9
+1172,Rudelzhausen,9178,9178,0.9
+1173,"Wolnzach, M",9186,9186,0.9
+1174,Schweitenkirchen,9186,9186,0.9
+1175,"Mainburg, St",9273,9273,0.9
+1176,"Mainburg, St",9273,9273,0.9
+1177,Rudelzhausen,9178,9178,0.9
+1178,"Mainburg, St",9273,9273,0.9
+1179,"Mainburg, St",9273,9273,0.9
+1180,Volkenschwand,9273,9273,0.9
+1181,"Au i.d.Hallertau, M",9178,9178,0.9
+1182,"Au i.d.Hallertau, M",9178,9178,0.9
+1183,"Au i.d.Hallertau, M",9178,9178,0.9
+1184,"Au i.d.Hallertau, M",9178,9178,0.9
+1185,"Nandlstadt, M",9178,9178,0.9
+1186,"Nandlstadt, M",9178,9178,0.9
+1187,"Nandlstadt, M",9178,9178,0.9
+1188,Schweitenkirchen,9186,9186,0.9
+1189,Schweitenkirchen,9186,9186,0.9
+1190,Hettenshausen,9186,9186,0.9
+1191,Schweitenkirchen,9186,9186,0.9
+1192,Allershausen,9178,9178,0.9
+1193,Wolfersdorf,9178,9178,0.9
+1194,Kirchdorf a.d.Amper,9178,9178,0.9
+1195,Allershausen,9178,9178,0.9
+1196,Allershausen,9178,9178,0.9
+1197,Hohenkammer,9178,9178,0.9
+1198,Allershausen,9178,9178,0.9
+1199,Paunzhausen,9178,9178,0.9
+1200,Kirchdorf a.d.Amper,9178,9178,0.9
+1201,Attenkirchen,9178,9178,0.9
+1202,Attenkirchen,9178,9178,0.9
+1203,Zolling,9178,9178,0.9
+1204,Wang,9178,9178,0.9
+1205,Zolling,9178,9178,0.9
+1206,Zolling,9178,9178,0.9
+1207,"Freising, GKSt",9178,9178,0.9
+1208,"Freising, GKSt",9178,9178,0.9
+1209,"Freising, GKSt",9178,9178,0.9
+1210,"Freising, GKSt",9178,9178,0.9
+1211,"Freising, GKSt",9178,9178,0.9
+1212,"Freising, GKSt",9178,9178,0.9
+1213,"Freising, GKSt",9178,9178,0.9
+1214,"Freising, GKSt",9178,9178,0.9
+1215,"Freising, GKSt",9178,9178,0.9
+1216,"Freising, GKSt",9178,9178,0.9
+1217,"Freising, GKSt",9178,9178,0.9
+1218,"Freising, GKSt",9178,9178,0.9
+1219,"Freising, GKSt",9178,9178,0.9
+1220,Wolfersdorf,9178,9178,0.9
+1221,Langenbach,9178,9178,0.9
+1222,Marzling,9178,9178,0.9
+1223,Marzling,9178,9178,0.9
+1224,Langenbach,9178,9178,0.9
+1225,Haag a.d.Amper,9178,9178,0.9
+1226,"Altomünster, M",9174,9174,0.9
+1227,"Altomünster, M",9174,9174,0.9
+1228,"Altomünster, M",9174,9174,0.9
+1229,"Altomünster, M",9174,9174,0.9
+1230,"Altomünster, M",9174,9174,0.9
+1231,"Altomünster, M",9174,9174,0.9
+1232,"Markt Indersdorf, M",9174,9174,0.9
+1233,Odelzhausen,9174,9174,0.9
+1234,Odelzhausen,9174,9174,0.9
+1235,Egenhofen,9179,9179,0.9
+1236,Sulzemoos,9174,9174,0.9
+1237,Erdweg,9174,9174,0.9
+1238,Erdweg,9174,9174,0.9
+1239,Erdweg,9174,9174,0.9
+1240,Erdweg,9174,9174,0.9
+1241,Schwabhausen,9174,9174,0.9
+1242,Schwabhausen,9174,9174,0.9
+1243,Weichs,9174,9174,0.9
+1244,Weichs,9174,9174,0.9
+1245,"Markt Indersdorf, M",9174,9174,0.9
+1246,"Markt Indersdorf, M",9174,9174,0.9
+1247,"Markt Indersdorf, M",9174,9174,0.9
+1248,"Markt Indersdorf, M",9174,9174,0.9
+1249,Vierkirchen,9174,9174,0.9
+1250,Vierkirchen,9174,9174,0.9
+1251,Röhrmoos,9174,9174,0.9
+1252,Vierkirchen,9174,9174,0.9
+1253,Röhrmoos,9174,9174,0.9
+1254,"Markt Indersdorf, M",9174,9174,0.9
+1255,Schwabhausen,9174,9174,0.9
+1256,Hebertshausen,9174,9174,0.9
+1257,Röhrmoos,9174,9174,0.9
+1258,Röhrmoos,9174,9174,0.9
+1259,Hebertshausen,9174,9174,0.9
+1260,Haimhausen,9174,9174,0.9
+1261,"Olching, St",9179,9179,0.9
+1262,Sulzemoos,9174,9174,0.9
+1263,Bergkirchen,9174,9174,0.9
+1264,Maisach,9179,9179,0.9
+1265,Maisach,9179,9179,0.9
+1266,Maisach,9179,9179,0.9
+1267,Maisach,9179,9179,0.9
+1268,Maisach,9179,9179,0.9
+1269,Maisach,9179,9179,0.9
+1270,Maisach,9179,9179,0.9
+1271,Maisach,9179,9179,0.9
+1272,Maisach,9179,9179,0.9
+1273,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1274,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1275,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1276,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1277,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1278,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1279,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1280,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1281,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1282,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1283,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1284,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1285,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1286,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1287,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1288,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1289,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1290,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1291,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1292,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1293,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1294,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1295,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1296,Emmering_MALO,9179,9179,0.9
+1297,Maisach,9179,9179,0.9
+1298,Maisach,9179,9179,0.9
+1299,Bergkirchen,9174,9174,0.9
+1300,"Olching, St",9179,9179,0.9
+1301,"Olching, St",9179,9179,0.9
+1302,"Olching, St",9179,9179,0.9
+1303,"Olching, St",9179,9179,0.9
+1304,"Olching, St",9179,9179,0.9
+1305,"Olching, St",9179,9179,0.9
+1306,"Olching, St",9179,9179,0.9
+1307,"Olching, St",9179,9179,0.9
+1308,"Olching, St",9179,9179,0.9
+1309,"Olching, St",9179,9179,0.9
+1310,"Olching, St",9179,9179,0.9
+1311,"Olching, St",9179,9179,0.9
+1312,"Olching, St",9179,9179,0.9
+1313,"Olching, St",9179,9179,0.9
+1314,"Olching, St",9179,9179,0.9
+1315,"Olching, St",9179,9179,0.9
+1316,Bergkirchen,9174,9174,0.9
+1317,Emmering_MALO,9179,9179,0.9
+1318,Emmering_MALO,9179,9179,0.9
+1319,Emmering_MALO,9179,9179,0.9
+1320,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+1321,"Olching, St",9179,9179,0.9
+1322,"Olching, St",9179,9179,0.9
+1323,"Olching, St",9179,9179,0.9
+1324,"Olching, St",9179,9179,0.9
+1325,"Olching, St",9179,9179,0.9
+1326,"Olching, St",9179,9179,0.9
+1327,"Olching, St",9179,9179,0.9
+1328,Eichenau,9179,9179,0.9
+1329,Eichenau,9179,9179,0.9
+1330,Gröbenzell,9179,9179,0.9
+1331,"Dachau, GKSt",9174,9174,0.9
+1332,"Dachau, GKSt",9174,9174,0.9
+1333,"Dachau, GKSt",9174,9174,0.9
+1334,"Dachau, GKSt",9174,9174,0.9
+1335,"Dachau, GKSt",9174,9174,0.9
+1336,"Dachau, GKSt",9174,9174,0.9
+1337,"Dachau, GKSt",9174,9174,0.9
+1338,"Dachau, GKSt",9174,9174,0.9
+1339,Bergkirchen,9174,9174,0.9
+1340,Bergkirchen,9174,9174,0.9
+1341,"Olching, St",9179,9179,0.9
+1342,Bergkirchen,9174,9174,0.9
+1343,"Dachau, GKSt",9174,9174,0.9
+1344,"Dachau, GKSt",9174,9174,0.9
+1345,"Dachau, GKSt",9174,9174,0.9
+1346,"Dachau, GKSt",9174,9174,0.9
+1347,"Dachau, GKSt",9174,9174,0.9
+1348,"Dachau, GKSt",9174,9174,0.9
+1349,"Dachau, GKSt",9174,9174,0.9
+1350,"Dachau, GKSt",9174,9174,0.9
+1351,"Dachau, GKSt",9174,9174,0.9
+1352,"Dachau, GKSt",9174,9174,0.9
+1353,"Dachau, GKSt",9174,9174,0.9
+1354,"Dachau, GKSt",9174,9174,0.9
+1355,"Dachau, GKSt",9174,9174,0.9
+1356,"Dachau, GKSt",9174,9174,0.9
+1357,"Dachau, GKSt",9174,9174,0.9
+1358,"Dachau, GKSt",9174,9174,0.9
+1359,"Dachau, GKSt",9174,9174,0.9
+1360,"Dachau, GKSt",9174,9174,0.9
+1361,"Dachau, GKSt",9174,9174,0.9
+1362,"Dachau, GKSt",9174,9174,0.9
+1363,"Dachau, GKSt",9174,9174,0.9
+1364,"Dachau, GKSt",9174,9174,0.9
+1365,"Dachau, GKSt",9174,9174,0.9
+1366,"Dachau, GKSt",9174,9174,0.9
+1367,"Dachau, GKSt",9174,9174,0.9
+1368,"Dachau, GKSt",9174,9174,0.9
+1369,"Dachau, GKSt",9174,9174,0.9
+1370,Hebertshausen,9174,9174,0.9
+1371,"Dachau, GKSt",9174,9174,0.9
+1372,"Dachau, GKSt",9174,9174,0.9
+1373,"Dachau, GKSt",9174,9174,0.9
+1374,"Dachau, GKSt",9174,9174,0.9
+1375,"Dachau, GKSt",9174,9174,0.9
+1376,"Dachau, GKSt",9174,9174,0.9
+1377,"Dachau, GKSt",9174,9174,0.9
+1378,"Dachau, GKSt",9174,9174,0.9
+1379,"Dachau, GKSt",9174,9174,0.9
+1380,"Dachau, GKSt",9174,9174,0.9
+1381,"Dachau, GKSt",9174,9174,0.9
+1382,"Dachau, GKSt",9174,9174,0.9
+1383,"Dachau, GKSt",9174,9174,0.9
+1384,"Dachau, GKSt",9174,9174,0.9
+1385,Karlsfeld,9174,9174,0.9
+1386,Karlsfeld,9174,9174,0.9
+1387,"Dachau, GKSt",9174,9174,0.9
+1388,Gröbenzell,9179,9179,0.9
+1389,Gröbenzell,9179,9179,0.9
+1390,Gröbenzell,9179,9179,0.9
+1391,Gröbenzell,9179,9179,0.9
+1392,Gröbenzell,9179,9179,0.9
+1393,Gröbenzell,9179,9179,0.9
+1394,Gröbenzell,9179,9179,0.9
+1395,Gröbenzell,9179,9179,0.9
+1396,Gröbenzell,9179,9179,0.9
+1397,Gröbenzell,9179,9179,0.9
+1398,Gröbenzell,9179,9179,0.9
+1399,"Puchheim, St",9179,9179,0.9
+1400,Gröbenzell,9179,9179,0.9
+1401,Gröbenzell,9179,9179,0.9
+1402,"Puchheim, St",9179,9179,0.9
+1403,"Puchheim, St",9179,9179,0.9
+1404,"Puchheim, St",9179,9179,0.9
+1405,"Puchheim, St",9179,9179,0.9
+1406,"Puchheim, St",9179,9179,0.9
+1407,Gröbenzell,9179,9179,0.9
+1408,"München, Landeshauptstadt",9162,9162,0.9
+1409,"München, Landeshauptstadt",9162,9162,0.9
+1410,"München, Landeshauptstadt",9162,9162,0.9
+1411,"München, Landeshauptstadt",9162,9162,0.9
+1412,"München, Landeshauptstadt",9162,9162,0.9
+1413,"München, Landeshauptstadt",9162,9162,0.9
+1414,"München, Landeshauptstadt",9162,9162,0.9
+1415,"München, Landeshauptstadt",9162,9162,0.9
+1416,"München, Landeshauptstadt",9162,9162,0.9
+1417,"München, Landeshauptstadt",9162,9162,0.9
+1418,Bergkirchen,9174,9174,0.9
+1419,Karlsfeld,9174,9174,0.9
+1420,Karlsfeld,9174,9174,0.9
+1421,Karlsfeld,9174,9174,0.9
+1422,Karlsfeld,9174,9174,0.9
+1423,Karlsfeld,9174,9174,0.9
+1424,Karlsfeld,9174,9174,0.9
+1425,Karlsfeld,9174,9174,0.9
+1426,Karlsfeld,9174,9174,0.9
+1427,Karlsfeld,9174,9174,0.9
+1428,Karlsfeld,9174,9174,0.9
+1429,Karlsfeld,9174,9174,0.9
+1430,Karlsfeld,9174,9174,0.9
+1431,"München, Landeshauptstadt",9162,9162,0.9
+1432,"München, Landeshauptstadt",9162,9162,0.9
+1433,"München, Landeshauptstadt",9162,9162,0.9
+1434,"München, Landeshauptstadt",9162,9162,0.9
+1435,"München, Landeshauptstadt",9162,9162,0.9
+1436,"München, Landeshauptstadt",9162,9162,0.9
+1437,"München, Landeshauptstadt",9162,9162,0.9
+1438,"München, Landeshauptstadt",9162,9162,0.9
+1439,"München, Landeshauptstadt",9162,9162,0.9
+1440,"München, Landeshauptstadt",9162,9162,0.9
+1441,"München, Landeshauptstadt",9162,9162,0.9
+1442,"München, Landeshauptstadt",9162,9162,0.9
+1443,"München, Landeshauptstadt",9162,9162,0.9
+1444,"München, Landeshauptstadt",9162,9162,0.9
+1445,"München, Landeshauptstadt",9162,9162,0.9
+1446,"München, Landeshauptstadt",9162,9162,0.9
+1447,"München, Landeshauptstadt",9162,9162,0.9
+1448,"München, Landeshauptstadt",9162,9162,0.9
+1449,"München, Landeshauptstadt",9162,9162,0.9
+1450,"München, Landeshauptstadt",9162,9162,0.9
+1451,"München, Landeshauptstadt",9162,9162,0.9
+1452,"München, Landeshauptstadt",9162,9162,0.9
+1453,"München, Landeshauptstadt",9162,9162,0.9
+1454,"München, Landeshauptstadt",9162,9162,0.9
+1455,"München, Landeshauptstadt",9162,9162,0.9
+1456,"München, Landeshauptstadt",9162,9162,0.9
+1457,"München, Landeshauptstadt",9162,9162,0.9
+1458,"München, Landeshauptstadt",9162,9162,0.9
+1459,"München, Landeshauptstadt",9162,9162,0.9
+1460,"München, Landeshauptstadt",9162,9162,0.9
+1461,"München, Landeshauptstadt",9162,9162,0.9
+1462,"München, Landeshauptstadt",9162,9162,0.9
+1463,"München, Landeshauptstadt",9162,9162,0.9
+1464,"München, Landeshauptstadt",9162,9162,0.9
+1465,"München, Landeshauptstadt",9162,9162,0.9
+1466,"München, Landeshauptstadt",9162,9162,0.9
+1467,"München, Landeshauptstadt",9162,9162,0.9
+1468,"München, Landeshauptstadt",9162,9162,0.9
+1469,"München, Landeshauptstadt",9162,9162,0.9
+1470,"München, Landeshauptstadt",9162,9162,0.9
+1471,"München, Landeshauptstadt",9162,9162,0.9
+1472,"München, Landeshauptstadt",9162,9162,0.9
+1473,"München, Landeshauptstadt",9162,9162,0.9
+1474,"München, Landeshauptstadt",9162,9162,0.9
+1475,"München, Landeshauptstadt",9162,9162,0.9
+1476,"München, Landeshauptstadt",9162,9162,0.9
+1477,"München, Landeshauptstadt",9162,9162,0.9
+1478,"München, Landeshauptstadt",9162,9162,0.9
+1479,"München, Landeshauptstadt",9162,9162,0.9
+1480,"München, Landeshauptstadt",9162,9162,0.9
+1481,"München, Landeshauptstadt",9162,9162,0.9
+1482,"München, Landeshauptstadt",9162,9162,0.9
+1483,"München, Landeshauptstadt",9162,9162,0.9
+1484,"München, Landeshauptstadt",9162,9162,0.9
+1485,"München, Landeshauptstadt",9162,9162,0.9
+1486,"München, Landeshauptstadt",9162,9162,0.9
+1487,"München, Landeshauptstadt",9162,9162,0.9
+1488,"München, Landeshauptstadt",9162,9162,0.9
+1489,"München, Landeshauptstadt",9162,9162,0.9
+1490,"München, Landeshauptstadt",9162,9162,0.9
+1491,"München, Landeshauptstadt",9162,9162,0.9
+1492,"München, Landeshauptstadt",9162,9162,0.9
+1493,"München, Landeshauptstadt",9162,9162,0.9
+1494,"München, Landeshauptstadt",9162,9162,0.9
+1495,"München, Landeshauptstadt",9162,9162,0.9
+1496,"München, Landeshauptstadt",9162,9162,0.9
+1497,"München, Landeshauptstadt",9162,9162,0.9
+1498,"München, Landeshauptstadt",9162,9162,0.9
+1499,"München, Landeshauptstadt",9162,9162,0.9
+1500,"München, Landeshauptstadt",9162,9162,0.9
+1501,"München, Landeshauptstadt",9162,9162,0.9
+1502,"München, Landeshauptstadt",9162,9162,0.9
+1503,"München, Landeshauptstadt",9162,9162,0.9
+1504,"München, Landeshauptstadt",9162,9162,0.9
+1505,"München, Landeshauptstadt",9162,9162,0.9
+1506,"München, Landeshauptstadt",9162,9162,0.9
+1507,"München, Landeshauptstadt",9162,9162,0.9
+1508,"München, Landeshauptstadt",9162,9162,0.9
+1509,"München, Landeshauptstadt",9162,9162,0.9
+1510,"München, Landeshauptstadt",9162,9162,0.9
+1511,"München, Landeshauptstadt",9162,9162,0.9
+1512,"München, Landeshauptstadt",9162,9162,0.9
+1513,"München, Landeshauptstadt",9162,9162,0.9
+1514,"München, Landeshauptstadt",9162,9162,0.9
+1515,"München, Landeshauptstadt",9162,9162,0.9
+1516,"München, Landeshauptstadt",9162,9162,0.9
+1517,"München, Landeshauptstadt",9162,9162,0.9
+1518,"München, Landeshauptstadt",9162,9162,0.9
+1519,"München, Landeshauptstadt",9162,9162,0.9
+1520,"München, Landeshauptstadt",9162,9162,0.9
+1521,"München, Landeshauptstadt",9162,9162,0.9
+1522,"München, Landeshauptstadt",9162,9162,0.9
+1523,"München, Landeshauptstadt",9162,9162,0.9
+1524,"München, Landeshauptstadt",9162,9162,0.9
+1525,"München, Landeshauptstadt",9162,9162,0.9
+1526,"München, Landeshauptstadt",9162,9162,0.9
+1527,"München, Landeshauptstadt",9162,9162,0.9
+1528,"München, Landeshauptstadt",9162,9162,0.9
+1529,"München, Landeshauptstadt",9162,9162,0.9
+1530,"München, Landeshauptstadt",9162,9162,0.9
+1531,"München, Landeshauptstadt",9162,9162,0.9
+1532,"München, Landeshauptstadt",9162,9162,0.9
+1533,"München, Landeshauptstadt",9162,9162,0.9
+1534,"München, Landeshauptstadt",9162,9162,0.9
+1535,"München, Landeshauptstadt",9162,9162,0.9
+1536,"München, Landeshauptstadt",9162,9162,0.9
+1537,"München, Landeshauptstadt",9162,9162,0.9
+1538,"München, Landeshauptstadt",9162,9162,0.9
+1539,"München, Landeshauptstadt",9162,9162,0.9
+1540,"München, Landeshauptstadt",9162,9162,0.9
+1541,"München, Landeshauptstadt",9162,9162,0.9
+1542,"München, Landeshauptstadt",9162,9162,0.9
+1543,"München, Landeshauptstadt",9162,9162,0.9
+1544,"München, Landeshauptstadt",9162,9162,0.9
+1545,"München, Landeshauptstadt",9162,9162,0.9
+1546,"München, Landeshauptstadt",9162,9162,0.9
+1547,"München, Landeshauptstadt",9162,9162,0.9
+1548,"München, Landeshauptstadt",9162,9162,0.9
+1549,"München, Landeshauptstadt",9162,9162,0.9
+1550,"München, Landeshauptstadt",9162,9162,0.9
+1551,"München, Landeshauptstadt",9162,9162,0.9
+1552,"München, Landeshauptstadt",9162,9162,0.9
+1553,"München, Landeshauptstadt",9162,9162,0.9
+1554,"München, Landeshauptstadt",9162,9162,0.9
+1555,"München, Landeshauptstadt",9162,9162,0.9
+1556,"München, Landeshauptstadt",9162,9162,0.9
+1557,"München, Landeshauptstadt",9162,9162,0.9
+1558,"München, Landeshauptstadt",9162,9162,0.9
+1559,"München, Landeshauptstadt",9162,9162,0.9
+1560,"München, Landeshauptstadt",9162,9162,0.9
+1561,"München, Landeshauptstadt",9162,9162,0.9
+1562,"München, Landeshauptstadt",9162,9162,0.9
+1563,Fahrenzhausen,9178,9178,0.9
+1564,Fahrenzhausen,9178,9178,0.9
+1565,Kranzberg,9178,9178,0.9
+1566,Kranzberg,9178,9178,0.9
+1567,"Freising, GKSt",9178,9178,0.9
+1568,Kranzberg,9178,9178,0.9
+1569,Haimhausen,9174,9174,0.9
+1570,Haimhausen,9174,9174,0.9
+1571,Hebertshausen,9174,9174,0.9
+1572,Eching,9178,9178,0.9
+1573,Eching,9178,9178,0.9
+1574,Eching,9178,9178,0.9
+1575,Eching,9178,9178,0.9
+1576,Fahrenzhausen,9178,9178,0.9
+1577,Neufahrn b.Freising,9178,9178,0.9
+1578,Neufahrn b.Freising,9178,9178,0.9
+1579,Neufahrn b.Freising,9178,9178,0.9
+1580,Neufahrn b.Freising,9178,9178,0.9
+1581,Neufahrn b.Freising,9178,9178,0.9
+1582,Neufahrn b.Freising,9178,9178,0.9
+1583,Eching,9178,9178,0.9
+1584,Eching,9178,9178,0.9
+1585,Eching,9178,9178,0.9
+1586,Eching,9178,9178,0.9
+1587,Eching,9178,9178,0.9
+1588,Eching,9178,9178,0.9
+1589,Eching,9178,9178,0.9
+1590,Eching,9178,9178,0.9
+1591,Eching,9178,9178,0.9
+1592,Neufahrn b.Freising,9178,9178,0.9
+1593,Neufahrn b.Freising,9178,9178,0.9
+1594,Neufahrn b.Freising,9178,9178,0.9
+1595,Neufahrn b.Freising,9178,9178,0.9
+1596,Neufahrn b.Freising,9178,9178,0.9
+1597,Neufahrn b.Freising,9178,9178,0.9
+1598,Neufahrn b.Freising,9178,9178,0.9
+1599,Neufahrn b.Freising,9178,9178,0.9
+1600,Neufahrn b.Freising,9178,9178,0.9
+1601,"Freising, GKSt",9178,9178,0.9
+1602,"Freising, GKSt",9178,9178,0.9
+1603,"Freising, GKSt",9178,9178,0.9
+1604,"Freising, GKSt",9178,9178,0.9
+1605,"Freising, GKSt",9178,9178,0.9
+1606,"Freising, GKSt",9178,9178,0.9
+1607,"Freising, GKSt",9178,9178,0.9
+1608,"Freising, GKSt",9178,9178,0.9
+1609,"Freising, GKSt",9178,9178,0.9
+1610,"Freising, GKSt",9178,9178,0.9
+1611,"Freising, GKSt",9178,9178,0.9
+1612,"Freising, GKSt",9178,9178,0.9
+1613,"Freising, GKSt",9178,9178,0.9
+1614,"Freising, GKSt",9178,9178,0.9
+1615,"Freising, GKSt",9178,9178,0.9
+1616,"Freising, GKSt",9178,9178,0.9
+1617,"Freising, GKSt",9178,9178,0.9
+1618,"Freising, GKSt",9178,9178,0.9
+1619,"Freising, GKSt",9178,9178,0.9
+1620,"Freising, GKSt",9178,9178,0.9
+1621,"Freising, GKSt",9178,9178,0.9
+1622,"Freising, GKSt",9178,9178,0.9
+1623,"Freising, GKSt",9178,9178,0.9
+1624,"Freising, GKSt",9178,9178,0.9
+1625,"Freising, GKSt",9178,9178,0.9
+1626,"Freising, GKSt",9178,9178,0.9
+1627,"Freising, GKSt",9178,9178,0.9
+1628,"Freising, GKSt",9178,9178,0.9
+1629,"Freising, GKSt",9178,9178,0.9
+1630,"Freising, GKSt",9178,9178,0.9
+1631,"Freising, GKSt",9178,9178,0.9
+1632,"Freising, GKSt",9178,9178,0.9
+1633,"Freising, GKSt",9178,9178,0.9
+1634,"Freising, GKSt",9178,9178,0.9
+1635,"Freising, GKSt",9178,9178,0.9
+1636,"Freising, GKSt",9178,9178,0.9
+1637,"Freising, GKSt",9178,9178,0.9
+1638,"Freising, GKSt",9178,9178,0.9
+1639,"Freising, GKSt",9178,9178,0.9
+1640,"Freising, GKSt",9178,9178,0.9
+1641,"Freising, GKSt",9178,9178,0.9
+1642,"Freising, GKSt",9178,9178,0.9
+1643,"Freising, GKSt",9178,9178,0.9
+1644,"Freising, GKSt",9178,9178,0.9
+1645,"Freising, GKSt",9178,9178,0.9
+1646,"Freising, GKSt",9178,9178,0.9
+1647,"Freising, GKSt",9178,9178,0.9
+1648,"Freising, GKSt",9178,9178,0.9
+1649,"Freising, GKSt",9178,9178,0.9
+1650,"Freising, GKSt",9178,9178,0.9
+1651,"Freising, GKSt",9178,9178,0.9
+1652,"Freising, GKSt",9178,9178,0.9
+1653,"Freising, GKSt",9178,9178,0.9
+1654,"Freising, GKSt",9178,9178,0.9
+1655,"Freising, GKSt",9178,9178,0.9
+1656,"Freising, GKSt",9178,9178,0.9
+1657,Hallbergmoos,9178,9178,0.9
+1658,Hallbergmoos,9178,9178,0.9
+1659,Oberding,9177,9177,0.9
+1660,Hallbergmoos,9178,9178,0.9
+1661,Hallbergmoos,9178,9178,0.9
+1662,Hallbergmoos,9178,9178,0.9
+1663,Hallbergmoos,9178,9178,0.9
+1664,Hallbergmoos,9178,9178,0.9
+1665,Hallbergmoos,9178,9178,0.9
+1666,Hallbergmoos,9178,9178,0.9
+1667,Hallbergmoos,9178,9178,0.9
+1668,Oberding,9177,9177,0.9
+1669,Moosinning,9177,9177,0.9
+1670,Oberding,9177,9177,0.9
+1671,Oberding,9177,9177,0.9
+1672,Oberding,9177,9177,0.9
+1673,Moosinning,9177,9177,0.9
+1674,"Unterschleißheim, St",9184,9184,0.9
+1675,"Unterschleißheim, St",9184,9184,0.9
+1676,"Unterschleißheim, St",9184,9184,0.9
+1677,"Unterschleißheim, St",9184,9184,0.9
+1678,"Unterschleißheim, St",9184,9184,0.9
+1679,"Unterschleißheim, St",9184,9184,0.9
+1680,"Unterschleißheim, St",9184,9184,0.9
+1681,"Unterschleißheim, St",9184,9184,0.9
+1682,"Unterschleißheim, St",9184,9184,0.9
+1683,"Unterschleißheim, St",9184,9184,0.9
+1684,"Unterschleißheim, St",9184,9184,0.9
+1685,"Unterschleißheim, St",9184,9184,0.9
+1686,"Unterschleißheim, St",9184,9184,0.9
+1687,"Unterschleißheim, St",9184,9184,0.9
+1688,"Unterschleißheim, St",9184,9184,0.9
+1689,"Unterschleißheim, St",9184,9184,0.9
+1690,"Unterschleißheim, St",9184,9184,0.9
+1691,"Unterschleißheim, St",9184,9184,0.9
+1692,"Unterschleißheim, St",9184,9184,0.9
+1693,"Unterschleißheim, St",9184,9184,0.9
+1694,"Unterschleißheim, St",9184,9184,0.9
+1695,"Unterschleißheim, St",9184,9184,0.9
+1696,"Unterschleißheim, St",9184,9184,0.9
+1697,"Unterschleißheim, St",9184,9184,0.9
+1698,"Unterschleißheim, St",9184,9184,0.9
+1699,Oberschleißheim,9184,9184,0.9
+1700,"Garching b.München, St",9184,9184,0.9
+1701,Oberschleißheim,9184,9184,0.9
+1702,Oberschleißheim,9184,9184,0.9
+1703,Oberschleißheim,9184,9184,0.9
+1704,"Unterschleißheim, St",9184,9184,0.9
+1705,Oberschleißheim,9184,9184,0.9
+1706,Oberschleißheim,9184,9184,0.9
+1707,Oberschleißheim,9184,9184,0.9
+1708,Oberschleißheim,9184,9184,0.9
+1709,Oberschleißheim,9184,9184,0.9
+1710,Oberschleißheim,9184,9184,0.9
+1711,Oberschleißheim,9184,9184,0.9
+1712,"Garching b.München, St",9184,9184,0.9
+1713,Eching,9178,9178,0.9
+1714,"Garching b.München, St",9184,9184,0.9
+1715,"Garching b.München, St",9184,9184,0.9
+1716,"Garching b.München, St",9184,9184,0.9
+1717,"Garching b.München, St",9184,9184,0.9
+1718,"Garching b.München, St",9184,9184,0.9
+1719,"Garching b.München, St",9184,9184,0.9
+1720,"Garching b.München, St",9184,9184,0.9
+1721,"Garching b.München, St",9184,9184,0.9
+1722,"Garching b.München, St",9184,9184,0.9
+1723,"Garching b.München, St",9184,9184,0.9
+1724,"Garching b.München, St",9184,9184,0.9
+1725,"Garching b.München, St",9184,9184,0.9
+1726,"Garching b.München, St",9184,9184,0.9
+1727,"Garching b.München, St",9184,9184,0.9
+1728,"Garching b.München, St",9184,9184,0.9
+1729,"Garching b.München, St",9184,9184,0.9
+1730,"Garching b.München, St",9184,9184,0.9
+1731,Ismaning,9184,9184,0.9
+1732,Ismaning,9184,9184,0.9
+1733,Ismaning,9184,9184,0.9
+1734,"München, Landeshauptstadt",9162,9162,0.9
+1735,"München, Landeshauptstadt",9162,9162,0.9
+1736,"München, Landeshauptstadt",9162,9162,0.9
+1737,"München, Landeshauptstadt",9162,9162,0.9
+1738,"München, Landeshauptstadt",9162,9162,0.9
+1739,"München, Landeshauptstadt",9162,9162,0.9
+1740,"München, Landeshauptstadt",9162,9162,0.9
+1741,"München, Landeshauptstadt",9162,9162,0.9
+1742,"München, Landeshauptstadt",9162,9162,0.9
+1743,"München, Landeshauptstadt",9162,9162,0.9
+1744,"München, Landeshauptstadt",9162,9162,0.9
+1745,"München, Landeshauptstadt",9162,9162,0.9
+1746,"München, Landeshauptstadt",9162,9162,0.9
+1747,"München, Landeshauptstadt",9162,9162,0.9
+1748,"München, Landeshauptstadt",9162,9162,0.9
+1749,"München, Landeshauptstadt",9162,9162,0.9
+1750,"München, Landeshauptstadt",9162,9162,0.9
+1751,"München, Landeshauptstadt",9162,9162,0.9
+1752,"München, Landeshauptstadt",9162,9162,0.9
+1753,"München, Landeshauptstadt",9162,9162,0.9
+1754,"München, Landeshauptstadt",9162,9162,0.9
+1755,"München, Landeshauptstadt",9162,9162,0.9
+1756,"München, Landeshauptstadt",9162,9162,0.9
+1757,"München, Landeshauptstadt",9162,9162,0.9
+1758,"München, Landeshauptstadt",9162,9162,0.9
+1759,"München, Landeshauptstadt",9162,9162,0.9
+1760,"München, Landeshauptstadt",9162,9162,0.9
+1761,"München, Landeshauptstadt",9162,9162,0.9
+1762,"München, Landeshauptstadt",9162,9162,0.9
+1763,"München, Landeshauptstadt",9162,9162,0.9
+1764,"München, Landeshauptstadt",9162,9162,0.9
+1765,"München, Landeshauptstadt",9162,9162,0.9
+1766,"München, Landeshauptstadt",9162,9162,0.9
+1767,"München, Landeshauptstadt",9162,9162,0.9
+1768,"München, Landeshauptstadt",9162,9162,0.9
+1769,"München, Landeshauptstadt",9162,9162,0.9
+1770,"München, Landeshauptstadt",9162,9162,0.9
+1771,"München, Landeshauptstadt",9162,9162,0.9
+1772,"München, Landeshauptstadt",9162,9162,0.9
+1773,"München, Landeshauptstadt",9162,9162,0.9
+1774,"München, Landeshauptstadt",9162,9162,0.9
+1775,"München, Landeshauptstadt",9162,9162,0.9
+1776,"München, Landeshauptstadt",9162,9162,0.9
+1777,"München, Landeshauptstadt",9162,9162,0.9
+1778,"München, Landeshauptstadt",9162,9162,0.9
+1779,"München, Landeshauptstadt",9162,9162,0.9
+1780,"München, Landeshauptstadt",9162,9162,0.9
+1781,"München, Landeshauptstadt",9162,9162,0.9
+1782,"München, Landeshauptstadt",9162,9162,0.9
+1783,"München, Landeshauptstadt",9162,9162,0.9
+1784,"München, Landeshauptstadt",9162,9162,0.9
+1785,"München, Landeshauptstadt",9162,9162,0.9
+1786,"München, Landeshauptstadt",9162,9162,0.9
+1787,"München, Landeshauptstadt",9162,9162,0.9
+1788,"München, Landeshauptstadt",9162,9162,0.9
+1789,"München, Landeshauptstadt",9162,9162,0.9
+1790,"München, Landeshauptstadt",9162,9162,0.9
+1791,"München, Landeshauptstadt",9162,9162,0.9
+1792,"München, Landeshauptstadt",9162,9162,0.9
+1793,"München, Landeshauptstadt",9162,9162,0.9
+1794,"München, Landeshauptstadt",9162,9162,0.9
+1795,"München, Landeshauptstadt",9162,9162,0.9
+1796,"München, Landeshauptstadt",9162,9162,0.9
+1797,"München, Landeshauptstadt",9162,9162,0.9
+1798,"München, Landeshauptstadt",9162,9162,0.9
+1799,"München, Landeshauptstadt",9162,9162,0.9
+1800,"München, Landeshauptstadt",9162,9162,0.9
+1801,"München, Landeshauptstadt",9162,9162,0.9
+1802,"München, Landeshauptstadt",9162,9162,0.9
+1803,"München, Landeshauptstadt",9162,9162,0.9
+1804,"München, Landeshauptstadt",9162,9162,0.9
+1805,"München, Landeshauptstadt",9162,9162,0.9
+1806,"München, Landeshauptstadt",9162,9162,0.9
+1807,"München, Landeshauptstadt",9162,9162,0.9
+1808,"München, Landeshauptstadt",9162,9162,0.9
+1809,"München, Landeshauptstadt",9162,9162,0.9
+1810,"München, Landeshauptstadt",9162,9162,0.9
+1811,"München, Landeshauptstadt",9162,9162,0.9
+1812,"München, Landeshauptstadt",9162,9162,0.9
+1813,"München, Landeshauptstadt",9162,9162,0.9
+1814,"München, Landeshauptstadt",9162,9162,0.9
+1815,"München, Landeshauptstadt",9162,9162,0.9
+1816,"München, Landeshauptstadt",9162,9162,0.9
+1817,"München, Landeshauptstadt",9162,9162,0.9
+1818,"München, Landeshauptstadt",9162,9162,0.9
+1819,"München, Landeshauptstadt",9162,9162,0.9
+1820,"München, Landeshauptstadt",9162,9162,0.9
+1821,"München, Landeshauptstadt",9162,9162,0.9
+1822,"München, Landeshauptstadt",9162,9162,0.9
+1823,"München, Landeshauptstadt",9162,9162,0.9
+1824,"München, Landeshauptstadt",9162,9162,0.9
+1825,"München, Landeshauptstadt",9162,9162,0.9
+1826,"München, Landeshauptstadt",9162,9162,0.9
+1827,"München, Landeshauptstadt",9162,9162,0.9
+1828,"München, Landeshauptstadt",9162,9162,0.9
+1829,"München, Landeshauptstadt",9162,9162,0.9
+1830,"München, Landeshauptstadt",9162,9162,0.9
+1831,"München, Landeshauptstadt",9162,9162,0.9
+1832,"München, Landeshauptstadt",9162,9162,0.9
+1833,"München, Landeshauptstadt",9162,9162,0.9
+1834,"München, Landeshauptstadt",9162,9162,0.9
+1835,"München, Landeshauptstadt",9162,9162,0.9
+1836,"München, Landeshauptstadt",9162,9162,0.9
+1837,"München, Landeshauptstadt",9162,9162,0.9
+1838,"München, Landeshauptstadt",9162,9162,0.9
+1839,"München, Landeshauptstadt",9162,9162,0.9
+1840,"München, Landeshauptstadt",9162,9162,0.9
+1841,"München, Landeshauptstadt",9162,9162,0.9
+1842,"München, Landeshauptstadt",9162,9162,0.9
+1843,"München, Landeshauptstadt",9162,9162,0.9
+1844,"München, Landeshauptstadt",9162,9162,0.9
+1845,"München, Landeshauptstadt",9162,9162,0.9
+1846,"München, Landeshauptstadt",9162,9162,0.9
+1847,"München, Landeshauptstadt",9162,9162,0.9
+1848,"München, Landeshauptstadt",9162,9162,0.9
+1849,"München, Landeshauptstadt",9162,9162,0.9
+1850,"München, Landeshauptstadt",9162,9162,0.9
+1851,"München, Landeshauptstadt",9162,9162,0.9
+1852,"München, Landeshauptstadt",9162,9162,0.9
+1853,"München, Landeshauptstadt",9162,9162,0.9
+1854,"München, Landeshauptstadt",9162,9162,0.9
+1855,"München, Landeshauptstadt",9162,9162,0.9
+1856,"München, Landeshauptstadt",9162,9162,0.9
+1857,"München, Landeshauptstadt",9162,9162,0.9
+1858,"München, Landeshauptstadt",9162,9162,0.9
+1859,"München, Landeshauptstadt",9162,9162,0.9
+1860,"München, Landeshauptstadt",9162,9162,0.9
+1861,"München, Landeshauptstadt",9162,9162,0.9
+1862,"München, Landeshauptstadt",9162,9162,0.9
+1863,"München, Landeshauptstadt",9162,9162,0.9
+1864,"München, Landeshauptstadt",9162,9162,0.9
+1865,"München, Landeshauptstadt",9162,9162,0.9
+1866,"München, Landeshauptstadt",9162,9162,0.9
+1867,"München, Landeshauptstadt",9162,9162,0.9
+1868,"München, Landeshauptstadt",9162,9162,0.9
+1869,"München, Landeshauptstadt",9162,9162,0.9
+1870,"München, Landeshauptstadt",9162,9162,0.9
+1871,"München, Landeshauptstadt",9162,9162,0.9
+1872,"München, Landeshauptstadt",9162,9162,0.9
+1873,"München, Landeshauptstadt",9162,9162,0.9
+1874,"München, Landeshauptstadt",9162,9162,0.9
+1875,"München, Landeshauptstadt",9162,9162,0.9
+1876,"München, Landeshauptstadt",9162,9162,0.9
+1877,"München, Landeshauptstadt",9162,9162,0.9
+1878,"München, Landeshauptstadt",9162,9162,0.9
+1879,"München, Landeshauptstadt",9162,9162,0.9
+1880,"München, Landeshauptstadt",9162,9162,0.9
+1881,"München, Landeshauptstadt",9162,9162,0.9
+1882,"München, Landeshauptstadt",9162,9162,0.9
+1883,"München, Landeshauptstadt",9162,9162,0.9
+1884,"München, Landeshauptstadt",9162,9162,0.9
+1885,"München, Landeshauptstadt",9162,9162,0.9
+1886,"München, Landeshauptstadt",9162,9162,0.9
+1887,"München, Landeshauptstadt",9162,9162,0.9
+1888,"München, Landeshauptstadt",9162,9162,0.9
+1889,"München, Landeshauptstadt",9162,9162,0.9
+1890,"München, Landeshauptstadt",9162,9162,0.9
+1891,"München, Landeshauptstadt",9162,9162,0.9
+1892,"München, Landeshauptstadt",9162,9162,0.9
+1893,"München, Landeshauptstadt",9162,9162,0.9
+1894,"München, Landeshauptstadt",9162,9162,0.9
+1895,"München, Landeshauptstadt",9162,9162,0.9
+1896,"München, Landeshauptstadt",9162,9162,0.9
+1897,"München, Landeshauptstadt",9162,9162,0.9
+1898,"München, Landeshauptstadt",9162,9162,0.9
+1899,"München, Landeshauptstadt",9162,9162,0.9
+1900,"München, Landeshauptstadt",9162,9162,0.9
+1901,"München, Landeshauptstadt",9162,9162,0.9
+1902,"München, Landeshauptstadt",9162,9162,0.9
+1903,"München, Landeshauptstadt",9162,9162,0.9
+1904,"München, Landeshauptstadt",9162,9162,0.9
+1905,"München, Landeshauptstadt",9162,9162,0.9
+1906,"München, Landeshauptstadt",9162,9162,0.9
+1907,"München, Landeshauptstadt",9162,9162,0.9
+1908,"München, Landeshauptstadt",9162,9162,0.9
+1909,"München, Landeshauptstadt",9162,9162,0.9
+1910,"München, Landeshauptstadt",9162,9162,0.9
+1911,"München, Landeshauptstadt",9162,9162,0.9
+1912,"München, Landeshauptstadt",9162,9162,0.9
+1913,"München, Landeshauptstadt",9162,9162,0.9
+1914,"München, Landeshauptstadt",9162,9162,0.9
+1915,"München, Landeshauptstadt",9162,9162,0.9
+1916,"München, Landeshauptstadt",9162,9162,0.9
+1917,"München, Landeshauptstadt",9162,9162,0.9
+1918,"München, Landeshauptstadt",9162,9162,0.9
+1919,"München, Landeshauptstadt",9162,9162,0.9
+1920,"München, Landeshauptstadt",9162,9162,0.9
+1921,"München, Landeshauptstadt",9162,9162,0.9
+1922,"München, Landeshauptstadt",9162,9162,0.9
+1923,"München, Landeshauptstadt",9162,9162,0.9
+1924,"München, Landeshauptstadt",9162,9162,0.9
+1925,"München, Landeshauptstadt",9162,9162,0.9
+1926,"München, Landeshauptstadt",9162,9162,0.9
+1927,"München, Landeshauptstadt",9162,9162,0.9
+1928,"München, Landeshauptstadt",9162,9162,0.9
+1929,"München, Landeshauptstadt",9162,9162,0.9
+1930,"München, Landeshauptstadt",9162,9162,0.9
+1931,"München, Landeshauptstadt",9162,9162,0.9
+1932,"München, Landeshauptstadt",9162,9162,0.9
+1933,"München, Landeshauptstadt",9162,9162,0.9
+1934,"München, Landeshauptstadt",9162,9162,0.9
+1935,"München, Landeshauptstadt",9162,9162,0.9
+1936,"München, Landeshauptstadt",9162,9162,0.9
+1937,"München, Landeshauptstadt",9162,9162,0.9
+1938,"München, Landeshauptstadt",9162,9162,0.9
+1939,"München, Landeshauptstadt",9162,9162,0.9
+1940,"München, Landeshauptstadt",9162,9162,0.9
+1941,"München, Landeshauptstadt",9162,9162,0.9
+1942,"München, Landeshauptstadt",9162,9162,0.9
+1943,"München, Landeshauptstadt",9162,9162,0.9
+1944,"München, Landeshauptstadt",9162,9162,0.9
+1945,"München, Landeshauptstadt",9162,9162,0.9
+1946,"München, Landeshauptstadt",9162,9162,0.9
+1947,"München, Landeshauptstadt",9162,9162,0.9
+1948,"München, Landeshauptstadt",9162,9162,0.9
+1949,"München, Landeshauptstadt",9162,9162,0.9
+1950,"München, Landeshauptstadt",9162,9162,0.9
+1951,"München, Landeshauptstadt",9162,9162,0.9
+1952,"München, Landeshauptstadt",9162,9162,0.9
+1953,"München, Landeshauptstadt",9162,9162,0.9
+1954,"München, Landeshauptstadt",9162,9162,0.9
+1955,"München, Landeshauptstadt",9162,9162,0.9
+1956,"München, Landeshauptstadt",9162,9162,0.9
+1957,Ismaning,9184,9184,0.9
+1958,Ismaning,9184,9184,0.9
+1959,Ismaning,9184,9184,0.9
+1960,Ismaning,9184,9184,0.9
+1961,Ismaning,9184,9184,0.9
+1962,Ismaning,9184,9184,0.9
+1963,Ismaning,9184,9184,0.9
+1964,Ismaning,9184,9184,0.9
+1965,Ismaning,9184,9184,0.9
+1966,"Garching b.München, St",9184,9184,0.9
+1967,Ismaning,9184,9184,0.9
+1968,Ismaning,9184,9184,0.9
+1969,Ismaning,9184,9184,0.9
+1970,Ismaning,9184,9184,0.9
+1971,Ismaning,9184,9184,0.9
+1972,Ismaning,9184,9184,0.9
+1973,Aschheim,9184,9184,0.9
+1974,"München, Landeshauptstadt",9162,9162,0.9
+1975,"München, Landeshauptstadt",9162,9162,0.9
+1976,"München, Landeshauptstadt",9162,9162,0.9
+1977,"München, Landeshauptstadt",9162,9162,0.9
+1978,"München, Landeshauptstadt",9162,9162,0.9
+1979,Unterföhring,9184,9184,0.9
+1980,Unterföhring,9184,9184,0.9
+1981,Unterföhring,9184,9184,0.9
+1982,Unterföhring,9184,9184,0.9
+1983,Unterföhring,9184,9184,0.9
+1984,Unterföhring,9184,9184,0.9
+1985,Unterföhring,9184,9184,0.9
+1986,Unterföhring,9184,9184,0.9
+1987,"München, Landeshauptstadt",9162,9162,0.9
+1988,"München, Landeshauptstadt",9162,9162,0.9
+1989,"München, Landeshauptstadt",9162,9162,0.9
+1990,Unterföhring,9184,9184,0.9
+1991,Unterföhring,9184,9184,0.9
+1992,Unterföhring,9184,9184,0.9
+1993,Unterföhring,9184,9184,0.9
+1994,Unterföhring,9184,9184,0.9
+1995,Unterföhring,9184,9184,0.9
+1996,Unterföhring,9184,9184,0.9
+1997,Unterföhring,9184,9184,0.9
+1998,Unterföhring,9184,9184,0.9
+1999,Aschheim,9184,9184,0.9
+2000,Finsing,9177,9177,0.9
+2001,Moosinning,9177,9177,0.9
+2002,Neuching,9177,9177,0.9
+2003,"Erding, St",9177,9177,0.9
+2004,Wörth,9177,9177,0.9
+2005,Pliening,9175,9175,0.9
+2006,Kirchheim b.München,9184,9184,0.9
+2007,Neuching,9177,9177,0.9
+2008,Finsing,9177,9177,0.9
+2009,Pliening,9175,9175,0.9
+2010,Pliening,9175,9175,0.9
+2011,Finsing,9177,9177,0.9
+2012,Poing,9175,9175,0.9
+2013,"Markt Schwaben, M",9175,9175,0.9
+2014,"Markt Schwaben, M",9175,9175,0.9
+2015,"Markt Schwaben, M",9175,9175,0.9
+2016,"Markt Schwaben, M",9175,9175,0.9
+2017,"Markt Schwaben, M",9175,9175,0.9
+2018,"Markt Schwaben, M",9175,9175,0.9
+2019,"Markt Schwaben, M",9175,9175,0.9
+2020,"Markt Schwaben, M",9175,9175,0.9
+2021,"Markt Schwaben, M",9175,9175,0.9
+2022,"Markt Schwaben, M",9175,9175,0.9
+2023,"Markt Schwaben, M",9175,9175,0.9
+2024,"Rottenburg a.d.Laaber, St",9274,9274,0.9
+2025,"Rottenburg a.d.Laaber, St",9274,9274,0.9
+2026,"Rottenburg a.d.Laaber, St",9274,9274,0.9
+2027,"Pfeffenhausen, M",9274,9274,0.9
+2028,"Rottenburg a.d.Laaber, St",9274,9274,0.9
+2029,"Pfeffenhausen, M",9274,9274,0.9
+2030,Hohenthann,9274,9274,0.9
+2031,Weihmichl,9274,9274,0.9
+2032,Elsendorf,9273,9273,0.9
+2033,Neufahrn i.NB,9274,9274,0.9
+2034,Neufahrn i.NB,9274,9274,0.9
+2035,"Ergoldsbach, M",9274,9274,0.9
+2036,Hohenthann,9274,9274,0.9
+2037,Hohenthann,9274,9274,0.9
+2038,"Rottenburg a.d.Laaber, St",9274,9274,0.9
+2039,"Ergoldsbach, M",9274,9274,0.9
+2040,"Ergoldsbach, M",9274,9274,0.9
+2041,"Ergoldsbach, M",9274,9274,0.9
+2042,"Ergoldsbach, M",9274,9274,0.9
+2043,Bayerbach b.Ergoldsbach,9274,9274,0.9
+2044,"Dingolfing, St",9279,9279,0.9
+2045,"Dingolfing, St",9279,9279,0.9
+2046,"Dingolfing, St",9279,9279,0.9
+2047,"Dingolfing, St",9279,9279,0.9
+2048,"Dingolfing, St",9279,9279,0.9
+2049,"Dingolfing, St",9279,9279,0.9
+2050,Weng,9274,9274,0.9
+2051,"Dingolfing, St",9279,9279,0.9
+2052,"Dingolfing, St",9279,9279,0.9
+2053,"Dingolfing, St",9279,9279,0.9
+2054,"Dingolfing, St",9279,9279,0.9
+2055,"Dingolfing, St",9279,9279,0.9
+2056,"Dingolfing, St",9279,9279,0.9
+2057,"Dingolfing, St",9279,9279,0.9
+2058,"Dingolfing, St",9279,9279,0.9
+2059,"Dingolfing, St",9279,9279,0.9
+2060,"Dingolfing, St",9279,9279,0.9
+2061,"Dingolfing, St",9279,9279,0.9
+2062,"Dingolfing, St",9279,9279,0.9
+2063,"Dingolfing, St",9279,9279,0.9
+2064,"Dingolfing, St",9279,9279,0.9
+2065,"Dingolfing, St",9279,9279,0.9
+2066,"Dingolfing, St",9279,9279,0.9
+2067,Furth,9274,9274,0.9
+2068,Obersüßbach,9274,9274,0.9
+2069,Furth,9274,9274,0.9
+2070,Weihmichl,9274,9274,0.9
+2071,"Pfeffenhausen, M",9274,9274,0.9
+2072,Gammelsdorf,9178,9178,0.9
+2073,Hörgertshausen,9178,9178,0.9
+2074,Mauern,9178,9178,0.9
+2075,Bruckberg,9274,9274,0.9
+2076,"Altdorf, M",9274,9274,0.9
+2077,Furth,9274,9274,0.9
+2078,"Ergolding, M",9274,9274,0.9
+2079,"Essenbach, M",9274,9274,0.9
+2080,"Essenbach, M",9274,9274,0.9
+2081,"Essenbach, M",9274,9274,0.9
+2082,"Essenbach, M",9274,9274,0.9
+2083,"Essenbach, M",9274,9274,0.9
+2084,"Essenbach, M",9274,9274,0.9
+2085,"Altdorf, M",9274,9274,0.9
+2086,"Altdorf, M",9274,9274,0.9
+2087,"Altdorf, M",9274,9274,0.9
+2088,"Altdorf, M",9274,9274,0.9
+2089,"Altdorf, M",9274,9274,0.9
+2090,Landshut,9261,9261,0.9
+2091,Landshut,9261,9261,0.9
+2092,Landshut,9261,9261,0.9
+2093,Landshut,9261,9261,0.9
+2094,Landshut,9261,9261,0.9
+2095,Landshut,9261,9261,0.9
+2096,Bruckberg,9274,9274,0.9
+2097,"Altdorf, M",9274,9274,0.9
+2098,Landshut,9261,9261,0.9
+2099,"Altdorf, M",9274,9274,0.9
+2100,"Altdorf, M",9274,9274,0.9
+2101,Landshut,9261,9261,0.9
+2102,Landshut,9261,9261,0.9
+2103,Landshut,9261,9261,0.9
+2104,Landshut,9261,9261,0.9
+2105,Landshut,9261,9261,0.9
+2106,Landshut,9261,9261,0.9
+2107,Landshut,9261,9261,0.9
+2108,Landshut,9261,9261,0.9
+2109,Landshut,9261,9261,0.9
+2110,"Ergolding, M",9274,9274,0.9
+2111,"Ergolding, M",9274,9274,0.9
+2112,"Ergolding, M",9274,9274,0.9
+2113,"Ergolding, M",9274,9274,0.9
+2114,"Ergolding, M",9274,9274,0.9
+2115,"Ergolding, M",9274,9274,0.9
+2116,"Ergolding, M",9274,9274,0.9
+2117,"Ergolding, M",9274,9274,0.9
+2118,"Ergolding, M",9274,9274,0.9
+2119,Landshut,9261,9261,0.9
+2120,Landshut,9261,9261,0.9
+2121,Landshut,9261,9261,0.9
+2122,Landshut,9261,9261,0.9
+2123,Landshut,9261,9261,0.9
+2124,"Ergolding, M",9274,9274,0.9
+2125,Landshut,9261,9261,0.9
+2126,Landshut,9261,9261,0.9
+2127,Landshut,9261,9261,0.9
+2128,Landshut,9261,9261,0.9
+2129,Landshut,9261,9261,0.9
+2130,Landshut,9261,9261,0.9
+2131,Landshut,9261,9261,0.9
+2132,Landshut,9261,9261,0.9
+2133,Landshut,9261,9261,0.9
+2134,Landshut,9261,9261,0.9
+2135,Landshut,9261,9261,0.9
+2136,Landshut,9261,9261,0.9
+2137,Landshut,9261,9261,0.9
+2138,Landshut,9261,9261,0.9
+2139,Landshut,9261,9261,0.9
+2140,Landshut,9261,9261,0.9
+2141,Landshut,9261,9261,0.9
+2142,Landshut,9261,9261,0.9
+2143,"Ergolding, M",9274,9274,0.9
+2144,Landshut,9261,9261,0.9
+2145,Landshut,9261,9261,0.9
+2146,"Ergolding, M",9274,9274,0.9
+2147,Landshut,9261,9261,0.9
+2148,Landshut,9261,9261,0.9
+2149,Landshut,9261,9261,0.9
+2150,Landshut,9261,9261,0.9
+2151,Landshut,9261,9261,0.9
+2152,Landshut,9261,9261,0.9
+2153,Landshut,9261,9261,0.9
+2154,Landshut,9261,9261,0.9
+2155,Landshut,9261,9261,0.9
+2156,Landshut,9261,9261,0.9
+2157,Landshut,9261,9261,0.9
+2158,Landshut,9261,9261,0.9
+2159,Landshut,9261,9261,0.9
+2160,Landshut,9261,9261,0.9
+2161,Landshut,9261,9261,0.9
+2162,Landshut,9261,9261,0.9
+2163,Landshut,9261,9261,0.9
+2164,Landshut,9261,9261,0.9
+2165,Landshut,9261,9261,0.9
+2166,Landshut,9261,9261,0.9
+2167,Landshut,9261,9261,0.9
+2168,Landshut,9261,9261,0.9
+2169,Landshut,9261,9261,0.9
+2170,Landshut,9261,9261,0.9
+2171,Landshut,9261,9261,0.9
+2172,Adlkofen,9274,9274,0.9
+2173,Mauern,9178,9178,0.9
+2174,Wang,9178,9178,0.9
+2175,"Moosburg a.d.Isar, St",9178,9178,0.9
+2176,"Moosburg a.d.Isar, St",9178,9178,0.9
+2177,"Moosburg a.d.Isar, St",9178,9178,0.9
+2178,"Moosburg a.d.Isar, St",9178,9178,0.9
+2179,"Moosburg a.d.Isar, St",9178,9178,0.9
+2180,"Moosburg a.d.Isar, St",9178,9178,0.9
+2181,"Moosburg a.d.Isar, St",9178,9178,0.9
+2182,"Moosburg a.d.Isar, St",9178,9178,0.9
+2183,"Moosburg a.d.Isar, St",9178,9178,0.9
+2184,"Moosburg a.d.Isar, St",9178,9178,0.9
+2185,"Moosburg a.d.Isar, St",9178,9178,0.9
+2186,"Moosburg a.d.Isar, St",9178,9178,0.9
+2187,Bruckberg,9274,9274,0.9
+2188,Bruckberg,9274,9274,0.9
+2189,Eching_MALO,9274,9274,0.9
+2190,Eching_MALO,9274,9274,0.9
+2191,"Moosburg a.d.Isar, St",9178,9178,0.9
+2192,"Moosburg a.d.Isar, St",9178,9178,0.9
+2193,"Moosburg a.d.Isar, St",9178,9178,0.9
+2194,"Moosburg a.d.Isar, St",9178,9178,0.9
+2195,"Moosburg a.d.Isar, St",9178,9178,0.9
+2196,"Moosburg a.d.Isar, St",9178,9178,0.9
+2197,"Moosburg a.d.Isar, St",9178,9178,0.9
+2198,Langenpreising,9177,9177,0.9
+2199,"Moosburg a.d.Isar, St",9178,9178,0.9
+2200,Langenpreising,9177,9177,0.9
+2201,Haag a.d.Amper,9178,9178,0.9
+2202,Buch a.Erlbach,9274,9274,0.9
+2203,"Wartenberg, M",9177,9177,0.9
+2204,Tiefenbach,9274,9274,0.9
+2205,Vilsheim,9274,9274,0.9
+2206,Kumhausen,9274,9274,0.9
+2207,Eching_MALO,9274,9274,0.9
+2208,Landshut,9261,9261,0.9
+2209,Landshut,9261,9261,0.9
+2210,Tiefenbach,9274,9274,0.9
+2211,Kumhausen,9274,9274,0.9
+2212,Altfraunhofen,9274,9274,0.9
+2213,Vilsheim,9274,9274,0.9
+2214,Kirchberg,9177,9177,0.9
+2215,Buch a.Erlbach,9274,9274,0.9
+2216,"Essenbach, M",9274,9274,0.9
+2217,"Essenbach, M",9274,9274,0.9
+2218,Niederaichbach,9274,9274,0.9
+2219,Wörth a.d.Isar,9274,9274,0.9
+2220,Wörth a.d.Isar,9274,9274,0.9
+2221,Postau,9274,9274,0.9
+2222,Adlkofen,9274,9274,0.9
+2223,Landshut,9261,9261,0.9
+2224,Landshut,9261,9261,0.9
+2225,Niederaichbach,9274,9274,0.9
+2226,Kumhausen,9274,9274,0.9
+2227,Kröning,9274,9274,0.9
+2228,Adlkofen,9274,9274,0.9
+2229,Loiching,9279,9279,0.9
+2230,"Dingolfing, St",9279,9279,0.9
+2231,"Dingolfing, St",9279,9279,0.9
+2232,Loiching,9279,9279,0.9
+2233,Niederviehbach,9279,9279,0.9
+2234,"Dingolfing, St",9279,9279,0.9
+2235,"Dingolfing, St",9279,9279,0.9
+2236,"Dingolfing, St",9279,9279,0.9
+2237,"Dingolfing, St",9279,9279,0.9
+2238,"Dingolfing, St",9279,9279,0.9
+2239,"Dingolfing, St",9279,9279,0.9
+2240,"Dingolfing, St",9279,9279,0.9
+2241,"Dingolfing, St",9279,9279,0.9
+2242,"Dingolfing, St",9279,9279,0.9
+2243,"Dingolfing, St",9279,9279,0.9
+2244,"Dingolfing, St",9279,9279,0.9
+2245,"Dingolfing, St",9279,9279,0.9
+2246,"Dingolfing, St",9279,9279,0.9
+2247,"Dingolfing, St",9279,9279,0.9
+2248,"Dingolfing, St",9279,9279,0.9
+2249,"Dingolfing, St",9279,9279,0.9
+2250,Aham,9274,9274,0.9
+2251,"Dingolfing, St",9279,9279,0.9
+2252,Niederviehbach,9279,9279,0.9
+2253,"Geisenhausen, M",9274,9274,0.9
+2254,"Geisenhausen, M",9274,9274,0.9
+2255,"Geisenhausen, M",9274,9274,0.9
+2256,"Geisenhausen, M",9274,9274,0.9
+2257,Schalkham,9274,9274,0.9
+2258,"Vilsbiburg, St",9274,9274,0.9
+2259,"Vilsbiburg, St",9274,9274,0.9
+2260,"Vilsbiburg, St",9274,9274,0.9
+2261,"Vilsbiburg, St",9274,9274,0.9
+2262,"Vilsbiburg, St",9274,9274,0.9
+2263,"Vilsbiburg, St",9274,9274,0.9
+2264,"Vilsbiburg, St",9274,9274,0.9
+2265,"Vilsbiburg, St",9274,9274,0.9
+2266,"Vilsbiburg, St",9274,9274,0.9
+2267,"Vilsbiburg, St",9274,9274,0.9
+2268,"Vilsbiburg, St",9274,9274,0.9
+2269,"Vilsbiburg, St",9274,9274,0.9
+2270,Baierbach,9274,9274,0.9
+2271,Gerzen,9274,9274,0.9
+2272,Bodenkirchen,9274,9274,0.9
+2273,Bodenkirchen,9274,9274,0.9
+2274,Bodenkirchen,9274,9274,0.9
+2275,Berglern,9177,9177,0.9
+2276,Eitting,9177,9177,0.9
+2277,Eitting,9177,9177,0.9
+2278,Berglern,9177,9177,0.9
+2279,"Wartenberg, M",9177,9177,0.9
+2280,"Wartenberg, M",9177,9177,0.9
+2281,"Wartenberg, M",9177,9177,0.9
+2282,"Wartenberg, M",9177,9177,0.9
+2283,Langenpreising,9177,9177,0.9
+2284,Fraunberg,9177,9177,0.9
+2285,"Erding, St",9177,9177,0.9
+2286,"Erding, St",9177,9177,0.9
+2287,"Erding, St",9177,9177,0.9
+2288,"Erding, St",9177,9177,0.9
+2289,"Erding, St",9177,9177,0.9
+2290,"Erding, St",9177,9177,0.9
+2291,"Erding, St",9177,9177,0.9
+2292,"Erding, St",9177,9177,0.9
+2293,"Erding, St",9177,9177,0.9
+2294,"Erding, St",9177,9177,0.9
+2295,"Erding, St",9177,9177,0.9
+2296,"Erding, St",9177,9177,0.9
+2297,"Erding, St",9177,9177,0.9
+2298,"Erding, St",9177,9177,0.9
+2299,"Erding, St",9177,9177,0.9
+2300,"Erding, St",9177,9177,0.9
+2301,"Erding, St",9177,9177,0.9
+2302,"Erding, St",9177,9177,0.9
+2303,"Erding, St",9177,9177,0.9
+2304,"Erding, St",9177,9177,0.9
+2305,"Erding, St",9177,9177,0.9
+2306,"Erding, St",9177,9177,0.9
+2307,"Erding, St",9177,9177,0.9
+2308,"Erding, St",9177,9177,0.9
+2309,"Erding, St",9177,9177,0.9
+2310,"Erding, St",9177,9177,0.9
+2311,"Erding, St",9177,9177,0.9
+2312,"Erding, St",9177,9177,0.9
+2313,"Erding, St",9177,9177,0.9
+2314,"Erding, St",9177,9177,0.9
+2315,Bockhorn,9177,9177,0.9
+2316,"Erding, St",9177,9177,0.9
+2317,Bockhorn,9177,9177,0.9
+2318,Fraunberg,9177,9177,0.9
+2319,Bockhorn,9177,9177,0.9
+2320,Hohenpolding,9177,9177,0.9
+2321,Inning a.Holz,9177,9177,0.9
+2322,Steinkirchen,9177,9177,0.9
+2323,Neufraunhofen,9274,9274,0.9
+2324,Taufkirchen (Vils),9177,9177,0.9
+2325,Taufkirchen (Vils),9177,9177,0.9
+2326,Taufkirchen (Vils),9177,9177,0.9
+2327,Taufkirchen (Vils),9177,9177,0.9
+2328,Taufkirchen (Vils),9177,9177,0.9
+2329,Taufkirchen (Vils),9177,9177,0.9
+2330,"Dorfen, St",9177,9177,0.9
+2331,"Erding, St",9177,9177,0.9
+2332,"Erding, St",9177,9177,0.9
+2333,"Erding, St",9177,9177,0.9
+2334,"Erding, St",9177,9177,0.9
+2335,"Erding, St",9177,9177,0.9
+2336,"Erding, St",9177,9177,0.9
+2337,"Erding, St",9177,9177,0.9
+2338,"Erding, St",9177,9177,0.9
+2339,Wörth,9177,9177,0.9
+2340,Walpertskirchen,9177,9177,0.9
+2341,"Erding, St",9177,9177,0.9
+2342,Lengdorf,9177,9177,0.9
+2343,Pastetten,9177,9177,0.9
+2344,Ottenhofen,9177,9177,0.9
+2345,Forstern,9177,9177,0.9
+2346,Forstern,9177,9177,0.9
+2347,Pastetten,9177,9177,0.9
+2348,Buch a.Buchrain,9177,9177,0.9
+2349,Sankt Wolfgang,9177,9177,0.9
+2350,Lengdorf,9177,9177,0.9
+2351,"Dorfen, St",9177,9177,0.9
+2352,"Dorfen, St",9177,9177,0.9
+2353,"Dorfen, St",9177,9177,0.9
+2354,"Dorfen, St",9177,9177,0.9
+2355,"Dorfen, St",9177,9177,0.9
+2356,"Dorfen, St",9177,9177,0.9
+2357,"Dorfen, St",9177,9177,0.9
+2358,"Dorfen, St",9177,9177,0.9
+2359,"Dorfen, St",9177,9177,0.9
+2360,"Dorfen, St",9177,9177,0.9
+2361,"Dorfen, St",9177,9177,0.9
+2362,"Dorfen, St",9177,9177,0.9
+2363,"Dorfen, St",9177,9177,0.9
+2364,Sankt Wolfgang,9177,9177,0.9
+2365,"Isen, M",9177,9177,0.9
+2366,"Isen, M",9177,9177,0.9
+2367,"Isen, M",9177,9177,0.9
+2368,Kirchdorf,9183,9183,0.9
+2369,"Haag i.OB, M",9183,9183,0.9
+2370,Sankt Wolfgang,9177,9177,0.9
+2371,"Velden, M",9274,9274,0.9
+2372,"Velden, M",9274,9274,0.9
+2373,"Velden, M",9274,9274,0.9
+2374,Taufkirchen (Vils),9177,9177,0.9
+2375,Bodenkirchen,9274,9274,0.9
+2376,Wurmsham,9274,9274,0.9
+2377,"Vilsbiburg, St",9274,9274,0.9
+2378,"Velden, M",9274,9274,0.9
+2379,Langerringen,9772,9772,0.9
+2380,Langerringen,9772,9772,0.9
+2381,"Schwabmünchen, St",9772,9772,0.9
+2382,Untermeitingen,9772,9772,0.9
+2383,Untermeitingen,9772,9772,0.9
+2384,Untermeitingen,9772,9772,0.9
+2385,Obermeitingen,9181,9181,0.9
+2386,Klosterlechfeld,9772,9772,0.9
+2387,Igling,9181,9181,0.9
+2388,"Landsberg am Lech, GKSt",9181,9181,0.9
+2389,Igling,9181,9181,0.9
+2390,Klosterlechfeld,9772,9772,0.9
+2391,Scheuring,9181,9181,0.9
+2392,Penzing,9181,9181,0.9
+2393,Weil,9181,9181,0.9
+2394,Weil,9181,9181,0.9
+2395,Egling a.d.Paar,9181,9181,0.9
+2396,Prittriching,9181,9181,0.9
+2397,"Kaufering, M",9181,9181,0.9
+2398,"Kaufering, M",9181,9181,0.9
+2399,"Kaufering, M",9181,9181,0.9
+2400,"Kaufering, M",9181,9181,0.9
+2401,"Kaufering, M",9181,9181,0.9
+2402,"Kaufering, M",9181,9181,0.9
+2403,"Kaufering, M",9181,9181,0.9
+2404,"Kaufering, M",9181,9181,0.9
+2405,Hurlach,9181,9181,0.9
+2406,"Kaufering, M",9181,9181,0.9
+2407,"Landsberg am Lech, GKSt",9181,9181,0.9
+2408,"Landsberg am Lech, GKSt",9181,9181,0.9
+2409,"Landsberg am Lech, GKSt",9181,9181,0.9
+2410,"Landsberg am Lech, GKSt",9181,9181,0.9
+2411,"Landsberg am Lech, GKSt",9181,9181,0.9
+2412,"Landsberg am Lech, GKSt",9181,9181,0.9
+2413,"Landsberg am Lech, GKSt",9181,9181,0.9
+2414,"Landsberg am Lech, GKSt",9181,9181,0.9
+2415,"Landsberg am Lech, GKSt",9181,9181,0.9
+2416,"Landsberg am Lech, GKSt",9181,9181,0.9
+2417,Schwifting,9181,9181,0.9
+2418,Penzing,9181,9181,0.9
+2419,Windach,9181,9181,0.9
+2420,Geltendorf,9181,9181,0.9
+2421,Moorenweis,9179,9179,0.9
+2422,Moorenweis,9179,9179,0.9
+2423,Geltendorf,9181,9181,0.9
+2424,Geltendorf,9181,9181,0.9
+2425,Grafrath,9179,9179,0.9
+2426,Kottgeisering,9179,9179,0.9
+2427,Grafrath,9179,9179,0.9
+2428,Jesenwang,9179,9179,0.9
+2429,Geltendorf,9181,9181,0.9
+2430,Eresing,9181,9181,0.9
+2431,Türkenfeld,9179,9179,0.9
+2432,Türkenfeld,9179,9179,0.9
+2433,Greifenberg,9181,9181,0.9
+2434,Greifenberg,9181,9181,0.9
+2435,Greifenberg,9181,9181,0.9
+2436,Schondorf am Ammersee,9181,9181,0.9
+2437,Inning a.Ammersee,9188,9188,0.9
+2438,Eching am Ammersee,9181,9181,0.9
+2439,Inning a.Ammersee,9188,9188,0.9
+2440,Inning a.Ammersee,9188,9188,0.9
+2441,Wörthsee,9188,9188,0.9
+2442,Wörthsee,9188,9188,0.9
+2443,"Landsberg am Lech, GKSt",9181,9181,0.9
+2444,"Landsberg am Lech, GKSt",9181,9181,0.9
+2445,"Landsberg am Lech, GKSt",9181,9181,0.9
+2446,"Landsberg am Lech, GKSt",9181,9181,0.9
+2447,"Landsberg am Lech, GKSt",9181,9181,0.9
+2448,"Landsberg am Lech, GKSt",9181,9181,0.9
+2449,"Landsberg am Lech, GKSt",9181,9181,0.9
+2450,"Landsberg am Lech, GKSt",9181,9181,0.9
+2451,"Landsberg am Lech, GKSt",9181,9181,0.9
+2452,"Landsberg am Lech, GKSt",9181,9181,0.9
+2453,"Landsberg am Lech, GKSt",9181,9181,0.9
+2454,"Landsberg am Lech, GKSt",9181,9181,0.9
+2455,"Landsberg am Lech, GKSt",9181,9181,0.9
+2456,"Landsberg am Lech, GKSt",9181,9181,0.9
+2457,"Landsberg am Lech, GKSt",9181,9181,0.9
+2458,"Landsberg am Lech, GKSt",9181,9181,0.9
+2459,"Landsberg am Lech, GKSt",9181,9181,0.9
+2460,"Landsberg am Lech, GKSt",9181,9181,0.9
+2461,"Landsberg am Lech, GKSt",9181,9181,0.9
+2462,"Landsberg am Lech, GKSt",9181,9181,0.9
+2463,"Landsberg am Lech, GKSt",9181,9181,0.9
+2464,"Landsberg am Lech, GKSt",9181,9181,0.9
+2465,"Landsberg am Lech, GKSt",9181,9181,0.9
+2466,"Landsberg am Lech, GKSt",9181,9181,0.9
+2467,"Landsberg am Lech, GKSt",9181,9181,0.9
+2468,"Landsberg am Lech, GKSt",9181,9181,0.9
+2469,"Landsberg am Lech, GKSt",9181,9181,0.9
+2470,"Landsberg am Lech, GKSt",9181,9181,0.9
+2471,"Landsberg am Lech, GKSt",9181,9181,0.9
+2472,Pürgen,9181,9181,0.9
+2473,Pürgen,9181,9181,0.9
+2474,Finning,9181,9181,0.9
+2475,Thaining,9181,9181,0.9
+2476,Hofstetten,9181,9181,0.9
+2477,"Dießen am Ammersee, M",9181,9181,0.9
+2478,Utting am Ammersee,9181,9181,0.9
+2479,Windach,9181,9181,0.9
+2480,Schondorf am Ammersee,9181,9181,0.9
+2481,Utting am Ammersee,9181,9181,0.9
+2482,Utting am Ammersee,9181,9181,0.9
+2484,Herrsching a.Ammersee,9188,9188,0.9
+2485,Herrsching a.Ammersee,9188,9188,0.9
+2486,"Dießen am Ammersee, M",9181,9181,0.9
+2487,"Dießen am Ammersee, M",9181,9181,0.9
+2488,"Dießen am Ammersee, M",9181,9181,0.9
+2489,"Dießen am Ammersee, M",9181,9181,0.9
+2490,"Dießen am Ammersee, M",9181,9181,0.9
+2491,"Dießen am Ammersee, M",9181,9181,0.9
+2492,Herrsching a.Ammersee,9188,9188,0.9
+2493,Andechs,9188,9188,0.9
+2494,Herrsching a.Ammersee,9188,9188,0.9
+2495,Andechs,9188,9188,0.9
+2496,Herrsching a.Ammersee,9188,9188,0.9
+2497,Tutzing,9188,9188,0.9
+2498,Pähl,9190,9190,0.9
+2499,Raisting,9190,9190,0.9
+2500,Wielenbach,9190,9190,0.9
+2501,"Weilheim i.OB, St",9190,9190,0.9
+2502,"Weilheim i.OB, St",9190,9190,0.9
+2503,"Weilheim i.OB, St",9190,9190,0.9
+2504,"Weilheim i.OB, St",9190,9190,0.9
+2505,"Weilheim i.OB, St",9190,9190,0.9
+2506,"Weilheim i.OB, St",9190,9190,0.9
+2507,"Weilheim i.OB, St",9190,9190,0.9
+2508,"Weilheim i.OB, St",9190,9190,0.9
+2509,"Weilheim i.OB, St",9190,9190,0.9
+2510,"Weilheim i.OB, St",9190,9190,0.9
+2511,"Weilheim i.OB, St",9190,9190,0.9
+2512,"Weilheim i.OB, St",9190,9190,0.9
+2513,"Weilheim i.OB, St",9190,9190,0.9
+2514,"Weilheim i.OB, St",9190,9190,0.9
+2515,"Weilheim i.OB, St",9190,9190,0.9
+2516,"Weilheim i.OB, St",9190,9190,0.9
+2517,"Weilheim i.OB, St",9190,9190,0.9
+2518,"Weilheim i.OB, St",9190,9190,0.9
+2519,"Weilheim i.OB, St",9190,9190,0.9
+2520,"Weilheim i.OB, St",9190,9190,0.9
+2521,"Weilheim i.OB, St",9190,9190,0.9
+2522,"Weilheim i.OB, St",9190,9190,0.9
+2523,"Weilheim i.OB, St",9190,9190,0.9
+2524,"Weilheim i.OB, St",9190,9190,0.9
+2525,"Weilheim i.OB, St",9190,9190,0.9
+2526,"Weilheim i.OB, St",9190,9190,0.9
+2527,"Weilheim i.OB, St",9190,9190,0.9
+2528,"Weilheim i.OB, St",9190,9190,0.9
+2529,"Weilheim i.OB, St",9190,9190,0.9
+2530,Raisting,9190,9190,0.9
+2531,Wielenbach,9190,9190,0.9
+2532,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2533,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2534,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2535,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2536,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2537,Alling,9179,9179,0.9
+2538,Landsberied,9179,9179,0.9
+2539,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2540,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2541,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2542,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2543,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2544,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2545,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2546,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2547,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2548,"Fürstenfeldbruck, GKSt",9179,9179,0.9
+2549,Eichenau,9179,9179,0.9
+2550,Eichenau,9179,9179,0.9
+2551,Eichenau,9179,9179,0.9
+2552,Eichenau,9179,9179,0.9
+2553,Eichenau,9179,9179,0.9
+2554,Eichenau,9179,9179,0.9
+2555,Eichenau,9179,9179,0.9
+2556,Eichenau,9179,9179,0.9
+2557,"Puchheim, St",9179,9179,0.9
+2558,"Puchheim, St",9179,9179,0.9
+2559,"Puchheim, St",9179,9179,0.9
+2560,"Puchheim, St",9179,9179,0.9
+2561,"Puchheim, St",9179,9179,0.9
+2562,"Puchheim, St",9179,9179,0.9
+2563,"Puchheim, St",9179,9179,0.9
+2564,"Puchheim, St",9179,9179,0.9
+2565,"Germering, GKSt",9179,9179,0.9
+2566,"Germering, GKSt",9179,9179,0.9
+2567,"Germering, GKSt",9179,9179,0.9
+2568,"Germering, GKSt",9179,9179,0.9
+2569,"Germering, GKSt",9179,9179,0.9
+2570,"Germering, GKSt",9179,9179,0.9
+2571,"Germering, GKSt",9179,9179,0.9
+2572,Alling,9179,9179,0.9
+2573,Weßling,9188,9188,0.9
+2574,Weßling,9188,9188,0.9
+2575,Weßling,9188,9188,0.9
+2576,Weßling,9188,9188,0.9
+2577,Schöngeising,9179,9179,0.9
+2578,Gilching,9188,9188,0.9
+2579,Gilching,9188,9188,0.9
+2580,Gilching,9188,9188,0.9
+2581,Gilching,9188,9188,0.9
+2582,Gilching,9188,9188,0.9
+2583,Gilching,9188,9188,0.9
+2584,Gilching,9188,9188,0.9
+2585,Gilching,9188,9188,0.9
+2586,Gilching,9188,9188,0.9
+2587,Gilching,9188,9188,0.9
+2588,Gilching,9188,9188,0.9
+2589,Gilching,9188,9188,0.9
+2590,Gilching,9188,9188,0.9
+2591,Gilching,9188,9188,0.9
+2592,Gilching,9188,9188,0.9
+2593,Gilching,9188,9188,0.9
+2594,Gilching,9188,9188,0.9
+2595,Gilching,9188,9188,0.9
+2596,Gauting,9188,9188,0.9
+2597,"Germering, GKSt",9179,9179,0.9
+2598,Weßling,9188,9188,0.9
+2599,Krailling,9188,9188,0.9
+2600,"Puchheim, St",9179,9179,0.9
+2601,"München, Landeshauptstadt",9162,9162,0.9
+2602,"München, Landeshauptstadt",9162,9162,0.9
+2603,"München, Landeshauptstadt",9162,9162,0.9
+2604,"München, Landeshauptstadt",9162,9162,0.9
+2605,"München, Landeshauptstadt",9162,9162,0.9
+2606,"München, Landeshauptstadt",9162,9162,0.9
+2607,"München, Landeshauptstadt",9162,9162,0.9
+2608,"München, Landeshauptstadt",9162,9162,0.9
+2609,"München, Landeshauptstadt",9162,9162,0.9
+2610,"München, Landeshauptstadt",9162,9162,0.9
+2611,"München, Landeshauptstadt",9162,9162,0.9
+2612,"München, Landeshauptstadt",9162,9162,0.9
+2613,"München, Landeshauptstadt",9162,9162,0.9
+2614,"München, Landeshauptstadt",9162,9162,0.9
+2615,"München, Landeshauptstadt",9162,9162,0.9
+2616,"München, Landeshauptstadt",9162,9162,0.9
+2617,"München, Landeshauptstadt",9162,9162,0.9
+2618,"München, Landeshauptstadt",9162,9162,0.9
+2619,"München, Landeshauptstadt",9162,9162,0.9
+2620,"München, Landeshauptstadt",9162,9162,0.9
+2621,"München, Landeshauptstadt",9162,9162,0.9
+2622,"München, Landeshauptstadt",9162,9162,0.9
+2623,"München, Landeshauptstadt",9162,9162,0.9
+2624,"München, Landeshauptstadt",9162,9162,0.9
+2625,"München, Landeshauptstadt",9162,9162,0.9
+2626,"München, Landeshauptstadt",9162,9162,0.9
+2627,"München, Landeshauptstadt",9162,9162,0.9
+2628,"München, Landeshauptstadt",9162,9162,0.9
+2629,"München, Landeshauptstadt",9162,9162,0.9
+2630,"München, Landeshauptstadt",9162,9162,0.9
+2631,"München, Landeshauptstadt",9162,9162,0.9
+2632,"München, Landeshauptstadt",9162,9162,0.9
+2633,"München, Landeshauptstadt",9162,9162,0.9
+2634,"München, Landeshauptstadt",9162,9162,0.9
+2635,"München, Landeshauptstadt",9162,9162,0.9
+2636,"München, Landeshauptstadt",9162,9162,0.9
+2637,"München, Landeshauptstadt",9162,9162,0.9
+2638,"München, Landeshauptstadt",9162,9162,0.9
+2639,"München, Landeshauptstadt",9162,9162,0.9
+2640,"München, Landeshauptstadt",9162,9162,0.9
+2641,"München, Landeshauptstadt",9162,9162,0.9
+2642,"München, Landeshauptstadt",9162,9162,0.9
+2643,"Germering, GKSt",9179,9179,0.9
+2644,"Germering, GKSt",9179,9179,0.9
+2645,"Germering, GKSt",9179,9179,0.9
+2646,"Germering, GKSt",9179,9179,0.9
+2647,"Germering, GKSt",9179,9179,0.9
+2648,"Germering, GKSt",9179,9179,0.9
+2649,"Germering, GKSt",9179,9179,0.9
+2650,"München, Landeshauptstadt",9162,9162,0.9
+2651,"Germering, GKSt",9179,9179,0.9
+2652,"Germering, GKSt",9179,9179,0.9
+2653,"München, Landeshauptstadt",9162,9162,0.9
+2654,"Germering, GKSt",9179,9179,0.9
+2655,"Germering, GKSt",9179,9179,0.9
+2656,"Germering, GKSt",9179,9179,0.9
+2657,"Germering, GKSt",9179,9179,0.9
+2658,"Germering, GKSt",9179,9179,0.9
+2659,"Germering, GKSt",9179,9179,0.9
+2660,"Germering, GKSt",9179,9179,0.9
+2661,"Germering, GKSt",9179,9179,0.9
+2662,"Germering, GKSt",9179,9179,0.9
+2663,"Germering, GKSt",9179,9179,0.9
+2664,"Germering, GKSt",9179,9179,0.9
+2665,"Germering, GKSt",9179,9179,0.9
+2666,"Germering, GKSt",9179,9179,0.9
+2667,Gräfelfing,9184,9184,0.9
+2668,"München, Landeshauptstadt",9162,9162,0.9
+2669,"München, Landeshauptstadt",9162,9162,0.9
+2670,"München, Landeshauptstadt",9162,9162,0.9
+2671,"München, Landeshauptstadt",9162,9162,0.9
+2672,"München, Landeshauptstadt",9162,9162,0.9
+2673,"München, Landeshauptstadt",9162,9162,0.9
+2674,"München, Landeshauptstadt",9162,9162,0.9
+2675,"München, Landeshauptstadt",9162,9162,0.9
+2676,"München, Landeshauptstadt",9162,9162,0.9
+2677,"München, Landeshauptstadt",9162,9162,0.9
+2678,"München, Landeshauptstadt",9162,9162,0.9
+2679,"München, Landeshauptstadt",9162,9162,0.9
+2680,"München, Landeshauptstadt",9162,9162,0.9
+2681,"München, Landeshauptstadt",9162,9162,0.9
+2682,Gräfelfing,9184,9184,0.9
+2683,Gräfelfing,9184,9184,0.9
+2684,Gräfelfing,9184,9184,0.9
+2685,Gräfelfing,9184,9184,0.9
+2686,Gräfelfing,9184,9184,0.9
+2687,Gräfelfing,9184,9184,0.9
+2688,Gräfelfing,9184,9184,0.9
+2689,Gräfelfing,9184,9184,0.9
+2690,Gräfelfing,9184,9184,0.9
+2691,Gräfelfing,9184,9184,0.9
+2692,Gräfelfing,9184,9184,0.9
+2693,"München, Landeshauptstadt",9162,9162,0.9
+2694,"München, Landeshauptstadt",9162,9162,0.9
+2695,"München, Landeshauptstadt",9162,9162,0.9
+2696,"München, Landeshauptstadt",9162,9162,0.9
+2697,"München, Landeshauptstadt",9162,9162,0.9
+2698,"München, Landeshauptstadt",9162,9162,0.9
+2699,"München, Landeshauptstadt",9162,9162,0.9
+2700,"München, Landeshauptstadt",9162,9162,0.9
+2701,"München, Landeshauptstadt",9162,9162,0.9
+2702,"München, Landeshauptstadt",9162,9162,0.9
+2703,"München, Landeshauptstadt",9162,9162,0.9
+2704,"München, Landeshauptstadt",9162,9162,0.9
+2705,"München, Landeshauptstadt",9162,9162,0.9
+2706,"München, Landeshauptstadt",9162,9162,0.9
+2707,"München, Landeshauptstadt",9162,9162,0.9
+2708,"München, Landeshauptstadt",9162,9162,0.9
+2709,"München, Landeshauptstadt",9162,9162,0.9
+2710,"München, Landeshauptstadt",9162,9162,0.9
+2711,"München, Landeshauptstadt",9162,9162,0.9
+2712,"München, Landeshauptstadt",9162,9162,0.9
+2713,"München, Landeshauptstadt",9162,9162,0.9
+2714,"München, Landeshauptstadt",9162,9162,0.9
+2715,"München, Landeshauptstadt",9162,9162,0.9
+2716,"München, Landeshauptstadt",9162,9162,0.9
+2717,"München, Landeshauptstadt",9162,9162,0.9
+2718,"München, Landeshauptstadt",9162,9162,0.9
+2719,"München, Landeshauptstadt",9162,9162,0.9
+2720,"München, Landeshauptstadt",9162,9162,0.9
+2721,"München, Landeshauptstadt",9162,9162,0.9
+2722,"München, Landeshauptstadt",9162,9162,0.9
+2723,"München, Landeshauptstadt",9162,9162,0.9
+2724,"München, Landeshauptstadt",9162,9162,0.9
+2725,"München, Landeshauptstadt",9162,9162,0.9
+2726,"München, Landeshauptstadt",9162,9162,0.9
+2727,"München, Landeshauptstadt",9162,9162,0.9
+2728,"München, Landeshauptstadt",9162,9162,0.9
+2729,"München, Landeshauptstadt",9162,9162,0.9
+2730,"München, Landeshauptstadt",9162,9162,0.9
+2731,"München, Landeshauptstadt",9162,9162,0.9
+2732,"München, Landeshauptstadt",9162,9162,0.9
+2733,"München, Landeshauptstadt",9162,9162,0.9
+2734,"München, Landeshauptstadt",9162,9162,0.9
+2735,"München, Landeshauptstadt",9162,9162,0.9
+2736,"München, Landeshauptstadt",9162,9162,0.9
+2737,"München, Landeshauptstadt",9162,9162,0.9
+2738,"München, Landeshauptstadt",9162,9162,0.9
+2739,"München, Landeshauptstadt",9162,9162,0.9
+2740,"München, Landeshauptstadt",9162,9162,0.9
+2741,"München, Landeshauptstadt",9162,9162,0.9
+2742,"München, Landeshauptstadt",9162,9162,0.9
+2743,"München, Landeshauptstadt",9162,9162,0.9
+2744,"München, Landeshauptstadt",9162,9162,0.9
+2745,"München, Landeshauptstadt",9162,9162,0.9
+2746,"München, Landeshauptstadt",9162,9162,0.9
+2747,"München, Landeshauptstadt",9162,9162,0.9
+2748,"München, Landeshauptstadt",9162,9162,0.9
+2749,"München, Landeshauptstadt",9162,9162,0.9
+2750,"München, Landeshauptstadt",9162,9162,0.9
+2751,"München, Landeshauptstadt",9162,9162,0.9
+2752,"München, Landeshauptstadt",9162,9162,0.9
+2753,"München, Landeshauptstadt",9162,9162,0.9
+2754,"München, Landeshauptstadt",9162,9162,0.9
+2755,"München, Landeshauptstadt",9162,9162,0.9
+2756,"München, Landeshauptstadt",9162,9162,0.9
+2757,"München, Landeshauptstadt",9162,9162,0.9
+2758,"München, Landeshauptstadt",9162,9162,0.9
+2759,"München, Landeshauptstadt",9162,9162,0.9
+2760,"München, Landeshauptstadt",9162,9162,0.9
+2761,"München, Landeshauptstadt",9162,9162,0.9
+2762,"München, Landeshauptstadt",9162,9162,0.9
+2763,"München, Landeshauptstadt",9162,9162,0.9
+2764,"München, Landeshauptstadt",9162,9162,0.9
+2765,"München, Landeshauptstadt",9162,9162,0.9
+2766,"München, Landeshauptstadt",9162,9162,0.9
+2767,"München, Landeshauptstadt",9162,9162,0.9
+2768,"München, Landeshauptstadt",9162,9162,0.9
+2769,"München, Landeshauptstadt",9162,9162,0.9
+2770,"München, Landeshauptstadt",9162,9162,0.9
+2771,"München, Landeshauptstadt",9162,9162,0.9
+2772,"München, Landeshauptstadt",9162,9162,0.9
+2773,"München, Landeshauptstadt",9162,9162,0.9
+2774,"München, Landeshauptstadt",9162,9162,0.9
+2775,"München, Landeshauptstadt",9162,9162,0.9
+2776,"München, Landeshauptstadt",9162,9162,0.9
+2777,"München, Landeshauptstadt",9162,9162,0.9
+2778,"München, Landeshauptstadt",9162,9162,0.9
+2779,"München, Landeshauptstadt",9162,9162,0.9
+2780,"München, Landeshauptstadt",9162,9162,0.9
+2781,"München, Landeshauptstadt",9162,9162,0.9
+2782,"München, Landeshauptstadt",9162,9162,0.9
+2783,"München, Landeshauptstadt",9162,9162,0.9
+2784,"München, Landeshauptstadt",9162,9162,0.9
+2785,"München, Landeshauptstadt",9162,9162,0.9
+2786,"München, Landeshauptstadt",9162,9162,0.9
+2787,"München, Landeshauptstadt",9162,9162,0.9
+2788,"München, Landeshauptstadt",9162,9162,0.9
+2789,"München, Landeshauptstadt",9162,9162,0.9
+2790,"München, Landeshauptstadt",9162,9162,0.9
+2791,"München, Landeshauptstadt",9162,9162,0.9
+2792,"München, Landeshauptstadt",9162,9162,0.9
+2793,"München, Landeshauptstadt",9162,9162,0.9
+2794,"München, Landeshauptstadt",9162,9162,0.9
+2795,"München, Landeshauptstadt",9162,9162,0.9
+2796,"München, Landeshauptstadt",9162,9162,0.9
+2797,"München, Landeshauptstadt",9162,9162,0.9
+2798,"München, Landeshauptstadt",9162,9162,0.9
+2799,"München, Landeshauptstadt",9162,9162,0.9
+2800,"München, Landeshauptstadt",9162,9162,0.9
+2801,"München, Landeshauptstadt",9162,9162,0.9
+2802,"München, Landeshauptstadt",9162,9162,0.9
+2803,"München, Landeshauptstadt",9162,9162,0.9
+2804,"München, Landeshauptstadt",9162,9162,0.9
+2805,"München, Landeshauptstadt",9162,9162,0.9
+2806,"München, Landeshauptstadt",9162,9162,0.9
+2807,"München, Landeshauptstadt",9162,9162,0.9
+2808,"München, Landeshauptstadt",9162,9162,0.9
+2809,"München, Landeshauptstadt",9162,9162,0.9
+2810,"München, Landeshauptstadt",9162,9162,0.9
+2811,"München, Landeshauptstadt",9162,9162,0.9
+2812,"München, Landeshauptstadt",9162,9162,0.9
+2813,"München, Landeshauptstadt",9162,9162,0.9
+2814,"München, Landeshauptstadt",9162,9162,0.9
+2815,"München, Landeshauptstadt",9162,9162,0.9
+2816,"München, Landeshauptstadt",9162,9162,0.9
+2817,"München, Landeshauptstadt",9162,9162,0.9
+2818,"München, Landeshauptstadt",9162,9162,0.9
+2819,"München, Landeshauptstadt",9162,9162,0.9
+2820,"München, Landeshauptstadt",9162,9162,0.9
+2821,"München, Landeshauptstadt",9162,9162,0.9
+2822,"München, Landeshauptstadt",9162,9162,0.9
+2823,"München, Landeshauptstadt",9162,9162,0.9
+2824,"München, Landeshauptstadt",9162,9162,0.9
+2825,"München, Landeshauptstadt",9162,9162,0.9
+2826,"München, Landeshauptstadt",9162,9162,0.9
+2827,"München, Landeshauptstadt",9162,9162,0.9
+2828,"München, Landeshauptstadt",9162,9162,0.9
+2829,"München, Landeshauptstadt",9162,9162,0.9
+2830,"München, Landeshauptstadt",9162,9162,0.9
+2831,"München, Landeshauptstadt",9162,9162,0.9
+2832,"München, Landeshauptstadt",9162,9162,0.9
+2833,"München, Landeshauptstadt",9162,9162,0.9
+2834,"München, Landeshauptstadt",9162,9162,0.9
+2835,"München, Landeshauptstadt",9162,9162,0.9
+2836,"München, Landeshauptstadt",9162,9162,0.9
+2837,"München, Landeshauptstadt",9162,9162,0.9
+2838,"München, Landeshauptstadt",9162,9162,0.9
+2839,"München, Landeshauptstadt",9162,9162,0.9
+2840,"München, Landeshauptstadt",9162,9162,0.9
+2841,"München, Landeshauptstadt",9162,9162,0.9
+2842,"München, Landeshauptstadt",9162,9162,0.9
+2843,"München, Landeshauptstadt",9162,9162,0.9
+2844,"München, Landeshauptstadt",9162,9162,0.9
+2845,"München, Landeshauptstadt",9162,9162,0.9
+2846,"München, Landeshauptstadt",9162,9162,0.9
+2847,"München, Landeshauptstadt",9162,9162,0.9
+2848,"München, Landeshauptstadt",9162,9162,0.9
+2849,"München, Landeshauptstadt",9162,9162,0.9
+2850,"München, Landeshauptstadt",9162,9162,0.9
+2851,"München, Landeshauptstadt",9162,9162,0.9
+2852,"München, Landeshauptstadt",9162,9162,0.9
+2853,"München, Landeshauptstadt",9162,9162,0.9
+2854,"München, Landeshauptstadt",9162,9162,0.9
+2855,"München, Landeshauptstadt",9162,9162,0.9
+2856,"München, Landeshauptstadt",9162,9162,0.9
+2857,"München, Landeshauptstadt",9162,9162,0.9
+2858,"München, Landeshauptstadt",9162,9162,0.9
+2859,"München, Landeshauptstadt",9162,9162,0.9
+2860,"München, Landeshauptstadt",9162,9162,0.9
+2861,"München, Landeshauptstadt",9162,9162,0.9
+2862,"München, Landeshauptstadt",9162,9162,0.9
+2863,"München, Landeshauptstadt",9162,9162,0.9
+2864,"München, Landeshauptstadt",9162,9162,0.9
+2865,"München, Landeshauptstadt",9162,9162,0.9
+2866,"München, Landeshauptstadt",9162,9162,0.9
+2867,"München, Landeshauptstadt",9162,9162,0.9
+2868,"München, Landeshauptstadt",9162,9162,0.9
+2869,"München, Landeshauptstadt",9162,9162,0.9
+2870,"München, Landeshauptstadt",9162,9162,0.9
+2871,"München, Landeshauptstadt",9162,9162,0.9
+2872,"München, Landeshauptstadt",9162,9162,0.9
+2873,"München, Landeshauptstadt",9162,9162,0.9
+2874,"München, Landeshauptstadt",9162,9162,0.9
+2875,"München, Landeshauptstadt",9162,9162,0.9
+2876,"München, Landeshauptstadt",9162,9162,0.9
+2877,"München, Landeshauptstadt",9162,9162,0.9
+2878,"München, Landeshauptstadt",9162,9162,0.9
+2879,"München, Landeshauptstadt",9162,9162,0.9
+2880,"München, Landeshauptstadt",9162,9162,0.9
+2881,"München, Landeshauptstadt",9162,9162,0.9
+2882,"München, Landeshauptstadt",9162,9162,0.9
+2883,"München, Landeshauptstadt",9162,9162,0.9
+2884,"München, Landeshauptstadt",9162,9162,0.9
+2885,"München, Landeshauptstadt",9162,9162,0.9
+2886,"München, Landeshauptstadt",9162,9162,0.9
+2887,"München, Landeshauptstadt",9162,9162,0.9
+2888,"München, Landeshauptstadt",9162,9162,0.9
+2889,"München, Landeshauptstadt",9162,9162,0.9
+2890,"München, Landeshauptstadt",9162,9162,0.9
+2891,"München, Landeshauptstadt",9162,9162,0.9
+2892,"München, Landeshauptstadt",9162,9162,0.9
+2893,"München, Landeshauptstadt",9162,9162,0.9
+2894,"München, Landeshauptstadt",9162,9162,0.9
+2895,"München, Landeshauptstadt",9162,9162,0.9
+2896,"München, Landeshauptstadt",9162,9162,0.9
+2897,"München, Landeshauptstadt",9162,9162,0.9
+2898,"München, Landeshauptstadt",9162,9162,0.9
+2899,"München, Landeshauptstadt",9162,9162,0.9
+2900,"München, Landeshauptstadt",9162,9162,0.9
+2901,"München, Landeshauptstadt",9162,9162,0.9
+2902,"München, Landeshauptstadt",9162,9162,0.9
+2903,"München, Landeshauptstadt",9162,9162,0.9
+2904,"München, Landeshauptstadt",9162,9162,0.9
+2905,"München, Landeshauptstadt",9162,9162,0.9
+2906,"München, Landeshauptstadt",9162,9162,0.9
+2907,"München, Landeshauptstadt",9162,9162,0.9
+2908,"München, Landeshauptstadt",9162,9162,0.9
+2909,"München, Landeshauptstadt",9162,9162,0.9
+2910,"München, Landeshauptstadt",9162,9162,0.9
+2911,"München, Landeshauptstadt",9162,9162,0.9
+2912,"München, Landeshauptstadt",9162,9162,0.9
+2913,"München, Landeshauptstadt",9162,9162,0.9
+2914,"München, Landeshauptstadt",9162,9162,0.9
+2915,"München, Landeshauptstadt",9162,9162,0.9
+2916,"München, Landeshauptstadt",9162,9162,0.9
+2917,"München, Landeshauptstadt",9162,9162,0.9
+2918,"München, Landeshauptstadt",9162,9162,0.9
+2919,"München, Landeshauptstadt",9162,9162,0.9
+2920,"München, Landeshauptstadt",9162,9162,0.9
+2921,"München, Landeshauptstadt",9162,9162,0.9
+2922,"München, Landeshauptstadt",9162,9162,0.9
+2923,"München, Landeshauptstadt",9162,9162,0.9
+2924,"München, Landeshauptstadt",9162,9162,0.9
+2925,"München, Landeshauptstadt",9162,9162,0.9
+2926,"München, Landeshauptstadt",9162,9162,0.9
+2927,"München, Landeshauptstadt",9162,9162,0.9
+2928,"München, Landeshauptstadt",9162,9162,0.9
+2929,"München, Landeshauptstadt",9162,9162,0.9
+2930,"München, Landeshauptstadt",9162,9162,0.9
+2931,"München, Landeshauptstadt",9162,9162,0.9
+2932,"München, Landeshauptstadt",9162,9162,0.9
+2933,"München, Landeshauptstadt",9162,9162,0.9
+2934,"München, Landeshauptstadt",9162,9162,0.9
+2935,"München, Landeshauptstadt",9162,9162,0.9
+2936,"München, Landeshauptstadt",9162,9162,0.9
+2937,"München, Landeshauptstadt",9162,9162,0.9
+2938,"München, Landeshauptstadt",9162,9162,0.9
+2939,"München, Landeshauptstadt",9162,9162,0.9
+2940,"München, Landeshauptstadt",9162,9162,0.9
+2941,"München, Landeshauptstadt",9162,9162,0.9
+2942,"München, Landeshauptstadt",9162,9162,0.9
+2943,"München, Landeshauptstadt",9162,9162,0.9
+2944,"München, Landeshauptstadt",9162,9162,0.9
+2945,"München, Landeshauptstadt",9162,9162,0.9
+2946,"München, Landeshauptstadt",9162,9162,0.9
+2947,"München, Landeshauptstadt",9162,9162,0.9
+2948,"München, Landeshauptstadt",9162,9162,0.9
+2949,"München, Landeshauptstadt",9162,9162,0.9
+2950,"München, Landeshauptstadt",9162,9162,0.9
+2951,"München, Landeshauptstadt",9162,9162,0.9
+2952,"München, Landeshauptstadt",9162,9162,0.9
+2953,"München, Landeshauptstadt",9162,9162,0.9
+2954,"München, Landeshauptstadt",9162,9162,0.9
+2955,"München, Landeshauptstadt",9162,9162,0.9
+2956,"München, Landeshauptstadt",9162,9162,0.9
+2957,"München, Landeshauptstadt",9162,9162,0.9
+2958,"München, Landeshauptstadt",9162,9162,0.9
+2959,"München, Landeshauptstadt",9162,9162,0.9
+2960,"München, Landeshauptstadt",9162,9162,0.9
+2961,"München, Landeshauptstadt",9162,9162,0.9
+2962,"München, Landeshauptstadt",9162,9162,0.9
+2963,"München, Landeshauptstadt",9162,9162,0.9
+2964,"München, Landeshauptstadt",9162,9162,0.9
+2965,"München, Landeshauptstadt",9162,9162,0.9
+2966,"München, Landeshauptstadt",9162,9162,0.9
+2967,"München, Landeshauptstadt",9162,9162,0.9
+2968,"München, Landeshauptstadt",9162,9162,0.9
+2969,"München, Landeshauptstadt",9162,9162,0.9
+2970,Planegg,9184,9184,0.9
+2971,Planegg,9184,9184,0.9
+2972,Planegg,9184,9184,0.9
+2973,Planegg,9184,9184,0.9
+2974,Planegg,9184,9184,0.9
+2975,Krailling,9188,9188,0.9
+2976,Krailling,9188,9188,0.9
+2977,Krailling,9188,9188,0.9
+2978,Krailling,9188,9188,0.9
+2979,Planegg,9184,9184,0.9
+2980,Gauting,9188,9188,0.9
+2981,Gauting,9188,9188,0.9
+2982,Gauting,9188,9188,0.9
+2983,Gauting,9188,9188,0.9
+2984,Gauting,9188,9188,0.9
+2985,Gauting,9188,9188,0.9
+2986,Gauting,9188,9188,0.9
+2987,Gauting,9188,9188,0.9
+2988,Gauting,9188,9188,0.9
+2989,Gauting,9188,9188,0.9
+2990,Gauting,9188,9188,0.9
+2991,Gauting,9188,9188,0.9
+2992,Gauting,9188,9188,0.9
+2993,Gauting,9188,9188,0.9
+2994,Gauting,9188,9188,0.9
+2995,Planegg,9184,9184,0.9
+2996,Planegg,9184,9184,0.9
+2997,Planegg,9184,9184,0.9
+2998,Gräfelfing,9184,9184,0.9
+2999,Planegg,9184,9184,0.9
+3000,"München, Landeshauptstadt",9162,9162,0.9
+3001,"München, Landeshauptstadt",9162,9162,0.9
+3002,"München, Landeshauptstadt",9162,9162,0.9
+3003,"München, Landeshauptstadt",9162,9162,0.9
+3004,"München, Landeshauptstadt",9162,9162,0.9
+3005,"München, Landeshauptstadt",9162,9162,0.9
+3006,"München, Landeshauptstadt",9162,9162,0.9
+3007,"München, Landeshauptstadt",9162,9162,0.9
+3008,"München, Landeshauptstadt",9162,9162,0.9
+3009,"München, Landeshauptstadt",9162,9162,0.9
+3010,"München, Landeshauptstadt",9162,9162,0.9
+3011,"München, Landeshauptstadt",9162,9162,0.9
+3012,"München, Landeshauptstadt",9162,9162,0.9
+3013,"München, Landeshauptstadt",9162,9162,0.9
+3014,"München, Landeshauptstadt",9162,9162,0.9
+3015,Planegg,9184,9184,0.9
+3016,Neuried,9184,9184,0.9
+3017,Neuried,9184,9184,0.9
+3018,Neuried,9184,9184,0.9
+3019,"München, Landeshauptstadt",9162,9162,0.9
+3020,"München, Landeshauptstadt",9162,9162,0.9
+3021,Neuried,9184,9184,0.9
+3022,"München, Landeshauptstadt",9162,9162,0.9
+3023,"München, Landeshauptstadt",9162,9162,0.9
+3024,"München, Landeshauptstadt",9162,9162,0.9
+3025,"München, Landeshauptstadt",9162,9162,0.9
+3026,"München, Landeshauptstadt",9162,9162,0.9
+3027,"München, Landeshauptstadt",9162,9162,0.9
+3028,"München, Landeshauptstadt",9162,9162,0.9
+3029,"München, Landeshauptstadt",9162,9162,0.9
+3030,"München, Landeshauptstadt",9162,9162,0.9
+3031,"München, Landeshauptstadt",9162,9162,0.9
+3032,"München, Landeshauptstadt",9162,9162,0.9
+3033,"München, Landeshauptstadt",9162,9162,0.9
+3034,"München, Landeshauptstadt",9162,9162,0.9
+3035,"München, Landeshauptstadt",9162,9162,0.9
+3036,"München, Landeshauptstadt",9162,9162,0.9
+3037,"München, Landeshauptstadt",9162,9162,0.9
+3038,"München, Landeshauptstadt",9162,9162,0.9
+3039,"München, Landeshauptstadt",9162,9162,0.9
+3040,"München, Landeshauptstadt",9162,9162,0.9
+3041,"München, Landeshauptstadt",9162,9162,0.9
+3042,"München, Landeshauptstadt",9162,9162,0.9
+3043,"München, Landeshauptstadt",9162,9162,0.9
+3044,"München, Landeshauptstadt",9162,9162,0.9
+3045,"München, Landeshauptstadt",9162,9162,0.9
+3046,"München, Landeshauptstadt",9162,9162,0.9
+3047,"München, Landeshauptstadt",9162,9162,0.9
+3048,"München, Landeshauptstadt",9162,9162,0.9
+3049,"München, Landeshauptstadt",9162,9162,0.9
+3050,"München, Landeshauptstadt",9162,9162,0.9
+3051,"München, Landeshauptstadt",9162,9162,0.9
+3052,"München, Landeshauptstadt",9162,9162,0.9
+3053,"München, Landeshauptstadt",9162,9162,0.9
+3054,"München, Landeshauptstadt",9162,9162,0.9
+3055,"München, Landeshauptstadt",9162,9162,0.9
+3056,"München, Landeshauptstadt",9162,9162,0.9
+3057,"München, Landeshauptstadt",9162,9162,0.9
+3058,"München, Landeshauptstadt",9162,9162,0.9
+3059,"München, Landeshauptstadt",9162,9162,0.9
+3060,"München, Landeshauptstadt",9162,9162,0.9
+3061,"München, Landeshauptstadt",9162,9162,0.9
+3062,"München, Landeshauptstadt",9162,9162,0.9
+3063,"München, Landeshauptstadt",9162,9162,0.9
+3064,"München, Landeshauptstadt",9162,9162,0.9
+3065,"München, Landeshauptstadt",9162,9162,0.9
+3066,"München, Landeshauptstadt",9162,9162,0.9
+3067,"München, Landeshauptstadt",9162,9162,0.9
+3068,"München, Landeshauptstadt",9162,9162,0.9
+3069,"München, Landeshauptstadt",9162,9162,0.9
+3070,"München, Landeshauptstadt",9162,9162,0.9
+3071,"München, Landeshauptstadt",9162,9162,0.9
+3072,"München, Landeshauptstadt",9162,9162,0.9
+3073,"München, Landeshauptstadt",9162,9162,0.9
+3074,"München, Landeshauptstadt",9162,9162,0.9
+3075,"München, Landeshauptstadt",9162,9162,0.9
+3076,"München, Landeshauptstadt",9162,9162,0.9
+3077,"München, Landeshauptstadt",9162,9162,0.9
+3078,"München, Landeshauptstadt",9162,9162,0.9
+3079,"München, Landeshauptstadt",9162,9162,0.9
+3080,"München, Landeshauptstadt",9162,9162,0.9
+3081,"München, Landeshauptstadt",9162,9162,0.9
+3082,"München, Landeshauptstadt",9162,9162,0.9
+3083,"München, Landeshauptstadt",9162,9162,0.9
+3084,"München, Landeshauptstadt",9162,9162,0.9
+3085,"München, Landeshauptstadt",9162,9162,0.9
+3086,"München, Landeshauptstadt",9162,9162,0.9
+3087,"München, Landeshauptstadt",9162,9162,0.9
+3088,"München, Landeshauptstadt",9162,9162,0.9
+3089,"München, Landeshauptstadt",9162,9162,0.9
+3090,"München, Landeshauptstadt",9162,9162,0.9
+3091,"München, Landeshauptstadt",9162,9162,0.9
+3092,"München, Landeshauptstadt",9162,9162,0.9
+3093,Neuried,9184,9184,0.9
+3094,"München, Landeshauptstadt",9162,9162,0.9
+3095,"München, Landeshauptstadt",9162,9162,0.9
+3096,"München, Landeshauptstadt",9162,9162,0.9
+3097,"München, Landeshauptstadt",9162,9162,0.9
+3098,"München, Landeshauptstadt",9162,9162,0.9
+3099,"München, Landeshauptstadt",9162,9162,0.9
+3100,"München, Landeshauptstadt",9162,9162,0.9
+3101,"München, Landeshauptstadt",9162,9162,0.9
+3102,"München, Landeshauptstadt",9162,9162,0.9
+3103,"München, Landeshauptstadt",9162,9162,0.9
+3104,"München, Landeshauptstadt",9162,9162,0.9
+3105,"München, Landeshauptstadt",9162,9162,0.9
+3106,"München, Landeshauptstadt",9162,9162,0.9
+3107,"München, Landeshauptstadt",9162,9162,0.9
+3108,"München, Landeshauptstadt",9162,9162,0.9
+3109,"München, Landeshauptstadt",9162,9162,0.9
+3110,"München, Landeshauptstadt",9162,9162,0.9
+3111,"München, Landeshauptstadt",9162,9162,0.9
+3112,"München, Landeshauptstadt",9162,9162,0.9
+3113,"München, Landeshauptstadt",9162,9162,0.9
+3114,"München, Landeshauptstadt",9162,9162,0.9
+3115,"München, Landeshauptstadt",9162,9162,0.9
+3116,"München, Landeshauptstadt",9162,9162,0.9
+3117,"München, Landeshauptstadt",9162,9162,0.9
+3118,"München, Landeshauptstadt",9162,9162,0.9
+3119,"München, Landeshauptstadt",9162,9162,0.9
+3120,"München, Landeshauptstadt",9162,9162,0.9
+3121,"München, Landeshauptstadt",9162,9162,0.9
+3122,"München, Landeshauptstadt",9162,9162,0.9
+3123,"München, Landeshauptstadt",9162,9162,0.9
+3124,"München, Landeshauptstadt",9162,9162,0.9
+3125,"München, Landeshauptstadt",9162,9162,0.9
+3126,"München, Landeshauptstadt",9162,9162,0.9
+3127,"München, Landeshauptstadt",9162,9162,0.9
+3128,"München, Landeshauptstadt",9162,9162,0.9
+3129,"München, Landeshauptstadt",9162,9162,0.9
+3130,"München, Landeshauptstadt",9162,9162,0.9
+3131,"München, Landeshauptstadt",9162,9162,0.9
+3132,"München, Landeshauptstadt",9162,9162,0.9
+3133,"München, Landeshauptstadt",9162,9162,0.9
+3134,"München, Landeshauptstadt",9162,9162,0.9
+3135,"München, Landeshauptstadt",9162,9162,0.9
+3136,"München, Landeshauptstadt",9162,9162,0.9
+3137,"München, Landeshauptstadt",9162,9162,0.9
+3138,"München, Landeshauptstadt",9162,9162,0.9
+3139,Pullach i.Isartal,9184,9184,0.9
+3140,Pullach i.Isartal,9184,9184,0.9
+3141,Pullach i.Isartal,9184,9184,0.9
+3142,"München, Landeshauptstadt",9162,9162,0.9
+3143,Seefeld,9188,9188,0.9
+3144,Seefeld,9188,9188,0.9
+3145,Seefeld,9188,9188,0.9
+3146,Seefeld,9188,9188,0.9
+3147,Seefeld,9188,9188,0.9
+3148,Seefeld,9188,9188,0.9
+3149,Wörthsee,9188,9188,0.9
+3150,"Starnberg, St",9188,9188,0.9
+3151,"Starnberg, St",9188,9188,0.9
+3152,"Starnberg, St",9188,9188,0.9
+3153,"Starnberg, St",9188,9188,0.9
+3154,"Starnberg, St",9188,9188,0.9
+3155,"Starnberg, St",9188,9188,0.9
+3156,"Starnberg, St",9188,9188,0.9
+3157,"Starnberg, St",9188,9188,0.9
+3158,"Starnberg, St",9188,9188,0.9
+3159,Feldafing,9188,9188,0.9
+3160,Herrsching a.Ammersee,9188,9188,0.9
+3161,"Starnberg, St",9188,9188,0.9
+3162,"Starnberg, St",9188,9188,0.9
+3163,"Starnberg, St",9188,9188,0.9
+3164,"Starnberg, St",9188,9188,0.9
+3165,"Starnberg, St",9188,9188,0.9
+3166,"Starnberg, St",9188,9188,0.9
+3167,"Starnberg, St",9188,9188,0.9
+3168,"Starnberg, St",9188,9188,0.9
+3169,"Starnberg, St",9188,9188,0.9
+3170,Pöcking,9188,9188,0.9
+3171,Pöcking,9188,9188,0.9
+3172,Feldafing,9188,9188,0.9
+3173,Pöcking,9188,9188,0.9
+3174,Berg,9188,9188,0.9
+3175,"Starnberg, St",9188,9188,0.9
+3176,Gauting,9188,9188,0.9
+3177,Pullach i.Isartal,9184,9184,0.9
+3178,Pullach i.Isartal,9184,9184,0.9
+3179,Pullach i.Isartal,9184,9184,0.9
+3180,Pullach i.Isartal,9184,9184,0.9
+3181,Grünwald,9184,9184,0.9
+3182,Grünwald,9184,9184,0.9
+3183,Grünwald,9184,9184,0.9
+3184,Grünwald,9184,9184,0.9
+3185,Pullach i.Isartal,9184,9184,0.9
+3186,Grünwald,9184,9184,0.9
+3187,Baierbrunn,9184,9184,0.9
+3188,Pullach i.Isartal,9184,9184,0.9
+3190,Baierbrunn,9184,9184,0.9
+3191,Schäftlarn,9184,9184,0.9
+3192,Straßlach-Dingharting,9184,9184,0.9
+3193,Berg,9188,9188,0.9
+3194,Berg,9188,9188,0.9
+3195,Berg,9188,9188,0.9
+3196,Icking,9173,9173,0.9
+3197,Icking,9173,9173,0.9
+3198,Schäftlarn,9184,9184,0.9
+3199,Schäftlarn,9184,9184,0.9
+3200,Icking,9173,9173,0.9
+3201,Straßlach-Dingharting,9184,9184,0.9
+3202,"München, Landeshauptstadt",9162,9162,0.9
+3203,"München, Landeshauptstadt",9162,9162,0.9
+3204,"München, Landeshauptstadt",9162,9162,0.9
+3205,"München, Landeshauptstadt",9162,9162,0.9
+3206,"München, Landeshauptstadt",9162,9162,0.9
+3207,"München, Landeshauptstadt",9162,9162,0.9
+3208,"München, Landeshauptstadt",9162,9162,0.9
+3209,"München, Landeshauptstadt",9162,9162,0.9
+3210,"München, Landeshauptstadt",9162,9162,0.9
+3211,"München, Landeshauptstadt",9162,9162,0.9
+3212,"München, Landeshauptstadt",9162,9162,0.9
+3213,"München, Landeshauptstadt",9162,9162,0.9
+3214,"München, Landeshauptstadt",9162,9162,0.9
+3215,"München, Landeshauptstadt",9162,9162,0.9
+3216,"München, Landeshauptstadt",9162,9162,0.9
+3217,"München, Landeshauptstadt",9162,9162,0.9
+3218,"München, Landeshauptstadt",9162,9162,0.9
+3219,"München, Landeshauptstadt",9162,9162,0.9
+3220,"München, Landeshauptstadt",9162,9162,0.9
+3221,"München, Landeshauptstadt",9162,9162,0.9
+3222,"München, Landeshauptstadt",9162,9162,0.9
+3223,"München, Landeshauptstadt",9162,9162,0.9
+3224,"München, Landeshauptstadt",9162,9162,0.9
+3225,"München, Landeshauptstadt",9162,9162,0.9
+3226,"München, Landeshauptstadt",9162,9162,0.9
+3227,"München, Landeshauptstadt",9162,9162,0.9
+3228,"München, Landeshauptstadt",9162,9162,0.9
+3229,"München, Landeshauptstadt",9162,9162,0.9
+3230,"München, Landeshauptstadt",9162,9162,0.9
+3231,"München, Landeshauptstadt",9162,9162,0.9
+3232,"München, Landeshauptstadt",9162,9162,0.9
+3233,"München, Landeshauptstadt",9162,9162,0.9
+3234,"München, Landeshauptstadt",9162,9162,0.9
+3235,"München, Landeshauptstadt",9162,9162,0.9
+3236,"München, Landeshauptstadt",9162,9162,0.9
+3237,"München, Landeshauptstadt",9162,9162,0.9
+3238,"München, Landeshauptstadt",9162,9162,0.9
+3239,"München, Landeshauptstadt",9162,9162,0.9
+3240,"München, Landeshauptstadt",9162,9162,0.9
+3241,"München, Landeshauptstadt",9162,9162,0.9
+3242,"München, Landeshauptstadt",9162,9162,0.9
+3243,"München, Landeshauptstadt",9162,9162,0.9
+3244,"München, Landeshauptstadt",9162,9162,0.9
+3245,"München, Landeshauptstadt",9162,9162,0.9
+3246,"München, Landeshauptstadt",9162,9162,0.9
+3247,"München, Landeshauptstadt",9162,9162,0.9
+3248,"München, Landeshauptstadt",9162,9162,0.9
+3249,"München, Landeshauptstadt",9162,9162,0.9
+3250,"München, Landeshauptstadt",9162,9162,0.9
+3251,"München, Landeshauptstadt",9162,9162,0.9
+3252,"München, Landeshauptstadt",9162,9162,0.9
+3253,"München, Landeshauptstadt",9162,9162,0.9
+3254,"München, Landeshauptstadt",9162,9162,0.9
+3255,"München, Landeshauptstadt",9162,9162,0.9
+3256,"München, Landeshauptstadt",9162,9162,0.9
+3257,"München, Landeshauptstadt",9162,9162,0.9
+3258,"München, Landeshauptstadt",9162,9162,0.9
+3259,"München, Landeshauptstadt",9162,9162,0.9
+3260,"München, Landeshauptstadt",9162,9162,0.9
+3261,"München, Landeshauptstadt",9162,9162,0.9
+3262,"München, Landeshauptstadt",9162,9162,0.9
+3263,"München, Landeshauptstadt",9162,9162,0.9
+3264,"München, Landeshauptstadt",9162,9162,0.9
+3265,"München, Landeshauptstadt",9162,9162,0.9
+3266,"München, Landeshauptstadt",9162,9162,0.9
+3267,"München, Landeshauptstadt",9162,9162,0.9
+3268,"München, Landeshauptstadt",9162,9162,0.9
+3269,"München, Landeshauptstadt",9162,9162,0.9
+3270,"München, Landeshauptstadt",9162,9162,0.9
+3271,"München, Landeshauptstadt",9162,9162,0.9
+3272,"München, Landeshauptstadt",9162,9162,0.9
+3273,"München, Landeshauptstadt",9162,9162,0.9
+3274,"München, Landeshauptstadt",9162,9162,0.9
+3275,"München, Landeshauptstadt",9162,9162,0.9
+3276,"München, Landeshauptstadt",9162,9162,0.9
+3277,"München, Landeshauptstadt",9162,9162,0.9
+3278,"München, Landeshauptstadt",9162,9162,0.9
+3279,"München, Landeshauptstadt",9162,9162,0.9
+3280,"München, Landeshauptstadt",9162,9162,0.9
+3281,"München, Landeshauptstadt",9162,9162,0.9
+3282,"München, Landeshauptstadt",9162,9162,0.9
+3283,"München, Landeshauptstadt",9162,9162,0.9
+3284,"München, Landeshauptstadt",9162,9162,0.9
+3285,"München, Landeshauptstadt",9162,9162,0.9
+3286,"München, Landeshauptstadt",9162,9162,0.9
+3287,"München, Landeshauptstadt",9162,9162,0.9
+3288,"München, Landeshauptstadt",9162,9162,0.9
+3289,"München, Landeshauptstadt",9162,9162,0.9
+3290,"München, Landeshauptstadt",9162,9162,0.9
+3291,"München, Landeshauptstadt",9162,9162,0.9
+3292,"München, Landeshauptstadt",9162,9162,0.9
+3293,"München, Landeshauptstadt",9162,9162,0.9
+3294,"München, Landeshauptstadt",9162,9162,0.9
+3295,"München, Landeshauptstadt",9162,9162,0.9
+3296,"München, Landeshauptstadt",9162,9162,0.9
+3297,"München, Landeshauptstadt",9162,9162,0.9
+3298,"München, Landeshauptstadt",9162,9162,0.9
+3299,"München, Landeshauptstadt",9162,9162,0.9
+3300,"München, Landeshauptstadt",9162,9162,0.9
+3301,"München, Landeshauptstadt",9162,9162,0.9
+3302,"München, Landeshauptstadt",9162,9162,0.9
+3303,"München, Landeshauptstadt",9162,9162,0.9
+3304,"München, Landeshauptstadt",9162,9162,0.9
+3305,"München, Landeshauptstadt",9162,9162,0.9
+3306,"München, Landeshauptstadt",9162,9162,0.9
+3307,"München, Landeshauptstadt",9162,9162,0.9
+3308,"München, Landeshauptstadt",9162,9162,0.9
+3309,"München, Landeshauptstadt",9162,9162,0.9
+3310,"München, Landeshauptstadt",9162,9162,0.9
+3311,"München, Landeshauptstadt",9162,9162,0.9
+3312,"München, Landeshauptstadt",9162,9162,0.9
+3313,"München, Landeshauptstadt",9162,9162,0.9
+3314,"München, Landeshauptstadt",9162,9162,0.9
+3315,"München, Landeshauptstadt",9162,9162,0.9
+3316,"München, Landeshauptstadt",9162,9162,0.9
+3317,"München, Landeshauptstadt",9162,9162,0.9
+3318,"München, Landeshauptstadt",9162,9162,0.9
+3319,"München, Landeshauptstadt",9162,9162,0.9
+3320,"München, Landeshauptstadt",9162,9162,0.9
+3321,"München, Landeshauptstadt",9162,9162,0.9
+3322,"München, Landeshauptstadt",9162,9162,0.9
+3323,"München, Landeshauptstadt",9162,9162,0.9
+3324,"München, Landeshauptstadt",9162,9162,0.9
+3325,"München, Landeshauptstadt",9162,9162,0.9
+3326,"München, Landeshauptstadt",9162,9162,0.9
+3327,"München, Landeshauptstadt",9162,9162,0.9
+3328,"München, Landeshauptstadt",9162,9162,0.9
+3329,"München, Landeshauptstadt",9162,9162,0.9
+3330,"München, Landeshauptstadt",9162,9162,0.9
+3331,"München, Landeshauptstadt",9162,9162,0.9
+3332,"München, Landeshauptstadt",9162,9162,0.9
+3333,"München, Landeshauptstadt",9162,9162,0.9
+3334,"München, Landeshauptstadt",9162,9162,0.9
+3335,"München, Landeshauptstadt",9162,9162,0.9
+3336,"München, Landeshauptstadt",9162,9162,0.9
+3337,"München, Landeshauptstadt",9162,9162,0.9
+3338,"München, Landeshauptstadt",9162,9162,0.9
+3339,"München, Landeshauptstadt",9162,9162,0.9
+3340,"München, Landeshauptstadt",9162,9162,0.9
+3341,"München, Landeshauptstadt",9162,9162,0.9
+3342,"München, Landeshauptstadt",9162,9162,0.9
+3343,"München, Landeshauptstadt",9162,9162,0.9
+3344,"München, Landeshauptstadt",9162,9162,0.9
+3345,"München, Landeshauptstadt",9162,9162,0.9
+3346,"München, Landeshauptstadt",9162,9162,0.9
+3347,"München, Landeshauptstadt",9162,9162,0.9
+3348,"München, Landeshauptstadt",9162,9162,0.9
+3349,"München, Landeshauptstadt",9162,9162,0.9
+3350,"München, Landeshauptstadt",9162,9162,0.9
+3351,"München, Landeshauptstadt",9162,9162,0.9
+3352,"München, Landeshauptstadt",9162,9162,0.9
+3353,"München, Landeshauptstadt",9162,9162,0.9
+3354,"München, Landeshauptstadt",9162,9162,0.9
+3355,"München, Landeshauptstadt",9162,9162,0.9
+3356,"München, Landeshauptstadt",9162,9162,0.9
+3357,"München, Landeshauptstadt",9162,9162,0.9
+3358,"München, Landeshauptstadt",9162,9162,0.9
+3359,"München, Landeshauptstadt",9162,9162,0.9
+3360,"München, Landeshauptstadt",9162,9162,0.9
+3361,"München, Landeshauptstadt",9162,9162,0.9
+3362,"München, Landeshauptstadt",9162,9162,0.9
+3363,"München, Landeshauptstadt",9162,9162,0.9
+3364,"München, Landeshauptstadt",9162,9162,0.9
+3365,"München, Landeshauptstadt",9162,9162,0.9
+3366,"München, Landeshauptstadt",9162,9162,0.9
+3367,"München, Landeshauptstadt",9162,9162,0.9
+3368,"München, Landeshauptstadt",9162,9162,0.9
+3369,"München, Landeshauptstadt",9162,9162,0.9
+3370,"München, Landeshauptstadt",9162,9162,0.9
+3371,"München, Landeshauptstadt",9162,9162,0.9
+3372,"München, Landeshauptstadt",9162,9162,0.9
+3373,"München, Landeshauptstadt",9162,9162,0.9
+3374,"München, Landeshauptstadt",9162,9162,0.9
+3375,"München, Landeshauptstadt",9162,9162,0.9
+3376,"München, Landeshauptstadt",9162,9162,0.9
+3377,"München, Landeshauptstadt",9162,9162,0.9
+3378,"München, Landeshauptstadt",9162,9162,0.9
+3379,"München, Landeshauptstadt",9162,9162,0.9
+3380,"München, Landeshauptstadt",9162,9162,0.9
+3381,"München, Landeshauptstadt",9162,9162,0.9
+3382,"München, Landeshauptstadt",9162,9162,0.9
+3383,"München, Landeshauptstadt",9162,9162,0.9
+3384,"München, Landeshauptstadt",9162,9162,0.9
+3385,"München, Landeshauptstadt",9162,9162,0.9
+3386,"München, Landeshauptstadt",9162,9162,0.9
+3387,"München, Landeshauptstadt",9162,9162,0.9
+3388,"München, Landeshauptstadt",9162,9162,0.9
+3389,"München, Landeshauptstadt",9162,9162,0.9
+3390,"München, Landeshauptstadt",9162,9162,0.9
+3391,"München, Landeshauptstadt",9162,9162,0.9
+3392,"München, Landeshauptstadt",9162,9162,0.9
+3393,"München, Landeshauptstadt",9162,9162,0.9
+3394,"München, Landeshauptstadt",9162,9162,0.9
+3395,"München, Landeshauptstadt",9162,9162,0.9
+3396,"München, Landeshauptstadt",9162,9162,0.9
+3397,"München, Landeshauptstadt",9162,9162,0.9
+3398,"München, Landeshauptstadt",9162,9162,0.9
+3399,"München, Landeshauptstadt",9162,9162,0.9
+3400,"München, Landeshauptstadt",9162,9162,0.9
+3401,"München, Landeshauptstadt",9162,9162,0.9
+3402,"München, Landeshauptstadt",9162,9162,0.9
+3403,"München, Landeshauptstadt",9162,9162,0.9
+3404,"München, Landeshauptstadt",9162,9162,0.9
+3405,"München, Landeshauptstadt",9162,9162,0.9
+3406,"München, Landeshauptstadt",9162,9162,0.9
+3407,"München, Landeshauptstadt",9162,9162,0.9
+3408,"München, Landeshauptstadt",9162,9162,0.9
+3409,"München, Landeshauptstadt",9162,9162,0.9
+3410,"München, Landeshauptstadt",9162,9162,0.9
+3411,"München, Landeshauptstadt",9162,9162,0.9
+3412,"München, Landeshauptstadt",9162,9162,0.9
+3413,"München, Landeshauptstadt",9162,9162,0.9
+3414,"München, Landeshauptstadt",9162,9162,0.9
+3415,"München, Landeshauptstadt",9162,9162,0.9
+3416,"München, Landeshauptstadt",9162,9162,0.9
+3417,"München, Landeshauptstadt",9162,9162,0.9
+3418,"München, Landeshauptstadt",9162,9162,0.9
+3419,"München, Landeshauptstadt",9162,9162,0.9
+3420,"München, Landeshauptstadt",9162,9162,0.9
+3421,"München, Landeshauptstadt",9162,9162,0.9
+3422,"München, Landeshauptstadt",9162,9162,0.9
+3423,"München, Landeshauptstadt",9162,9162,0.9
+3424,"München, Landeshauptstadt",9162,9162,0.9
+3425,"München, Landeshauptstadt",9162,9162,0.9
+3426,"München, Landeshauptstadt",9162,9162,0.9
+3427,"München, Landeshauptstadt",9162,9162,0.9
+3428,"München, Landeshauptstadt",9162,9162,0.9
+3429,"München, Landeshauptstadt",9162,9162,0.9
+3430,"München, Landeshauptstadt",9162,9162,0.9
+3431,"München, Landeshauptstadt",9162,9162,0.9
+3432,"München, Landeshauptstadt",9162,9162,0.9
+3433,"München, Landeshauptstadt",9162,9162,0.9
+3434,"München, Landeshauptstadt",9162,9162,0.9
+3435,"München, Landeshauptstadt",9162,9162,0.9
+3436,"München, Landeshauptstadt",9162,9162,0.9
+3437,"München, Landeshauptstadt",9162,9162,0.9
+3438,"München, Landeshauptstadt",9162,9162,0.9
+3439,"München, Landeshauptstadt",9162,9162,0.9
+3440,"München, Landeshauptstadt",9162,9162,0.9
+3441,"München, Landeshauptstadt",9162,9162,0.9
+3442,"München, Landeshauptstadt",9162,9162,0.9
+3443,"München, Landeshauptstadt",9162,9162,0.9
+3444,"München, Landeshauptstadt",9162,9162,0.9
+3445,"München, Landeshauptstadt",9162,9162,0.9
+3446,"München, Landeshauptstadt",9162,9162,0.9
+3447,"München, Landeshauptstadt",9162,9162,0.9
+3448,"München, Landeshauptstadt",9162,9162,0.9
+3449,"München, Landeshauptstadt",9162,9162,0.9
+3450,"München, Landeshauptstadt",9162,9162,0.9
+3451,"München, Landeshauptstadt",9162,9162,0.9
+3452,"München, Landeshauptstadt",9162,9162,0.9
+3453,"München, Landeshauptstadt",9162,9162,0.9
+3454,"München, Landeshauptstadt",9162,9162,0.9
+3455,"München, Landeshauptstadt",9162,9162,0.9
+3456,"München, Landeshauptstadt",9162,9162,0.9
+3457,"München, Landeshauptstadt",9162,9162,0.9
+3458,"München, Landeshauptstadt",9162,9162,0.9
+3459,"München, Landeshauptstadt",9162,9162,0.9
+3460,"München, Landeshauptstadt",9162,9162,0.9
+3461,"München, Landeshauptstadt",9162,9162,0.9
+3462,"München, Landeshauptstadt",9162,9162,0.9
+3463,"München, Landeshauptstadt",9162,9162,0.9
+3464,"München, Landeshauptstadt",9162,9162,0.9
+3465,"München, Landeshauptstadt",9162,9162,0.9
+3466,"München, Landeshauptstadt",9162,9162,0.9
+3467,"München, Landeshauptstadt",9162,9162,0.9
+3468,"München, Landeshauptstadt",9162,9162,0.9
+3469,"München, Landeshauptstadt",9162,9162,0.9
+3470,"München, Landeshauptstadt",9162,9162,0.9
+3471,"München, Landeshauptstadt",9162,9162,0.9
+3472,"München, Landeshauptstadt",9162,9162,0.9
+3473,"München, Landeshauptstadt",9162,9162,0.9
+3474,"München, Landeshauptstadt",9162,9162,0.9
+3475,"München, Landeshauptstadt",9162,9162,0.9
+3476,"München, Landeshauptstadt",9162,9162,0.9
+3477,"München, Landeshauptstadt",9162,9162,0.9
+3478,"München, Landeshauptstadt",9162,9162,0.9
+3479,"München, Landeshauptstadt",9162,9162,0.9
+3480,"München, Landeshauptstadt",9162,9162,0.9
+3481,"München, Landeshauptstadt",9162,9162,0.9
+3482,"München, Landeshauptstadt",9162,9162,0.9
+3483,"München, Landeshauptstadt",9162,9162,0.9
+3484,"München, Landeshauptstadt",9162,9162,0.9
+3485,"München, Landeshauptstadt",9162,9162,0.9
+3486,"München, Landeshauptstadt",9162,9162,0.9
+3487,"München, Landeshauptstadt",9162,9162,0.9
+3488,"München, Landeshauptstadt",9162,9162,0.9
+3489,"München, Landeshauptstadt",9162,9162,0.9
+3490,"München, Landeshauptstadt",9162,9162,0.9
+3491,"München, Landeshauptstadt",9162,9162,0.9
+3492,"München, Landeshauptstadt",9162,9162,0.9
+3493,"München, Landeshauptstadt",9162,9162,0.9
+3494,"München, Landeshauptstadt",9162,9162,0.9
+3495,"München, Landeshauptstadt",9162,9162,0.9
+3496,"München, Landeshauptstadt",9162,9162,0.9
+3497,"München, Landeshauptstadt",9162,9162,0.9
+3498,"München, Landeshauptstadt",9162,9162,0.9
+3499,"München, Landeshauptstadt",9162,9162,0.9
+3500,"München, Landeshauptstadt",9162,9162,0.9
+3501,"München, Landeshauptstadt",9162,9162,0.9
+3502,"München, Landeshauptstadt",9162,9162,0.9
+3503,"München, Landeshauptstadt",9162,9162,0.9
+3504,"München, Landeshauptstadt",9162,9162,0.9
+3505,"München, Landeshauptstadt",9162,9162,0.9
+3506,"München, Landeshauptstadt",9162,9162,0.9
+3507,"München, Landeshauptstadt",9162,9162,0.9
+3508,"München, Landeshauptstadt",9162,9162,0.9
+3509,"München, Landeshauptstadt",9162,9162,0.9
+3510,"München, Landeshauptstadt",9162,9162,0.9
+3511,"München, Landeshauptstadt",9162,9162,0.9
+3512,"München, Landeshauptstadt",9162,9162,0.9
+3513,"München, Landeshauptstadt",9162,9162,0.9
+3514,"München, Landeshauptstadt",9162,9162,0.9
+3515,"München, Landeshauptstadt",9162,9162,0.9
+3516,"München, Landeshauptstadt",9162,9162,0.9
+3517,"München, Landeshauptstadt",9162,9162,0.9
+3518,"München, Landeshauptstadt",9162,9162,0.9
+3519,"München, Landeshauptstadt",9162,9162,0.9
+3520,"München, Landeshauptstadt",9162,9162,0.9
+3521,"München, Landeshauptstadt",9162,9162,0.9
+3522,"München, Landeshauptstadt",9162,9162,0.9
+3523,"München, Landeshauptstadt",9162,9162,0.9
+3524,"München, Landeshauptstadt",9162,9162,0.9
+3525,"München, Landeshauptstadt",9162,9162,0.9
+3526,"München, Landeshauptstadt",9162,9162,0.9
+3527,"München, Landeshauptstadt",9162,9162,0.9
+3528,"München, Landeshauptstadt",9162,9162,0.9
+3529,"München, Landeshauptstadt",9162,9162,0.9
+3530,"München, Landeshauptstadt",9162,9162,0.9
+3531,"München, Landeshauptstadt",9162,9162,0.9
+3532,"München, Landeshauptstadt",9162,9162,0.9
+3533,"München, Landeshauptstadt",9162,9162,0.9
+3534,"München, Landeshauptstadt",9162,9162,0.9
+3535,"München, Landeshauptstadt",9162,9162,0.9
+3536,"München, Landeshauptstadt",9162,9162,0.9
+3537,"München, Landeshauptstadt",9162,9162,0.9
+3538,"München, Landeshauptstadt",9162,9162,0.9
+3539,"München, Landeshauptstadt",9162,9162,0.9
+3540,"München, Landeshauptstadt",9162,9162,0.9
+3541,"München, Landeshauptstadt",9162,9162,0.9
+3542,"München, Landeshauptstadt",9162,9162,0.9
+3543,"München, Landeshauptstadt",9162,9162,0.9
+3544,"München, Landeshauptstadt",9162,9162,0.9
+3545,"München, Landeshauptstadt",9162,9162,0.9
+3546,"München, Landeshauptstadt",9162,9162,0.9
+3547,"München, Landeshauptstadt",9162,9162,0.9
+3548,"München, Landeshauptstadt",9162,9162,0.9
+3549,"München, Landeshauptstadt",9162,9162,0.9
+3550,"München, Landeshauptstadt",9162,9162,0.9
+3551,"München, Landeshauptstadt",9162,9162,0.9
+3552,"München, Landeshauptstadt",9162,9162,0.9
+3553,"München, Landeshauptstadt",9162,9162,0.9
+3554,"München, Landeshauptstadt",9162,9162,0.9
+3555,"München, Landeshauptstadt",9162,9162,0.9
+3556,"München, Landeshauptstadt",9162,9162,0.9
+3557,"München, Landeshauptstadt",9162,9162,0.9
+3558,"München, Landeshauptstadt",9162,9162,0.9
+3559,"München, Landeshauptstadt",9162,9162,0.9
+3560,"München, Landeshauptstadt",9162,9162,0.9
+3561,"München, Landeshauptstadt",9162,9162,0.9
+3562,"München, Landeshauptstadt",9162,9162,0.9
+3563,"München, Landeshauptstadt",9162,9162,0.9
+3564,"München, Landeshauptstadt",9162,9162,0.9
+3565,"München, Landeshauptstadt",9162,9162,0.9
+3566,"München, Landeshauptstadt",9162,9162,0.9
+3567,"München, Landeshauptstadt",9162,9162,0.9
+3568,"München, Landeshauptstadt",9162,9162,0.9
+3569,"München, Landeshauptstadt",9162,9162,0.9
+3570,"München, Landeshauptstadt",9162,9162,0.9
+3571,"München, Landeshauptstadt",9162,9162,0.9
+3572,"München, Landeshauptstadt",9162,9162,0.9
+3573,"München, Landeshauptstadt",9162,9162,0.9
+3574,"München, Landeshauptstadt",9162,9162,0.9
+3575,"München, Landeshauptstadt",9162,9162,0.9
+3576,"München, Landeshauptstadt",9162,9162,0.9
+3577,"München, Landeshauptstadt",9162,9162,0.9
+3578,"München, Landeshauptstadt",9162,9162,0.9
+3579,"München, Landeshauptstadt",9162,9162,0.9
+3580,"München, Landeshauptstadt",9162,9162,0.9
+3581,"München, Landeshauptstadt",9162,9162,0.9
+3582,"München, Landeshauptstadt",9162,9162,0.9
+3583,"München, Landeshauptstadt",9162,9162,0.9
+3584,"München, Landeshauptstadt",9162,9162,0.9
+3585,"München, Landeshauptstadt",9162,9162,0.9
+3586,"München, Landeshauptstadt",9162,9162,0.9
+3587,"München, Landeshauptstadt",9162,9162,0.9
+3588,"München, Landeshauptstadt",9162,9162,0.9
+3589,"München, Landeshauptstadt",9162,9162,0.9
+3590,"München, Landeshauptstadt",9162,9162,0.9
+3591,"München, Landeshauptstadt",9162,9162,0.9
+3592,"München, Landeshauptstadt",9162,9162,0.9
+3593,"München, Landeshauptstadt",9162,9162,0.9
+3594,"München, Landeshauptstadt",9162,9162,0.9
+3595,"München, Landeshauptstadt",9162,9162,0.9
+3596,"München, Landeshauptstadt",9162,9162,0.9
+3597,"München, Landeshauptstadt",9162,9162,0.9
+3598,"München, Landeshauptstadt",9162,9162,0.9
+3599,"München, Landeshauptstadt",9162,9162,0.9
+3600,"München, Landeshauptstadt",9162,9162,0.9
+3601,"München, Landeshauptstadt",9162,9162,0.9
+3602,"München, Landeshauptstadt",9162,9162,0.9
+3603,"München, Landeshauptstadt",9162,9162,0.9
+3604,"München, Landeshauptstadt",9162,9162,0.9
+3605,"München, Landeshauptstadt",9162,9162,0.9
+3606,"München, Landeshauptstadt",9162,9162,0.9
+3607,"München, Landeshauptstadt",9162,9162,0.9
+3608,"München, Landeshauptstadt",9162,9162,0.9
+3609,"München, Landeshauptstadt",9162,9162,0.9
+3610,"München, Landeshauptstadt",9162,9162,0.9
+3611,"München, Landeshauptstadt",9162,9162,0.9
+3612,"München, Landeshauptstadt",9162,9162,0.9
+3613,"München, Landeshauptstadt",9162,9162,0.9
+3614,"München, Landeshauptstadt",9162,9162,0.9
+3615,"München, Landeshauptstadt",9162,9162,0.9
+3616,"München, Landeshauptstadt",9162,9162,0.9
+3617,"München, Landeshauptstadt",9162,9162,0.9
+3618,"München, Landeshauptstadt",9162,9162,0.9
+3619,"München, Landeshauptstadt",9162,9162,0.9
+3620,"München, Landeshauptstadt",9162,9162,0.9
+3621,"München, Landeshauptstadt",9162,9162,0.9
+3622,"München, Landeshauptstadt",9162,9162,0.9
+3623,"München, Landeshauptstadt",9162,9162,0.9
+3624,"München, Landeshauptstadt",9162,9162,0.9
+3625,"München, Landeshauptstadt",9162,9162,0.9
+3626,"München, Landeshauptstadt",9162,9162,0.9
+3627,"München, Landeshauptstadt",9162,9162,0.9
+3628,"München, Landeshauptstadt",9162,9162,0.9
+3629,"München, Landeshauptstadt",9162,9162,0.9
+3630,"München, Landeshauptstadt",9162,9162,0.9
+3631,"München, Landeshauptstadt",9162,9162,0.9
+3632,"München, Landeshauptstadt",9162,9162,0.9
+3633,"München, Landeshauptstadt",9162,9162,0.9
+3634,"München, Landeshauptstadt",9162,9162,0.9
+3635,"München, Landeshauptstadt",9162,9162,0.9
+3636,"München, Landeshauptstadt",9162,9162,0.9
+3637,"München, Landeshauptstadt",9162,9162,0.9
+3638,"München, Landeshauptstadt",9162,9162,0.9
+3639,"München, Landeshauptstadt",9162,9162,0.9
+3640,"München, Landeshauptstadt",9162,9162,0.9
+3641,"München, Landeshauptstadt",9162,9162,0.9
+3642,"München, Landeshauptstadt",9162,9162,0.9
+3643,"München, Landeshauptstadt",9162,9162,0.9
+3644,"München, Landeshauptstadt",9162,9162,0.9
+3645,"München, Landeshauptstadt",9162,9162,0.9
+3646,"München, Landeshauptstadt",9162,9162,0.9
+3647,"München, Landeshauptstadt",9162,9162,0.9
+3648,"München, Landeshauptstadt",9162,9162,0.9
+3649,"München, Landeshauptstadt",9162,9162,0.9
+3650,"München, Landeshauptstadt",9162,9162,0.9
+3651,"München, Landeshauptstadt",9162,9162,0.9
+3652,"München, Landeshauptstadt",9162,9162,0.9
+3653,"München, Landeshauptstadt",9162,9162,0.9
+3654,"München, Landeshauptstadt",9162,9162,0.9
+3655,"München, Landeshauptstadt",9162,9162,0.9
+3656,"München, Landeshauptstadt",9162,9162,0.9
+3657,"München, Landeshauptstadt",9162,9162,0.9
+3658,"München, Landeshauptstadt",9162,9162,0.9
+3659,"München, Landeshauptstadt",9162,9162,0.9
+3660,"München, Landeshauptstadt",9162,9162,0.9
+3661,"München, Landeshauptstadt",9162,9162,0.9
+3662,"München, Landeshauptstadt",9162,9162,0.9
+3663,"München, Landeshauptstadt",9162,9162,0.9
+3664,"München, Landeshauptstadt",9162,9162,0.9
+3665,"München, Landeshauptstadt",9162,9162,0.9
+3666,"München, Landeshauptstadt",9162,9162,0.9
+3667,"München, Landeshauptstadt",9162,9162,0.9
+3668,"München, Landeshauptstadt",9162,9162,0.9
+3669,"München, Landeshauptstadt",9162,9162,0.9
+3670,"München, Landeshauptstadt",9162,9162,0.9
+3671,"München, Landeshauptstadt",9162,9162,0.9
+3672,"München, Landeshauptstadt",9162,9162,0.9
+3673,"München, Landeshauptstadt",9162,9162,0.9
+3674,"München, Landeshauptstadt",9162,9162,0.9
+3675,"München, Landeshauptstadt",9162,9162,0.9
+3676,"München, Landeshauptstadt",9162,9162,0.9
+3677,"München, Landeshauptstadt",9162,9162,0.9
+3678,"München, Landeshauptstadt",9162,9162,0.9
+3679,"München, Landeshauptstadt",9162,9162,0.9
+3680,"München, Landeshauptstadt",9162,9162,0.9
+3681,"München, Landeshauptstadt",9162,9162,0.9
+3682,"München, Landeshauptstadt",9162,9162,0.9
+3683,"München, Landeshauptstadt",9162,9162,0.9
+3684,"München, Landeshauptstadt",9162,9162,0.9
+3685,"München, Landeshauptstadt",9162,9162,0.9
+3686,"München, Landeshauptstadt",9162,9162,0.9
+3687,"München, Landeshauptstadt",9162,9162,0.9
+3688,"München, Landeshauptstadt",9162,9162,0.9
+3689,"München, Landeshauptstadt",9162,9162,0.9
+3690,"München, Landeshauptstadt",9162,9162,0.9
+3691,"München, Landeshauptstadt",9162,9162,0.9
+3692,"München, Landeshauptstadt",9162,9162,0.9
+3693,"München, Landeshauptstadt",9162,9162,0.9
+3694,"München, Landeshauptstadt",9162,9162,0.9
+3695,"München, Landeshauptstadt",9162,9162,0.9
+3696,"München, Landeshauptstadt",9162,9162,0.9
+3697,"München, Landeshauptstadt",9162,9162,0.9
+3698,"München, Landeshauptstadt",9162,9162,0.9
+3699,"München, Landeshauptstadt",9162,9162,0.9
+3700,"München, Landeshauptstadt",9162,9162,0.9
+3701,"München, Landeshauptstadt",9162,9162,0.9
+3702,"München, Landeshauptstadt",9162,9162,0.9
+3703,"München, Landeshauptstadt",9162,9162,0.9
+3704,"München, Landeshauptstadt",9162,9162,0.9
+3705,"München, Landeshauptstadt",9162,9162,0.9
+3706,"München, Landeshauptstadt",9162,9162,0.9
+3707,"München, Landeshauptstadt",9162,9162,0.9
+3708,"München, Landeshauptstadt",9162,9162,0.9
+3709,"München, Landeshauptstadt",9162,9162,0.9
+3710,"München, Landeshauptstadt",9162,9162,0.9
+3711,"München, Landeshauptstadt",9162,9162,0.9
+3712,"München, Landeshauptstadt",9162,9162,0.9
+3713,"München, Landeshauptstadt",9162,9162,0.9
+3714,"München, Landeshauptstadt",9162,9162,0.9
+3715,"München, Landeshauptstadt",9162,9162,0.9
+3716,"München, Landeshauptstadt",9162,9162,0.9
+3717,"München, Landeshauptstadt",9162,9162,0.9
+3718,"München, Landeshauptstadt",9162,9162,0.9
+3719,"München, Landeshauptstadt",9162,9162,0.9
+3720,"München, Landeshauptstadt",9162,9162,0.9
+3721,"München, Landeshauptstadt",9162,9162,0.9
+3722,"München, Landeshauptstadt",9162,9162,0.9
+3723,"München, Landeshauptstadt",9162,9162,0.9
+3724,"München, Landeshauptstadt",9162,9162,0.9
+3725,"München, Landeshauptstadt",9162,9162,0.9
+3726,"München, Landeshauptstadt",9162,9162,0.9
+3727,"München, Landeshauptstadt",9162,9162,0.9
+3728,"München, Landeshauptstadt",9162,9162,0.9
+3729,"München, Landeshauptstadt",9162,9162,0.9
+3730,"München, Landeshauptstadt",9162,9162,0.9
+3731,"München, Landeshauptstadt",9162,9162,0.9
+3732,"München, Landeshauptstadt",9162,9162,0.9
+3733,"München, Landeshauptstadt",9162,9162,0.9
+3734,"München, Landeshauptstadt",9162,9162,0.9
+3735,"München, Landeshauptstadt",9162,9162,0.9
+3736,"München, Landeshauptstadt",9162,9162,0.9
+3737,"München, Landeshauptstadt",9162,9162,0.9
+3738,"München, Landeshauptstadt",9162,9162,0.9
+3739,"München, Landeshauptstadt",9162,9162,0.9
+3740,"München, Landeshauptstadt",9162,9162,0.9
+3741,"München, Landeshauptstadt",9162,9162,0.9
+3742,"München, Landeshauptstadt",9162,9162,0.9
+3743,"München, Landeshauptstadt",9162,9162,0.9
+3744,"München, Landeshauptstadt",9162,9162,0.9
+3745,"München, Landeshauptstadt",9162,9162,0.9
+3746,"München, Landeshauptstadt",9162,9162,0.9
+3747,"München, Landeshauptstadt",9162,9162,0.9
+3748,"München, Landeshauptstadt",9162,9162,0.9
+3749,"München, Landeshauptstadt",9162,9162,0.9
+3750,"München, Landeshauptstadt",9162,9162,0.9
+3751,"München, Landeshauptstadt",9162,9162,0.9
+3752,"München, Landeshauptstadt",9162,9162,0.9
+3753,"München, Landeshauptstadt",9162,9162,0.9
+3754,"München, Landeshauptstadt",9162,9162,0.9
+3755,"München, Landeshauptstadt",9162,9162,0.9
+3756,"München, Landeshauptstadt",9162,9162,0.9
+3757,"München, Landeshauptstadt",9162,9162,0.9
+3758,"München, Landeshauptstadt",9162,9162,0.9
+3759,"München, Landeshauptstadt",9162,9162,0.9
+3760,"München, Landeshauptstadt",9162,9162,0.9
+3761,"München, Landeshauptstadt",9162,9162,0.9
+3762,"München, Landeshauptstadt",9162,9162,0.9
+3763,"München, Landeshauptstadt",9162,9162,0.9
+3764,"München, Landeshauptstadt",9162,9162,0.9
+3765,"München, Landeshauptstadt",9162,9162,0.9
+3766,"München, Landeshauptstadt",9162,9162,0.9
+3767,"München, Landeshauptstadt",9162,9162,0.9
+3768,"München, Landeshauptstadt",9162,9162,0.9
+3769,"München, Landeshauptstadt",9162,9162,0.9
+3770,"München, Landeshauptstadt",9162,9162,0.9
+3771,"München, Landeshauptstadt",9162,9162,0.9
+3772,"München, Landeshauptstadt",9162,9162,0.9
+3773,"München, Landeshauptstadt",9162,9162,0.9
+3774,"München, Landeshauptstadt",9162,9162,0.9
+3775,"München, Landeshauptstadt",9162,9162,0.9
+3776,"München, Landeshauptstadt",9162,9162,0.9
+3777,"München, Landeshauptstadt",9162,9162,0.9
+3778,"München, Landeshauptstadt",9162,9162,0.9
+3779,"München, Landeshauptstadt",9162,9162,0.9
+3780,"München, Landeshauptstadt",9162,9162,0.9
+3781,"München, Landeshauptstadt",9162,9162,0.9
+3782,"München, Landeshauptstadt",9162,9162,0.9
+3783,"München, Landeshauptstadt",9162,9162,0.9
+3784,"München, Landeshauptstadt",9162,9162,0.9
+3785,"München, Landeshauptstadt",9162,9162,0.9
+3786,"München, Landeshauptstadt",9162,9162,0.9
+3787,"München, Landeshauptstadt",9162,9162,0.9
+3788,"München, Landeshauptstadt",9162,9162,0.9
+3789,"München, Landeshauptstadt",9162,9162,0.9
+3790,"München, Landeshauptstadt",9162,9162,0.9
+3791,"München, Landeshauptstadt",9162,9162,0.9
+3792,"München, Landeshauptstadt",9162,9162,0.9
+3793,"München, Landeshauptstadt",9162,9162,0.9
+3794,Aschheim,9184,9184,0.9
+3795,Aschheim,9184,9184,0.9
+3796,"München, Landeshauptstadt",9162,9162,0.9
+3797,"München, Landeshauptstadt",9162,9162,0.9
+3798,"München, Landeshauptstadt",9162,9162,0.9
+3799,"München, Landeshauptstadt",9162,9162,0.9
+3800,"München, Landeshauptstadt",9162,9162,0.9
+3801,"München, Landeshauptstadt",9162,9162,0.9
+3802,"München, Landeshauptstadt",9162,9162,0.9
+3803,"München, Landeshauptstadt",9162,9162,0.9
+3804,"München, Landeshauptstadt",9162,9162,0.9
+3805,"München, Landeshauptstadt",9162,9162,0.9
+3806,"München, Landeshauptstadt",9162,9162,0.9
+3807,"München, Landeshauptstadt",9162,9162,0.9
+3808,"München, Landeshauptstadt",9162,9162,0.9
+3809,"München, Landeshauptstadt",9162,9162,0.9
+3810,"München, Landeshauptstadt",9162,9162,0.9
+3811,"München, Landeshauptstadt",9162,9162,0.9
+3812,"München, Landeshauptstadt",9162,9162,0.9
+3813,"München, Landeshauptstadt",9162,9162,0.9
+3814,"München, Landeshauptstadt",9162,9162,0.9
+3815,"München, Landeshauptstadt",9162,9162,0.9
+3816,"München, Landeshauptstadt",9162,9162,0.9
+3817,"München, Landeshauptstadt",9162,9162,0.9
+3818,"München, Landeshauptstadt",9162,9162,0.9
+3819,"München, Landeshauptstadt",9162,9162,0.9
+3820,"München, Landeshauptstadt",9162,9162,0.9
+3821,"München, Landeshauptstadt",9162,9162,0.9
+3822,"München, Landeshauptstadt",9162,9162,0.9
+3823,"München, Landeshauptstadt",9162,9162,0.9
+3824,"München, Landeshauptstadt",9162,9162,0.9
+3825,"München, Landeshauptstadt",9162,9162,0.9
+3826,"München, Landeshauptstadt",9162,9162,0.9
+3827,"München, Landeshauptstadt",9162,9162,0.9
+3828,"München, Landeshauptstadt",9162,9162,0.9
+3829,"München, Landeshauptstadt",9162,9162,0.9
+3830,"München, Landeshauptstadt",9162,9162,0.9
+3831,"München, Landeshauptstadt",9162,9162,0.9
+3832,"München, Landeshauptstadt",9162,9162,0.9
+3833,"München, Landeshauptstadt",9162,9162,0.9
+3834,"München, Landeshauptstadt",9162,9162,0.9
+3835,"München, Landeshauptstadt",9162,9162,0.9
+3836,"München, Landeshauptstadt",9162,9162,0.9
+3837,"München, Landeshauptstadt",9162,9162,0.9
+3838,"München, Landeshauptstadt",9162,9162,0.9
+3839,"München, Landeshauptstadt",9162,9162,0.9
+3840,"München, Landeshauptstadt",9162,9162,0.9
+3841,"München, Landeshauptstadt",9162,9162,0.9
+3842,"München, Landeshauptstadt",9162,9162,0.9
+3843,"München, Landeshauptstadt",9162,9162,0.9
+3844,"München, Landeshauptstadt",9162,9162,0.9
+3845,"München, Landeshauptstadt",9162,9162,0.9
+3846,"München, Landeshauptstadt",9162,9162,0.9
+3847,"München, Landeshauptstadt",9162,9162,0.9
+3848,"München, Landeshauptstadt",9162,9162,0.9
+3849,"München, Landeshauptstadt",9162,9162,0.9
+3850,"München, Landeshauptstadt",9162,9162,0.9
+3851,"München, Landeshauptstadt",9162,9162,0.9
+3852,"München, Landeshauptstadt",9162,9162,0.9
+3853,"München, Landeshauptstadt",9162,9162,0.9
+3854,"München, Landeshauptstadt",9162,9162,0.9
+3855,"München, Landeshauptstadt",9162,9162,0.9
+3856,"München, Landeshauptstadt",9162,9162,0.9
+3857,"München, Landeshauptstadt",9162,9162,0.9
+3858,"München, Landeshauptstadt",9162,9162,0.9
+3859,"München, Landeshauptstadt",9162,9162,0.9
+3860,"München, Landeshauptstadt",9162,9162,0.9
+3861,"München, Landeshauptstadt",9162,9162,0.9
+3862,"München, Landeshauptstadt",9162,9162,0.9
+3863,"München, Landeshauptstadt",9162,9162,0.9
+3864,"München, Landeshauptstadt",9162,9162,0.9
+3865,"München, Landeshauptstadt",9162,9162,0.9
+3866,"München, Landeshauptstadt",9162,9162,0.9
+3867,"München, Landeshauptstadt",9162,9162,0.9
+3868,"München, Landeshauptstadt",9162,9162,0.9
+3869,"München, Landeshauptstadt",9162,9162,0.9
+3870,"München, Landeshauptstadt",9162,9162,0.9
+3871,"München, Landeshauptstadt",9162,9162,0.9
+3872,"München, Landeshauptstadt",9162,9162,0.9
+3873,"München, Landeshauptstadt",9162,9162,0.9
+3874,"München, Landeshauptstadt",9162,9162,0.9
+3875,"München, Landeshauptstadt",9162,9162,0.9
+3876,"München, Landeshauptstadt",9162,9162,0.9
+3877,"München, Landeshauptstadt",9162,9162,0.9
+3878,"München, Landeshauptstadt",9162,9162,0.9
+3879,"München, Landeshauptstadt",9162,9162,0.9
+3880,"München, Landeshauptstadt",9162,9162,0.9
+3881,"München, Landeshauptstadt",9162,9162,0.9
+3882,"München, Landeshauptstadt",9162,9162,0.9
+3883,"München, Landeshauptstadt",9162,9162,0.9
+3884,"München, Landeshauptstadt",9162,9162,0.9
+3885,"München, Landeshauptstadt",9162,9162,0.9
+3886,"München, Landeshauptstadt",9162,9162,0.9
+3887,"München, Landeshauptstadt",9162,9162,0.9
+3888,"München, Landeshauptstadt",9162,9162,0.9
+3889,"München, Landeshauptstadt",9162,9162,0.9
+3890,"München, Landeshauptstadt",9162,9162,0.9
+3891,"München, Landeshauptstadt",9162,9162,0.9
+3892,"München, Landeshauptstadt",9162,9162,0.9
+3893,"München, Landeshauptstadt",9162,9162,0.9
+3894,"München, Landeshauptstadt",9162,9162,0.9
+3895,"München, Landeshauptstadt",9162,9162,0.9
+3896,"München, Landeshauptstadt",9162,9162,0.9
+3897,"München, Landeshauptstadt",9162,9162,0.9
+3898,"München, Landeshauptstadt",9162,9162,0.9
+3899,"München, Landeshauptstadt",9162,9162,0.9
+3900,"München, Landeshauptstadt",9162,9162,0.9
+3901,"München, Landeshauptstadt",9162,9162,0.9
+3902,"München, Landeshauptstadt",9162,9162,0.9
+3903,"München, Landeshauptstadt",9162,9162,0.9
+3904,"München, Landeshauptstadt",9162,9162,0.9
+3905,"München, Landeshauptstadt",9162,9162,0.9
+3906,"München, Landeshauptstadt",9162,9162,0.9
+3907,"München, Landeshauptstadt",9162,9162,0.9
+3908,"München, Landeshauptstadt",9162,9162,0.9
+3909,"München, Landeshauptstadt",9162,9162,0.9
+3910,"München, Landeshauptstadt",9162,9162,0.9
+3911,"München, Landeshauptstadt",9162,9162,0.9
+3912,"München, Landeshauptstadt",9162,9162,0.9
+3913,"München, Landeshauptstadt",9162,9162,0.9
+3914,"München, Landeshauptstadt",9162,9162,0.9
+3915,"München, Landeshauptstadt",9162,9162,0.9
+3916,"München, Landeshauptstadt",9162,9162,0.9
+3917,"München, Landeshauptstadt",9162,9162,0.9
+3918,"München, Landeshauptstadt",9162,9162,0.9
+3919,"München, Landeshauptstadt",9162,9162,0.9
+3920,"München, Landeshauptstadt",9162,9162,0.9
+3921,"München, Landeshauptstadt",9162,9162,0.9
+3922,"München, Landeshauptstadt",9162,9162,0.9
+3923,"München, Landeshauptstadt",9162,9162,0.9
+3924,"München, Landeshauptstadt",9162,9162,0.9
+3925,"München, Landeshauptstadt",9162,9162,0.9
+3926,"München, Landeshauptstadt",9162,9162,0.9
+3927,"München, Landeshauptstadt",9162,9162,0.9
+3928,"München, Landeshauptstadt",9162,9162,0.9
+3929,"München, Landeshauptstadt",9162,9162,0.9
+3930,"München, Landeshauptstadt",9162,9162,0.9
+3931,"München, Landeshauptstadt",9162,9162,0.9
+3932,"München, Landeshauptstadt",9162,9162,0.9
+3933,"München, Landeshauptstadt",9162,9162,0.9
+3934,"München, Landeshauptstadt",9162,9162,0.9
+3935,"München, Landeshauptstadt",9162,9162,0.9
+3936,"München, Landeshauptstadt",9162,9162,0.9
+3937,"München, Landeshauptstadt",9162,9162,0.9
+3938,"München, Landeshauptstadt",9162,9162,0.9
+3939,"München, Landeshauptstadt",9162,9162,0.9
+3940,"München, Landeshauptstadt",9162,9162,0.9
+3941,"München, Landeshauptstadt",9162,9162,0.9
+3942,"München, Landeshauptstadt",9162,9162,0.9
+3943,"München, Landeshauptstadt",9162,9162,0.9
+3944,"München, Landeshauptstadt",9162,9162,0.9
+3945,"München, Landeshauptstadt",9162,9162,0.9
+3946,"München, Landeshauptstadt",9162,9162,0.9
+3947,"München, Landeshauptstadt",9162,9162,0.9
+3948,"München, Landeshauptstadt",9162,9162,0.9
+3949,"München, Landeshauptstadt",9162,9162,0.9
+3950,"München, Landeshauptstadt",9162,9162,0.9
+3951,"München, Landeshauptstadt",9162,9162,0.9
+3952,"München, Landeshauptstadt",9162,9162,0.9
+3953,"München, Landeshauptstadt",9162,9162,0.9
+3954,"München, Landeshauptstadt",9162,9162,0.9
+3955,"München, Landeshauptstadt",9162,9162,0.9
+3956,"München, Landeshauptstadt",9162,9162,0.9
+3957,"München, Landeshauptstadt",9162,9162,0.9
+3958,"München, Landeshauptstadt",9162,9162,0.9
+3959,"München, Landeshauptstadt",9162,9162,0.9
+3960,"München, Landeshauptstadt",9162,9162,0.9
+3961,"München, Landeshauptstadt",9162,9162,0.9
+3962,"München, Landeshauptstadt",9162,9162,0.9
+3963,"München, Landeshauptstadt",9162,9162,0.9
+3964,"München, Landeshauptstadt",9162,9162,0.9
+3965,"München, Landeshauptstadt",9162,9162,0.9
+3966,"München, Landeshauptstadt",9162,9162,0.9
+3967,"München, Landeshauptstadt",9162,9162,0.9
+3968,"München, Landeshauptstadt",9162,9162,0.9
+3969,"München, Landeshauptstadt",9162,9162,0.9
+3970,"München, Landeshauptstadt",9162,9162,0.9
+3971,"München, Landeshauptstadt",9162,9162,0.9
+3972,"München, Landeshauptstadt",9162,9162,0.9
+3973,"München, Landeshauptstadt",9162,9162,0.9
+3974,"München, Landeshauptstadt",9162,9162,0.9
+3975,"München, Landeshauptstadt",9162,9162,0.9
+3976,"München, Landeshauptstadt",9162,9162,0.9
+3977,"München, Landeshauptstadt",9162,9162,0.9
+3978,"München, Landeshauptstadt",9162,9162,0.9
+3979,"München, Landeshauptstadt",9162,9162,0.9
+3980,"München, Landeshauptstadt",9162,9162,0.9
+3981,"München, Landeshauptstadt",9162,9162,0.9
+3982,"München, Landeshauptstadt",9162,9162,0.9
+3983,"München, Landeshauptstadt",9162,9162,0.9
+3984,"München, Landeshauptstadt",9162,9162,0.9
+3985,"München, Landeshauptstadt",9162,9162,0.9
+3986,"München, Landeshauptstadt",9162,9162,0.9
+3987,"München, Landeshauptstadt",9162,9162,0.9
+3988,"München, Landeshauptstadt",9162,9162,0.9
+3989,"München, Landeshauptstadt",9162,9162,0.9
+3990,"München, Landeshauptstadt",9162,9162,0.9
+3991,"München, Landeshauptstadt",9162,9162,0.9
+3992,"München, Landeshauptstadt",9162,9162,0.9
+3993,"München, Landeshauptstadt",9162,9162,0.9
+3994,"München, Landeshauptstadt",9162,9162,0.9
+3995,"München, Landeshauptstadt",9162,9162,0.9
+3996,"München, Landeshauptstadt",9162,9162,0.9
+3997,"München, Landeshauptstadt",9162,9162,0.9
+3998,"München, Landeshauptstadt",9162,9162,0.9
+3999,"München, Landeshauptstadt",9162,9162,0.9
+4000,"München, Landeshauptstadt",9162,9162,0.9
+4001,"München, Landeshauptstadt",9162,9162,0.9
+4002,"München, Landeshauptstadt",9162,9162,0.9
+4003,"München, Landeshauptstadt",9162,9162,0.9
+4004,"München, Landeshauptstadt",9162,9162,0.9
+4005,"München, Landeshauptstadt",9162,9162,0.9
+4006,"München, Landeshauptstadt",9162,9162,0.9
+4007,"München, Landeshauptstadt",9162,9162,0.9
+4008,"München, Landeshauptstadt",9162,9162,0.9
+4009,"München, Landeshauptstadt",9162,9162,0.9
+4010,"München, Landeshauptstadt",9162,9162,0.9
+4011,"München, Landeshauptstadt",9162,9162,0.9
+4012,"München, Landeshauptstadt",9162,9162,0.9
+4013,"München, Landeshauptstadt",9162,9162,0.9
+4014,"München, Landeshauptstadt",9162,9162,0.9
+4015,"München, Landeshauptstadt",9162,9162,0.9
+4016,"München, Landeshauptstadt",9162,9162,0.9
+4017,"München, Landeshauptstadt",9162,9162,0.9
+4018,"München, Landeshauptstadt",9162,9162,0.9
+4019,"München, Landeshauptstadt",9162,9162,0.9
+4020,"München, Landeshauptstadt",9162,9162,0.9
+4021,"München, Landeshauptstadt",9162,9162,0.9
+4022,"München, Landeshauptstadt",9162,9162,0.9
+4023,"München, Landeshauptstadt",9162,9162,0.9
+4024,"München, Landeshauptstadt",9162,9162,0.9
+4025,"München, Landeshauptstadt",9162,9162,0.9
+4026,"München, Landeshauptstadt",9162,9162,0.9
+4027,"München, Landeshauptstadt",9162,9162,0.9
+4028,"München, Landeshauptstadt",9162,9162,0.9
+4029,"München, Landeshauptstadt",9162,9162,0.9
+4030,"München, Landeshauptstadt",9162,9162,0.9
+4031,"München, Landeshauptstadt",9162,9162,0.9
+4032,"München, Landeshauptstadt",9162,9162,0.9
+4033,"München, Landeshauptstadt",9162,9162,0.9
+4034,"München, Landeshauptstadt",9162,9162,0.9
+4035,"München, Landeshauptstadt",9162,9162,0.9
+4036,"München, Landeshauptstadt",9162,9162,0.9
+4037,"München, Landeshauptstadt",9162,9162,0.9
+4038,"München, Landeshauptstadt",9162,9162,0.9
+4039,"München, Landeshauptstadt",9162,9162,0.9
+4040,"München, Landeshauptstadt",9162,9162,0.9
+4041,"München, Landeshauptstadt",9162,9162,0.9
+4042,"München, Landeshauptstadt",9162,9162,0.9
+4043,"München, Landeshauptstadt",9162,9162,0.9
+4044,"München, Landeshauptstadt",9162,9162,0.9
+4045,"München, Landeshauptstadt",9162,9162,0.9
+4046,"München, Landeshauptstadt",9162,9162,0.9
+4047,"München, Landeshauptstadt",9162,9162,0.9
+4048,"München, Landeshauptstadt",9162,9162,0.9
+4049,"München, Landeshauptstadt",9162,9162,0.9
+4050,"München, Landeshauptstadt",9162,9162,0.9
+4051,"München, Landeshauptstadt",9162,9162,0.9
+4052,"München, Landeshauptstadt",9162,9162,0.9
+4053,"München, Landeshauptstadt",9162,9162,0.9
+4054,"München, Landeshauptstadt",9162,9162,0.9
+4055,"München, Landeshauptstadt",9162,9162,0.9
+4056,"München, Landeshauptstadt",9162,9162,0.9
+4057,"München, Landeshauptstadt",9162,9162,0.9
+4058,"München, Landeshauptstadt",9162,9162,0.9
+4059,"München, Landeshauptstadt",9162,9162,0.9
+4060,"München, Landeshauptstadt",9162,9162,0.9
+4061,"München, Landeshauptstadt",9162,9162,0.9
+4062,"München, Landeshauptstadt",9162,9162,0.9
+4063,"München, Landeshauptstadt",9162,9162,0.9
+4064,"München, Landeshauptstadt",9162,9162,0.9
+4065,"München, Landeshauptstadt",9162,9162,0.9
+4066,"München, Landeshauptstadt",9162,9162,0.9
+4067,"München, Landeshauptstadt",9162,9162,0.9
+4068,"München, Landeshauptstadt",9162,9162,0.9
+4069,"München, Landeshauptstadt",9162,9162,0.9
+4070,"München, Landeshauptstadt",9162,9162,0.9
+4071,"München, Landeshauptstadt",9162,9162,0.9
+4072,"München, Landeshauptstadt",9162,9162,0.9
+4073,"München, Landeshauptstadt",9162,9162,0.9
+4074,"München, Landeshauptstadt",9162,9162,0.9
+4075,"München, Landeshauptstadt",9162,9162,0.9
+4076,"München, Landeshauptstadt",9162,9162,0.9
+4077,"München, Landeshauptstadt",9162,9162,0.9
+4078,"München, Landeshauptstadt",9162,9162,0.9
+4079,"München, Landeshauptstadt",9162,9162,0.9
+4080,"München, Landeshauptstadt",9162,9162,0.9
+4081,"München, Landeshauptstadt",9162,9162,0.9
+4082,"München, Landeshauptstadt",9162,9162,0.9
+4083,"München, Landeshauptstadt",9162,9162,0.9
+4084,"München, Landeshauptstadt",9162,9162,0.9
+4085,"München, Landeshauptstadt",9162,9162,0.9
+4086,"München, Landeshauptstadt",9162,9162,0.9
+4087,"München, Landeshauptstadt",9162,9162,0.9
+4088,"München, Landeshauptstadt",9162,9162,0.9
+4089,"München, Landeshauptstadt",9162,9162,0.9
+4090,"München, Landeshauptstadt",9162,9162,0.9
+4091,"München, Landeshauptstadt",9162,9162,0.9
+4092,"München, Landeshauptstadt",9162,9162,0.9
+4093,"München, Landeshauptstadt",9162,9162,0.9
+4094,"München, Landeshauptstadt",9162,9162,0.9
+4095,"München, Landeshauptstadt",9162,9162,0.9
+4096,"München, Landeshauptstadt",9162,9162,0.9
+4097,"München, Landeshauptstadt",9162,9162,0.9
+4098,"München, Landeshauptstadt",9162,9162,0.9
+4099,"München, Landeshauptstadt",9162,9162,0.9
+4100,"München, Landeshauptstadt",9162,9162,0.9
+4101,"München, Landeshauptstadt",9162,9162,0.9
+4102,"München, Landeshauptstadt",9162,9162,0.9
+4103,"München, Landeshauptstadt",9162,9162,0.9
+4104,"München, Landeshauptstadt",9162,9162,0.9
+4105,"München, Landeshauptstadt",9162,9162,0.9
+4106,"München, Landeshauptstadt",9162,9162,0.9
+4107,"München, Landeshauptstadt",9162,9162,0.9
+4108,"München, Landeshauptstadt",9162,9162,0.9
+4109,"München, Landeshauptstadt",9162,9162,0.9
+4110,"München, Landeshauptstadt",9162,9162,0.9
+4111,"München, Landeshauptstadt",9162,9162,0.9
+4112,"München, Landeshauptstadt",9162,9162,0.9
+4113,"München, Landeshauptstadt",9162,9162,0.9
+4114,"München, Landeshauptstadt",9162,9162,0.9
+4115,"München, Landeshauptstadt",9162,9162,0.9
+4116,"München, Landeshauptstadt",9162,9162,0.9
+4117,"München, Landeshauptstadt",9162,9162,0.9
+4118,"München, Landeshauptstadt",9162,9162,0.9
+4119,"München, Landeshauptstadt",9162,9162,0.9
+4120,"München, Landeshauptstadt",9162,9162,0.9
+4121,"München, Landeshauptstadt",9162,9162,0.9
+4124,"München, Landeshauptstadt",9162,9162,0.9
+4125,Neubiberg,9184,9184,0.9
+4126,Neubiberg,9184,9184,0.9
+4127,Unterhaching,9184,9184,0.9
+4128,Unterhaching,9184,9184,0.9
+4129,Unterhaching,9184,9184,0.9
+4130,Unterhaching,9184,9184,0.9
+4131,Unterhaching,9184,9184,0.9
+4132,Unterhaching,9184,9184,0.9
+4133,Unterhaching,9184,9184,0.9
+4134,Unterhaching,9184,9184,0.9
+4135,Unterhaching,9184,9184,0.9
+4136,Unterhaching,9184,9184,0.9
+4137,Unterhaching,9184,9184,0.9
+4138,"München, Landeshauptstadt",9162,9162,0.9
+4139,"München, Landeshauptstadt",9162,9162,0.9
+4140,"München, Landeshauptstadt",9162,9162,0.9
+4141,"München, Landeshauptstadt",9162,9162,0.9
+4142,"München, Landeshauptstadt",9162,9162,0.9
+4143,"München, Landeshauptstadt",9162,9162,0.9
+4144,"München, Landeshauptstadt",9162,9162,0.9
+4145,"München, Landeshauptstadt",9162,9162,0.9
+4146,"München, Landeshauptstadt",9162,9162,0.9
+4147,"München, Landeshauptstadt",9162,9162,0.9
+4148,"München, Landeshauptstadt",9162,9162,0.9
+4149,"München, Landeshauptstadt",9162,9162,0.9
+4150,"München, Landeshauptstadt",9162,9162,0.9
+4151,"München, Landeshauptstadt",9162,9162,0.9
+4152,"München, Landeshauptstadt",9162,9162,0.9
+4153,"München, Landeshauptstadt",9162,9162,0.9
+4154,"München, Landeshauptstadt",9162,9162,0.9
+4155,"München, Landeshauptstadt",9162,9162,0.9
+4156,"München, Landeshauptstadt",9162,9162,0.9
+4157,"München, Landeshauptstadt",9162,9162,0.9
+4158,"München, Landeshauptstadt",9162,9162,0.9
+4159,"München, Landeshauptstadt",9162,9162,0.9
+4160,"München, Landeshauptstadt",9162,9162,0.9
+4161,"München, Landeshauptstadt",9162,9162,0.9
+4162,"München, Landeshauptstadt",9162,9162,0.9
+4163,"München, Landeshauptstadt",9162,9162,0.9
+4164,"München, Landeshauptstadt",9162,9162,0.9
+4165,"München, Landeshauptstadt",9162,9162,0.9
+4166,"München, Landeshauptstadt",9162,9162,0.9
+4167,"München, Landeshauptstadt",9162,9162,0.9
+4168,"München, Landeshauptstadt",9162,9162,0.9
+4169,"München, Landeshauptstadt",9162,9162,0.9
+4170,"München, Landeshauptstadt",9162,9162,0.9
+4171,"München, Landeshauptstadt",9162,9162,0.9
+4172,"München, Landeshauptstadt",9162,9162,0.9
+4173,"München, Landeshauptstadt",9162,9162,0.9
+4174,"München, Landeshauptstadt",9162,9162,0.9
+4175,"München, Landeshauptstadt",9162,9162,0.9
+4176,"München, Landeshauptstadt",9162,9162,0.9
+4177,"München, Landeshauptstadt",9162,9162,0.9
+4178,"München, Landeshauptstadt",9162,9162,0.9
+4179,"München, Landeshauptstadt",9162,9162,0.9
+4180,"München, Landeshauptstadt",9162,9162,0.9
+4181,"München, Landeshauptstadt",9162,9162,0.9
+4182,"München, Landeshauptstadt",9162,9162,0.9
+4183,"München, Landeshauptstadt",9162,9162,0.9
+4184,"München, Landeshauptstadt",9162,9162,0.9
+4185,"München, Landeshauptstadt",9162,9162,0.9
+4186,"München, Landeshauptstadt",9162,9162,0.9
+4187,"München, Landeshauptstadt",9162,9162,0.9
+4188,"München, Landeshauptstadt",9162,9162,0.9
+4189,"München, Landeshauptstadt",9162,9162,0.9
+4190,"München, Landeshauptstadt",9162,9162,0.9
+4191,"München, Landeshauptstadt",9162,9162,0.9
+4192,"München, Landeshauptstadt",9162,9162,0.9
+4193,"München, Landeshauptstadt",9162,9162,0.9
+4194,"München, Landeshauptstadt",9162,9162,0.9
+4195,"München, Landeshauptstadt",9162,9162,0.9
+4196,"München, Landeshauptstadt",9162,9162,0.9
+4197,"München, Landeshauptstadt",9162,9162,0.9
+4198,"München, Landeshauptstadt",9162,9162,0.9
+4199,"München, Landeshauptstadt",9162,9162,0.9
+4200,"München, Landeshauptstadt",9162,9162,0.9
+4201,"München, Landeshauptstadt",9162,9162,0.9
+4202,"München, Landeshauptstadt",9162,9162,0.9
+4203,"München, Landeshauptstadt",9162,9162,0.9
+4204,"München, Landeshauptstadt",9162,9162,0.9
+4205,"München, Landeshauptstadt",9162,9162,0.9
+4206,"München, Landeshauptstadt",9162,9162,0.9
+4207,"München, Landeshauptstadt",9162,9162,0.9
+4208,"München, Landeshauptstadt",9162,9162,0.9
+4209,"München, Landeshauptstadt",9162,9162,0.9
+4210,"München, Landeshauptstadt",9162,9162,0.9
+4211,"München, Landeshauptstadt",9162,9162,0.9
+4212,"München, Landeshauptstadt",9162,9162,0.9
+4213,"München, Landeshauptstadt",9162,9162,0.9
+4214,"München, Landeshauptstadt",9162,9162,0.9
+4215,"München, Landeshauptstadt",9162,9162,0.9
+4216,"München, Landeshauptstadt",9162,9162,0.9
+4217,"München, Landeshauptstadt",9162,9162,0.9
+4218,"München, Landeshauptstadt",9162,9162,0.9
+4219,"München, Landeshauptstadt",9162,9162,0.9
+4220,"München, Landeshauptstadt",9162,9162,0.9
+4221,"München, Landeshauptstadt",9162,9162,0.9
+4222,"München, Landeshauptstadt",9162,9162,0.9
+4223,"München, Landeshauptstadt",9162,9162,0.9
+4224,"München, Landeshauptstadt",9162,9162,0.9
+4225,"München, Landeshauptstadt",9162,9162,0.9
+4226,"München, Landeshauptstadt",9162,9162,0.9
+4227,"München, Landeshauptstadt",9162,9162,0.9
+4228,"München, Landeshauptstadt",9162,9162,0.9
+4229,"München, Landeshauptstadt",9162,9162,0.9
+4230,"München, Landeshauptstadt",9162,9162,0.9
+4231,"München, Landeshauptstadt",9162,9162,0.9
+4232,"München, Landeshauptstadt",9162,9162,0.9
+4233,"München, Landeshauptstadt",9162,9162,0.9
+4234,"München, Landeshauptstadt",9162,9162,0.9
+4235,"München, Landeshauptstadt",9162,9162,0.9
+4236,"München, Landeshauptstadt",9162,9162,0.9
+4237,"München, Landeshauptstadt",9162,9162,0.9
+4238,"München, Landeshauptstadt",9162,9162,0.9
+4239,"München, Landeshauptstadt",9162,9162,0.9
+4240,"München, Landeshauptstadt",9162,9162,0.9
+4241,"München, Landeshauptstadt",9162,9162,0.9
+4242,"München, Landeshauptstadt",9162,9162,0.9
+4243,"München, Landeshauptstadt",9162,9162,0.9
+4244,"München, Landeshauptstadt",9162,9162,0.9
+4245,"München, Landeshauptstadt",9162,9162,0.9
+4246,"München, Landeshauptstadt",9162,9162,0.9
+4247,"München, Landeshauptstadt",9162,9162,0.9
+4248,"München, Landeshauptstadt",9162,9162,0.9
+4249,"München, Landeshauptstadt",9162,9162,0.9
+4250,"München, Landeshauptstadt",9162,9162,0.9
+4251,"München, Landeshauptstadt",9162,9162,0.9
+4252,"München, Landeshauptstadt",9162,9162,0.9
+4253,Haar,9184,9184,0.9
+4254,"München, Landeshauptstadt",9162,9162,0.9
+4255,"München, Landeshauptstadt",9162,9162,0.9
+4256,"München, Landeshauptstadt",9162,9162,0.9
+4257,"München, Landeshauptstadt",9162,9162,0.9
+4258,"München, Landeshauptstadt",9162,9162,0.9
+4259,"München, Landeshauptstadt",9162,9162,0.9
+4260,"München, Landeshauptstadt",9162,9162,0.9
+4261,"München, Landeshauptstadt",9162,9162,0.9
+4262,"München, Landeshauptstadt",9162,9162,0.9
+4263,"München, Landeshauptstadt",9162,9162,0.9
+4264,"München, Landeshauptstadt",9162,9162,0.9
+4265,Neubiberg,9184,9184,0.9
+4266,Neubiberg,9184,9184,0.9
+4267,"München, Landeshauptstadt",9162,9162,0.9
+4268,"München, Landeshauptstadt",9162,9162,0.9
+4269,"München, Landeshauptstadt",9162,9162,0.9
+4270,"München, Landeshauptstadt",9162,9162,0.9
+4271,Neubiberg,9184,9184,0.9
+4272,Neubiberg,9184,9184,0.9
+4273,Unterhaching,9184,9184,0.9
+4274,Unterhaching,9184,9184,0.9
+4275,Unterhaching,9184,9184,0.9
+4276,Unterhaching,9184,9184,0.9
+4277,Unterhaching,9184,9184,0.9
+4278,Neubiberg,9184,9184,0.9
+4279,Ottobrunn,9184,9184,0.9
+4280,Ottobrunn,9184,9184,0.9
+4281,Ottobrunn,9184,9184,0.9
+4282,Ottobrunn,9184,9184,0.9
+4283,"München, Landeshauptstadt",9162,9162,0.9
+4284,"München, Landeshauptstadt",9162,9162,0.9
+4285,"München, Landeshauptstadt",9162,9162,0.9
+4286,"München, Landeshauptstadt",9162,9162,0.9
+4287,"München, Landeshauptstadt",9162,9162,0.9
+4288,"München, Landeshauptstadt",9162,9162,0.9
+4289,Neubiberg,9184,9184,0.9
+4290,Ottobrunn,9184,9184,0.9
+4291,Neubiberg,9184,9184,0.9
+4292,Neubiberg,9184,9184,0.9
+4293,Neubiberg,9184,9184,0.9
+4294,Ottobrunn,9184,9184,0.9
+4295,Ottobrunn,9184,9184,0.9
+4296,Neubiberg,9184,9184,0.9
+4297,Ottobrunn,9184,9184,0.9
+4298,Ottobrunn,9184,9184,0.9
+4299,Ottobrunn,9184,9184,0.9
+4300,Ottobrunn,9184,9184,0.9
+4301,Ottobrunn,9184,9184,0.9
+4302,Putzbrunn,9184,9184,0.9
+4303,Ottobrunn,9184,9184,0.9
+4304,Aschheim,9184,9184,0.9
+4305,Aschheim,9184,9184,0.9
+4306,Aschheim,9184,9184,0.9
+4307,Aschheim,9184,9184,0.9
+4308,Aschheim,9184,9184,0.9
+4309,Aschheim,9184,9184,0.9
+4310,Aschheim,9184,9184,0.9
+4311,Feldkirchen,9184,9184,0.9
+4312,Feldkirchen,9184,9184,0.9
+4313,Kirchheim b.München,9184,9184,0.9
+4314,Kirchheim b.München,9184,9184,0.9
+4315,Kirchheim b.München,9184,9184,0.9
+4316,Kirchheim b.München,9184,9184,0.9
+4317,Kirchheim b.München,9184,9184,0.9
+4318,Kirchheim b.München,9184,9184,0.9
+4319,Kirchheim b.München,9184,9184,0.9
+4320,Kirchheim b.München,9184,9184,0.9
+4321,Kirchheim b.München,9184,9184,0.9
+4322,Kirchheim b.München,9184,9184,0.9
+4323,Kirchheim b.München,9184,9184,0.9
+4324,Kirchheim b.München,9184,9184,0.9
+4325,Feldkirchen,9184,9184,0.9
+4326,"München, Landeshauptstadt",9162,9162,0.9
+4327,Feldkirchen,9184,9184,0.9
+4328,Feldkirchen,9184,9184,0.9
+4329,Feldkirchen,9184,9184,0.9
+4330,Feldkirchen,9184,9184,0.9
+4331,Haar,9184,9184,0.9
+4332,"München, Landeshauptstadt",9162,9162,0.9
+4333,"München, Landeshauptstadt",9162,9162,0.9
+4334,Haar,9184,9184,0.9
+4335,Vaterstetten,9175,9175,0.9
+4336,Vaterstetten,9175,9175,0.9
+4337,Vaterstetten,9175,9175,0.9
+4338,Poing,9175,9175,0.9
+4339,Poing,9175,9175,0.9
+4340,Poing,9175,9175,0.9
+4341,Poing,9175,9175,0.9
+4342,Poing,9175,9175,0.9
+4343,Poing,9175,9175,0.9
+4344,Poing,9175,9175,0.9
+4345,Poing,9175,9175,0.9
+4346,Poing,9175,9175,0.9
+4347,Poing,9175,9175,0.9
+4348,Poing,9175,9175,0.9
+4349,Poing,9175,9175,0.9
+4350,Poing,9175,9175,0.9
+4351,Anzing,9175,9175,0.9
+4352,Anzing,9175,9175,0.9
+4353,Vaterstetten,9175,9175,0.9
+4354,Anzing,9175,9175,0.9
+4356,"München, Landeshauptstadt",9162,9162,0.9
+4357,"München, Landeshauptstadt",9162,9162,0.9
+4358,Haar,9184,9184,0.9
+4359,Haar,9184,9184,0.9
+4360,Haar,9184,9184,0.9
+4361,Haar,9184,9184,0.9
+4362,"München, Landeshauptstadt",9162,9162,0.9
+4363,Haar,9184,9184,0.9
+4364,Haar,9184,9184,0.9
+4365,Haar,9184,9184,0.9
+4366,Haar,9184,9184,0.9
+4367,Haar,9184,9184,0.9
+4368,Haar,9184,9184,0.9
+4369,Haar,9184,9184,0.9
+4370,Haar,9184,9184,0.9
+4371,Haar,9184,9184,0.9
+4372,Haar,9184,9184,0.9
+4373,Putzbrunn,9184,9184,0.9
+4374,Haar,9184,9184,0.9
+4375,"München, Landeshauptstadt",9162,9162,0.9
+4376,Vaterstetten,9175,9175,0.9
+4377,Vaterstetten,9175,9175,0.9
+4378,Vaterstetten,9175,9175,0.9
+4379,Vaterstetten,9175,9175,0.9
+4380,Vaterstetten,9175,9175,0.9
+4381,Vaterstetten,9175,9175,0.9
+4382,Grasbrunn,9184,9184,0.9
+4383,Grasbrunn,9184,9184,0.9
+4384,Vaterstetten,9175,9175,0.9
+4385,Vaterstetten,9175,9175,0.9
+4386,Vaterstetten,9175,9175,0.9
+4387,Vaterstetten,9175,9175,0.9
+4388,Vaterstetten,9175,9175,0.9
+4389,Vaterstetten,9175,9175,0.9
+4390,Vaterstetten,9175,9175,0.9
+4391,Vaterstetten,9175,9175,0.9
+4392,Putzbrunn,9184,9184,0.9
+4393,Putzbrunn,9184,9184,0.9
+4394,Grasbrunn,9184,9184,0.9
+4395,Vaterstetten,9175,9175,0.9
+4396,Vaterstetten,9175,9175,0.9
+4397,Zorneding,9175,9175,0.9
+4398,Zorneding,9175,9175,0.9
+4399,Zorneding,9175,9175,0.9
+4400,Zorneding,9175,9175,0.9
+4401,Zorneding,9175,9175,0.9
+4402,Zorneding,9175,9175,0.9
+4403,Zorneding,9175,9175,0.9
+4404,"Kirchseeon, M",9175,9175,0.9
+4406,Grünwald,9184,9184,0.9
+4407,Grünwald,9184,9184,0.9
+4409,Grünwald,9184,9184,0.9
+4410,Grünwald,9184,9184,0.9
+4411,Taufkirchen,9184,9184,0.9
+4412,Taufkirchen,9184,9184,0.9
+4413,Taufkirchen,9184,9184,0.9
+4414,Taufkirchen,9184,9184,0.9
+4415,Taufkirchen,9184,9184,0.9
+4416,Taufkirchen,9184,9184,0.9
+4417,Taufkirchen,9184,9184,0.9
+4418,Taufkirchen,9184,9184,0.9
+4419,Taufkirchen,9184,9184,0.9
+4420,Oberhaching,9184,9184,0.9
+4421,Oberhaching,9184,9184,0.9
+4422,Oberhaching,9184,9184,0.9
+4423,Oberhaching,9184,9184,0.9
+4424,Oberhaching,9184,9184,0.9
+4425,Oberhaching,9184,9184,0.9
+4426,Oberhaching,9184,9184,0.9
+4427,Oberhaching,9184,9184,0.9
+4428,Oberhaching,9184,9184,0.9
+4429,Grünwald,9184,9184,0.9
+4430,Unterhaching,9184,9184,0.9
+4431,Unterhaching,9184,9184,0.9
+4432,Unterhaching,9184,9184,0.9
+4433,Ottobrunn,9184,9184,0.9
+4434,Ottobrunn,9184,9184,0.9
+4435,Ottobrunn,9184,9184,0.9
+4436,Ottobrunn,9184,9184,0.9
+4437,Taufkirchen,9184,9184,0.9
+4438,Taufkirchen,9184,9184,0.9
+4439,Taufkirchen,9184,9184,0.9
+4440,Taufkirchen,9184,9184,0.9
+4441,Ottobrunn,9184,9184,0.9
+4442,Ottobrunn,9184,9184,0.9
+4443,Hohenbrunn,9184,9184,0.9
+4444,Ottobrunn,9184,9184,0.9
+4445,Taufkirchen,9184,9184,0.9
+4446,Taufkirchen,9184,9184,0.9
+4447,Taufkirchen,9184,9184,0.9
+4448,Hohenbrunn,9184,9184,0.9
+4449,Taufkirchen,9184,9184,0.9
+4450,Hohenbrunn,9184,9184,0.9
+4451,Hohenbrunn,9184,9184,0.9
+4452,Brunnthal,9184,9184,0.9
+4453,Brunnthal,9184,9184,0.9
+4454,Oberhaching,9184,9184,0.9
+4455,Straßlach-Dingharting,9184,9184,0.9
+4456,Sauerlach,9184,9184,0.9
+4457,Sauerlach,9184,9184,0.9
+4458,Sauerlach,9184,9184,0.9
+4459,Sauerlach,9184,9184,0.9
+4460,Sauerlach,9184,9184,0.9
+4461,Brunnthal,9184,9184,0.9
+4462,Hohenbrunn,9184,9184,0.9
+4463,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4464,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4465,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4466,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4467,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4468,Hohenbrunn,9184,9184,0.9
+4469,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4470,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4471,Höhenkirchen-Siegertsbrunn,9184,9184,0.9
+4472,Brunnthal,9184,9184,0.9
+4473,Oberpframmern,9175,9175,0.9
+4474,Oberpframmern,9175,9175,0.9
+4475,Grasbrunn,9184,9184,0.9
+4476,Aying,9184,9184,0.9
+4477,Aying,9184,9184,0.9
+4478,"Glonn, M",9175,9175,0.9
+4479,"Glonn, M",9175,9175,0.9
+4480,"Glonn, M",9175,9175,0.9
+4481,Egmating,9175,9175,0.9
+4482,Aying,9184,9184,0.9
+4483,Feldafing,9188,9188,0.9
+4484,Pähl,9190,9190,0.9
+4485,Tutzing,9188,9188,0.9
+4486,Tutzing,9188,9188,0.9
+4487,Tutzing,9188,9188,0.9
+4488,Tutzing,9188,9188,0.9
+4489,Tutzing,9188,9188,0.9
+4490,Feldafing,9188,9188,0.9
+4491,Feldafing,9188,9188,0.9
+4493,Tutzing,9188,9188,0.9
+4495,Bernried am Starnberger See,9190,9190,0.9
+4496,Bernried am Starnberger See,9190,9190,0.9
+4497,Münsing,9173,9173,0.9
+4498,Eurasburg,9173,9173,0.9
+4499,Berg,9188,9188,0.9
+4500,"Wolfratshausen, St",9173,9173,0.9
+4501,"Wolfratshausen, St",9173,9173,0.9
+4502,"Wolfratshausen, St",9173,9173,0.9
+4503,"Wolfratshausen, St",9173,9173,0.9
+4504,"Wolfratshausen, St",9173,9173,0.9
+4505,"Wolfratshausen, St",9173,9173,0.9
+4506,Icking,9173,9173,0.9
+4507,"Wolfratshausen, St",9173,9173,0.9
+4508,"Wolfratshausen, St",9173,9173,0.9
+4509,"Wolfratshausen, St",9173,9173,0.9
+4510,"Wolfratshausen, St",9173,9173,0.9
+4511,"Wolfratshausen, St",9173,9173,0.9
+4512,"Wolfratshausen, St",9173,9173,0.9
+4513,"Wolfratshausen, St",9173,9173,0.9
+4514,"Wolfratshausen, St",9173,9173,0.9
+4515,"Wolfratshausen, St",9173,9173,0.9
+4516,"Wolfratshausen, St",9173,9173,0.9
+4517,"Wolfratshausen, St",9173,9173,0.9
+4518,"Wolfratshausen, St",9173,9173,0.9
+4519,"Wolfratshausen, St",9173,9173,0.9
+4520,"Geretsried, St",9173,9173,0.9
+4521,Münsing,9173,9173,0.9
+4524,Egling,9173,9173,0.9
+4525,Egling,9173,9173,0.9
+4526,Egling,9173,9173,0.9
+4527,Münsing,9173,9173,0.9
+4528,"Geretsried, St",9173,9173,0.9
+4529,"Geretsried, St",9173,9173,0.9
+4530,"Geretsried, St",9173,9173,0.9
+4531,"Geretsried, St",9173,9173,0.9
+4532,"Geretsried, St",9173,9173,0.9
+4533,"Geretsried, St",9173,9173,0.9
+4534,"Geretsried, St",9173,9173,0.9
+4536,"Geretsried, St",9173,9173,0.9
+4537,"Geretsried, St",9173,9173,0.9
+4538,"Geretsried, St",9173,9173,0.9
+4539,"Geretsried, St",9173,9173,0.9
+4540,"Geretsried, St",9173,9173,0.9
+4541,"Geretsried, St",9173,9173,0.9
+4542,"Geretsried, St",9173,9173,0.9
+4543,"Geretsried, St",9173,9173,0.9
+4544,Königsdorf,9173,9173,0.9
+4545,"Geretsried, St",9173,9173,0.9
+4546,Eurasburg,9173,9173,0.9
+4547,Dietramszell,9173,9173,0.9
+4548,"Geretsried, St",9173,9173,0.9
+4549,Egling,9173,9173,0.9
+4550,Iffeldorf,9190,9190,0.9
+4551,Seeshaupt,9190,9190,0.9
+4552,"Penzberg, St",9190,9190,0.9
+4553,"Penzberg, St",9190,9190,0.9
+4554,"Penzberg, St",9190,9190,0.9
+4555,"Penzberg, St",9190,9190,0.9
+4556,Iffeldorf,9190,9190,0.9
+4557,Seeshaupt,9190,9190,0.9
+4558,Königsdorf,9173,9173,0.9
+4559,Eurasburg,9173,9173,0.9
+4560,Dietramszell,9173,9173,0.9
+4561,"Penzberg, St",9190,9190,0.9
+4562,"Penzberg, St",9190,9190,0.9
+4563,"Penzberg, St",9190,9190,0.9
+4564,"Penzberg, St",9190,9190,0.9
+4565,"Penzberg, St",9190,9190,0.9
+4566,"Penzberg, St",9190,9190,0.9
+4567,"Penzberg, St",9190,9190,0.9
+4568,"Penzberg, St",9190,9190,0.9
+4569,"Penzberg, St",9190,9190,0.9
+4570,"Penzberg, St",9190,9190,0.9
+4571,"Penzberg, St",9190,9190,0.9
+4572,"Penzberg, St",9190,9190,0.9
+4573,"Penzberg, St",9190,9190,0.9
+4574,"Penzberg, St",9190,9190,0.9
+4575,"Penzberg, St",9190,9190,0.9
+4576,"Penzberg, St",9190,9190,0.9
+4577,"Penzberg, St",9190,9190,0.9
+4578,"Penzberg, St",9190,9190,0.9
+4579,"Penzberg, St",9190,9190,0.9
+4580,"Penzberg, St",9190,9190,0.9
+4581,"Penzberg, St",9190,9190,0.9
+4582,"Penzberg, St",9190,9190,0.9
+4583,Egling,9173,9173,0.9
+4584,Otterfing,9182,9182,0.9
+4585,Otterfing,9182,9182,0.9
+4586,Otterfing,9182,9182,0.9
+4587,Dietramszell,9173,9173,0.9
+4588,"Holzkirchen, M",9182,9182,0.9
+4589,"Holzkirchen, M",9182,9182,0.9
+4590,"Holzkirchen, M",9182,9182,0.9
+4591,"Holzkirchen, M",9182,9182,0.9
+4592,"Holzkirchen, M",9182,9182,0.9
+4593,"Holzkirchen, M",9182,9182,0.9
+4594,"Holzkirchen, M",9182,9182,0.9
+4595,"Holzkirchen, M",9182,9182,0.9
+4596,"Holzkirchen, M",9182,9182,0.9
+4597,"Holzkirchen, M",9182,9182,0.9
+4598,"Holzkirchen, M",9182,9182,0.9
+4599,"Holzkirchen, M",9182,9182,0.9
+4600,Valley,9182,9182,0.9
+4601,"Holzkirchen, M",9182,9182,0.9
+4602,Feldkirchen-Westerham,9187,9187,0.9
+4603,Feldkirchen-Westerham,9187,9187,0.9
+4604,Feldkirchen-Westerham,9187,9187,0.9
+4605,Feldkirchen-Westerham,9187,9187,0.9
+4606,Feldkirchen-Westerham,9187,9187,0.9
+4607,Feldkirchen-Westerham,9187,9187,0.9
+4608,Feldkirchen-Westerham,9187,9187,0.9
+4609,Feldkirchen-Westerham,9187,9187,0.9
+4610,Feldkirchen-Westerham,9187,9187,0.9
+4611,Feldkirchen-Westerham,9187,9187,0.9
+4612,"Holzkirchen, M",9182,9182,0.9
+4613,"Holzkirchen, M",9182,9182,0.9
+4614,"Holzkirchen, M",9182,9182,0.9
+4615,Warngau,9182,9182,0.9
+4616,Valley,9182,9182,0.9
+4617,Feldkirchen-Westerham,9187,9187,0.9
+4618,Weyarn,9182,9182,0.9
+4619,Warngau,9182,9182,0.9
+4620,"Miesbach, St",9182,9182,0.9
+4621,"Miesbach, St",9182,9182,0.9
+4622,"Miesbach, St",9182,9182,0.9
+4623,"Miesbach, St",9182,9182,0.9
+4624,"Miesbach, St",9182,9182,0.9
+4625,"Miesbach, St",9182,9182,0.9
+4626,"Miesbach, St",9182,9182,0.9
+4627,"Miesbach, St",9182,9182,0.9
+4628,"Miesbach, St",9182,9182,0.9
+4629,"Miesbach, St",9182,9182,0.9
+4630,"Miesbach, St",9182,9182,0.9
+4631,"Miesbach, St",9182,9182,0.9
+4632,Weyarn,9182,9182,0.9
+4633,Forstinning,9175,9175,0.9
+4634,Forstinning,9175,9175,0.9
+4636,Hohenlinden,9175,9175,0.9
+4637,Hohenlinden,9175,9175,0.9
+4638,Steinhöring,9175,9175,0.9
+4639,"Kirchseeon, M",9175,9175,0.9
+4640,"Kirchseeon, M",9175,9175,0.9
+4641,"Kirchseeon, M",9175,9175,0.9
+4642,"Kirchseeon, M",9175,9175,0.9
+4643,"Kirchseeon, M",9175,9175,0.9
+4644,"Ebersberg, St",9175,9175,0.9
+4645,"Ebersberg, St",9175,9175,0.9
+4646,"Ebersberg, St",9175,9175,0.9
+4647,"Ebersberg, St",9175,9175,0.9
+4648,"Ebersberg, St",9175,9175,0.9
+4649,"Ebersberg, St",9175,9175,0.9
+4650,"Ebersberg, St",9175,9175,0.9
+4651,"Ebersberg, St",9175,9175,0.9
+4652,"Ebersberg, St",9175,9175,0.9
+4653,"Ebersberg, St",9175,9175,0.9
+4654,"Ebersberg, St",9175,9175,0.9
+4655,"Ebersberg, St",9175,9175,0.9
+4656,"Ebersberg, St",9175,9175,0.9
+4657,"Ebersberg, St",9175,9175,0.9
+4658,"Grafing b.München, St",9175,9175,0.9
+4659,Steinhöring,9175,9175,0.9
+4660,Steinhöring,9175,9175,0.9
+4661,Maitenbeth,9183,9183,0.9
+4662,"Isen, M",9177,9177,0.9
+4663,"Haag i.OB, M",9183,9183,0.9
+4664,"Haag i.OB, M",9183,9183,0.9
+4665,"Haag i.OB, M",9183,9183,0.9
+4666,Soyen,9187,9187,0.9
+4667,Rechtmehring,9183,9183,0.9
+4668,Pfaffing,9187,9187,0.9
+4669,Albaching,9187,9187,0.9
+4670,Babensham,9187,9187,0.9
+4671,Soyen,9187,9187,0.9
+4672,Edling,9187,9187,0.9
+4673,"Wasserburg a.Inn, St",9187,9187,0.9
+4674,"Wasserburg a.Inn, St",9187,9187,0.9
+4675,Soyen,9187,9187,0.9
+4676,"Grafing b.München, St",9175,9175,0.9
+4677,"Grafing b.München, St",9175,9175,0.9
+4678,"Grafing b.München, St",9175,9175,0.9
+4679,Moosach,9175,9175,0.9
+4680,"Grafing b.München, St",9175,9175,0.9
+4681,"Grafing b.München, St",9175,9175,0.9
+4682,"Grafing b.München, St",9175,9175,0.9
+4683,"Grafing b.München, St",9175,9175,0.9
+4684,"Grafing b.München, St",9175,9175,0.9
+4685,"Grafing b.München, St",9175,9175,0.9
+4686,"Grafing b.München, St",9175,9175,0.9
+4687,Baiern,9175,9175,0.9
+4688,Bruck,9175,9175,0.9
+4689,Aßling,9175,9175,0.9
+4690,Aßling,9175,9175,0.9
+4691,Tuntenhausen,9187,9187,0.9
+4692,Aßling,9175,9175,0.9
+4693,Pfaffing,9187,9187,0.9
+4694,Pfaffing,9187,9187,0.9
+4695,Emmering,9175,9175,0.9
+4696,Rott a.Inn,9187,9187,0.9
+4697,Edling,9187,9187,0.9
+4698,Edling,9187,9187,0.9
+4699,"Wasserburg a.Inn, St",9187,9187,0.9
+4700,Ramerberg,9187,9187,0.9
+4701,"Wasserburg a.Inn, St",9187,9187,0.9
+4702,"Wasserburg a.Inn, St",9187,9187,0.9
+4703,"Wasserburg a.Inn, St",9187,9187,0.9
+4704,"Wasserburg a.Inn, St",9187,9187,0.9
+4705,Eiselfing,9187,9187,0.9
+4706,"Wasserburg a.Inn, St",9187,9187,0.9
+4707,Griesstätt,9187,9187,0.9
+4708,Rott a.Inn,9187,9187,0.9
+4709,Rott a.Inn,9187,9187,0.9
+4711,Frauenneuharting,9175,9175,0.9
+4712,Tuntenhausen,9187,9187,0.9
+4713,Schonstett,9187,9187,0.9
+4714,Vogtareuth,9187,9187,0.9
+4715,Griesstätt,9187,9187,0.9
+4716,Babensham,9187,9187,0.9
+4717,Soyen,9187,9187,0.9
+4718,"Wasserburg a.Inn, St",9187,9187,0.9
+4719,"Wasserburg a.Inn, St",9187,9187,0.9
+4720,"Wasserburg a.Inn, St",9187,9187,0.9
+4721,Eiselfing,9187,9187,0.9
+4722,"Wasserburg a.Inn, St",9187,9187,0.9
+4723,Halfing,9187,9187,0.9
+4724,Halfing,9187,9187,0.9
+4725,Amerang,9187,9187,0.9
+4726,Amerang,9187,9187,0.9
+4727,Vogtareuth,9187,9187,0.9
+4728,Höslwang,9187,9187,0.9
+4729,Tuntenhausen,9187,9187,0.9
+4730,Tuntenhausen,9187,9187,0.9
+4731,Tuntenhausen,9187,9187,0.9
+4732,"Bruckmühl, M",9187,9187,0.9
+4733,"Bruckmühl, M",9187,9187,0.9
+4734,"Bruckmühl, M",9187,9187,0.9
+4735,"Bruckmühl, M",9187,9187,0.9
+4736,"Bruckmühl, M",9187,9187,0.9
+4737,"Bruckmühl, M",9187,9187,0.9
+4738,"Bruckmühl, M",9187,9187,0.9
+4739,"Bruckmühl, M",9187,9187,0.9
+4740,"Bruckmühl, M",9187,9187,0.9
+4741,"Bruckmühl, M",9187,9187,0.9
+4742,"Bruckmühl, M",9187,9187,0.9
+4743,"Bruckmühl, M",9187,9187,0.9
+4744,Irschenberg,9182,9182,0.9
+4745,"Bad Aibling, St",9187,9187,0.9
+4746,"Bad Aibling, St",9187,9187,0.9
+4747,"Bad Aibling, St",9187,9187,0.9
+4748,"Bad Aibling, St",9187,9187,0.9
+4749,"Bad Aibling, St",9187,9187,0.9
+4750,"Bad Aibling, St",9187,9187,0.9
+4751,"Bad Aibling, St",9187,9187,0.9
+4752,"Bad Aibling, St",9187,9187,0.9
+4753,"Bad Aibling, St",9187,9187,0.9
+4754,"Bad Aibling, St",9187,9187,0.9
+4755,"Bad Aibling, St",9187,9187,0.9
+4756,"Bad Aibling, St",9187,9187,0.9
+4757,"Bad Aibling, St",9187,9187,0.9
+4758,"Bad Aibling, St",9187,9187,0.9
+4759,"Bad Aibling, St",9187,9187,0.9
+4760,"Bad Aibling, St",9187,9187,0.9
+4761,"Bruckmühl, M",9187,9187,0.9
+4762,"Kolbermoor, St",9187,9187,0.9
+4763,"Kolbermoor, St",9187,9187,0.9
+4764,"Bad Aibling, St",9187,9187,0.9
+4765,Schechen,9187,9187,0.9
+4767,Großkarolinenfeld,9187,9187,0.9
+4768,Großkarolinenfeld,9187,9187,0.9
+4769,Vogtareuth,9187,9187,0.9
+4770,Söchtenau,9187,9187,0.9
+4771,Schechen,9187,9187,0.9
+4772,Prutting,9187,9187,0.9
+4773,Großkarolinenfeld,9187,9187,0.9
+4774,Großkarolinenfeld,9187,9187,0.9
+4775,"Kolbermoor, St",9187,9187,0.9
+4776,Schechen,9187,9187,0.9
+4777,Rosenheim,9163,9163,0.9
+4778,Rosenheim,9163,9163,0.9
+4779,Rosenheim,9163,9163,0.9
+4780,Rosenheim,9163,9163,0.9
+4781,Rosenheim,9163,9163,0.9
+4782,Rosenheim,9163,9163,0.9
+4783,Rosenheim,9163,9163,0.9
+4784,Rosenheim,9163,9163,0.9
+4785,Rosenheim,9163,9163,0.9
+4786,Rosenheim,9163,9163,0.9
+4787,Rosenheim,9163,9163,0.9
+4788,Rosenheim,9163,9163,0.9
+4789,Rosenheim,9163,9163,0.9
+4790,Rosenheim,9163,9163,0.9
+4791,Rosenheim,9163,9163,0.9
+4792,Rosenheim,9163,9163,0.9
+4793,Rosenheim,9163,9163,0.9
+4794,Rosenheim,9163,9163,0.9
+4795,Rosenheim,9163,9163,0.9
+4796,Rosenheim,9163,9163,0.9
+4797,Rosenheim,9163,9163,0.9
+4798,Rosenheim,9163,9163,0.9
+4799,"Kolbermoor, St",9187,9187,0.9
+4800,"Kolbermoor, St",9187,9187,0.9
+4801,"Kolbermoor, St",9187,9187,0.9
+4802,"Kolbermoor, St",9187,9187,0.9
+4803,"Kolbermoor, St",9187,9187,0.9
+4804,"Kolbermoor, St",9187,9187,0.9
+4805,"Kolbermoor, St",9187,9187,0.9
+4806,"Kolbermoor, St",9187,9187,0.9
+4807,"Kolbermoor, St",9187,9187,0.9
+4808,"Kolbermoor, St",9187,9187,0.9
+4809,"Kolbermoor, St",9187,9187,0.9
+4810,"Kolbermoor, St",9187,9187,0.9
+4811,"Kolbermoor, St",9187,9187,0.9
+4812,Rosenheim,9163,9163,0.9
+4813,Rosenheim,9163,9163,0.9
+4814,Rosenheim,9163,9163,0.9
+4815,Rosenheim,9163,9163,0.9
+4816,Rosenheim,9163,9163,0.9
+4817,Rosenheim,9163,9163,0.9
+4818,Rosenheim,9163,9163,0.9
+4819,Rosenheim,9163,9163,0.9
+4820,Rosenheim,9163,9163,0.9
+4821,Rosenheim,9163,9163,0.9
+4822,Rosenheim,9163,9163,0.9
+4823,Rosenheim,9163,9163,0.9
+4824,Rosenheim,9163,9163,0.9
+4825,Rosenheim,9163,9163,0.9
+4826,Rosenheim,9163,9163,0.9
+4827,Rosenheim,9163,9163,0.9
+4828,Rosenheim,9163,9163,0.9
+4829,Rosenheim,9163,9163,0.9
+4830,Rosenheim,9163,9163,0.9
+4831,Rosenheim,9163,9163,0.9
+4832,Rosenheim,9163,9163,0.9
+4833,Rosenheim,9163,9163,0.9
+4834,Rosenheim,9163,9163,0.9
+4835,Rosenheim,9163,9163,0.9
+4836,Rosenheim,9163,9163,0.9
+4837,Rosenheim,9163,9163,0.9
+4838,Rosenheim,9163,9163,0.9
+4839,Rosenheim,9163,9163,0.9
+4840,Rosenheim,9163,9163,0.9
+4841,Rosenheim,9163,9163,0.9
+4842,Rosenheim,9163,9163,0.9
+4843,Rosenheim,9163,9163,0.9
+4844,Rosenheim,9163,9163,0.9
+4845,Rosenheim,9163,9163,0.9
+4846,Rosenheim,9163,9163,0.9
+4847,Rosenheim,9163,9163,0.9
+4848,Rosenheim,9163,9163,0.9
+4849,Stephanskirchen,9187,9187,0.9
+4850,Stephanskirchen,9187,9187,0.9
+4851,Rosenheim,9163,9163,0.9
+4852,Rosenheim,9163,9163,0.9
+4853,Prutting,9187,9187,0.9
+4854,Stephanskirchen,9187,9187,0.9
+4855,Stephanskirchen,9187,9187,0.9
+4856,Stephanskirchen,9187,9187,0.9
+4857,Stephanskirchen,9187,9187,0.9
+4858,Rosenheim,9163,9163,0.9
+4859,Rosenheim,9163,9163,0.9
+4860,Stephanskirchen,9187,9187,0.9
+4861,Stephanskirchen,9187,9187,0.9
+4862,Riedering,9187,9187,0.9
+4863,Irschenberg,9182,9182,0.9
+4864,Bad Feilnbach,9187,9187,0.9
+4865,Bad Feilnbach,9187,9187,0.9
+4866,Bad Feilnbach,9187,9187,0.9
+4867,Bad Feilnbach,9187,9187,0.9
+4868,Bad Feilnbach,9187,9187,0.9
+4869,Brannenburg,9187,9187,0.9
+4870,Rosenheim,9163,9163,0.9
+4871,Rosenheim,9163,9163,0.9
+4872,Rosenheim,9163,9163,0.9
+4873,Rosenheim,9163,9163,0.9
+4874,Raubling,9187,9187,0.9
+4875,Raubling,9187,9187,0.9
+4876,Raubling,9187,9187,0.9
+4877,Raubling,9187,9187,0.9
+4878,Raubling,9187,9187,0.9
+4879,Raubling,9187,9187,0.9
+4880,Raubling,9187,9187,0.9
+4881,Rohrdorf,9187,9187,0.9
+4882,Rosenheim,9163,9163,0.9
+4883,Rohrdorf,9187,9187,0.9
+4884,"Neubeuern, M",9187,9187,0.9
+4885,"Neubeuern, M",9187,9187,0.9
+4886,Rohrdorf,9187,9187,0.9
+4887,Raubling,9187,9187,0.9
+4888,Riedering,9187,9187,0.9
+4889,Rohrdorf,9187,9187,0.9
+4890,Brannenburg,9187,9187,0.9
+4891,Brannenburg,9187,9187,0.9
+4892,Brannenburg,9187,9187,0.9
+4893,Brannenburg,9187,9187,0.9
+4894,Flintsbach a.Inn,9187,9187,0.9
+4895,Flintsbach a.Inn,9187,9187,0.9
+4896,Nußdorf a.Inn,9187,9187,0.9
+4897,Raubling,9187,9187,0.9
+4898,Nußdorf a.Inn,9187,9187,0.9
+4899,"Bad Endorf, M",9187,9187,0.9
+4900,"Bad Endorf, M",9187,9187,0.9
+4901,"Bad Endorf, M",9187,9187,0.9
+4902,"Bad Endorf, M",9187,9187,0.9
+4903,"Bad Endorf, M",9187,9187,0.9
+4904,"Bad Endorf, M",9187,9187,0.9
+4905,"Bad Endorf, M",9187,9187,0.9
+4906,Eggstätt,9187,9187,0.9
+4907,Eggstätt,9187,9187,0.9
+4908,"Bad Endorf, M",9187,9187,0.9
+4909,Riedering,9187,9187,0.9
+4910,Riedering,9187,9187,0.9
+4911,Stephanskirchen,9187,9187,0.9
+4912,Söchtenau,9187,9187,0.9
+4913,Rimsting,9187,9187,0.9
+4914,"Prien a.Chiemsee, M",9187,9187,0.9
+4915,Breitbrunn a.Chiemsee,9187,9187,0.9
+4917,"Prien a.Chiemsee, M",9187,9187,0.9
+4918,"Prien a.Chiemsee, M",9187,9187,0.9
+4919,"Prien a.Chiemsee, M",9187,9187,0.9
+4920,"Prien a.Chiemsee, M",9187,9187,0.9
+4921,Rimsting,9187,9187,0.9
+4922,"Prien a.Chiemsee, M",9187,9187,0.9
+4923,"Prien a.Chiemsee, M",9187,9187,0.9
+4924,"Prien a.Chiemsee, M",9187,9187,0.9
+4925,Chiemsee,9187,9187,0.9
+4926,Chiemsee,9187,9187,0.9
+4927,Chiemsee,9187,9187,0.9
+4928,Gstadt a.Chiemsee,9187,9187,0.9
+4934,Samerberg,9187,9187,0.9
+4935,Bernau a.Chiemsee,9187,9187,0.9
+4936,Bernau a.Chiemsee,9187,9187,0.9
+4937,Bernau a.Chiemsee,9187,9187,0.9
+4938,Bernau a.Chiemsee,9187,9187,0.9
+4939,Aschau i.Chiemgau,9187,9187,0.9
+4940,Frasdorf,9187,9187,0.9
+4941,Frasdorf,9187,9187,0.9
+4942,Aschau i.Chiemgau,9187,9187,0.9
+4943,Aschau i.Chiemgau,9187,9187,0.9
+4944,Samerberg,9187,9187,0.9
+4945,Nußdorf a.Inn,9187,9187,0.9
+4946,Oberaudorf,9187,9187,0.9
+4947,Oberaudorf,9187,9187,0.9
+4948,Oberaudorf,9187,9187,0.9
+4949,Kiefersfelden,9187,9187,0.9
+4950,Kiefersfelden,9187,9187,0.9
+4951,Kiefersfelden,9187,9187,0.9
+4952,Kiefersfelden,9187,9187,0.9
+4953,Kiefersfelden,9187,9187,0.9

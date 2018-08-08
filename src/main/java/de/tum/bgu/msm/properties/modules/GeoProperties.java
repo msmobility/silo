@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.properties.modules;
 
+import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.PropertiesUtil;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.util.ResourceBundle;
 
@@ -34,8 +36,6 @@ public class GeoProperties {
         PropertiesUtil.newPropertySubmodule("Geo - grwoth capacity model?");
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
         capacityFile = PropertiesUtil.getStringProperty(bundle, "growth.capacity.file", "INSERT_DEFAULT_VALUE");
-
-
     }
 }
 

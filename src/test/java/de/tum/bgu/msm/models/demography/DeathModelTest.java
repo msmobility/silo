@@ -28,7 +28,7 @@ public class DeathModelTest {
         model = modelContainer.getDeath();
         
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);
-        dataContainer.getRealEstateData().createDwelling(1, 1, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000);
+        dataContainer.getRealEstateData().createDwelling(1, new ZoneImpl(99,1,1), 1, DwellingType.MF234, 4, 1, 1000, -1, 2000);
         Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, 1, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);

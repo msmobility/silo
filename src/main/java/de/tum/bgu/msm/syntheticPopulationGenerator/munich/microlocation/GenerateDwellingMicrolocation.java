@@ -3,6 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -41,9 +43,10 @@ public class GenerateDwellingMicrolocation {
         //Select the building to allocate the dwelling
         int errorBuilding = 0;
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
-            int zoneID = dd.getZone();
+            int zoneID = dd.determineZoneId();
+            Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneBuildingMap.get(zoneID) == null){
-                dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                dd.setLocation(zone.getRandomMicroLocation());
                 errorBuilding++;
                 continue;
             }
@@ -54,7 +57,7 @@ public class GenerateDwellingMicrolocation {
             } else {
                 zoneBuildingMap.get(zoneID).put(selectedBuildingID, 0.0);
             }
-            dd.setCoord(new Coord(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID)));
+            dd.setLocation(new MicroLocation(buildingX.get(selectedBuildingID),buildingY.get(selectedBuildingID), zone));
         }
 
         logger.warn( errorBuilding +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
@@ -86,7 +89,7 @@ public class GenerateDwellingMicrolocation {
 
     private void calculateDensity() {
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
-            int zoneID = dd.getZone();
+            int zoneID = dd.determineZoneId();
 
             if (dwellingsInTAZ.get(zoneID) == null) {
                 dwellingsInTAZ.put(zoneID, 0);

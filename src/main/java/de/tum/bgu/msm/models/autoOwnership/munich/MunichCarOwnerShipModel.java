@@ -35,7 +35,7 @@ public class MunichCarOwnerShipModel extends AbstractModel implements CreateCarO
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             int homeZone = -1;
             if(dwelling != null) {
-                homeZone = dwelling.getZone();
+                homeZone = dwelling.determineZoneId();
             }
             pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
         }

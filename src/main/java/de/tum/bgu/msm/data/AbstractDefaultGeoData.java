@@ -1,10 +1,13 @@
 package de.tum.bgu.msm.data;
 
+
 import com.pb.common.datafile.TableDataSet;
+
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.PrintWriter;
@@ -18,6 +21,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     protected final String zoneIdColumnName;
     protected final String regionColumnName;
+    private final String shapeIdentifier;
 
     protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
     protected final Map<Integer, Region> regions = new LinkedHashMap<>();
@@ -30,18 +34,38 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
     private boolean useCapacityAsNumberOfDwellings;
 
-    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName) {
+    public AbstractDefaultGeoData(String zoneIdColumnName, String regionColumnName, String shapeIdentifier) {
         this.zoneIdColumnName = zoneIdColumnName;
         this.regionColumnName = regionColumnName;
+        this.shapeIdentifier = shapeIdentifier;
     }
 
     @Override
     public void readData() {
         readZones();
+        readShapes();
         readRegionDefinition();
         readLandUse();
         readDeveloperData();
     }
+
+	private void readShapes() {
+		String zoneShapeFile = Properties.get().geo.zoneShapeFile;
+		if(zoneShapeFile == null) {
+		    logger.error("No shape file found!");
+		    throw new RuntimeException("No shape file found!");
+        }
+        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(Properties.get().main.baseDirectory + zoneShapeFile)) {
+            int zoneId = Integer.parseInt(feature.getAttribute(shapeIdentifier).toString());
+            Zone zone = zones.get(zoneId);
+            if (zone != null){
+                zone.setZoneFeature(feature);
+                zoneFeatureMap.put(zoneId,feature);
+            }else{
+                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+            }
+        }
+	}
 
     @Override
     public Map<Integer, Zone> getZones() {

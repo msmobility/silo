@@ -23,13 +23,12 @@ import java.util.EnumMap;
 import org.matsim.api.core.v01.Coord;
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
- *
  */
 public final class Dwelling {
 
-    public enum Usage{
+    public enum Usage {
         GROUP_QUARTER_OR_DEFAULT, OWNED, RENTED, VACANT;
 
         public static Usage valueOf(int code) {
@@ -50,7 +49,6 @@ public final class Dwelling {
 
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
-    private final int zone;
     private final DwellingType type;
     private final int bedrooms;
     private final int yearBuilt;
@@ -67,19 +65,13 @@ public final class Dwelling {
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
-    private Coord coord;
-    public Coord getCoord() {
-        return coord;
-    }
-    public void setCoord(Coord coord) {
-        this.coord = coord;
-    }
+    private Location location;
 
 
-    Dwelling (int id, int zone, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
-                     int year) {
+    Dwelling(int id, Location location, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
+             int year) {
         this.id = id;
-        this.zone = zone;
+        this.location = location;
         this.hhId = hhId;
         this.type = type;
         this.bedrooms = bedrooms;
@@ -91,20 +83,28 @@ public final class Dwelling {
         this.utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
     }
 
-    public int getId () {
+    public int determineZoneId() {
+        if (location instanceof MicroLocation) {
+            return ((MicroLocation) location).getZone().getId();
+        } else if (location instanceof Zone) {
+            return ((Zone) location).getId();
+        } else if (location == null) {
+            throw new NullPointerException("No location assigned!");
+        } else {
+            throw new IllegalStateException("No implementation for Location of type " + location.getClass().getName());
+        }
+    }
+
+    public int getId() {
         return id;
     }
 
-    public int getQuality () {
+    public int getQuality() {
         return quality;
     }
 
-    public int getResidentId () {
+    public int getResidentId() {
         return hhId;
-    }
-
-    public int getZone() {
-        return zone;
     }
 
     public int getPrice() {
@@ -128,7 +128,7 @@ public final class Dwelling {
         return restriction;
     }
 
-    public EnumMap<HouseholdType, Double> getUtilitiesByHouseholdType(){
+    public EnumMap<HouseholdType, Double> getUtilitiesByHouseholdType() {
         return utilitiesByHouseholdType;
     }
 
@@ -139,22 +139,22 @@ public final class Dwelling {
     public void setResidentID(int residentID) {
         this.hhId = residentID;
     }
-    
-    public void setQuality (int quality) {
-        this.quality = quality;
-    }  
 
-    public void setPrice (int price) {
+    public void setQuality(int quality) {
+        this.quality = quality;
+    }
+
+    public void setPrice(int price) {
         this.price = price;
     }
 
-    public void setRestriction (float restriction) {
+    public void setRestriction(float restriction) {
         // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
         this.restriction = restriction;
     }
 
 
-    public void setUtilitiesByHouseholdType(EnumMap<HouseholdType,Double> utilitiesByHouseholdType){
+    public void setUtilitiesByHouseholdType(EnumMap<HouseholdType, Double> utilitiesByHouseholdType) {
         this.utilitiesByHouseholdType = utilitiesByHouseholdType;
     }
 
@@ -168,7 +168,18 @@ public final class Dwelling {
         //Numerical value from 1 to 9999
     }
 
-    public int getFloorSpace() { return floorSpace; }
+    public int getFloorSpace() {
+        return floorSpace;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
 
     //TODO: magic numbers
     public void setBuildingSize(int buildingSize) {
@@ -183,16 +194,20 @@ public final class Dwelling {
         //There are not supposed to be any "no stated (9)" or "group quarter (-1)" or "moved out (-5)". They are filtered before.
     }
 
-    public int getBuildingSize() { return buildingSize; }
+    public int getBuildingSize() {
+        return buildingSize;
+    }
 
     public void setUsage(Usage usage) {
         this.usage = usage;
     }
 
-    public Usage getUsage() { return usage; }
+    public Usage getUsage() {
+        return usage;
+    }
 
     //TODO: magic numbers
-    public void setYearConstructionDE (int yearConstructionDE){
+    public void setYearConstructionDE(int yearConstructionDE) {
         this.yearConstructionDE = yearConstructionDE;
         //Dwelling construction year in Germany
         //1: before 1919
@@ -207,18 +222,21 @@ public final class Dwelling {
         //There are not supposed to be any "no stated (99)" or "group quarter (-1)" or "moved out (-5)". They are filtered before.
     }
 
-    public int getYearConstructionDE() { return yearConstructionDE; }
+    public int getYearConstructionDE() {
+        return yearConstructionDE;
+    }
 
     @Override
     public String toString() {
         return "Attributes of dwelling  " + id
-                +"\nLocated in zone         "+(zone)
-                +"\nOccupied by household   "+(hhId)
-                +"\nDwelling type           "+(type.toString())
-                +"\nNumber of bedrooms      "+(bedrooms)
-                +"\nQuality (1 low, 4 high) "+(quality)
-                +"\nMonthly price in US$    "+(price)
-                +"\nAffordable housing      "+(restriction)
-                +"\nYear dwelling was built "+(yearBuilt);
+//                +"\nLocated in zone         "+(zone)
+                + "\nLocated at		        " + (location.toString()) // TODO implement toString methods
+                + "\nOccupied by household   " + (hhId)
+                + "\nDwelling type           " + (type.toString())
+                + "\nNumber of bedrooms      " + (bedrooms)
+                + "\nQuality (1 low, 4 high) " + (quality)
+                + "\nMonthly price in US$    " + (price)
+                + "\nAffordable housing      " + (restriction)
+                + "\nYear dwelling was built " + (yearBuilt);
     }
- }
+}

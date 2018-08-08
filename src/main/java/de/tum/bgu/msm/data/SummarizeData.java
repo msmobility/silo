@@ -118,17 +118,17 @@ public class SummarizeData {
         int[][] hhInc = new int[Properties.get().main.incomeBrackets.length + 1][highestZonalId + 1];
         DoubleMatrix1D pop = getPopulationByZone(dataContainer);
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
-            int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getZone();
+            int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).determineZoneId();
             int incGroup = hh.getHouseholdType().getIncomeCategory().ordinal();
             hhInc[incGroup][zone]++;
             hhs[zone] ++;
         }
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
-            dds[dd.getType().ordinal()][dd.getZone()]++;
-            prices[dd.getZone()] += dd.getPrice();
+            dds[dd.getType().ordinal()][dd.determineZoneId()]++;
+            prices[dd.determineZoneId()] += dd.getPrice();
         }
         for (Job jj: dataContainer.getJobData().getJobs()) {
-            jobs[jj.getZone()]++;
+            jobs[jj.determineZoneId()]++;
         }
 
 
@@ -160,7 +160,7 @@ public class SummarizeData {
     public static DoubleMatrix1D getPopulationByZone (SiloDataContainer dataContainer) {
         DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
-            final int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getZone();
+            final int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).determineZoneId();
             popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
         }
         return popByZone;
@@ -339,7 +339,7 @@ public class SummarizeData {
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()){
             pw.print(dd.getId());
             pw.print(",");
-            pw.print(dd.getZone());
+            pw.print(dd.determineZoneId());
             pw.print(",");
             pw.print(dd.getType());
             pw.print(",");
@@ -412,7 +412,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if (dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwh.print(zone);
             pwh.print(",");
@@ -466,7 +466,7 @@ public class SummarizeData {
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
-            pwd.print(dd.getZone());
+            pwd.print(dd.determineZoneId());
             pwd.print(",\"");
             pwd.print(dd.getType());
             pwd.print("\",");
@@ -518,7 +518,7 @@ public class SummarizeData {
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
-            pwj.print(jj.getZone());
+            pwj.print(jj.determineZoneId());
             pwj.print(",");
             pwj.print(jj.getWorkerId());
             pwj.print(",\"");
@@ -555,7 +555,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwh.print(zone);
             pwh.print(",");
@@ -597,7 +597,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(pp.getHh().getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwp.print(zone);
             pwp.print(",");
@@ -609,10 +609,10 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
             pwp.print(",");
-            if (pp.getSchoolCoord() != null){
-                pwp.print(pp.getSchoolCoord().getX());
+            if (pp.getSchoolLocation() != null){
+                pwp.print(pp.getSchoolLocation().getCoordinate().x);
                 pwp.print(",");
-                pwp.println(pp.getSchoolCoord().getY());
+                pwp.println(pp.getSchoolLocation().getCoordinate().y);
             }else{
                 pwp.print(0.0);
                 pwp.print(",");
@@ -634,7 +634,7 @@ public class SummarizeData {
         for (Dwelling dd : realEstate.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
-            pwd.print(dd.getZone());
+            pwd.print(dd.determineZoneId());
             pwd.print(",\"");
             pwd.print(dd.getType());
             pwd.print("\",");
@@ -664,9 +664,15 @@ public class SummarizeData {
             }
             pwd.print(use);
             pwd.print(",");
-            pwd.print(dd.getCoord().getX());
-            pwd.print(",");
-            pwd.println(dd.getCoord().getY());
+            if (dd.getLocation() instanceof MicroLocation) {
+	            pwd.print(((MicroLocation) dd.getLocation()).getCoordinate().x);
+	            pwd.print(",");
+	            pwd.println(((MicroLocation) dd.getLocation()).getCoordinate().y);
+            } else {
+            	pwd.print("n/a");
+	            pwd.print(",");
+	            pwd.println("n/a");
+            }
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(dd.toString());
@@ -682,15 +688,21 @@ public class SummarizeData {
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
-            pwj.print(jj.getZone());
+            pwj.print(jj.determineZoneId());
             pwj.print(",");
             pwj.print(jj.getWorkerId());
             pwj.print(",");
             pwj.print(jj.getType());
             pwj.print(",");
-            pwj.print(jj.getCoord().getX());
-            pwj.print(",");
-            pwj.println(jj.getCoord().getY());
+            if (jj.getLocation() instanceof MicroLocation) {
+            	pwj.print(((MicroLocation) jj.getLocation()).getCoordinate().x);
+            	pwj.print(",");
+            	pwj.println(((MicroLocation) jj.getLocation()).getCoordinate().y);
+            } else {
+            	pwj.print("n/a");
+            	pwj.print(",");
+            	pwj.println("n/a");
+            }
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(jj.toString());
@@ -730,7 +742,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwh.print(zone);
             pwh.print(",");
@@ -772,7 +784,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(pp.getHh().getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwp.print(zone);
             pwp.print(",");
@@ -802,7 +814,7 @@ public class SummarizeData {
         for (Dwelling dd : realEstate.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
-            pwd.print(dd.getZone());
+            pwd.print(dd.determineZoneId());
             pwd.print(",\"");
             pwd.print(dd.getType());
             pwd.print("\",");
@@ -840,7 +852,7 @@ public class SummarizeData {
         for (Job jj : dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
-            pwj.print(jj.getZone());
+            pwj.print(jj.determineZoneId());
             pwj.print(",");
             pwj.print(jj.getWorkerId());
             pwj.print(",");
@@ -890,7 +902,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwh.print(zone);
             pwh.print(",");
@@ -943,7 +955,7 @@ public class SummarizeData {
         for (Dwelling dd: realEstate.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
-            pwd.print(dd.getZone());
+            pwd.print(dd.determineZoneId());
             pwd.print(",\"");
             pwd.print(dd.getType());
             pwd.print("\",");
@@ -980,7 +992,7 @@ public class SummarizeData {
         for (Job jj: dataContainer.getJobData().getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
-            pwj.print(jj.getZone());
+            pwj.print(jj.determineZoneId());
             pwj.print(",");
             pwj.print(jj.getWorkerId());
             pwj.print(",");
@@ -1008,7 +1020,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             int county = ((MstmZone)geoData.getZones().get(zone)).getCounty().getId();
             autos[autoOwnership][county]++;
@@ -1065,7 +1077,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             if (prestoRegionByTaz[zone] > 0) {
                 int hhInc = hh.getHhIncome();
@@ -1108,7 +1120,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             pwh.print(zone);
             pwh.print(",");
@@ -1172,7 +1184,7 @@ public class SummarizeData {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
             if(dwelling != null) {
-                zone = dwelling.getZone();
+                zone = dwelling.determineZoneId();
             }
             int municipality = (int) zonalData.getIndexedValueAt(zone, "ID_city");
             int distance = (int) Math.log(zonalData.getIndexedValueAt(zone, "distanceToTransit"));

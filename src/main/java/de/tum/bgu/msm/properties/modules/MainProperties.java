@@ -44,6 +44,7 @@ public class MainProperties {
     public final int[] bemModelYears;
     public final String housingEnvironmentImpactFile;
     public final String prestoSummaryFile;
+    public final double peakHour;
 
     public final Implementation implementation;
 
@@ -101,6 +102,7 @@ public class MainProperties {
         prestoSummaryFile = PropertiesUtil.getStringProperty(bundle, "presto.summary.file", "prestoSummary");
         bemModelYears = PropertiesUtil.getIntPropertyArray(bundle, "bem.model.years", new int[]{2000,2040});
         housingEnvironmentImpactFile = PropertiesUtil.getStringProperty(bundle, "housing.environment.impact.file.name", "bemHousing");
+        peakHour = ResourceUtil.getDoubleProperty(bundle, "peak.hour", 8*60*60);
 
         PropertiesUtil.newPropertySubmodule("Main - gregorian iterator");
         gregorianIterator = PropertiesUtil.getIntProperty(bundle, "this.gregorian.iterator", 1);

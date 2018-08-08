@@ -3,8 +3,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -43,16 +45,18 @@ public class GenerateSchoolMicrolocation {
             if (pp.getOccupation() == 3) {
                 int zoneID = pp.getSchoolPlace();
                 int schoolType = pp.getSchoolType();
+                Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
 
-                if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType)==null){
-                    pp.setSchoolCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType) == null){
+                	pp.setSchoolLocation(zone.getRandomMicroLocation());
                     errorSchool++;
                     continue;
                 }
                 int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
                 int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
                 zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
-                pp.setSchoolCoord(new Coord(schoolY.get(selectedSchoolID), schoolY.get(selectedSchoolID)));
+                MicroLocation schoolLocation = new MicroLocation(schoolX.get(selectedSchoolID), schoolY.get(selectedSchoolID), zone);
+                pp.setSchoolLocation(schoolLocation);
             }
         }
         logger.warn( errorSchool +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );

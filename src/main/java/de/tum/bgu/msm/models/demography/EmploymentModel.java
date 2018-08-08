@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
@@ -50,11 +51,11 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
 
     private Job findJob(Person pp) {
         final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(pp.getHh().getDwellingId());
-        int zoneId = -1;
+        Zone zone = null;
         if (dwelling != null) {
-            zoneId = dwelling.getZone();
+            zone = dataContainer.getGeoData().getZones().get(dwelling.determineZoneId());
         }
-        final int idVacantJob = dataContainer.getJobData().findVacantJob(zoneId, dataContainer.getGeoData().getRegions().keySet(),
+        final int idVacantJob = dataContainer.getJobData().findVacantJob(zone, dataContainer.getGeoData().getRegions().values(),
                 accessibility);
         return dataContainer.getJobData().getJobFromId(idVacantJob);
     }

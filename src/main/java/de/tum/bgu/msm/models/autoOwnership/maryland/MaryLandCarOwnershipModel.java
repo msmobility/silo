@@ -119,8 +119,8 @@ public class MaryLandCarOwnershipModel extends AbstractModel implements CreateCa
             int workers = Math.min(household.getNumberOfWorkers(), 4);
             int incomeCategory = getIncomeCategory(household.getHhIncome());
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZone()) + 0.5);
-            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.getZone());
+            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.determineZoneId()) + 0.5);
+            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.determineZoneId());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];
             }

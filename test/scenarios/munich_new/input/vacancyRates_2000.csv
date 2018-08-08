@@ -1,0 +1,41 @@
+County,State,Short,Fips,Units,Occupied,Vacant,VacancyRate
+Fairfax city, Virginia,VA,51600,8204,8035,169,0.020599707
+Fairfax County, Virginia,VA,51059,359411,350714,8697,0.024197924
+Manassas city, Virginia,VA,51683,12114,11757,357,0.029470035
+Howard County, Maryland,MD,24027,92818,90043,2775,0.029897218
+Montgomery County, Maryland,MD,24031,334632,324565,10067,0.030083794
+Carroll County, Maryland,MD,24013,54260,52503,1757,0.032381128
+Manassas Park city, Virginia,VA,51685,3365,3254,111,0.032986627
+Prince William County, Virginia,VA,51153,98052,94570,3482,0.035511769
+Loudoun County, Virginia,VA,51107,62160,59900,2260,0.036357786
+Alexandria city, Virginia,VA,51510,64251,61889,2362,0.036762074
+Stafford County, Virginia,VA,51179,31405,30187,1218,0.038783633
+Frederick County, Maryland,MD,24021,73017,70060,2957,0.040497418
+Harford County, Maryland,MD,24025,83146,79667,3479,0.041842061
+Baltimore County, Maryland,MD,24005,313734,299877,13857,0.044167989
+Anne Arundel County, Maryland,MD,24003,186937,178670,8267,0.044223455
+Arlington County, Virginia,VA,51013,90426,86352,4074,0.045053414
+Charles County, Maryland,MD,24017,43903,41668,2235,0.050907683
+Prince George's County, Maryland,MD,24033,302378,286610,15768,0.052146651
+Frederick County, Virginia,VA,51069,23319,22097,1222,0.052403619
+New Castle County, Delaware,DE,10003,199521,188935,10586,0.053057072
+Falls Church city, Virginia,VA,51610,4725,4471,254,0.053756614
+Fauquier County, Virginia,VA,51061,21046,19842,1204,0.057208021
+Spotsylvania County, Virginia,VA,51177,33329,31308,2021,0.060637883
+Washington County, Maryland,MD,24043,52972,49726,3246,0.061277656
+Wicomico County, Maryland,MD,24045,34401,32218,2183,0.063457458
+Kent County, Delaware,DE,10001,50481,47224,3257,0.064519324
+Calvert County, Maryland,MD,24009,27576,25447,2129,0.077204816
+Caroline County, Maryland,MD,24011,12028,11097,931,0.077402727
+Queen Anne's County, Maryland,MD,24035,16674,15315,1359,0.081504138
+Clarke County, Virginia,VA,51043,5388,4942,446,0.08277654
+Fredericksburg city, Virginia,VA,51630,8888,8102,786,0.088433843
+Cecil County, Maryland,MD,24015,34461,31223,3238,0.09396129
+District of Columbia, District of Columbia,DC,11001,274845,248338,26507,0.09644345
+Baltimore city, Maryland,MD,24510,300477,257996,42481,0.141378541
+Winchester city, Virginia,VA,51840,10587,10001,586,0.055350902
+"Fairfax Co./Fairfax City/Falls Church, VA", Virginia,VA,51919,372340,363220,9120,0.024493742
+"Prince William Co./Manassas/Manassas Park, VA", Virginia,VA,51942,113531,109581,3950,0.034792259
+"Frederick County/Winchester, VA", Virginia,VA,51951,33906,32098,1808,0.053323895
+All other counties,Based on average rural county,Any,99999,0,0,0,0.038805041
+Other counties where removed,as they had unreasonable vacancy rates,Likely due to vacationing homes,0,0,0,0,0

@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.data.Zone;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
     private final List<Integer> vacantJobs;
     private final List<Integer> occupiedJobs;
 
-    public RemoveJobsDefinition(int zone, int change, String jobType, List<Integer> vacantJobs,
+    public RemoveJobsDefinition(Zone zone, int change, String jobType, List<Integer> vacantJobs,
                                 List<Integer> occupiedJobs, SiloDataContainer dataContainer) {
         super(zone, change, jobType, dataContainer);
         this.vacantJobs = vacantJobs;

@@ -203,8 +203,8 @@ public class SyntheticPopUs implements SyntheticPopI {
         // create base year employment
         for (int zone: geoData.getZones().keySet()) {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                if (jobInventory[jobTp][zone] > 0) {
-                    for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
+                if (jobInventory[jobTp][zoneId] > 0) {
+                    for (int i = 1; i <= jobInventory[jobTp][zoneId]; i++) {
                         int id = jobData.getNextJobId();
                         jobData.createJob (id, zone, -1, JobType.getJobType(jobTp));
                         if (id == SiloUtil.trackJj) {
@@ -228,7 +228,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
                 int id = jj.getId();
-                int zone = jj.getZone();
+                int zone = jj.determineZoneId();
                 if (vacantJobsByZone.containsKey(zone)) {
                     int[] vacancies = vacantJobsByZone.get(zone);
                     int[] newVacancies = SiloUtil.expandArrayByOneElement(vacancies, id);
@@ -429,10 +429,11 @@ public class SyntheticPopUs implements SyntheticPopI {
             if (gender[0] == 0) newHhId = -1;
             else newHhId = householdDataManager.getNextHouseholdId();
             int taz = locateDwelling(pumaZone);
+            Zone zone = geoData.getZones().get(taz);
 
             int price = getDwellingPrice(rent, mortgage);
             int selectedYear = selectYear(yearBuilt);
-            realEstateDataManager.createDwelling(newDdId, taz, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
+            realEstateDataManager.createDwelling(newDdId, zone, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
             if (gender[0] == 0) return;   // this dwelling is empty, do not create household
             Household hh = householdDataManager.createHousehold(newHhId, newDdId, autos);
             for (int s = 0; s < hhSize; s++) {
@@ -583,6 +584,8 @@ public class SyntheticPopUs implements SyntheticPopI {
             if (vacantJobsByZone.containsKey(zone.getId())) {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zone.getId()).length;
                 if (numberOfJobsInThisZone > 0) {
+                	Zone homeZone = geoData.getZones().get(homeTaz);
+                	Zone destinationZone = geoData.getZones().get(zones[zn]);
                     int distance = (int) (accessibility.getPeakAutoTravelTime(homeTaz, zone.getId()) + 0.5);
                     zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
@@ -744,7 +747,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         int[][][] ddCount = new int [highestZoneId + 1][DwellingType.values().length][2];
         for (Dwelling dd: realEstateDataManager.getDwellings()) {
-            int taz = dd.getZone();
+            int taz = dd.determineZoneId();
             int occ = dd.getResidentId();
             ddCount[taz][dd.getType().ordinal()][0]++;
             if (occ > 0) ddCount[taz][dd.getType().ordinal()][1]++;
@@ -794,7 +797,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     int selected = SiloUtil.select(ids.length) - 1;
                     Dwelling dd = realEstateDataManager.getDwelling(ids[selected]);
                     int newDdId = RealEstateDataManager.getNextDwellingId();
-                    realEstateDataManager.createDwelling(newDdId, dd.getZone(), -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
+                    realEstateDataManager.createDwelling(newDdId, zone, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
                             dd.getPrice(), 0f, dd.getYearBuilt());
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;

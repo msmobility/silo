@@ -72,7 +72,7 @@ public final class PricingModel extends AbstractModel {
             float structuralVacHigh = (float) (structuralVacancy[dto] * inflectionHigh);
             int currentPrice = dd.getPrice();
 
-            int region = dataContainer.getGeoData().getZones().get(dd.getZone()).getRegion().getId();
+            int region = dataContainer.getGeoData().getZones().get(dd.determineZoneId()).getRegion().getId();
             double changeRate;
             if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply

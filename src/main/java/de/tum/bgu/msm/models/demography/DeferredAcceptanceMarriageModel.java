@@ -6,8 +6,10 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.DeferredAcceptanceMatching;
@@ -18,6 +20,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 
 public class DeferredAcceptanceMarriageModel implements MarriageModel {
 
@@ -84,11 +89,14 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 bachelorettes.stream().mapToInt(Integer::intValue).max().getAsInt()+1);
         for(Integer id: bachelors) {
             Person bachelor = dataContainer.getHouseholdData().getPersonFromId(id);
-            int bachelorZone = dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).getZone();
+            Zone bachelorZone = dataContainer.getGeoData().getZones().get(
+            		dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).determineZoneId());
             for(Integer id2: bachelorettes) {
                 Person bachelorette = dataContainer.getHouseholdData().getPersonFromId(id2);
-                int bacheloretteZone = dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).getZone();
-                double travelTime = accessibility.getPeakAutoTravelTime(bachelorZone, bacheloretteZone);
+                Zone bacheloretteZone = dataContainer.getGeoData().getZones().get(
+                		dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).determineZoneId());
+                double travelTime = accessibility.getTravelTimes().getTravelTime(
+                		bachelorZone, bacheloretteZone, Properties.get().main.peakHour, TransportMode.car);
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
                 double educationOffset = Math.abs(bachelor.getEducationLevel() - bachelorette.getEducationLevel());
                 double nationalityBias = bachelor.getNationality() == bachelorette.getNationality() ? 1: 0.5;

@@ -6,6 +6,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.JobType;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
@@ -40,7 +41,7 @@ public class UpdateJobs extends AbstractModel {
 
         for (Job jj :jobData.getJobs()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
-            jobsByZone[jobTypeId][jj.getZone()]++;
+            jobsByZone[jobTypeId][jj.determineZoneId()]++;
         }
 
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
@@ -50,7 +51,7 @@ public class UpdateJobs extends AbstractModel {
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
         for (Job jj : jobData.getJobs()) {
-            String token = jj.getType() + "." + jj.getZone() + "." + (jj.getWorkerId() == -1);
+            String token = jj.getType() + "." + jj.determineZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {
                 List<Integer> jobList = jobsAvailableForRemoval.get(token);
                 jobList.add(jj.getId());
@@ -65,14 +66,15 @@ public class UpdateJobs extends AbstractModel {
 
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for (int row = 1; row <= forecast.getRowCount(); row++) {
-            int zone = (int) forecast.getValueAt(row, "zone");
+            int zoneId = (int) forecast.getValueAt(row, "zone");
+            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
             for (String jt : JobType.getJobTypes()) {
                 int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
-                if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zone]) {
-                    int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zone];
+                if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
+                    int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
                     executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer));
-                } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zone]) {
-                    int change = jobsByZone[JobType.getOrdinal(jt)][zone] - jobsExogenousForecast;
+                } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
+                    int change = jobsByZone[JobType.getOrdinal(jt)][zoneId] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);
                     List<Integer> occupiedJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + false);
                     if(vacantJobs == null) {

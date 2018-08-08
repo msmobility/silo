@@ -3,6 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
@@ -42,10 +44,11 @@ public class GenerateJobMicrolocation {
         //Select the job to allocate the job
         int errorjob = 0;
         for (Job jj: dataContainer.getJobData().getJobs()) {
-            int zoneID = jj.getZone();
+            int zoneID = jj.determineZoneId();
             String jobType = jj.getType();
+            Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                jj.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(dataSetSynPop.getZoneFeatureMap().get(zoneID)));
+                jj.setLocation(zone.getRandomMicroLocation());
                 errorjob++;
                 continue;
             }
@@ -56,7 +59,7 @@ public class GenerateJobMicrolocation {
             } else {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
             }
-            jj.setCoord(new Coord(jobX.get(selectedJobID),jobY.get(selectedJobID)));
+            jj.setLocation(new MicroLocation(jobX.get(selectedJobID),jobY.get(selectedJobID), zone));
         }
         logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");
@@ -121,7 +124,7 @@ public class GenerateJobMicrolocation {
         }
 
         for (Job jj: dataContainer.getJobData().getJobs()) {
-            int zoneID = jj.getZone();
+            int zoneID = jj.determineZoneId();
             String jobType = jj.getType();
 
             if (jobsByJobTypeInTAZ.get(zoneID).get(jobType) ==null){

@@ -122,11 +122,13 @@ public class ConstructionOverwrite extends AbstractModel {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
 
             if(Properties.get().main.implementation == Implementation.MUNICH) {
                 if(Properties.get().main.runDwellingMicrolocation) {
-                    dd.setCoord(SiloMatsimUtils.getRandomCoordinateInGeometry(((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getZoneFeature()));
+                	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
+                    dd.setLocation(microLocation);
                 }
             }
 
