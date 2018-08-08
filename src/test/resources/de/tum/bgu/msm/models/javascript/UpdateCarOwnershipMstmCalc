@@ -1,0 +1,108 @@
+var calculateCarOwnerShipProbabilities = function(hhSize, workers, inc, transitAcc, dens) {
+
+    switch(inc) {
+        case 1: incomeOneCar = -3.783; break;
+        case 2: incomeOneCar = -3.134; break;
+        case 3: incomeOneCar = -2.423; break;
+        case 4: incomeOneCar = -1.964; break;
+        case 5: incomeOneCar = -1.374; break;
+        case 6: incomeOneCar = -0.811; break;
+        case 7: incomeOneCar = -0.996; break;
+        case 8: incomeOneCar = -0.913; break;
+        case 9: incomeOneCar = -0.716; break;
+        case 10:incomeOneCar = -0.271; break;
+        case 11:incomeOneCar = -0.236; break;
+        case 12:incomeOneCar = 0;      break;
+        default: throw new Error("Invalid income!");
+    }
+
+
+    switch(dens) {
+        case 1: densOneCar = 2.678; break;
+        case 2: densOneCar = 2.306; break;
+        case 3: densOneCar = 1.412; break;
+        case 4: densOneCar = 1.461; break;
+        case 5: densOneCar = 1.121; break;
+        case 6: densOneCar = 0.762; break;
+        case 7: densOneCar = 0.895; break;
+        case 8: densOneCar = 0.471; break;
+        case 9: densOneCar = 0.678; break;
+        case 10:densOneCar = 0; break;
+        default: throw new Error("Invalid dens!");
+    }
+
+    oneCar = Math.exp(2.258434 + -0.121 * hhSize + 0.327 * workers + -0.022 * transitAcc + incomeOneCar + densOneCar);
+
+
+    switch(inc) {
+        case 1: incomeTwoCars = -6.348; break;
+        case 2: incomeTwoCars = -5.724; break;
+        case 3: incomeTwoCars = -4.734; break;
+        case 4: incomeTwoCars = -3.918; break;
+        case 5: incomeTwoCars = -3.027; break;
+        case 6: incomeTwoCars = -2.11; break;
+        case 7: incomeTwoCars = -2.168; break;
+        case 8: incomeTwoCars = -1.93; break;
+        case 9: incomeTwoCars = -1.376; break;
+        case 10:incomeTwoCars = -0.609; break;
+        case 11:incomeTwoCars = -0.432; break;
+        case 12:incomeTwoCars = 0;  break;
+        default: throw new Error("Invalid income!");
+    }
+
+    switch(dens) {
+        case 1: densTwoCars = 4.72; break;
+        case 2: densTwoCars = 4.085; break;
+        case 3: densTwoCars = 2.742; break;
+        case 4: densTwoCars = 2.749; break;
+        case 5: densTwoCars = 2.213; break;
+        case 6: densTwoCars = 1.661; break;
+        case 7: densTwoCars = 1.713; break;
+        case 8: densTwoCars = 1.096; break;
+        case 9: densTwoCars = 1.196; break;
+        case 10:densTwoCars = 0; break;
+        default: throw new Error("Invalid dens!");
+    }
+
+    twoCars = Math.exp(0.273337 + 0.689 * hhSize + 0.652 * workers + -0.051 * transitAcc + incomeTwoCars + densTwoCars);
+
+
+    switch(inc) {
+        case 1: incomeThreePlusCars = -7.007; break;
+        case 2: incomeThreePlusCars = -6.637; break;
+        case 3: incomeThreePlusCars = -5.315; break;
+        case 4: incomeThreePlusCars = -4.858; break;
+        case 5: incomeThreePlusCars = -3.639; break;
+        case 6: incomeThreePlusCars = -2.522; break;
+        case 7: incomeThreePlusCars = -2.589; break;
+        case 8: incomeThreePlusCars = -2.283; break;
+        case 9: incomeThreePlusCars = -1.706; break;
+        case 10:incomeThreePlusCars = -0.827; break;
+        case 11:incomeThreePlusCars = -0.382; break;
+        case 12:incomeThreePlusCars = 0;  break;
+        default: throw new Error("Invalid income!");
+    }
+
+    switch(dens) {
+        case 1: densThreePlusCars = 6.978; break;
+        case 2: densThreePlusCars = 5.802; break;
+        case 3: densThreePlusCars = 4.163; break;
+        case 4: densThreePlusCars = 3.909; break;
+        case 5: densThreePlusCars = 3.231; break;
+        case 6: densThreePlusCars = 2.927; break;
+        case 7: densThreePlusCars = 2.463; break;
+        case 8: densThreePlusCars = 1.92 ; break;
+        case 9: densThreePlusCars = 2.029; break;
+        case 10:densThreePlusCars = 0; break;
+        default: throw new Error("Invalid dens!");
+    }
+
+    threePlusCars = Math.exp(-3.26874 + 0.801 * hhSize + 1.378 * workers + -0.054 * transitAcc + incomeThreePlusCars + densThreePlusCars);
+
+    results = new Array(3);
+    results[0] = oneCar;
+    results[1] = twoCars;
+    results[2] = threePlusCars;
+
+    return Java.to(results, "double[]");
+}

@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
-import com.pb.common.calculator.UtilityExpressionCalculator;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
@@ -11,7 +10,8 @@ import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
-import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Map;
 
 /**
@@ -22,20 +22,14 @@ import java.util.Map;
 
 public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements UpdateCarOwnershipModel {
     static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
-    static Logger traceLogger = Logger.getLogger("trace");
 
     private final Accessibility accessibility;
-    private String uecFileName;
-    private int dataSheetNumber;
-    int numAltsAutoOwnership;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
     public MaryLandUpdateCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         logger.info("  Setting up probabilities for auto-ownership model");
-        uecFileName = Properties.get().main.baseDirectory + Properties.get().demographics.autoOwnerShipUecFile;
-        dataSheetNumber = Properties.get().demographics.autoOwnershipDataSheet;
         this.accessibility = accessibility;
     }
 
@@ -51,47 +45,23 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
 
     @Override
     public void initialize() {
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
+        MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
+
         boolean logCalculation = Properties.get().demographics.logAutoOwnership;
-        int aoModelSheetNumber = Properties.get().demographics.autoOwnershipUecUtility;
-        UtilityExpressionCalculator aoModelUtility = new UtilityExpressionCalculator(new File(uecFileName),
-                aoModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MarylandCarOwnershipDMU.class);
-        MarylandCarOwnershipDMU marylandCarOwnershipDMU = new MarylandCarOwnershipDMU();
-
-        // everything is available
-        numAltsAutoOwnership = aoModelUtility.getNumberOfAlternatives();
-
-        int[] aoAvail = new int[numAltsAutoOwnership + 1];
-        for (int i = 1; i < aoAvail.length; i++) {
-            aoAvail[i] = 1;
-        }
 
         autoOwnerShipUtil = new double[3][8][5][12][101][10];
         for (int hhSize = 0; hhSize < 8; hhSize++) {
-            marylandCarOwnershipDMU.setHhSize(hhSize + 1);
             for (int wrk = 0; wrk < 5; wrk++) {
-                marylandCarOwnershipDMU.setWorkers(wrk);
                 for (int inc = 0; inc < 12; inc++) {
-                    marylandCarOwnershipDMU.setIncomeCategory(inc + 1);
                     for (int transitAcc = 0; transitAcc < 101; transitAcc++) {
-                        marylandCarOwnershipDMU.setTransitAccessibility(transitAcc);
                         for (int dens = 0; dens < 10; dens++) {
-                            marylandCarOwnershipDMU.setDensityCategory(dens + 1);
-                            double util[] = aoModelUtility.solve(marylandCarOwnershipDMU.getDmuIndexValues(),
-                                    marylandCarOwnershipDMU, aoAvail);
-                            for (int i = 1; i < aoAvail.length; i++) {
-                                util[i - 1] = Math.exp(util[i - 1]);
-                            }
+                            double util[] =calculator.calculateCarOwnerShipProbabilities(hhSize +1, wrk, inc +1, transitAcc, dens +1);
                             double prob0cars = 1d / (SiloUtil.getSum(util) + 1d);
-                            for (int i = 1; i < aoAvail.length; i++) {
-                                autoOwnerShipUtil[i - 1][hhSize][wrk][inc][transitAcc][dens] = util[i - 1] * prob0cars;
+                            for (int i = 0; i < 3; i++) {
+                                autoOwnerShipUtil[i][hhSize][wrk][inc][transitAcc][dens] = util[i] * prob0cars;
                             }
                             if (logCalculation) {
-                                // log UEC values for each person type
-                                aoModelUtility.logAnswersArray(traceLogger, "Auto-ownership model. HH size: " + hhSize +
-                                        ", wrk: " + wrk + ", inc: " + inc + ", transitAcc: " + transitAcc + ", density: " + dens);
                                 logger.info(hhSize + "," + wrk + "," + inc + "," + transitAcc + "," + dens + "," + prob0cars + "," +
                                         autoOwnerShipUtil[0][hhSize][wrk][inc][transitAcc][dens] + "," +
                                         autoOwnerShipUtil[1][hhSize][wrk][inc][transitAcc][dens] + "," +

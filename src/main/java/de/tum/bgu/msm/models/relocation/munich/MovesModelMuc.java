@@ -25,32 +25,16 @@ import org.matsim.api.core.v01.TransportMode;
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private SelectRegionJSCalculator regionCalculator;
-    protected EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeNationalityAndRegion = new EnumMap<>(IncomeCategory.class) ;
+    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeNationalityAndRegion = new EnumMap<>(IncomeCategory.class) ;
 
     private SelectDwellingJSCalculator dwellingCalculator;
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
-//    private PrintWriter pw;
-//    private PrintWriter pw2;
-//    private PrintWriter pw3;
-
 
     public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer, accessibility);
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
-//        try {
-//            pw = new PrintWriter(new File("./listOfSelectedRegions.csv"));
-//            pw2 = new PrintWriter(new File("./genericUtilitiesForDwellings.csv"));
-//            pw3 = new PrintWriter(new File("./dwellingSelection.csv"));
-//            pw.println("year,personId,hhId,workZone,region,timeRegionToWork");
-//            pw2.println("year,dd,hhType,quality,bedrooms,auto_access,transit_access,price,genericUtil");
-//            pw3.println("year,dd,dd_zone,genericUtility,workers,sum_commuting_time,workDistanceUtility,utility");
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
-
     }
 
     private void calculateShareOfForeignersByZoneAndRegion() {
@@ -143,7 +127,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         calculateShareOfForeignersByZoneAndRegion();
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
-            EnumMap<Nationality, Map<Integer, Double>> utilitiesByNationalityRegionForThisIncome = new EnumMap(Nationality.class);
+            EnumMap<Nationality, Map<Integer, Double>> utilitiesByNationalityRegionForThisIncome = new EnumMap<>(Nationality.class);
             for (Nationality nationality: Nationality.values()) {
                 Map<Integer, Double> utilitiesByRegionForThisNationalityAndIncome = new HashMap<>();
                 for (Region region : geoData.getRegions().values()){
@@ -163,8 +147,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     }
 
     private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
-        Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
-        utilitiesForThisHousheold.putAll(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
+        Map<Integer, Double> utilitiesForThisHousheold
+                = new HashMap<>(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
@@ -288,40 +272,14 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     @Override
     protected double calculateDwellingUtilityForHouseholdType(HouseholdType ht, Dwelling dd) {
-
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.determineZoneId()));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.determineZoneId()));
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
-
-        double ddUtility = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+        return dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility);
-
-
-//        if(year == 2011) {
-//            pw2.print(year);
-//            pw2.print(",");
-//            pw2.print(dd.getId());
-//            pw2.print(",");
-//            pw2.print(ht.toString());
-//            pw2.print(",");
-//            pw2.print(dd.getQuality());
-//            pw2.print(",");
-//            pw2.print(dd.getBedrooms());
-//            pw2.print(",");
-//            pw2.print(accessibility.getAutoAccessibilityForZone(dd.getZone()));
-//            pw2.print(",");
-//            pw2.print(accessibility.getTransitAccessibilityForZone(dd.getZone()));
-//            pw2.print(",");
-//            pw2.print(dd.getPrice());
-//            pw2.print(",");
-//            pw2.print(ddUtility);
-//            pw2.println();
-//        }
-
-        return ddUtility;
     }
 
     @Override
@@ -331,7 +289,6 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
         HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
 
-        double workDistanceUtility = 1;
         double travelCostUtility = 1; //do not have effect at the moment;
 
         Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
@@ -342,47 +299,17 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
                 workerZonesForThisHousehold.put(pp, workLocation);
             }
         }
-        double sumOfCommutingTimeForThisHousehold = 0;
+        double workDistanceUtility = 1;
         for (Location workLocation : workerZonesForThisHousehold.values()){
-        		sumOfCommutingTimeForThisHousehold += accessibility.getTravelTimes().getTravelTime(
-        				dd.getLocation(), workLocation, Properties.get().main.peakHour, TransportMode.car);
-        	// Why is sumOfCommutingTimeForThisHousehold not used anywhere? (Was like this before my change), dz, july'18 
-            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getTravelTimes().getTravelTime(
+        	double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) accessibility.getTravelTimes().getTravelTime(
             		dd.getLocation(), workLocation, Properties.get().main.peakHour, TransportMode.car)));
-            workDistanceUtility = workDistanceUtility * factorForThisZone;
+            workDistanceUtility *= factorForThisZone;
         }
-
-        double finalUtility = dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
-
-//        pw3.print(year);
-//        pw3.print(",");
-//        pw3.print(dd.getId());
-//        pw3.print(",");
-//        pw3.print(dd.getZone());
-//        pw3.print(",");
-//        pw3.print(genericUtility);
-//        pw3.print(",");
-//        pw3.print(workerZonesForThisHousehold.size());
-//        pw3.print(",");
-//        pw3.print(sumOfCommutingTimeForThisHousehold);
-//        pw3.print(",");
-//        pw3.print(workDistanceUtility);
-//        pw3.print(",");
-//        pw3.print(finalUtility);
-//        pw3.println();
-
-        return finalUtility;
-
+        return dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
     }
 
     @Override
     public void finishYear(int year) {
-//        if (year == Properties.get().main.endYear){
-//            pw.close();
-//            pw2.close();
-//            pw3.close();
-//        }
-
     }
 
 
