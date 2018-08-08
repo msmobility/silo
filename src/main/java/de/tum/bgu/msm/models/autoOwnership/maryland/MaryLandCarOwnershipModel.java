@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -20,7 +20,7 @@ import java.util.Map;
  * Created on 18 August 2014 in College Park, MD
  **/
 
-public class MaryLandCarOwnershipModel extends AbstractModel implements CreateCarOwnershipModel {
+public class MaryLandCarOwnershipModel extends AbstractModel implements CarOwnershipModel {
     static Logger logger = Logger.getLogger(MaryLandCarOwnershipModel.class);
     static Logger traceLogger = Logger.getLogger("trace");
 

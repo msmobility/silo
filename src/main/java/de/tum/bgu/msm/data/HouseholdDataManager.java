@@ -50,6 +50,7 @@ public class HouseholdDataManager {
     private final Map<Integer, Household> households = new HashMap<>();
 
     private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
+    private HashMap<Integer, int[]> conventionalCarsHouseholds = new HashMap<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
@@ -914,5 +915,23 @@ public class HouseholdDataManager {
 
     public Map<Integer, int[]> getUpdatedHouseholds() {
         return updatedHouseholds;
+    }
+
+    public HashMap<Integer, int[]> getConventionalCarsHouseholds(){
+        // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
+        // to autonomous cars. currently income is the only household attribute used but room is left for additional
+        // attributes in the future
+        for (Household hh: households.values()){
+            if(hh.getAutos() > hh.getAutonomous()){
+                int[] hhAttributes = new int[1];
+                hhAttributes[0] = hh.getHhIncome();
+                conventionalCarsHouseholds.put(hh.getId(), hhAttributes);
+            }
+        }
+        return conventionalCarsHouseholds;
+    }
+
+    public void clearConventionalCarsHouseholds(){
+        conventionalCarsHouseholds.clear();
     }
 }

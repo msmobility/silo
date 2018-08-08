@@ -4,9 +4,9 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
@@ -46,6 +46,8 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
         SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
+        dataContainer.getGeoData().readData();
+
         long startTime = System.nanoTime();
 
         logger.info("Running Module: Reading inputs");
@@ -61,7 +63,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Microlocation(dataSetSynPop,dataContainer).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModel(dataContainer).run();
+        new CreateCarOwnershipModel(dataContainer, (GeoDataMuc) dataContainer.getGeoData()).run();
 
         logger.info("Summary of the synthetic population");
         SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR, dataContainer);
@@ -69,7 +71,6 @@ public class SyntheticPopDe implements SyntheticPopI {
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
-
 
     private void createDirectoryForOutput() {
         SiloUtil.createDirectoryIfNotExistingYet("microData");

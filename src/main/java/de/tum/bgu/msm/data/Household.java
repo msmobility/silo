@@ -35,6 +35,7 @@ public final class Household {
     private int autos;
     private HouseholdType type;
     private final List<Person> persons;
+    private int autonomous = 0;
 
     Household(int id, int dwellingID, int autos) {
         this.hhId = id;
@@ -144,5 +145,13 @@ public final class Household {
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
             +"\nHousehold size          " + persons.size();
+    }
+
+    public void setAutonomous (int autonomous){
+        this.autonomous = autonomous;
+    }
+
+    public int getAutonomous(){
+        return autonomous;
     }
 }

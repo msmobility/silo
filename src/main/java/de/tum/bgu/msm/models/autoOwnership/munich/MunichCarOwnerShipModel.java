@@ -3,7 +3,7 @@ package de.tum.bgu.msm.models.autoOwnership.munich;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CarOwnershipModel;
 import de.tum.bgu.msm.data.*;
 import org.apache.log4j.Logger;
 
@@ -17,7 +17,7 @@ import java.util.*;
  * @author Matthew Okrah
  * Created on 28/08/2017 in Munich, Germany.
  */
-public class MunichCarOwnerShipModel extends AbstractModel implements CreateCarOwnershipModel {
+public class MunichCarOwnerShipModel extends AbstractModel implements CarOwnershipModel {
 
     static Logger logger = Logger.getLogger(MunichCarOwnerShipModel.class);
 
@@ -60,7 +60,8 @@ public class MunichCarOwnerShipModel extends AbstractModel implements CreateCarO
                         for (int incMinus = 0; incMinus < 2; incMinus++){
                             for (int licPlus = 0; licPlus < 2; licPlus++){
                                 for (int changeRes = 0; changeRes < 2; changeRes++){
-                                    carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] = calculator.calculateCarOwnerShipProbabilities(prevCar, sizePlus, sizeMinus, incPlus, incMinus, licPlus, changeRes);
+                                    carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] =
+                                            calculator.calculateCarOwnerShipProbabilities(prevCar, sizePlus, sizeMinus, incPlus, incMinus, licPlus, changeRes);
                                 }
                             }
                         }
@@ -115,6 +116,10 @@ public class MunichCarOwnerShipModel extends AbstractModel implements CreateCarO
                     if (hh.getAutos() > 0){ //cannot have less than zero cars
                         hh.setAutos(hh.getAutos() - 1);
                         counter[1]++;
+                        // update number of AVs if necessary after household relinquishes a car
+                        if (hh.getAutonomous() > hh.getAutos()) { // no. of AVs cannot exceed total no. of autos
+                            hh.setAutonomous(hh.getAutos());
+                        }
                     }
                 }
             }

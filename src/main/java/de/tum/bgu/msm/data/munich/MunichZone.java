@@ -7,7 +7,11 @@ import de.tum.bgu.msm.data.ZoneImpl;
 public class MunichZone extends ZoneImpl {
 
     private final Coord coord;
+
     private double ptDistance;
+
+
+
 
     public MunichZone(int id, int msa, float area, Coord coord, double initialPTDistance) {
         super(id, msa, area);
