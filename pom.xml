@@ -4,6 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.tum.bgu.msm</groupId>
 	<artifactId>silo</artifactId>
+	<packaging>pom</packaging>
 	<name>SILO</name>
 	<version>0.1.0-SNAPSHOT</version>
 	<description>Simple Integrated Land-Use Orchestrator</description>
@@ -20,6 +21,10 @@
 		<connection>scm:git:git://github.com/msmobility/silo.git</connection>
 		<developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
 	</scm>
+	<modules>
+		<module>usesCases</module>
+		<module>siloCore</module>
+	</modules>
 	<repositories>
 		<repository>
 			<!-- Geotools is not on Maven central -->
