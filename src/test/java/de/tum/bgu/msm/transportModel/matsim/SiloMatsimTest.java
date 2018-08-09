@@ -3,6 +3,7 @@ package de.tum.bgu.msm.transportModel.matsim;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloMatsim;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
+import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -66,35 +67,17 @@ public class SiloMatsimTest {
 			e.printStackTrace();
 			Assert.fail("Something did not work") ;
 		}
+
+		final String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
+		FileAssert.assertEquals("dwellings are different.", new File(utils.getInputDirectory() + "./dd_2001.csv"), new File(filename_dd));
+		final String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
+		FileAssert.assertEquals("households are different.", new File(utils.getInputDirectory() + "./hh_2001.csv"), new File(filename_hh));
+		final String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
+		FileAssert.assertEquals("jobs are different.", new File(utils.getInputDirectory() + "./jj_2001.csv"), new File(filename_jj));
+		final String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
+		FileAssert.assertEquals("populations are different.", new File(utils.getInputDirectory() + "./pp_2001.csv"), new File(filename_pp));
+
 		{
-			log.info("Checking dwellings file ...");
-			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2001.csv");
-			final String filename = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
-			long checksum_run = CRCChecksum.getCRCFromFile(filename);
-			assertEquals("Dwelling files are different", checksum_ref, checksum_run);
-			if (cleanupAfterTest) new File(filename).delete();
-		}{
-			log.info("Checking households file ...");
-			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./hh_2001.csv");
-			final String filename = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
-			long checksum_run = CRCChecksum.getCRCFromFile(filename);
-			assertEquals("Household files are different", checksum_ref, checksum_run);
-			if (cleanupAfterTest) new File(filename).delete();
-		}{
-			log.info("Checking jobs file ...");
-			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./jj_2001.csv");
-			final String filename = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
-			long checksum_run = CRCChecksum.getCRCFromFile(filename);
-			assertEquals("Job files are different", checksum_ref, checksum_run);
-			if (cleanupAfterTest) new File(filename).delete();
-		}{
-			log.info("checking SILO population file ...");
-			long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./pp_2001.csv");
-			final String filename = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
-			long checksum_run = CRCChecksum.getCRCFromFile(filename);
-			assertEquals("Population files are different", checksum_ref, checksum_run);
-			if (cleanupAfterTest) new File(filename).delete();
-		}{
 			log.info("Checking MATSim plans file ...");
 
 			final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2001.output_plans.xml.gz";

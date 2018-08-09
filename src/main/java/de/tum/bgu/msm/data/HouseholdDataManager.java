@@ -74,7 +74,7 @@ public class HouseholdDataManager {
         for (Household hh: hhs) households.put(hh.getId(), hh);
     }
 
-    public Person createPerson(int id, int age, int gender, Race race, int occupation, int workplace, int income) {
+    public Person createPerson(int id, int age, Person.Gender gender, Race race, int occupation, int workplace, int income) {
         final Person person = new Person(id, age, gender, race, occupation, workplace, income);
         this.persons.put(id, person);
         return person;
@@ -277,7 +277,7 @@ public class HouseholdDataManager {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int hhid       = Integer.parseInt(lineElements[posHhId]);
                 int age        = Integer.parseInt(lineElements[posAge]);
-                int gender     = Integer.parseInt(lineElements[posGender]);
+                Person.Gender gender     = Person.Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
@@ -420,9 +420,9 @@ public class HouseholdDataManager {
         int pers[][] = new int[2][101];
         int ppRace[] = new int[4];
         for (Person per: persons.values()) {
-            int gender = per.getGender();
+            Person.Gender gender = per.getGender();
             int age = Math.min(per.getAge(), 100);
-            pers[gender-1][age] += 1;
+            pers[gender.ordinal()][age] += 1;
             ppRace[per.getRace().ordinal()]++;
         }
         int hhs[] = new int[10];
@@ -479,15 +479,15 @@ public class HouseholdDataManager {
         float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         for (Person per: persons.values()) {
             int age = per.getAge();
-            int gender = per.getGender() - 1;
+            Person.Gender gender = per.getGender();
             boolean employed = per.getWorkplace() > 0;
             int ageGroup = 0;
             if (age >= 65) ageGroup = 4;
             else if (age >= 50) ageGroup = 3;
             else if (age >= 30) ageGroup = 2;
             else if (age >= 18) ageGroup = 1;
-            if (employed) labP[1][gender][ageGroup]++;
-            else labP[0][gender][ageGroup]++;
+            if (employed) labP[1][gender.ordinal()][ageGroup]++;
+            else labP[0][gender.ordinal()][ageGroup]++;
             if (employed) {
                 Zone zone = null;
                 Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(per.getHh().getDwellingId());
@@ -623,8 +623,8 @@ public class HouseholdDataManager {
             int age = Math.min(99, pp.getAge());
             int occupation = 0;
             if (pp.getOccupation() == 1) occupation = 1;
-            averageIncome[pp.getGender() - 1][age][occupation] += pp.getIncome();
-            count[pp.getGender() - 1][age][occupation]++;
+            averageIncome[pp.getGender().ordinal()][age][occupation] += pp.getIncome();
+            count[pp.getGender().ordinal()][age][occupation]++;
         }
         for (int i = 0; i < averageIncome.length; i++) {
             for (int j = 0; j < averageIncome[i].length; j++) {
@@ -658,7 +658,7 @@ public class HouseholdDataManager {
     }
 
     public void selectIncomeForPerson (Person person) {
-        final int gender = person.getGender() - 1;
+        final Person.Gender gender = person.getGender();
         final int age = Math.min(99, person.getAge());
         final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         final double[] prob = new double[21];
@@ -671,7 +671,7 @@ public class HouseholdDataManager {
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
         final int sel = SiloUtil.select(prob);
-        final int inc = Math.max((int) initialIncomeDistribution[gender][age][person.getOccupation()] + change[sel], 0);
+        final int inc = Math.max((int) initialIncomeDistribution[gender.ordinal()][age][person.getOccupation()] + change[sel], 0);
         person.setIncome(inc);
     }
 
@@ -789,7 +789,7 @@ public class HouseholdDataManager {
                 pwp.print(",");
                 pwp.print(pp.getAge());
                 pwp.print(",");
-                pwp.print(pp.getGender());
+                pwp.print(pp.getGender().getCode());
                 pwp.print(",\"");
                 pwp.print(pp.getRole().toString());
                 pwp.print("\",\"");

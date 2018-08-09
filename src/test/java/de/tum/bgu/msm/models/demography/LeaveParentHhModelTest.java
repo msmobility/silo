@@ -29,10 +29,10 @@ public class LeaveParentHhModelTest {
                 .createDwelling(999, zone, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
 
         household = dataContainer.getHouseholdData().createHousehold(999, 1, 0);
-        Person parent1 = dataContainer.getHouseholdData().createPerson(123, 40, 1, Race.other, 3, 0, 0);
-        Person parent2 = dataContainer.getHouseholdData().createPerson(456, 40, 2, Race.other, 3, 0, 0);
+        Person parent1 = dataContainer.getHouseholdData().createPerson(123, 40, Person.Gender.MALE, Race.other, 3, 0, 0);
+        Person parent2 = dataContainer.getHouseholdData().createPerson(456, 40, Person.Gender.FEMALE, Race.other, 3, 0, 0);
 
-        person = dataContainer.getHouseholdData().createPerson(0, 20, 2, Race.other, 3, 0, 0);
+        person = dataContainer.getHouseholdData().createPerson(0, 20, Person.Gender.FEMALE, Race.other, 3, 0, 0);
         person.setRole(PersonRole.CHILD);
         dataContainer.getHouseholdData().addPersonToHousehold(person, household);
         dataContainer.getHouseholdData().addPersonToHousehold(parent1, household);

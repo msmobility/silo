@@ -29,17 +29,17 @@ public class DeathModelTest {
         
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);
         dataContainer.getRealEstateData().createDwelling(1, new ZoneImpl(99,1,1), 1, DwellingType.MF234, 4, 1, 1000, -1, 2000);
-        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, 1, Race.other, -1, -1, 0);
+        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Person.Gender.MALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
 
-        Person person1Child1 = dataContainer.getHouseholdData().createPerson(11, 10, 2, Race.other, -1, -1, 0);
+        Person person1Child1 = dataContainer.getHouseholdData().createPerson(11, 10, Person.Gender.FEMALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child1, household1);
         person1Child1.setRole(PersonRole.CHILD);
-        Person person1Child2 = dataContainer.getHouseholdData().createPerson(12, 10, 2, Race.other, -1, -1, 0);
+        Person person1Child2 = dataContainer.getHouseholdData().createPerson(12, 10, Person.Gender.FEMALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child2, household1);
         person1Child2.setRole(PersonRole.CHILD);
-        Person person1Child3 = dataContainer.getHouseholdData().createPerson(13, 10, 2, Race.other, -1, -1, 0);
+        Person person1Child3 = dataContainer.getHouseholdData().createPerson(13, 10, Person.Gender.FEMALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child3, household1);
         person1Child3.setRole(PersonRole.CHILD);
 

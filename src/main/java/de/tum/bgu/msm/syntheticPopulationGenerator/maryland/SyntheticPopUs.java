@@ -455,7 +455,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                         jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                     }
                 }
-                Person pp = householdDataManager.createPerson(newPpId, age[s], gender[s], race[s], occ, workplace, income[s]);
+                Person pp = householdDataManager.createPerson(newPpId, age[s], Person.Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
                 householdDataManager.addPersonToHousehold(pp, hh);
             }
             hh.setType();
@@ -683,20 +683,20 @@ public class SyntheticPopUs implements SyntheticPopI {
             //      Householder      husband/wife  unmarried Partner
             if (relShp[i] == 1 || relShp[i] == 2 || relShp[i] == 19) {
                 int cnt = coupleCounter.get(pp[i].getGender()) + 1;
-                coupleCounter.put(pp[i].getGender(), cnt);
+                coupleCounter.put(pp[i].getGender().ordinal()+1, cnt);
             }
         }
         int numberOfCouples = Math.min(coupleCounter.get(1), coupleCounter.get(2));
         int[] marriedPersons = new int[]{numberOfCouples, numberOfCouples};
         if (numberOfCouples > 0) {
             pp[0].setRole(PersonRole.MARRIED);
-            marriedPersons[pp[0].getGender()-1] -= 1;
+            marriedPersons[pp[0].getGender().ordinal()] -= 1;
         } else pp[0].setRole(PersonRole.SINGLE);
 
         for (int i = 1; i < pp.length; i++) {
-            if ((relShp[i] == 2 || relShp[i] == 19) && marriedPersons[pp[i].getGender()-1] > 0) {
+            if ((relShp[i] == 2 || relShp[i] == 19) && marriedPersons[pp[i].getGender().ordinal()] > 0) {
                 pp[i].setRole(PersonRole.MARRIED);
-                marriedPersons[pp[i].getGender()-1] -= 1;
+                marriedPersons[pp[i].getGender().ordinal()] -= 1;
                 //   natural child     adopted child        step child        grandchild       foster child
             } else if (relShp[i] == 3 || relShp[i] == 4 || relShp[i] == 5 || relShp[i] == 8 || relShp[i] == 20)
                 pp[i].setRole(PersonRole.CHILD);
@@ -915,7 +915,9 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         int[][] roleCounter = new int[101][3];
         for (Person pp: householdDataManager.getPersons()) {
-            if (pp.getGender() == 1) continue;
+            if (pp.getGender() == Person.Gender.MALE) {
+                continue;
+            }
             int age = Math.min(100, pp.getAge());
             roleCounter[age][pp.getRole().ordinal()]++;
         }

@@ -230,11 +230,11 @@ public class AssignJobs {
     }
 
 
-    public int guessjobType(int gender, int educationLevel){
+    public int guessjobType(Person.Gender gender, int educationLevel){
         int jobType = 0;
         float[] cumProbability;
         switch (gender){
-            case 1:
+            case MALE:
                 switch (educationLevel) {
                     case 0:
                         cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
@@ -254,7 +254,7 @@ public class AssignJobs {
                     default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
                 }
                 break;
-            case 2:
+            case FEMALE:
                 switch (educationLevel) {
                     case 0:
                         cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};

@@ -69,7 +69,7 @@ public enum PersonType {
 
     public static PersonType defineType(Person person) {
         final int age = person.getAge();
-        if (person.getGender() == 1) {
+        if (person.getGender() == Person.Gender.MALE) {
             if (age == 0) {
                 return PersonType.MEN_AGE_0;
             } else if (age <= 4) {

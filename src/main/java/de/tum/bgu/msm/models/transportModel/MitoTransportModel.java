@@ -127,7 +127,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	}
 
 	private MitoPerson convertToMitoPp(Person person) {
-		final Gender mitoGender = Gender.valueOf(person.getGender());
+		final Gender mitoGender = Gender.valueOf(person.getGender().name());
 		final Occupation mitoOccupation = Occupation.valueOf(person.getOccupation());
 		final int workPlace = person.getWorkplace();
 		int workzone = -1;

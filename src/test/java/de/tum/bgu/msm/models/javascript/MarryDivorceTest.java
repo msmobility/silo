@@ -35,13 +35,13 @@ public class MarryDivorceTest {
 
     @Test
     public void testModelOne() {
-        Person person = dataContainer.getHouseholdData().createPerson(1, 20, 1, Race.other, 1, -1, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(1, 20, Person.Gender.MALE, Race.other, 1, -1, 0);
         Assert.assertEquals((0.05926 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);
     }
 
     @Test
     public void testModelTwo() {
-        Person person = dataContainer.getHouseholdData().createPerson(1, 50, 2, Race.other, 1, -1, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(1, 50, Person.Gender.FEMALE, Race.other, 1, -1, 0);
         Assert.assertEquals((0.02514 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);    }
 
     @Test(expected = RuntimeException.class)

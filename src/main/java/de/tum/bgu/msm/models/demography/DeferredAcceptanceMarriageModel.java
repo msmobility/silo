@@ -74,7 +74,7 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
 
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             if(ruleGetMarried(person) && SiloUtil.getRandomNumberAsDouble() <= 15 * getMarryProb(person)) {
-                if(person.getGender() == 1) {
+                if(person.getGender() == Person.Gender.MALE) {
                     bachelors.add(person.getId());
                 } else {
                     if(bachelorettes.size()< bachelors.size()) {

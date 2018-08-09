@@ -109,7 +109,7 @@ public class ReadPopulation {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int hhid       = Integer.parseInt(lineElements[posHhId]);
                 int age        = Integer.parseInt(lineElements[posAge]);
-                int gender     = Integer.parseInt(lineElements[posGender]);
+                Person.Gender gender     = Person.Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");

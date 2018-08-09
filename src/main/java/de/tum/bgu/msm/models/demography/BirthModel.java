@@ -34,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static de.tum.bgu.msm.data.Person.Gender.FEMALE;
+import static de.tum.bgu.msm.data.Person.Gender.MALE;
+
 /**
  * Simulates birth of children
  * Author: Rolf Moeckel, PB Albuquerque
@@ -104,9 +107,9 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
-        int gender = 1;
+        Person.Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
-            gender = 2;
+            gender = FEMALE;
         }
         final Person child = householdData.createPerson(id, 0, gender, household.getRace(),
                 0, 0, 0);
@@ -128,6 +131,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     private boolean personCanGiveBirth(Person person) {
-        return person.getGender() == 2 && calculator.calculateBirthProbability(person.getAge()) > 0;
+        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge()) > 0;
     }
 }
