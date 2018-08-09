@@ -19,10 +19,8 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 //import de.tum.bgu.msm.Implementation;
+
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-//import de.tum.bgu.msm.data.munich.GeoDataMuc;
-//import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -31,19 +29,22 @@ import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.gbl.Gbl;
-//import org.matsim.core.router.util.TravelDisutility;
-//import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+
+import java.io.File;
+import java.util.Objects;
+
+//import de.tum.bgu.msm.data.munich.GeoDataMuc;
+//import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+//import org.matsim.core.router.util.TravelDisutility;
+//import org.matsim.core.router.util.TravelTime;
 //import org.matsim.core.utils.gis.ShapeFileReader;
 //import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 //import org.opengis.feature.simple.SimpleFeature;
-
-import java.io.File;
 //import java.util.HashMap;
 //import java.util.Map;
 
@@ -60,10 +61,9 @@ public final class MatsimTransportModel implements TransportModelI  {
 	
 	
 	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
-		this.dataContainer = dataContainer;
-		Gbl.assertNotNull(dataContainer);
-		this.initialMatsimConfig = matsimConfig ;
-		this.travelTimes =  new MatsimTravelTimes();
+		this.dataContainer = Objects.requireNonNull(dataContainer);
+		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
+		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
 	}
 
 	@Override
@@ -140,13 +140,6 @@ public final class MatsimTransportModel implements TransportModelI  {
 				scenario.getNetwork(), leastCoastPathTree);
 		
 //		tripRouter = controler.getTripRouterProvider().get();
-	}
-
-	public final TravelTimes getTravelTimes() {
-		if(travelTimes == null) {
-			throw new RuntimeException("MATSim Transport Model needs to run at least once before querying travel times!");
-		}
-		return travelTimes;
 	}
 	
 	// Other idea; provide TripRouter more directly; requires more fundamental change, however

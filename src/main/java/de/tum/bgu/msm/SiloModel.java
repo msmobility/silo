@@ -52,7 +52,7 @@ public final class SiloModel {
     private final Set<Integer> scalingYears = new HashSet<>();
 
 	private SiloModelContainer modelContainer;
-	private SiloDataContainer dataContainer;
+	private SiloDataContainer data;
 	private final Config matsimConfig;
     private MicroSimulation microSim;
     private TimeTracker timeTracker = new TimeTracker();
@@ -80,46 +80,53 @@ public final class SiloModel {
 		logger.info("Setting up SILO Model (Implementation " + Properties.get().main.implementation + ")");
         setupContainer();
         setupYears();
+        setupTravelTimes();
         setupAccessibility();
         setupMicroSim();
-        IssueCounter.logIssues(dataContainer.getGeoData());
+        IssueCounter.logIssues(data.getGeoData());
 
         if (Properties.get().main.writeSmallSynpop) {
-            dataContainer.getHouseholdData().writeOutSmallSynPop();
+            data.getHouseholdData().writeOutSmallSynPop();
         }
 		if (Properties.get().main.createPrestoSummary) {
-			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
+			SummarizeData.preparePrestoSummary(data.getGeoData());
 		}
 	}
 
     private void setupContainer() {
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
-		dataContainer.getHouseholdData().setTypeOfAllHouseholds();
-		dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
-		dataContainer.getHouseholdData().calculateInitialSettings();
-		dataContainer.getJobData().calculateEmploymentForecast();
-		dataContainer.getJobData().identifyVacantJobs();
-		dataContainer.getJobData().calculateJobDensityByZone();
-		dataContainer.getRealEstateData().fillQualityDistribution();
-		dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
-		dataContainer.getRealEstateData().identifyVacantDwellings();
+        data = SiloDataContainer.loadSiloDataContainer(Properties.get());
+		IssueCounter.regionSpecificCounters(data.getGeoData());
+		data.getHouseholdData().setTypeOfAllHouseholds();
+		data.getHouseholdData().setHighestHouseholdAndPersonId();
+		data.getHouseholdData().calculateInitialSettings();
+		data.getJobData().calculateEmploymentForecast();
+		data.getJobData().identifyVacantJobs();
+		data.getJobData().calculateJobDensityByZone();
+		data.getRealEstateData().fillQualityDistribution();
+		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
+		data.getRealEstateData().identifyVacantDwellings();
 
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, matsimConfig);
+        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig);
     }
 
-    private void setupAccessibility() {
+    private void setupTravelTimes() {
+		if(Properties.get().transportModel.runMatsim) {
+			modelContainer.getTransportModel().runTransportModel(Properties.get().main.startYear);
+		} else {
+			updateTravelTimes(Properties.get().main.startYear);
+		}
+	}
 
-	    if(Properties.get().transportModel.runMatsim) {
-	        modelContainer.getTransportModel().runTransportModel(Properties.get().main.startYear);
-        } else {
-            SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
-                    Properties.get().main.startYear, Properties.get());
-			SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
-					Properties.get().main.startYear, Properties.get());
-			// updateTransitSkim was outside the bracket before, but central code should not decide how matsim updates
-			// travel times.  If necessary, should be done inside the matsim adapter class. kai, may'18
-        }
+	private void updateTravelTimes(int year) {
+		SkimUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(),
+				year, Properties.get());
+		SkimUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(),
+				year, Properties.get());
+		// updateTransitSkim was outside the bracket before, but central code should not decide how matsim updates
+		// travel times.  If necessary, should be done inside the matsim adapter class. kai, may'18
+	}
+
+    private void setupAccessibility() {
         modelContainer.getAcc().initialize();
         modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
     }
@@ -186,7 +193,7 @@ public final class SiloModel {
 
 	private void runYearByYear() {
 
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdDataManager householdData = data.getHouseholdData();
 
         for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
 
@@ -197,29 +204,24 @@ public final class SiloModel {
 
             timeTracker.reset();
             if (scalingYears.contains(year)) {
-                SummarizeData.scaleMicroDataToExogenousForecast(year, dataContainer);
+                SummarizeData.scaleMicroDataToExogenousForecast(year, data);
             }
             timeTracker.record("scaleDataToForecast");
 
 			timeTracker.reset();
 			if (year != Properties.get().main.implementation.BASE_YEAR) {
 				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
-				dataContainer.getJobData().identifyVacantJobs();
+				data.getJobData().identifyVacantJobs();
 			}
 			timeTracker.record("setupJobChange");
 
 			timeTracker.reset();
-			if (skimYears.contains(year) && !tdmYears.contains(year) &&
+			if (skimYears.contains(year) &&
+                    !tdmYears.contains(year) &&
 					!Properties.get().transportModel.runTravelDemandModel &&
-					year != Properties.get().main.startYear) {
-				// skims are (in non-Matsim case) always read in start year and in every year the transportation model ran. Additional
-				// years to read skims may be provided in skimYears
-				if (!Properties.get().transportModel.runMatsim) {
-                    SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
-                            Properties.get().main.startYear, Properties.get());
-				}
-                SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
-                        Properties.get().main.startYear, Properties.get());
+					year != Properties.get().main.startYear &&
+                    !Properties.get().transportModel.runMatsim) {
+                    updateTravelTimes(year);
             }
 			modelContainer.getAcc().calculateHansenAccessibilities(year);
 			timeTracker.record("calcAccessibilities");
@@ -240,7 +242,7 @@ public final class SiloModel {
 			timeTracker.record("planIncomeChange");
 
 			if (year == Properties.get().main.implementation.BASE_YEAR || year != Properties.get().main.startYear) {
-                SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
+                SiloUtil.summarizeMicroData(year, modelContainer, data);
             }
 
             microSim.simulate(year);
@@ -276,12 +278,12 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			timeTracker.record("updateRealEstatePrices");
 
-			microSim.finishYear(year, carChangeCounter, avSwitchCounter, dataContainer);
-			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
+			microSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
+			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
-					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
+					data.getRealEstateData().getDwellings().size() + " dwellings.");
 
 			if (SiloUtil.modelStopper("check")) {
 			    break;
@@ -292,15 +294,15 @@ public final class SiloModel {
 
 	private void endSimulation() {
 		if (scalingYears.contains(Properties.get().main.endYear)) {
-            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
+            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, data);
         }
 
 		if (Properties.get().main.endYear != 2040) {
-			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);
-			dataContainer.getGeoData().writeOutDevelopmentCapacityFile(dataContainer);
+			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, data);
+			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}
 
-		SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, dataContainer);
+		SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);

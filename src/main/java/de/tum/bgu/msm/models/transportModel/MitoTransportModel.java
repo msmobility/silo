@@ -19,6 +19,7 @@ import org.matsim.api.core.v01.TransportMode;
 import javax.measure.unit.SI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of Transport Model Interface for MITO
@@ -34,13 +35,11 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private final String propertiesPath;
     private final String baseDirectory;
 
-    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, TravelTimes travelTimes) {
+    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer) {
     	super(dataContainer);
-    	this.travelTimes = travelTimes;
-		this.propertiesPath = Properties.get().transportModel.demandModelPropertiesPath;
-		this.baseDirectory = baseDirectory;
-		this.travelDistancesAuto = null;
-
+    	this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
+		this.propertiesPath = Objects.requireNonNull(Properties.get().transportModel.demandModelPropertiesPath);
+		this.baseDirectory = Objects.requireNonNull(baseDirectory);
 	}
 
     @Override

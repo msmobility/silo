@@ -45,6 +45,7 @@ public class JobDataManager {
 
     private final GeoData geoData;
     private final Map<Integer, Job> jobs = new ConcurrentHashMap<>();
+    private final SiloDataContainer data;
 
     private int highestJobIdInUse;
     private int[][] vacantJobsByRegion;
@@ -53,8 +54,9 @@ public class JobDataManager {
     private final Map<Integer, Double> zonalJobDensity;
 
 
-    public JobDataManager(SiloDataContainer dataContainer) {
-        this.geoData = dataContainer.getGeoData();
+    public JobDataManager(SiloDataContainer data) {
+        this.data = data;
+        this.geoData = data.getGeoData();
         this.zonalJobDensity = new HashMap<>();
     }
 
@@ -414,7 +416,7 @@ public class JobDataManager {
             // person has home location (i.e., is not inmigrating right now)
             for (Region reg : regions) {
                 if (vacantJobsByRegionPos[reg.getId()] > 0) {
-                    int distance = (int) (accessibility.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
+                    int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
                     		Properties.get().main.peakHour, TransportMode.car) + 0.5);
                     regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
@@ -423,7 +425,7 @@ public class JobDataManager {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (vacantJobsByRegionPos[reg.getId()] > 0) {
-                    	int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, reg,
+                    	int distance = (int) (data.getTravelTimes().getTravelTime(homeZone, reg,
                         		Properties.get().main.peakHour, TransportMode.car) + 0.5);
                     	regionProb.put(reg, 1. / distance);
                     }

@@ -498,7 +498,7 @@ public class HouseholdDataManager {
 //                        .getPeakAutoTravelTime(zone.getId(),
 //                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
                 Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getWorkplace()).determineZoneId());
-                double ds = siloModelContainer.getAcc().getTravelTimes().
+                double ds = dataContainer.getTravelTimes().
                 		getTravelTime(zone, destination, Properties.get().main.peakHour, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()] ++;

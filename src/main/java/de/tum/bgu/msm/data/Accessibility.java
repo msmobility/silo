@@ -28,9 +28,6 @@ public class Accessibility {
 
     private final GeoData geoData;
 
-    // Travel times should be stored directly in the data container and not here, nk/dz, july'18
-    private final TravelTimes travelTimes;
-
     private DoubleMatrix1D autoAccessibilities;
     private DoubleMatrix1D transitAccessibilities;
     private DoubleMatrix1D regionalAccessibilities;
@@ -42,12 +39,11 @@ public class Accessibility {
     private final float betaTransit;
 
     private final SiloDataContainer dataContainer;
+    private final TravelTimes travelTimes;
 
     private float[] workTLFD;
 
-    public Accessibility(SiloDataContainer dataContainer, TravelTimes travelTimes) {
-        this.travelTimes = travelTimes;
-
+    public Accessibility(SiloDataContainer dataContainer) {
         this.geoData = dataContainer.getGeoData();
         this.dataContainer = dataContainer;
 
@@ -60,6 +56,8 @@ public class Accessibility {
         this.betaAuto = Properties.get().accessibility.betaAuto;
         this.alphaTransit = Properties.get().accessibility.alphaTransit;
         this.betaTransit = Properties.get().accessibility.betaTransit;
+
+        this.travelTimes = dataContainer.getTravelTimes();
     }
 
     /**
@@ -177,9 +175,6 @@ public class Accessibility {
         }
     }
 
-    public TravelTimes getTravelTimes() {
-        return this.travelTimes;
-    }
 
     private DoubleMatrix2D getPeakTravelTimeMatrix(String mode) {
     	if (travelTimes instanceof SkimTravelTimes) {

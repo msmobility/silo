@@ -59,6 +59,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private RealEstateDataManager realEstateDataManager;
     private HouseholdDataManager householdDataManager;
     private JobDataManager jobData;
+    private SkimTravelTimes travelTimes;
 
 
     public SyntheticPopUs(ResourceBundle rb) {
@@ -80,15 +81,15 @@ public class SyntheticPopUs implements SyntheticPopI {
         createJobs();
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         geoData.readData();
-        SkimTravelTimes skimTravelTimes = new SkimTravelTimes();
-        accessibility = new Accessibility(dataContainer, skimTravelTimes);                        // read in travel times and trip length frequency distribution
+        travelTimes = new SkimTravelTimes();
+        accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
 
         final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
-        skimTravelTimes.readSkim(TransportMode.pt, transitSkimFile,
+        travelTimes.readSkim(TransportMode.pt, transitSkimFile,
                     Properties.get().accessibility.transitPeakSkim, Properties.get().accessibility.skimFileFactorTransit);
 
         final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
-        skimTravelTimes.readSkim(TransportMode.car, carSkimFile,
+        travelTimes.readSkim(TransportMode.car, carSkimFile,
                     Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
 
         accessibility.initialize();
@@ -585,7 +586,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 if (numberOfJobsInThisZone > 0) {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
                 	Zone destinationZone = zone;
-                    int distance = (int) (accessibility.getTravelTimes().getTravelTime(homeZone, destinationZone, Properties.get().main.peakHour, "car") + 0.5);
+                    int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().main.peakHour, "car") + 0.5);
                     zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);

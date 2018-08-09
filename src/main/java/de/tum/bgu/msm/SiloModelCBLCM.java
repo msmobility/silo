@@ -37,7 +37,7 @@ public class SiloModelCBLCM {
 	private int currentYear;
 	private boolean trackTime;
 	private SiloModelContainer modelContainer;
-	private SiloDataContainer dataContainer;
+	private SiloDataContainer data;
 	public GeoData geoData;
 
 
@@ -59,11 +59,11 @@ public class SiloModelCBLCM {
 	        // Note: only implemented for MSTM:
 
 		// read micro data
-		dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-		modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
+		data = SiloDataContainer.loadSiloDataContainer(Properties.get());
+		modelContainer = SiloModelContainer.createSiloModelContainer(data, null);
 
-		SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(), currentYear, Properties.get());
-		SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(), currentYear, Properties.get());
+		SkimUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(), currentYear, Properties.get());
+		SkimUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(), currentYear, Properties.get());
 		modelContainer.getAcc().initialize();
 
 	        trackTime = Properties.get().main.trackTime;
@@ -84,18 +84,18 @@ public class SiloModelCBLCM {
 	            System.exit(1);
 	        }
 	        if (scalingYears.contains(currentYear))
-	            SummarizeData.scaleMicroDataToExogenousForecast(currentYear, dataContainer);
+	            SummarizeData.scaleMicroDataToExogenousForecast(currentYear, data);
 	        logger.info("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        IssueCounter.setUpCounter();    // setup issue counter for this simulation period
 	        SiloUtil.trackingFile("Simulating changes from year " + currentYear + " to year " + (currentYear + 1));
 	        MicroSimulation em = new MicroSimulation(new TimeTracker());
-            final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+            final HouseholdDataManager householdData = data.getHouseholdData();
 			long startTime = 0;
 
 
 	        if (currentYear != Properties.get().main.implementation.BASE_YEAR) {
 	            modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(currentYear);
-	            dataContainer.getJobData().identifyVacantJobs();
+	            data.getJobData().identifyVacantJobs();
 	        }
 
 
@@ -103,9 +103,9 @@ public class SiloModelCBLCM {
 	            if (currentYear != Properties.get().main.startYear && !tdmYears.contains(currentYear)) {
 	                // skims are always read in start year and in every year the transportation model ran. Additional
 	                // years to read skims may be provided in skimYears
-	                SkimUtil.updateCarSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+	                SkimUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(),
                             currentYear, Properties.get());
-	                SkimUtil.updateTransitSkim((SkimTravelTimes) modelContainer.getAcc().getTravelTimes(),
+	                SkimUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(),
                             currentYear, Properties.get());
 	                modelContainer.getAcc().calculateHansenAccessibilities(currentYear);
 	            }
@@ -122,7 +122,7 @@ public class SiloModelCBLCM {
 
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        if (currentYear == Properties.get().main.implementation.BASE_YEAR || currentYear != Properties.get().main.startYear)
-	            SiloUtil.summarizeMicroData(currentYear, modelContainer, dataContainer);
+	            SiloUtil.summarizeMicroData(currentYear, modelContainer, data);
 
 		    em.simulate((int) year);
 
@@ -135,12 +135,12 @@ public class SiloModelCBLCM {
 	        if (trackTime) startTime = System.currentTimeMillis();
 	        modelContainer.getPrm().updatedRealEstatePrices();
 
-	        em.finishYear((int) year, new int[] {0,0}, 0, dataContainer);
+	        em.finishYear((int) year, new int[] {0,0}, 0, data);
 	        IssueCounter.logIssues(geoData);           // log any issues that arose during this simulation period
 
 	        logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
 	                " persons, " + householdData.getHouseholds().size() +" households and "  +
-	                dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
+	                data.getRealEstateData().getDwellings().size() + " dwellings.");
 	        currentYear++;
 	        if (SiloUtil.modelStopper("check")) finishModel();
 	}
@@ -152,14 +152,14 @@ public class SiloModelCBLCM {
 	        SummarizeData.resultWriterReplicate = true;
 
 	        if (scalingYears.contains(Properties.get().main.endYear))
-	            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, dataContainer);
+	            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, data);
 
 	        if (Properties.get().main.endYear != 2040) {
-	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, dataContainer);
-	            geoData.writeOutDevelopmentCapacityFile(dataContainer);
+	            SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, data);
+	            geoData.writeOutDevelopmentCapacityFile(data);
 	        }
 
-	        SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, dataContainer);
+	        SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, data);
 	        SiloUtil.finish(modelContainer);
 	        SiloUtil.modelStopper("removeFile");
 	        

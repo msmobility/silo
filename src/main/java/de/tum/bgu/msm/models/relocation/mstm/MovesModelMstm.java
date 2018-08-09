@@ -30,12 +30,9 @@ import org.matsim.api.core.v01.TransportMode;
 
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
-       private SelectRegionJSCalculator regionCalculator;
-    protected EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
+    private SelectRegionJSCalculator regionCalculator;
+    private EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
-
-//    private UtilityExpressionCalculator selectRegionModel;
-    //private MovesDMU selectRegionDmu;
     private DoubleMatrix2D zonalRacialComposition;
     private DoubleMatrix2D regionalRacialComposition;
     private DoubleMatrix1D hhByRegion;
@@ -204,7 +201,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             double thisRegionFactor = 1;
             if (workZones != null) {
                 for (Zone workZone : workZones) {
-                    int timeFromZoneToRegion = (int) accessibility.getTravelTimes().getTravelTimeToRegion(
+                    int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
                     		workZone, region, Properties.get().main.peakHour, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }

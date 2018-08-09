@@ -21,7 +21,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-
     private double[] averageHousingSatisfaction;
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
 

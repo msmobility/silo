@@ -131,7 +131,6 @@ public class SiloModelContainer {
         boolean runMatsim = Properties.get().transportModel.runMatsim;
         boolean runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
 
-        TravelTimes travelTimes;
         TransportModelI transportModel;
         if (runMatsim && (runTravelDemandModel || Properties.get().main.createMstmOutput)) {
             throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point.");
@@ -140,19 +139,17 @@ public class SiloModelContainer {
             LOGGER.info("  MATSim is used as the transport model");
             MatsimTransportModel tmpModel = new MatsimTransportModel(dataContainer, matsimConfig);
             transportModel = tmpModel ;
-            travelTimes = tmpModel.getTravelTimes() ;
         } else {
-            travelTimes = new SkimTravelTimes();
             if (runTravelDemandModel) {
                 LOGGER.info("  MITO is used as the transport model");
-                transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer, travelTimes);
+                transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer);
             } else {
                 LOGGER.info(" No transport model is used");
                 transportModel = null;
             }
         }
 
-        Accessibility acc = new Accessibility(dataContainer, travelTimes);
+        Accessibility acc = new Accessibility(dataContainer);
 
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer);

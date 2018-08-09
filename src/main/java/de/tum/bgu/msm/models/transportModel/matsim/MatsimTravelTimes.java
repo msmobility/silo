@@ -36,7 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/* deliberately package */ final class MatsimTravelTimes implements TravelTimes {
+public final class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
 	private SkimTravelTimes delegate = new SkimTravelTimes() ;

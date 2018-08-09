@@ -6,7 +6,6 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Dwelling;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.data.Zone;
@@ -21,19 +20,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.TransportMode;
 
 public class DeferredAcceptanceMarriageModel implements MarriageModel {
 
-    private final SiloDataContainer dataContainer;
-    private final Accessibility accessibility;
+    private final SiloDataContainer data;
     private MarryDivorceJSCalculator calculator;
 
 
-    public DeferredAcceptanceMarriageModel(SiloDataContainer dataContainer, Accessibility accessibility) {
-        this.dataContainer = dataContainer;
-        this.accessibility = accessibility;
+    public DeferredAcceptanceMarriageModel(SiloDataContainer data) {
+        this.data = data;
         setupModel();
     }
 
@@ -72,7 +68,7 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
         Set<Integer> bachelors = new HashSet<>();
         Set<Integer> bachelorettes = new HashSet<>();
 
-        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+        for(Person person: data.getHouseholdData().getPersons()) {
             if(ruleGetMarried(person) && SiloUtil.getRandomNumberAsDouble() <= 15 * getMarryProb(person)) {
                 if(person.getGender() == Person.Gender.MALE) {
                     bachelors.add(person.getId());
@@ -88,14 +84,14 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 bachelors.stream().mapToInt(Integer::intValue).max().getAsInt()+1,
                 bachelorettes.stream().mapToInt(Integer::intValue).max().getAsInt()+1);
         for(Integer id: bachelors) {
-            Person bachelor = dataContainer.getHouseholdData().getPersonFromId(id);
-            Zone bachelorZone = dataContainer.getGeoData().getZones().get(
-            		dataContainer.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).determineZoneId());
+            Person bachelor = data.getHouseholdData().getPersonFromId(id);
+            Zone bachelorZone = data.getGeoData().getZones().get(
+            		data.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).determineZoneId());
             for(Integer id2: bachelorettes) {
-                Person bachelorette = dataContainer.getHouseholdData().getPersonFromId(id2);
-                Zone bacheloretteZone = dataContainer.getGeoData().getZones().get(
-                		dataContainer.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).determineZoneId());
-                double travelTime = accessibility.getTravelTimes().getTravelTime(
+                Person bachelorette = data.getHouseholdData().getPersonFromId(id2);
+                Zone bacheloretteZone = data.getGeoData().getZones().get(
+                		data.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).determineZoneId());
+                double travelTime = data.getTravelTimes().getTravelTime(
                 		bachelorZone, bacheloretteZone, Properties.get().main.peakHour, TransportMode.car);
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
                 double educationOffset = Math.abs(bachelor.getEducationLevel() - bachelorette.getEducationLevel());
