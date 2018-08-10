@@ -8,13 +8,12 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.TableDataFileReader2;
 import de.tum.bgu.msm.utils.TimeTracker;
-import de.tum.bgu.msm.data.summarizeDataCblcm;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.log4j.Logger;
@@ -54,9 +53,6 @@ public class SiloUtil {
             e.printStackTrace();
         }
         Properties.initializeProperties(rb, implementation);
-        if (Properties.get().main.runSynPop){
-            PropertiesSynPop.initializePropertiesSynPop(rb, implementation);
-        }
         rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");

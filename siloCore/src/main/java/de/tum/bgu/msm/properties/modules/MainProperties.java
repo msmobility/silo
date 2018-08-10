@@ -37,7 +37,6 @@ public class MainProperties {
     public final int[] incomeBrackets;
     public final int qualityLevels;
     public final int randomSeed;
-    public final boolean runSynPop;
     public final int smallSynPopSize;
     public final String prestoZoneFile;
     public final String scaledMicroDataHh;
@@ -80,7 +79,6 @@ public class MainProperties {
         qualityLevels = PropertiesUtil.getIntProperty(bundle, "dwelling.quality.levels.distinguished", 4);
 
         PropertiesUtil.newPropertySubmodule("Main synthetic population");
-        runSynPop = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         smallSynPopSize = PropertiesUtil.getIntProperty(bundle, "size.small.syn.pop", 0);
         readSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "read.small.syn.pop", false);
         writeSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "write.small.syn.pop", false);

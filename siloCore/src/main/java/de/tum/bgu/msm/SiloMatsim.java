@@ -2,7 +2,6 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -37,8 +36,6 @@ public final class SiloMatsim {
 		try {
 			logger.info("Starting SILO program for MATSim");
 			logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-			SyntheticPopUs sp = new SyntheticPopUs(rb);
-			sp.runSP();
 			SiloModel model = new SiloModel(matsimConfig);
 			model.runModel();
 			logger.info("Finished SILO.");

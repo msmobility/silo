@@ -5,7 +5,7 @@ var calculateMarriageProbability = function(person, scale) {
     if(age < 0) {
         throw new Error("Negative age not allowed!");
     }
-    if(person.getGender()==1) { // male
+    if(person.getGender().name()=="MALE") {
         if(age < 15) {
             probability = 0.;
         } else if(age < 20) {
@@ -35,7 +35,7 @@ var calculateMarriageProbability = function(person, scale) {
         } else if(age >= 75) {
             probability = 0.0025;
         }
-    } else if(person.getGender() == 2) { // female
+    } else if(person.getGender().name() == "FEMALE") {
         if(age < 15) {
             probability = 0.;
         } else if(age < 20) {

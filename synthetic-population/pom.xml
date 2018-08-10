@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.tum.bgu.msm</groupId>
+    <artifactId>synthetic-population</artifactId>
+    <name>SILO Synthetic population generator</name>
+    <version>0.1.0-SNAPSHOT</version>
+    <description>SILO synthetic population generator</description>
+    <url>silo.zone</url>
+    <inceptionYear>2015</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License</name>
+            <url>${basedir}/LICENSE</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/moeckel/silo</url>
+        <connection>scm:git:git://github.com/msmobility/silo.git</connection>
+        <developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
+    </scm>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>oss-jfrog-artifactory</id>
+            <name>artifactory-snapshots</name>
+            <url>http://oss.jfrog.org/oss-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+    <build>
+        <defaultGoal>compiler:compile</defaultGoal>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>revision.txt</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>revision.txt</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <revisionOnScmFailure>unknown</revisionOnScmFailure>
+                    <timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss}</timestampFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <showWarnings>false</showWarnings>
+                    <showDeprecation>false</showDeprecation>
+                    <encoding>UTF-8</encoding>
+                    <!-- configure initial and maximal memory for compiling -->
+                    <fork>true</fork>
+                    <meminitial>128m</meminitial>
+                    <maxmem>512m</maxmem>
+                    <compilerArguments>
+                        <Xmaxwarns>4000</Xmaxwarns>
+                        <Xmaxerrs>100</Xmaxerrs>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*$*</exclude> <!-- exclude all inner classes -->
+                    </excludes>
+
+                    <!--execute each test in separate JVM (slow, but otherwise it does not-->
+                    <!--work, and no problem as long as there are only integration tests):-->
+                    <forkMode>always</forkMode>
+
+                    <!-- avoid out of memory errors: -->
+                    <argLine>-Xmx2000m -Djava.awt.headless=true
+
+                        -Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTestJar}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 	<plugin>
+                    <groupId>com.igormaznitsa</groupId>
+                    <artifactId>jute</artifactId>
+                    <version>1.1.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>jute</goal>
+                            </goals>
+                            <configuration>
+                                <verbose>true</verbose>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+             -->
+            <plugin>
+                <!-- Usage (change version numbers, of course) mvn release:prepare -Darguments="-DskipTests
+            -Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B
+            mvn release:perform -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1
+            -DdevelopmentVersion=0.7.2-SNAPSHOT -B -->
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.1</version>
+            </plugin>
+            <plugin>  <!-- plugin to generate sources, which are used when deploying via jitpack.  kai, nov'16 -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.1</version>
+                    <configuration>
+                        <quiet>true</quiet>
+                        <header>SILO API</header>
+                        <groups>
+                            <group>
+                                <title>all</title>
+                                <packages>de.tum.bgu.msm:de.tum.bgu.msm.*</packages>
+                            </group>
+                        </groups>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <reporting>
+        <!-- this plugin generates a html test report -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.8</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>siloCore</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <svnRevision>${buildNumber}</svnRevision>
+        <geotools.version>13.0</geotools.version>
+        <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
+        <matsimVersion>0.10.0-SNAPSHOT</matsimVersion>
+        <jackson.version>2.9.5</jackson.version>
+    </properties>
+</project>

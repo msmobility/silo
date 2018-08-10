@@ -44,8 +44,8 @@ public class SiloMatsimTest {
 		SiloTestUtils.cleanUpOtherFiles();
 
 		boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
-		String arg = "./test/scenarios/annapolis/javaFiles/siloMatsim.properties";
-		Config config = ConfigUtils.loadConfig("./test/scenarios/annapolis/matsim_input/config.xml") ;
+		String arg = "test/scenarios/annapolis/javaFiles/siloMatsim.properties";
+		Config config = ConfigUtils.loadConfig("test/scenarios/annapolis/matsim_input/config.xml") ;
 
 		//TODO: apparently this is required for some machines, as the test class of utils is not initialized at this point,
 		// resulting in exceptions when trying to get output directory 'ana,nico 07/'17
@@ -67,20 +67,20 @@ public class SiloMatsimTest {
 			Assert.fail("Something did not work") ;
 		}
 
-		final String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
+		final String filename_dd = "test/scenarios/annapolis/microData_reduced/dd_2001.csv";
 		FileAssert.assertEquals("dwellings are different.", new File(utils.getInputDirectory() + "./dd_2001.csv"), new File(filename_dd));
-		final String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";
+		final String filename_hh = "test/scenarios/annapolis/microData_reduced/hh_2001.csv";
 		FileAssert.assertEquals("households are different.", new File(utils.getInputDirectory() + "./hh_2001.csv"), new File(filename_hh));
-		final String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2001.csv";
+		final String filename_jj = "test/scenarios/annapolis/microData_reduced/jj_2001.csv";
 		FileAssert.assertEquals("jobs are different.", new File(utils.getInputDirectory() + "./jj_2001.csv"), new File(filename_jj));
-		final String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2001.csv";
+		final String filename_pp = "test/scenarios/annapolis/microData_reduced/pp_2001.csv";
 		FileAssert.assertEquals("populations are different.", new File(utils.getInputDirectory() + "./pp_2001.csv"), new File(filename_pp));
 
 		{
 			log.info("Checking MATSim plans file ...");
 
-			final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2001.output_plans.xml.gz";
-			final String outputFilename = utils.getOutputDirectory() + "./test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
+			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2001.output_plans.xml.gz";
+			final String outputFilename = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
 
 			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -91,8 +91,8 @@ public class SiloMatsimTest {
 			assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ; 
 		}{
 			log.info("Checking MATSim events file ...");
-			final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2001.output_events.xml.gz";
-			final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2001//test_matsim_2001.output_events.xml.gz";
+			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
+			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2001//test_matsim_2001.output_events.xml.gz";
 			assertEquals("Different event files.", FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}
 		

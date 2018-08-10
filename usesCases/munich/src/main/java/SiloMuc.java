@@ -3,7 +3,6 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopulationGenerator;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -29,10 +28,6 @@ public class SiloMuc {
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-            if(Properties.get().main.runSynPop) {
-                SyntheticPopulationGenerator sp = new SyntheticPopulationGenerator(rb);
-                sp.run();
-            }
             SiloModel model = new SiloModel();
             model.runModel();
             logger.info("Finished SILO.");
