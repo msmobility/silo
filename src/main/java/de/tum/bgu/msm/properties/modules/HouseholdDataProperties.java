@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
@@ -14,45 +14,38 @@ public final class HouseholdDataProperties {
     public final boolean summarizeMetro;
     public final String selectedMetroStopsFile;
     public final String householdsNearMetroFile;
-    public final String jobsFileName;
-    public final String dwellingsFileName;
     public final boolean writeBinPopFile;
-    public final boolean writeBinDwellingsFile;
-    public final boolean writeBinJobFile;
-    public final String binaryDwellingsFile;
-    public final String binaryJobFile;
+
+
     public final String householdFinalFileName;
     public final String personFinalFileName;
-    public final String jobsFinalFileName;
-    public final String dwellingsFinalFileName;
+    //public final String jobsFinalFileName;
+    //public final String dwellingsFinalFileName;
 
 
 
     public HouseholdDataProperties(ResourceBundle bundle) {
-        meanIncomeChange = (float) ResourceUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income");
-        readBinaryPopulation = ResourceUtil.getBooleanProperty(bundle, "read.binary.pop.files", false);
-        
-        binaryPopulationFile = ResourceUtil.getProperty(bundle, "population.file.bin");
-        
-        summarizeMetro = ResourceUtil.getBooleanProperty(bundle, "summarize.hh.near.selected.metro.stp");
-        selectedMetroStopsFile = ResourceUtil.getProperty(bundle, "selected.metro.stops");
-        householdsNearMetroFile = ResourceUtil.getProperty(bundle, "hh.near.selected.metro.stops.summary");
+        PropertiesUtil.newPropertySubmodule("Synthetic persons and households for the base year");
+        householdFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/hh");
+        personFileName =  PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/pp");
+        PropertiesUtil.newPropertySubmodule("Synthetic persons and households output of the final year");
+        householdFinalFileName = PropertiesUtil.getStringProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
+        personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
 
-        householdFileName = ResourceUtil.getProperty(bundle, "household.file.ascii");
-        personFileName =  ResourceUtil.getProperty(bundle, "person.file.ascii");
-        jobsFileName = ResourceUtil.getProperty(bundle, "job.file.ascii");
-        dwellingsFileName = ResourceUtil.getProperty(bundle, "dwelling.file.ascii");
-        writeBinPopFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.pop.files");
-        writeBinDwellingsFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.dd.file");
-        writeBinJobFile = ResourceUtil.getBooleanProperty(bundle, "write.binary.jj.file");
-        binaryDwellingsFile = ResourceUtil.getProperty(bundle, "dwellings.file.bin");
-        binaryJobFile = ResourceUtil.getProperty(bundle, "job.file.bin");
+        PropertiesUtil.newPropertySubmodule("Synthetic persons and households for the base year - binary files options");
+        readBinaryPopulation = PropertiesUtil.getBooleanProperty(bundle, "read.binary.pop.files", false);
+        writeBinPopFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.pop.files", false);
+        binaryPopulationFile = PropertiesUtil.getStringProperty(bundle, "population.file.bin", "microData/popData.bin");
+
+        PropertiesUtil.newPropertySubmodule("Household data properties - additional models");
+        meanIncomeChange = (float) PropertiesUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income", 2000);
+        summarizeMetro = PropertiesUtil.getBooleanProperty(bundle, "summarize.hh.near.selected.metro.stp", false);
+        selectedMetroStopsFile = PropertiesUtil.getStringProperty(bundle, "selected.metro.stops","input/housingNearMetroTracer.csv" );
+        householdsNearMetroFile = PropertiesUtil.getStringProperty(bundle, "hh.near.selected.metro.stops.summary", "householdNearSelectedMetroStops");
 
 
-        householdFinalFileName = ResourceUtil.getProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
-        personFinalFileName = ResourceUtil.getProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
-        jobsFinalFileName = ResourceUtil.getProperty(bundle, "job.final.file.ascii", "microData/futureYears/jj");
-        dwellingsFinalFileName = ResourceUtil.getProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
+
+
 
 
     }

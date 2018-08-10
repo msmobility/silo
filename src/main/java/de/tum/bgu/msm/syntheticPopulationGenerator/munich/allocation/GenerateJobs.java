@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -50,7 +51,8 @@ public class GenerateJobs {
                 } else {
                     jobsByTaz.remove(tazSelected);
                 }
-                jobDataManager.createJob(id, tazSelected, -1, jobType);
+                Zone zone = dataContainer.getGeoData().getZones().get(tazSelected);
+                jobDataManager.createJob(id, zone, -1, jobType);
             }
 
     }

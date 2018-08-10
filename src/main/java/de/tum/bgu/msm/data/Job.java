@@ -25,15 +25,25 @@ package de.tum.bgu.msm.data;
 public final class Job {
 
 	private final int id;
-    private final int zone;
     private int workerId;
     private final String type;
+    private Location location;
 
-    Job (int id, int zone, int workerId, String type) {
+    Job (int id, Location location, int workerId, String type) {
         this.id = id;
-        this.zone = zone;
+        this.location = location;
         this.workerId = workerId;
         this.type = type;
+    }
+    
+    public int determineZoneId() {
+    	if (location instanceof MicroLocation) {
+    		return ((MicroLocation) location).getZone().getId();
+    	} else if (location instanceof Zone) {
+    		return ((Zone) location).getId();
+    	} else {
+    		throw new IllegalStateException("No implementation for Location of type " + location.getClass().getName());
+    	}
     }
 
     public int getId () {
@@ -44,14 +54,18 @@ public final class Job {
         return workerId;
     }
 
-    public int getZone() {
-        return zone;
-    }
-
     public String getType() {
         return type;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+    
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+    
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
@@ -59,7 +73,8 @@ public final class Job {
     @Override
     public String toString() {
         return "Attributes of job       " + id
-                + "\nLocated in zone         " + zone
+//                + "\nLocated in zone         " + zone
+                + "\nLocated at         " + location // TODO implement toString methods
                 + "\nFilled by person        " + workerId
                 + "\nJob type                " + type;
     }

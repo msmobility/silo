@@ -23,7 +23,7 @@ public class Optimization extends ModuleSynPop{
         logger.info("   Started optimization model.");
         if (PropertiesSynPop.get().main.runIPU){
             obtainWeightsIPU();
-        } else {
+        } else if (PropertiesSynPop.get().main.runAllocation){
             readIPUresults();
         }
         logger.info("   Completed optimization model.");

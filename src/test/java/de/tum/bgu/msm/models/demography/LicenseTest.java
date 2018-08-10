@@ -24,7 +24,7 @@ public class LicenseTest {
 
     @Test
     public void testLicenseChange() {
-        Person person = dataContainer.getHouseholdData().createPerson(0, 18, 2, Race.other, 1, 0, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(0, 18, Person.Gender.FEMALE, Race.other, 1, 0, 0);
         Assert.assertFalse(person.hasDriverLicense());
         model.createLicense(person);
         Assert.assertTrue(person.hasDriverLicense());

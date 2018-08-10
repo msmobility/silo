@@ -16,6 +16,7 @@ import de.tum.bgu.msm.utils.SkimUtil;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -91,11 +92,10 @@ public class AccessibilityTest {
         HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
         hhManager.readPopulation(Properties.get());
 
-        SkimTravelTimes travelTimes = new SkimTravelTimes();
-        SkimUtil.updateCarSkim(travelTimes, 2000, Properties.get());
-        SkimUtil.updateTransitSkim(travelTimes, 2000, Properties.get());
+        SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
+        SkimUtil.updateTransitSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
 
-        Accessibility accessibility = new Accessibility(dataContainer, travelTimes);
+        Accessibility accessibility = new Accessibility(dataContainer);
         accessibility.initialize();
         accessibility.calculateHansenAccessibilities(2000);
 
@@ -103,7 +103,8 @@ public class AccessibilityTest {
 
         for(Zone zone: geoData.getZones().values()) {
             for(Region region: geoData.getRegions().values()) {
-                minTravelTimes.setQuick(zone.getId(), region.getId(), accessibility.getMinTravelTimeFromZoneToRegion(zone.getId(), region.getId()));
+                minTravelTimes.setQuick(zone.getId(), region.getId(),
+                		dataContainer.getTravelTimes().getTravelTimeToRegion(zone, region, Properties.get().main.peakHour, TransportMode.car));
             }
         }
 

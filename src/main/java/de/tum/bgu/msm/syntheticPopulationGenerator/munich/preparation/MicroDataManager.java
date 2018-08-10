@@ -416,49 +416,49 @@ public class MicroDataManager {
         return personRole;
     }
 
-    public boolean obtainLicense(int gender, int age){
+    public static boolean obtainLicense(Person.Gender gender, int age){
         boolean license = false;
         int row = 1;
         int threshold = 0;
         if (age > 17) {
             if (age < 29) {
-                if (gender == 0) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 86;
                 } else {
                     threshold = 87;
                 }
             } else if (age < 39) {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 94;
                 }
             } else if (age < 49) {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 97;
                 } else {
                     threshold = 95;
                 }
             } else if (age < 59) {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 96;
                 } else {
                     threshold = 89;
                 }
             } else if (age < 64) {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 86;
                 }
             } else if (age < 74) {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 71;
                 }
             } else {
-                if (gender == 1) {
+                if (gender == Person.Gender.MALE) {
                     threshold = 88;
                 } else {
                     threshold = 44;

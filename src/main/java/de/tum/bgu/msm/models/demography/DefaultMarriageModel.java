@@ -27,7 +27,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -56,7 +56,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final static int AGE_OFFSET = 10;
     private final static ContiguousSet<Integer> AGE_DIFF_RANGE
             = ContiguousSet.create(Range.closed(-AGE_OFFSET, AGE_OFFSET), DiscreteDomain.integers());
-    private Table<Integer, Integer, Double> ageDiffProbabilityByGender;
+    private Table<Integer, Person.Gender, Double> ageDiffProbabilityByGender;
     // ageOffset is the range of ages above and below a persons age that are considered for marriage
     // needs to cover -9 to +9 to reach one person type above and one person type below
     // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
@@ -131,9 +131,9 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         LOGGER.info("Defining Marriage Market");
 
         final List<Person> activePartners = new ArrayList<>();
-        final Table<Integer, Integer, List<Person>> partnersByAgeAndGender = ArrayTable.create(
+        final Table<Integer, Person.Gender, List<Person>> partnersByAgeAndGender = ArrayTable.create(
                 ContiguousSet.create(Range.closed(16, 100), DiscreteDomain.integers()),
-                ContiguousSet.create(Range.closed(1, 2), DiscreteDomain.integers()));
+                Arrays.asList(Person.Gender.values()));
 
         for (final Person pp : persons) {
             if (ruleGetMarried(pp)) {
@@ -185,7 +185,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
-        final int partnerGender = (person.getGender() == 1 ? 2 : 1);
+        final Person.Gender partnerGender = person.getGender().opposite();
         final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
 
         final Map<Integer, Double> probabilityByAge = new HashMap<>();
@@ -362,15 +362,15 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         }
     }
 
-    private Table<Integer, Integer, Double> calculateAgeDiffProbabilities() {
+    private Table<Integer, Person.Gender, Double> calculateAgeDiffProbabilities() {
 
-        final Table<Integer, Integer, Double> probabilitiesByAgeDiffAndGender =
-                ArrayTable.create(AGE_DIFF_RANGE, Lists.newArrayList(1, 2));
+        final Table<Integer, Person.Gender, Double> probabilitiesByAgeDiffAndGender =
+                ArrayTable.create(AGE_DIFF_RANGE, Lists.newArrayList(Person.Gender.values()));
 
         for (int ageDiff : AGE_DIFF_RANGE) {
             int ageFactor = ageDiff;
-            for (int gender : probabilitiesByAgeDiffAndGender.columnKeySet()) {
-                if (gender == 1) {
+            for (Person.Gender gender : probabilitiesByAgeDiffAndGender.columnKeySet()) {
+                if (gender == Person.Gender.MALE) {
                     // man searches woman
                     ageFactor += Properties.get().demographics.marryAbsAgeDiff;
                 } else {
@@ -400,9 +400,9 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         private final boolean sameRace;
         private final int age;
-        private final int gender;
+        private final Person.Gender gender;
 
-        private MarriagePreference(boolean sameRace, int age, int gender) {
+        private MarriagePreference(boolean sameRace, int age, Person.Gender gender) {
             this.sameRace = sameRace;
             this.age = age;
             this.gender = gender;
@@ -411,10 +411,10 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private final static class MarriageMarket {
         final List<Person> activePartners;
-        final Table<Integer, Integer, List<Person>> partnersByAgeAndGender;
+        final Table<Integer, Person.Gender, List<Person>> partnersByAgeAndGender;
 
         private MarriageMarket(List<Person> activePartners,
-                               Table<Integer, Integer, List<Person>> passivePartnersByAgeAndGender) {
+                               Table<Integer, Person.Gender, List<Person>> passivePartnersByAgeAndGender) {
             this.activePartners = activePartners;
             this.partnersByAgeAndGender = passivePartnersByAgeAndGender;
         }
@@ -427,7 +427,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
             }
         }
 
-        private List<Person> getFittingPartners(int age, int gender) {
+        private List<Person> getFittingPartners(int age, Person.Gender gender) {
             final List<Person> entry = partnersByAgeAndGender.get(age, gender);
             if(entry == null) {
                 return Collections.emptyList();

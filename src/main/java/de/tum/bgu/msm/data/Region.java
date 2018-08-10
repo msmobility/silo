@@ -2,7 +2,7 @@ package de.tum.bgu.msm.data;
 
 import java.util.Collection;
 
-public interface Region extends Id{
+public interface Region extends Id, Location {
 
     Collection<Zone> getZones();
 

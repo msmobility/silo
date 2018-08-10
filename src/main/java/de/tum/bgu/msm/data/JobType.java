@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.data;
 
-import com.pb.common.util.ResourceUtil;
 
 import java.util.HashMap;
 import java.util.ResourceBundle;

@@ -1,7 +1,13 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
+//import com.vividsolutions.jts.geom.*;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -23,6 +29,7 @@ import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheck
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.core.utils.geometry.CoordUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Collection;
@@ -43,15 +50,13 @@ public class SiloMatsimUtils {
 		
 		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
 		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-		double storageCapacityFactor = Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.;
-		config.qsim().setStorageCapFactor(storageCapacityFactor);
+		config.qsim().setStorageCapFactor(Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.);
 		
 		String outputDirectoryRoot = initialConfig.controler().getOutputDirectory();
 		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
-		config.controler().setMobsim("qsim");
 		config.controler().setWritePlansInterval(config.controler().getLastIteration());
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration());
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
@@ -97,8 +102,9 @@ public class SiloMatsimUtils {
 		return config;
 	}
 
-	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
-			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
+//	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
+//			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
+	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
     	Collection<Person> siloPersons = dataContainer.getHouseholdData().getPersons();
     	
@@ -135,57 +141,80 @@ public class SiloMatsimUtils {
     			}
     		}
 
-    		int siloPersonId = siloPerson.getId();
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		int siloHomeTazId = dwelling.getZone();
+    		MicroLocation dwellingLocation;
+    		if (dwelling.getLocation() instanceof MicroLocation) {
+	    		dwellingLocation = (MicroLocation) dwelling.getLocation();
+    		} else if (dwelling.getLocation() instanceof Zone) {
+    			dwellingLocation = ((Zone) dwelling.getLocation()).getRandomMicroLocation();
+    		} else {
+    			throw new RuntimeException("Location must either be Microlocation or Zone.");
+    		}
+    		Coord dwellingCoord = new Coord(dwellingLocation.getCoordinate().x, dwellingLocation.getCoordinate().y);
+
     		Job job = jobData.getJobFromId(siloWorkplaceId);
-    		int workZoneId = job.getZone();
+    		MicroLocation jobLocation;
+    		if (job.getLocation() instanceof MicroLocation) {
+    			jobLocation = (MicroLocation) job.getLocation();
+    		} else if (job.getLocation() instanceof Zone) {
+    			jobLocation = ((Zone) job.getLocation()).getRandomMicroLocation();
+    		} else {
+    			throw new RuntimeException("Location must either be Microlocation or Zone.");
+    		}
+    		Coord jobCoord = new Coord(jobLocation.getCoordinate().x, jobLocation.getCoordinate().y);
+    		
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here
     		org.matsim.api.core.v01.population.Person matsimPerson = 
-    				matsimPopulationFactory.createPerson(Id.create(siloPersonId, org.matsim.api.core.v01.population.Person.class));
+    				matsimPopulationFactory.createPerson(Id.create(siloPerson.getId(), org.matsim.api.core.v01.population.Person.class));
     		matsimPopulation.addPerson(matsimPerson);
 
     		Plan matsimPlan = matsimPopulationFactory.createPlan();
     		matsimPerson.addPlan(matsimPlan);
 
-    		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
-    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
-    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+//    		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
+//    		//TODO remove getRandomCoordinate when implementing microlocation
+//    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
+//    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
     		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-    		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
-    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
-    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
+//    		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
+//			//TODO remove getRandomCoordinate when implementing microlocation
+//    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
+//    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
+    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
     		activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity2);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+//    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
+    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+
     		matsimPlan.addActivity(activity3);
     	}
     	LOG.info("Finished creating a MATSim population.");
     	return matsimPopulation;
     }
 	
-	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature) {
-		Geometry geometry = (Geometry) feature.getDefaultGeometry();
-		Envelope envelope = geometry.getEnvelopeInternal();
-		while (true) {
-			Point point = getRandomPointInEnvelope(envelope);
-			if (point.within(geometry)) {
-				return new Coord(point.getX(), point.getY());
-			}
-		}
-	}
+//	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature) {
+//		Geometry geometry = (Geometry) feature.getDefaultGeometry();
+//		Envelope envelope = geometry.getEnvelopeInternal();
+//		while (true) {
+//			Point point = getRandomPointInEnvelope(envelope);
+//			if (point.within(geometry)) {
+//				return new Coord(point.getX(), point.getY());
+//			}
+//		}
+//	}
 	
-	public static final Point getRandomPointInEnvelope(Envelope envelope) {
-		double x = envelope.getMinX() + SiloUtil.getRandomNumberAsDouble() * envelope.getWidth();
-		double y = envelope.getMinY() + SiloUtil.getRandomNumberAsDouble() * envelope.getHeight();
-		return geometryFactory.createPoint(new Coordinate(x,y));
-	}
+//	public static final Point getRandomPointInEnvelope(Envelope envelope) {
+//		double x = envelope.getMinX() + SiloUtil.getRandomNumberAsDouble() * envelope.getWidth();
+//		double y = envelope.getMinY() + SiloUtil.getRandomNumberAsDouble() * envelope.getHeight();
+//		return geometryFactory.createPoint(new Coordinate(x,y));
+//	}
 	
 	public static final Matrix convertTravelTimesToImpedanceMatrix(
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int rowCount, int columnCount, int year) {

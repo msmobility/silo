@@ -45,7 +45,8 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
     @Override
     public boolean handleEvent(LicenseEvent event) {
         Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
-        if (pp != null && pp.hasDriverLicense() && pp.getAge() < 18) {
+        //assign new licenses to adults who does not have one, no license is revoked at any time
+        if (pp != null && !pp.hasDriverLicense() && pp.getAge()>= 18) {
             final double changeProb = calculator.calculateChangeDriversLicenseProbability(pp.getType());
             if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
                 return createLicense(pp);

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 
@@ -25,28 +26,9 @@ public interface GeoData {
     Map<Integer, Region> getRegions();
 
     /**
-     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
+     * Returns an immutable map of all zoneFeatures mapped to their zone IDs
      */
-    @Deprecated
-    int[] getZoneIdsArray();
-
-    /**
-     * @deprecated  As of jan'18. Use  {@link #getZones()} instead
-     */
-    @Deprecated
-    int[] getRegionIdsArray();
-
-    /**
-     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
-     */
-    @Deprecated
-    int getZoneIndex(int zone);
-
-    /**
-     * @deprecated  As of jan'18. No need to use with new Collections access {@link #getZones()}
-     */
-    @Deprecated
-    int getHighestZonalId();
+    Map<Integer, SimpleFeature> getZoneFeatureMap();
 
     boolean useNumberOfDwellingsAsCapacity();
 

@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.data;
 
-public interface Zone extends Id{
+import org.opengis.feature.simple.SimpleFeature;
+
+public interface Zone extends Id, Location {
 
     void setRegion(Region region);
 
@@ -15,5 +17,11 @@ public interface Zone extends Id{
      * @return the area of the zone in acres
      */
     float getArea();
+
+	void setZoneFeature(SimpleFeature zoneFeature);
+
+	SimpleFeature getZoneFeature();
+
+	MicroLocation getRandomMicroLocation();
 
 }

@@ -1,0 +1,29 @@
+County,State,Short,Fips,Units,Occupied,Vacant,VacancyRate
+Ingolstadt,Oberbayern,91,9161,61123,57424,3699,0.060517318
+"München, Landeshauptstadt",Oberbayern,91,9162,751452,712250,39202,0.052168335
+Rosenheim,Oberbayern,91,9163,30994,28981,2013,0.064948054
+Landshut,Oberbayern,92,9261,33257,30971,2286,0.068737409
+Augsburg,Oberbayern,97,9761,143978,135727,8251,0.057307366
+"Bad Tölz-Wolfratshausen, Landkreis",Oberbayern,91,9173,55986,50434,5552,0.099167649
+"Dachau, Landkreis",Oberbayern,91,9174,61950,57911,4039,0.06519774
+"Ebersberg, Landkreis",Oberbayern,91,9175,56546,52591,3955,0.069943055
+"Eichstätt, Landkreis",Oberbayern,91,9176,52056,47278,4778,0.091785769
+"Erding, Landkreis",Oberbayern,91,9177,53960,49921,4039,0.074851742
+"Freising, Landkreis",Oberbayern,91,9178,74665,68881,5784,0.077466015
+"Fürstenfeldbruck, Landkreis",Oberbayern,91,9179,94327,89171,5156,0.054660914
+"Landsberg am Lech, Landkreis",Oberbayern,91,9181,50145,46002,4143,0.082620401
+"Miesbach, Landkreis",Oberbayern,91,9182,47330,40827,6503,0.137397
+"Mühldorf a.Inn, Landkreis",Oberbayern,91,9183,45699,41390,4309,0.094290904
+"München, Landkreis",Oberbayern,91,9184,150379,139260,11119,0.073939845
+"Neuburg-Schrobenhausen, Landkreis",Oberbayern,91,9185,39221,36199,3022,0.07705056
+"Pfaffenhofen a.d.Ilm, Landkreis",Oberbayern,91,9186,50208,46436,3772,0.07512747
+"Rosenheim, Landkreis",Oberbayern,91,9187,110847,99435,11412,0.102952719
+"Starnberg, Landkreis",Oberbayern,91,9188,61748,55734,6014,0.097395867
+"Weilheim-Schongau, Landkreis",Oberbayern,91,9190,58765,54243,4522,0.076950566
+"Kelheim, Landkreis",Niederbayern,92,9273,48831,44766,4065,0.083246298
+"Landshut, Landkreis",Niederbayern,92,9274,61905,57105,4800,0.077538163
+"Dingolfing-Landau, Landkreis",Niederbayern,92,9279,38670,35291,3379,0.087380398
+"Neumarkt i.d.OPf., Landkreis",Oberpfalz,93,9373,52980,48372,4608,0.086976217
+"Aichach-Friedberg, Landkreis",Schwaben,97,9771,54579,50681,3898,0.07141941
+"Augsburg, Landkreis",Schwaben,97,9772,106932,99364,7568,0.07077395
+"Dillingen a.d.Donau, Landkreis",Schwaben,97,9773,39700,36287,3413,0.085969773

@@ -7,6 +7,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.data.DwellingType;
 import org.apache.log4j.Logger;
+import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,6 +54,8 @@ public class DataSetSynPop {
     private TableDataSet householdDataSet;
     private TableDataSet personDataSet;
     private TableDataSet dwellingDataSet;
+
+    private Map<Integer, SimpleFeature> zoneFeatureMap;
 
     public TableDataSet getWeights() {
         return weights;
@@ -276,5 +279,13 @@ public class DataSetSynPop {
 
     public void setDwellingDataSet(TableDataSet dwellingDataSet) {
         this.dwellingDataSet = dwellingDataSet;
+    }
+
+    public Map<Integer, SimpleFeature> getZoneFeatureMap() {
+        return zoneFeatureMap;
+    }
+
+    public void setZoneFeatureMap(Map<Integer, SimpleFeature> zoneFeatureMap) {
+        this.zoneFeatureMap = zoneFeatureMap;
     }
 }

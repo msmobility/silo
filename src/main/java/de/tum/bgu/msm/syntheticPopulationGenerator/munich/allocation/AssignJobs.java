@@ -48,7 +48,7 @@ public class AssignJobs {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
-            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
+            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).determineZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
@@ -84,7 +84,7 @@ public class AssignJobs {
     private void setWorkerAndJob(Person pp, int jobID){
 
         dataContainer.getJobData().getJobFromId(jobID).setWorkerID(pp.getId());
-        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).getZone();
+        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).determineZoneId();
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
@@ -108,14 +108,13 @@ public class AssignJobs {
 
     private void shuffleWorkers(){
 
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
-        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
-            if (pair.getValue().getOccupation() == 1){
-                workerArrayList.add(pair.getValue());
-                pair.getValue().setWorkplace(-1);
-                pair.getValue().setJobTAZ(-1);
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            if (pp.getOccupation() == 1){
+                workerArrayList.add(pp);
+                pp.setWorkplace(-1);
+                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(workerArrayList);
@@ -161,7 +160,7 @@ public class AssignJobs {
             //set all jobs vacant to allocate them
             jj.setWorkerID(-1);
             int type = jobIntTypes.get(jj.getType());
-            int typeZone = type + jj.getZone() * 100;
+            int typeZone = type + jj.determineZoneId() * 100;
             //update the set of zones that have ID
             if (numberVacantJobsByZoneByType.get(typeZone) == 0){
                 numberZonesByType.put(type, numberZonesByType.get(type) + 1);
@@ -191,7 +190,7 @@ public class AssignJobs {
         for (Job jj: jobs) {
             //all jobs are vacant in this step of the synthetic population
             int type = jobIntTypes.get(jj.getType());
-            int typeZone = jobIntTypes.get(jj.getType()) + jj.getZone() * 100;
+            int typeZone = jobIntTypes.get(jj.getType()) + jj.determineZoneId() * 100;
             //update the list of job IDs per zone and job type
             int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
             previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();
@@ -231,11 +230,11 @@ public class AssignJobs {
     }
 
 
-    public int guessjobType(int gender, int educationLevel){
+    public int guessjobType(Person.Gender gender, int educationLevel){
         int jobType = 0;
         float[] cumProbability;
         switch (gender){
-            case 1:
+            case MALE:
                 switch (educationLevel) {
                     case 0:
                         cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
@@ -255,7 +254,7 @@ public class AssignJobs {
                     default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
                 }
                 break;
-            case 2:
+            case FEMALE:
                 switch (educationLevel) {
                     case 0:
                         cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};

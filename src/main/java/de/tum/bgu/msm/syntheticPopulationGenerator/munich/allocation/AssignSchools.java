@@ -36,12 +36,18 @@ public class AssignSchools {
         calculateDistanceImpedance();
         initializeSchoolCapacity();
         shuffleStudents();
+
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            pp.setDriverLicense(obtainLicense(pp.getGender(),pp.getAge()));
+        }
+
+
         double logging = 2;
         int it = 12;
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : studentArrayList){
             int schooltaz;
-            int hometaz = realEstate.getDwelling(pp.getHh().getDwellingId()).getZone();
+            int hometaz = realEstate.getDwelling(pp.getHh().getDwellingId()).determineZoneId();
             if (pp.getSchoolType() == 3){
                 schooltaz = selectTertiarySchool(hometaz);
             } else {
@@ -94,9 +100,9 @@ public class AssignSchools {
                 probability.put(zone, prob);
             }
             schooltaz = SiloUtil.select(probability);
-            int remainingCapacity = schoolCapacityMap.get(3).get(schooltaz);
+            int remainingCapacity = schoolCapacityMap.get(3).get(schooltaz) - 1;
             if (remainingCapacity > 0) {
-                schoolCapacityMap.get(3).put(schooltaz, remainingCapacity - 1);
+                schoolCapacityMap.get(3).put(schooltaz, remainingCapacity);
             } else {
                 schoolCapacityMap.get(3).remove(schooltaz);
             }
@@ -120,9 +126,9 @@ public class AssignSchools {
                     minDistance = distanceImpedancePrimarySecondary.getValueAt(hometaz, zone);
                 }
             }
-            int remainingCapacity = schoolCapacityMap.get(schoolType).get(schooltaz);
+            int remainingCapacity = schoolCapacityMap.get(schoolType).get(schooltaz) - 1;
             if (remainingCapacity > 0) {
-                schoolCapacityMap.get(schoolType).put(schooltaz, remainingCapacity - 1);
+                schoolCapacityMap.get(schoolType).put(schooltaz, remainingCapacity);
             } else {
                 schoolCapacityMap.get(schoolType).remove(schooltaz);
             }
@@ -135,13 +141,12 @@ public class AssignSchools {
 
     private void shuffleStudents(){
 
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
         studentArrayList = new ArrayList<>();
-        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
-            if (pair.getValue().getOccupation() == 3){
-                studentArrayList.add(pair.getValue());
-                pair.getValue().setSchoolPlace(-1);
-                pair.getValue().setJobTAZ(-1);
+        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+            if (pp.getOccupation() == 3){
+                studentArrayList.add(pp);
+                pp.setSchoolPlace(-1);
+                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(studentArrayList);
@@ -176,6 +181,61 @@ public class AssignSchools {
                 }
             }
         }
+    }
+
+    public boolean obtainLicense(Person.Gender gender, int age){
+        boolean license = false;
+        int row = 1;
+        int threshold = 0;
+        if (age > 17) {
+            if (age < 29) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 86;
+                } else {
+                    threshold = 87;
+                }
+            } else if (age < 39) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 95;
+                } else {
+                    threshold = 94;
+                }
+            } else if (age < 49) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 97;
+                } else {
+                    threshold = 95;
+                }
+            } else if (age < 59) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 96;
+                } else {
+                    threshold = 89;
+                }
+            } else if (age < 64) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 95;
+                } else {
+                    threshold = 86;
+                }
+            } else if (age < 74) {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 95;
+                } else {
+                    threshold = 71;
+                }
+            } else {
+                if (gender == Person.Gender.MALE) {
+                    threshold = 88;
+                } else {
+                    threshold = 44;
+                }
+            }
+            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
+                license = true;
+            }
+        }
+        return license;
     }
 
 }

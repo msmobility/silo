@@ -1,12 +1,17 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.transportModel.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -117,7 +122,17 @@ public class ConstructionOverwrite extends AbstractModel {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zoneId, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+
+            if(Properties.get().main.implementation == Implementation.MUNICH) {
+                if(Properties.get().main.runDwellingMicrolocation) {
+                	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
+                    dd.setLocation(microLocation);
+                }
+            }
+
+
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {

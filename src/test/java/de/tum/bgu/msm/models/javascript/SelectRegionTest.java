@@ -40,10 +40,9 @@ public class SelectRegionTest {
                 Nationality.OTHER, 500, 100, 0.5f), 0.);
     }
 
-    @Ignore
-    //this test should be ignore until the SelectRegionMstm javascript is updated and compatible with races
+    @Test
     public void testMovesModelMaryland() throws ScriptException {
-        Assert.assertEquals(359.125, calculatorMstm.calculateSelectRegionProbabilityMstm(IncomeCategory.LOW,
-                Race.white, 500, 100, 0.5f, 0, 0));
+        Assert.assertEquals(314.365, calculatorMstm.calculateSelectRegionProbabilityMstm(IncomeCategory.LOW,
+                Race.white, 1000, 100, 0.6f, 0.6f, 0.1f), 0.000001);
     }
 }

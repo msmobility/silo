@@ -67,7 +67,7 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction {
     }
 
     private float getDesiredShift() {
-        int gender = person.getGender() - 1;
+        int gender = person.getGender().ordinal();
         int age = Math.min(99, person.getAge());
         int occ = 0;
         if (person.getOccupation() == 1) {

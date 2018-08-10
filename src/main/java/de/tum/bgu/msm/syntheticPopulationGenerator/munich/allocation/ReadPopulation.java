@@ -109,7 +109,7 @@ public class ReadPopulation {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int hhid       = Integer.parseInt(lineElements[posHhId]);
                 int age        = Integer.parseInt(lineElements[posAge]);
-                int gender     = Integer.parseInt(lineElements[posGender]);
+                Person.Gender gender     = Person.Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
@@ -156,7 +156,7 @@ public class ReadPopulation {
 
         logger.info("Reading dwelling micro data from ascii file");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFile;
+        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
         fileName += "_" + year + ".csv";
 
         String recString = "";
@@ -185,7 +185,7 @@ public class ReadPopulation {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id        = Integer.parseInt(lineElements[posId]);
-                int zone      = Integer.parseInt(lineElements[posZone]);
+                int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
                 DwellingType type = DwellingType.valueOf(tp);
@@ -194,6 +194,7 @@ public class ReadPopulation {
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
+                Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
                 Dwelling dd = realEstate.createDwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
@@ -238,9 +239,10 @@ public class ReadPopulation {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id      = Integer.parseInt(lineElements[posId]);
-                int zone    = Integer.parseInt(lineElements[posZone]);
+                int zoneId    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
+                Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
                 jobDataManager.createJob(id, zone, worker, type);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);

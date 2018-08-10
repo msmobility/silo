@@ -7,6 +7,9 @@ import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -24,12 +27,12 @@ public class SiloDataContainer {
     private final RealEstateDataManager realEstateData;
     private final JobDataManager jobData;
     private final GeoData geoData;
+    private final TravelTimes travelTimes;
 
     /**
      *
      * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
      * being used to encapsulate the object creation.
-     *
      *
      */
     private SiloDataContainer(Implementation implementation) {
@@ -49,13 +52,42 @@ public class SiloDataContainer {
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this);
+        travelTimes = new SkimTravelTimes();
     }
 
-    public void loadData(Properties properties) {
+    /**
+     *
+     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * being used to encapsulate the object creation.
+     *
+     */
+    private SiloDataContainer(Implementation implementation, Properties properties) {
+
+        switch (implementation) {
+            case MARYLAND:
+                geoData = new GeoDataMstm();
+                break;
+            case MUNICH:
+                geoData = new GeoDataMuc();
+                break;
+            default:
+                LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
+                throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
+        }
+
+        realEstateData = new RealEstateDataManager(this);
+        jobData = new JobDataManager(this);
+        householdData = new HouseholdDataManager(this);
         geoData.readData();
         householdData.readPopulation(properties);
         realEstateData.readDwellings(properties);
         jobData.readJobs(properties);
+
+        if(properties.transportModel.runMatsim) {
+            travelTimes = new MatsimTravelTimes();
+        } else {
+            travelTimes = new SkimTravelTimes();
+        }
     }
 
     /**
@@ -65,20 +97,17 @@ public class SiloDataContainer {
      */
     public static SiloDataContainer loadSiloDataContainer(Properties properties) {
         LOGGER.info("  Creating Data Objects for SiloDataContainer");
-        SiloDataContainer dataContainer = new SiloDataContainer(properties.main.implementation);
-        dataContainer.loadData(properties);
-        return dataContainer;
+        return new SiloDataContainer(properties.main.implementation, properties);
     }
 
     /**
      * This factory method is used to create an empty data container.
-     * Barely tested, use with caution!
+     * Barely tested, use with caution! Uses Skim Travel times
      * @return A SiloDataContainer, with each data object created within
      */
     public static SiloDataContainer createEmptySiloDataContainer(Implementation implementation) {
         LOGGER.info("  Creating Data Objects for SiloDataContainer");
-        SiloDataContainer dataContainer = new SiloDataContainer(implementation);
-        return dataContainer;
+        return new SiloDataContainer(implementation);
     }
 
     public HouseholdDataManager getHouseholdData() {
@@ -95,5 +124,9 @@ public class SiloDataContainer {
 
     public GeoData getGeoData() {
         return geoData;
+    }
+
+    public TravelTimes getTravelTimes() {
+        return travelTimes;
     }
 }

@@ -91,7 +91,7 @@ public class GenerateHouseholdsPersonsDwellings {
             int id = householdDataManager.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
-            int gender = dataSetSynPop.getPersonTable().get(personSelected, "gender");
+            Person.Gender gender = Person.Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
             int occupation = dataSetSynPop.getPersonTable().get(personSelected, "occupation");
             Race race = microDataManager.translateRace(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
             Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
@@ -132,7 +132,10 @@ public class GenerateHouseholdsPersonsDwellings {
         int bedRooms = microDataManager.guessBedrooms(floorSpace);
         int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
         int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, usage);
-        Dwelling dwell = realEstate.createDwelling(newDdId, tazSelected, idHousehold, type , bedRooms, quality, price, 0, year);
+        
+        Zone zone = dataContainer.getGeoData().getZones().get(tazSelected);
+        
+        Dwelling dwell = realEstate.createDwelling(newDdId, zone, idHousehold, type , bedRooms, quality, price, 0, year);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
         dwell.setBuildingSize(buildingSize);

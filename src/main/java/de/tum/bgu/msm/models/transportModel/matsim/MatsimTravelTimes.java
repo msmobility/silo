@@ -10,7 +10,13 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+
+import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Person ;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
+
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
@@ -20,56 +26,58 @@ import org.matsim.pt.router.FakeFacility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.vividsolutions.jts.geom.Coordinate;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/* deliberately package */ final class MatsimTravelTimes implements TravelTimes {
+public final class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
 	private SkimTravelTimes delegate = new SkimTravelTimes() ;
 	private LeastCostPathTree leastCoastPathTree;
 	private Network network;
 	private TripRouter tripRouter;
-	private final Map<Integer, List<Node>> zoneCalculationNodesMap = new HashMap<>();
+	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
 	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
 
-	void update(LeastCostPathTree leastCoastPathTree, Map<Integer, SimpleFeature> zoneFeatureMap, Network network, TripRouter tripRouter) {
-        this.leastCoastPathTree = leastCoastPathTree;
-        this.network = network;
+	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
+
+	void update(TripRouter tripRouter, Collection<Zone> zones, Network network, LeastCostPathTree leastCoastPathTree) {
 		this.tripRouter = tripRouter;
+		this.network = network;
+		this.leastCoastPathTree = leastCoastPathTree;
+
+		updateZoneConnections(zones);
 		this.treesForNodesByTimes.clear();
-        updateZoneConnections(zoneFeatureMap);
-		
-		
 		SkimUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
-		
 	}
 
-	private void updateZoneConnections(Map<Integer,SimpleFeature> zoneFeatureMap) {
-	    zoneCalculationNodesMap.clear();
-		for (int zoneId : zoneFeatureMap.keySet()) {
-            SimpleFeature originFeature = zoneFeatureMap.get(zoneId);
 
+	private void updateZoneConnections(Collection<Zone> zones) {
+	    for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-				Coord originCoord = SiloMatsimUtils.getRandomCoordinateInGeometry(originFeature);
+            	MicroLocation originLocation = zone.getRandomMicroLocation();
+				Coord originCoord = new Coord(originLocation.getCoordinate().x, originLocation.getCoordinate().y);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
-				if (!zoneCalculationNodesMap.containsKey(zoneId)) {
-					zoneCalculationNodesMap.put(zoneId, new LinkedList());
+				if (!zoneCalculationNodesMap.containsKey(zone)) {
+					zoneCalculationNodesMap.put(zone, new LinkedList<>());
 				}
-				zoneCalculationNodesMap.get(zoneId).add(originNode);
+				zoneCalculationNodesMap.get(zone).add(originNode);
 			}
 		}
         logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
     }
 
-	@Override
-	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
-		
+	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
 		if(TransportMode.car.equals(mode)) {
 			double sumTravelTime_min = 0.;
 
@@ -92,31 +100,71 @@ import java.util.Map;
 					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 				}
 
-				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// several points in a given destination zone
+				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// Several points in a given destination zone
 
 					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
 					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
 				}
 			}
 			return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
-		} else {
-			
-//			// yyyyyy should work as follows (if we had the information). kai, may'18
-//			Facility fromFacility = null ;
-//			Facility toFacility = null ;
-//			org.matsim.api.core.v01.population.Person person = null ;
-//			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
-//			double ttime = 0. ;
-//			for ( PlanElement pe : trip ) {
-//				if ( pe instanceof Leg) {
-//					ttime += ((Leg) pe).getTravelTime() ;
-//				}
-//			}
-//			return ttime ;
-			
+		} else {			
 			//TODO: reconsider matsim pt travel times. nk apr'18
             return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
 		}
 	}
-	
+
+
+	@Override
+	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+		if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
+			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();
+			Coordinate destinationCoord = ((MicroLocation) destination).getCoordinate();
+			FakeFacility fromFacility = new FakeFacility(new Coord(originCoord.x, originCoord.y));
+			FakeFacility toFacility = new FakeFacility(new Coord(destinationCoord.x, destinationCoord.y));
+			org.matsim.api.core.v01.population.Person person = null;
+			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
+			double ttime = 0. ;
+			for ( PlanElement pe : trip ) {
+				if ( pe instanceof Leg) {
+					ttime += ((Leg) pe).getTravelTime() ;
+				}
+			}
+			// TODO take care of relevant interaction activities
+			return ttime;
+		}
+		else if (origin instanceof Zone) {
+			Zone originZone = (Zone) origin;
+			if (destination instanceof Zone) {
+				return getZoneToZoneTravelTime(originZone, (Zone) destination, timeOfDay_s, mode);
+			} else if (destination instanceof Region) {
+				Region destinationRegion = (Region) destination;
+				if (travelTimeToRegion.contains(originZone, destinationRegion)) {
+					return travelTimeToRegion.get(originZone, destinationRegion);
+				}
+				double min = Double.MAX_VALUE;
+        		for (Zone zoneInRegion : destinationRegion.getZones()) {
+        			double travelTime = getZoneToZoneTravelTime(originZone, zoneInRegion, timeOfDay_s, mode);
+        			if (travelTime < min) {
+        				min = travelTime;
+        			}
+        		}
+        		travelTimeToRegion.put(originZone, destinationRegion, min);
+			}
+		}
+		throw new IllegalArgumentException("The combination with origin of type " + origin.getClass().getName() 
+					+ " and destination of type " + destination.getClass().getName() + " is not valid.");
+	}
+
+
+	@Override
+	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
+		throw new IllegalArgumentException("Not implemented in MATSim case.");
+	}
+
+
+	@Override
+	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
