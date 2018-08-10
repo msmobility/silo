@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>munich</module>
+        <module>maryland</module>
     </modules>
     <dependencies>
         <dependency>
