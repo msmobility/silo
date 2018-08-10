@@ -1,0 +1,29 @@
+var calculateDemolitionProbability = function(dwelling, year) {
+    quality = dwelling.getQuality();
+    if(dwelling.getUsage().name().equals("VACANT")) {
+        if(quality == 1) {
+            demolitionProbability = 0.01;
+        } else  if(quality == 2) {
+            demolitionProbability = 0.008;
+        } else  if(quality == 3) {
+            demolitionProbability = 0.005;
+        } else  if(quality == 4) {
+            demolitionProbability = 0.001;
+        } else {
+            throw new Error("Invalid dwelling type \"" + quality + "\" given!")
+        }
+    } else {
+        if(quality == 1) {
+            demolitionProbability = 0.0001;
+        } else  if(quality == 2) {
+            demolitionProbability = 0.00008;
+        } else  if(quality == 3) {
+            demolitionProbability = 0.00005;
+        } else  if(quality == 4) {
+            demolitionProbability = 0.00001;
+        } else {
+            throw new Error("Invalid dwelling type \"" + quality + "\" given!")
+        }
+    }
+    return demolitionProbability;
+}
