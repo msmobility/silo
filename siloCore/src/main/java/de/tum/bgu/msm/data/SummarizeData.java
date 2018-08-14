@@ -444,7 +444,7 @@ public class SummarizeData {
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
-            pwp.print(pp.getOccupation());
+            pwp.print(pp.getOccupation().getCode());
             pwp.print(",0,");
             pwp.print(pp.getWorkplace());
             pwp.print(",");
@@ -584,7 +584,7 @@ public class SummarizeData {
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
-            pwp.print(pp.getOccupation());
+            pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             pwp.print(pp.getWorkplace());
             pwp.print(",");
@@ -771,7 +771,7 @@ public class SummarizeData {
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
-            pwp.print(pp.getOccupation());
+            pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             pwp.print(pp.getWorkplace());
             pwp.print(",");
@@ -922,7 +922,7 @@ public class SummarizeData {
                 pwp.print("\",\"");
                 pwp.print(pp.getRace());
                 pwp.print("\",");
-                pwp.print(pp.getOccupation());
+                pwp.print(pp.getOccupation().getCode());
                 pwp.print(",");
                 pwp.print(pp.getWorkplace());
                 pwp.print(",");
@@ -1148,7 +1148,7 @@ public class SummarizeData {
             pwp.print("\",\"");
             pwp.print(pp.getRace());
             pwp.print("\",");
-            pwp.print(pp.getOccupation());
+            pwp.print(pp.getOccupation().getCode());
             pwp.print(",0,");
             pwp.print(pp.getWorkplace());
             pwp.print(",");
