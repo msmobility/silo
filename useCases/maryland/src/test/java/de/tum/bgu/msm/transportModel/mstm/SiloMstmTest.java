@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.transportModel.mstm;
 
-import de.tum.bgu.msm.SiloMstm;
+import run.SiloMstm;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
