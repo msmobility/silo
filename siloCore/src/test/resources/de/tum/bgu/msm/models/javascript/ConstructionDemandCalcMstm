@@ -1,0 +1,31 @@
+var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
+
+    //Alpha = max value
+    alpha = 0.0;
+
+    //Beta = shape adj.
+    beta = 0.0;
+
+    if (dwellingType=="SFD"){
+        alpha = 0.05;
+        beta = 320.;
+    } else if (dwellingType=="SFA"){
+        alpha = 0.05;
+        beta = 89.;
+    } else if (dwellingType=="MF234"){
+        alpha = 0.05;
+        beta = 46.;
+    } else if (dwellingType=="MF5plus"){
+        alpha = 0.05;
+        beta = 61.5;
+    } else if (dwellingType=="MH"){
+        alpha = 0.05;
+        beta = 89.;
+    }
+
+    if (vacancyByRegion > 1){
+            vacancyByRegion = 1;
+            //this checks that very large vacancy rates (generally in tests with subsamples of sp) do not result in  infinity
+    }
+    return alpha / Math.exp(beta * vacancyByRegion);
+}
