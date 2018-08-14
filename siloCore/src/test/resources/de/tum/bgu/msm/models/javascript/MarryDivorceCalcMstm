@@ -1,0 +1,150 @@
+var calculateMarriageProbability = function(person, scale) {
+
+    var probability;
+    var age = person.getAge();
+    if(age < 0) {
+        throw new Error("Negative age not allowed!");
+    }
+    if(person.getGender().name()=="MALE") {
+        if(age < 15) {
+            probability = 0.;
+        } else if(age < 20) {
+            probability = 0.00682;
+        } else if(age < 25) {
+            probability = 0.05926;
+        } else if(age < 30) {
+            probability = 0.11516;
+        } else if(age < 35) {
+            probability = 0.11077;
+        } else if(age < 40) {
+            probability = 0.05965;
+        } else if(age < 45) {
+            probability = 0.06225;
+        } else if(age < 50) {
+            probability = 0.03594;
+        } else if(age < 55) {
+            probability = 0.03016;
+        } else if(age < 60) {
+            probability = 0.05158;
+        } else if(age < 65) {
+            probability = 0.02582;
+        } else if(age < 70) {
+            probability = 0.02096;
+        } else if(age < 75) {
+            probability = 0.01262;
+        } else if(age < 80) {
+            probability = 0.00421;
+        } else if(age >= 80) {
+            probability = 0.;
+        }
+    } else if(person.getGender().name() == "FEMALE") {
+        if(age < 15) {
+            probability = 0.;
+        } else if(age < 20) {
+            probability = 0.01564;
+        } else if(age < 25) {
+            probability = 0.08454;
+        } else if(age < 30) {
+            probability = 0.13776;
+        } else if(age < 35) {
+            probability = 0.09874;
+        } else if(age < 40) {
+            probability = 0.04830;
+        } else if(age < 45) {
+            probability = 0.04818;
+        } else if(age < 50) {
+            probability = 0.04832;
+        } else if(age < 55) {
+            probability = 0.02514;
+        } else if(age < 60) {
+            probability = 0.01047;
+        } else if(age < 65) {
+            probability = 0.00724;
+        } else if(age < 70) {
+            probability = 0.00133;
+        } else if(age < 75) {
+            probability = 0.00186;
+        } else if(age < 80) {
+            probability = 0.00062;
+        } else if(age >= 80) {
+            probability = 0.;
+        }
+    } else {
+        throw new Error("Undefined gender " + person.getGender())
+    }
+
+    // "/2" because each marriage event affects two persons
+    return (probability / 2) * scale;
+}
+
+var calculateDivorceProbability = function(personType) {
+
+    alpha = 0.;
+
+    if (personType > 43){
+        throw new Error("Undefined person type!")
+    } else if (personType < 0){
+        throw new Error("Undefined person type!")
+    }
+
+    if (personType == 4){
+         alpha = 0.00878;
+    } else if (personType == 5){
+         alpha = 0.01874;
+    } else if (personType == 6){
+         alpha = 0.02690;
+    } else if (personType == 7){
+         alpha = 0.02851;
+    } else if (personType == 8){
+         alpha = 0.02629;
+    } else if (personType == 9){
+         alpha = 0.02278;
+    } else if (personType == 10){
+         alpha = 0.01782;
+    } else if (personType == 11){
+         alpha = 0.01342;
+    } else if (personType == 12){
+         alpha = 0.00936;
+    } else if (personType == 13){
+         alpha = 0.00527;
+    } else if (personType == 14){
+         alpha = 0.00212;
+    } else if (personType == 15){
+         alpha = 0.00160;
+    } else if (personType == 16){
+         alpha = 0.00026;
+    } else if (personType == 17){
+         alpha = 0.00007;
+    } else if (personType == 25){
+         alpha = 0.00417;
+    } else if (personType == 26){
+         alpha = 0.01732;
+    } else if (personType == 27){
+         alpha = 0.03145;
+    } else if (personType == 28){
+         alpha = 0.03625;
+    } else if (personType == 29){
+         alpha = 0.03084;
+    } else if (personType == 30){
+         alpha = 0.02640;
+    } else if (personType == 31){
+         alpha = 0.02156;
+    } else if (personType == 32){
+         alpha = 0.01718;
+    } else if (personType == 33){
+         alpha = 0.01029;
+    } else if (personType == 34){
+         alpha = 0.00790;
+    } else if (personType == 35){
+         alpha = 0.00454;
+    } else if (personType == 36){
+         alpha = 0.00216;
+    } else if (personType == 37){
+         alpha = 0.00055;
+    } else if (personType == 38){
+         alpha = 0.00055;
+    } else if (personType == 39){
+         alpha = 0.00014;
+    }
+    return alpha;
+}

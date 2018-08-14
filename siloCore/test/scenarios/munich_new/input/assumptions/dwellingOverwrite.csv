@@ -1,0 +1,5 @@
+Year,zone,type,bedrooms,quality,monthlyCosts,restriction,quantity
+2001,623,MF5plus,2,4,600,0.3,2
+2001,633,MF5plus,2,4,600,-0.3,2
+2001,773,MF5plus,2,4,600,0.8,2
+2001,787,MF5plus,2,4,600,-0.8,2

@@ -1,0 +1,10 @@
+based on
+"osm/md_and_surroundings.osm.bz2"
+the following networks were created
+01	osm-based matsim xml network with default
+02	secondary/tertiary link with same settings as secondary/tertiary
+03	thinner network; only down to tertiary
+04	like 03, but with secondary/tertiary links included
+05	like 04, but very thin; only very big roads kept (done by KN)
+
+(other networks stored at shared-svn/projects/tum-with-moeckel/data/other/network)

@@ -1,0 +1,32 @@
+var calculate = function(license, workers, income, logDistanceToTransit, areaType) {
+intercept = [-4.69730, -10.98800, -17.00200];
+betaLicense = [3.11410, 4.65460, 5.71850];
+betaWorkers = [0.22840, 0.76420, 1.13260];
+betaIncome = [0.00070, 0.00100, 0.00120];
+betaDistance = [0.15230, 0.25180, 0.25930];
+betaAreaType = [
+    [0., 0.88210, 0.99270, 1.34420],
+    [0., 1.43410, 1.60730, 2.25490],
+    [0., 1.69830, 1.91330, 2.93080]
+];
+
+results = new Array(4);
+sum = 0;
+for(i = 0; i < 3; i++) {
+     utility = intercept[i] + (betaLicense[i] * license) + (betaWorkers[i] * workers) + (betaIncome[i] * income) + (betaDistance[i] * logDistanceToTransit) + betaAreaType[i][areaType-1];
+     result = Math.exp(utility);
+     sum += result;
+     results[i+1] = result;
+}
+
+prob0cars = 1.0 / (sum + 1.0);
+
+sum = 0;
+for(i = 0; i < 3; i++) {
+     results[i+1] = results[i+1] * prob0cars;
+     sum += results[i+1];
+}
+
+results[0] = 1 - sum;
+return Java.to(results, "double[]");
+}

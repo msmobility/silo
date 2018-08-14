@@ -1,0 +1,97 @@
+var calculateBirthProbability = function(personAge, scaler) {
+
+    alpha = 0.;
+
+       if (personAge <= 14){
+             alpha = 0.0;
+        } else if (personAge == 15){
+             alpha = 0.8;
+        } else if (personAge == 16){
+             alpha = 2.2;
+        } else if (personAge == 17){
+             alpha = 4.7;
+        } else if (personAge == 18){
+             alpha = 8.3;
+        } else if (personAge == 19){
+             alpha = 14.5;
+        } else if (personAge == 20){
+             alpha = 20.8;
+        } else if (personAge == 21){
+             alpha = 26.2;
+        } else if (personAge == 22){
+             alpha = 31.6;
+        } else if (personAge == 23){
+             alpha = 38.1;
+        } else if (personAge == 24){
+             alpha = 45.9;
+        } else if (personAge == 25){
+             alpha = 55.7;
+        } else if (personAge == 26){
+             alpha = 67.4;
+        } else if (personAge == 27){
+             alpha = 78.1;
+        } else if (personAge == 28){
+             alpha = 89.3;
+        } else if (personAge == 29){
+             alpha = 98.7;
+        } else if (personAge == 30){
+             alpha = 106.;
+        } else if (personAge == 31){
+             alpha = 110.1;
+        } else if (personAge == 32){
+             alpha = 109.1;
+        } else if (personAge == 33){
+             alpha = 105.4;
+        } else if (personAge == 34){
+             alpha = 97.1;
+        } else if (personAge == 35){
+             alpha = 87.8;
+        } else if (personAge == 36){
+             alpha = 76.6;
+        } else if (personAge == 37){
+             alpha = 62.6;
+        } else if (personAge == 38){
+             alpha = 50.3;
+        } else if (personAge == 39){
+             alpha = 39.6;
+        } else if (personAge == 40){
+             alpha = 30;
+        } else if (personAge == 41){
+             alpha = 20.3;
+        } else if (personAge == 42){
+             alpha = 11.8;
+        } else if (personAge == 43){
+             alpha = 6.6;
+        } else if (personAge == 44){
+             alpha = 3.6;
+        } else if (personAge == 45){
+             alpha = 1.8;
+        } else if (personAge == 46){
+             alpha = 0.9;
+        } else if (personAge == 47){
+             alpha = 0.4;
+        } else if (personAge == 48){
+             alpha = 0.2;
+        } else if (personAge == 49){
+             alpha = 0.1;
+        } else if (personAge >= 50){
+             alpha = 0.0;
+        }
+
+    if (personAge < 0){
+        throw new Error("Undefined negative person age!"+personAge)
+    }
+
+    // Birth probabilities are provided as birth per 1,000 women
+    alpha = alpha / 1000.
+
+    // Birth rate can be adjusted by global scaler
+    alpha = alpha * scaler
+
+return alpha;
+}
+
+
+var probabilityForAGirl = function() {
+    return 0.4867;
+}

@@ -1,0 +1,23 @@
+var getLowInflectionPoint = function() {
+    return 0.333;
+}
+
+var getHighInflectionPoint = function() {
+    return 2.;
+}
+
+var getLowerSlope = function() {
+    return -5.;
+}
+
+var getMainSlope = function() {
+    return -1.;
+}
+
+var getHighSlope = function() {
+    return -0.1;
+}
+
+var getMaximumChange = function() {
+    return 0.02;
+}
