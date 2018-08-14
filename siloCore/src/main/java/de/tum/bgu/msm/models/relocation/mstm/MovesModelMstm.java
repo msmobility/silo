@@ -230,7 +230,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
-            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).determineZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();

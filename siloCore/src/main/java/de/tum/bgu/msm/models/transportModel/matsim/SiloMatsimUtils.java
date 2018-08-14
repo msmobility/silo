@@ -113,7 +113,7 @@ public class SiloMatsimUtils {
     			continue;
     		}
 
-    		if (siloPerson.getOccupation() != 1) { // i.e. person does not work
+    		if (siloPerson.getOccupation() != Occupation.EMPLOYED) { // i.e. person does not work
     			continue;
     		}
 

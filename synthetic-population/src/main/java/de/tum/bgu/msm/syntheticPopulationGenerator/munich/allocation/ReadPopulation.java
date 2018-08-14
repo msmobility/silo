@@ -15,7 +15,7 @@ public class ReadPopulation {
     private static final Logger logger = Logger.getLogger(ReadPopulation.class);
     private final SiloDataContainer dataContainer;
 
-    public ReadPopulation(SiloDataContainer dataContainer){
+    ReadPopulation(SiloDataContainer dataContainer){
         this.dataContainer = dataContainer;
     }
 
@@ -114,7 +114,7 @@ public class ReadPopulation {
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
-                int occupation = Integer.parseInt(lineElements[posOccupation]);
+                Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 Person pp = householdData.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class

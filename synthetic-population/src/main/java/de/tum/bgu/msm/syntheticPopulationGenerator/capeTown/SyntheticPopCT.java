@@ -1381,11 +1381,11 @@ public class SyntheticPopCT implements SyntheticPopI {
 
 
         //Produce one array list with workers' ID
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
+        Collection<Person> persons = dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Map.Entry<Integer,Person> pair : personMap.entrySet() ){
-            if (pair.getValue().getOccupation() == 1){
-                workerArrayList.add(pair.getValue());
+        for (Person person: persons ){
+            if (person.getOccupation() == Occupation.EMPLOYED){
+                workerArrayList.add(person);
             }
         }
         //Randomize the order of the worker array list
@@ -1633,7 +1633,7 @@ public class SyntheticPopCT implements SyntheticPopI {
             int hhID = (int) persons.getValueAt(i, "hhid");
             Person pp = householdDataManager.createPerson((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), Gender.valueOf((int) persons.getValueAt(i, "gender")),
-                    race, (int) persons.getValueAt(i, "occupation"), (int) persons.getValueAt(i, "workplace"),
+                    race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")), (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
             householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
@@ -1902,7 +1902,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                     int personCounter = (int) microDataHousehold.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
                     int age = (int) microDataPerson.getValueAt(personCounter, "age");
                     Gender gender = Gender.valueOf((int) microDataPerson.getValueAt(personCounter, "gender"));
-                    int occupation = (int) microDataPerson.getValueAt(personCounter, "occupation");
+                    Occupation occupation = Occupation.valueOf((int) microDataPerson.getValueAt(personCounter, "occupation"));
                     int income = (int) microDataPerson.getValueAt(personCounter, "income");
                     try {
                         income = (int) translateIncome((int) microDataPerson.getValueAt(personCounter, "income"),incomeProbability, gammaDist)
@@ -2633,11 +2633,11 @@ public class SyntheticPopCT implements SyntheticPopI {
             attributesCount.setIndexedValueAt(mun, "foreigners", attributesCount.getIndexedValueAt(mun, "foreigners") + 1);
         }
         if (person.getGender() == Gender.MALE) {
-            if (person.getOccupation() == 1) {
+            if (person.getOccupation() == Occupation.EMPLOYED) {
                 attributesCount.setIndexedValueAt(mun, "maleWorkers", attributesCount.getIndexedValueAt(mun, "maleWorkers") + 1);
             }
         } else {
-            if (person.getOccupation() == 1) {
+            if (person.getOccupation() == Occupation.EMPLOYED) {
                 attributesCount.setIndexedValueAt(mun, "femaleWorkers", attributesCount.getIndexedValueAt(mun, "femaleWorkers") + 1);
             }
         }

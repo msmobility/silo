@@ -59,7 +59,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
     boolean takeNewJob(Person person, Job job) {
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
-        person.setOccupation(1);
+        person.setOccupation(Occupation.EMPLOYED);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
         dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
         if (person.getId() == SiloUtil.trackPp) {

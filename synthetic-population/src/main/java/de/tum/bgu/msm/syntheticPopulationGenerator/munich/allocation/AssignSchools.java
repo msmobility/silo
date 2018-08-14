@@ -5,6 +5,7 @@ import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Gender;
+import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -144,7 +145,7 @@ public class AssignSchools {
 
         studentArrayList = new ArrayList<>();
         for (Person pp : dataContainer.getHouseholdData().getPersons()){
-            if (pp.getOccupation() == 3){
+            if (pp.getOccupation() == Occupation.STUDENT){
                 studentArrayList.add(pp);
                 pp.setSchoolPlace(-1);
                 pp.setJobTAZ(-1);

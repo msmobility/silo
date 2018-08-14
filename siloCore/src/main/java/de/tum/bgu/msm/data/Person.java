@@ -31,8 +31,9 @@ public final class Person implements Id {
     private final Gender gender;
     private final Race race;
 
+    private Occupation occupation;
+
     private int age;
-	private int occupation;
     private int workplace;        // job ID
     private int schoolPlace = 0;  // ID of school
     private MicroLocation schoolLocation;
@@ -50,7 +51,7 @@ public final class Person implements Id {
     private boolean driverLicense = false;
     private int schoolType = 0;
 
-    Person(int id, int age, Gender gender, Race race, int occupation, int workplace, int income) {
+    Person(int id, int age, Gender gender, Race race, Occupation occupation, int workplace, int income) {
 		this.id = id;
 		this.age = age;
 		this.gender = gender; 
@@ -91,7 +92,7 @@ public final class Person implements Id {
         this.workplace = newWorkplace;
     }
 
-    public void setOccupation(int newOccupation) {
+    public void setOccupation(Occupation newOccupation) {
         this.occupation = newOccupation;
     }
 
@@ -111,7 +112,7 @@ public final class Person implements Id {
         return race;
     }
 
-    public int getOccupation() {
+    public Occupation getOccupation() {
         return occupation;
     }
 

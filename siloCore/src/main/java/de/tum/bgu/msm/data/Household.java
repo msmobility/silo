@@ -83,15 +83,11 @@ public final class Household {
     }
 
     public int getNumberOfWorkers () {
-        int wrk = 0;
-        for (Person pp: persons) if (pp.getOccupation() == 1) wrk++;
-        return wrk;
+        return (int) persons.stream().filter(p -> p.getOccupation() == Occupation.EMPLOYED).count();
     }
 
     public int getHHLicenseHolders () {
-        int lic = 0;
-        for (Person pp: persons) if (pp.hasDriverLicense()) lic++;
-        return lic;
+        return (int) persons.stream().filter(Person::hasDriverLicense).count();
     }
 
     public void setDwelling (int id) {

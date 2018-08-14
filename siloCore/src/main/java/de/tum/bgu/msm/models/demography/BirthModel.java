@@ -109,7 +109,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             gender = FEMALE;
         }
         final Person child = householdData.createPerson(id, 0, gender, household.getRace(),
-                0, 0, 0);
+                Occupation.TODDLER, 0, 0);
         child.setRole(PersonRole.CHILD);
         householdData.addPersonToHousehold(child, household);
         householdData.addHouseholdThatChanged(household);

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.data.RealEstateDataManager;
@@ -59,7 +60,7 @@ public class ValidateTripLengthDistribution {
     private ArrayList<Person> obtainWorkers(){
         ArrayList<Person> workerArrayList = new ArrayList<>();
         for (Person pp : dataContainer.getHouseholdData().getPersons()){
-            if (pp.getOccupation() == 1){
+            if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
             }
         }
@@ -112,7 +113,7 @@ public class ValidateTripLengthDistribution {
     private ArrayList<Person> obtainStudents (int school){
         ArrayList<Person> workerArrayList = new ArrayList<>();
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            if (pp.getOccupation() == 3 & pp.getSchoolType() == school) {
+            if (pp.getOccupation() == Occupation.STUDENT & pp.getSchoolType() == school) {
                 workerArrayList.add(pp);
             }
         }

@@ -4,6 +4,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Gender;
+import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Race;
 import de.tum.bgu.msm.properties.Properties;
@@ -25,7 +26,7 @@ public class LicenseTest {
 
     @Test
     public void testLicenseChange() {
-        Person person = dataContainer.getHouseholdData().createPerson(0, 18, Gender.FEMALE, Race.other, 1, 0, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(0, 18, Gender.FEMALE, Race.other, Occupation.EMPLOYED, 0, 0);
         Assert.assertFalse(person.hasDriverLicense());
         model.createLicense(person);
         Assert.assertTrue(person.hasDriverLicense());

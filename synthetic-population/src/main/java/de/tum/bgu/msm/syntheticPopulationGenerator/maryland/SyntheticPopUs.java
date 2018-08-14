@@ -439,9 +439,9 @@ public class SyntheticPopUs implements SyntheticPopI {
             for (int s = 0; s < hhSize; s++) {
                 int newPpId = householdDataManager.getNextPersonId();
 
-                int occ = translateOccupation(occupation[s]);
+                Occupation occ = translateOccupation(occupation[s]);
                 int workplace = -1;
-                if (occ == 1) {
+                if (occ == Occupation.EMPLOYED) {
 
                     if (workPumaZone[s]==0 || workState[s] == 0) {
                         // no workplace PUMA provided by PUMS (person did not go to work during week interviewed because of vacation, leave, etc.)
@@ -651,24 +651,24 @@ public class SyntheticPopUs implements SyntheticPopI {
 //    }
 
 
-    private int translateOccupation (int pumsOccupation) {
+    private Occupation translateOccupation (int pumsOccupation) {
         // translate PUMS occupation into simpler categories: 0 not employed, not looking for work, 1 employed, 2 unemployed
         switch(pumsOccupation) {
             // 0 . Not in universe (Under 16 years)
-            case 0: return 0;
+            case 0: return Occupation.TODDLER;
             // 1 . Employed, at work
-            case 1: return 1;
+            case 1: return Occupation.EMPLOYED;
             // 2 . Employed, with a job but not at work during week interviewed (on vacation, leave, etc.)
-            case 2: return 1;
+            case 2: return Occupation.EMPLOYED;
             // 3 . Unemployed
-            case 3: return 2;
+            case 3: return Occupation.UNEMPLOYED;
             // 4 . Armed Forces, at work
-            case 4: return 1;
+            case 4: return Occupation.EMPLOYED;
             // 5 . Armed Forces, with a job but not at work
-            case 5: return 1;
+            case 5: return Occupation.EMPLOYED;
             // 6 . Not in labor force
-            case 6: return 0;
-            default: return 0;
+            case 6: return Occupation.RETIREE;
+            default: return Occupation.RETIREE;
         }
     }
 
