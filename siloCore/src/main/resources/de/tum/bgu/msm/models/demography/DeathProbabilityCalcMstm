@@ -1,0 +1,103 @@
+var calculateDeathProbability = function(personAge, personSex) {
+    alpha = 0.;
+    if (personSex.name() == "MALE") {
+        if (personAge == 0){
+            alpha = 0.00807;
+        } else if (personAge < 5){
+            alpha = 0.00036;
+        } else if (personAge < 10){
+             alpha = 0.00018;
+        } else if (personAge < 15){
+             alpha = 0.00024;
+        } else if (personAge < 20){
+             alpha = 0.00093;
+        } else if (personAge < 25){
+             alpha = 0.00138;
+        } else if (personAge < 30){
+             alpha = 0.00129;
+        } else if (personAge < 35){
+             alpha = 0.00148;
+        } else if (personAge < 40){
+             alpha = 0.00205;
+        } else if (personAge < 45){
+             alpha = 0.00306;
+        } else if (personAge < 50){
+             alpha = 0.00456;
+        } else if (personAge < 55){
+             alpha = 0.00642;
+        } else if (personAge < 60){
+             alpha = 0.00990;
+        } else if (personAge < 65){
+             alpha = 0.01536;
+        } else if (personAge < 70){
+             alpha = 0.02363;
+        } else if (personAge < 75){
+             alpha = 0.03677;
+        } else if (personAge < 80){
+             alpha = 0.05695;
+        } else if (personAge < 85){
+             alpha = 0.09098;
+        } else if (personAge < 90){
+             alpha = 0.14267;
+        } else if (personAge < 95){
+             alpha = 0.21964;
+        } else if (personAge < 100){
+             alpha = 0.33191;
+        } else if (personAge >= 100){
+             alpha = 0.49236;
+        }
+    }   else if(personSex.name() == "FEMALE") {
+        if (personAge == 0){
+               alpha = 0.00663;
+        } else if (personAge < 5){
+               alpha = 0.00029;
+        } else if (personAge < 10){
+               alpha = 0.00014;
+               } else if (personAge < 15){
+                    alpha = 0.00016;
+               } else if (personAge < 20){
+                    alpha = 0.00039;
+               } else if (personAge < 25){
+                    alpha = 0.00047;
+               } else if (personAge < 30){
+                    alpha = 0.00053;
+               } else if (personAge < 35){
+                    alpha = 0.00074;
+               } else if (personAge < 40){
+                    alpha = 0.00113;
+               } else if (personAge < 45){
+                    alpha = 0.00173;
+               } else if (personAge < 50){
+                    alpha = 0.00252;
+               } else if (personAge < 55){
+                    alpha = 0.00381;
+               } else if (personAge < 60){
+                    alpha = 0.00608;
+               } else if (personAge < 65){
+                    alpha = 0.00974;
+               } else if (personAge < 70){
+                    alpha = 0.01516;
+               } else if (personAge < 75){
+                    alpha = 0.02341;
+               } else if (personAge < 80){
+                    alpha = 0.03760;
+               } else if (personAge < 85){
+                    alpha = 0.06297;
+               } else if (personAge < 90){
+                    alpha = 0.10424;
+               } else if (personAge < 95){
+                    alpha = 0.17057;
+               } else if (personAge < 100){
+                    alpha = 0.27594;
+               } else if (personAge >= 100){
+                    alpha = 0.44127;
+               }
+    }
+    if (personAge < 0){
+        throw new Error("Undefined negative person age!"+personAge)
+    }
+    if (personSex.name() != "MALE" && personSex.name() != "FEMALE") {
+        throw new Error("Undefined personSex: "+personSex)
+    }
+    return alpha;
+}

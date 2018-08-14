@@ -1,3 +1,0 @@
-var calculateSelectDwellingProbability = function(ddUtility) {
-    return Math.exp(-0.5 * ddUtility);
-}

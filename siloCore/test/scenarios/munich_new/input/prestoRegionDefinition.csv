@@ -1,0 +1,29 @@
+COUNTY,aggFips,STATE,NAME,TYPE,presto
+9161,9161,91,Ingolstadt,Independent City,1
+9162,9162,91,"München, Landeshauptstadt",Independent City,1
+9163,9163,91,Rosenheim,Independent City,1
+9261,9261,92,Landshut,Independent City,1
+9761,9761,97,Augsburg,Independent City,1
+9173,9173,91,"Bad Tölz-Wolfratshausen, Landkreis",County,1
+9174,9174,91,"Dachau, Landkreis",County,1
+9175,9175,91,"Ebersberg, Landkreis",County,1
+9176,9176,91,"Eichstätt, Landkreis",County,1
+9177,9177,91,"Erding, Landkreis",County,1
+9178,9178,91,"Freising, Landkreis",County,1
+9179,9179,91,"Fürstenfeldbruck, Landkreis",County,1
+9181,9181,91,"Landsberg am Lech, Landkreis",County,1
+9182,9182,91,"Miesbach, Landkreis",County,1
+9183,9183,91,"Mühldorf a.Inn, Landkreis",County,1
+9184,9184,91,"München, Landkreis",County,1
+9185,9185,91,"Neuburg-Schrobenhausen, Landkreis",County,1
+9186,9186,91,"Pfaffenhofen a.d.Ilm, Landkreis",County,1
+9187,9187,91,"Rosenheim, Landkreis",County,1
+9188,9188,91,"Starnberg, Landkreis",County,1
+9190,9190,91,"Weilheim-Schongau, Landkreis",County,1
+9273,9273,92,"Kelheim, Landkreis",County,1
+9274,9274,92,"Landshut, Landkreis",County,1
+9279,9279,92,"Dingolfing-Landau, Landkreis",County,1
+9373,9373,93,"Neumarkt i.d.OPf., Landkreis",County,1
+9771,9771,97,"Aichach-Friedberg, Landkreis",County,1
+9772,9772,97,"Augsburg, Landkreis",County,1
+9773,9773,97,"Dillingen a.d.Donau, Landkreis",County,1

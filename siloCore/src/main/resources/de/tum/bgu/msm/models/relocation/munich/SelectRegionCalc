@@ -1,0 +1,50 @@
+var calculateSelectRegionProbability = function (incomeGroup, nationality, price, accessibility, share) {
+
+      if(nationality.name().equals("GERMAN") || nationality.name().equals("OTHER")) {
+        if(incomeGroup.name().equals("LOW")) {
+            alpha = 0.04;
+            if(nationality.name().equals("GERMAN") ) {
+                delta = 0.55;
+            } else {
+                delta = 0.25;
+            }
+        } else if(incomeGroup.name().equals("MEDIUM")) {
+            alpha = 0.08;
+            if(nationality.name().equals("GERMAN") ) {
+                delta = 0.5;
+            } else {
+                delta = 0.2;
+            }
+        } else if(incomeGroup.name().equals("HIGH")) {
+            alpha = 0.120;
+            if(nationality.name().equals("GERMAN") ) {
+                delta = 0.45;
+            } else {
+                delta = 0.15;
+            }
+        } else if(incomeGroup.name().equals("VERY_HIGH")) {
+            alpha = 0.16;
+            if(nationality.name().equals("GERMAN") ) {
+                delta = 0.25;
+            } else {
+                delta = 0.1;
+            }
+        } else {
+            throw new Error("Undefined income group: " + incomeGroup);
+        }
+    } else {
+        throw new Error("Undefined nationality: " + nationality);
+    }
+
+    if(share > 1 || share < 0) {
+        throw new Error("Foreigner share must be between 0 and 1!")
+    }
+
+    if(nationality == 1) {
+        relevantShare = share;
+    } else {
+        relevantShare = 1 - share;
+    }
+
+    return (1 - alpha - delta) * price + alpha * accessibility + delta * relevantShare;
+}

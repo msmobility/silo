@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+	<module name="controler" >
+		<param name="firstIteration" value="0" />
+		<param name="lastIteration" value="1" />
+		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
+		<param name="runId" value="regression_test" />
+	</module>
+
+	<module name="network" >
+		<param name="inputNetworkFile" value="network/05/network.xml.gz" />
+	</module>
+
+	<module name="qsim" >
+		<param name="linkDynamics" value="FIFO" />
+	</module>
+
+	<module name="strategy" >
+		<param name="maxAgentPlanMemorySize" value="5" />
+	</module>
+	
+	<module name="accessibility" >
+		<param name="timeOfDay" value="28800.0" />
+	</module>
+</config>
