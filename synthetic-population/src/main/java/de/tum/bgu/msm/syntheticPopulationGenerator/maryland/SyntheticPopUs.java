@@ -456,7 +456,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                         jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                     }
                 }
-                Person pp = householdDataManager.createPerson(newPpId, age[s], Person.Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
+                Person pp = householdDataManager.createPerson(newPpId, age[s], Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
                 householdDataManager.addPersonToHousehold(pp, hh);
             }
             hh.setType();
@@ -916,7 +916,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         int[][] roleCounter = new int[101][3];
         for (Person pp: householdDataManager.getPersons()) {
-            if (pp.getGender() == Person.Gender.MALE) {
+            if (pp.getGender() == Gender.MALE) {
                 continue;
             }
             int age = Math.min(100, pp.getAge());

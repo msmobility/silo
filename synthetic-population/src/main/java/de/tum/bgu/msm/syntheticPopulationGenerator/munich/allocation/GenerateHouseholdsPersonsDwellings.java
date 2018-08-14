@@ -91,7 +91,7 @@ public class GenerateHouseholdsPersonsDwellings {
             int id = householdDataManager.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
-            Person.Gender gender = Person.Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
+            Gender gender = Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
             int occupation = dataSetSynPop.getPersonTable().get(personSelected, "occupation");
             Race race = microDataManager.translateRace(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
             Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));

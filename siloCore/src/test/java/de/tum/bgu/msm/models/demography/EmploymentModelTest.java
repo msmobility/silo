@@ -34,7 +34,7 @@ public class EmploymentModelTest {
     @Before
     public void setupMicroData() {
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, -1, 0);
-        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Person.Gender.MALE, Race.other, -1, -1, 0);
+        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Gender.MALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
         SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.demography;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
@@ -69,7 +70,7 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
 
         for(Person person: data.getHouseholdData().getPersons()) {
             if(ruleGetMarried(person) && SiloUtil.getRandomNumberAsDouble() <= 15 * getMarryProb(person)) {
-                if(person.getGender() == Person.Gender.MALE) {
+                if(person.getGender() == Gender.MALE) {
                     bachelors.add(person.getId());
                 } else {
                     if(bachelorettes.size()< bachelors.size()) {

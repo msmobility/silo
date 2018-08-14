@@ -27,7 +27,7 @@ public class BirthModelTest {
 
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);
         dataContainer.getRealEstateData().createDwelling(1, null, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000);
-        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Person.Gender.MALE, Race.other, -1, -1, 0);
+        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Gender.MALE, Race.other, -1, -1, 0);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
     }

@@ -7,7 +7,7 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.Person.Gender;
+import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;

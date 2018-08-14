@@ -78,7 +78,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
-            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], Person.Gender.valueOf(imData[2 + k]),
+            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], Gender.valueOf(imData[2 + k]),
                     ppRace, imData[4 + k], -1, imData[5 + k]);
             householdData.addPersonToHousehold(per, hh);
             k += 6;

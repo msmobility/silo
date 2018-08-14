@@ -17,13 +17,10 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.PersonRole;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -34,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static de.tum.bgu.msm.data.Person.Gender.FEMALE;
-import static de.tum.bgu.msm.data.Person.Gender.MALE;
+import static de.tum.bgu.msm.data.Gender.FEMALE;
+import static de.tum.bgu.msm.data.Gender.MALE;
 
 /**
  * Simulates birth of children
@@ -107,7 +104,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
-        Person.Gender gender = MALE;
+        Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
             gender = FEMALE;
         }

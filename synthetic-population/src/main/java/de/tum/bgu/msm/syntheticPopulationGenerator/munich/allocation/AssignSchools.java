@@ -4,6 +4,7 @@ import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -183,49 +184,49 @@ public class AssignSchools {
         }
     }
 
-    public boolean obtainLicense(Person.Gender gender, int age){
+    public boolean obtainLicense(Gender gender, int age){
         boolean license = false;
         int row = 1;
         int threshold = 0;
         if (age > 17) {
             if (age < 29) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 86;
                 } else {
                     threshold = 87;
                 }
             } else if (age < 39) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 94;
                 }
             } else if (age < 49) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 97;
                 } else {
                     threshold = 95;
                 }
             } else if (age < 59) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 96;
                 } else {
                     threshold = 89;
                 }
             } else if (age < 64) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 86;
                 }
             } else if (age < 74) {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 95;
                 } else {
                     threshold = 71;
                 }
             } else {
-                if (gender == Person.Gender.MALE) {
+                if (gender == Gender.MALE) {
                     threshold = 88;
                 } else {
                     threshold = 44;

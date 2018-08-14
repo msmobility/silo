@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Race;
 import de.tum.bgu.msm.properties.Properties;
@@ -24,7 +25,7 @@ public class ChangeSchoolUnivModelTest {
 
     @Test
     public void testSchoolChange() {
-        Person person = dataContainer.getHouseholdData().createPerson(0, 20, Person.Gender.FEMALE, Race.other, 1, 0, 0);
+        Person person = dataContainer.getHouseholdData().createPerson(0, 20, Gender.FEMALE, Race.other, 1, 0, 0);
         person.setSchoolPlace(10);
         Assert.assertEquals(0, person.getEducationLevel());
         model.updateEducation(person);
