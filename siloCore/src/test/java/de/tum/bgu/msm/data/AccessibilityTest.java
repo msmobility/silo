@@ -9,8 +9,6 @@ import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -82,7 +80,7 @@ public class AccessibilityTest {
 
     @Test
     public void testIntegration()  {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization("test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();
@@ -126,32 +124,32 @@ public class AccessibilityTest {
         Locale.setDefault(Locale.ENGLISH);
 
         try {
-            new File("./test/output/").mkdirs();
-            MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("./test/output/zone2regionTravelTimes.txt"));
+            new File("test/output/").mkdirs();
+            MatrixVectorWriter writerZone2Region = new MatrixVectorWriter(new FileWriter("test/output/zone2regionTravelTimes.txt"));
             writerZone2Region.print(new DoubleFormatter().toString(minTravelTimes));
             writerZone2Region.flush();
             writerZone2Region.close();
 
-            MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesCar.txt"));
+            MatrixVectorWriter writerCar = new MatrixVectorWriter(new FileWriter("test/output/accessibilitiesCar.txt"));
             writerCar.printArray(accCar.toArray());
             writerCar.flush();
             writerCar.close();
 
-            MatrixVectorWriter writerTransit = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesTransit.txt"));
+            MatrixVectorWriter writerTransit = new MatrixVectorWriter(new FileWriter("test/output/accessibilitiesTransit.txt"));
             writerTransit.printArray(accTransit.toArray());
             writerTransit.flush();
             writerTransit.close();
 
-            MatrixVectorWriter writerRegion = new MatrixVectorWriter(new FileWriter("./test/output/accessibilitiesRegion.txt"));
+            MatrixVectorWriter writerRegion = new MatrixVectorWriter(new FileWriter("test/output/accessibilitiesRegion.txt"));
             writerRegion.printArray(accRegions.toArray());
             writerRegion.flush();
             writerRegion.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FileAssert.assertEquals("car accessibilities are different.", new File("./test/input/accessibilitiesCar.txt"), new File("./test/output/accessibilitiesCar.txt"));
-        FileAssert.assertEquals("transit accessibilities are different.", new File("./test/input/accessibilitiesTransit.txt"), new File("./test/output/accessibilitiesTransit.txt"));
-        FileAssert.assertEquals("region accessibilities are different.", new File("./test/input/accessibilitiesRegion.txt"), new File("./test/output/accessibilitiesRegion.txt"));
-        FileAssert.assertEquals("zone 2 region travel times  are different.", new File("./test/input/zone2regionTravelTimes.txt"), new File("./test/output/zone2regionTravelTimes.txt"));
+        FileAssert.assertEquals("car accessibilities are different.", new File("test/input/accessibilitiesCar.txt"), new File("test/output/accessibilitiesCar.txt"));
+        FileAssert.assertEquals("transit accessibilities are different.", new File("test/input/accessibilitiesTransit.txt"), new File("test/output/accessibilitiesTransit.txt"));
+        FileAssert.assertEquals("region accessibilities are different.", new File("test/input/accessibilitiesRegion.txt"), new File("test/output/accessibilitiesRegion.txt"));
+        FileAssert.assertEquals("zone 2 region travel times  are different.", new File("test/input/zone2regionTravelTimes.txt"), new File("test/output/zone2regionTravelTimes.txt"));
     }
 }
