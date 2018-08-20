@@ -38,13 +38,10 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private void calculateShareOfForeignersByZoneAndRegion() {
 
-        final DoubleMatrix1D zonalShare = Matrices.doubleMatrix1D(geoData.getZones().values());
-        zonalShare.assign(0);
-        final DoubleMatrix1D hhByZone = zonalShare.copy();
 
+        final DoubleMatrix1D hhByZone = regionalShareForeigners.copy();
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
-
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
@@ -55,18 +52,9 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
             hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
             if (hh.getNationality() != Nationality.GERMAN) {
-                zonalShare.setQuick(zone, zonalShare.getQuick(zone)+1);
-                regionalShareForeigners.setQuick(region, zonalShare.getQuick(region)+1);
+                regionalShareForeigners.setQuick(region, regionalShareForeigners.getQuick(region)+1);
             }
         }
-
-        zonalShare.assign(hhByZone, (foreignerShare, numberOfHouseholds) -> {
-            if (numberOfHouseholds > 0) {
-                return foreignerShare / numberOfHouseholds;
-            } else {
-                return 0;
-            }
-        });
 
         regionalShareForeigners.assign(hhByRegion, (foreignerShare, numberOfHouseholds) -> {
             if (numberOfHouseholds > 0) {
