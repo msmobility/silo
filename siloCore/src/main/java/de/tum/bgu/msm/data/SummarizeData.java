@@ -644,7 +644,7 @@ public class SummarizeData {
                     pwj.print(location.getCoordinate().x);
                     pwj.print(",");
                     pwj.print(location.getCoordinate().y);
-                } catch (NullPointerException e) {
+                } catch (Exception e) {
                     pwj.print(",");
                     pwj.print(0);
                     pwj.print(",");

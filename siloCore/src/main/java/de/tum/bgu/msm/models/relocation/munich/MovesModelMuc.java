@@ -39,7 +39,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private void calculateShareOfForeignersByZoneAndRegion() {
 
 
-        final DoubleMatrix1D hhByZone = regionalShareForeigners.copy();
+        final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
