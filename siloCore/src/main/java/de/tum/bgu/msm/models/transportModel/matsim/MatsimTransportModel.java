@@ -123,7 +123,6 @@ public final class MatsimTransportModel implements TransportModelI  {
 		
 		TravelTime travelTime = controler.getLinkTravelTimes();
 		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-//		
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
 //		
 ////		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );

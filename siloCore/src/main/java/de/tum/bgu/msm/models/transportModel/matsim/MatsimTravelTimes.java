@@ -57,7 +57,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 				Properties.get().main.startYear, Properties.get());
 	}
 
-
 	private void updateZoneConnections(Collection<Zone> zones) {
 	    for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
@@ -77,7 +76,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
 		if(TransportMode.car.equals(mode)) {
 			double sumTravelTime_min = 0.;
-
 			for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
 				Map<Id<Node>, LeastCostPathTree.NodeData> tree;
 				if (treesForNodesByTimes.containsKey(originNode.getId())) {
@@ -97,8 +95,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
 				}
 
-				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) {// Several points in a given destination zone
-
+				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) { // Several points in a given destination zone
 					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
 					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
 				}
@@ -110,10 +107,9 @@ public final class MatsimTravelTimes implements TravelTimes {
 		}
 	}
 
-
 	@Override
 	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-		if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
+		if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
 			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();
 			Coordinate destinationCoord = ((MicroLocation) destination).getCoordinate();
 			FakeFacility fromFacility = new FakeFacility(new Coord(originCoord.x, originCoord.y));
@@ -129,7 +125,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 			// TODO take care of relevant interaction activities
 			return ttime;
 		}
-		else if (origin instanceof Zone) {
+		else if (origin instanceof Zone) { // Non-microlocations case
 			Zone originZone = (Zone) origin;
 			if (destination instanceof Zone) {
 				return getZoneToZoneTravelTime(originZone, (Zone) destination, timeOfDay_s, mode);
@@ -152,12 +148,10 @@ public final class MatsimTravelTimes implements TravelTimes {
 					+ " and destination of type " + destination.getClass().getName() + " is not valid.");
 	}
 
-
 	@Override
 	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
 		throw new IllegalArgumentException("Not implemented in MATSim case.");
 	}
-
 
 	@Override
 	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
