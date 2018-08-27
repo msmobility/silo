@@ -16,7 +16,6 @@ lib/
 scenOutput
 status.csv
 test/output/*
-*2002.csv
 test/scenarios/annapolis/null_t.csv
 
 tripAttraction.csv

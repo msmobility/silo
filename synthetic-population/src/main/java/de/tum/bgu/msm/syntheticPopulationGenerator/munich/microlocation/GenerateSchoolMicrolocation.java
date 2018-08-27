@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -36,7 +37,7 @@ public class GenerateSchoolMicrolocation {
         //Select the school to allocate the student
         int errorSchool = 0;
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            if (pp.getOccupation() == 3) {
+            if (pp.getOccupation() == Occupation.STUDENT) {
                 int zoneID = pp.getSchoolPlace();
                 int schoolType = pp.getSchoolType();
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneID);

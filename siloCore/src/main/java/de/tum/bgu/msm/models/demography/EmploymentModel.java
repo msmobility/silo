@@ -1,12 +1,8 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
@@ -63,7 +59,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
     boolean takeNewJob(Person person, Job job) {
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
-        person.setOccupation(1);
+        person.setOccupation(Occupation.EMPLOYED);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
         dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
         if (person.getId() == SiloUtil.trackPp) {
@@ -115,7 +111,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             int age = pp.getAge();
             if (age > 99) continue;  // people older than 99 will always be unemployed/retired
-            Person.Gender gender = pp.getGender();
+            Gender gender = pp.getGender();
             boolean employed = pp.getWorkplace() > 0;
             if (employed) {
                 currentlyEmployed[gender.ordinal()][age]++;

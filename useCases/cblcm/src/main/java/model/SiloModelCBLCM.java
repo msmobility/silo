@@ -1,8 +1,9 @@
-package de.tum.bgu.msm;
+package model;
 /**
  * 
  */
 
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -46,7 +47,7 @@ public class SiloModelCBLCM {
 		SiloUtil.modelStopper("initialize");
 	}
 
-	void initialize() {
+	public void initialize() {
 		// initial steps that only need to performed once to set up the model
 	        // define years to simulate
 	        scalingYears.addAll(Properties.get().main.scalingYears);
@@ -76,7 +77,7 @@ public class SiloModelCBLCM {
 	        SiloUtil.initializeRandomNumber(Properties.get().main.randomSeed);
 	}
 	
-	void runYear(double year) {
+	public void runYear(double year) {
 		// run single simulation period
 
 	        if (year != 1) {
@@ -145,7 +146,7 @@ public class SiloModelCBLCM {
 	        if (SiloUtil.modelStopper("check")) finishModel();
 	}
 	
-	protected void finishModel() {
+	public void finishModel() {
 		// close model run
 
 	        //Writes summarize data in 2 files, the normal combined file & a special file with only last year's data

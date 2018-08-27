@@ -979,7 +979,7 @@ public class SiloUtil {
     }
 
 
-    static void closeAllFiles (long startTime, ResourceBundle rbLandUse, de.tum.bgu.msm.properties.Properties properties) {
+    public static void closeAllFiles (long startTime, ResourceBundle rbLandUse, de.tum.bgu.msm.properties.Properties properties) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
@@ -1000,7 +1000,7 @@ public class SiloUtil {
     }
 
 
-    static boolean modelStopper (String action) {
+    public static boolean modelStopper (String action) {
         // provide option for a clean model stop after every simulation period is completed
         String fileName = Properties.get().main.baseDirectory + "status.csv";
         if (action.equalsIgnoreCase("initialize")) {
@@ -1020,7 +1020,7 @@ public class SiloUtil {
     }
 
 
-    static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
 
 

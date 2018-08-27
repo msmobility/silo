@@ -1,6 +1,9 @@
-package de.tum.bgu.msm;
+package run;
 
+import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
+import model.SiloModelCBLCM;
 import org.apache.log4j.Logger;
 
 import java.util.ResourceBundle;
@@ -16,7 +19,7 @@ import java.util.ResourceBundle;
 public class SiloCSDMS {
     // main class
     static final Logger logger = Logger.getLogger(SiloCSDMS.class);
-    private static  SiloModelCBLCM model;
+    private static SiloModelCBLCM model;
     private static  long startTime;
     private static  ResourceBundle rb ;
     private static Properties properties;

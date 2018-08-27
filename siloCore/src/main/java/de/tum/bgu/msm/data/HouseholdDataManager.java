@@ -72,7 +72,7 @@ public class HouseholdDataManager {
         for (Household hh: hhs) households.put(hh.getId(), hh);
     }
 
-    public Person createPerson(int id, int age, Person.Gender gender, Race race, int occupation, int workplace, int income) {
+    public Person createPerson(int id, int age, Gender gender, Race race, Occupation occupation, int workplace, int income) {
         final Person person = new Person(id, age, gender, race, occupation, workplace, income);
         this.persons.put(id, person);
         return person;
@@ -275,12 +275,12 @@ public class HouseholdDataManager {
                 int id         = Integer.parseInt(lineElements[posId]);
                 int hhid       = Integer.parseInt(lineElements[posHhId]);
                 int age        = Integer.parseInt(lineElements[posAge]);
-                Person.Gender gender     = Person.Gender.valueOf(Integer.parseInt(lineElements[posGender]));
+                Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 String strRace = lineElements[posRace].replace("\"", "");
                 Race race = Race.valueOf(strRace);
-                int occupation = Integer.parseInt(lineElements[posOccupation]);
+                Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
@@ -418,7 +418,7 @@ public class HouseholdDataManager {
         int pers[][] = new int[2][101];
         int ppRace[] = new int[4];
         for (Person per: persons.values()) {
-            Person.Gender gender = per.getGender();
+            Gender gender = per.getGender();
             int age = Math.min(per.getAge(), 100);
             pers[gender.ordinal()][age] += 1;
             ppRace[per.getRace().ordinal()]++;
@@ -477,7 +477,7 @@ public class HouseholdDataManager {
         float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         for (Person per: persons.values()) {
             int age = per.getAge();
-            Person.Gender gender = per.getGender();
+            Gender gender = per.getGender();
             boolean employed = per.getWorkplace() > 0;
             int ageGroup = 0;
             if (age >= 65) ageGroup = 4;
@@ -620,7 +620,9 @@ public class HouseholdDataManager {
         for (Person pp: persons.values()) {
             int age = Math.min(99, pp.getAge());
             int occupation = 0;
-            if (pp.getOccupation() == 1) occupation = 1;
+            if (pp.getOccupation() == Occupation.EMPLOYED) {
+                occupation = 1;
+            }
             averageIncome[pp.getGender().ordinal()][age][occupation] += pp.getIncome();
             count[pp.getGender().ordinal()][age][occupation]++;
         }
@@ -656,7 +658,7 @@ public class HouseholdDataManager {
     }
 
     public void selectIncomeForPerson (Person person) {
-        final Person.Gender gender = person.getGender();
+        final Gender gender = person.getGender();
         final int age = Math.min(99, person.getAge());
         final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         final double[] prob = new double[21];
@@ -669,7 +671,7 @@ public class HouseholdDataManager {
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
         final int sel = SiloUtil.select(prob);
-        final int inc = Math.max((int) initialIncomeDistribution[gender.ordinal()][age][person.getOccupation()] + change[sel], 0);
+        final int inc = Math.max((int) initialIncomeDistribution[gender.ordinal()][age][person.getOccupation().getCode()] + change[sel], 0);
         person.setIncome(inc);
     }
 
@@ -793,14 +795,14 @@ public class HouseholdDataManager {
                 pwp.print("\",\"");
                 pwp.print(pp.getRace());
                 pwp.print("\",");
-                pwp.print(pp.getOccupation());
+                pwp.print(pp.getOccupation().getCode());
                 pwp.print(",0,");
                 pwp.print(pp.getWorkplace());
                 pwp.print(",");
                 pwp.println(pp.getIncome());
                 // write out job attributes (if person is employed)
                 int job = pp.getWorkplace();
-                if (job > 0 && pp.getOccupation() == 1) {
+                if (job > 0 && pp.getOccupation() == Occupation.EMPLOYED) {
                     Job jj = jobData.getJobFromId(job);
                     pwj.print(jj.getId());
                     pwj.print(",");

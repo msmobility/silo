@@ -70,7 +70,7 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction {
         int gender = person.getGender().ordinal();
         int age = Math.min(99, person.getAge());
         int occ = 0;
-        if (person.getOccupation() == 1) {
+        if (person.getOccupation() == Occupation.EMPLOYED) {
             occ = 1;
         }
         return initialIncomeDistribution[gender][age][occ] - currentIncomeDistribution[gender][age][occ];

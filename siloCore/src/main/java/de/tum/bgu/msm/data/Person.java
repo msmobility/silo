@@ -25,52 +25,15 @@ import java.util.Comparator;
  */
 public final class Person implements Id {
 
-    public enum Gender {
-        MALE() {
-            @Override
-            public Gender opposite() {
-                return FEMALE;
-            }
-
-            @Override
-            public int getCode() {
-                return 1;
-            }
-        }, FEMALE {
-            @Override
-            public Gender opposite() {
-                return MALE;
-            }
-
-            @Override
-            public int getCode() {
-                return 2;
-            }
-        };
-
-        public static Gender valueOf(int code) {
-            switch(code) {
-                case 1:
-                    return MALE;
-                case 2:
-                    return FEMALE;
-                default:
-                    throw new IllegalArgumentException(String.format("Code %d not valid. Use 1 (MALE) or 2 (FEMALE).", code));
-            }
-        }
-
-        public abstract Gender opposite();
-        public abstract int getCode();
-    }
-
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated
     private final int id;
     private final Gender gender;
     private final Race race;
 
+    private Occupation occupation;
+
     private int age;
-	private int occupation;
     private int workplace;        // job ID
     private int schoolPlace = 0;  // ID of school
     private MicroLocation schoolLocation;
@@ -88,7 +51,7 @@ public final class Person implements Id {
     private boolean driverLicense = false;
     private int schoolType = 0;
 
-    Person(int id, int age, Gender gender, Race race, int occupation, int workplace, int income) {
+    Person(int id, int age, Gender gender, Race race, Occupation occupation, int workplace, int income) {
 		this.id = id;
 		this.age = age;
 		this.gender = gender; 
@@ -129,7 +92,7 @@ public final class Person implements Id {
         this.workplace = newWorkplace;
     }
 
-    public void setOccupation(int newOccupation) {
+    public void setOccupation(Occupation newOccupation) {
         this.occupation = newOccupation;
     }
 
@@ -149,7 +112,7 @@ public final class Person implements Id {
         return race;
     }
 
-    public int getOccupation() {
+    public Occupation getOccupation() {
         return occupation;
     }
 

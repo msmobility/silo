@@ -38,13 +38,10 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private void calculateShareOfForeignersByZoneAndRegion() {
 
-        final DoubleMatrix1D zonalShare = Matrices.doubleMatrix1D(geoData.getZones().values());
-        zonalShare.assign(0);
-        final DoubleMatrix1D hhByZone = zonalShare.copy();
 
+        final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
-
         for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
@@ -55,18 +52,9 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
             hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
             if (hh.getNationality() != Nationality.GERMAN) {
-                zonalShare.setQuick(zone, zonalShare.getQuick(zone)+1);
-                regionalShareForeigners.setQuick(region, zonalShare.getQuick(region)+1);
+                regionalShareForeigners.setQuick(region, regionalShareForeigners.getQuick(region)+1);
             }
         }
-
-        zonalShare.assign(hhByZone, (foreignerShare, numberOfHouseholds) -> {
-            if (numberOfHouseholds > 0) {
-                return foreignerShare / numberOfHouseholds;
-            } else {
-                return 0;
-            }
-        });
 
         regionalShareForeigners.assign(hhByRegion, (foreignerShare, numberOfHouseholds) -> {
             if (numberOfHouseholds > 0) {
@@ -181,7 +169,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
-            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).determineZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
@@ -293,7 +281,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: persons) {
-            if (pp.getOccupation() == 1 && pp.getWorkplace() != -2) {
+            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Location workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()).getLocation());
                 workerZonesForThisHousehold.put(pp, workLocation);
             }

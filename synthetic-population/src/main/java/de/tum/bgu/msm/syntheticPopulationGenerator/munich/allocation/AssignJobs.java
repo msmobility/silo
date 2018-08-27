@@ -5,11 +5,8 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Job;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.Person.Gender;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
@@ -114,7 +111,7 @@ public class AssignJobs {
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
         for (Person pp : dataContainer.getHouseholdData().getPersons()){
-            if (pp.getOccupation() == 1){
+            if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
                 pp.setWorkplace(-1);
                 pp.setJobTAZ(-1);

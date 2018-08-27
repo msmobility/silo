@@ -308,27 +308,4 @@ public final class SiloModel {
         SiloUtil.writeOutTimeTracker(timeTracker);
 		logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
 	}
-
-	//*************************************************************************
-	//*** Special implementation of same SILO Model for integration with    ***
-	//*** CBLCM Framework (http://csdms.colorado.edu/wiki/Main_Page). Used  ***
-	//*** in Maryland implementation only. Functions:                       ***
-	//*** initialize(), runYear (double dt) and finishModel()               ***
-	//*************************************************************************
-
-	@Deprecated // use SiloModelCBLCM directly
-	private SiloModelCBLCM cblcm ;
-	@Deprecated // use SiloModelCBLCM directly
-	public void initialize() {
-		cblcm = new SiloModelCBLCM() ;
-		cblcm.initialize();
-	}
-	@Deprecated // use SiloModelCBLCM directly
-	public void runYear (double dt) {
-		cblcm.runYear(dt);
-	}
-	@Deprecated // use SiloModelCBLCM directly
-	public void finishModel() {
-		cblcm.finishModel();
-	}
 }

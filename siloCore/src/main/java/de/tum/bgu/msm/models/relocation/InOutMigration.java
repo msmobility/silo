@@ -78,17 +78,19 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
-            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], Person.Gender.valueOf(imData[2 + k]),
-                    ppRace, imData[4 + k], -1, imData[5 + k]);
+            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], Gender.valueOf(imData[2 + k]),
+                    ppRace, Occupation.valueOf(imData[4 + k]), -1, imData[5 + k]);
             householdData.addPersonToHousehold(per, hh);
             k += 6;
         }
-        // Searching for employment has to be in a separate loop from setting up all persons, as finding a job will change the household income and household type, which can only be calculated after all persons are set up.
+        // Searching for employment has to be in a separate loop from setting up all persons, as finding a
+        // job will change the household income and household type, which can only be calculated after all
+        // persons are set up.
         for (Person per : hh.getPersons()) {
-            if (per.getOccupation() == 1) {
+            if (per.getOccupation() == Occupation.EMPLOYED) {
                 employment.lookForJob(per.getId());
                 if (per.getWorkplace() < 1) {
-                    per.setOccupation(2);
+                    per.setOccupation(Occupation.UNEMPLOYED);
                 }
             }
             driversLicense.checkLicenseCreation(per.getId());
@@ -217,7 +219,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                 inData[1 + k] = pp.getAge();
                 inData[2 + k] = pp.getGender().ordinal()+1;
                 inData[3 + k] = pp.getRace().ordinal();
-                inData[4 + k] = pp.getOccupation();
+                inData[4 + k] = pp.getOccupation().getCode();
                 inData[5 + k] = pp.getIncome();
                 // todo: Keep person role in household
                 // todo: imData[6+k] is not used, as inmigrant certainly will occupy different workplace. Remove or replace with other person attribute
