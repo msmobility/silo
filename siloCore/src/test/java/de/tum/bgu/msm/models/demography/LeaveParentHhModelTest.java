@@ -19,9 +19,9 @@ public class LeaveParentHhModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        Properties properties = SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
+        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getLph();
         Zone zone = dataContainer.getGeoData().getZones().get(1093);
 

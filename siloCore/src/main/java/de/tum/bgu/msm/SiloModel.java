@@ -30,6 +30,7 @@ import de.tum.bgu.msm.events.impls.person.*;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SkimUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
@@ -50,6 +51,7 @@ public final class SiloModel {
 	private final Set<Integer> tdmYears = new HashSet<>();
 	private final Set<Integer> skimYears = new HashSet<>();
     private final Set<Integer> scalingYears = new HashSet<>();
+	private final Properties properties;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer data;
@@ -57,18 +59,19 @@ public final class SiloModel {
     private MicroSimulation microSim;
     private TimeTracker timeTracker = new TimeTracker();
 
-    public SiloModel() {
-		this(null) ;
+    public SiloModel(Properties properties) {
+		this(null, properties) ;
 	}
 
-	public SiloModel(Config matsimConfig) {
+	public SiloModel(Config matsimConfig, Properties properties) {
 		IssueCounter.setUpCounter();
+		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
 	}
 
 	public void runModel() {
-		if (!Properties.get().main.runSilo) {
+		if (!properties.main.runSilo) {
 			return;
 		}
 		setupModel();
@@ -77,7 +80,7 @@ public final class SiloModel {
 	}
 
 	private void setupModel() {
-		logger.info("Setting up SILO Model (Implementation " + Properties.get().main.implementation + ")");
+		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
         setupContainer();
         setupYears();
         setupTravelTimes();
@@ -85,16 +88,16 @@ public final class SiloModel {
         setupMicroSim();
         IssueCounter.logIssues(data.getGeoData());
 
-        if (Properties.get().main.writeSmallSynpop) {
+        if (properties.main.writeSmallSynpop) {
             data.getHouseholdData().writeOutSmallSynPop();
         }
-		if (Properties.get().main.createPrestoSummary) {
+		if (properties.main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(data.getGeoData());
 		}
 	}
 
     private void setupContainer() {
-        data = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
 		data.getHouseholdData().setTypeOfAllHouseholds();
 		data.getHouseholdData().setHighestHouseholdAndPersonId();
@@ -105,87 +108,89 @@ public final class SiloModel {
 		data.getRealEstateData().fillQualityDistribution();
 		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
 		data.getRealEstateData().identifyVacantDwellings();
-
-        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig);
+        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties);
     }
 
     private void setupTravelTimes() {
-		if(Properties.get().transportModel.runMatsim) {
-			modelContainer.getTransportModel().runTransportModel(Properties.get().main.startYear);
+		if(properties.transportModel.runMatsim) {
+		    if(properties.transportModel.matsimInitialEventsFile == null) {
+                modelContainer.getTransportModel().runTransportModel(properties.main.startYear);
+            } else {
+                String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+                ((MatsimTransportModel) modelContainer.getTransportModel()).replayFromEvents(eventsFile);
+            }
 		} else {
-			updateTravelTimes(Properties.get().main.startYear);
+			updateTravelTimes(properties.main.startYear);
 		}
 	}
 
 	private void updateTravelTimes(int year) {
 		SkimUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(),
-				year, Properties.get());
+				year, properties);
 		SkimUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(),
-				year, Properties.get());
-		// updateTransitSkim was outside the bracket before, but central code should not decide how matsim updates
-		// travel times.  If necessary, should be done inside the matsim adapter class. kai, may'18
+				year, properties);
 	}
 
     private void setupAccessibility() {
         modelContainer.getAcc().initialize();
-        modelContainer.getAcc().calculateHansenAccessibilities(Properties.get().main.startYear);
+        modelContainer.getAcc().calculateHansenAccessibilities(properties.main.startYear);
     }
 
 	private void setupYears() {
-		scalingYears.addAll(Properties.get().main.scalingYears);
+		scalingYears.addAll(properties.main.scalingYears);
 		if (!scalingYears.isEmpty()) {
 			SummarizeData.readScalingYearControlTotals();
 		}
-		tdmYears.addAll(Properties.get().transportModel.modelYears);
-		skimYears.addAll(Properties.get().accessibility.skimYears);
+		tdmYears.addAll(properties.transportModel.modelYears);
+		skimYears.addAll(properties.accessibility.skimYears);
 	}
 
 	private void setupMicroSim() {
         microSim = new MicroSimulation(timeTracker);
 
-		if(Properties.get().eventRules.allDemography) {
-			if (Properties.get().eventRules.birthday ) {
+		if(properties.eventRules.allDemography) {
+			if (properties.eventRules.birthday ) {
 				microSim.registerModel(BirthDayEvent.class, modelContainer.getBirthday());
             }
-            if(Properties.get().eventRules.birth) {
+            if(properties.eventRules.birth) {
 				microSim.registerModel(BirthEvent.class, modelContainer.getBirth());
 			}
-			if (Properties.get().eventRules.death) {
+			if (properties.eventRules.death) {
 				microSim.registerModel(DeathEvent.class, modelContainer.getDeath());
 			}
-			if (Properties.get().eventRules.leaveParentHh) {
+			if (properties.eventRules.leaveParentHh) {
 				microSim.registerModel(LeaveParentsEvent.class, modelContainer.getLph());
 			}
-			if (Properties.get().eventRules.divorce) {
+			if (properties.eventRules.divorce) {
 				microSim.registerModel(MarriageEvent.class, modelContainer.getMarriage());
 			}
-			if(Properties.get().eventRules.marriage) {
+			if(properties.eventRules.marriage) {
 				microSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
 			}
-			if (Properties.get().eventRules.schoolUniversity) {
+			if (properties.eventRules.schoolUniversity) {
 				microSim.registerModel(EducationEvent.class, modelContainer.getChangeSchoolUniv());
 			}
-			if (Properties.get().eventRules.driversLicense) {
+			if (properties.eventRules.driversLicense) {
 				microSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());
 			}
-			if (Properties.get().eventRules.quitJob || Properties.get().eventRules.startNewJob) {
+			if (properties.eventRules.quitJob || properties.eventRules.startNewJob) {
 				microSim.registerModel(EmploymentEvent.class, modelContainer.getEmployment());
             }
 		}
-        if(Properties.get().eventRules.allHhMoves) {
+        if(properties.eventRules.allHhMoves) {
             microSim.registerModel(MoveEvent.class, modelContainer.getMove());
-            if(Properties.get().eventRules.outMigration || Properties.get().eventRules.inmigration) {
+            if(properties.eventRules.outMigration || properties.eventRules.inmigration) {
                 microSim.registerModel(MigrationEvent.class, modelContainer.getIomig());
             }
         }
-        if(Properties.get().eventRules.allDwellingDevelopments) {
-            if(Properties.get().eventRules.dwellingChangeQuality) {
+        if(properties.eventRules.allDwellingDevelopments) {
+            if(properties.eventRules.dwellingChangeQuality) {
                 microSim.registerModel(RenovationEvent.class, modelContainer.getRenov());
             }
-            if(Properties.get().eventRules.dwellingDemolition) {
+            if(properties.eventRules.dwellingDemolition) {
                 microSim.registerModel(DemolitionEvent.class, modelContainer.getDemol());
             }
-            if(Properties.get().eventRules.dwellingConstruction) {
+            if(properties.eventRules.dwellingConstruction) {
                 microSim.registerModel(ConstructionEvent.class, modelContainer.getCons());
             }
         }
@@ -195,7 +200,7 @@ public final class SiloModel {
 
         final HouseholdDataManager householdData = data.getHouseholdData();
 
-        for (int year = Properties.get().main.startYear; year < Properties.get().main.endYear; year ++) {
+        for (int year = properties.main.startYear; year < properties.main.endYear; year ++) {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
@@ -206,42 +211,37 @@ public final class SiloModel {
             if (scalingYears.contains(year)) {
                 SummarizeData.scaleMicroDataToExogenousForecast(year, data);
             }
-            timeTracker.record("scaleDataToForecast");
+            timeTracker.recordAndReset("scaleDataToForecast");
 
-			timeTracker.reset();
-			if (year != Properties.get().main.implementation.BASE_YEAR) {
+            if (year != properties.main.implementation.BASE_YEAR) {
 				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
 				data.getJobData().identifyVacantJobs();
 			}
-			timeTracker.record("setupJobChange");
+			timeTracker.recordAndReset("setupJobChange");
 
-			timeTracker.reset();
 			if (skimYears.contains(year) &&
                     !tdmYears.contains(year) &&
-					!Properties.get().transportModel.runTravelDemandModel &&
-					year != Properties.get().main.startYear &&
-                    !Properties.get().transportModel.runMatsim) {
+					!properties.transportModel.runTravelDemandModel &&
+					year != properties.main.startYear &&
+                    !properties.transportModel.runMatsim) {
                     updateTravelTimes(year);
             }
 			modelContainer.getAcc().calculateHansenAccessibilities(year);
-			timeTracker.record("calcAccessibilities");
+			timeTracker.recordAndReset("calcAccessibilities");
 
-            timeTracker.reset();
 			modelContainer.getDdOverwrite().addDwellings(year);
-            timeTracker.record("addOverwriteDwellings");
+            timeTracker.recordAndReset("addOverwriteDwellings");
 
-            timeTracker.reset();
             modelContainer.getMove().calculateRegionalUtilities();
 			modelContainer.getMove().calculateAverageHousingSatisfaction();
-			timeTracker.record("calcAveHousingSatisfaction");
+			timeTracker.recordAndReset("calcAveHousingSatisfaction");
 
-            timeTracker.reset();
-			if (year != Properties.get().main.implementation.BASE_YEAR) {
+			if (year != properties.main.implementation.BASE_YEAR) {
 			    householdData.adjustIncome();
             }
 			timeTracker.record("planIncomeChange");
 
-			if (year == Properties.get().main.implementation.BASE_YEAR || year != Properties.get().main.startYear) {
+			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, data);
             }
 
@@ -254,7 +254,7 @@ public final class SiloModel {
 
 
 			int avSwitchCounter = 0;
-			if (Properties.get().main.implementation == Implementation.MUNICH){
+			if (properties.main.implementation == Implementation.MUNICH){
 				timeTracker.reset();
 				avSwitchCounter = modelContainer.getSwitchToAutonomousVehicleModel().switchToAV(householdData.getConventionalCarsHouseholds(), year);
 				householdData.clearConventionalCarsHouseholds();
@@ -262,13 +262,12 @@ public final class SiloModel {
 			}
 
 
-			if ( Properties.get().transportModel.runMatsim || Properties.get().transportModel.runTravelDemandModel
-                    || Properties.get().main.createMstmOutput) {
+			if ( properties.transportModel.runMatsim || properties.transportModel.runTravelDemandModel
+                    || properties.main.createMstmOutput) {
                 if (tdmYears.contains(year + 1)) {
 					timeTracker.reset();
                     modelContainer.getTransportModel().runTransportModel(year + 1);
-					timeTracker.record("transportModel");
-					timeTracker.reset();
+					timeTracker.recordAndReset("transportModel");
                     modelContainer.getAcc().calculateHansenAccessibilities(year + 1);
 					timeTracker.record("calcAccessibilities");
                 }
@@ -293,19 +292,19 @@ public final class SiloModel {
 	}
 
 	private void endSimulation() {
-		if (scalingYears.contains(Properties.get().main.endYear)) {
-            SummarizeData.scaleMicroDataToExogenousForecast(Properties.get().main.endYear, data);
+		if (scalingYears.contains(properties.main.endYear)) {
+            SummarizeData.scaleMicroDataToExogenousForecast(properties.main.endYear, data);
         }
 
-		if (Properties.get().main.endYear != 2040) {
-			SummarizeData.writeOutSyntheticPopulation(Properties.get().main.endYear, data);
+		if (properties.main.endYear != 2040) {
+			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}
 
-		SiloUtil.summarizeMicroData(Properties.get().main.endYear, modelContainer, data);
+		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);
-		logger.info("Scenario results can be found in the directory scenOutput/" + Properties.get().main.scenarioName + ".");
+		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + ".");
 	}
 }

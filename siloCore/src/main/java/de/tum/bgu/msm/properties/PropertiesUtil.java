@@ -8,15 +8,13 @@ import java.util.*;
 
 public class PropertiesUtil {
 
-
     private PropertiesUtil(){
     }
 
-    private static String format = "%-60s%s";
-    private static String formatDefault = "%-80s%s";
-    private static Map<Integer, String> propertiesInUse = new HashMap<>();
-    private static Logger logger = Logger.getLogger(PropertiesUtil.class);
-
+    private final static String FORMAT = "%-60s%s";
+    private final static String FORMAT_DEFAULT = "%-80s%s";
+    private final static Map<Integer, String> propertiesInUse = new HashMap<>();
+    private final static Logger logger = Logger.getLogger(PropertiesUtil.class);
 
     public static int getIntProperty(ResourceBundle bundle, String key, int defaultValue) {
         try {
@@ -31,7 +29,7 @@ public class PropertiesUtil {
 
     public static int getIntProperty(ResourceBundle bundle, String key) {
         try {
-            Integer returnValue = Integer.parseInt(bundle.getString(key).replace(" ",""));
+            int returnValue = Integer.parseInt(bundle.getString(key).replace(" ",""));
             printOutProperty(key, returnValue, false);
             return returnValue;
         } catch (NumberFormatException e){
@@ -54,7 +52,7 @@ public class PropertiesUtil {
 
     public static double getDoubleProperty(ResourceBundle bundle, String key) {
         try {
-            Double returnValue = Double.parseDouble(bundle.getString(key));
+            double returnValue = Double.parseDouble(bundle.getString(key));
             printOutProperty(key, returnValue, false);
             return returnValue;
         } catch (NumberFormatException e){
@@ -77,7 +75,7 @@ public class PropertiesUtil {
 
     public static boolean getBooleanProperty(ResourceBundle bundle, String key) {
         try {
-            Boolean returnValue = Boolean.parseBoolean(bundle.getString(key));
+            boolean returnValue = Boolean.parseBoolean(bundle.getString(key));
             printOutProperty(key, returnValue, false);
             return returnValue;
         } catch (NumberFormatException e){
@@ -105,8 +103,7 @@ public class PropertiesUtil {
         } catch (MissingResourceException e){
             throw new RuntimeException("The property " + key + " is not defined and has no default value");
         }
-
-}
+    }
 
 
     public static int[] getIntPropertyArray(ResourceBundle bundle, String key){
@@ -186,9 +183,9 @@ public class PropertiesUtil {
 
     private static <E> void printOutProperty(String key, E property, boolean isDefault) {
         if (isDefault){
-            printOutLine(String.format(formatDefault, key, " = " + property.toString()));
+            printOutLine(String.format(FORMAT_DEFAULT, key, " = " + property));
         } else {
-            printOutLine(String.format(format, key, " = " + property.toString()));
+            printOutLine(String.format(FORMAT, key, " = " + property));
         }
 
     }
@@ -202,9 +199,9 @@ public class PropertiesUtil {
             }
         }
         if (isDefault){
-            printOutLine(String.format(formatDefault, key, " = " + value.toString()));
+            printOutLine(String.format(FORMAT_DEFAULT, key, " = " + value.toString()));
         } else {
-            printOutLine(String.format(format, key, " = " + value.toString()));
+            printOutLine(String.format(FORMAT, key, " = " + value.toString()));
         }
 
 
@@ -226,17 +223,11 @@ public class PropertiesUtil {
             PrintWriter pw = new PrintWriter(new File(folder + "/siloProperties.properties"));
             pw.println("#Properties for SILO");
             pw.println(String.format("%-60s %-20s %s","#Legend", "set by user", "default"));
-            propertiesInUse.values().forEach(row -> pw.println(row));
+            propertiesInUse.values().forEach(pw::println);
             pw.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
     }
-
-
-
-
-
 }

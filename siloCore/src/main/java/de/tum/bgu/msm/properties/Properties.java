@@ -16,11 +16,12 @@ public final class Properties {
         return instance;
     }
 
-    public static void initializeProperties(ResourceBundle bundle, Implementation implementation) {
+    public static Properties initializeProperties(ResourceBundle bundle, Implementation implementation) {
         if(instance != null) {
             throw new RuntimeException("Already initialized properties!");
         }
         instance = new Properties(bundle, implementation);
+        return instance;
     }
 
     public final MainProperties main;

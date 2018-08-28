@@ -6,8 +6,6 @@ import de.tum.bgu.msm.properties.Properties;
 import model.SiloModelCBLCM;
 import org.apache.log4j.Logger;
 
-import java.util.ResourceBundle;
-
 /**
  * Implements SILO for the Maryland Statewide Transportation Model for CSDMS integration
  * @author Rolf Moeckel
@@ -17,15 +15,12 @@ import java.util.ResourceBundle;
  */
 
 public class SiloCSDMS {
-    // main class
     static final Logger logger = Logger.getLogger(SiloCSDMS.class);
     private static SiloModelCBLCM model;
     private static  long startTime;
-    private static  ResourceBundle rb ;
     private static Properties properties;
 
     public static void main (String args) {
-        // main run method
 
 //        SyntheticPopUs sp = new SyntheticPopUs(rb);
 //        sp.runSP();
@@ -64,10 +59,10 @@ public class SiloCSDMS {
         // initialization step for CSDMS
 
         logger.info("Starting SILO Initialization for MSTM with CSDMS Integration");
-        rb = SiloUtil.siloInitialization(configFile, Implementation.MARYLAND);
+        properties = SiloUtil.siloInitialization(configFile, Implementation.MARYLAND);
         logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
         startTime = System.currentTimeMillis();
-        model = new SiloModelCBLCM();
+        model = new SiloModelCBLCM(properties);
         model.initialize();
         logger.info("Finished Initialization.");
     }
@@ -80,7 +75,7 @@ public class SiloCSDMS {
             model.runYear(dt);
         } catch (Exception e) {
             logger.error("Error running SILO.");
-            SiloUtil.closeAllFiles(startTime, rb, properties);
+            SiloUtil.closeAllFiles(startTime, properties);
             throw new RuntimeException(e);
         }
     }
@@ -95,7 +90,7 @@ public class SiloCSDMS {
 			e.printStackTrace();
 			//throw e;
 		}
-    	SiloUtil.closeAllFiles(startTime,rb, properties);
+    	SiloUtil.closeAllFiles(startTime, properties);
         logger.info("Finished SILO.");
     }
 }

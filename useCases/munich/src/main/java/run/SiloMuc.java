@@ -11,7 +11,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 
 /**
  * Implements SILO for the Munich Metropolitan Area
@@ -21,16 +20,16 @@ import java.util.ResourceBundle;
  */
 public class SiloMuc {
 
-    static Logger logger = Logger.getLogger(SiloMuc.class);
+    private static Logger logger = Logger.getLogger(SiloMuc.class);
     
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
+        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-            logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-            SiloModel model = new SiloModel();
+            logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
+            SiloModel model = new SiloModel(properties);
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
@@ -44,8 +43,8 @@ public class SiloMuc {
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);
             logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-            if (Properties.get().main.trackTime) {
-                String fileName = Properties.get().main.trackTimeFile;
+            if (properties.main.trackTime) {
+                String fileName = properties.main.trackTimeFile;
                 try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                     out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                     out.close();

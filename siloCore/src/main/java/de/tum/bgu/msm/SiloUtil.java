@@ -4,7 +4,6 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -40,27 +39,24 @@ public class SiloUtil {
     public static int trackJj;
     public static PrintWriter trackWriter;
     private static ResourceBundle rb;
-    //todo remove rbHashMap when Maryland Car Ownership UEC is not used any more
-    private static HashMap rbHashMap;
 
-    static Logger logger = Logger.getLogger(SiloUtil.class);
+    private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static ResourceBundle siloInitialization(String resourceBundleNames, Implementation implementation) {
+    public static Properties siloInitialization(String resourceBundleNames, Implementation implementation) {
         File propFile = new File(resourceBundleNames);
         try {
             rb = new PropertyResourceBundle(new FileReader(propFile));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Properties.initializeProperties(rb, implementation);
-        rbHashMap = ResourceUtil.changeResourceBundleIntoHashMap(rb);
+        Properties properties = Properties.initializeProperties(rb, implementation);
         SummarizeData.openResultFile(rb);
         SummarizeData.resultFileSpatial("open");
 
         // create scenarios output directory if it does not exist yet
-        createDirectoryIfNotExistingYet(Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName);
+        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
 
-        PropertiesUtil.printOutPropertiesOfThisRun(Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName);
+        PropertiesUtil.printOutPropertiesOfThisRun(properties.main.baseDirectory + "/scenOutput/" + properties.main.scenarioName);
         // copy properties file into scenarios directory
         String[] prop = resourceBundleNames.split("/");
 
@@ -68,18 +64,12 @@ public class SiloUtil {
         // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
         // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
-        copyFile(resourceBundleNames, Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + prop[prop.length-1]);
+        copyFile(resourceBundleNames, properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/" + prop[prop.length-1]);
 
-        initializeRandomNumber(Properties.get().main.randomSeed);
+        initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
-        return rb;
+        return properties;
     }
-
-
-    public static HashMap getRbHashMap() {
-        return rbHashMap;
-    }
-
 
     public static void createDirectoryIfNotExistingYet (String directory) {
         File file = new File (directory);
@@ -113,7 +103,7 @@ public class SiloUtil {
 
 
     public static int[] convertIntegerArrayListToArray (ArrayList<Integer> al) {
-        Integer[] temp = al.toArray(new Integer[al.size()]);
+        Integer[] temp = al.toArray(new Integer[0]);
         int[] list = new int[temp.length];
         for (int i = 0; i < temp.length; i++) list[i] = temp[i];
         return list;
@@ -121,7 +111,7 @@ public class SiloUtil {
 
 
     public static String[] convertStringArrayListToArray (ArrayList<String> al) {
-        String[] temp = al.toArray(new String[al.size()]);
+        String[] temp = al.toArray(new String[0]);
         String[] list = new String[temp.length];
         System.arraycopy(temp, 0, list, 0, temp.length);
         return list;
@@ -379,7 +369,7 @@ public class SiloUtil {
     public static double[] convertProbability (double[] probabilities){
         //method to return the probability in percentage
         double sum = 0;
-        for (int row = 0; row < probabilities.length; row++){
+        for (double probability : probabilities) {
             sum++;
         }
         for (int row = 0; row < probabilities.length; row++) {
@@ -979,7 +969,7 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime, ResourceBundle rbLandUse, de.tum.bgu.msm.properties.Properties properties) {
+    public static void closeAllFiles (long startTime, Properties properties) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
@@ -988,11 +978,10 @@ public class SiloUtil {
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        if (Properties.get().main.trackTime) {
-            String fileName = Properties.get().main.trackTimeFile;
+        if (properties.main.trackTime) {
+            String fileName = properties.main.trackTimeFile;
             try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                 out.println("Runtime: " + hours + " hours and " + min + " minutes.");
-                out.close();
             } catch (IOException e) {
                 logger.warn("Could not add run-time statement to time-tracking file.");
             }
@@ -1012,9 +1001,7 @@ public class SiloUtil {
             deleteFile (fileName);
         } else {
             TableDataSet status = readCSVfile(fileName);
-            if (!status.getStringValueAt(1, "Status").equalsIgnoreCase("continue")) {
-                return true;
-            }
+            return !status.getStringValueAt(1, "Status").equalsIgnoreCase("continue");
         }
         return false;
     }

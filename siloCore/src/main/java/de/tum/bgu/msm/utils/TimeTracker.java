@@ -21,6 +21,11 @@ public class TimeTracker {
         currentYearRecords.add(identifier, (int) timer.millis());
     }
 
+    public void recordAndReset(String identifier) {
+        record(identifier);
+        reset();
+    }
+
     public void setCurrentYear(int currentYear) {
         this.currentYear = currentYear;
     }

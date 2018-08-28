@@ -11,7 +11,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ResourceBundle;
 
 /**
  * Implements SILO for the Maryland Statewide Transportation Model
@@ -21,19 +20,18 @@ import java.util.ResourceBundle;
  */
 
 public class SiloMstm {
-    // main class
-    static Logger logger = Logger.getLogger(SiloMstm.class);
+
+    private static Logger logger = Logger.getLogger(SiloMstm.class);
 
 
     public static void main(String[] args) {
-        // main run method
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MARYLAND);
+        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MARYLAND);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO program for MSTM");
-            logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-            SiloModel model = new SiloModel();
+            logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
+            SiloModel model = new SiloModel(properties);
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {
@@ -47,8 +45,8 @@ public class SiloMstm {
             int hours = (int) (endTime / 60);
             int min = (int) (endTime - 60 * hours);
             logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-            if (Properties.get().main.trackTime) {
-                String fileName = Properties.get().main.trackTimeFile;
+            if (properties.main.trackTime) {
+                String fileName = properties.main.trackTimeFile;
                 try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
                     out.println("Runtime: " + hours + " hours and " + min + " minutes.");
                     out.close();

@@ -41,12 +41,12 @@ public class SiloMsp {
 
     public static void main(String[] args) {
 
-        ResourceBundle rb = SiloUtil.siloInitialization(args[0], Implementation.MSP);
+        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MSP);
         long startTime = System.currentTimeMillis();
         try {
             logger.info("Starting SILO for Minneapolis/St. Paul");
-            logger.info("Scenario: " + Properties.get().main.scenarioName);
-            SiloModel model = new SiloModel();
+            logger.info("Scenario: " + properties.main.scenarioName);
+            SiloModel model = new SiloModel(properties);
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {

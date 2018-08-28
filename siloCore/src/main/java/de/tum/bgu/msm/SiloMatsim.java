@@ -19,24 +19,23 @@ import java.util.ResourceBundle;
 public final class SiloMatsim {
 	static Logger logger = Logger.getLogger(SiloMatsim.class);
 
-	private ResourceBundle rb;
-	private Config matsimConfig = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
+	private final Properties properties;
+	private final Config matsimConfig;// = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
 
 	/**
 	 * Option to set the matsim config directly, at this point meant for tests.
 	 */
 	public SiloMatsim(String args, Config config, Implementation implementation) {
-		rb = SiloUtil.siloInitialization(args, implementation);
+		properties = SiloUtil.siloInitialization(args, implementation);
 		matsimConfig = config ;
 	}	    
 
 	public final void run() {
-		// main run method
 		long startTime = System.currentTimeMillis();
 		try {
 			logger.info("Starting SILO program for MATSim");
-			logger.info("Scenario: " + Properties.get().main.scenarioName + ", Simulation start year: " + Properties.get().main.startYear);
-			SiloModel model = new SiloModel(matsimConfig);
+			logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
+			SiloModel model = new SiloModel(matsimConfig, Properties.get());
 			model.runModel();
 			logger.info("Finished SILO.");
 		} catch (Exception e) {
@@ -50,8 +49,8 @@ public final class SiloMatsim {
 			int hours = (int) (endTime / 60);
 			int min = (int) (endTime - 60 * hours);
 			logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-			if (Properties.get().main.trackTime) {
-				String fileName = Properties.get().main.trackTimeFile;
+			if (properties.main.trackTime) {
+				String fileName = properties.main.trackTimeFile;
 				try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
 					out.println("Runtime: " + hours + " hours and " + min + " minutes.");
 					out.close();
@@ -60,9 +59,5 @@ public final class SiloMatsim {
 				}
 			}
 		}
-	}
-
-	final ResourceBundle getRb() {
-		return this.rb;
 	}
 }

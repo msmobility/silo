@@ -31,7 +31,6 @@ import org.matsim.core.config.Config;
  * using the repsective getter.  \n
  * All the models are constructed within the SiloModelContainer, removing the initialization code from the SiloModel main body
  * @see SiloModel
- * @see SiloModel#initialize()
  */
 public class SiloModelContainer {
 
@@ -62,7 +61,7 @@ public class SiloModelContainer {
     private final TransportModelI transportModel;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(SiloDataContainer, Config)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(SiloDataContainer, Config, Properties)}}
      * being used to encapsulate the object creation.
      *
      * @param iomig
@@ -124,31 +123,28 @@ public class SiloModelContainer {
      *
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer, Config matsimConfig) {
+    public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer, Config matsimConfig,
+                                                              Properties properties) {
 
-        boolean runMatsim = Properties.get().transportModel.runMatsim;
-        boolean runTravelDemandModel = Properties.get().transportModel.runTravelDemandModel;
+        boolean runMatsim = properties.transportModel.runMatsim;
+        boolean runTravelDemandModel = properties.transportModel.runTravelDemandModel;
 
         TransportModelI transportModel;
-        if (runMatsim && (runTravelDemandModel || Properties.get().main.createMstmOutput)) {
+        if (runMatsim && (runTravelDemandModel || properties.main.createMstmOutput)) {
             throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point.");
         }
         if (runMatsim) {
             LOGGER.info("  MATSim is used as the transport model");
-            MatsimTransportModel tmpModel = new MatsimTransportModel(dataContainer, matsimConfig);
-            transportModel = tmpModel ;
+            transportModel = new MatsimTransportModel(dataContainer, matsimConfig);
+        } else if (runTravelDemandModel) {
+            LOGGER.info("  MITO is used as the transport model");
+            transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer);
         } else {
-            if (runTravelDemandModel) {
-                LOGGER.info("  MITO is used as the transport model");
-                transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer);
-            } else {
-                LOGGER.info(" No transport model is used");
-                transportModel = null;
-            }
+            LOGGER.info(" No transport model is used");
+            transportModel = null;
         }
 
         Accessibility acc = new Accessibility(dataContainer);
-
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer);
         BirthdayModel birthday = new BirthdayModel(dataContainer);

@@ -21,18 +21,25 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 //import Implementation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
+import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.events.EventsUtils;
+import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
+import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 
 import java.io.File;
@@ -122,25 +129,41 @@ public final class MatsimTransportModel implements TransportModelI  {
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
 		
 		TravelTime travelTime = controler.getLinkTravelTimes();
-		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+		updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime);
+	}
+
+	public void replayFromEvents(String eventsFile) {
+        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
+	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
+        EventsManager events = EventsUtils.createEventsManager();
+        events.addHandler(ttCalculator);
+        (new MatsimEventsReader(events)).readFile(eventsFile);
+        TripRouter tripRouter = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario).get();
+        updateTravelTimes(scenario, tripRouter, ttCalculator.getLinkTravelTimes());
+	}
+
+	private void updateTravelTimes(MutableScenario scenario, TripRouter tripRouter, TravelTime travelTime) {
+		TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
-//		
+//
 ////		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
 //		// for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
 //		// potentially revise this later; nk/dz, nov'17
 //		//TODO: Optimize pt travel time query
 ////		MatsimPtTravelTimes matsimPtTravelTimes = new MatsimPtTravelTimes(controler.getTripRouterProvider().get(), zoneFeatureMap, scenario.getNetwork());
 ////		acc.addTravelTimeForMode(TransportMode.pt, matsimTravelTimes); // use car times for now also, as pt travel times are too slow to compute, Nico Oct 17
-//		
+//
 //		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
-		travelTimes.update(controler.getTripRouterProvider().get(), dataContainer.getGeoData().getZones().values(),
+		travelTimes.update(tripRouter, dataContainer.getGeoData().getZones().values(),
 				scenario.getNetwork(), leastCoastPathTree);
-		
+
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
-	
+
+
+
 	// Other idea; provide TripRouter more directly; requires more fundamental change, however
 //	public final TripRouter getTripRouter() {
 //		if(tripRouter == null) {

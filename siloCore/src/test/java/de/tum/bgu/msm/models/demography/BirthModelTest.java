@@ -19,10 +19,10 @@ public class BirthModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        Properties properties = SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getBirth();
 
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);

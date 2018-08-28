@@ -19,6 +19,7 @@ public class TransportModelPropertiesModule {
     public final String matsimZoneShapeFile;
     public final String matsimZoneCRS;
     public final String matsimZoneShapeIdField;
+    public final String matsimInitialEventsFile;
 
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
@@ -35,6 +36,7 @@ public class TransportModelPropertiesModule {
         matsimZoneShapeFile = PropertiesUtil.getStringProperty(bundle, "matsim.zones.shapefile", "input/zonesShapefile/zones.shp");
         matsimZoneCRS = PropertiesUtil.getStringProperty(bundle, "matsim.zones.crs", "EPSG:4326");
         matsimZoneShapeIdField = PropertiesUtil.getStringProperty(bundle, "matsim.zones.sahape.id.field", "id");
+        matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
     }
 
 }
