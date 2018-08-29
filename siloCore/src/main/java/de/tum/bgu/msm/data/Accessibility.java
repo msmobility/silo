@@ -20,7 +20,6 @@ import java.util.Collection;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 12 December 2012 in Santa Fe
  **/
-
 public class Accessibility {
 
     private static final Logger LOGGER = Logger.getLogger(Accessibility.class);

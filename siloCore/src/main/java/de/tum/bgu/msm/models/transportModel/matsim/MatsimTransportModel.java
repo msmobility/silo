@@ -129,7 +129,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
 		
 		TravelTime travelTime = controler.getLinkTravelTimes();
-		updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime);
+        TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+        updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime, travelDisutility);
 	}
 
 	public void replayFromEvents(String eventsFile) {
@@ -139,12 +140,13 @@ public final class MatsimTransportModel implements TransportModelI  {
         events.addHandler(ttCalculator);
         (new MatsimEventsReader(events)).readFile(eventsFile);
         TripRouter tripRouter = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario).get();
-        updateTravelTimes(scenario, tripRouter, ttCalculator.getLinkTravelTimes());
+        TravelTime travelTime = ttCalculator.getLinkTravelTimes();
+        TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
+        updateTravelTimes(scenario, tripRouter, travelTime, travelDisutility);
 	}
 
-	private void updateTravelTimes(MutableScenario scenario, TripRouter tripRouter, TravelTime travelTime) {
-		TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, travelDisutility);
+	private void updateTravelTimes(MutableScenario scenario, TripRouter tripRouter, TravelTime travelTime, TravelDisutility disutility) {
+		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
 //
 ////		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
 //		// for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
