@@ -7,7 +7,6 @@ import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.data.summarizeDataCblcm;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
@@ -1008,9 +1007,6 @@ public class SiloUtil {
 
 
     public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
-        // "static" so it can also be used from SiloModelCBLCM.  nico/kai/dominik, oct'17
-
-
         // aggregate micro data
 
         if (trackHh != -1 || trackPp != -1 || trackDd != -1)
@@ -1024,9 +1020,6 @@ public class SiloUtil {
 
         SummarizeData.resultFileSpatial("Year " + year, false);
         SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
-        if (Properties.get().cblcm.createCblcmFiles) {
-            summarizeDataCblcm.createCblcmSummaries(year, modelContainer, dataContainer);
-        }
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }

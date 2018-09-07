@@ -25,7 +25,6 @@ public final class Properties {
     }
 
     public final MainProperties main;
-    public final CblcmProperties cblcm;
     public final TransportModelPropertiesModule transportModel;
     public final GeoProperties geo;
     public final RealEstateProperties realEstate;
@@ -39,7 +38,6 @@ public final class Properties {
 
     private Properties(ResourceBundle bundle, Implementation implementation) {
         main = new MainProperties(bundle, implementation);
-        cblcm = new CblcmProperties(bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
         geo = new GeoProperties(bundle, implementation);
         realEstate = new RealEstateProperties(bundle);

@@ -173,7 +173,6 @@
     <modules>
         <module>munich</module>
         <module>maryland</module>
-        <module>cblcm</module>
         <module>msp</module>
     </modules>
 
