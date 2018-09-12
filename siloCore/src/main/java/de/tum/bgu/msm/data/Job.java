@@ -28,6 +28,8 @@ public final class Job {
     private int workerId;
     private final String type;
     private Location location;
+    private double startTimeInSeconds;
+    private double workingTimeInSeconds;
 
     Job (int id, Location location, int workerId, String type) {
         this.id = id;
@@ -68,6 +70,19 @@ public final class Job {
     
     public void setWorkerID(int personID) {
         this.workerId = personID;
+    }
+
+    public void setJobWorkingTime(double startTimeInSeconds, double workingTimeInSeconds){
+        this.startTimeInSeconds = startTimeInSeconds;
+        this.workingTimeInSeconds = workingTimeInSeconds;
+    }
+
+    public double getStartTimeInSeconds() {
+        return startTimeInSeconds;
+    }
+
+    public double getWorkingTimeInSeconds() {
+        return workingTimeInSeconds;
     }
 
     @Override

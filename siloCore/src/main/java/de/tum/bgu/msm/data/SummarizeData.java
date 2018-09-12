@@ -626,6 +626,10 @@ public class SummarizeData {
             pwj.print("coordX");
             pwj.print(",");
             pwj.print("coordY");
+            pwj.print(",");
+            pwj.print("startTime");
+            pwj.print(",");
+            pwj.print("duration");
         }
         pwj.println();
         for (Job jj : dataContainer.getJobData().getJobs()) {
@@ -650,6 +654,10 @@ public class SummarizeData {
                     pwj.print(",");
                     pwj.print(0);
                 }
+                pwj.print(",");
+                pwj.print(jj.getStartTimeInSeconds());
+                pwj.print(",");
+                pwj.print(jj.getWorkingTimeInSeconds());
             }
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {

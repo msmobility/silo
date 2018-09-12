@@ -52,6 +52,10 @@ public class JobDataManager {
     private int numberOfStoredVacantJobs;
     private final Map<Integer, Double> zonalJobDensity;
 
+    private final Map<String, Map<Integer,Double>> startTimeDistributionByJobType = new ConcurrentHashMap<>();
+    private final Map<String, Map<Integer,Double>> workingTimeDistributionByJobType = new ConcurrentHashMap<>();
+    private int intervalInSecondsForPreferredTimes;
+
 
     public JobDataManager(SiloDataContainer data) {
         this.data = data;
@@ -61,6 +65,13 @@ public class JobDataManager {
 
     public Job createJob(int id, Location location, int workerId, String type) {
         Job job = new Job(id, location, workerId, type);
+
+        if(Properties.get().main.implementation.equals(Implementation.MUNICH)){
+            job.setJobWorkingTime(SiloUtil.select(startTimeDistributionByJobType.get(type)) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble(),
+                    SiloUtil.select(workingTimeDistributionByJobType.get(type)) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble());
+        }
         this.jobs.put(id, job);
         return job;
     }
@@ -113,6 +124,11 @@ public class JobDataManager {
 
     public void readJobs(de.tum.bgu.msm.properties.Properties properties) {
         new JobType(properties.jobData.jobTypes);
+
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
+            readWorkingTimeDistributions();
+        }
+
         boolean readBin = properties.jobData.readBinaryJobFile;
         if (readBin) {
             readBinaryJobDataObjects();
@@ -120,6 +136,64 @@ public class JobDataManager {
             readJobData(properties);
         }
         setHighestJobId();
+    }
+
+    private void readWorkingTimeDistributions() {
+        String fileNameStart = Properties.get().jobData.jobStartTimeDistributionFile;
+        String recString = "";
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new FileReader(fileNameStart));
+            recString = in.readLine();
+            String[] header = recString.split(",");
+            while ((recString = in.readLine()) != null) {
+                String[] row = recString.split(",");
+                int time = Integer.parseInt(row[0]);
+                for (int column = 1 ; column < header.length; column++){
+                    if (startTimeDistributionByJobType.containsKey(header[column])){
+                        startTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
+                    } else {
+                        Map<Integer,Double> startTimeDistribution = new HashMap<>();
+                        startTimeDistribution.put(time, Double.parseDouble(row[column]));
+                        startTimeDistributionByJobType.put(header[column], startTimeDistribution);
+                    }
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String fileNameDuration = Properties.get().jobData.jobDurationDistributionFile;
+        try {
+            in = new BufferedReader(new FileReader(fileNameDuration));
+            recString = in.readLine();
+            String[] header = recString.split(",");
+            while ((recString = in.readLine()) != null) {
+                String[] row = recString.split(",");
+                int time = Integer.parseInt(row[0]);
+                for (int column = 1 ; column < header.length; column++){
+                    if (workingTimeDistributionByJobType.containsKey(header[column])){
+                        workingTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
+                    } else {
+                        Map<Integer,Double> workingTimeDistribution = new HashMap<>();
+                        workingTimeDistribution.put(time, Double.parseDouble(row[column]));
+                        workingTimeDistributionByJobType.put(header[column], workingTimeDistribution);
+                    }
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        intervalInSecondsForPreferredTimes = Math.round(24*3600 / startTimeDistributionByJobType.get(JobType.getJobType(0)).size());
+
+
     }
 
 

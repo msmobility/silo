@@ -15,6 +15,8 @@ public final class JobDataProperties {
     public final String binaryJobsFileName;
     public final String jobControlTotalsFileName;
     public final String employmentForeCastFile;
+    public final String jobStartTimeDistributionFile;
+    public final String jobDurationDistributionFile;
 
 
     public JobDataProperties(ResourceBundle bundle) {
@@ -32,5 +34,10 @@ public final class JobDataProperties {
         readBinaryJobFile = PropertiesUtil.getBooleanProperty(bundle, "read.binary.jj.file", false);
         writeBinJobFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.jj.file", false);
         binaryJobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.bin", "microData/jjData.bin");
+
+        PropertiesUtil.newPropertySubmodule("Job - job time input");
+        jobStartTimeDistributionFile = PropertiesUtil.getStringProperty(bundle, "job.start.distribution.file", "input/jobStartTimeDistributions.csv");
+        jobDurationDistributionFile = PropertiesUtil.getStringProperty(bundle, "job.duration.distribution.file", "input/jobDurationDistributions.csv");
+
     }
 }
