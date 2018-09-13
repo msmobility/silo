@@ -55,10 +55,26 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
+        } else if(populationControlMethod.equalsIgnoreCase("populationGrowthRate")) {
+            tblPopulationTarget = new TableDataSet();
+            int periodLength = Properties.get().main.endYear - Properties.get().main.startYear + 1;
+            int[] years = new int[periodLength];
+            int[] populationByYear = new int [periodLength];
+            int populationBaseYear = dataContainer.getHouseholdData().getPersons().size();
+            for (int i = 0; i < periodLength; i++){
+                years[i] = Properties.get().main.startYear + i ;
+                populationByYear[i] = (int) Math.round(populationBaseYear * Math.pow(1 + Properties.get().moves.populationGrowthRateInPercentage/100, i));
+            }
+            tblPopulationTarget.appendColumn(years, "Year");
+            tblPopulationTarget.appendColumn(populationByYear, "Population");
+            tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
+
+
         } else {
-            LOGGER.error("Unknown property found for population.control.total, set to population or migration");
-            System.exit(0);
+                LOGGER.error("Unknown property found for population.control.total, set to population or migration");
+                System.exit(0);
         }
+
     }
 
     private boolean inmigrateHh(int hhId) {
