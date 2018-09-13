@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
+
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
@@ -55,6 +56,8 @@ public class JobDataManager {
     private final Map<String, Map<Integer,Double>> startTimeDistributionByJobType = new ConcurrentHashMap<>();
     private final Map<String, Map<Integer,Double>> workingTimeDistributionByJobType = new ConcurrentHashMap<>();
     private int intervalInSecondsForPreferredTimes;
+
+    private final Map<Integer, Map<Integer,Map<String,Float>>> jobsByYearByZoneByIndustry = new ConcurrentHashMap<>();
 
 
     public JobDataManager(SiloDataContainer data) {
@@ -314,6 +317,53 @@ public class JobDataManager {
 
 
     public void calculateEmploymentForecast() {
+        if (Properties.get().jobData.jobForecastMethod.equalsIgnoreCase("interpolate")) {
+            interpolateEmploymentForecast();
+            logger.info("Forecasted jobs from employment forecast file");
+        } else if (Properties.get().jobData.jobForecastMethod.equalsIgnoreCase("rate")){
+            calculateEmploymentForecastWithRate();
+            logger.info("Forecasted jobs with growth rate");
+        }
+
+    }
+
+    private void calculateEmploymentForecastWithRate() {
+        int year = Properties.get().main.startYear;
+        Map<Integer, Map<String, Float>> jobCountBaseyear = new HashMap<>();
+        jobsByYearByZoneByIndustry.put(year, jobCountBaseyear);
+        //initialize maps with count = 0
+        for (Zone zone : geoData.getZones().values()){
+            Map<String, Float> jobsInThisZone = new HashMap<>();
+            jobCountBaseyear.put(zone.getId(), jobsInThisZone);
+            for (String jobType : JobType.getJobTypes()){
+                jobsInThisZone.put(jobType, 0.f);
+            }
+        }
+        //count jobs in SP of base year
+        for (Job job : jobs.values()){
+            int zoneId = job.determineZoneId();
+            String jobType = job.getType();
+            jobCountBaseyear.get(zoneId).put(jobType, jobCountBaseyear.get(zoneId).get(jobType) + 1);
+        }
+        logger.info("Count of jobs in synthetic population of the base year completed");
+        //forecast the following years
+        year++;
+        while (year <= Properties.get().main.endYear){
+            Map<Integer, Map<String, Float>> jobCountThisyear = new HashMap<>();
+            jobsByYearByZoneByIndustry.put(year, jobCountThisyear);
+            for (int zone : geoData.getZones().keySet()) {
+                Map<String, Float> jobCountThisZone = new HashMap<>();
+                for (String jobType : JobType.getJobTypes()){
+                    jobCountThisZone.put(jobType, (float)(jobCountBaseyear.get(zone).get(jobType)*
+                            Math.pow(1+Properties.get().jobData.growthRateInPercentByJobType.get(jobType)/100,year - Properties.get().main.startYear)));
+                }
+                jobCountThisyear.put(zone, jobCountThisZone);
+            }
+            year++;
+        }
+    }
+
+    private void interpolateEmploymentForecast(){
 
         TableDataSet jobs;
         try {
@@ -339,7 +389,6 @@ public class JobDataManager {
                     years.add(year);
                 }
             }
-
         }
         //proof the rest of job types are in the file
         for (int i = 1; i < jobTypes.length; i++) {
@@ -361,46 +410,61 @@ public class JobDataManager {
         String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
 
-        int previousFixedYear = Integer.parseInt(yearsGiven[0]);
-        int nextFixedYear;
-        int interpolatedYear = previousFixedYear;
-        for (int i = 0; i < yearsGiven.length - 1; i++) {
-            nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
-            while (interpolatedYear <= nextFixedYear) {
-                final String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
-                final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
-                final StringBuilder builder = new StringBuilder("zone");
-                for (String jobType : JobType.getJobTypes()) {
-                    builder.append(",").append(jobType);
-                }
-                builder.append("\n");
-                for (int zone : geoData.getZones().keySet()) {
-                    builder.append(zone);
-                    for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                        final int index = jobs.getIndexedRowNumber(zone);
-                        float currentValue;
-                        if (interpolatedYear == previousFixedYear) {
-                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                        } else if (interpolatedYear == nextFixedYear) {
-                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
-                        } else {
-                            final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                            final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
-                            currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
-                                    (nextFixedYear - previousFixedYear);
-                        }
-                        builder.append(",").append(currentValue);
+            int previousFixedYear = Integer.parseInt(yearsGiven[0]);
+            int nextFixedYear;
+            int interpolatedYear = previousFixedYear;
+            for (int i = 0; i < yearsGiven.length - 1; i++) {
+                nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
+                while (interpolatedYear <= nextFixedYear) {
+                    Map<Integer, Map<String, Float>> jobsThisyear = new HashMap<>();
+                    jobsByYearByZoneByIndustry.put(2000 + interpolatedYear, jobsThisyear);
+                    final String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
+                    final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
+                    final StringBuilder builder = new StringBuilder("zone");
+                    for (String jobType : JobType.getJobTypes()) {
+                        builder.append(",").append(jobType);
                     }
                     builder.append("\n");
+                    for (int zone : geoData.getZones().keySet()) {
+                        Map<String, Float> jobsThisZone = new HashMap<>();
+                        jobsThisyear.put(zone, jobsThisZone);
+                        builder.append(zone);
+                        for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
+                            final int index = jobs.getIndexedRowNumber(zone);
+                            float currentValue;
+                            if (interpolatedYear == previousFixedYear) {
+                                //todo look at a different place if it is the base year!
+                                currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                            } else if (interpolatedYear == nextFixedYear) {
+                                currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
+                            } else {
+                                final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                                final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
+                                currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
+                                        (nextFixedYear - previousFixedYear);
+                            }
+
+                            jobsThisZone.put(JobType.getJobType(jobTp), currentValue);
+                            builder.append(",").append(currentValue);
+                        }
+                        builder.append("\n");
+                    }
+                    pw.print(builder.toString());
+                    pw.close();
+                    interpolatedYear++;
                 }
-                pw.print(builder.toString());
-                pw.close();
-                interpolatedYear++;
+                previousFixedYear = nextFixedYear;
             }
-            previousFixedYear = nextFixedYear;
-        }
+
+
     }
 
+
+
+
+    public float getJobForecast(int year, int zone, String jobType){
+        return jobsByYearByZoneByIndustry.get(year).get(zone).get(jobType);
+    }
 
     public void identifyVacantJobs() {
         // identify vacant jobs by region (one-time task at beginning of model run only)

@@ -44,9 +44,9 @@ public class UpdateJobs extends AbstractModel {
             jobsByZone[jobTypeId][jj.determineZoneId()]++;
         }
 
-        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
-        String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
-        TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
+        //String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
+        //String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
+        //TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
@@ -65,11 +65,17 @@ public class UpdateJobs extends AbstractModel {
 
 
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
-        for (int row = 1; row <= forecast.getRowCount(); row++) {
-            int zoneId = (int) forecast.getValueAt(row, "zone");
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+        //for (int row = 1; row <= forecast.getRowCount(); row++) {
+        for (Zone zone : dataContainer.getGeoData().getZones().values()){
+
+            //int zoneId = (int) forecast.getValueAt(row, "zone");
+
+            int zoneId = zone.getId();
+            //Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+
             for (String jt : JobType.getJobTypes()) {
-                int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
+                //int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
+                int jobsExogenousForecast = (int) jobData.getJobForecast(year, zoneId, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
                     executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer));
