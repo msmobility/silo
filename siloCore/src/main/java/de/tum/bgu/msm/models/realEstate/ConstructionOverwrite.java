@@ -1,10 +1,15 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
+import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingFactory;
+import de.tum.bgu.msm.data.dwelling.DwellingImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -26,13 +31,15 @@ import java.util.List;
 public class ConstructionOverwrite extends AbstractModel {
 
     static Logger logger = Logger.getLogger(ConstructionModel.class);
+    private final DwellingFactory factory;
 
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
     private HashMap<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwrite(SiloDataContainer dataContainer) {
+    public ConstructionOverwrite(SiloDataContainer dataContainer, DwellingFactory factory) {
         super(dataContainer);
+        this.factory = factory;
         useOverwrite = Properties.get().realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) return;
         traceOverwriteDwellings = Properties.get().realEstate.traceOverwriteDwellings;
@@ -119,13 +126,13 @@ public class ConstructionOverwrite extends AbstractModel {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
-            Dwelling dd = dataContainer.getRealEstateData().createDwelling(ddId, zone, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            dataContainer.getRealEstateData().addDwelling(dd);
 
             if(Properties.get().main.implementation == Implementation.MUNICH) {
                 if(Properties.get().main.runDwellingMicrolocation) {
-                	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
-                    dd.setLocation(microLocation);
+                	Coordinate coordinate = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomCoordinate();
+                    ((DwellingImpl) dd).setCoordinate(coordinate);
                 }
             }
 

@@ -10,5 +10,6 @@
 		<module>useCases</module>
 		<module>siloCore</module>
 		<module>synthetic-population</module>
-	</modules>
+        <module>analysis</module>
+    </modules>
 </project>

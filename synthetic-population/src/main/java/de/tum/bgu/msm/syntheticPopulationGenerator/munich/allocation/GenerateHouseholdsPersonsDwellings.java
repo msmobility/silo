@@ -3,6 +3,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -122,7 +126,7 @@ public class GenerateHouseholdsPersonsDwellings {
         int year = microDataManager.dwellingYearfromBracket(yearBracket);
         int floorSpace = dataSetSynPop.getDwellingTable().get(hhSelected, "ddFloor");
         int useInteger = dataSetSynPop.getDwellingTable().get(hhSelected, "ddUse");
-        Dwelling.Usage usage = Dwelling.Usage.valueOf(useInteger);
+        DwellingImpl.Usage usage = DwellingImpl.Usage.valueOf(useInteger);
         int buildingSize = dataSetSynPop.getDwellingTable().get(hhSelected, "ddSize");
         int ddHeatingEnergy = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingEnergy");
         int ddHeatingType = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingType");
@@ -132,10 +136,9 @@ public class GenerateHouseholdsPersonsDwellings {
         int bedRooms = microDataManager.guessBedrooms(floorSpace);
         int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
         int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, usage);
-        
-        Zone zone = dataContainer.getGeoData().getZones().get(tazSelected);
-        
-        Dwelling dwell = realEstate.createDwelling(newDdId, zone, idHousehold, type , bedRooms, quality, price, 0, year);
+
+        Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, quality, price, 0, year);
+        realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
         dwell.setBuildingSize(buildingSize);

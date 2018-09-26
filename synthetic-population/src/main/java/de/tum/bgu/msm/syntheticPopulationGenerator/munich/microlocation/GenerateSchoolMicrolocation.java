@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.Person;
@@ -43,15 +44,15 @@ public class GenerateSchoolMicrolocation {
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
 
                 if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType) == null){
-                	pp.setSchoolLocation(zone.getRandomMicroLocation());
+                	pp.setSchoolCoordinate(zone.getRandomCoordinate(), zoneID);
                     errorSchool++;
                     continue;
                 }
                 int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
                 int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
                 zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
-                MicroLocation schoolLocation = new MicroLocation(schoolX.get(selectedSchoolID), schoolY.get(selectedSchoolID), zone);
-                pp.setSchoolLocation(schoolLocation);
+                Coordinate schoolLocation = new Coordinate(schoolX.get(selectedSchoolID), schoolY.get(selectedSchoolID));
+                pp.setSchoolCoordinate(schoolLocation, -1);
             }
         }
         logger.warn( errorSchool +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );

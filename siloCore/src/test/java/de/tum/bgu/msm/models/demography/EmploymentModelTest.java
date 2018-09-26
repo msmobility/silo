@@ -6,6 +6,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SkimUtil;
@@ -49,7 +51,8 @@ public class EmploymentModelTest {
         Assert.assertEquals(Occupation.UNEMPLOYED, person.getOccupation());
         Assert.assertEquals(0, person.getIncome());
 
-        final Job job = dataContainer.getJobData().createJob(1, null, -1, "dummy");
+        Job job = JobUtils.getFactory().createJob(1, -1, null, -1, "dummy");
+        dataContainer.getJobData().addJob(job);
         model.takeNewJob(person, job);
         Assert.assertEquals(1, person.getWorkplace());
         Assert.assertEquals(1, job.getWorkerId());
@@ -66,7 +69,8 @@ public class EmploymentModelTest {
         Assert.assertEquals(Occupation.UNEMPLOYED, person.getOccupation());
         Assert.assertEquals(0, person.getIncome());
 
-        final Job job = dataContainer.getJobData().createJob(2, new ZoneImpl(999,1,1), -1, "dummy");
+        final Job job = JobUtils.getFactory().createJob(2, 1,null, -1, "dummy");
+        dataContainer.getJobData().addJob(job);
         model.takeNewJob(person, job);
 
         int income = person.getIncome();

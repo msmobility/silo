@@ -2,6 +2,7 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
@@ -156,7 +157,7 @@ public class SiloModelContainer {
         RenovationModel renov = new RenovationModel(dataContainer);
         PricingModel prm = new PricingModel(dataContainer);
         UpdateJobs updateJobs = new UpdateJobs(dataContainer);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer);
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer, DwellingUtils.getFactory());
 
         UpdateCarOwnershipModel updateCarOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
@@ -176,7 +177,7 @@ public class SiloModelContainer {
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
-        ConstructionModel cons = new ConstructionModel(dataContainer, move, acc);
+        ConstructionModel cons = new ConstructionModel(dataContainer, move, acc, DwellingUtils.getFactory());
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         updateCarOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);

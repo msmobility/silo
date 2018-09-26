@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.dwelling;
 
 /**
  * Dwelling types that are distinguished in the model

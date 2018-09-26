@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -72,7 +72,7 @@ public final class PricingModel extends AbstractModel {
             float structuralVacHigh = (float) (structuralVacancy[dto] * inflectionHigh);
             int currentPrice = dd.getPrice();
 
-            int region = dataContainer.getGeoData().getZones().get(dd.determineZoneId()).getRegion().getId();
+            int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
             double changeRate;
             if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply

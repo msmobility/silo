@@ -1,10 +1,13 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.job.Job;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -136,26 +139,22 @@ public class SiloMatsimUtils {
     		}
 
     		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-    		MicroLocation dwellingLocation;
-    		if (dwelling.getLocation() instanceof MicroLocation) {
-	    		dwellingLocation = (MicroLocation) dwelling.getLocation();
-    		} else if (dwelling.getLocation() instanceof Zone) {
-    			dwellingLocation = ((Zone) dwelling.getLocation()).getRandomMicroLocation();
+    		Coordinate dwellingCoordinate;
+    		if (dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
+	    		dwellingCoordinate = ((MicroLocation) dwelling).getCoordinate();
     		} else {
-    			throw new RuntimeException("Location must either be Microlocation or Zone.");
+    			dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate();
     		}
-    		Coord dwellingCoord = new Coord(dwellingLocation.getCoordinate().x, dwellingLocation.getCoordinate().y);
+    		Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
 
     		Job job = jobData.getJobFromId(siloWorkplaceId);
-    		MicroLocation jobLocation;
-    		if (job.getLocation() instanceof MicroLocation) {
-    			jobLocation = (MicroLocation) job.getLocation();
-    		} else if (job.getLocation() instanceof Zone) {
-    			jobLocation = ((Zone) job.getLocation()).getRandomMicroLocation();
+    		Coordinate jobCoordinate;
+    		if (job instanceof MicroLocation && ((MicroLocation) job).getCoordinate() != null) {
+    			jobCoordinate = ((MicroLocation) job).getCoordinate();
     		} else {
-    			throw new RuntimeException("Location must either be Microlocation or Zone.");
+    			jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate();
     		}
-    		Coord jobCoord = new Coord(jobLocation.getCoordinate().x, jobLocation.getCoordinate().y);
+    		Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
     		
 
     		// Note: Do not confuse the SILO Person class with the MATSim Person class here

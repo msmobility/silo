@@ -5,6 +5,9 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,10 +26,10 @@ public class LeaveParentHhModelTest {
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getLph();
-        Zone zone = dataContainer.getGeoData().getZones().get(1093);
 
-        Dwelling dd = dataContainer.getRealEstateData()
-                .createDwelling(999, zone, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
+        Dwelling dd = DwellingUtils.getFactory()
+                .createDwelling(999, 1093, null, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
+        dataContainer.getRealEstateData().addDwelling(dd);
 
         household = dataContainer.getHouseholdData().createHousehold(999, 1, 0);
         Person parent1 = dataContainer.getHouseholdData().createPerson(123, 40, Gender.MALE, Race.other, Occupation.EMPLOYED, 0, 0);

@@ -1,13 +1,13 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Dwelling;
-import de.tum.bgu.msm.data.Household;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -89,8 +89,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
             int workers = Math.min(household.getNumberOfWorkers(), 4);
             int incomeCategory = getIncomeCategory(household.getHhIncome());
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.determineZoneId()) + 0.5);
-            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.determineZoneId());
+            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZoneId()) + 0.5);
+            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.getZoneId());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];
             }

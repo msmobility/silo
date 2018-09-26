@@ -1,17 +1,25 @@
 package de.tum.bgu.msm.container;
 
+import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobFactoryImpl;
+import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.io.DefaultDwellingReader;
+import de.tum.bgu.msm.io.DefaultJobReader;
+import de.tum.bgu.msm.io.DwellingReader;
+import de.tum.bgu.msm.io.JobReader;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import org.apache.log4j.Logger;
+
+import java.util.Map;
 
 /**
  * @author moeckel
@@ -51,7 +59,7 @@ public class SiloDataContainer {
 
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
-        householdData = new HouseholdDataManager(this);
+        householdData = new HouseholdDataManager(this, DwellingUtils.getFactory());
         travelTimes = new SkimTravelTimes();
     }
 
@@ -77,11 +85,27 @@ public class SiloDataContainer {
 
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
-        householdData = new HouseholdDataManager(this);
+        householdData = new HouseholdDataManager(this, DwellingUtils.getFactory());
         geoData.readData();
         householdData.readPopulation(properties);
-        realEstateData.readDwellings(properties);
-        jobData.readJobs(properties);
+
+        DwellingReader ddReader = new DefaultDwellingReader(this);
+        int dwellingYear = Properties.get().main.startYear;
+        String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + dwellingYear + ".csv";
+        ddReader.readData(dwellingsFile);
+        realEstateData.readAcresNeededByDwellingType();
+
+        new JobType(properties.jobData.jobTypes);
+
+        JobReader jjReader = new DefaultJobReader(this);
+        int year = Properties.get().main.startYear;
+        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
+        jjReader.readData(jobsFile);
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
+            ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
+        }
+
+        jobData.setHighestJobId();
 
         if(properties.transportModel.runMatsim) {
             travelTimes = new MatsimTravelTimes();

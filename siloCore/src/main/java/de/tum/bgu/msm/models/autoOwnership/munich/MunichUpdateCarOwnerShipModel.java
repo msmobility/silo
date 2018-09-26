@@ -1,18 +1,18 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
@@ -37,7 +37,7 @@ public class MunichUpdateCarOwnerShipModel extends AbstractModel implements Upda
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             int homeZone = -1;
             if(dwelling != null) {
-                homeZone = dwelling.determineZoneId();
+                homeZone = dwelling.getZoneId();
             }
             pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
         }

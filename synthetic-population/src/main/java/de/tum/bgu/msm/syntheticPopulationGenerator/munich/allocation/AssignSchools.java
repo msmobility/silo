@@ -49,7 +49,7 @@ public class AssignSchools {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : studentArrayList){
             int schooltaz;
-            int hometaz = realEstate.getDwelling(pp.getHh().getDwellingId()).determineZoneId();
+            int hometaz = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
             if (pp.getSchoolType() == 3){
                 schooltaz = selectTertiarySchool(hometaz);
             } else {

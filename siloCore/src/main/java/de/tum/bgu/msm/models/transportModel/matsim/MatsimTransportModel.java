@@ -133,6 +133,10 @@ public final class MatsimTransportModel implements TransportModelI  {
         updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime, travelDisutility);
 	}
 
+    /**
+     *
+     * @param eventsFile
+     */
 	public void replayFromEvents(String eventsFile) {
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
 	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
