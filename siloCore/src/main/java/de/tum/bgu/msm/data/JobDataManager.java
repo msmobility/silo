@@ -20,16 +20,18 @@ package de.tum.bgu.msm.data;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.io.*;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,10 +55,6 @@ public class JobDataManager {
     private int numberOfStoredVacantJobs;
     private final Map<Integer, Double> zonalJobDensity;
 
-    private final Map<String, Map<Integer,Double>> startTimeDistributionByJobType = new ConcurrentHashMap<>();
-    private final Map<String, Map<Integer,Double>> workingTimeDistributionByJobType = new ConcurrentHashMap<>();
-    private int intervalInSecondsForPreferredTimes;
-
     private final Map<Integer, Map<Integer,Map<String,Float>>> jobsByYearByZoneByIndustry = new ConcurrentHashMap<>();
 
 
@@ -64,19 +62,6 @@ public class JobDataManager {
         this.data = data;
         this.geoData = data.getGeoData();
         this.zonalJobDensity = new HashMap<>();
-    }
-
-    public Job createJob(int id, Location location, int workerId, String type) {
-        Job job = new Job(id, location, workerId, type);
-
-        if(Properties.get().main.implementation.equals(Implementation.MUNICH)){
-            job.setJobWorkingTime(SiloUtil.select(startTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble(),
-                    SiloUtil.select(workingTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble());
-        }
-        this.jobs.put(id, job);
-        return job;
     }
 
     public Job getJobFromId(int jobId) {
@@ -106,7 +91,7 @@ public class JobDataManager {
     public void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
 
         for (Job jj : jobs.values()) {
-            final MitoZone zone = zones.get(jj.determineZoneId());
+            final MitoZone zone = zones.get(jj.getZoneId());
             final String type = jj.getType().toUpperCase();
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
@@ -122,173 +107,6 @@ public class JobDataManager {
                 logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
             }
         }
-    }
-
-
-    public void readJobs(de.tum.bgu.msm.properties.Properties properties) {
-        new JobType(properties.jobData.jobTypes);
-
-        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
-            readWorkingTimeDistributions();
-        }
-
-        boolean readBin = properties.jobData.readBinaryJobFile;
-        if (readBin) {
-            readBinaryJobDataObjects();
-        } else {
-            readJobData(properties);
-        }
-        setHighestJobId();
-    }
-
-    private void readWorkingTimeDistributions() {
-        String fileNameStart = Properties.get().jobData.jobStartTimeDistributionFile;
-        String recString = "";
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new FileReader(fileNameStart));
-            recString = in.readLine();
-            String[] header = recString.split(",");
-            while ((recString = in.readLine()) != null) {
-                String[] row = recString.split(",");
-                int time = Integer.parseInt(row[0]);
-                for (int column = 1 ; column < header.length; column++){
-                    if (startTimeDistributionByJobType.containsKey(header[column])){
-                        startTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
-                    } else {
-                        Map<Integer,Double> startTimeDistribution = new HashMap<>();
-                        startTimeDistribution.put(time, Double.parseDouble(row[column]));
-                        startTimeDistributionByJobType.put(header[column], startTimeDistribution);
-                    }
-                }
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        String fileNameDuration = Properties.get().jobData.jobDurationDistributionFile;
-        try {
-            in = new BufferedReader(new FileReader(fileNameDuration));
-            recString = in.readLine();
-            String[] header = recString.split(",");
-            while ((recString = in.readLine()) != null) {
-                String[] row = recString.split(",");
-                int time = Integer.parseInt(row[0]);
-                for (int column = 1 ; column < header.length; column++){
-                    if (workingTimeDistributionByJobType.containsKey(header[column])){
-                        workingTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
-                    } else {
-                        Map<Integer,Double> workingTimeDistribution = new HashMap<>();
-                        workingTimeDistribution.put(time, Double.parseDouble(row[column]));
-                        workingTimeDistributionByJobType.put(header[column], workingTimeDistribution);
-                    }
-                }
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        intervalInSecondsForPreferredTimes = Math.round(24*3600 / startTimeDistributionByJobType.get(JobType.getJobType(0)).size());
-
-
-    }
-
-
-    private void readJobData(de.tum.bgu.msm.properties.Properties properties) {
-        logger.info("Reading job micro data from ascii file");
-
-        int year = Properties.get().main.startYear;
-        String fileName = properties.main.baseDirectory + properties.jobData.jobsFileName;
-        fileName += "_" + year + ".csv";
-
-        String recString = "";
-        int recCount = 0;
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(fileName));
-            recString = in.readLine();
-
-            // read header
-            String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("id", header);
-            int posZone = SiloUtil.findPositionInArray("zone", header);
-            int posWorker = SiloUtil.findPositionInArray("personId", header);
-            int posType = SiloUtil.findPositionInArray("type", header);
-
-            int posCoordX = -1;
-            int posCoordY = -1;
-            if(Properties.get().main.implementation == Implementation.MUNICH) {
-                posCoordX = SiloUtil.findPositionInArray("CoordX", header);
-                posCoordY = SiloUtil.findPositionInArray("CoordY", header);
-            }
-
-
-            // read line
-            while ((recString = in.readLine()) != null) {
-                recCount++;
-                String[] lineElements = recString.split(",");
-                int id = Integer.parseInt(lineElements[posId]);
-                int zoneId = Integer.parseInt(lineElements[posZone]);
-                Location location;
-                Zone zone = geoData.getZones().get(zoneId);
-                int worker = Integer.parseInt(lineElements[posWorker]);
-                String type = lineElements[posType].replace("\"", "");
-
-                //TODO: remove it when we implement interface
-                if (Properties.get().main.implementation == Implementation.MUNICH) {
-                	location = new MicroLocation(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]), zone);
-                } else {
-                	location = zone;
-                }
-                Job jj = createJob(id, location, worker, type);
-
-                if (id == SiloUtil.trackJj) {
-                    SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
-                    SiloUtil.trackWriter.println(jobs.get(id).toString());
-                }
-            }
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop job file: " + fileName);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
-        }
-        logger.info("Finished reading " + recCount + " jobs.");
-    }
-
-
-    public void writeBinaryJobDataObjects() {
-        // Store job object data in binary file
-
-        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
-        logger.info("  Writing job data to binary file.");
-        Object[] data = jobs.values().toArray(new Job[]{});
-        try {
-            File fl = new File(fileName);
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fl));
-            out.writeObject(data);
-            out.close();
-        } catch (Exception e) {
-            logger.error("Error saving to binary file " + fileName + ". Object not saved.\n" + e);
-        }
-    }
-
-
-    private void readBinaryJobDataObjects() {
-        // read jobs from binary file
-        String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.binaryJobsFileName;
-        logger.info("Reading job data from binary file.");
-        try {
-            ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File(fileName)));
-            Object[] data = (Object[]) in.readObject();
-            saveJobs((Job[]) data[0]);
-        } catch (Exception e) {
-            logger.error("Error reading from binary file " + fileName + ". Object not read.\n" + e);
-        }
-        logger.info("Finished reading " + jobs.size() + " jobs.");
     }
 
 
@@ -334,14 +152,14 @@ public class JobDataManager {
         //initialize maps with count = 0
         for (Zone zone : geoData.getZones().values()){
             Map<String, Float> jobsInThisZone = new HashMap<>();
-            jobCountBaseyear.put(zone.getId(), jobsInThisZone);
+            jobCountBaseyear.put(zone.getZoneId(), jobsInThisZone);
             for (String jobType : JobType.getJobTypes()){
                 jobsInThisZone.put(jobType, 0.f);
             }
         }
         //count jobs in SP of base year
         for (Job job : jobs.values()){
-            int zoneId = job.determineZoneId();
+            int zoneId = job.getZoneId();
             String jobType = job.getType();
             jobCountBaseyear.get(zoneId).put(jobType, jobCountBaseyear.get(zoneId).get(jobType) + 1);
         }
@@ -480,7 +298,7 @@ public class JobDataManager {
             if (jj.getWorkerId() == -1) {
                 int jobId = jj.getId();
 
-                int region = geoData.getZones().get(jj.determineZoneId()).getRegion().getId();
+                int region = geoData.getZones().get(jj.getZoneId()).getRegion().getId();
                 if (vacantJobsByRegionPos[region] < numberOfStoredVacantJobs) {
                     vacantJobsByRegion[region][vacantJobsByRegionPos[region]] = jobId;
                     vacantJobsByRegionPos[region]++;
@@ -503,7 +321,7 @@ public class JobDataManager {
         final int workplace = person.getWorkplace();
         Job jb = jobs.get(workplace);
         if (makeJobAvailableToOthers) {
-            addJobToVacancyList(jb.determineZoneId(), workplace);
+            addJobToVacancyList(jb.getZoneId(), workplace);
         }
         jb.setWorkerID(-1);
         person.setWorkplace(-1);
@@ -562,7 +380,7 @@ public class JobDataManager {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (vacantJobsByRegionPos[reg.getId()] > 0) {
-                    	int distance = (int) (data.getTravelTimes().getTravelTime(homeZone, reg,
+                    	int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
                         		Properties.get().main.peakHour, TransportMode.car) + 0.5);
                     	regionProb.put(reg, 1. / distance);
                     }
@@ -627,7 +445,7 @@ public class JobDataManager {
         final int highestId = regions.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][highestId + 1];
         for (Job job : jobs.values()) {
-            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.determineZoneId()).getRegion().getId()]++;
+            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.getZoneId()).getRegion().getId()]++;
         }
 
         for (int region : regions.keySet()) {
@@ -644,7 +462,7 @@ public class JobDataManager {
 
     public void calculateJobDensityByZone() {
         Multiset<Integer> counter = ConcurrentHashMultiset.create();
-        jobs.values().parallelStream().forEach(j -> counter.add(j.determineZoneId()));
+        jobs.values().parallelStream().forEach(j -> counter.add(j.getZoneId()));
         geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
     }
 
@@ -663,5 +481,9 @@ public class JobDataManager {
             }
         }
         return densityCategories.length;
+    }
+
+    public void addJob(Job jj) {
+        this.jobs.put(jj.getId(), jj);
     }
 }

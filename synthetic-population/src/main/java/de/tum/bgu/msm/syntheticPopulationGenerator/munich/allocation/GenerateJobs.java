@@ -3,9 +3,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -50,8 +50,7 @@ public class GenerateJobs {
                 } else {
                     jobsByTaz.remove(tazSelected);
                 }
-                Zone zone = dataContainer.getGeoData().getZones().get(tazSelected);
-                jobDataManager.createJob(id, zone, -1, jobType);
+                jobDataManager.addJob(JobUtils.getFactory().createJob(id, tazSelected, null, -1, jobType));
             }
 
     }

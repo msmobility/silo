@@ -3,6 +3,12 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -103,6 +109,7 @@ public class ReadPopulation {
             int posSchoolTAZ = SiloUtil.findPositionInArray("schoolTAZ",header);
 
             // read line
+            PersonFactory factory = PersonUtils.getFactory();
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
@@ -117,7 +124,8 @@ public class ReadPopulation {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = householdData.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = factory.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                householdData.addPerson(pp);
                 pp.setRole(pr);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
@@ -194,8 +202,8 @@ public class ReadPopulation {
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
-                Dwelling dd = realEstate.createDwelling(id, zone, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                realEstate.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }
@@ -204,7 +212,7 @@ public class ReadPopulation {
                 int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
                 dd.setBuildingSize(building);
-                dd.setUsage(Dwelling.Usage.valueOf(use));
+                dd.setUsage(DwellingImpl.Usage.valueOf(use));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + fileName);
@@ -242,8 +250,7 @@ public class ReadPopulation {
                 int zoneId    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
-                jobDataManager.createJob(id, zone, worker, type);
+                jobDataManager.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }

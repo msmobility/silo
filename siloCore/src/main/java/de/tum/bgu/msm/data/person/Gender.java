@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.person;
 
 public enum Gender {
     MALE() {
@@ -11,7 +11,8 @@ public enum Gender {
         public int getCode() {
             return 1;
         }
-    }, FEMALE {
+    },
+    FEMALE() {
         @Override
         public Gender opposite() {
             return MALE;

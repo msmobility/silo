@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.PersonType;
+import de.tum.bgu.msm.data.person.PersonType;
 import de.tum.bgu.msm.models.demography.LeaveParentHhJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;

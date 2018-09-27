@@ -5,9 +5,13 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -48,7 +52,7 @@ public class AssignJobs {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
-            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).determineZoneId();
+            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
@@ -84,7 +88,7 @@ public class AssignJobs {
     private void setWorkerAndJob(Person pp, int jobID){
 
         dataContainer.getJobData().getJobFromId(jobID).setWorkerID(pp.getId());
-        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).determineZoneId();
+        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).getZoneId();
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
@@ -160,7 +164,7 @@ public class AssignJobs {
             //set all jobs vacant to allocate them
             jj.setWorkerID(-1);
             int type = jobIntTypes.get(jj.getType());
-            int typeZone = type + jj.determineZoneId() * 100;
+            int typeZone = type + jj.getZoneId() * 100;
             //update the set of zones that have ID
             if (numberVacantJobsByZoneByType.get(typeZone) == 0){
                 numberZonesByType.put(type, numberZonesByType.get(type) + 1);
@@ -190,7 +194,7 @@ public class AssignJobs {
         for (Job jj: jobs) {
             //all jobs are vacant in this step of the synthetic population
             int type = jobIntTypes.get(jj.getType());
-            int typeZone = jobIntTypes.get(jj.getType()) + jj.determineZoneId() * 100;
+            int typeZone = jobIntTypes.get(jj.getType()) + jj.getZoneId() * 100;
             //update the list of job IDs per zone and job type
             int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
             previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();

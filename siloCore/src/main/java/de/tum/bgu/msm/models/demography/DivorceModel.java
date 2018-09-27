@@ -1,19 +1,19 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.relocation.MovesModelI;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.PersonRole;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

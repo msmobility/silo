@@ -14,7 +14,11 @@
  *  limitations under the License.
  *
  */
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.dwelling;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.HouseholdType;
+import de.tum.bgu.msm.data.MicroLocation;
 
 import java.util.EnumMap;
 
@@ -22,7 +26,7 @@ import java.util.EnumMap;
  * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
-public final class Dwelling {
+public final class DwellingImpl implements Dwelling, MicroLocation {
 
     public enum Usage {
         GROUP_QUARTER_OR_DEFAULT, OWNED, RENTED, VACANT;
@@ -45,6 +49,7 @@ public final class Dwelling {
 
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
+    private final int zoneId;
     private final DwellingType type;
     private final int bedrooms;
     private final int yearBuilt;
@@ -61,13 +66,14 @@ public final class Dwelling {
     private int floorSpace = 0;
     private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
-    private Location location;
+    private Coordinate coordinate;
 
 
-    Dwelling(int id, Location location, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
-             int year) {
+    DwellingImpl(int id, int zoneId, Coordinate coordinate, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
+                 int year) {
         this.id = id;
-        this.location = location;
+        this.zoneId = zoneId;
+        this.coordinate = coordinate;
         this.hhId = hhId;
         this.type = type;
         this.bedrooms = bedrooms;
@@ -79,46 +85,52 @@ public final class Dwelling {
         this.utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
     }
 
-    public int determineZoneId() {
-        if (location instanceof MicroLocation) {
-            return ((MicroLocation) location).getZone().getId();
-        } else if (location instanceof Zone) {
-            return ((Zone) location).getId();
-        } else if (location == null) {
-            throw new NullPointerException("No location assigned!");
-        } else {
-            throw new IllegalStateException("No implementation for Location of type " + location.getClass().getName());
-        }
+    @Override
+    public Coordinate getCoordinate() {
+        return coordinate;
     }
 
+    @Override
+    public int getZoneId() {
+        return zoneId;
+    }
+
+    @Override
     public int getId() {
         return id;
     }
 
+    @Override
     public int getQuality() {
         return quality;
     }
 
+    @Override
     public int getResidentId() {
         return hhId;
     }
 
+    @Override
     public int getPrice() {
         return price;
     }
 
+    @Override
     public DwellingType getType() {
         return type;
     }
 
+    @Override
     public int getBedrooms() {
         return bedrooms;
     }
 
+    @Override
     public int getYearBuilt() {
         return yearBuilt;
     }
 
+    @Override
     public float getRestriction() {
         // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
         return restriction;
@@ -128,56 +140,62 @@ public final class Dwelling {
         return utilitiesByHouseholdType;
     }
 
+    @Override
     public double getUtilOfResident() {
         return utilOfResident;
     }
 
+    @Override
     public void setResidentID(int residentID) {
         this.hhId = residentID;
     }
 
+    @Override
     public void setQuality(int quality) {
         this.quality = quality;
     }
 
+    @Override
     public void setPrice(int price) {
         this.price = price;
     }
 
+    @Override
     public void setRestriction(float restriction) {
         // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
         this.restriction = restriction;
     }
 
-
+    @Override
     public void setUtilitiesByHouseholdType(EnumMap<HouseholdType, Double> utilitiesByHouseholdType) {
         this.utilitiesByHouseholdType = utilitiesByHouseholdType;
     }
 
+    @Override
     public void setUtilOfResident(double utilOfResident) {
         this.utilOfResident = utilOfResident;
     }
 
+    @Override
     public void setFloorSpace(int floorSpace) {
         this.floorSpace = floorSpace;
         //Usable square meters of the dwelling.
         //Numerical value from 1 to 9999
     }
 
+    @Override
     public int getFloorSpace() {
         return floorSpace;
     }
 
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setCoordinate(Coordinate coordinate) {
+        this.coordinate = coordinate;
     }
 
 
     //TODO: magic numbers
+    //TODO: use case specific
+    @Override
     public void setBuildingSize(int buildingSize) {
         this.buildingSize = buildingSize;
         //Number of dwellings inside the building
@@ -190,19 +208,27 @@ public final class Dwelling {
         //There are not supposed to be any "no stated (9)" or "group quarter (-1)" or "moved out (-5)". They are filtered before.
     }
 
+    //TODO: use case specific
+    @Override
     public int getBuildingSize() {
         return buildingSize;
     }
 
+    //TODO: use case specific
+    @Override
     public void setUsage(Usage usage) {
         this.usage = usage;
     }
 
+    //TODO: use case specific
+    @Override
     public Usage getUsage() {
         return usage;
     }
 
     //TODO: magic numbers
+    //TODO: use case specific
+    @Override
     public void setYearConstructionDE(int yearConstructionDE) {
         this.yearConstructionDE = yearConstructionDE;
         //Dwelling construction year in Germany
@@ -218,6 +244,8 @@ public final class Dwelling {
         //There are not supposed to be any "no stated (99)" or "group quarter (-1)" or "moved out (-5)". They are filtered before.
     }
 
+    //TODO: use case specific
+    @Override
     public int getYearConstructionDE() {
         return yearConstructionDE;
     }
@@ -226,7 +254,7 @@ public final class Dwelling {
     public String toString() {
         return "Attributes of dwelling  " + id
 //                +"\nLocated in zone         "+(zone)
-                + "\nLocated at		        " + (location.toString()) // TODO implement toString methods
+                + "\nLocated at		        " + (coordinate.toString()) // TODO implement toString methods
                 + "\nOccupied by household   " + (hhId)
                 + "\nDwelling type           " + (type.toString())
                 + "\nNumber of bedrooms      " + (bedrooms)

@@ -1,8 +1,7 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.job;
 
 
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 /**
  * Job types that are distinguished in the model

@@ -60,8 +60,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 	private void updateZoneConnections(Collection<Zone> zones) {
 	    for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-            	MicroLocation originLocation = zone.getRandomMicroLocation();
-				Coord originCoord = new Coord(originLocation.getCoordinate().x, originLocation.getCoordinate().y);
+            	Coordinate coordinate = zone.getRandomCoordinate();
+				Coord originCoord = new Coord(coordinate.x, coordinate.y);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
 				if (!zoneCalculationNodesMap.containsKey(zone)) {

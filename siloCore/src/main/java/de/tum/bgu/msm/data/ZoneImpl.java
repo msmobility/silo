@@ -34,7 +34,7 @@ public class ZoneImpl implements Zone {
     }
 
     @Override
-    public int getId() {
+    public int getZoneId() {
         return this.id;
     }
 
@@ -64,7 +64,7 @@ public class ZoneImpl implements Zone {
     }
     
     @Override
-	public MicroLocation getRandomMicroLocation() {
+	public Coordinate getRandomCoordinate() {
         // alternative and about 10 times faster way to generate random point inside a geometry. Amit Dec'17
         RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(),
                 SiloUtil.getRandomObject());
@@ -72,6 +72,11 @@ public class ZoneImpl implements Zone {
         randomPointsBuilder.setExtent((Geometry) zoneFeature.getDefaultGeometry());
         Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];
         Point p = MGC.coordinate2Point(coordinate);
-        return new MicroLocation(p.getX(), p.getY(), this);
+        return new Coordinate(p.getX(), p.getY());
+    }
+
+    @Override
+    public int getId() {
+        return getZoneId();
     }
 }
