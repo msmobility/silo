@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Person;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthDayEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.util.ArrayList;
 import java.util.Collection;

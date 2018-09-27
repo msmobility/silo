@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.data.person.Person;
+
 public class Couple {
 
     private final Person partner1;

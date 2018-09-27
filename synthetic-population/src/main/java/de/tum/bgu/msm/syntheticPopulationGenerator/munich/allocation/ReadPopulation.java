@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -108,6 +109,7 @@ public class ReadPopulation {
             int posSchoolTAZ = SiloUtil.findPositionInArray("schoolTAZ",header);
 
             // read line
+            PersonFactory factory = PersonUtils.getFactory();
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
@@ -122,7 +124,8 @@ public class ReadPopulation {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = householdData.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = factory.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                householdData.addPerson(pp);
                 pp.setRole(pr);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];

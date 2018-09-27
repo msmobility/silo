@@ -5,9 +5,11 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SkimUtil;
@@ -36,7 +38,8 @@ public class EmploymentModelTest {
     @Before
     public void setupMicroData() {
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, -1, 0);
-        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
         SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());

@@ -4,9 +4,12 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -31,17 +34,22 @@ public class DeathModelTest {
         
         Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1,99, null, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000));
-        Person person1 = dataContainer.getHouseholdData().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        dataContainer.getHouseholdData().addPerson(person1);
+
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
 
-        Person person1Child1 = dataContainer.getHouseholdData().createPerson(11, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child1 = PersonUtils.getFactory().createPerson(11, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        dataContainer.getHouseholdData().addPerson(person1Child1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child1, household1);
         person1Child1.setRole(PersonRole.CHILD);
-        Person person1Child2 = dataContainer.getHouseholdData().createPerson(12, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child2 = PersonUtils.getFactory().createPerson(12, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        dataContainer.getHouseholdData().addPerson(person1Child2);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child2, household1);
         person1Child2.setRole(PersonRole.CHILD);
-        Person person1Child3 = dataContainer.getHouseholdData().createPerson(13, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child3 = PersonUtils.getFactory().createPerson(13, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        dataContainer.getHouseholdData().addPerson(person1Child3);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child3, household1);
         person1Child3.setRole(PersonRole.CHILD);
 

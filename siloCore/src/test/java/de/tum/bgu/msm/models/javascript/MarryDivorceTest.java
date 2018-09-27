@@ -3,10 +3,11 @@ package de.tum.bgu.msm.models.javascript;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.data.Occupation;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.data.Race;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonUtils;
+import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.models.demography.MarryDivorceJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
@@ -37,13 +38,13 @@ public class MarryDivorceTest {
 
     @Test
     public void testModelOne() {
-        Person person = dataContainer.getHouseholdData().createPerson(1, 20, Gender.MALE, Race.other, Occupation.EMPLOYED, -1, 0);
+        Person person = PersonUtils.getFactory().createPerson(1, 20, Gender.MALE, Race.other, Occupation.EMPLOYED, -1, 0);
         Assert.assertEquals((0.05926 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);
     }
 
     @Test
     public void testModelTwo() {
-        Person person = dataContainer.getHouseholdData().createPerson(1, 50, Gender.FEMALE, Race.other, Occupation.EMPLOYED, -1, 0);
+        Person person = PersonUtils.getFactory().createPerson(1, 50, Gender.FEMALE, Race.other, Occupation.EMPLOYED, -1, 0);
         Assert.assertEquals((0.02514 /2) * SCALE, calculator.calculateMarriageProbability(person), 0.);    }
 
     @Test(expected = RuntimeException.class)

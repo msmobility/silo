@@ -10,9 +10,11 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -462,7 +464,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                         jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                     }
                 }
-                Person pp = householdDataManager.createPerson(newPpId, age[s], Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
+                Person pp = PersonUtils.getFactory().createPerson(newPpId, age[s], Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
+                householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, hh);
             }
             hh.setType();

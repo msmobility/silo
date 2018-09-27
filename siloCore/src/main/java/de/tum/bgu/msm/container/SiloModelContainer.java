@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
+import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
@@ -147,7 +148,7 @@ public class SiloModelContainer {
 
         Accessibility acc = new Accessibility(dataContainer);
         DeathModel death = new DeathModel(dataContainer);
-        BirthModel birth = new BirthModel(dataContainer);
+        BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory());
         BirthdayModel birthday = new BirthdayModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         DriversLicense driversLicense = new DriversLicense(dataContainer);
@@ -181,7 +182,7 @@ public class SiloModelContainer {
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         updateCarOwnershipModel.initialize();
         LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
-        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense);
+        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense, PersonUtils.getFactory());
         DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
         MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel);
 //        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);

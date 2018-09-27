@@ -3,8 +3,7 @@ package de.tum.bgu.msm.io;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.JobType;
+import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -14,17 +13,14 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultJobReader implements JobReader {
 
-    private final SiloDataContainer dataContainer;
     private final static Logger logger = Logger.getLogger(DefaultJobReader.class);
+    private final JobDataManager jobData;
 
-    public DefaultJobReader(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+    public DefaultJobReader(JobDataManager jobData) {
+        this.jobData = jobData;
     }
 
     @Override
@@ -68,7 +64,7 @@ public class DefaultJobReader implements JobReader {
                 }
 
                 Job jj = factory.createJob(id, zoneId, coordinate, worker, type);
-                dataContainer.getJobData().addJob(jj);
+                jobData.addJob(jj);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(jj.toString());

@@ -11,6 +11,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.util.matrices.Matrices;

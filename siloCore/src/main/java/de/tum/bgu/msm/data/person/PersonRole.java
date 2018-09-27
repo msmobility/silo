@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.person;
 
 /**
  * Role a person takes over in its household

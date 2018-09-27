@@ -4,10 +4,10 @@ import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Gender;
 import de.tum.bgu.msm.data.Occupation;
-import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 

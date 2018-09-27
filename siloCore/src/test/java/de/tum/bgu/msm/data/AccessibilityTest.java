@@ -9,7 +9,7 @@ import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -87,7 +87,7 @@ public class AccessibilityTest {
         GeoData geoData = dataContainer.getGeoData();
         geoData.readData();
 
-        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, DwellingUtils.getFactory());
+        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, PersonUtils.getFactory());
         hhManager.readPopulation(Properties.get());
 
         SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());

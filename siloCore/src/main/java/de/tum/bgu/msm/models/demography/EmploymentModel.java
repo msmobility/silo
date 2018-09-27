@@ -2,9 +2,13 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;

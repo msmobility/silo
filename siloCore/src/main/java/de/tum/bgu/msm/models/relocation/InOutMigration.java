@@ -5,6 +5,10 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -31,6 +35,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final DriversLicense driversLicense;
+    private final PersonFactory factory;
 
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
@@ -40,12 +45,13 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, DriversLicense driversLicense) {
+    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, DriversLicense driversLicense, PersonFactory factory) {
         super(dataContainer);
         this.employment = employment;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
         this.driversLicense = driversLicense;
+        this.factory = factory;
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
@@ -94,8 +100,9 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
-            Person per = householdData.createPerson(householdData.getNextPersonId(), imData[1 + k], Gender.valueOf(imData[2 + k]),
+            Person per = factory.createPerson(householdData.getNextPersonId(), imData[1 + k], Gender.valueOf(imData[2 + k]),
                     ppRace, Occupation.valueOf(imData[4 + k]), -1, imData[5 + k]);
+            householdData.addPerson(per);
             householdData.addPersonToHousehold(per, hh);
             k += 6;
         }

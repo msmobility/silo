@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.data.Gender;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;

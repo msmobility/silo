@@ -4,10 +4,10 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Occupation;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 

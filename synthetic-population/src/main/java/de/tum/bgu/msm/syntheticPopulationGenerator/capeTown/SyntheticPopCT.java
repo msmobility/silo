@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
@@ -1632,14 +1633,17 @@ public class SyntheticPopCT implements SyntheticPopI {
         }
 
         logger.info("   Starting to generate persons");
+        PersonFactory factory = PersonUtils.getFactory();
         for (int i = 1; i <= persons.getRowCount(); i++) {
             Race race = Race.white;
             if ((int) persons.getValueAt(i,"nationality") > 1){race = Race.black;}
             int hhID = (int) persons.getValueAt(i, "hhid");
-            Person pp = householdDataManager.createPerson((int) persons.getValueAt(i, "id"),
+
+            Person pp = factory.createPerson((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), Gender.valueOf((int) persons.getValueAt(i, "gender")),
                     race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")), (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
+            householdDataManager.addPerson(pp);
             householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
             if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
@@ -1903,6 +1907,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
 
                 //copy the household members characteristics
+                PersonFactory factory = PersonUtils.getFactory();
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = householdDataManager.getNextPersonId();
                     int personCounter = (int) microDataHousehold.getIndexedValueAt(hhIdMD, "personCount") + rowPerson;
@@ -1916,7 +1921,8 @@ public class SyntheticPopCT implements SyntheticPopI {
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
-                    Person pers = householdDataManager.createPerson(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    householdDataManager.addPerson(pers);
                     householdDataManager.addPersonToHousehold(pers, household);
                     pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.SINGLE; //default value = single

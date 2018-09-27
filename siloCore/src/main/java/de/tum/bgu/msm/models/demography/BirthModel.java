@@ -16,14 +16,20 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -31,8 +37,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static de.tum.bgu.msm.data.Gender.FEMALE;
-import static de.tum.bgu.msm.data.Gender.MALE;
+import static de.tum.bgu.msm.data.person.Gender.FEMALE;
+import static de.tum.bgu.msm.data.person.Gender.MALE;
 
 /**
  * Simulates birth of children
@@ -42,10 +48,12 @@ import static de.tum.bgu.msm.data.Gender.MALE;
 
 public class BirthModel extends AbstractModel implements MicroEventModel<BirthEvent> {
 
+    private final PersonFactory factory;
     private BirthJSCalculator calculator;
 
-    public BirthModel(SiloDataContainer dataContainer) {
+    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory) {
         super(dataContainer);
+        this.factory = factory;
         setupBirthModel();
     }
 
@@ -100,7 +108,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         return false;
     }
 
-    Person giveBirth(Person person) {
+    void giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = householdData.getHouseholdFromId(person.getHh().getId());
         final int id = householdData.getNextPersonId();
@@ -108,8 +116,9 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
             gender = FEMALE;
         }
-        final Person child = householdData.createPerson(id, 0, gender, household.getRace(),
+        final Person child = factory.createPerson(id, 0, gender, household.getRace(),
                 Occupation.TODDLER, 0, 0);
+        householdData.addPerson(child);
         child.setRole(PersonRole.CHILD);
         householdData.addPersonToHousehold(child, household);
         householdData.addHouseholdThatChanged(household);
@@ -119,7 +128,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             SiloUtil.trackWriter.println("For unto us a child was born... " + person.getId() + " gave birth" +
                     "to a child named " + id + ". Added to household " + household.getId() + ".");
         }
-        return child;
     }
 
 

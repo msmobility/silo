@@ -22,8 +22,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -40,6 +40,7 @@ import java.util.*;
 public class HouseholdDataManager {
     private final static Logger LOGGER = Logger.getLogger(HouseholdDataManager.class);
     private final SiloDataContainer dataContainer;
+    private final PersonFactory factory;
 
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
@@ -48,14 +49,13 @@ public class HouseholdDataManager {
     public static int[] quitJobPersonIds;
     private static float[] medianIncome;
 
-    private final Map<Integer,Person> persons = new HashMap<>();
+    private final Map<Integer, Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
     private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
     private HashMap<Integer, int[]> conventionalCarsHouseholds = new HashMap<>();
-    private final DwellingFactory factory;
 
-    public HouseholdDataManager(SiloDataContainer dataContainer, DwellingFactory factory) {
+    public HouseholdDataManager(SiloDataContainer dataContainer, PersonFactory factory) {
         this.dataContainer = dataContainer;
         this.factory = factory;
     }
@@ -76,12 +76,6 @@ public class HouseholdDataManager {
 
     public void saveHouseholds (Household[] hhs) {
         for (Household hh: hhs) households.put(hh.getId(), hh);
-    }
-
-    public Person createPerson(int id, int age, Gender gender, Race race, Occupation occupation, int workplace, int income) {
-        final Person person = new Person(id, age, gender, race, occupation, workplace, income);
-        this.persons.put(id, person);
-        return person;
     }
 
     public Person getPersonFromId(int id) {
@@ -294,9 +288,10 @@ public class HouseholdDataManager {
                 //boolean license = MicroDataManager.obtainLicense(gender, age);
                 Household household = households.get(hhid);
                 if(household == null) {
-                    throw new RuntimeException(new StringBuilder("Person ").append(id).append(" refers to non existing household ").append(hhid).append("!").toString());
+                    throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                Person pp = createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = factory.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                persons.put(id ,pp);
                 addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
@@ -346,7 +341,7 @@ public class HouseholdDataManager {
         // define role of person with ageMain in household where members have ageAll[]
         int[] ages = new int[hh.getHhSize()];
         List<Person> personsCopy = new ArrayList<>(hh.getPersons());
-        personsCopy.sort(new Person.PersonByAgeComparator());
+        personsCopy.sort(new PersonUtils.PersonByAgeComparator());
 
         for (Person person: personsCopy) {
             Person partner = findMostLikelyUnmarriedPartner(person, hh);
@@ -939,5 +934,9 @@ public class HouseholdDataManager {
 
     public void clearConventionalCarsHouseholds(){
         conventionalCarsHouseholds.clear();
+    }
+
+    public void addPerson(Person person) {
+        persons.put(person.getId(), person);
     }
 }

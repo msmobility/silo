@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelDistances.TravelDistances;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.input.Input;

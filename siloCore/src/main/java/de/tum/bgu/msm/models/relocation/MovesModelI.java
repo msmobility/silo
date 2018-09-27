@@ -2,8 +2,8 @@ package de.tum.bgu.msm.models.relocation;
 
 import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdType;
-import de.tum.bgu.msm.data.Person;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 

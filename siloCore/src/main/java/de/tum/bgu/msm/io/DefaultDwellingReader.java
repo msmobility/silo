@@ -3,7 +3,7 @@ package de.tum.bgu.msm.io;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
@@ -18,10 +18,10 @@ import java.io.IOException;
 public class DefaultDwellingReader implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingReader.class);
-    private final SiloDataContainer dataContainer;
+    private final RealEstateDataManager realEstate;
 
-    public DefaultDwellingReader(SiloDataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+    public DefaultDwellingReader(RealEstateDataManager realEstate) {
+        this.realEstate= realEstate;
     }
 
     @Override
@@ -74,7 +74,7 @@ public class DefaultDwellingReader implements DwellingReader {
                     coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
                 }
                 Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, restrict, yearBuilt);
-                dataContainer.getRealEstateData().addDwelling(dwelling);
+                realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
                     SiloUtil.trackWriter.println(dwelling.toString());

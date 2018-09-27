@@ -7,9 +7,10 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -91,6 +92,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private void generatePersons(int hhSelected, Household hh){
 
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
+        PersonFactory factory = PersonUtils.getFactory();
         for (int person = 0; person < hhSize; person++) {
             int id = householdDataManager.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
@@ -105,7 +107,8 @@ public class GenerateHouseholdsPersonsDwellings {
             int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
-            Person pers = householdDataManager.createPerson(id, age, gender, race, occupation, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            Person pers = factory.createPerson(id, age, gender, race, occupation, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            householdDataManager.addPerson(pers);
             householdDataManager.addPersonToHousehold(pers, hh);
             pers.setRole(personRole);
             pers.setNationality(nationality1);
