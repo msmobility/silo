@@ -97,13 +97,13 @@ public class SiloDataContainer {
 
         new JobType(properties.jobData.jobTypes);
 
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
+            ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
+        }
         JobReader jjReader = new DefaultJobReader(jobData);
         int year = Properties.get().main.startYear;
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
-        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
-            ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
-        }
 
         jobData.setHighestJobId();
 
