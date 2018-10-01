@@ -35,6 +35,7 @@ public final class Properties {
     public final AccessibilityProperties accessibility;
     public final MovesProperties moves;
     public final TrackProperties track;
+    public final SchoolDataProperties schoolData;
 
     private Properties(ResourceBundle bundle, Implementation implementation) {
         main = new MainProperties(bundle, implementation);
@@ -48,5 +49,6 @@ public final class Properties {
         accessibility = new AccessibilityProperties(bundle, main.startYear);
         moves = new MovesProperties(bundle);
         track = new TrackProperties(bundle);
+        schoolData = new SchoolDataProperties(bundle);
     }
 }
