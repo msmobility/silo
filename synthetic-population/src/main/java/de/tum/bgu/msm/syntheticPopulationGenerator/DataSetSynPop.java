@@ -5,7 +5,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeature;
 

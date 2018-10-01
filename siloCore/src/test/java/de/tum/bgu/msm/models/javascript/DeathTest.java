@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.Gender;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.models.demography.DeathJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;

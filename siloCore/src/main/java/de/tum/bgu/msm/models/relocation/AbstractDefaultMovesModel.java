@@ -3,6 +3,8 @@ package de.tum.bgu.msm.models.relocation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -200,7 +202,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         int counter = 0;
         for (Dwelling d : dataContainer.getRealEstateData().getDwellings()) {
 
-            if (geoData.getZones().get(d.determineZoneId()).getRegion().getId() == region) {
+            if (geoData.getZones().get(d.getZoneId()).getRegion().getId() == region) {
                 priceSum += d.getPrice();
                 counter++;
             }
@@ -219,9 +221,9 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         final Map<Integer, Zone> zones = geoData.getZones();
         final Map<Integer, List<Dwelling>> dwellingsByRegion =
                 dataContainer.getRealEstateData().getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
-                        zones.get(d.determineZoneId()).getRegion().getId()));
+                        zones.get(d.getZoneId()).getRegion().getId()));
         final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream().collect(Collectors.toMap(e ->
-                e.getKey(), e -> e.getValue().stream().mapToDouble(d -> d.getPrice()).average().getAsDouble()));
+                e.getKey(), e -> e.getValue().stream().mapToDouble(Dwelling::getPrice).average().getAsDouble()));
         return rentsByRegion;
     }
 
@@ -249,7 +251,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (dd.getRestriction() <= 0) {
             return true;   // Dwelling is not income restricted
         }
-        int msa = geoData.getZones().get(dd.determineZoneId()).getMsa();
+        int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
         return hh.getHhIncome() <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 

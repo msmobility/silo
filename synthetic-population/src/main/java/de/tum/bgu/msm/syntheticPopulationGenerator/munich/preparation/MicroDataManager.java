@@ -3,6 +3,11 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.DwellingImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.PersonRole;
+import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.commons.math.MathException;
@@ -528,17 +533,17 @@ public class MicroDataManager {
         return bedrooms;
     }
 
-    public Dwelling.Usage translateDwellingUsage(int use){
-        Dwelling.Usage usage = Dwelling.Usage.OWNED;
+    public DwellingImpl.Usage translateDwellingUsage(int use){
+        DwellingImpl.Usage usage = DwellingImpl.Usage.OWNED;
         if (use == 2){
-            usage = Dwelling.Usage.RENTED;
+            usage = DwellingImpl.Usage.RENTED;
         } else if (use == 3){
-            usage = Dwelling.Usage.VACANT;
+            usage = DwellingImpl.Usage.VACANT;
         }
         return usage;
     }
 
-    public int guessPrice(float brw, int quality, int size, Dwelling.Usage use) {
+    public int guessPrice(float brw, int quality, int size, DwellingImpl.Usage use) {
 
         //coefficient by quality of the dwelling
         float qualityReduction = 1;
@@ -553,9 +558,9 @@ public class MicroDataManager {
         float convertToMonth = 0.0057f;
         //increase price for rented dwellings
         float rentedIncrease = 1; //by default, the price is not reduced/increased
-        if (use.equals(Dwelling.Usage.RENTED)){
+        if (use.equals(DwellingImpl.Usage.RENTED)){
             rentedIncrease = 1.2f; //rented dwelling
-        } else if (use.equals(Dwelling.Usage.VACANT)){
+        } else if (use.equals(DwellingImpl.Usage.VACANT)){
             rentedIncrease = 1; //vacant dwelling
         }
         //extra costs for power, water, etc (Nebenkosten)

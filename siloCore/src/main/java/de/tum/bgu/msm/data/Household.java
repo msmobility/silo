@@ -16,6 +16,9 @@
  */
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.Race;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

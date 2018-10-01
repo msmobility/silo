@@ -101,7 +101,7 @@ public class Accessibility {
     static DoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, DoubleMatrix1D autoAccessibilities) {
         final DoubleMatrix1D matrix = Matrices.doubleMatrix1D(regions);
         regions.parallelStream().forEach(r -> {
-            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getId())).sum() / r.getZones().size();
+            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getZoneId())).sum() / r.getZones().size();
             matrix.setQuick(r.getId(), sum);
         });
         return matrix;
@@ -185,7 +185,7 @@ public class Accessibility {
         final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getZones().values());
         for (Zone origin : geoData.getZones().values()) {
             for (Zone destination : geoData.getZones().values()) {
-                matrix.setQuick(origin.getId(), destination.getId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
+                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
             }
         }
         return matrix;

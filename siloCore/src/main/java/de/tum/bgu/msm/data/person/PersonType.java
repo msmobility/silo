@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.person;
 
 /**
  * @author Greg Erhardt

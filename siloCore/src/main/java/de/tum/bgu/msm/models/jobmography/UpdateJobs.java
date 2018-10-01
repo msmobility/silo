@@ -1,13 +1,12 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Job;
 import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.JobType;
+import de.tum.bgu.msm.data.job.JobType;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -24,9 +23,11 @@ import java.util.*;
 public class UpdateJobs extends AbstractModel {
 
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
+    private JobFactory factory;
 
     public UpdateJobs(SiloDataContainer dataContainer) {
         super(dataContainer);
+        factory = JobUtils.getFactory();
     }
 
     public void updateJobInventoryMultiThreadedThisYear(int year) {
@@ -41,17 +42,17 @@ public class UpdateJobs extends AbstractModel {
 
         for (Job jj :jobData.getJobs()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
-            jobsByZone[jobTypeId][jj.determineZoneId()]++;
+            jobsByZone[jobTypeId][jj.getZoneId()]++;
         }
 
-        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
-        String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
-        TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
+        //String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
+        //String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
+        //TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
         for (Job jj : jobData.getJobs()) {
-            String token = jj.getType() + "." + jj.determineZoneId() + "." + (jj.getWorkerId() == -1);
+            String token = jj.getType() + "." + jj.getZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {
                 List<Integer> jobList = jobsAvailableForRemoval.get(token);
                 jobList.add(jj.getId());
@@ -65,14 +66,20 @@ public class UpdateJobs extends AbstractModel {
 
 
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
-        for (int row = 1; row <= forecast.getRowCount(); row++) {
-            int zoneId = (int) forecast.getValueAt(row, "zone");
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+        //for (int row = 1; row <= forecast.getRowCount(); row++) {
+        for (Zone zone : dataContainer.getGeoData().getZones().values()){
+
+            //int zoneId = (int) forecast.getValueAt(row, "zone");
+
+            int zoneId = zone.getZoneId();
+            //Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+
             for (String jt : JobType.getJobTypes()) {
-                int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
+                //int jobsExogenousForecast = (int) forecast.getValueAt(row, jt);
+                int jobsExogenousForecast = (int) jobData.getJobForecast(year, zoneId, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
-                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer));
+                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory));
                 } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsByZone[JobType.getOrdinal(jt)][zoneId] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);

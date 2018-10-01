@@ -9,6 +9,7 @@ import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -86,10 +87,7 @@ public class AccessibilityTest {
         GeoData geoData = dataContainer.getGeoData();
         geoData.readData();
 
-        RealEstateDataManager realEstateDataManager = new RealEstateDataManager(dataContainer);
-        realEstateDataManager.readDwellings(Properties.get());
-
-        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer);
+        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, PersonUtils.getFactory());
         hhManager.readPopulation(Properties.get());
 
         SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
@@ -103,7 +101,7 @@ public class AccessibilityTest {
 
         for(Zone zone: geoData.getZones().values()) {
             for(Region region: geoData.getRegions().values()) {
-                minTravelTimes.setQuick(zone.getId(), region.getId(),
+                minTravelTimes.setQuick(zone.getZoneId(), region.getId(),
                 		dataContainer.getTravelTimes().getTravelTimeToRegion(zone, region, Properties.get().main.peakHour, TransportMode.car));
             }
         }

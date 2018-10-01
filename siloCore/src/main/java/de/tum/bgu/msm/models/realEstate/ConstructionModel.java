@@ -1,11 +1,14 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.util.IndexSort;
+import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingFactory;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -31,6 +34,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
     private final GeoData geoData;
     private final MovesModelI moves;
+    private final DwellingFactory factory;
     private final Accessibility accessibility;
 
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
@@ -45,11 +49,12 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
-    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves, Accessibility accessibility) {
+    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves, Accessibility accessibility, DwellingFactory factory) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         this.moves = moves;
+        this.factory = factory;
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
         constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);
         setupConstructionModel();
@@ -113,7 +118,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 if (demand == 0) {
                     continue;
                 }
-                int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getId).toArray();
+                int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getZoneId).toArray();
                 double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 for (int zone : zonesInThisRegion) {
                     float avePrice = avePriceByTypeAndZone[dto][zone];
@@ -191,20 +196,18 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int quality = attributes[3];
         float restriction = attributes[4] / 100f;
         int price = attributes[5];
-        
-        Zone zone = geoData.getZones().get(zoneId);
-        
-        Dwelling dd = dataContainer.getRealEstateData()
-                .createDwelling(ddId, zone, -1,
+
+        Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1,
                         DwellingType.values()[dto], size,
                         quality, price, restriction, currentYear);
+        dataContainer.getRealEstateData().addDwelling(dd);
         EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesByHouseholdType(utilities);
 
         if(Properties.get().main.implementation == Implementation.MUNICH) {
             if(Properties.get().main.runDwellingMicrolocation) {
-            	MicroLocation microLocation = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomMicroLocation();
-            	dd.setLocation(microLocation);
+            	Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            	dd.setCoordinate(coordinate);
             }
         }
 
@@ -229,7 +232,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][highestZoneId + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int zone = geoData.getZones().get(dd.determineZoneId()).getId();
+            int zone = geoData.getZones().get(dd.getZoneId()).getZoneId();
             counter[dt][zone]++;
             avePrice[dt][zone] += dd.getPrice();
         }
@@ -259,7 +262,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][highestRegionId + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getZones().get(dd.determineZoneId()).getRegion().getId();
+            int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();
         }
@@ -289,7 +292,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int[][] counter = new int[DwellingType.values().length][highestRegionId + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
             int dt = dd.getType().ordinal();
-            int region = geoData.getZones().get(dd.determineZoneId()).getRegion().getId();
+            int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
             counter[dt][region]++;
             aveSize[dt][region] += dd.getBedrooms();
         }

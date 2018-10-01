@@ -1,13 +1,13 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Dwelling;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;

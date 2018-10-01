@@ -4,10 +4,10 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Occupation;
-import de.tum.bgu.msm.data.Person;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 
@@ -73,7 +73,7 @@ public class ValidateTripLengthDistribution {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         for (Person pp : personArrayList){
             if (pp.getJobTAZ() > 0){
-                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).determineZoneId();
+                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
                 int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
                 commuteDistance.addValue(value);
             }
