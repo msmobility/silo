@@ -1,10 +1,7 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -13,10 +10,7 @@ import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.DefaultDwellingReader;
-import de.tum.bgu.msm.io.DefaultJobReader;
-import de.tum.bgu.msm.io.DwellingReader;
-import de.tum.bgu.msm.io.JobReader;
+import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -36,6 +30,7 @@ public class SiloDataContainer {
     private final JobDataManager jobData;
     private final GeoData geoData;
     private final TravelTimes travelTimes;
+    private final SchoolDataManager schoolData;
 
     /**
      *
@@ -61,6 +56,7 @@ public class SiloDataContainer {
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory());
         travelTimes = new SkimTravelTimes();
+        schoolData = new SchoolDataManager(this);
     }
 
     /**
@@ -86,6 +82,7 @@ public class SiloDataContainer {
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory());
+        schoolData = new SchoolDataManager(this);
         geoData.readData();
         householdData.readPopulation(properties);
 
@@ -107,11 +104,16 @@ public class SiloDataContainer {
 
         jobData.setHighestJobId();
 
+        SchoolReader ssReader = new DefaultSchoolReader(schoolData);
+        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
+        ssReader.readData(schoolsFile);
+
         if(properties.transportModel.runMatsim) {
             travelTimes = new MatsimTravelTimes();
         } else {
             travelTimes = new SkimTravelTimes();
         }
+
     }
 
     /**
@@ -152,5 +154,9 @@ public class SiloDataContainer {
 
     public TravelTimes getTravelTimes() {
         return travelTimes;
+    }
+
+    public SchoolDataManager getSchoolData() {
+        return schoolData;
     }
 }
