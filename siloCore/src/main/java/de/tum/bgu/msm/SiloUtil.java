@@ -14,6 +14,7 @@ import de.tum.bgu.msm.utils.TableDataFileReader2;
 import de.tum.bgu.msm.utils.TimeTracker;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -31,6 +32,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class SiloUtil {
 
+    static {
+
+    }
+
     private static Random rand;
     public static int trackHh;
     public static int trackPp;
@@ -42,6 +47,9 @@ public class SiloUtil {
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
     public static Properties siloInitialization(String resourceBundleNames, Implementation implementation) {
+
+        loadHdf5Lib();
+
         File propFile = new File(resourceBundleNames);
         try {
             rb = new PropertyResourceBundle(new FileReader(propFile));
@@ -68,6 +76,63 @@ public class SiloUtil {
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
         return properties;
+    }
+
+    private static void loadHdf5Lib() {
+
+        ClassLoader classLoader = SiloUtil.class.getClassLoader();
+        logger.info("Trying to set up native hdf5 lib");
+        String path = null;
+        if(SystemUtils.IS_OS_WINDOWS) {
+            logger.info("Detected windows OS.");
+            try {
+                path = classLoader.getResource("lib/win32/jhdf5.dll").getFile();
+                System.load(path);
+            } catch(UnsatisfiedLinkError e) {
+                logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
+                try {
+                    path = classLoader.getResource("lib/win64/jhdf5.dll").getFile();
+                    System.load(path);
+                }  catch(UnsatisfiedLinkError e2) {
+                    path = null;
+                }
+            }
+        } else if(SystemUtils.IS_OS_MAC) {
+            logger.info("Detected Mac OS.");
+            try {
+                path = classLoader.getResource("lib/macosx32/libjhdf5.jnilib").getFile();
+                System.load(path);
+            } catch(UnsatisfiedLinkError e) {
+                logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
+                try {
+                    path = classLoader.getResource("lib/macosx64/libjhdf5.jnilib").getFile();
+                    System.load(path);
+                } catch(UnsatisfiedLinkError e2) {
+                    path = null;
+                }
+            }
+        } else if(SystemUtils.IS_OS_LINUX) {
+            logger.info("Detected linux OS.");
+            try {
+                path = classLoader.getResource("lib/linux32/libjhdf5.so").getFile();
+                System.load(path);
+            } catch(UnsatisfiedLinkError e) {
+                logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
+                try {
+                    path = classLoader.getResource("lib/linux64/libjhdf5.so").getFile();
+                    System.load(path);
+                } catch(UnsatisfiedLinkError e2) {
+                    path = null;
+                }
+            }
+        }
+        if(path != null) {
+            logger.info("Hdf5 library successfully located.");
+            System.setProperty("ncsa.hdf.hdf5lib.H5.hdf5lib", path);
+        } else {
+            logger.info("Could not load native hdf5 library automatically." +
+                    " Please set the library location in the java class path");
+        }
     }
 
     public static void createDirectoryIfNotExistingYet (String directory) {
