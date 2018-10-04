@@ -76,7 +76,6 @@ public class SiloUtil {
     }
 
     private static void loadHdf5Lib() {
-
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;
@@ -85,12 +84,13 @@ public class SiloUtil {
             try {
                 path = classLoader.getResource("lib/win32/jhdf5.dll").getFile();
                 System.load(path);
-            } catch(UnsatisfiedLinkError e) {
+            } catch(Throwable e) {
                 logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
                 try {
                     path = classLoader.getResource("lib/win64/jhdf5.dll").getFile();
                     System.load(path);
-                }  catch(UnsatisfiedLinkError e2) {
+                }  catch(Throwable e2) {
+                    logger.debug("Cannot load 64 bit library.");
                     path = null;
                 }
             }
@@ -99,12 +99,13 @@ public class SiloUtil {
             try {
                 path = classLoader.getResource("lib/macosx32/libjhdf5.jnilib").getFile();
                 System.load(path);
-            } catch(UnsatisfiedLinkError e) {
+            } catch(Throwable e) {
                 logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
                 try {
                     path = classLoader.getResource("lib/macosx64/libjhdf5.jnilib").getFile();
                     System.load(path);
-                } catch(UnsatisfiedLinkError e2) {
+                } catch(Throwable e2) {
+                    logger.debug("Cannot load 64 bit library.");
                     path = null;
                 }
             }
@@ -118,7 +119,7 @@ public class SiloUtil {
                     path = url.getFile();
                     System.load(path);
                 }
-            } catch(UnsatisfiedLinkError e) {
+            } catch(Throwable e) {
                 logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
                 try {
                     URL url = classLoader.getResource("lib/linux64/libjhdf5.so");
@@ -128,21 +129,19 @@ public class SiloUtil {
                         path = url.getFile();
                         System.load(path);
                     }
-                } catch(UnsatisfiedLinkError e2) {
+                } catch(Throwable e2) {
+                    logger.debug("Cannot load 64 bit library. ");
                     path = null;
-                } catch (Exception e2) {
-                    e2.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
         if(path != null) {
             logger.info("Hdf5 library successfully located.");
             System.setProperty("ncsa.hdf.hdf5lib.H5.hdf5lib", path);
         } else {
-            logger.info("Could not load native hdf5 library automatically." +
-                    " Please set the library location in the java class path");
+            logger.warn("Could not load native hdf5 library automatically." +
+                    " Any code involving omx matrices will only work if the " +
+                    "library was set up in java.library.path");
         }
     }
 
