@@ -119,7 +119,11 @@ public class SiloUtil {
                     System.load(path);
                 } catch(UnsatisfiedLinkError e2) {
                     path = null;
+                } catch (Exception e2) {
+                    e2.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         if(path != null) {
