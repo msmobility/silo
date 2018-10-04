@@ -18,6 +18,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -110,13 +111,23 @@ public class SiloUtil {
         } else if(SystemUtils.IS_OS_LINUX) {
             logger.info("Detected linux OS.");
             try {
-                path = classLoader.getResource("lib/linux32/libjhdf5.so").getFile();
-                System.load(path);
+                URL url = classLoader.getResource("lib/linux32/libjhdf5.so");
+                if(url == null) {
+                    logger.info("Could not find linux 32 lib");
+                } else {
+                    path = url.getFile();
+                    System.load(path);
+                }
             } catch(UnsatisfiedLinkError e) {
                 logger.debug("Cannot load 32 bit library. Trying 64 bit next.");
                 try {
-                    path = classLoader.getResource("lib/linux64/libjhdf5.so").getFile();
-                    System.load(path);
+                    URL url = classLoader.getResource("lib/linux64/libjhdf5.so");
+                    if(url == null) {
+                        logger.info("Could not find linux 64 lib");
+                    } else {
+                        path = url.getFile();
+                        System.load(path);
+                    }
                 } catch(UnsatisfiedLinkError e2) {
                     path = null;
                 } catch (Exception e2) {
