@@ -24,6 +24,7 @@ import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
