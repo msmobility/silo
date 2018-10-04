@@ -7,7 +7,6 @@ out
 /target/
 .idea/
 *.iml
-lib/
 /Makefile
 /event-performance.log
 /event.log
