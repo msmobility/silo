@@ -32,10 +32,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class SiloUtil {
 
-    static {
-
-    }
-
     private static Random rand;
     public static int trackHh;
     public static int trackPp;
