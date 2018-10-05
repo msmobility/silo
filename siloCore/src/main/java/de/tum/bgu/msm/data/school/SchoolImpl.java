@@ -6,20 +6,21 @@ import de.tum.bgu.msm.data.MicroLocation;
 public class SchoolImpl implements School, MicroLocation {
     private final int id;
     private final int type;
-    private double startTimeInSeconds;
-    private double studyTimeInSeconds;
     private final int capacity;
-    private int currentOccupancy;
+    private final int occupancy;
     private final Coordinate coordinate;
     private final int zoneId;
+    private double startTimeInSeconds;
+    private double studyTimeInSeconds;
 
 
-    public SchoolImpl(int id, int type, int capacity, Coordinate coordinate, int zoneId) {
+    public SchoolImpl(int id, int type, int capacity, int occupancy, Coordinate coordinate, int zoneId) {
         this.id = id;
         this.type = type;
         this.capacity = capacity;
         this.coordinate = coordinate;
         this.zoneId = zoneId;
+        this.occupancy = occupancy;
     }
 
     @Override
@@ -39,12 +40,8 @@ public class SchoolImpl implements School, MicroLocation {
         return capacity;
     }
 
-    public void setCurrentOccupancy(int currentOccupancy) {
-        this.currentOccupancy = currentOccupancy;
-    }
-
     public int getCurrentOccupancy() {
-        return currentOccupancy;
+        return occupancy;
     }
 
     public void setSchoolStudyingTime(double startTimeInSeconds, double studyTimeInSeconds) {

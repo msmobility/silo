@@ -66,8 +66,7 @@ public class DefaultSchoolReader implements SchoolReader {
                     coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
                 }
 
-                School ss = factory.createSchool(id, type, capacity, coordinate,zoneId);
-                ss.setCurrentOccupancy(occupancy);
+                School ss = factory.createSchool(id, type, capacity, occupancy, coordinate,zoneId);
                 schoolData.addSchool(ss);
 //Qin???
 //                if (id == SiloUtil.trackSs) {

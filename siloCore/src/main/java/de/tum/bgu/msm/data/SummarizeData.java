@@ -405,7 +405,7 @@ public class SummarizeData {
 
     private static void writeSchools(String filess, SiloDataContainer dataContainer) {
         PrintWriter pws = SiloUtil.openFileForSequentialWriting(filess, false);
-        pws.print("id,zone,type,capacity,currentOccupancy");
+        pws.print("id,zone,type,capacity,occupancy");
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
             pws.print(",");
             pws.print("coordX");

@@ -18,68 +18,16 @@ public class SchoolFactoryImpl implements SchoolFactory {
     private int intervalInSecondsForPreferredTimes;
 
     @Override
-    public School createSchool(int id, int type, int capacity, Coordinate coordinate, int zoneId) {
-        School school = new SchoolImpl(id, type, capacity, coordinate, zoneId);
+    public School createSchool(int id, int type, int capacity, int occupancy, Coordinate coordinate, int zoneId) {
+        School school = new SchoolImpl(id, type, capacity, occupancy, coordinate, zoneId);
+
+        //TODO: same as job? element and secondary school have same schoolTime, university has a distribution?
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
-            school.setSchoolStudyingTime(SiloUtil.select(startTimeDistributionBySchoolType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble(),
-                    SiloUtil.select(studyTimeDistributionBySchoolType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble());
+            //school.setSchoolStudyingTime();
         }
-        //this.schools.put(id, school);
+
         return school;
     }
 
 
-    public void readStudyTimeDistributions(Properties properties) {
-//        String fileNameStart = properties.jobData.jobStartTimeDistributionFile;
-//        String recString = "";
-//        BufferedReader in = null;
-//        try {
-//            in = new BufferedReader(new FileReader(fileNameStart));
-//            recString = in.readLine();
-//            String[] header = recString.split(",");
-//            while ((recString = in.readLine()) != null) {
-//                String[] row = recString.split(",");
-//                int time = Integer.parseInt(row[0]);
-//                for (int column = 1; column < header.length; column++) {
-//                    if (startTimeDistributionByJobType.containsKey(header[column])) {
-//                        startTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
-//                    } else {
-//                        Map<Integer, Double> startTimeDistribution = new HashMap<>();
-//                        startTimeDistribution.put(time, Double.parseDouble(row[column]));
-//                        startTimeDistributionByJobType.put(header[column], startTimeDistribution);
-//                    }
-//                }
-//            }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        String fileNameDuration = properties.jobData.jobDurationDistributionFile;
-//        try {
-//            in = new BufferedReader(new FileReader(fileNameDuration));
-//            recString = in.readLine();
-//            String[] header = recString.split(",");
-//            while ((recString = in.readLine()) != null) {
-//                String[] row = recString.split(",");
-//                int time = Integer.parseInt(row[0]);
-//                for (int column = 1; column < header.length; column++) {
-//                    if (workingTimeDistributionByJobType.containsKey(header[column])) {
-//                        workingTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
-//                    } else {
-//                        Map<Integer, Double> workingTimeDistribution = new HashMap<>();
-//                        workingTimeDistribution.put(time, Double.parseDouble(row[column]));
-//                        workingTimeDistributionByJobType.put(header[column], workingTimeDistribution);
-//                    }
-//                }
-//            }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        intervalInSecondsForPreferredTimes = Math.round(24 * 3600 / startTimeDistributionByJobType.get(JobType.getJobType(0)).size());
-
-    }
 }
