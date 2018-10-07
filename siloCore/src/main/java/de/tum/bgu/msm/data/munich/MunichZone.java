@@ -3,7 +3,7 @@ package de.tum.bgu.msm.data.munich;
 import de.tum.bgu.msm.data.AreaTypes;
 import org.matsim.api.core.v01.Coord;
 
-import de.tum.bgu.msm.data.ZoneImpl;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
 
 public class MunichZone extends ZoneImpl {
 

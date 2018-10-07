@@ -11,6 +11,12 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.person.Nationality;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
@@ -161,26 +167,30 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
 
     @Override
-    public int searchForNewDwelling(List<Person> persons) {
+    public int searchForNewDwelling(Household household) {
         // search alternative dwellings
 
         // data preparation
         int householdIncome = 0;
-        Nationality nationality = persons.get(0).getNationality();
+        Nationality nationality = null;
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
-        for (Person pp: persons) {
+        for (Person pp: household.getPersons().values()) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).getZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
             }
-            if (pp.getNationality() != nationality) nationality = Nationality.OTHER;
+
+            if(nationality == null) {
+                nationality = pp.getNationality();
+            } else if (pp.getNationality() != nationality) {
+                nationality = Nationality.OTHER;
+            }
         }
 
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
+        HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
         Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
@@ -250,7 +260,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
             double util = calculateDwellingUtilityForHouseholdType(ht, dd);
-            util = personalizeDwellingUtilityForThisHousehold(persons, dd, householdIncome, util);
+            util = personalizeDwellingUtilityForThisHousehold(household, dd, householdIncome, util);
             expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
@@ -272,17 +282,16 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     }
 
     @Override
-    protected double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dd, int income, double genericUtility) {
+    protected double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dd, int income, double genericUtility) {
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
-        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
+        HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
         Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
-        for (Person pp: persons) {
+        for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Location workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
                 workerZonesForThisHousehold.put(pp, workLocation);

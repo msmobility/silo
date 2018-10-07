@@ -5,10 +5,12 @@ import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -50,9 +52,11 @@ public class AssignJobs {
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
-            int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
+            Household hh = households.getHouseholdFromId(pp.getHousehldId());
+            int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];

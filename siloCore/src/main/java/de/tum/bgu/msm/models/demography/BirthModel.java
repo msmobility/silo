@@ -19,13 +19,9 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.Occupation;
-import de.tum.bgu.msm.data.person.Gender;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.data.person.PersonRole;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -110,7 +106,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
     void giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Household household = householdData.getHouseholdFromId(person.getHh().getId());
+        final Household household = householdData.getHouseholdFromId(person.getHousehldId());
         final int id = householdData.getNextPersonId();
         Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {

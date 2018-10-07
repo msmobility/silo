@@ -14,129 +14,105 @@
  *  limitations under the License.
  *
  */
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.household;
 
+import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
  *
  */
-public final class Household {
+public final class HouseholdImpl implements Household {
 
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
     private final int hhId;
     private int dwellingId;
+
     private Race race;
     private Nationality nationality;
     private int autos;
     private HouseholdType type;
-    private final List<Person> persons;
     private int autonomous = 0;
 
-    Household(int id, int dwellingID, int autos) {
+    private final Map<Integer, Person> persons;
+
+    HouseholdImpl(int id, int dwellingID, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.autos = autos;
-        persons = new ArrayList<>();
+        persons = new HashMap<>(10);
     }
 
+    @Override
     public int getId() {
         return hhId;
     }
 
+    @Override
     public int getHhSize() {
         return persons.size();
     }
 
+    @Override
     public int getDwellingId() {
         return dwellingId;
     }
 
+    @Override
     public int getAutos() {
         return autos;
     }
 
-    public List<Person> getPersons(){
-        return Collections.unmodifiableList(persons);
+    @Override
+    public Map<Integer, ? extends Person> getPersons(){
+        return Collections.unmodifiableMap(persons);
     }
 
+    @Override
     public HouseholdType getHouseholdType() {
         return type;
     }
 
-    public int getHhIncome () {
-        int hhInc = 0;
-        for (Person pp : persons) {
-            hhInc += pp.getIncome();
-        }
-        return hhInc;
-    }
-
+    @Override
     public Race getRace() {return race; }
 
+    @Override
     public Nationality getNationality() {
         return nationality;
     }
 
-    public int getNumberOfWorkers () {
-        return (int) persons.stream().filter(p -> p.getOccupation() == Occupation.EMPLOYED).count();
-    }
-
-    public int getHHLicenseHolders () {
-        return (int) persons.stream().filter(Person::hasDriverLicense).count();
-    }
-
-    public void setDwelling (int id) {
+    @Override
+    public void setDwelling(int id) {
         this.dwellingId = id;
     }
 
-    void addPerson(Person person) {
-        this.persons.add(person);
+    @Override
+    public void addPerson(Person person) {
+        this.persons.put(person.getId(), person);
+        update();
     }
 
-    void removePerson(Person person) {
-        this.persons.remove(person);
+    @Override
+    public void removePerson(Integer personId) {
+        this.persons.remove(personId);
     }
 
-    public void setType() {
-        IncomeCategory incCat = HouseholdDataManager.getIncomeCategoryForIncome(getHhIncome());
-        this.type = HouseholdType.defineHouseholdType(persons.size(), incCat);
+    @Override
+    public void setType(HouseholdType householdType) {
+        this.type = householdType;
     }
 
-    public void determineHouseholdRace() {
-        Race householdRace = null;
-        for (Person pp: persons) {
-            if(householdRace == null) {
-                householdRace = pp.getRace();
-            } else if (pp.getRace() != householdRace) {
-                this.race = Race.other;
-                return;
-            }
-        }
-        this.race = householdRace;
-    }
-
-    public void setAutos (int autos) {
+    @Override
+    public void setAutos(int autos) {
         this.autos = autos;
-    }
-
-    public boolean checkIfOnlyChildrenRemaining() {
-        if(persons.isEmpty()) {
-            return false;
-        }
-        for (Person person: persons) {
-           if(person.getAge() >= 16) {
-               return false;
-           }
-        }
-        return true;
     }
 
     @Override
@@ -146,11 +122,18 @@ public final class Household {
             +"\nHousehold size          " + persons.size();
     }
 
-    public void setAutonomous (int autonomous){
+    @Override
+    public void setAutonomous(int autonomous){
         this.autonomous = autonomous;
     }
 
+    @Override
     public int getAutonomous(){
         return autonomous;
+    }
+
+    private final void update() {
+        this.race = HouseholdUtil.defineHouseholdRace(this);
+        this.type = HouseholdUtil.defineHouseholdType(this);
     }
 }

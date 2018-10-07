@@ -3,7 +3,8 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.job.Job;
@@ -52,7 +53,8 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
     }
 
     private Job findJob(Person pp) {
-        final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(pp.getHh().getDwellingId());
+        final Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
         Zone zone = null;
         if (dwelling != null) {
             zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
@@ -67,7 +69,8 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         person.setWorkplace(job.getId());
         person.setOccupation(Occupation.EMPLOYED);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
-        dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
+        Household household = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+        dataContainer.getHouseholdData().addHouseholdThatChanged(household);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
         }
@@ -78,7 +81,8 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (person != null) {
             dataContainer.getJobData().quitJob(true, person);
-            dataContainer.getHouseholdData().addHouseholdThatChanged(person.getHh());
+            Household household = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+            dataContainer.getHouseholdData().addHouseholdThatChanged(household);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
             }

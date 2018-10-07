@@ -25,6 +25,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;

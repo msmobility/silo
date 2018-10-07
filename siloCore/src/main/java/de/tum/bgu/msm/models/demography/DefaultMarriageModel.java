@@ -20,9 +20,11 @@ import com.google.common.collect.*;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
@@ -55,6 +57,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final InOutMigration iomig;
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
+    private final HouseholdFactory hhFactory;
 
     private float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
 
@@ -69,11 +72,12 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     // performance, the person type of this person in the marriage market is not updated.
 
     public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
-                                InOutMigration iomig, CreateCarOwnershipModel carOwnership) {
+                                InOutMigration iomig, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
         super(dataContainer);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
+        this.hhFactory = hhFactory;
         setupModel();
     }
 
@@ -220,7 +224,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
      */
     private double getMarryProb(Person pp) {
         double marryProb = calculator.calculateMarriageProbability(pp);
-        if (pp.getHh().getHhSize() == 1) {
+        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        if (hh.getHhSize() == 1) {
             marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
         }
         return marryProb;
@@ -228,7 +233,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private boolean isQualifiedAsPossiblePartner(Person person) {
         float share = 0.1f;
-        if (person.getHh().getHhSize() == 1) {
+        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+        if (hh.getHhSize() == 1) {
             share *= Properties.get().demographics.onePersonHhMarriageBias;
         }
         return SiloUtil.getRandomNumberAsFloat() < share;
@@ -248,8 +254,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
             return false;  // Person got already married this simulation period or died or moved away
         }
 
-        final Household hhOfPartner1 = partner1.getHh();
-        final Household hhOfPartner2 = partner2.getHh();
+        final Household hhOfPartner1 = householdData.getHouseholdFromId(partner1.getHousehldId());
+        final Household hhOfPartner2 = householdData.getHouseholdFromId(partner2.getHousehldId());
 
         final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
 
@@ -306,7 +312,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         // if household is already crowded, move couple into new household
         if (moveTo.getHhSize() > 3) {
             final int newHhId = dataContainer.getHouseholdData().getNextHouseholdId();
-            moveTo = dataContainer.getHouseholdData().createHousehold(newHhId, -1, 0);
+            moveTo = hhFactory.createHousehold(newHhId, -1, 0);
         }
         return moveTo;
     }
@@ -318,15 +324,15 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         if (person1.getId() == SiloUtil.trackPp
                 || person2.getId() == SiloUtil.trackPp
-                || person1.getHh().getId() == SiloUtil.trackHh
-                || person2.getHh().getId() == SiloUtil.trackHh) {
+                || person1.getHousehldId() == SiloUtil.trackHh
+                || person2.getHousehldId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Person " + person1.getId() +
                     " and person " + person2.getId() + " got married and moved into household "
                     + moveTo.getId() + ".");
         }
 
         if (moveTo.getDwellingId() == -1) {
-            final int newDwellingId = movesModel.searchForNewDwelling(ImmutableList.of(person1, person2));
+            final int newDwellingId = movesModel.searchForNewDwelling(moveTo);
             if (newDwellingId < 0) {
                 iomig.outMigrateHh(moveTo.getId(), true);
                 return false;
@@ -342,18 +348,18 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private void movePerson(Person person1, Household moveTo) {
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Household household1 = person1.getHh();
+        final Household household1 = householdData.getHouseholdFromId(person1.getHousehldId());
         if (!moveTo.equals(household1)) {
             householdData.removePersonFromHousehold(person1);
             householdData.addPersonToHousehold(person1, moveTo);
-            if (household1.checkIfOnlyChildrenRemaining()) {
+            if (HouseholdUtil.checkIfOnlyChildrenRemaining(household1)) {
                 moveRemainingChildren(household1, moveTo);
             }
         }
     }
 
     private void moveRemainingChildren(Household oldHh, Household newHh) {
-        List<Person> remainingPersons = new ArrayList<>(oldHh.getPersons());
+        List<Person> remainingPersons = new ArrayList<>(oldHh.getPersons().values());
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Person person : remainingPersons) {
             householdData.removePersonFromHousehold(person);

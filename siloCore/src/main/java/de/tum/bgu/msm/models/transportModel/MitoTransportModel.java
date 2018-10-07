@@ -6,6 +6,8 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.data.person.Person;
@@ -63,7 +65,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
 		Map<Integer, MitoHousehold> households = convertHhs(zones);
 		for(Person person: dataContainer.getHouseholdData().getPersons()) {
-			int hhId = person.getHh().getId();
+			int hhId = person.getHousehldId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
 				Coordinate workplaceCoordinate = null;
@@ -109,7 +111,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
 			}
             //todo if there are housholds without adults they cannot be processed
-			if (siloHousehold.getPersons().stream().filter(p -> p.getAge() >= 18).count() != 0){
+			if (siloHousehold.getPersons().values().stream().filter(p -> p.getAge() >= 18).count() != 0){
                 thhs.put(household.getId(), household);
             } else {
                 householdsSkipped++;
@@ -121,7 +123,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	}
 
 	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-		return new MitoHousehold(household.getId(), household.getHhIncome(), household.getAutos(), zone);
+		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household), household.getAutos(), zone);
 	}
 
 	private MitoPerson convertToMitoPp(Person person) {

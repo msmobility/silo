@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.data.person;
 
-import de.tum.bgu.msm.data.Occupation;
-
 public class PersonFactoryImpl implements PersonFactory {
 
     @Override

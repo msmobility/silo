@@ -1,5 +1,7 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.geo;
 
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.SiloUtil;
 import org.matsim.core.utils.geometry.geotools.MGC;
@@ -65,7 +67,7 @@ public class ZoneImpl implements Zone {
     
     @Override
 	public Coordinate getRandomCoordinate() {
-        // alternative and about 10 times faster way to generate random point inside a geometry. Amit Dec'17
+        //TODO:this can be optimized by using the same (static) points builder multiple times instead of recreating it
         RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(),
                 SiloUtil.getRandomObject());
         randomPointsBuilder.setNumPoints(1);

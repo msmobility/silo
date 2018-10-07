@@ -4,10 +4,10 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
@@ -29,7 +29,9 @@ public class BirthModelTest {
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getBirth();
 
-        Household household1 = dataContainer.getHouseholdData().createHousehold(1, 1,  0);
+        Household household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);
+        dataContainer.getHouseholdData().addHousehold(household1);
+
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, -1, null, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000));
         Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
@@ -42,7 +44,7 @@ public class BirthModelTest {
         Assert.assertEquals(1, dataContainer.getHouseholdData().getHouseholdFromId(1).getHhSize());
         model.giveBirth(dataContainer.getHouseholdData().getPersonFromId(1));
         Assert.assertEquals(2, dataContainer.getHouseholdData().getHouseholdFromId(1).getHhSize());
-        Assert.assertTrue(dataContainer.getHouseholdData().getHouseholdFromId(1).getPersons().stream()
+        Assert.assertTrue(dataContainer.getHouseholdData().getHouseholdFromId(1).getPersons().values().stream()
                 .anyMatch(person -> person.getRole() == PersonRole.CHILD));
         Assert.assertEquals(true, dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
     }

@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.data.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.Location;
 
 import java.util.EnumMap;

@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.IncomeCategory;
-import de.tum.bgu.msm.data.Nationality;
+import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import org.junit.Assert;

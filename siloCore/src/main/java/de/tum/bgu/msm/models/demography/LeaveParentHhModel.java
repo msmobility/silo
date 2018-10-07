@@ -19,8 +19,9 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -35,7 +36,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,12 +47,18 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
+    private final HouseholdFactory hhFactory;
     private final MovesModelI movesModel;
+    private HouseholdDataManager householdData;
 
-    public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move, CreateCarOwnershipModel createCarOwnershipModel) {
+    public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move,
+                              CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory) {
         super(dataContainer);
         this.movesModel = move;
         this.createCarOwnershipModel = createCarOwnershipModel;
+        this.hhFactory = hhFactory;
+        this.householdData = dataContainer.getHouseholdData();
+
         setupLPHModel();
     }
 
@@ -79,7 +85,6 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     @Override
     public boolean handleEvent(LeaveParentsEvent event) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person per = householdData.getPersonFromId(event.getPersonId());
         if (per != null && qualifiesForParentalHHLeave(per)) {
             final double prob = calculator.calculateLeaveParentsProbability(per.getType());
@@ -97,11 +102,12 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     boolean leaveHousehold(Person per) {
         // search if dwelling is available
-        final int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
+        Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);
+        final int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
         if (newDwellingId < 0) {
-            if (per.getId() == SiloUtil.trackPp || (per.getHh() != null && per.getHh().getId() == SiloUtil.trackHh)) {
+            if (per.getId() == SiloUtil.trackPp || per.getHousehldId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println(
-                        "Person " + per.getId() + " wanted to but could not leave parental Household " + per.getHh().getId() +
+                        "Person " + per.getId() + " wanted to but could not leave parental Household " + per.getHousehldId() +
                                 " because no appropriate vacant dwelling was found.");
             }
             IssueCounter.countLackOfDwellingFailedLeavingChild();
@@ -109,11 +115,11 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         }
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
-        final Household hhOfThisPerson = per.getHh();
+        final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehldId());
         households.removePersonFromHousehold(per);
 
         final int newHhId = households.getNextHouseholdId();
-        final Household newHousehold = households.createHousehold(newHhId, -1, 0);
+        final Household newHousehold = hhFactory.createHousehold(newHhId, -1, 0);
         households.addPersonToHousehold(per, newHousehold);
         per.setRole(PersonRole.SINGLE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
@@ -133,6 +139,6 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     private boolean qualifiesForParentalHHLeave(Person person) {
-        return (person.getHh().getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
+        return (householdData.getHouseholdFromId(person.getHousehldId()).getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
     }
 }

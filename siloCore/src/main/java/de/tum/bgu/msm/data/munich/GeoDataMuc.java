@@ -1,12 +1,13 @@
 package de.tum.bgu.msm.data.munich;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.AbstractDefaultGeoData;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.RegionImpl;
+import de.tum.bgu.msm.data.geo.RegionImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 

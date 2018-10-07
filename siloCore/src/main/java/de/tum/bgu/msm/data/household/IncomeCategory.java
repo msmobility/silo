@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.household;
 
 public enum IncomeCategory {
 

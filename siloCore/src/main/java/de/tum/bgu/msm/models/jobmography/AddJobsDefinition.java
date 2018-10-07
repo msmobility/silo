@@ -4,14 +4,11 @@ import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobFactory;
-import de.tum.bgu.msm.data.job.JobImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.munich.MunichZone;
 
 import java.util.List;
 import java.util.concurrent.Callable;

@@ -2,11 +2,16 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.*;
@@ -39,6 +44,7 @@ public class ReadPopulation {
         logger.info("Reading household micro data from ascii file");
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdFactory householdFactory = HouseholdUtil.getFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
@@ -64,7 +70,8 @@ public class ReadPopulation {
                 int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
-                householdData.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                Household household = householdFactory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                householdData.addHousehold(household);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                 }

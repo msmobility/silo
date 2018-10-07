@@ -9,8 +9,13 @@ import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.geo.RegionImpl;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.io.DefaultHouseholdReader;
+import de.tum.bgu.msm.io.DefaultPersonReader;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SkimUtil;
@@ -81,14 +86,19 @@ public class AccessibilityTest {
 
     @Test
     public void testIntegration()  {
-        SiloUtil.siloInitialization("test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        Properties properties = SiloUtil.siloInitialization("test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
 
         SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();
         geoData.readData();
 
-        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, PersonUtils.getFactory());
-        hhManager.readPopulation(Properties.get());
+        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());
+        String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
+        householdFile += "_" + properties.main.startYear + ".csv";
+        new DefaultHouseholdReader(hhManager).readData(householdFile);
+        String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
+        personFile += "_" + properties.main.startYear + ".csv";
+        new DefaultPersonReader(hhManager).readData(personFile);
 
         SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
         SkimUtil.updateTransitSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());

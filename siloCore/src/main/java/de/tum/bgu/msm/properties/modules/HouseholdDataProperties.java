@@ -7,7 +7,6 @@ import java.util.ResourceBundle;
 public final class HouseholdDataProperties {
 
     public final float meanIncomeChange;
-    public final boolean readBinaryPopulation;
     public final String householdFileName;
     public final String binaryPopulationFile;
     public final String personFileName;
@@ -33,7 +32,6 @@ public final class HouseholdDataProperties {
         personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
 
         PropertiesUtil.newPropertySubmodule("Synthetic persons and households for the base year - binary files options");
-        readBinaryPopulation = PropertiesUtil.getBooleanProperty(bundle, "read.binary.pop.files", false);
         writeBinPopFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.pop.files", false);
         binaryPopulationFile = PropertiesUtil.getStringProperty(bundle, "population.file.bin", "microData/popData.bin");
 

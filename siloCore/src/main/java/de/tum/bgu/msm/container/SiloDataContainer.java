@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -13,10 +14,7 @@ import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.DefaultDwellingReader;
-import de.tum.bgu.msm.io.DefaultJobReader;
-import de.tum.bgu.msm.io.DwellingReader;
-import de.tum.bgu.msm.io.JobReader;
+import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -59,7 +57,7 @@ public class SiloDataContainer {
 
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
-        householdData = new HouseholdDataManager(this, PersonUtils.getFactory());
+        householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         travelTimes = new SkimTravelTimes();
     }
 
@@ -85,13 +83,22 @@ public class SiloDataContainer {
 
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
-        householdData = new HouseholdDataManager(this, PersonUtils.getFactory());
+        householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         geoData.readData();
-        householdData.readPopulation(properties);
+
+        int year = properties.main.startYear;
+        String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
+        householdFile += "_" + year + ".csv";
+        HouseholdReader hhReader = new DefaultHouseholdReader(householdData);
+        hhReader.readData(householdFile);
+
+        String personFile = properties.main.baseDirectory +  properties.householdData.personFileName;
+        personFile += "_" + year + ".csv";
+        PersonReader personReader = new DefaultPersonReader(householdData);
+        personReader.readData(personFile);
 
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
-        int dwellingYear = Properties.get().main.startYear;
-        String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + dwellingYear + ".csv";
+        String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
         realEstateData.readAcresNeededByDwellingType();
 
@@ -101,7 +108,6 @@ public class SiloDataContainer {
             ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
         }
         JobReader jjReader = new DefaultJobReader(jobData);
-        int year = Properties.get().main.startYear;
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 

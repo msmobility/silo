@@ -5,8 +5,6 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 
-import java.util.Objects;
-
 public class Main {
 
     public static void main(String[] args) {

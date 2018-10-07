@@ -6,6 +6,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
@@ -84,12 +85,14 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 bachelorettes.stream().mapToInt(Integer::intValue).max().getAsInt()+1);
         for(Integer id: bachelors) {
             Person bachelor = data.getHouseholdData().getPersonFromId(id);
+            Household bachelorHh = data.getHouseholdData().getHouseholdFromId(bachelor.getHousehldId());
             Zone bachelorZone = data.getGeoData().getZones().get(
-            		data.getRealEstateData().getDwelling(bachelor.getHh().getDwellingId()).getZoneId());
+            		data.getRealEstateData().getDwelling(bachelorHh.getDwellingId()).getZoneId());
             for(Integer id2: bachelorettes) {
                 Person bachelorette = data.getHouseholdData().getPersonFromId(id2);
+                Household bacheloretteHh = data.getHouseholdData().getHouseholdFromId(bachelorette.getHousehldId());
                 Zone bacheloretteZone = data.getGeoData().getZones().get(
-                		data.getRealEstateData().getDwelling(bachelorette.getHh().getDwellingId()).getZoneId());
+                		data.getRealEstateData().getDwelling(bacheloretteHh.getDwellingId()).getZoneId());
                 double travelTime = data.getTravelTimes().getTravelTime(
                 		bachelorZone, bacheloretteZone, Properties.get().main.peakHour, TransportMode.car);
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
@@ -120,7 +123,8 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
      */
     private double getMarryProb(Person pp) {
         double marryProb = calculator.calculateMarriageProbability(pp);
-        if (pp.getHh().getHhSize() == 1) {
+        Household hh = data.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        if (hh.getHhSize() == 1) {
             marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
         }
         return marryProb;
