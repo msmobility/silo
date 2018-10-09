@@ -7,7 +7,7 @@ public class SchoolImpl implements School, MicroLocation {
     private final int id;
     private final int type;
     private final int capacity;
-    private final int occupancy;
+    private int occupancy;
     private final Coordinate coordinate;
     private final int zoneId;
     private double startTimeInSeconds;
@@ -40,8 +40,13 @@ public class SchoolImpl implements School, MicroLocation {
         return capacity;
     }
 
-    public int getCurrentOccupancy() {
+    public int getOccupancy() {
         return occupancy;
+    }
+
+    @Override
+    public void setOccupancy(int occupancy) {
+        this.occupancy = occupancy;
     }
 
     public void setSchoolStudyingTime(double startTimeInSeconds, double studyTimeInSeconds) {

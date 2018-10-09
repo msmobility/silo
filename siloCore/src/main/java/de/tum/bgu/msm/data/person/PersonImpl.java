@@ -28,7 +28,7 @@ public class PersonImpl implements Person{
     private PersonRole role;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int telework = 0;
-    private int educationLevel = 0;
+    private int educationLevel = 0; //TODO: educationLevel and schoolType are repeated qz' 05 Oct 2018
     private Nationality nationality = Nationality.GERMAN;
     private float travelTime = 0;
     private int jobTAZ = 0;
@@ -187,7 +187,9 @@ public class PersonImpl implements Person{
     public int getSchoolType() {return schoolType;}
 
     @Override
-    public void setSchoolPlace(int schoolPlace) {this.schoolPlace = schoolPlace;}
+    public void setSchoolPlace(int schoolPlace) {
+        this.schoolPlace = schoolPlace;
+    }
 
     @Override
     public int getSchoolPlace() {return schoolPlace;}

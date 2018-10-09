@@ -13,11 +13,15 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultSchoolReader implements SchoolReader {
 
     private final static Logger logger = Logger.getLogger(DefaultSchoolReader.class);
     private final SchoolDataManager schoolData;
+    private Map<Integer, Map<Integer,List<School>>> schoolByZoneBySchoolType = new HashMap<>();
 
     public DefaultSchoolReader(SchoolDataManager schoolData) {
         this.schoolData = schoolData;
@@ -68,12 +72,15 @@ public class DefaultSchoolReader implements SchoolReader {
 
                 School ss = factory.createSchool(id, type, capacity, occupancy, coordinate,zoneId);
                 schoolData.addSchool(ss);
+                schoolData.addSchoolToSearchTree(ss);
 //Qin???
 //                if (id == SiloUtil.trackSs) {
 //                    SiloUtil.trackWriter.println("Read school with following attributes from " + fileName);
 //                    SiloUtil.trackWriter.println(schools.get(id).toString());
 //                }
             }
+
+
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop school file: " + fileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");

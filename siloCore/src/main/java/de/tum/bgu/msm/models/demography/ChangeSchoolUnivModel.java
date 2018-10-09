@@ -2,7 +2,13 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.SchoolDataManager;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -15,6 +21,7 @@ import java.util.List;
  * Simulates if someone changes school
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
+ * Edited on 05 October 2018 in Munich by Qin Zhang, TUM
  **/
 public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel<EducationEvent> {
 
@@ -24,14 +31,54 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
 
     @Override
     public boolean handleEvent(EducationEvent event) {
+        //TODO: Event handled randomly, so it might happen that birthday event always happened before
+        //TODO: Realschuln and Gymnasien
         Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
         if (pp != null) {
-            if (pp.getAge() == 19) {
-                return updateEducation(pp);
+            School findSchool = null;
+            if (pp.getAge() >= 6 && pp.getAge() <= 10 && pp.getSchoolType() == 0) {
+                findSchool = findSchool(pp);
+            }else if (pp.getAge() > 10 && pp.getSchoolType() == 1) {
+                findSchool = findSchool(pp);
+            }else if (pp.getAge() > 18 && pp.getSchoolType() == 2) {
+                if (SiloUtil.getRandomNumberAsFloat() < 0.528){
+                    findSchool = findSchool(pp);
+                }else{
+                    return leaveSchoolToWork(pp,2);
+                }
+            }else if (pp.getAge() > 23 && pp.getSchoolType() == 3){
+                return  leaveSchoolToWork(pp,3);
+            }
+
+            if (findSchool != null){
+                return updateEducation(pp, findSchool);
             }
         }
+
         return false;
     }
+
+    //TODO: leave school to work
+    boolean leaveSchoolToWork(Person person, int educationLevel) {
+
+        person.setOccupation(Occupation.UNEMPLOYED);
+        person.setSchoolType(0);
+        person.setSchoolId(-1);
+        person.setSchoolCoordinate(null,-1);
+        //TODO: schoolType and educationLevel code needs to be aligned! 09 Oct 2018 QZ'
+        person.setEducationLevel(educationLevel);
+
+        School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
+        school.setOccupancy(school.getOccupancy() + 1);
+
+        if (person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " + person.getId() +
+                    " leaved from school to job market. ");
+        }
+
+        return true;
+    }
+
 
     @Override
     public void finishYear(int year) {}
@@ -45,17 +92,25 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
         return events;
     }
 
-    // todo: Implement logical rules how students change from one school type to another or graduate from school/university
-    boolean updateEducation(Person person) {
-        int schoolId = 0;
-        person.setSchoolPlace(schoolId);
-        // todo if 2 is the right code for someone who graduates from high school
-        //todo also check occupation transition to worker? 'nk
-        person.setEducationLevel(2);
+
+    boolean updateEducation(Person person, School school) {
+
+        person.setSchoolType(school.getType());
+        person.setSchoolId(school.getId());
+        person.setOccupation(Occupation.STUDENT);
+        person.setSchoolCoordinate(((MicroLocation)school).getCoordinate(),school.getZoneId());
+        school.setOccupancy(school.getOccupancy()-1);
+
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
-                    " changed school. New school place (0 = left school) " + schoolId);
+                    " changed school. New school id " + school.getId());
         }
         return true;
     }
+
+    private School findSchool(Person person) {
+        return dataContainer.getSchoolData().getClosestSchool(person);
+    }
+
+
 }

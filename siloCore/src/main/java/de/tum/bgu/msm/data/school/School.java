@@ -14,7 +14,9 @@ public interface School extends Location {
 
     int getCapacity();
 
-    int getCurrentOccupancy();
+    int getOccupancy();
+
+    void setOccupancy(int occupancy);
 
     void setSchoolStudyingTime(double startTimeInSeconds, double studyTimeInSeconds);
 

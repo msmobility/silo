@@ -426,7 +426,7 @@ public class SummarizeData {
             pws.print(",");
             pws.print(ss.getCapacity());
             pws.print(",");
-            pws.print(ss.getCurrentOccupancy());
+            pws.print(ss.getOccupancy());
             if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
                 try {
                     Coordinate coordinate = ((MicroLocation) ss).getCoordinate();

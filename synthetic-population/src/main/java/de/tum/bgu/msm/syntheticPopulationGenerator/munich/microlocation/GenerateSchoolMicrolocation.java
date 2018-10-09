@@ -57,7 +57,7 @@ public class GenerateSchoolMicrolocation {
 
         for (School ss : dataContainer.getSchoolData().getSchools()){
             int finalRemainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(ss.getZoneId()).get(ss.getType()).get(ss.getId());
-            ss.setCurrentOccupancy(ss.getCapacity()-finalRemainingCapacity);
+            ss.setOccupancy(ss.getCapacity()-finalRemainingCapacity);
         }
 
         logger.warn( errorSchool +"   Students cannot find specific school location. Their coordinates are assigned randomly in TAZ" );
@@ -89,7 +89,7 @@ public class GenerateSchoolMicrolocation {
             int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"schoolType");
 
             Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
-            schoolDataManager.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity, coordinate, zone));
+            schoolDataManager.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
 
             if (zoneSchoolTypeSchoolLocationCapacity.get(zone) != null){
                 zoneSchoolTypeSchoolLocationCapacity.get(zone).get(schoolType).put(id,schoolCapacity);
