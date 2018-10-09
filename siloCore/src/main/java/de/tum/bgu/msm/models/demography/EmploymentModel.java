@@ -53,7 +53,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
     }
 
     private Job findJob(Person pp) {
-        final Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        final Household household = pp.getHousehold();
         final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
         Zone zone = null;
         if (dwelling != null) {
@@ -69,7 +69,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         person.setWorkplace(job.getId());
         person.setOccupation(Occupation.EMPLOYED);
         dataContainer.getHouseholdData().selectIncomeForPerson(person);
-        Household household = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+        Household household = person.getHousehold();
         dataContainer.getHouseholdData().addHouseholdThatChanged(household);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
@@ -81,7 +81,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
         final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (person != null) {
             dataContainer.getJobData().quitJob(true, person);
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+            Household household = person.getHousehold();
             dataContainer.getHouseholdData().addHouseholdThatChanged(household);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");

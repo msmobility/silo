@@ -76,7 +76,7 @@ public class ValidateTripLengthDistribution {
         HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : personArrayList){
             if (pp.getJobTAZ() > 0){
-                Household hh = households.getHouseholdFromId(pp.getHousehldId());
+                Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
                 commuteDistance.addValue(value);

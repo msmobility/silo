@@ -224,7 +224,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
      */
     private double getMarryProb(Person pp) {
         double marryProb = calculator.calculateMarriageProbability(pp);
-        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        Household hh = pp.getHousehold();
         if (hh.getHhSize() == 1) {
             marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
         }
@@ -233,7 +233,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private boolean isQualifiedAsPossiblePartner(Person person) {
         float share = 0.1f;
-        Household hh = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+        Household hh = person.getHousehold();
         if (hh.getHhSize() == 1) {
             share *= Properties.get().demographics.onePersonHhMarriageBias;
         }
@@ -254,8 +254,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
             return false;  // Person got already married this simulation period or died or moved away
         }
 
-        final Household hhOfPartner1 = householdData.getHouseholdFromId(partner1.getHousehldId());
-        final Household hhOfPartner2 = householdData.getHouseholdFromId(partner2.getHousehldId());
+        final Household hhOfPartner1 = partner1.getHousehold();
+        final Household hhOfPartner2 = partner2.getHousehold();
 
         final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
 
@@ -324,8 +324,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         if (person1.getId() == SiloUtil.trackPp
                 || person2.getId() == SiloUtil.trackPp
-                || person1.getHousehldId() == SiloUtil.trackHh
-                || person2.getHousehldId() == SiloUtil.trackHh) {
+                || person1.getHousehold().getId() == SiloUtil.trackHh
+                || person2.getHousehold().getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Person " + person1.getId() +
                     " and person " + person2.getId() + " got married and moved into household "
                     + moveTo.getId() + ".");
@@ -348,7 +348,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private void movePerson(Person person1, Household moveTo) {
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Household household1 = householdData.getHouseholdFromId(person1.getHousehldId());
+        final Household household1 = person1.getHousehold();
         if (!moveTo.equals(household1)) {
             householdData.removePersonFromHousehold(person1);
             householdData.addPersonToHousehold(person1, moveTo);

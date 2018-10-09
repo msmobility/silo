@@ -94,11 +94,10 @@ public class HouseholdDataManager {
     }
 
     public void removePersonFromHousehold (Person person) {
-        int hhId = person.getHousehldId();
-        if(households.containsKey(hhId)) {
-            Household household = households.get(hhId);
+        Household household = person.getHousehold();
+        if(household != null && households.containsKey(household.getId())) {
             household.removePerson(person.getId());
-            person.setHousehold(-1);
+            person.setHousehold(null);
             if (household.getPersons().isEmpty()) {
                 removeHousehold(household.getId());
             }
@@ -115,7 +114,7 @@ public class HouseholdDataManager {
             throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + household.getId());
         }
         household.addPerson(person);
-        person.setHousehold(household.getId());
+        person.setHousehold(household);
         if (person.getId() == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("A person " +
                     "(not a child) named " + person.getId() + " was added to household " + household.getId() + ".");
@@ -160,12 +159,14 @@ public class HouseholdDataManager {
             if (partner != null) {
                 partner.setRole(PersonRole.MARRIED);
                 person.setRole(PersonRole.MARRIED);
-                if (person.getId() == SiloUtil.trackPp || person.getHousehldId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household " + person.getHousehldId() +
+                if (person.getId() == SiloUtil.trackPp || person.getHousehold().getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household "
+                            + person.getHousehold().getId() +
                             " as " + person.getRole());
                 }
-                if (partner.getId() == SiloUtil.trackPp || partner.getHousehldId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Defined role of partner " + partner.getId() + " in household " + partner.getHousehldId() +
+                if (partner.getId() == SiloUtil.trackPp || partner.getHousehold().getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Defined role of partner " + partner.getId() + " in household "
+                            + partner.getHousehold().getId() +
                             " as " + partner.getRole());
                 }
                 return;
@@ -196,9 +197,9 @@ public class HouseholdDataManager {
             } else {
                 pp.setRole(PersonRole.SINGLE);
             }
-            if (pp.getId() == SiloUtil.trackPp || pp.getHousehldId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household " + pp.getHousehldId() +
-                        " as " + pp.getRole());
+            if (pp.getId() == SiloUtil.trackPp || pp.getHousehold().getId() == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household "
+                        + pp.getHousehold().getId() + " as " + pp.getRole());
             }
         }
     }
@@ -214,7 +215,7 @@ public class HouseholdDataManager {
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
         for(Person pp: household.getPersons().values()) {
-            pp.setHousehold(-1);
+            pp.setHousehold(null);
             persons.remove(pp.getId());
         }
         households.remove(householdId);
@@ -301,7 +302,7 @@ public class HouseholdDataManager {
             else labP[0][gender.ordinal()][ageGroup]++;
             if (employed) {
                 Zone zone = null;
-                Household household = households.get(per.getHousehldId());
+                Household household = households.get(per.getHousehold().getId());
                 Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
                 if(dwelling != null) {
                     zone = geoData.getZones().get(dwelling.getZoneId());

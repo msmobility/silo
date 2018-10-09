@@ -59,7 +59,7 @@ public class LeaveParentHhModelTest {
     public void testLeaveParents() {
         model.leaveHousehold(person);
         Assert.assertEquals(2, dataContainer.getHouseholdData().getHouseholdFromId(999).getHhSize());
-        Household household = dataContainer.getHouseholdData().getHouseholdFromId(person.getHousehldId());
+        Household household = person.getHousehold();
         Assert.assertEquals(999, household.getDwellingId());
         Assert.assertEquals(PersonRole.SINGLE, person.getRole());
     }

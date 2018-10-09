@@ -77,7 +77,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         if (person.getWorkplace() > 0) {
             dataContainer.getJobData().quitJob(true, person);
         }
-        final Household hhOfPersonToDie = householdData.getHouseholdFromId(person.getHousehldId());
+        final Household hhOfPersonToDie = person.getHousehold();
 
         if (person.getRole() == PersonRole.MARRIED) {
             Person widow = householdData.findMostLikelyPartner(person, hhOfPersonToDie);

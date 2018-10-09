@@ -4,11 +4,10 @@ import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
@@ -49,10 +48,9 @@ public class AssignSchools {
         double logging = 2;
         int it = 12;
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : studentArrayList){
             int schooltaz;
-            Household household = households.getHouseholdFromId(pp.getHousehldId());
+            Household household = pp.getHousehold();
             int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
             if (pp.getSchoolType() == 3){
                 schooltaz = selectTertiarySchool(hometaz);

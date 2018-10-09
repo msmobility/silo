@@ -99,7 +99,6 @@ public final class SiloModel {
     private void setupContainer() {
         data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
-		data.getHouseholdData().setHighestHouseholdAndPersonId();
 		data.getHouseholdData().calculateInitialSettings();
 		data.getJobData().calculateEmploymentForecast();
 		data.getJobData().identifyVacantJobs();

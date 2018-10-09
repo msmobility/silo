@@ -18,6 +18,7 @@ package de.tum.bgu.msm.data.person;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Id;
+import de.tum.bgu.msm.data.household.Household;
 
 /**
  * @author Greg Erhardt 
@@ -26,9 +27,9 @@ import de.tum.bgu.msm.data.Id;
  */
 public interface Person extends Id {
 
-    void setHousehold(int householdId);
+    void setHousehold(Household householdId);
 
-    int getHousehldId();
+    Household getHousehold();
 
     void setRole(PersonRole pr);
 

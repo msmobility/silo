@@ -65,7 +65,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
 		Map<Integer, MitoHousehold> households = convertHhs(zones);
 		for(Person person: dataContainer.getHouseholdData().getPersons()) {
-			int hhId = person.getHousehldId();
+			int hhId = person.getHousehold().getId();
 			if(households.containsKey(hhId)) {
 				MitoPerson mitoPerson = convertToMitoPp(person);
 				Coordinate workplaceCoordinate = null;

@@ -55,7 +55,7 @@ public class AssignJobs {
         HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
-            Household hh = households.getHouseholdFromId(pp.getHousehldId());
+            Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {

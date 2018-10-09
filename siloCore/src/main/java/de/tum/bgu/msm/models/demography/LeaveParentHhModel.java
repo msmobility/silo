@@ -103,19 +103,20 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     boolean leaveHousehold(Person per) {
         // search if dwelling is available
         Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);
+        fakeHypotheticalHousehold.addPerson(per);
         final int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
         if (newDwellingId < 0) {
-            if (per.getId() == SiloUtil.trackPp || per.getHousehldId() == SiloUtil.trackHh) {
+            if (per.getId() == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println(
-                        "Person " + per.getId() + " wanted to but could not leave parental Household " + per.getHousehldId() +
-                                " because no appropriate vacant dwelling was found.");
+                        "Person " + per.getId() + " wanted to but could not leave parental Household "
+                                + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
             }
             IssueCounter.countLackOfDwellingFailedLeavingChild();
             return false;
         }
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
-        final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehldId());
+        final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehold().getId());
         households.removePersonFromHousehold(per);
 
         final int newHhId = households.getNextHouseholdId();
@@ -139,6 +140,6 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     private boolean qualifiesForParentalHHLeave(Person person) {
-        return (householdData.getHouseholdFromId(person.getHousehldId()).getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
+        return (householdData.getHouseholdFromId(person.getHousehold().getId()).getHhSize() >= 2 && person.getRole() == PersonRole.CHILD);
     }
 }

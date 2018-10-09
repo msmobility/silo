@@ -96,8 +96,10 @@ public final class HouseholdImpl implements Household {
 
     @Override
     public void addPerson(Person person) {
-        this.persons.put(person.getId(), person);
-        update();
+        if(person != null) {
+            this.persons.put(person.getId(), person);
+            update();
+        }
     }
 
     @Override
@@ -132,7 +134,7 @@ public final class HouseholdImpl implements Household {
         return autonomous;
     }
 
-    private final void update() {
+    private void update() {
         this.race = HouseholdUtil.defineHouseholdRace(this);
         this.type = HouseholdUtil.defineHouseholdType(this);
     }

@@ -79,19 +79,20 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 // check if vacant dwelling is available
 
                 Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1,-1,0);
+                fakeHypotheticalHousehold.addPerson(per);
                 int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
                 if (newDwellingId < 0) {
-                    if (perId == SiloUtil.trackPp || per.getHousehldId() == SiloUtil.trackHh) {
+                    if (perId == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
                         SiloUtil.trackWriter.println(
-                                "Person " + perId + " wanted to but could not divorce from household " + per.getHousehldId() +
-                                        " because no appropriate vacant dwelling was found.");
+                                "Person " + perId + " wanted to but could not divorce from household "
+                                        + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
                     }
                     IssueCounter.countLackOfDwellingFailedDivorce();
                     return false;
                 }
 
                 // divorce
-                Household oldHh = householdData.getHouseholdFromId(per.getHousehldId());
+                Household oldHh = householdData.getHouseholdFromId(per.getHousehold().getId());
                 Person divorcedPerson = householdData.findMostLikelyPartner(per, oldHh);
                 divorcedPerson.setRole(PersonRole.SINGLE);
                 per.setRole(PersonRole.SINGLE);

@@ -247,7 +247,7 @@ public class SummarizeData {
                         for (Person pp : hh.getPersons().values()) {
                             pwp.print(pp.getId());
                             pwp.print(",");
-                            pwp.print(pp.getHousehldId());
+                            pwp.print(pp.getHousehold().getId());
                             pwp.print(",");
                             pwp.print(pp.getAge());
                             pwp.print(",");
@@ -308,7 +308,7 @@ public class SummarizeData {
                             for (Person pp : hh.getPersons().values()) {
                                 pwp.print(pp.getId());
                                 pwp.print(",");
-                                pwp.print(pp.getHousehldId());
+                                pwp.print(pp.getHousehold().getId());
                                 pwp.print(",");
                                 pwp.print(pp.getAge());
                                 pwp.print(",");
@@ -455,10 +455,10 @@ public class SummarizeData {
         }
         pwp.println();
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHousehldId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -683,10 +683,10 @@ public class SummarizeData {
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ,schoolCoordX,schoolCoordY");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+            Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHousehldId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -871,10 +871,10 @@ public class SummarizeData {
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHousehldId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -1025,7 +1025,7 @@ public class SummarizeData {
             for (Person pp : hh.getPersons().values()) {
                 pwp.print(pp.getId());
                 pwp.print(",");
-                pwp.print(pp.getHousehldId());
+                pwp.print(pp.getHousehold().getId());
                 pwp.print(",");
                 pwp.print(pp.getAge());
                 pwp.print(",");
@@ -1253,7 +1253,7 @@ public class SummarizeData {
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHousehldId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");

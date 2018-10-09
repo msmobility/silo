@@ -36,10 +36,8 @@ public class SiloDataContainer {
     private final TravelTimes travelTimes;
 
     /**
-     *
      * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
      * being used to encapsulate the object creation.
-     *
      */
     private SiloDataContainer(Implementation implementation) {
 
@@ -62,10 +60,8 @@ public class SiloDataContainer {
     }
 
     /**
-     *
      * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
      * being used to encapsulate the object creation.
-     *
      */
     private SiloDataContainer(Implementation implementation, Properties properties) {
 
@@ -92,10 +88,12 @@ public class SiloDataContainer {
         HouseholdReader hhReader = new DefaultHouseholdReader(householdData);
         hhReader.readData(householdFile);
 
-        String personFile = properties.main.baseDirectory +  properties.householdData.personFileName;
+        String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
         PersonReader personReader = new DefaultPersonReader(householdData);
         personReader.readData(personFile);
+
+        householdData.setHighestHouseholdAndPersonId();
 
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
@@ -104,7 +102,7 @@ public class SiloDataContainer {
 
         new JobType(properties.jobData.jobTypes);
 
-        if (Properties.get().main.implementation.equals(Implementation.MUNICH)){
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
             ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
         }
         JobReader jjReader = new DefaultJobReader(jobData);
@@ -113,7 +111,7 @@ public class SiloDataContainer {
 
         jobData.setHighestJobId();
 
-        if(properties.transportModel.runMatsim) {
+        if (properties.transportModel.runMatsim) {
             travelTimes = new MatsimTravelTimes();
         } else {
             travelTimes = new SkimTravelTimes();
@@ -123,6 +121,7 @@ public class SiloDataContainer {
     /**
      * This factory method is used to create a fully set up data container with
      * all input data read in defined in the properties.
+     *
      * @return A SiloDataContainer, with each data object created within
      */
     public static SiloDataContainer loadSiloDataContainer(Properties properties) {
@@ -133,6 +132,7 @@ public class SiloDataContainer {
     /**
      * This factory method is used to create an empty data container.
      * Barely tested, use with caution! Uses Skim Travel times
+     *
      * @return A SiloDataContainer, with each data object created within
      */
     public static SiloDataContainer createEmptySiloDataContainer(Implementation implementation) {

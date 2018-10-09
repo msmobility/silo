@@ -106,7 +106,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
     void giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        final Household household = householdData.getHouseholdFromId(person.getHousehldId());
+        final Household household = person.getHousehold();
         final int id = householdData.getNextPersonId();
         Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {

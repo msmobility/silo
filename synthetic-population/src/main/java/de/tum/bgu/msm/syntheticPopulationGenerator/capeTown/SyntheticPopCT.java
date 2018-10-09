@@ -1425,7 +1425,7 @@ public class SyntheticPopCT implements SyntheticPopI {
             if (lengthKeys > 0) {
 
                 //Select the workplace location (TAZ) for that person given his/her job type
-                Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+                Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int[] workplace = selectWorkplace(origin, numberVacantJobsByZoneByType, keys, lengthKeys,
                         distanceImpedance);
@@ -1561,7 +1561,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
                 //Select the school location (which raster cell) for that person given his/her job type
                 int[] schoolPlace = new int[2];
-                Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+                Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 if (schoolType == 3) {
                     schoolPlace = selectWorkplace(origin, numberVacantSchoolsByZoneByType,

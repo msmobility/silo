@@ -85,12 +85,12 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 bachelorettes.stream().mapToInt(Integer::intValue).max().getAsInt()+1);
         for(Integer id: bachelors) {
             Person bachelor = data.getHouseholdData().getPersonFromId(id);
-            Household bachelorHh = data.getHouseholdData().getHouseholdFromId(bachelor.getHousehldId());
+            Household bachelorHh = bachelor.getHousehold();
             Zone bachelorZone = data.getGeoData().getZones().get(
             		data.getRealEstateData().getDwelling(bachelorHh.getDwellingId()).getZoneId());
             for(Integer id2: bachelorettes) {
                 Person bachelorette = data.getHouseholdData().getPersonFromId(id2);
-                Household bacheloretteHh = data.getHouseholdData().getHouseholdFromId(bachelorette.getHousehldId());
+                Household bacheloretteHh = bachelorette.getHousehold();
                 Zone bacheloretteZone = data.getGeoData().getZones().get(
                 		data.getRealEstateData().getDwelling(bacheloretteHh.getDwellingId()).getZoneId());
                 double travelTime = data.getTravelTimes().getTravelTime(
@@ -123,7 +123,7 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
      */
     private double getMarryProb(Person pp) {
         double marryProb = calculator.calculateMarriageProbability(pp);
-        Household hh = data.getHouseholdData().getHouseholdFromId(pp.getHousehldId());
+        Household hh = pp.getHousehold();
         if (hh.getHhSize() == 1) {
             marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
         }
