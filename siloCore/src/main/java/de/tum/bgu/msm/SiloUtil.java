@@ -191,31 +191,17 @@ public class SiloUtil {
         return list;
     }
 
-
-    public static int findPositionInArray (int element, int[] arr){
-        // return index position of element in array arr
-        int ind = -1;
-        for (int a = 0; a < arr.length; a++) if (arr[a] == element) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
-        return ind;
-    }
-
-    public static int findPositionInArray (String element, String[] arr){
-        // return index position of element in array arr
-        int ind = -1;
-        for (int a = 0; a < arr.length; a++) if (arr[a].equalsIgnoreCase(element)) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
-        return ind;
-    }
-
-
     public static <T> int findPositionInArray (T element, T array[]) {
         int ind = -1;
-        for (int a = 0; a < array.length; a++) if (array[a].equals(element)) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
+        for (int a = 0; a < array.length; a++) {
+            if (array[a].equals(element)) {
+                ind = a;
+            }
+        }
+        if (ind == -1) {
+            logger.error ("Could not find element " + element +
+                    " in array (see method <findPositionInArray> in class <SiloUtil>");
+        }
         return ind;
     }
 

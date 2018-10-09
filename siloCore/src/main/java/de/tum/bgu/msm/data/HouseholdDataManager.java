@@ -25,11 +25,16 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.data.person.PersonRole;
+import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
+import de.tum.bgu.msm.data.person.Occupation;
 
 import java.io.PrintWriter;
 import java.util.*;

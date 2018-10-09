@@ -36,7 +36,7 @@ public class DefaultPersonReader implements PersonReader{
             // read header
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("id", header);
-            int posHhId = SiloUtil.findPositionInArray("hhid",header);
+            int posHhId = SiloUtil.findPositionInArray("hhID",header);
             int posAge = SiloUtil.findPositionInArray("age",header);
             int posGender = SiloUtil.findPositionInArray("gender",header);
             int posRelShp = SiloUtil.findPositionInArray("relationShip",header);
