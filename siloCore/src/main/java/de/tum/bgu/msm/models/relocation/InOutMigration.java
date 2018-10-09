@@ -101,6 +101,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         }
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Household hh = hhFactory.createHousehold(hhId, -1, 0);
+        householdData.addHousehold(hh);
 
         k = 0;
         for (int i = 1; i <= hhSize; i++) {

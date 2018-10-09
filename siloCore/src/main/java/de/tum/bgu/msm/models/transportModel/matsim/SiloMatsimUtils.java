@@ -132,7 +132,8 @@ public class SiloMatsimUtils {
     			continue;
     		}
 
-    		Household household = householdData.getHouseholdFromId(siloPerson.getHousehold().getId());
+    		Household household = siloPerson.getHousehold();
+
     		int numberOfWorkers = HouseholdUtil.getNumberOfWorkers(household);
     		int numberOfAutos = household.getAutos();
     		if (numberOfWorkers == 0) {

@@ -121,6 +121,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
         final int newHhId = households.getNextHouseholdId();
         final Household newHousehold = hhFactory.createHousehold(newHhId, -1, 0);
+        dataContainer.getHouseholdData().addHousehold(newHousehold);
         households.addPersonToHousehold(per, newHousehold);
         per.setRole(PersonRole.SINGLE);
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership

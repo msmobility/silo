@@ -100,6 +100,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
                 int newHhId = householdData.getNextHouseholdId();
                 Household newHh = hhFactory.createHousehold(newHhId, -1, 0);
+                householdData.addHousehold(newHh);
                 householdData.addPersonToHousehold(per, newHh);
 
                 // move divorced person into new dwelling

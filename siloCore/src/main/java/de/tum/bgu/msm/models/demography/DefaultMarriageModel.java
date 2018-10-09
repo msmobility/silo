@@ -313,6 +313,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         if (moveTo.getHhSize() > 3) {
             final int newHhId = dataContainer.getHouseholdData().getNextHouseholdId();
             moveTo = hhFactory.createHousehold(newHhId, -1, 0);
+            dataContainer.getHouseholdData().addHousehold(moveTo);
         }
         return moveTo;
     }
