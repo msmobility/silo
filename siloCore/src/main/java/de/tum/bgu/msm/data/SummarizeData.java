@@ -455,7 +455,6 @@ public class SummarizeData {
         }
         pwp.println();
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHousehold().getId());
@@ -486,7 +485,7 @@ public class SummarizeData {
                 pwp.print(",");
                 pwp.print(pp.getEducationLevel());
                 pwp.print(",");
-                Dwelling dd = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+                Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
                 pwp.print(pp.getJobTAZ());
@@ -683,7 +682,6 @@ public class SummarizeData {
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolTAZ,schoolCoordX,schoolCoordY");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household hh = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHousehold().getId());
@@ -707,7 +705,7 @@ public class SummarizeData {
             pwp.print(pp.getEducationLevel());
             pwp.print(",");
             int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
+            Dwelling dwelling = realEstate.getDwelling(pp.getHousehold().getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
@@ -871,7 +869,6 @@ public class SummarizeData {
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
         pwp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,nationality,education,homeZone,workZone,driversLicense,schoolDE,schoolplace,autos,trips");
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(pp.getHousehold().getId());
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHousehold().getId());
@@ -895,7 +892,7 @@ public class SummarizeData {
             pwp.print(pp.getEducationLevel());
             pwp.print(",");
             int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(household.getDwellingId());
+            Dwelling dwelling = realEstate.getDwelling(pp.getHousehold().getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
@@ -909,7 +906,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
             pwp.print(",");
-            pwp.print(household.getAutos());
+            pwp.print(pp.getHousehold().getAutos());
             pwp.print(",");
             pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
@@ -1187,7 +1184,6 @@ public class SummarizeData {
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
@@ -1284,7 +1280,6 @@ public class SummarizeData {
         pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
         int[][] autos = new int[4][10000000];
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             int autoOwnership = hh.getAutos();
             int zone = -1;

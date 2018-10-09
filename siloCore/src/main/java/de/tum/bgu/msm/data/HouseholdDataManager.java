@@ -100,7 +100,7 @@ public class HouseholdDataManager {
 
     public void removePersonFromHousehold (Person person) {
         Household household = person.getHousehold();
-        if(household != null && households.containsKey(household.getId())) {
+        if(household != null ) {
             household.removePerson(person.getId());
             person.setHousehold(null);
             if (household.getPersons().isEmpty()) {

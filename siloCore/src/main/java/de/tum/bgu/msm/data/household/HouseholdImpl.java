@@ -21,7 +21,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -48,7 +48,7 @@ public final class HouseholdImpl implements Household {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.autos = autos;
-        persons = new HashMap<>(10);
+        persons = new LinkedHashMap<>(10);
     }
 
     @Override
