@@ -4,7 +4,7 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SkimUtil;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -53,7 +53,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 		updateZoneConnections(zones);
 		this.treesForNodesByTimes.clear();
-		SkimUtil.updateTransitSkim(delegate,
+		TravelTimeUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
 	}
 
