@@ -4,16 +4,18 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 
@@ -242,10 +244,10 @@ public class SummarizeData {
                         pwh.print(hh.getHhSize());
                         pwh.print(",");
                         pwh.println(hh.getAutos());
-                        for (Person pp : hh.getPersons()) {
+                        for (Person pp : hh.getPersons().values()) {
                             pwp.print(pp.getId());
                             pwp.print(",");
-                            pwp.print(pp.getHh().getId());
+                            pwp.print(pp.getHousehold().getId());
                             pwp.print(",");
                             pwp.print(pp.getAge());
                             pwp.print(",");
@@ -271,7 +273,7 @@ public class SummarizeData {
                                 pwh.print(hh.getHhSize());
                                 pwh.print(",");
                                 pwh.println(hh.getAutos());
-                                for (Person pp : hh.getPersons()) {
+                                for (Person pp : hh.getPersons().values()) {
                                     pwp.print(artificialPpId);
                                     pwp.print(",");
                                     pwp.print(artificialHhId);
@@ -303,10 +305,10 @@ public class SummarizeData {
                             pwh.print(hh.getHhSize());
                             pwh.print(",");
                             pwh.println(hh.getAutos());
-                            for (Person pp : hh.getPersons()) {
+                            for (Person pp : hh.getPersons().values()) {
                                 pwp.print(pp.getId());
                                 pwp.print(",");
-                                pwp.print(pp.getHh().getId());
+                                pwp.print(pp.getHousehold().getId());
                                 pwp.print(",");
                                 pwp.print(pp.getAge());
                                 pwp.print(",");
@@ -455,7 +457,7 @@ public class SummarizeData {
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHh().getId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -483,7 +485,7 @@ public class SummarizeData {
                 pwp.print(",");
                 pwp.print(pp.getEducationLevel());
                 pwp.print(",");
-                Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHh().getDwellingId());
+                Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
                 pwp.print(pp.getJobTAZ());
@@ -682,7 +684,7 @@ public class SummarizeData {
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHh().getId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -703,7 +705,7 @@ public class SummarizeData {
             pwp.print(pp.getEducationLevel());
             pwp.print(",");
             int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(pp.getHh().getDwellingId());
+            Dwelling dwelling = realEstate.getDwelling(pp.getHousehold().getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
@@ -869,7 +871,7 @@ public class SummarizeData {
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHh().getId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -890,7 +892,7 @@ public class SummarizeData {
             pwp.print(pp.getEducationLevel());
             pwp.print(",");
             int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(pp.getHh().getDwellingId());
+            Dwelling dwelling = realEstate.getDwelling(pp.getHousehold().getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
@@ -904,7 +906,7 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print(pp.getSchoolPlace());
             pwp.print(",");
-            pwp.print(pp.getHh().getAutos());
+            pwp.print(pp.getHousehold().getAutos());
             pwp.print(",");
             pwp.println(pp.getTelework());
             if (pp.getId() == SiloUtil.trackPp) {
@@ -1017,10 +1019,10 @@ public class SummarizeData {
             pwh.print(hh.getHhSize());
             pwh.print(",");
             pwh.println(hh.getAutos());
-            for (Person pp : hh.getPersons()) {
+            for (Person pp : hh.getPersons().values()) {
                 pwp.print(pp.getId());
                 pwp.print(",");
-                pwp.print(pp.getHh().getId());
+                pwp.print(pp.getHousehold().getId());
                 pwp.print(",");
                 pwp.print(pp.getAge());
                 pwp.print(",");
@@ -1132,7 +1134,7 @@ public class SummarizeData {
             }
             int county = ((MstmZone) geoData.getZones().get(zone)).getCounty().getId();
             autos[autoOwnership][county]++;
-            pwa.println(hh.getHhSize() + "," + hh.getNumberOfWorkers() + "," + hh.getHhIncome() + "," +
+            pwa.println(hh.getHhSize() + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
                     accessibility.getTransitAccessibilityForZone(zone) + "," + jobData.getJobDensityInZone(zone) + "," + hh.getAutos());
         }
         pwa.close();
@@ -1189,7 +1191,7 @@ public class SummarizeData {
                 zone = dwelling.getZoneId();
             }
             if (prestoRegionByTaz[zone] > 0) {
-                int hhInc = hh.getHhIncome();
+                int hhInc = HouseholdUtil.getHhIncome(hh);
                 int rent = realEstate.getDwelling(hh.getDwellingId()).getPrice();
                 int incCat = Math.min((hhInc / 10000), 9);
                 int rentCat = Math.min((rent / 250), 9);
@@ -1247,7 +1249,7 @@ public class SummarizeData {
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
-            pwp.print(pp.getHh().getId());
+            pwp.print(pp.getHousehold().getId());
             pwp.print(",");
             pwp.print(pp.getAge());
             pwp.print(",");
@@ -1289,7 +1291,7 @@ public class SummarizeData {
             int distance = (int) Math.log(zonalData.getIndexedValueAt(zone, "distanceToTransit"));
             int area = (int) zonalData.getIndexedValueAt(zone, "BBSR");
             autos[autoOwnership][municipality]++;
-            pwa.println(hh.getHHLicenseHolders() + "," + hh.getNumberOfWorkers() + "," + hh.getHhIncome() + "," +
+            pwa.println(HouseholdUtil.getHHLicenseHolders(hh) + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
                     distance + "," + area + "," + hh.getAutos());
         }
         pwa.close();

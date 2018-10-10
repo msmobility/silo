@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data.maryland;
 
-import de.tum.bgu.msm.data.ZoneImpl;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
 
 public final class MstmZone extends ZoneImpl {
 

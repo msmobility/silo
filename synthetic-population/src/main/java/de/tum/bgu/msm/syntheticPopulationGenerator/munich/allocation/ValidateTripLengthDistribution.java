@@ -3,7 +3,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Occupation;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -71,9 +73,11 @@ public class ValidateTripLengthDistribution {
     private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : personArrayList){
             if (pp.getJobTAZ() > 0){
-                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
+                Household hh = pp.getHousehold();
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
                 commuteDistance.addValue(value);
             }

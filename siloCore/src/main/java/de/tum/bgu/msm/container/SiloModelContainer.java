@@ -3,6 +3,7 @@ package de.tum.bgu.msm.container;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
@@ -181,12 +182,13 @@ public class SiloModelContainer {
         ConstructionModel cons = new ConstructionModel(dataContainer, move, acc, DwellingUtils.getFactory());
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         updateCarOwnershipModel.initialize();
-        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel);
-        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense, PersonUtils.getFactory());
+        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
+        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense,
+                PersonUtils.getFactory(), HouseholdUtil.getFactory());
         DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
-        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel);
+        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel, HouseholdUtil.getFactory());
 //        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);
-        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel);
+        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,

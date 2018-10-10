@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.person;
 
 /**
  * Nationality of a person or a household. For households, defined if all household members belong to one nationality,

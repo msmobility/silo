@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -32,7 +33,7 @@ public class SwitchToAutonomousVehicleModel {
         for (Map.Entry<Integer, int[]> pair : conventionalCarsHouseholds.entrySet()) {
             Household hh = householdData.getHouseholdFromId(pair.getKey());
             if (hh != null) {
-                int income = hh.getHhIncome()/12 ; //uses monthly income
+                int income = HouseholdUtil.getHhIncome(hh)/12 ; //uses monthly income
                 double[] prob = calculator.calculate(income, year);
 
                 int action = SiloUtil.select(prob);

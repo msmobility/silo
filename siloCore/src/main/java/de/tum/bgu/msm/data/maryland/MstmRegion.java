@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data.maryland;
 
-import de.tum.bgu.msm.data.RegionImpl;
+import de.tum.bgu.msm.data.geo.RegionImpl;
 
 public class MstmRegion extends RegionImpl {
 

@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.transportModel.mstm;
 
-import run.SiloMstm;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
@@ -8,10 +7,9 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.testcases.MatsimTestUtils;
+import run.SiloMstm;
 
 import java.io.File;
-
-import static org.junit.Assert.assertEquals;
 
 public class SiloMstmTest {
     private static final Logger LOG = Logger.getLogger(SiloMstmTest.class);

@@ -6,11 +6,16 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.Gender;
@@ -1420,7 +1425,8 @@ public class SyntheticPopCT implements SyntheticPopI {
             if (lengthKeys > 0) {
 
                 //Select the workplace location (TAZ) for that person given his/her job type
-                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
+                Household hh = pp.getHousehold();
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int[] workplace = selectWorkplace(origin, numberVacantJobsByZoneByType, keys, lengthKeys,
                         distanceImpedance);
 
@@ -1555,7 +1561,8 @@ public class SyntheticPopCT implements SyntheticPopI {
 
                 //Select the school location (which raster cell) for that person given his/her job type
                 int[] schoolPlace = new int[2];
-                int origin = realEstate.getDwelling(pp.getHh().getDwellingId()).getZoneId();
+                Household hh = pp.getHousehold();
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 if (schoolType == 3) {
                     schoolPlace = selectWorkplace(origin, numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, universityDistanceImpedance);
@@ -1628,9 +1635,11 @@ public class SyntheticPopCT implements SyntheticPopI {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdData();
         //Generate the households, dwellings and persons
         logger.info("   Starting to generate households");
+        HouseholdFactory householdFactory = HouseholdUtil.getFactory();
         for (int i = 1; i <= households.getRowCount(); i++) {
-            Household hh = householdDataManager.createHousehold((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
+            Household hh = householdFactory.createHousehold((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
                     (int) households.getValueAt(i, "autos"));
+            householdDataManager.addHousehold(hh);
         }
 
         logger.info("   Starting to generate persons");
@@ -1846,6 +1855,8 @@ public class SyntheticPopCT implements SyntheticPopI {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdData();
         //Selection of households, persons, jobs and dwellings per municipality
+
+        HouseholdFactory householdFactory = HouseholdUtil.getFactory();
         for (int municipality : municipalities){
             logger.info("   Municipality " + cityID[municipality] + ". Starting to generate households.");
 
@@ -1902,7 +1913,8 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int householdSize = (int) microDataHousehold.getIndexedValueAt(hhIdMD, "hhSize");
                 id = householdDataManager.getNextHouseholdId();
                 int newDdId = RealEstateDataManager.getNextDwellingId();
-                Household household = householdDataManager.createHousehold(id, newDdId, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                Household household = householdFactory.createHousehold(id, newDdId, 0); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
+                householdDataManager.addHousehold(household);
                 hhTotal++;
                 counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipality);
 

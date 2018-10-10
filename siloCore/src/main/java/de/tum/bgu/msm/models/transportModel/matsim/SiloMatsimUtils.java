@@ -5,12 +5,14 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
@@ -107,7 +109,8 @@ public class SiloMatsimUtils {
 //			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
-    	Collection<Person> siloPersons = dataContainer.getHouseholdData().getPersons();
+		HouseholdDataManager householdData = dataContainer.getHouseholdData();
+		Collection<Person> siloPersons = householdData.getPersons();
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
@@ -129,8 +132,9 @@ public class SiloMatsimUtils {
     			continue;
     		}
 
-    		Household household = siloPerson.getHh();
-    		int numberOfWorkers = household.getNumberOfWorkers();
+    		Household household = siloPerson.getHousehold();
+
+    		int numberOfWorkers = HouseholdUtil.getNumberOfWorkers(household);
     		int numberOfAutos = household.getAutos();
     		if (numberOfWorkers == 0) {
     			throw new RuntimeException("If there are no workers in the household, the loop must already"

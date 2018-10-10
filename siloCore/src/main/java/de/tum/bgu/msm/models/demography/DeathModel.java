@@ -3,8 +3,9 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.MicroEventModel;
@@ -76,18 +77,18 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         if (person.getWorkplace() > 0) {
             dataContainer.getJobData().quitJob(true, person);
         }
-        final Household hhOfPersonToDie = person.getHh();
+        final Household hhOfPersonToDie = person.getHousehold();
 
         if (person.getRole() == PersonRole.MARRIED) {
-            Person widow = HouseholdDataManager.findMostLikelyPartner(person, hhOfPersonToDie);
+            Person widow = householdData.findMostLikelyPartner(person, hhOfPersonToDie);
             widow.setRole(PersonRole.SINGLE);
         }
         householdData.removePerson(person.getId());
         householdData.addHouseholdThatChanged(hhOfPersonToDie);
 
-        final boolean onlyChildrenLeft = hhOfPersonToDie.checkIfOnlyChildrenRemaining();
+        final boolean onlyChildrenLeft = HouseholdUtil.checkIfOnlyChildrenRemaining(hhOfPersonToDie);
         if (onlyChildrenLeft) {
-            for (Person pp : hhOfPersonToDie.getPersons()) {
+            for (Person pp : hhOfPersonToDie.getPersons().values()) {
                 if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
                             " to foster care as remaining child just before head of household (ID " +

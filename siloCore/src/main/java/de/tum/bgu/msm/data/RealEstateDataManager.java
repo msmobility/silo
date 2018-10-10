@@ -8,6 +8,9 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -188,7 +191,7 @@ public class RealEstateDataManager {
             largestNoBedrooms = Math.max(largestNoBedrooms, dd.getBedrooms());
             int hhId = dd.getResidentId();
             if (hhId > 0) {
-                int hhinc = householdData.getHouseholdFromId(hhId).getHhIncome();
+                int hhinc = HouseholdUtil.getHhIncome(householdData.getHouseholdFromId(hhId));
                 IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(hhinc);
                 int rentCategory = (int) ((dd.getPrice() * 1.) / 200.);  // rent category defined as <rent/200>
                 rentCategory = Math.min(rentCategory, rentCategories);   // ensure that rent categories do not exceed max
@@ -313,8 +316,9 @@ public class RealEstateDataManager {
         SummarizeData.resultFile(header);
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
-        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
-            int hhInc = hh.getHhIncome();
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        for (Household hh: householdData.getHouseholds()) {
+            int hhInc = HouseholdUtil.getHhIncome(hh);
             int rent = dwellings.get(hh.getDwellingId()).getPrice();
             int incCat = Math.min((hhInc / 10000), 9);
             int rentCat = Math.min((rent / 250), 9);
