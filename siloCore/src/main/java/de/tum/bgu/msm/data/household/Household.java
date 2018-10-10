@@ -29,8 +29,6 @@ public interface Household extends Id {
 
     void removePerson(Integer personId);
 
-    void setType(HouseholdType householdType);
-
     void setAutos(int autos);
 
     void setAutonomous(int autonomous);

@@ -108,11 +108,6 @@ public final class HouseholdImpl implements Household {
     }
 
     @Override
-    public void setType(HouseholdType householdType) {
-        this.type = householdType;
-    }
-
-    @Override
     public void setAutos(int autos) {
         this.autos = autos;
     }
