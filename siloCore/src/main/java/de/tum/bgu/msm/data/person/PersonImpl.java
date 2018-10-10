@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data.person;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 
 public class PersonImpl implements Person{
 
@@ -73,7 +72,7 @@ public class PersonImpl implements Person{
     @Override
     public void setIncome (int newIncome) {
         this.income = newIncome;
-        HouseholdUtil.defineHouseholdType(household);
+        household.updateHouseholdType();
     }
 
     @Override

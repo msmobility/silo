@@ -82,6 +82,11 @@ public final class HouseholdImpl implements Household {
     }
 
     @Override
+    public void updateHouseholdType() {
+        this.type = HouseholdUtil.defineHouseholdType(this);
+    }
+
+    @Override
     public Race getRace() {return race; }
 
     @Override
@@ -131,6 +136,6 @@ public final class HouseholdImpl implements Household {
 
     private void update() {
         this.race = HouseholdUtil.defineHouseholdRace(this);
-        this.type = HouseholdUtil.defineHouseholdType(this);
+        updateHouseholdType();
     }
 }

@@ -19,6 +19,8 @@ public interface Household extends Id {
 
     HouseholdType getHouseholdType();
 
+    void updateHouseholdType();
+
     Race getRace();
 
     Nationality getNationality();
