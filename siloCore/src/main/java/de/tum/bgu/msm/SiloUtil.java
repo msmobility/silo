@@ -205,6 +205,20 @@ public class SiloUtil {
         return ind;
     }
 
+    public static int findPositionInArray (String string, String[] array) {
+        int ind = -1;
+        for (int a = 0; a < array.length; a++) {
+            if (array[a].equalsIgnoreCase(string)) {
+                ind = a;
+            }
+        }
+        if (ind == -1) {
+            logger.error ("Could not find element " + string +
+                    " in array (see method <findPositionInArray> in class <SiloUtil>");
+        }
+        return ind;
+    }
+
 
     public static TableDataSet readCSVfile (String fileName) {
         // read csv file and return as TableDataSet

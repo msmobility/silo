@@ -6,6 +6,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -93,7 +94,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
                 // divorce
                 Household oldHh = householdData.getHouseholdFromId(per.getHousehold().getId());
-                Person divorcedPerson = householdData.findMostLikelyPartner(per, oldHh);
+                Person divorcedPerson = HouseholdUtil.findMostLikelyPartner(per, oldHh);
                 divorcedPerson.setRole(PersonRole.SINGLE);
                 per.setRole(PersonRole.SINGLE);
                 householdData.removePersonFromHousehold(per);

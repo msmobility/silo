@@ -32,7 +32,7 @@ public class JobFactoryImpl implements JobFactory {
     }
 
     public void readWorkingTimeDistributions(Properties properties) {
-        String fileNameStart = properties.jobData.jobStartTimeDistributionFile;
+        String fileNameStart = properties.main.baseDirectory + properties.jobData.jobStartTimeDistributionFile;
         String recString = "";
         BufferedReader in = null;
         try {
@@ -57,7 +57,7 @@ public class JobFactoryImpl implements JobFactory {
             e.printStackTrace();
         }
 
-        String fileNameDuration = properties.jobData.jobDurationDistributionFile;
+        String fileNameDuration = properties.main.baseDirectory + properties.jobData.jobDurationDistributionFile;
         try {
             in = new BufferedReader(new FileReader(fileNameDuration));
             recString = in.readLine();

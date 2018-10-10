@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
@@ -125,8 +126,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             driversLicense.checkLicenseCreation(person.getId());
         }
 
-        householdData.findMarriedCouple(hh);
-        householdData.defineUnmarriedPersons(hh);
+        HouseholdUtil.findMarriedCouple(hh);
+        HouseholdUtil.defineUnmarriedPersons(hh);
         int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);

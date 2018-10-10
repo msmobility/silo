@@ -18,7 +18,7 @@ import de.tum.bgu.msm.io.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.DefaultPersonReader;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
-import de.tum.bgu.msm.utils.SkimUtil;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -100,8 +100,8 @@ public class AccessibilityTest {
         personFile += "_" + properties.main.startYear + ".csv";
         new DefaultPersonReader(hhManager).readData(personFile);
 
-        SkimUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
-        SkimUtil.updateTransitSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
+        TravelTimeUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
+        TravelTimeUtil.updateTransitSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
 
         Accessibility accessibility = new Accessibility(dataContainer);
         accessibility.initialize();
