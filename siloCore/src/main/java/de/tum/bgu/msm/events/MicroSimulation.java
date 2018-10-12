@@ -3,7 +3,7 @@ package de.tum.bgu.msm.events;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;

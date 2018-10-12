@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;

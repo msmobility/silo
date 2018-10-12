@@ -2,7 +2,7 @@ package run;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;

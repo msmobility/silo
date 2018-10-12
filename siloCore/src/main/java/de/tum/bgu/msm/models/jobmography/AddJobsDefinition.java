@@ -6,7 +6,7 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.job.Job;
 

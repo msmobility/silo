@@ -2,7 +2,7 @@ package de.tum.bgu.msm.io;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;

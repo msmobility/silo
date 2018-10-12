@@ -1,17 +1,16 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.utils;
 
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
-import de.tum.bgu.msm.utils.TableDataFileReader2;
-import de.tum.bgu.msm.utils.TimeTracker;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
@@ -75,7 +74,7 @@ public class SiloUtil {
         return properties;
     }
 
-    private static void loadHdf5Lib() {
+    public static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;
@@ -1104,7 +1103,7 @@ public class SiloUtil {
     }
 
 
-    static void writeOutTimeTracker (TimeTracker timeTracker) {
+    public static void writeOutTimeTracker (TimeTracker timeTracker) {
         // write file summarizing run times
 
         int startYear = Properties.get().main.startYear;

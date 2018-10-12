@@ -2,10 +2,12 @@ package run;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -26,10 +28,14 @@ public class SiloMuc {
 
         Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
         long startTime = System.currentTimeMillis();
+        Config config = null;
+        if(args[1] != null) {
+            config = ConfigUtils.loadConfig(args[1]);
+        }
         try {
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
             logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
-            SiloModel model = new SiloModel(properties);
+            SiloModel model = new SiloModel(config, properties);
             model.runModel();
             logger.info("Finished SILO.");
         } catch (Exception e) {

@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;

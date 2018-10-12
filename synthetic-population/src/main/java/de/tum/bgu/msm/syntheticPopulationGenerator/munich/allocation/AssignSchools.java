@@ -2,7 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;

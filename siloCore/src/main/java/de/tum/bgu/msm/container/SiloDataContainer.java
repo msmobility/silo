@@ -112,7 +112,7 @@ public class SiloDataContainer {
         jobData.setHighestJobId();
 
         if (properties.transportModel.runMatsim) {
-            travelTimes = new MatsimTravelTimes();
+            travelTimes = new MatsimTravelTimes(geoData.getZones().values());
         } else {
             travelTimes = new SkimTravelTimes();
         }

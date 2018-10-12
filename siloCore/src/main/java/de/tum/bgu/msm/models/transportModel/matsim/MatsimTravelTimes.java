@@ -1,5 +1,11 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -11,11 +17,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-
-import de.tum.bgu.msm.data.Location;
-import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.Region;
-
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
@@ -23,15 +24,7 @@ import org.matsim.core.router.TripRouter;
 import org.matsim.pt.router.FakeFacility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import com.vividsolutions.jts.geom.Coordinate;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class MatsimTravelTimes implements TravelTimes {
 	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
@@ -46,12 +39,14 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
 
-	void update(TripRouter tripRouter, Collection<Zone> zones, Network network, LeastCostPathTree leastCoastPathTree) {
+	public MatsimTravelTimes(Collection<Zone> zones) {
+		updateZoneConnections(zones);
+	}
+
+	void update(TripRouter tripRouter, Network network, LeastCostPathTree leastCoastPathTree) {
 		this.tripRouter = tripRouter;
 		this.network = network;
 		this.leastCoastPathTree = leastCoastPathTree;
-
-		updateZoneConnections(zones);
 		this.treesForNodesByTimes.clear();
 		TravelTimeUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());

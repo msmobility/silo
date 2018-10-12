@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulation;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.models.realEstate.ConstructionDemandJSCalculator;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;

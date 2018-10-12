@@ -21,9 +21,11 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 //import Implementation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -90,8 +92,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		int numberOfCalcPoints = 1;
 		boolean writePopulation = false;
 
-//		double populationScalingFactor = 0.01;
-		double populationScalingFactor = 1.; // For test
+		double populationScalingFactor = 0.01;
+//		double populationScalingFactor = 1.; // For test
 		
 		// people working at non-peak times (only peak traffic is simulated), and people going by a mode other
 		// than car in case a car is still available to them
@@ -117,8 +119,7 @@ public final class MatsimTransportModel implements TransportModelI  {
     		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
     	}
 
-		// Get travel Times from MATSim
-		LOG.warn("Using MATSim to compute travel times from zone to zone.");
+
 		
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
@@ -127,7 +128,9 @@ public final class MatsimTransportModel implements TransportModelI  {
 		
 		controler.run();
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");
-		
+
+		// Get travel Times from MATSim
+		LOG.warn("Using MATSim to compute travel times from zone to zone.");
 		TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
         updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime, travelDisutility);
@@ -162,8 +165,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
-		travelTimes.update(tripRouter, dataContainer.getGeoData().getZones().values(),
-				scenario.getNetwork(), leastCoastPathTree);
+		travelTimes.update(tripRouter,scenario.getNetwork(), leastCoastPathTree);
+		new OmxTravelTimesWriter(travelTimes, dataContainer.getGeoData().getZones().values()).writeTravelTimes("D:/traveltimes11.omx", "tt", TransportMode.car);
 
 //		tripRouter = controler.getTripRouterProvider().get();
 	}

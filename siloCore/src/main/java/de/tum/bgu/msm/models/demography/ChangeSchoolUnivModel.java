@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEventModel;
