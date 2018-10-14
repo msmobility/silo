@@ -347,7 +347,7 @@
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
             <!-- 			<version>0.3.0-SNAPSHOT</version> -->
-            <version>master-SNAPSHOT</version>
+            <version>master</version>
             <!-- 		The jitpack version refers to the github branch.  Since you only have a master branch for mito, you can only use master-SNAPSHOT.  If
                     you want to have this dependency stay with an older version of mito, you will have to put that older version on a branch and leave it there.
                     I just introduced a 0.2.x branch. But it does not work with that either. kai, jun'17	 -->
