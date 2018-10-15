@@ -21,11 +21,9 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 //import Implementation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
@@ -172,8 +170,6 @@ public final class MatsimTransportModel implements TransportModelI  {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
 		travelTimes.update(tripRouter, leastCoastPathTree);
-		new OmxTravelTimesWriter(travelTimes, dataContainer.getGeoData().getZones().values()).writeTravelTimes("D:/traveltimes22.omx", "tt", TransportMode.car);
-
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
 
