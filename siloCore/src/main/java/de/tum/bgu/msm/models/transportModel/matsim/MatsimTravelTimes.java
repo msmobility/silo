@@ -39,21 +39,20 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
 
-	public MatsimTravelTimes(Collection<Zone> zones) {
-		updateZoneConnections(zones);
+	public MatsimTravelTimes() {
 	}
 
-	void update(TripRouter tripRouter, Network network, LeastCostPathTree leastCoastPathTree) {
+	void update(TripRouter tripRouter, LeastCostPathTree leastCoastPathTree) {
 		this.tripRouter = tripRouter;
-		this.network = network;
 		this.leastCoastPathTree = leastCoastPathTree;
 		this.treesForNodesByTimes.clear();
 		TravelTimeUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
 	}
 
-	private void updateZoneConnections(Collection<Zone> zones) {
-	    for (Zone zone : zones) {
+	public void initialize(Collection<Zone> zones, Network network) {
+		this.network = network;
+		for (Zone zone : zones) {
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
             	Coordinate coordinate = zone.getRandomCoordinate();
 				Coord originCoord = new Coord(coordinate.x, coordinate.y);

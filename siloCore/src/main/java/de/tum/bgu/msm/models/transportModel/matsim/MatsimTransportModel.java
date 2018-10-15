@@ -26,6 +26,7 @@ import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -34,6 +35,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
@@ -67,12 +70,16 @@ public final class MatsimTransportModel implements TransportModelI  {
 	private final MatsimTravelTimes travelTimes;
 //	private TripRouter tripRouter = null;
 	private final SiloDataContainer dataContainer;
-	
-	
+	private final Network network;
+
+
 	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
 		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
+		network = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(network).readFile(matsimConfig.network().getInputFile());
+		travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
 	}
 
 	@Override
@@ -109,7 +116,6 @@ public final class MatsimTransportModel implements TransportModelI  {
 		String matsimRunId = scenarioName + "_" + year;
 		
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor, workerScalingFactor);
-		
 //		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, zoneFeatureMap, populationScalingFactor * workerScalingFactor);
 		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor * workerScalingFactor);
 		
@@ -133,7 +139,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		LOG.warn("Using MATSim to compute travel times from zone to zone.");
 		TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(scenario, controler.getTripRouterProvider().get(), travelTime, travelDisutility);
+        updateTravelTimes(controler.getTripRouterProvider().get(), travelTime, travelDisutility);
 	}
 
     /**
@@ -149,10 +155,10 @@ public final class MatsimTransportModel implements TransportModelI  {
         TripRouter tripRouter = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario).get();
         TravelTime travelTime = ttCalculator.getLinkTravelTimes();
         TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(scenario, tripRouter, travelTime, travelDisutility);
+        updateTravelTimes(tripRouter, travelTime, travelDisutility);
 	}
 
-	private void updateTravelTimes(MutableScenario scenario, TripRouter tripRouter, TravelTime travelTime, TravelDisutility disutility) {
+	private void updateTravelTimes(TripRouter tripRouter, TravelTime travelTime, TravelDisutility disutility) {
 		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
 //
 ////		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
@@ -165,8 +171,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
-		travelTimes.update(tripRouter,scenario.getNetwork(), leastCoastPathTree);
-		new OmxTravelTimesWriter(travelTimes, dataContainer.getGeoData().getZones().values()).writeTravelTimes("D:/traveltimes11.omx", "tt", TransportMode.car);
+		travelTimes.update(tripRouter, leastCoastPathTree);
+		new OmxTravelTimesWriter(travelTimes, dataContainer.getGeoData().getZones().values()).writeTravelTimes("D:/traveltimes22.omx", "tt", TransportMode.car);
 
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
