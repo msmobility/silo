@@ -78,7 +78,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
 		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
 		network = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(network).readFile(matsimConfig.network().getInputFile());
+		new MatsimNetworkReader(network).readFile(matsimConfig.network().getInputFileURL(matsimConfig.getContext()).getFile());
 		travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
 	}
 
