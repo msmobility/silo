@@ -71,12 +71,9 @@ public class DefaultJobReader implements JobReader {
                 Job jj = factory.createJob(id, zoneId, coordinate, worker, type);
                 int startTime = 0;
                 int duration = 0;
-                if (Properties.get().main.implementation == Implementation.MUNICH && posStartTime == -1 && posDuration == -1) {
+                if (Properties.get().main.implementation == Implementation.MUNICH) {
                     startTime = Integer.parseInt(lineElements[posStartTime]);
                     duration = Integer.parseInt(lineElements[posDuration]);
-                    //overwrite a randomly assigned working time when calling the method create job before.
-                    //right now it is modifying twice these values
-                    //this has to be improved by different implementations of jobs and their corresponding factories
                     jj.setJobWorkingTime(startTime, duration);
                 }
 
