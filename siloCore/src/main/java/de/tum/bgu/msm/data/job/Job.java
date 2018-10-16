@@ -16,15 +16,14 @@
  */
 package de.tum.bgu.msm.data.job;
 
+import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.Location;
 
 /**
  * Job interface
  * @author Nkuehnel
  **/
- public interface Job extends Location {
-
-     int getId();
+ public interface Job extends Location, Id {
 
      int getWorkerId();
 

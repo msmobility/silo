@@ -1,14 +1,13 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.Location;
 
 import java.util.EnumMap;
 
-public interface Dwelling extends Location {
-
-    int getId();
+public interface Dwelling extends Location, Id {
 
     int getQuality();
 
