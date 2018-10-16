@@ -23,10 +23,10 @@ public class JobFactoryImpl implements JobFactory {
         Job job = new JobImpl(id, zoneId, coordinate, workerId, type);
 
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
-            job.setJobWorkingTime(SiloUtil.select(startTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble(),
-                    SiloUtil.select(workingTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble());
+            job.setJobWorkingTime((int) (SiloUtil.select(startTimeDistributionByJobType.get(type)) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
+                    (int) (SiloUtil.select(workingTimeDistributionByJobType.get(type)) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
         }
         return job;
     }
