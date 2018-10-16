@@ -29,7 +29,7 @@ public class SiloMuc {
         Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
         long startTime = System.currentTimeMillis();
         Config config = null;
-        if(args[1] != null) {
+        if(args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
         try {

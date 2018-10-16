@@ -38,7 +38,8 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
                         coordinate = zone.getRandomCoordinate();
                     }
                 }
-                factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
+                final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
+                jobDataManager.addJob(job);
             }
             if (id == SiloUtil.trackJj) {
                 SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +
