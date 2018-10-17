@@ -15,13 +15,14 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
-import org.matsim.pt.router.FakeFacility;
+import org.matsim.facilities.Facility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 
 import java.util.*;
@@ -106,8 +107,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 		if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
 			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();
 			Coordinate destinationCoord = ((MicroLocation) destination).getCoordinate();
-			FakeFacility fromFacility = new FakeFacility(new Coord(originCoord.x, originCoord.y));
-			FakeFacility toFacility = new FakeFacility(new Coord(destinationCoord.x, destinationCoord.y));
+			Facility fromFacility = new DummyFacility(new Coord(originCoord.x, originCoord.y));
+			Facility toFacility = new DummyFacility(new Coord(destinationCoord.x, destinationCoord.y));
 			org.matsim.api.core.v01.population.Person person = null;
 			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
 			double ttime = 0. ;
@@ -151,5 +152,29 @@ public final class MatsimTravelTimes implements TravelTimes {
 	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	private static class DummyFacility implements Facility {
+
+		private final Coord coord;
+
+		private DummyFacility(Coord coord) {
+			this.coord = coord;
+		}
+
+		@Override
+		public Id<Link> getLinkId() {
+			return null;
+		}
+
+		@Override
+		public Coord getCoord() {
+			return this.coord;
+		}
+
+		@Override
+		public Map<String, Object> getCustomAttributes() {
+			return null;
+		}
 	}
 }

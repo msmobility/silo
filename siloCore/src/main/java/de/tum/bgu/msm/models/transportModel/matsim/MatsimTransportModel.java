@@ -124,7 +124,7 @@ public final class MatsimTransportModel implements TransportModelI  {
     	}
 
 
-		
+		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
 		
@@ -146,6 +146,7 @@ public final class MatsimTransportModel implements TransportModelI  {
      */
 	public void replayFromEvents(String eventsFile) {
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
+        initialMatsimConfig.plansCalcRoute().setInsertingAccessEgressWalk(true);
 	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
         EventsManager events = EventsUtils.createEventsManager();
         events.addHandler(ttCalculator);
