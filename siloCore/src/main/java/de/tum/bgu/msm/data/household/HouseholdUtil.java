@@ -197,4 +197,16 @@ public class HouseholdUtil {
             }
         }
     }
+
+    public static Nationality defineHouseholdNationality(Household household) {
+        Nationality householdNationaliy = null;
+        for (Person pp : household.getPersons().values()) {
+            if (householdNationaliy == null) {
+                householdNationaliy = pp.getNationality();
+            } else if (pp.getNationality() != householdNationaliy) {
+                return Nationality.OTHER;
+            }
+        }
+        return householdNationaliy;
+    }
 }
