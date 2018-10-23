@@ -46,15 +46,15 @@ public class SummarizeData {
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
 
-    public static void openResultFile(ResourceBundle rb) {
+    public static void openResultFile(Properties properties) {
         // open summary file
 
-        String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
-        String resultFileName = Properties.get().main.resultFileName;
+        String resultFileName = properties.main.resultFileName;
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
-                Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
-        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + Properties.get().main.endYear + ".csv", false);
+                properties.main.gregorianIterator + ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
+        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + properties.main.endYear + ".csv", false);
     }
 
 

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.properties.modules;
 
 
+import com.google.common.io.Files;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.PropertiesUtil;
@@ -12,7 +13,6 @@ import java.util.stream.Collectors;
 
 public class MainProperties {
 
-    public final boolean runSilo;
     public final String scenarioName;
 
     public final boolean trackTime;
@@ -52,16 +52,15 @@ public class MainProperties {
     public final boolean runJobMicrolocation;
     public final boolean runSchoolMicrolocation;
 
-    public MainProperties(ResourceBundle bundle, Implementation implementation) {
+    public MainProperties(String propertiesBasePath, ResourceBundle bundle, Implementation implementation) {
 
         this.implementation = implementation;
 
         PropertiesUtil.newPropertySubmodule("Main properties");
-        runSilo = PropertiesUtil.getBooleanProperty(bundle, "run.silo.model", true);
         scenarioName = PropertiesUtil.getStringProperty(bundle, "scenario.name");
         //by omitting base directory one has to set up a working folder in intellij etc. which represents "." in the next line
         //add working directory as default value?
-        baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", "./");
+        baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", propertiesBasePath + "/");
         startYear = PropertiesUtil.getIntProperty(bundle, "start.year");
         endYear = PropertiesUtil.getIntProperty(bundle, "end.year");
         randomSeed = PropertiesUtil.getIntProperty(bundle, "random.seed", -1);

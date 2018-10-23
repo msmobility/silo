@@ -38,36 +38,19 @@ public class SiloUtil {
     public static int trackDd;
     public static int trackJj;
     public static PrintWriter trackWriter;
-    private static ResourceBundle rb;
-
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static Properties siloInitialization(String resourceBundleNames, Implementation implementation) {
+    public static Properties siloInitialization(String propertiesPath, Implementation implementation) {
 
         loadHdf5Lib();
 
-        File propFile = new File(resourceBundleNames);
-        try {
-            rb = new PropertyResourceBundle(new FileReader(propFile));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Properties properties = Properties.initializeProperties(rb, implementation);
-        SummarizeData.openResultFile(rb);
+        Properties properties = Properties.initializeProperties(propertiesPath, implementation);
+        SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
 
         // create scenarios output directory if it does not exist yet
         createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
 
-        PropertiesUtil.printOutPropertiesOfThisRun(properties.main.baseDirectory + "/scenOutput/" + properties.main.scenarioName);
-        // copy properties file into scenarios directory
-        String[] prop = resourceBundleNames.split("/");
-
-//        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
-        // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
-        // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
-        // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
-        copyFile(resourceBundleNames, properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/" + prop[prop.length-1]);
 
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
@@ -901,7 +884,7 @@ public class SiloUtil {
         try {
             Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
         } catch (Exception e) {
-            final String msg = "Unable to copy properties file " + source + " to scenarios output directory.";
+            final String msg = "Unable to copy file " + source + " to directory " + destination;
 		logger.warn(msg);
             throw new RuntimeException(msg) ;
             // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16

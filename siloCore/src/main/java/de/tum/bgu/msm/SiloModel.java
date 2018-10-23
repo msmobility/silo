@@ -72,9 +72,6 @@ public final class SiloModel {
 	}
 
 	public void runModel() {
-		if (!properties.main.runSilo) {
-			return;
-		}
 		setupModel();
 		runYearByYear();
 		endSimulation();
