@@ -16,16 +16,11 @@ public class MainProperties {
     public final String scenarioName;
 
     public final boolean trackTime;
-    public final String trackTimeFile;
+
 
     public final Set<Integer> scalingYears;
-
     public final boolean readSmallSynpop;
     public final boolean writeSmallSynpop;
-
-    public final String resultFileName;
-    public final String spatialResultFileName;
-
     public final boolean createMstmOutput;
     public final boolean createHousingEnvironmentImpactFile;
     public final boolean createPrestoSummary;
@@ -67,11 +62,6 @@ public class MainProperties {
 
         PropertiesUtil.newPropertySubmodule("Main - runtime tracking");
         trackTime = PropertiesUtil.getBooleanProperty(bundle, "track.time", true);
-        trackTimeFile = PropertiesUtil.getStringProperty(bundle, "track.time.file","timeTracker.csv");
-
-        PropertiesUtil.newPropertySubmodule("Main - result files");
-        resultFileName = PropertiesUtil.getStringProperty(bundle, "result.file.name", "resultFile");
-        spatialResultFileName =  PropertiesUtil.getStringProperty(bundle,"spatial.result.file.name", "resultFileSpatial");
 
         PropertiesUtil.newPropertySubmodule("Main - dwelling and income input data");
         incomeBrackets = PropertiesUtil.getIntPropertyArray(bundle,"income.brackets.hh.types", new int[]{20000,40000,60000}); //munich implementation

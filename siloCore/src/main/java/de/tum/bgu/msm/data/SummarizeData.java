@@ -45,15 +45,16 @@ public class SummarizeData {
 
     private static TableDataSet scalingControlTotals;
     private static int[] prestoRegionByTaz;
+    private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
+    private static final String RESULT_FILE = "resultFile";
 
     public static void openResultFile(Properties properties) {
         // open summary file
 
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        String resultFileName = properties.main.resultFileName;
-        resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
+        resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE +
                 properties.main.gregorianIterator + ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
-        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + properties.main.endYear + ".csv", false);
+        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE + "_" + properties.main.endYear + ".csv", false);
     }
 
 
@@ -94,10 +95,9 @@ public class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                String resultFileName = Properties.get().main.spatialResultFileName;
-                spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
+                spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
                         Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
-                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName + "_" + Properties.get().main.endYear + ".csv", false);
+                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL + "_" + Properties.get().main.endYear + ".csv", false);
                 break;
             case "close":
                 spatialResultWriter.close();

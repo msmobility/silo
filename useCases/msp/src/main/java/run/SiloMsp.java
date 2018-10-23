@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 
 /**
  * Implements SILO for Minneapolis/St. Paul (MetCouncil)
+ *
  * @author Rolf Moeckel
  * Created on Jan 28, 2011 in Vienna, VA
- *
  */
 
 public class SiloMsp {
@@ -40,24 +40,10 @@ public class SiloMsp {
     public static void main(String[] args) {
 
         Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MSP);
-        long startTime = System.currentTimeMillis();
-        try {
-            logger.info("Starting SILO for Minneapolis/St. Paul");
-            logger.info("Scenario: " + properties.main.scenarioName);
-            SiloModel model = new SiloModel(properties);
-            model.runModel();
-            logger.info("Finished SILO.");
-        } catch (Exception e) {
-            logger.error("Error running SILO.");
-            throw new RuntimeException(e);
-        } finally {
-            SiloUtil.trackingFile("close");
-            SummarizeData.resultFile("close");
-            SummarizeData.resultFileSpatial("close");
-            float endTime = SiloUtil.rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
-            int hours = (int) (endTime / 60);
-            int min = (int) (endTime - 60 * hours);
-            logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        }
+        logger.info("Starting SILO for Minneapolis/St. Paul");
+        SiloModel model = new SiloModel(properties);
+        model.runModel();
+        logger.info("Finished SILO.");
+
     }
 }

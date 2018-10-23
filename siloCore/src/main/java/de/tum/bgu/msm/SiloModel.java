@@ -58,7 +58,7 @@ public final class SiloModel {
 	private SiloDataContainer data;
 	private final Config matsimConfig;
     private MicroSimulation microSim;
-    private TimeTracker timeTracker = new TimeTracker();
+    private final TimeTracker timeTracker = new TimeTracker();
 
     public SiloModel(Properties properties) {
 		this(null, properties) ;
@@ -72,9 +72,19 @@ public final class SiloModel {
 	}
 
 	public void runModel() {
-		setupModel();
-		runYearByYear();
-		endSimulation();
+		logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
+		long startTime = System.currentTimeMillis();
+		try{
+			setupModel();
+			runYearByYear();
+			endSimulation();
+		} catch (Exception e){
+			logger.error("Error running SILO.");
+			throw new RuntimeException(e);
+		} finally {
+			SiloUtil.closeAllFiles(startTime, timeTracker);
+		}
+
 	}
 
 	private void setupModel() {
@@ -268,6 +278,8 @@ public final class SiloModel {
 					timeTracker.record("calcAccessibilities");
                 }
             }
+
+
 
 			timeTracker.reset();
 			modelContainer.getPrm().updatedRealEstatePrices();

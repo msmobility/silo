@@ -32,6 +32,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class SiloUtil {
 
+    private static final String TIME_TRACKER_FILE = "timeTracker.csv";
     private static Random rand;
     public static int trackHh;
     public static int trackPp;
@@ -1025,7 +1026,7 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime, Properties properties) {
+    public static void closeAllFiles (long startTime, TimeTracker timeTracker) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
@@ -1034,14 +1035,7 @@ public class SiloUtil {
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        if (properties.main.trackTime) {
-            String fileName = properties.main.trackTimeFile;
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
-                out.println("Runtime: " + hours + " hours and " + min + " minutes.");
-            } catch (IOException e) {
-                logger.warn("Could not add run-time statement to time-tracking file.");
-            }
-        }
+        SiloUtil.writeOutTimeTracker(timeTracker);
     }
 
 
@@ -1091,7 +1085,7 @@ public class SiloUtil {
 
         int startYear = Properties.get().main.startYear;
         PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" +
-                Properties.get().main.scenarioName + "/" + Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
+                Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.implementation.BASE_YEAR);
         pw.write(timeTracker.toString());
         pw.close();
     }
