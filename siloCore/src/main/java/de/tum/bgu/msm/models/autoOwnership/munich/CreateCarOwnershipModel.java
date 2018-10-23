@@ -3,7 +3,9 @@ package de.tum.bgu.msm.models.autoOwnership.munich;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import org.apache.log4j.Logger;
@@ -20,7 +22,7 @@ import java.io.Reader;
 
 public class CreateCarOwnershipModel {
 
-    static Logger logger = Logger.getLogger(CreateCarOwnershipModel.class);
+    private static Logger logger = Logger.getLogger(CreateCarOwnershipModel.class);
     private final CreateCarOwnershipJSCalculator calculator;
     private final SiloDataContainer dataContainer;
     private final GeoDataMuc geoDataMuc;
@@ -49,9 +51,10 @@ public class CreateCarOwnershipModel {
      * @param hh the household for which number of cars have to be simulated
      */
     public void simulateCarOwnership(Household hh) {
-        int license = hh.getHHLicenseHolders();
-        int workers = hh.getNumberOfWorkers();
-        int income = hh.getHhIncome()/12;  // convert yearly into monthly income
+        HouseholdDataManager households = dataContainer.getHouseholdData();
+        int license = HouseholdUtil.getHHLicenseHolders(hh);
+        int workers = HouseholdUtil.getNumberOfWorkers(hh);
+        int income = HouseholdUtil.getHhIncome(hh)/12;  // convert yearly into monthly income
         MunichZone zone = (MunichZone) geoDataMuc.getZones().get(dataContainer.getRealEstateData().
                 getDwelling(hh.getDwellingId()).getZoneId());
 

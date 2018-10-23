@@ -32,7 +32,7 @@ import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SkimUtil;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -99,8 +99,6 @@ public final class SiloModel {
     private void setupContainer() {
         data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
-		data.getHouseholdData().setTypeOfAllHouseholds();
-		data.getHouseholdData().setHighestHouseholdAndPersonId();
 		data.getHouseholdData().calculateInitialSettings();
 		data.getJobData().calculateEmploymentForecast();
 		data.getJobData().identifyVacantJobs();
@@ -125,9 +123,9 @@ public final class SiloModel {
 	}
 
 	private void updateTravelTimes(int year) {
-		SkimUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(),
+		TravelTimeUtil.updateCarSkim((SkimTravelTimes) data.getTravelTimes(),
 				year, properties);
-		SkimUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(),
+		TravelTimeUtil.updateTransitSkim((SkimTravelTimes) data.getTravelTimes(),
 				year, properties);
 	}
 

@@ -4,11 +4,11 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.Occupation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
@@ -33,7 +33,8 @@ public class LeaveParentHhModelTest {
                 .createDwelling(999, 1093, null, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
         dataContainer.getRealEstateData().addDwelling(dd);
 
-        household = dataContainer.getHouseholdData().createHousehold(999, 1, 0);
+        household = HouseholdUtil.getFactory().createHousehold(999, 1, 0);
+        dataContainer.getHouseholdData().addHousehold(household);
         Person parent1 = PersonUtils.getFactory().createPerson(123, 40, Gender.MALE, Race.other, Occupation.EMPLOYED, 0, 0);
         Person parent2 = PersonUtils.getFactory().createPerson(456, 40, Gender.FEMALE, Race.other, Occupation.EMPLOYED, 0, 0);
         dataContainer.getHouseholdData().addPerson(parent1);
@@ -58,7 +59,8 @@ public class LeaveParentHhModelTest {
     public void testLeaveParents() {
         model.leaveHousehold(person);
         Assert.assertEquals(2, dataContainer.getHouseholdData().getHouseholdFromId(999).getHhSize());
-        Assert.assertEquals(999, person.getHh().getDwellingId());
+        Household household = person.getHousehold();
+        Assert.assertEquals(999, household.getDwellingId());
         Assert.assertEquals(PersonRole.SINGLE, person.getRole());
     }
 }

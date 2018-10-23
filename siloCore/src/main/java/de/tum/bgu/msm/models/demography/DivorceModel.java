@@ -3,8 +3,10 @@ package de.tum.bgu.msm.models.demography;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -19,18 +21,19 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class DivorceModel extends AbstractModel implements MicroEventModel<DivorceEvent> {
 
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
+    private final HouseholdFactory hhFactory;
 
     private MarryDivorceJSCalculator calculator;
 
-    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership) {
+    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
         super(dataContainer);
+        this.hhFactory = hhFactory;
         setupModel();
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
@@ -75,31 +78,32 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
             final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
             if (SiloUtil.getRandomNumberAsDouble() < probability) {
                 // check if vacant dwelling is available
-                int newDwellingId = movesModel.searchForNewDwelling(Collections.singletonList(per));
+
+                Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1,-1,0);
+                fakeHypotheticalHousehold.addPerson(per);
+                int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
                 if (newDwellingId < 0) {
-                    if (perId == SiloUtil.trackPp || per.getHh().getId() == SiloUtil.trackHh) {
+                    if (perId == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
                         SiloUtil.trackWriter.println(
-                                "Person " + perId + " wanted to but could not divorce from household " + per.getHh().getId() +
-                                        " because no appropriate vacant dwelling was found.");
+                                "Person " + perId + " wanted to but could not divorce from household "
+                                        + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
                     }
                     IssueCounter.countLackOfDwellingFailedDivorce();
                     return false;
                 }
 
                 // divorce
-                Household oldHh = per.getHh();
-                Person divorcedPerson = HouseholdDataManager.findMostLikelyPartner(per, oldHh);
+                Household oldHh = householdData.getHouseholdFromId(per.getHousehold().getId());
+                Person divorcedPerson = HouseholdUtil.findMostLikelyPartner(per, oldHh);
                 divorcedPerson.setRole(PersonRole.SINGLE);
                 per.setRole(PersonRole.SINGLE);
                 householdData.removePersonFromHousehold(per);
-                oldHh.determineHouseholdRace();
-                oldHh.setType();
 
                 int newHhId = householdData.getNextHouseholdId();
-                Household newHh = householdData.createHousehold(newHhId, -1, 0);
+                Household newHh = hhFactory.createHousehold(newHhId, -1, 0);
+                householdData.addHousehold(newHh);
                 householdData.addPersonToHousehold(per, newHh);
-                newHh.setType();
-                newHh.determineHouseholdRace();
+
                 // move divorced person into new dwelling
                 movesModel.moveHousehold(newHh, -1, newDwellingId);
                 if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||

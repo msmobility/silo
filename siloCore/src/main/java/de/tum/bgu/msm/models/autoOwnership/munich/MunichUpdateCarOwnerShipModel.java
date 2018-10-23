@@ -2,9 +2,10 @@ package de.tum.bgu.msm.models.autoOwnership.munich;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import org.apache.log4j.Logger;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 public class MunichUpdateCarOwnerShipModel extends AbstractModel implements UpdateCarOwnershipModel {
 
-    static Logger logger = Logger.getLogger(MunichUpdateCarOwnerShipModel.class);
+    private static Logger logger = Logger.getLogger(MunichUpdateCarOwnerShipModel.class);
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
@@ -33,13 +34,15 @@ public class MunichUpdateCarOwnerShipModel extends AbstractModel implements Upda
         // This function summarizes household car ownership update and quits
         PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
         pwa.println("id, dwelling, zone, license, income, size, autos");
-        for (Household hh: dataContainer.getHouseholdData().getHouseholds()) {
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        for (Household hh: householdData.getHouseholds()) {
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             int homeZone = -1;
             if(dwelling != null) {
                 homeZone = dwelling.getZoneId();
             }
-            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," + hh.getHHLicenseHolders()+ "," +  hh.getHhIncome() + "," + hh.getHhSize() + "," + hh.getAutos());
+            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," +
+                    HouseholdUtil.getHHLicenseHolders(hh)+ "," +  HouseholdUtil.getHhIncome(hh) + "," + hh.getHhSize() + "," + hh.getAutos());
         }
         pwa.close();
 
@@ -96,12 +99,13 @@ public class MunichUpdateCarOwnerShipModel extends AbstractModel implements Upda
                 } else if (hh.getHhSize() < previousAttributes[0]){
                     hhSizeMinus = 1;
                 }
-                if (hh.getHhIncome() > previousAttributes[1] + 6000) {
+                int hhIncome = HouseholdUtil.getHhIncome(hh);
+                if (hhIncome > previousAttributes[1] + 6000) {
                     hhIncomePlus = 1;
-                } else if (hh.getHhIncome() < previousAttributes[1] - 6000) {
+                } else if (hhIncome < previousAttributes[1] - 6000) {
                     hhIncomeMinus = 1;
                 }
-                if (hh.getHHLicenseHolders() > previousAttributes[2]){
+                if (HouseholdUtil.getHHLicenseHolders(hh) > previousAttributes[2]){
                     licensePlus = 1;
                 }
 

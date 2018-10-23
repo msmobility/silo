@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.relocation;
 
-import de.tum.bgu.msm.data.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.Reader;

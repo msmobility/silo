@@ -8,42 +8,42 @@ delta = 0.0;
 epsilon = 0.0;
 eta = 0.0;
 
-if (ht.name()=="size1inc1"){
+if (ht.name()=="SIZE_1_INC_LOW"){
     //old hhtype 0
     alpha = 0.12;
     beta = 0.25;
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
-} else if (ht.name()=="size2inc1"){
+} else if (ht.name()=="SIZE_2_INC_LOW"){
     //old hhtype 1
     alpha = 0.14;
     beta = 0.25;
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
-} else if (ht.name()=="size3inc1"){
+} else if (ht.name()=="SIZE_3_INC_LOW"){
     //old hhtype 2
     alpha = 0.16;
     beta = 0.25;
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
-} else if (ht.name()=="size4inc1"){
+} else if (ht.name()=="SIZE_4_INC_LOW"){
     //old hhtype 3
     alpha = 0.18;
     beta = 0.25;
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
-} else if (ht.name()=="size1inc2"){
+} else if (ht.name()=="SIZE_1_INC_MEDIUM"){
     //old hhtype 4
     alpha = 0.17;
     beta = 0.2;
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
-} else if (ht.name()=="size2inc2"){
+} else if (ht.name()=="SIZE_2_INC_MEDIUM"){
     //old hhtype 5
     alpha = 0.19;
     beta = 0.2;
@@ -51,70 +51,70 @@ if (ht.name()=="size1inc1"){
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
-} else if (ht.name()=="size3inc2"){
+} else if (ht.name()=="SIZE_3_INC_MEDIUM"){
     //old hhtype 6
     alpha = 0.21;
     beta = 0.2;
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
-} else if (ht.name()=="size4inc2"){
+} else if (ht.name()=="SIZE_4_INC_MEDIUM"){
     //old hhtype 7
     alpha = 0.23;
     beta = 0.2;
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
-} else if (ht.name()=="size1inc3"){
+} else if (ht.name()=="SIZE_1_INC_HIGH"){
     //old hhtype 8
     alpha = 0.22;
     beta = 0.15;
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
-} else if (ht.name()=="size2inc3"){
+} else if (ht.name()=="SIZE_2_INC_HIGH"){
     //old hhtype 9
     alpha = 0.24;
     beta = 0.15;
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
-} else if (ht.name()=="size3inc3"){
+} else if (ht.name()=="SIZE_3_INC_HIGH"){
     //old hhtype 10
     alpha = 0.26;
     beta = 0.15;
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
-} else if (ht.name()=="size4inc3"){
+} else if (ht.name()=="SIZE_4_INC_HIGH"){
     //old hhtype 11
     alpha = 0.28;
     beta = 0.15;
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
-} else if (ht.name()=="size1inc4"){
+} else if (ht.name()=="SIZE_1_INC_VERY_HIGH"){
     //old hhtype 12
     alpha = 0.27;
     beta = 0.12;
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
-} else if (ht.name()=="size2inc4"){
+} else if (ht.name()=="SIZE_2_INC_VERY_HIGH"){
     //old hhtype 13
     alpha = 0.29;
     beta = 0.12;
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
-} else if (ht.name()=="size3inc4"){
+} else if (ht.name()=="SIZE_3_INC_VERY_HIGH"){
     //old hhtype 14
     alpha = 0.31;
     beta = 0.12;
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
-} else if (ht.name()=="size4inc4"){
+} else if (ht.name()=="SIZE_4_INC_VERY_HIGH"){
     //old hhtype 15
     alpha = 0.33;
     beta = 0.12;
@@ -134,12 +134,12 @@ delta = 0.0;
 epsilon = 0.0;
 eta = 0.0;
 
-if (ht.name()=="size1inc1"){
+if (ht.name()=="SIZE_1_INC_LOW"){
     //old hhtype 0
     delta = 0.2;
     epsilon = 0.35;
     eta = 0.175;
-} else if (ht.name()=="size2inc1"){
+} else if (ht.name()=="SIZE_2_INC_LOW"){
     //old hhtype 1
     alpha = 0.14;
     beta = 0.25;
@@ -147,7 +147,7 @@ if (ht.name()=="size1inc1"){
     delta = 0.2;
     epsilon = 0.35;
     eta = 0.175;
-} else if (ht.name()=="size3inc1"){
+} else if (ht.name()=="SIZE_3_INC_LOW"){
     //old hhtype 2
     alpha = 0.16;
     beta = 0.25;
@@ -155,67 +155,67 @@ if (ht.name()=="size1inc1"){
     delta = 0.2;
     epsilon = 0.35;
     eta = 0.175;
-} else if (ht.name()=="size4inc1"){
+} else if (ht.name()=="SIZE_4_INC_LOW"){
     //old hhtype 3
     delta = 0.2;
     epsilon = 0.35;
     eta = 0.175;
-} else if (ht.name()=="size1inc2"){
+} else if (ht.name()=="SIZE_1_INC_MEDIUM"){
     //old hhtype 4
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
-} else if (ht.name()=="size2inc2"){
+} else if (ht.name()=="SIZE_2_INC_MEDIUM"){
     //old hhtype 5
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
-} else if (ht.name()=="size3inc2"){
+} else if (ht.name()=="SIZE_3_INC_MEDIUM"){
     //old hhtype 6
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
-} else if (ht.name()=="size4inc2"){
+} else if (ht.name()=="SIZE_4_INC_MEDIUM"){
     //old hhtype 7
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
-} else if (ht.name()=="size1inc3"){
+} else if (ht.name()=="SIZE_1_INC_HIGH"){
     //old hhtype 8
     delta = 0.5;
     epsilon = 0.1;
     eta = 0.225;
-} else if (ht.name()=="size2inc3"){
+} else if (ht.name()=="SIZE_2_INC_HIGH"){
     //old hhtype 9
     delta = 0.5;
     epsilon = 0.1;
     eta = 0.225;
-} else if (ht.name()=="size3inc3"){
+} else if (ht.name()=="SIZE_3_INC_HIGH"){
     //old hhtype 10
     delta = 0.5;
     epsilon = 0.1;
     eta = 0.225;
-} else if (ht.name()=="size4inc3"){
+} else if (ht.name()=="SIZE_4_INC_HIGH"){
     //old hhtype 11
     delta = 0.5;
     epsilon = 0.1;
     eta = 0.225;
-} else if (ht.name()=="size1inc4"){
+} else if (ht.name()=="SIZE_1_INC_VERY_HIGH"){
     //old hhtype 12
     delta = 0.6;
     epsilon = 0.05;
     eta = 0.25;
-} else if (ht.name()=="size2inc4"){
+} else if (ht.name()=="SIZE_2_INC_VERY_HIGH"){
     //old hhtype 13
     delta = 0.6;
     epsilon = 0.05;
     eta = 0.25;
-} else if (ht.name()=="size3inc4"){
+} else if (ht.name()=="SIZE_3_INC_VERY_HIGH"){
     //old hhtype 14
     delta = 0.6;
     epsilon = 0.05;
     eta = 0.25;
-} else if (ht.name()=="size4inc4"){
+} else if (ht.name()=="SIZE_4_INC_VERY_HIGH"){
     //old hhtype 15
     delta = 0.6;
     epsilon = 0.05;

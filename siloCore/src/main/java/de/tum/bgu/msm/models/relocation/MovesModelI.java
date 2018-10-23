@@ -1,14 +1,12 @@
 package de.tum.bgu.msm.models.relocation;
 
-import de.tum.bgu.msm.data.Household;
-import de.tum.bgu.msm.data.HouseholdType;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 
 import java.util.EnumMap;
-import java.util.List;
 
 /**
  * Interface to generate an application-specific implementation of the MovesModel
@@ -23,7 +21,7 @@ public interface MovesModelI extends MicroEventModel<MoveEvent> {
 
     void calculateRegionalUtilities();
 
-    int searchForNewDwelling(List<Person> persons);
+    int searchForNewDwelling(Household household);
 
     void moveHousehold(Household hh, int idOldDD, int idNewDD);
 }

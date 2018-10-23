@@ -12,7 +12,12 @@ import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
@@ -223,27 +228,29 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
 
     @Override
-    public int searchForNewDwelling(List<Person> persons) {
+    public int searchForNewDwelling(Household household) {
         // search alternative dwellings for the list of persons in the household
 
         // data preparation -- > count workers, store working zones, define income, define race
         int householdIncome = 0;
-        Race householdRace = persons.get(0).getRace();
+        Race householdRace = null;
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
-        for (Person pp: persons) {
+        for (Person pp: household.getPersons().values()) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).getZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
             }
-            if (pp.getRace() != householdRace) householdRace = Race.other;
+            if(householdRace == null) {
+                householdRace = pp.getRace();
+            } else if (pp.getRace() != householdRace) {
+                householdRace = Race.other;
+            }
         }
 
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(householdIncome);
-        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
-
+        HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
         Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
@@ -305,7 +312,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             // multiply by racial share to make zones with higher own racial share more attractive
 
             double utility = calculateDwellingUtilityForHouseholdType(ht, dd);
-            utility = personalizeDwellingUtilityForThisHousehold(persons, dd, householdIncome, utility);
+            utility = personalizeDwellingUtilityForThisHousehold(household, dd, householdIncome, utility);
 
 
             double adjustedUtility = Math.pow(utility, (1 - selectDwellingRaceRelevance)) *
@@ -337,9 +344,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
     @Override
-    protected double personalizeDwellingUtilityForThisHousehold(List<Person> persons, Dwelling dd, int income, double genericUtility) {
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(income);
-        HouseholdType ht = HouseholdType.defineHouseholdType(persons.size(), incomeCategory);
+    protected double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dd, int income, double genericUtility) {
+        HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
         if (householdQualifiesForSubsidy(income, geoData.getZones().get(dd.getZoneId()).getZoneId(), dd.getPrice())) {
             //need to recalculate the generic utility
 

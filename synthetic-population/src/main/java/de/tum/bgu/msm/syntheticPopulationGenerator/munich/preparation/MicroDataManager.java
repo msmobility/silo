@@ -2,10 +2,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;

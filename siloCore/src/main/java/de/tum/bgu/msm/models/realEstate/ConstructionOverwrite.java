@@ -10,6 +10,8 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -180,7 +182,7 @@ public class ConstructionOverwrite extends AbstractModel {
                 Household hh = householdData.getHouseholdFromId(dd.getResidentId());
                 householdId[row-1] = hh.getId();
                 householdSize[row-1] = hh.getHhSize();
-                householdInc[row-1] = hh.getHhIncome();
+                householdInc[row-1] = HouseholdUtil.getHhIncome(hh);
                 householdAuto[row-1] = hh.getAutos();
             }
         }

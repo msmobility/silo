@@ -37,7 +37,7 @@ public class DefaultDwellingReader implements DwellingReader {
             String[] header = recString.split(",");
             int posId      = SiloUtil.findPositionInArray("id", header);
             int posZone    = SiloUtil.findPositionInArray("zone",header);
-            int posHh      = SiloUtil.findPositionInArray("hhId",header);
+            int posHh      = SiloUtil.findPositionInArray("hhID",header);
             int posType    = SiloUtil.findPositionInArray("type",header);
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);

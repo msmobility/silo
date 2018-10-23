@@ -4,12 +4,12 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.SiloUtil;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -23,7 +23,6 @@ import java.util.Collection;
 public class Accessibility {
 
     private static final Logger LOGGER = Logger.getLogger(Accessibility.class);
-    private static final double TIME_OF_DAY = 8 * 60. * 60.;
 
     private final GeoData geoData;
 
@@ -74,12 +73,16 @@ public class Accessibility {
         final DoubleMatrix1D population = SummarizeData.getPopulationByZone(dataContainer);
 
         LOGGER.info("  Calculating zone zone accessibilities: auto");
-        final DoubleMatrix2D peakTravelTimeMatrix = getPeakTravelTimeMatrix(TransportMode.car);
+        final DoubleMatrix2D peakTravelTimeMatrixCar =
+                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, geoData.getZones().values());
         final DoubleMatrix2D autoAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrix, alphaAuto, betaAuto);
+                calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         LOGGER.info("  Calculating zone zone accessibilities: transit");
+        final DoubleMatrix2D peakTravelTimeMatrixTransit =
+                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, geoData.getZones().values());
         final DoubleMatrix2D transitAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, getPeakTravelTimeMatrix(TransportMode.pt), alphaTransit, betaTransit);
+                calculateZoneToZoneAccessibilities(population,
+                        peakTravelTimeMatrixTransit, alphaTransit, betaTransit);
 
         LOGGER.info("  Aggregating zone accessibilities");
         aggregateAccessibilities(autoAccessZoneToZone, transitAccessZoneToZone, autoAccessibilities, transitAccessibilities, geoData.getZones().keySet());
@@ -175,21 +178,7 @@ public class Accessibility {
     }
 
 
-    private DoubleMatrix2D getPeakTravelTimeMatrix(String mode) {
-    	if (travelTimes instanceof SkimTravelTimes) {
-    		return ((SkimTravelTimes) travelTimes).getMatrixForMode(mode);
-    	}
-    	
-    	// The following lines can go once the skim-based case (above) remains the only in this method
-    	// MATSim-based accessibilities will be provided "directly", nk/dz, july'18
-        final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(geoData.getZones().values(), geoData.getZones().values());
-        for (Zone origin : geoData.getZones().values()) {
-            for (Zone destination : geoData.getZones().values()) {
-                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
-            }
-        }
-        return matrix;
-    }
+
 
     public double getAutoAccessibilityForZone(int zone) {
     	// Can be combined with getTransitAccessibilityForZone into one method which get the mode
@@ -205,9 +194,9 @@ public class Accessibility {
         return regionalAccessibilities.getQuick(region);
     }
     
-    public double getPeakTravelCosts(Location i, Location j) {
-        return (autoOperatingCosts / 100) * travelTimes.getTravelTime(i, j, TIME_OF_DAY, "car");
-        // Take costs provided by MATSim here? Should be possible
-        // without much alterations as they are part of NodeData, which is contained in MATSimTravelTimes, nk/dz, jan'18
-    }
+//    public double getPeakTravelCosts(Location i, Location j) {
+//        return (autoOperatingCosts / 100) * travelTimes.getTravelTime(i, j, TIME_OF_DAY, "car");
+//        // Take costs provided by MATSim here? Should be possible
+//        // without much alterations as they are part of NodeData, which is contained in MATSimTravelTimes, nk/dz, jan'18
+//    }
 }

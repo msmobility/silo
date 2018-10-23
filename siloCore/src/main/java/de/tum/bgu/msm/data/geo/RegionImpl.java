@@ -1,4 +1,7 @@
-package de.tum.bgu.msm.data;
+package de.tum.bgu.msm.data.geo;
+
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 
 import java.util.Collection;
 import java.util.Collections;

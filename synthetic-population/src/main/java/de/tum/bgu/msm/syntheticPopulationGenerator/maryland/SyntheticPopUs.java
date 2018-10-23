@@ -9,12 +9,15 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
@@ -444,7 +447,8 @@ public class SyntheticPopUs implements SyntheticPopI {
             Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone, null, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
             realEstateDataManager.addDwelling(dwelling);
             if (gender[0] == 0) return;   // this dwelling is empty, do not create household
-            Household hh = householdDataManager.createHousehold(newHhId, newDdId, autos);
+            Household hh = HouseholdUtil.getFactory().createHousehold(newHhId, newDdId, autos);
+            householdDataManager.addHousehold(hh);
             for (int s = 0; s < hhSize; s++) {
                 int newPpId = householdDataManager.getNextPersonId();
 
@@ -469,11 +473,9 @@ public class SyntheticPopUs implements SyntheticPopI {
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, hh);
             }
-            hh.setType();
-            hh.determineHouseholdRace();
             definePersonRolesInHousehold(hh, relShp);
             // trace persons, households and dwellings
-            for (Person pp: hh.getPersons()) if (pp.getId() == SiloUtil.trackPp) {
+            for (Person pp: hh.getPersons().values()) if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Generated person with following attributes:");
                 SiloUtil.trackWriter.println(pp.toString());
             }
@@ -686,7 +688,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void definePersonRolesInHousehold (Household hh, int[] relShp) {
         // define roles as single, married or child
 
-        Person[] pp = hh.getPersons().toArray(new Person[0]);
+        Person[] pp = hh.getPersons().values().toArray(new Person[0]);
         HashMap<Integer, Integer> coupleCounter = new HashMap<>();
         coupleCounter.put(1, 0);
         coupleCounter.put(2, 0);

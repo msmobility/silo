@@ -3,8 +3,10 @@ package de.tum.bgu.msm.models.autoOwnership.maryland;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -21,7 +23,7 @@ import java.util.Map;
  **/
 
 public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements UpdateCarOwnershipModel {
-    static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
+    private static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
 
     private final Accessibility accessibility;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
@@ -79,6 +81,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (int id: updatedHouseholds.keySet()) {
             Household household = dataContainer.getHouseholdData().getHouseholdFromId(id);
             if(household == null) {
@@ -86,8 +89,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
             }
             double[] prob = new double[4];
             int hhSize = Math.min(household.getHhSize(), 8);
-            int workers = Math.min(household.getNumberOfWorkers(), 4);
-            int incomeCategory = getIncomeCategory(household.getHhIncome());
+            int workers = Math.min(HouseholdUtil.getNumberOfWorkers(household), 4);
+            int incomeCategory = getIncomeCategory(HouseholdUtil.getHhIncome(household));
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
             int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZoneId()) + 0.5);
             int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.getZoneId());

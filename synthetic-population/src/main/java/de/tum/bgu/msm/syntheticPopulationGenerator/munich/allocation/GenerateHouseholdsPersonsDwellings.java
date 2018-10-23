@@ -2,12 +2,15 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
-import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -83,8 +86,10 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private Household generateHousehold(){
 
+        HouseholdFactory factory = HouseholdUtil.getFactory();
         int id = householdDataManager.getNextHouseholdId();
-        Household household = householdDataManager.createHousehold(id, id, 0);
+        Household household = factory.createHousehold(id,id,0);
+                householdDataManager.addHousehold(household);
         householdCounter++;
         return household;
     }

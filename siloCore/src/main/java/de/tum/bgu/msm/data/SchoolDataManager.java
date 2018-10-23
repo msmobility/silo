@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.data;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
@@ -24,14 +25,12 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.matsim.core.utils.collections.QuadTree;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -46,25 +45,38 @@ public class SchoolDataManager {
     private final GeoData geoData;
     private final SiloDataContainer data;
     private final Map<Integer, School> schools = new ConcurrentHashMap<>();
-    private final QuadTree<School> primarySearchTree;
-    private final QuadTree<School> secondarySearchTree;
-    private final QuadTree<School> tertiarySearchTree;
+    private QuadTree<School> primarySearchTree;
+    private QuadTree<School> secondarySearchTree;
+    private QuadTree<School> tertiarySearchTree;
 
-    public SchoolDataManager(SiloDataContainer data) throws IOException {
+    public SchoolDataManager(SiloDataContainer data) {
         this.data = data;
         this.geoData = data.getGeoData();
+    }
 
-        //TODO: Remove minX,minY,maxX,maxY when implementing study area shapefile in Geodata 09 Oct QZ'
-        File schoolsShapeFile = new File(Properties.get().schoolData.schoolsShapeFile);
-        FileDataStore dataStore = FileDataStoreFinder.getDataStore(schoolsShapeFile);
-        SimpleFeatureSource ozMapSource = dataStore.getFeatureSource();
-        double minX = ozMapSource.getBounds().getMinX();
-        double minY = ozMapSource.getBounds().getMinY();
-        double maxX = ozMapSource.getBounds().getMaxX();
-        double maxY = ozMapSource.getBounds().getMaxY();
+    public void setSchoolSearchTree(Properties properties) {
+        Envelope bounds = loadEnvelope(properties);
+        double minX = bounds.getMinX();
+        double minY = bounds.getMinY();
+        double maxX = bounds.getMaxX();
+        double maxY = bounds.getMaxY();
         this.primarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.secondarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.tertiarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
+    }
+
+
+    private Envelope loadEnvelope(Properties properties) {
+        //TODO: Remove minX,minY,maxX,maxY when implementing study area shapefile in Geodata 09 Oct QZ'
+        File schoolsShapeFile = new File(properties.schoolData.schoolsShapeFile);
+
+        try {
+            FileDataStore dataStore = FileDataStoreFinder.getDataStore(schoolsShapeFile);
+            return dataStore.getFeatureSource().getBounds();
+        } catch (IOException e) {
+            logger.error("Error reading file " + schoolsShapeFile);
+            throw new RuntimeException(e);
+        }
     }
 
     public void addSchool(School ss) {

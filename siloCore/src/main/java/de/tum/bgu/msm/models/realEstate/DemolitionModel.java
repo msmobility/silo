@@ -3,9 +3,8 @@ package de.tum.bgu.msm.models.realEstate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.Household;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
@@ -91,7 +90,7 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
     }
 
     private void moveOutHousehold(int dwellingId, Household hh) {
-        int idNewDD = moves.searchForNewDwelling(hh.getPersons());
+        int idNewDD = moves.searchForNewDwelling(hh);
         if (idNewDD > 0) {
             moves.moveHousehold(hh, -1, idNewDD);  // set old dwelling ID to -1 to avoid it from being added to the vacancy list
         } else {

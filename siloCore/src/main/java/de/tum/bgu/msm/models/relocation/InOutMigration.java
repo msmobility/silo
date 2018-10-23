@@ -4,11 +4,13 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.person.Gender;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.data.person.Race;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -36,6 +38,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private final CreateCarOwnershipModel carOwnership;
     private final DriversLicense driversLicense;
     private final PersonFactory factory;
+    private final HouseholdFactory hhFactory;
 
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
@@ -45,13 +48,16 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, DriversLicense driversLicense, PersonFactory factory) {
+    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel,
+                          CreateCarOwnershipModel carOwnership, DriversLicense driversLicense,
+                          PersonFactory factory, HouseholdFactory hhFactory) {
         super(dataContainer);
         this.employment = employment;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
         this.driversLicense = driversLicense;
         this.factory = factory;
+        this.hhFactory = hhFactory;
         populationControlMethod = Properties.get().moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
@@ -95,7 +101,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             k += 6;
         }
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        Household hh = householdData.createHousehold(hhId, -1, 0);
+        Household hh = hhFactory.createHousehold(hhId, -1, 0);
+        householdData.addHousehold(hh);
 
         k = 0;
         for (int i = 1; i <= hhSize; i++) {
@@ -109,20 +116,19 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a
         // job will change the household income and household type, which can only be calculated after all
         // persons are set up.
-        for (Person per : hh.getPersons()) {
-            if (per.getOccupation() == Occupation.EMPLOYED) {
-                employment.lookForJob(per.getId());
-                if (per.getWorkplace() < 1) {
-                    per.setOccupation(Occupation.UNEMPLOYED);
+        for (Person person : hh.getPersons().values()) {
+            if (person.getOccupation() == Occupation.EMPLOYED) {
+                employment.lookForJob(person.getId());
+                if (person.getWorkplace() < 1) {
+                    person.setOccupation(Occupation.UNEMPLOYED);
                 }
             }
-            driversLicense.checkLicenseCreation(per.getId());
+            driversLicense.checkLicenseCreation(person.getId());
         }
-        hh.setType();
-        hh.determineHouseholdRace();
-        HouseholdDataManager.findMarriedCouple(hh);
-        HouseholdDataManager.defineUnmarriedPersons(hh);
-        int newDdId = movesModel.searchForNewDwelling(hh.getPersons());
+
+        HouseholdUtil.findMarriedCouple(hh);
+        HouseholdUtil.defineUnmarriedPersons(hh);
+        int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
             if (Properties.get().main.implementation == Implementation.MUNICH) {
@@ -132,9 +138,9 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
             }
-            for (Person pp : hh.getPersons()) {
-                if (pp.getId() == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println(" Person " + pp.getId() + " inmigrated.");
+            for (Integer ppId : hh.getPersons().keySet()) {
+                if (ppId == SiloUtil.trackPp) {
+                    SiloUtil.trackWriter.println(" Person " + ppId + " inmigrated.");
                 }
             }
             return true;
@@ -157,12 +163,13 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         }
         JobDataManager jobData = dataContainer.getJobData();
-        for (Person pp : hh.getPersons()) {
-            if (pp.getWorkplace() > 0) {
-                jobData.quitJob(true, pp);
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        for (Map.Entry<Integer, ? extends Person> person: hh.getPersons().entrySet()) {
+            if (person.getValue().getWorkplace() > 0) {
+                jobData.quitJob(true, person.getValue());
             }
-            if (pp.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println(" Person " + pp.getId() + " outmigrated.");
+            if (person.getKey() == SiloUtil.trackPp) {
+                SiloUtil.trackWriter.println(" Person " + person.getKey() + " outmigrated.");
             }
         }
         dataContainer.getHouseholdData().removeHousehold(hhId);
@@ -237,7 +244,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             int selected = (int) (hhs.length * SiloUtil.getRandomNumberAsFloat());
             inData[0] = Math.min(hhs[selected].getHhSize(), 5);
             int k = 0;
-            for (Person pp : hhs[selected].getPersons()) {
+            for (Person pp : hhs[selected].getPersons().values()) {
                 if (k + 6 > inData.length) continue;  // for household size 11+, only first ten persons are recorded
                 inData[1 + k] = pp.getAge();
                 inData[2 + k] = pp.getGender().ordinal()+1;

@@ -9,6 +9,8 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
