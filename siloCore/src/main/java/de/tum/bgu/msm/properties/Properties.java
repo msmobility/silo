@@ -2,7 +2,6 @@ package de.tum.bgu.msm.properties;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.modules.*;
-import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.File;
 import java.io.FileReader;
@@ -28,12 +27,9 @@ public final class Properties {
             throw new RuntimeException("Already initialized properties!");
         }
         instance = new Properties(path, implementation);
-
-        SiloUtil.copyFile(path, instance.main.baseDirectory + "scenOutput/" + instance.main.scenarioName + "/inputProperties.properties");
-        PropertiesUtil.printOutPropertiesOfThisRun(instance.main.baseDirectory + "/scenOutput/" + instance.main.scenarioName);
-
         return instance;
     }
+
 
     public final MainProperties main;
     public final TransportModelPropertiesModule transportModel;

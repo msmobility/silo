@@ -45,12 +45,12 @@ public class SiloUtil {
         loadHdf5Lib();
 
         Properties properties = Properties.initializeProperties(propertiesPath, implementation);
+
+        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
         SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
 
-        // create scenarios output directory if it does not exist yet
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-
+        PropertiesUtil.writePropertiesForThisRun(propertiesPath);
 
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
@@ -128,11 +128,11 @@ public class SiloUtil {
     }
 
     public static void createDirectoryIfNotExistingYet (String directory) {
-        File file = new File (directory);
-        if (!file.exists()) {
-            logger.info("   Creating Directory: "+directory);
-            boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenarios directory " + directory);
+        File test = new File (directory);
+        test.mkdirs();
+        if(!test.exists()) {
+            logger.error("Could not create scenarios directory " + directory);
+            throw new RuntimeException();
         }
     }
 
@@ -271,7 +271,7 @@ public class SiloUtil {
                 String fileName = Properties.get().track.trackFile;
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
+                trackWriter = openFileForSequentialWriting(baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);

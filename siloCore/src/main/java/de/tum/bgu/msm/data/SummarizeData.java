@@ -50,7 +50,6 @@ public class SummarizeData {
         // open summary file
 
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        SiloUtil.createDirectoryIfNotExistingYet(directory);
         String resultFileName = properties.main.resultFileName;
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                 properties.main.gregorianIterator + ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
@@ -95,7 +94,6 @@ public class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                SiloUtil.createDirectoryIfNotExistingYet(directory);
                 String resultFileName = Properties.get().main.spatialResultFileName;
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + resultFileName +
                         Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
