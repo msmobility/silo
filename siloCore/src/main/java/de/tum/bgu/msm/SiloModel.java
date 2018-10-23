@@ -96,9 +96,7 @@ public final class SiloModel {
         setupMicroSim();
         IssueCounter.logIssues(data.getGeoData());
 
-        if (properties.main.writeSmallSynpop) {
-            data.getHouseholdData().writeOutSmallSynPop();
-        }
+
 		if (properties.main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(data.getGeoData());
 		}

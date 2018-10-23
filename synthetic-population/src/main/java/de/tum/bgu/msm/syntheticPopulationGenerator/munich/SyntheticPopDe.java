@@ -67,7 +67,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         new CreateCarOwnershipModel(dataContainer, (GeoDataMuc) dataContainer.getGeoData()).run();
 
         logger.info("Summary of the synthetic population");
-        SummarizeData.writeOutSyntheticPopulationDE(Properties.get().main.implementation.BASE_YEAR, dataContainer);
+        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
 
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);

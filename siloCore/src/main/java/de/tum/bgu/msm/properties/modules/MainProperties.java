@@ -16,11 +16,7 @@ public class MainProperties {
     public final String scenarioName;
 
     public final boolean trackTime;
-
-
     public final Set<Integer> scalingYears;
-    public final boolean readSmallSynpop;
-    public final boolean writeSmallSynpop;
     public final boolean createMstmOutput;
     public final boolean createHousingEnvironmentImpactFile;
     public final boolean createPrestoSummary;
@@ -32,7 +28,6 @@ public class MainProperties {
     public final int[] incomeBrackets;
     public final int qualityLevels;
     public final int randomSeed;
-    public final int smallSynPopSize;
     public final String prestoZoneFile;
     public final String scaledMicroDataHh;
     public final String scaledMicroDataPp;
@@ -66,11 +61,6 @@ public class MainProperties {
         PropertiesUtil.newPropertySubmodule("Main - dwelling and income input data");
         incomeBrackets = PropertiesUtil.getIntPropertyArray(bundle,"income.brackets.hh.types", new int[]{20000,40000,60000}); //munich implementation
         qualityLevels = PropertiesUtil.getIntProperty(bundle, "dwelling.quality.levels.distinguished", 4);
-
-        PropertiesUtil.newPropertySubmodule("Main synthetic population");
-        smallSynPopSize = PropertiesUtil.getIntProperty(bundle, "size.small.syn.pop", 0);
-        readSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "read.small.syn.pop", false);
-        writeSmallSynpop = PropertiesUtil.getBooleanProperty(bundle, "write.small.syn.pop", false);
 
         PropertiesUtil.newPropertySubmodule("Main microlocation");
         runDwellingMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.dwelling.microlocation", false);
