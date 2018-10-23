@@ -1,17 +1,16 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.utils;
 
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
-import de.tum.bgu.msm.utils.TableDataFileReader2;
-import de.tum.bgu.msm.utils.TimeTracker;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
@@ -75,7 +74,7 @@ public class SiloUtil {
         return properties;
     }
 
-    private static void loadHdf5Lib() {
+    public static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;
@@ -191,31 +190,31 @@ public class SiloUtil {
         return list;
     }
 
-
-    public static int findPositionInArray (int element, int[] arr){
-        // return index position of element in array arr
-        int ind = -1;
-        for (int a = 0; a < arr.length; a++) if (arr[a] == element) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
-        return ind;
-    }
-
-    public static int findPositionInArray (String element, String[] arr){
-        // return index position of element in array arr
-        int ind = -1;
-        for (int a = 0; a < arr.length; a++) if (arr[a].equalsIgnoreCase(element)) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
-        return ind;
-    }
-
-
     public static <T> int findPositionInArray (T element, T array[]) {
         int ind = -1;
-        for (int a = 0; a < array.length; a++) if (array[a].equals(element)) ind = a;
-        if (ind == -1) logger.error ("Could not find element " + element +
-                " in array (see method <findPositionInArray> in class <SiloUtil>");
+        for (int a = 0; a < array.length; a++) {
+            if (array[a].equals(element)) {
+                ind = a;
+            }
+        }
+        if (ind == -1) {
+            logger.error ("Could not find element " + element +
+                    " in array (see method <findPositionInArray> in class <SiloUtil>");
+        }
+        return ind;
+    }
+
+    public static int findPositionInArray (String string, String[] array) {
+        int ind = -1;
+        for (int a = 0; a < array.length; a++) {
+            if (array[a].equalsIgnoreCase(string)) {
+                ind = a;
+            }
+        }
+        if (ind == -1) {
+            logger.error ("Could not find element " + string +
+                    " in array (see method <findPositionInArray> in class <SiloUtil>");
+        }
         return ind;
     }
 
@@ -1104,7 +1103,7 @@ public class SiloUtil {
     }
 
 
-    static void writeOutTimeTracker (TimeTracker timeTracker) {
+    public static void writeOutTimeTracker (TimeTracker timeTracker) {
         // write file summarizing run times
 
         int startYear = Properties.get().main.startYear;

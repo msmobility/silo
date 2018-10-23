@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
 import org.apache.log4j.Logger;
@@ -196,5 +196,17 @@ public class HouseholdUtil {
                 return;
             }
         }
+    }
+
+    public static Nationality defineHouseholdNationality(Household household) {
+        Nationality householdNationaliy = null;
+        for (Person pp : household.getPersons().values()) {
+            if (householdNationaliy == null) {
+                householdNationaliy = pp.getNationality();
+            } else if (pp.getNationality() != householdNationaliy) {
+                return Nationality.OTHER;
+            }
+        }
+        return householdNationaliy;
     }
 }

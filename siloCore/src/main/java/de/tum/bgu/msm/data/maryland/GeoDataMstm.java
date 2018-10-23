@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.data.maryland;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;

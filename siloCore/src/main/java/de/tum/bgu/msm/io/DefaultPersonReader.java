@@ -2,7 +2,7 @@ package de.tum.bgu.msm.io;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
@@ -23,7 +23,7 @@ public class DefaultPersonReader implements PersonReader{
     }
 
     @Override
-    public void readData(String path) {    
+    public void readData(String path) {
         logger.info("Reading person micro data from ascii file");
 
         PersonFactory ppFactory = PersonUtils.getFactory();

@@ -2,7 +2,7 @@ package de.tum.bgu.msm.data.job;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
 
 import java.io.BufferedReader;
@@ -20,16 +20,21 @@ public class JobFactoryImpl implements JobFactory {
 
     @Override
     public Job createJob(int id, int zoneId, Coordinate coordinate, int workerId, String type) {
-        Job job = new JobImpl(id, zoneId, coordinate, workerId, type);
-
-        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
-            job.setJobWorkingTime(SiloUtil.select(startTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble(),
-                    SiloUtil.select(workingTimeDistributionByJobType.get(type)) +
-                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble());
-        }
-        return job;
+        return new JobImpl(id, zoneId, coordinate, workerId, type);
     }
+
+    public void assignWorkingTimesFromDistribution(Job job){
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            job.setJobWorkingTime((int) (SiloUtil.select(startTimeDistributionByJobType.get(job.getType())) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
+                    (int) (SiloUtil.select(workingTimeDistributionByJobType.get(job.getType())) +
+                            intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
+        } else {
+
+        }
+    }
+
+
 
     public void readWorkingTimeDistributions(Properties properties) {
         String fileNameStart = properties.main.baseDirectory + properties.jobData.jobStartTimeDistributionFile;

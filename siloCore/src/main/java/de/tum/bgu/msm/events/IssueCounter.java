@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.events;
 
 import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.Comparator;

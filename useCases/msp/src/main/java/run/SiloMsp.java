@@ -18,12 +18,10 @@ package run;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 /**
  * Implements SILO for Minneapolis/St. Paul (MetCouncil)

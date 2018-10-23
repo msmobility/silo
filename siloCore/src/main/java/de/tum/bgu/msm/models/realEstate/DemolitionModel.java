@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.dwelling.Dwelling;

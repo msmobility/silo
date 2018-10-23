@@ -4,9 +4,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.job.Job;
 
@@ -38,7 +39,9 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
                         coordinate = zone.getRandomCoordinate();
                     }
                 }
-                factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
+                final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
+                ((JobFactoryImpl) factory).assignWorkingTimesFromDistribution(job);
+                jobDataManager.addJob(job);
             }
             if (id == SiloUtil.trackJj) {
                 SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +

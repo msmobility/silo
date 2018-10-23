@@ -2,7 +2,7 @@ package de.tum.bgu.msm.io;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
@@ -43,9 +43,13 @@ public class DefaultJobReader implements JobReader {
 
             int posCoordX = -1;
             int posCoordY = -1;
+            int posStartTime = -1;
+            int posDuration = -1;
             if (Properties.get().main.implementation == Implementation.MUNICH) {
                 posCoordX = SiloUtil.findPositionInArray("CoordX", header);
                 posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+                posStartTime = SiloUtil.findPositionInArray("startTime", header);
+                posDuration = SiloUtil.findPositionInArray("duration", header);
             }
 
             // read line
@@ -58,12 +62,21 @@ public class DefaultJobReader implements JobReader {
                 String type = lineElements[posType].replace("\"", "");
 
                 Coordinate coordinate = null;
+
                 //TODO: remove it when we implement interface
                 if (Properties.get().main.implementation == Implementation.MUNICH) {
                     coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
                 }
 
                 Job jj = factory.createJob(id, zoneId, coordinate, worker, type);
+                int startTime = 0;
+                int duration = 0;
+                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                    startTime = Integer.parseInt(lineElements[posStartTime]);
+                    duration = Integer.parseInt(lineElements[posDuration]);
+                    jj.setJobWorkingTime(startTime, duration);
+                }
+
                 jobData.addJob(jj);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);

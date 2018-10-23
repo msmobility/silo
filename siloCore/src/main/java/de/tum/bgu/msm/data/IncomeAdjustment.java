@@ -2,7 +2,7 @@ package de.tum.bgu.msm.data;
 
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DoubleRandomEngine;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.util.concurrent.RandomizableConcurrentFunction;

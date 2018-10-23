@@ -30,7 +30,7 @@ import java.util.Map;
  * Created on Dec 2, 2009
  *
  */
-public final class HouseholdImpl implements Household {
+public class HouseholdImpl implements Household {
 
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
     private final int hhId;
@@ -44,7 +44,7 @@ public final class HouseholdImpl implements Household {
 
     private final Map<Integer, Person> persons;
 
-    HouseholdImpl(int id, int dwellingID, int autos) {
+    public HouseholdImpl(int id, int dwellingID, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.autos = autos;
@@ -136,6 +136,7 @@ public final class HouseholdImpl implements Household {
 
     private void update() {
         this.race = HouseholdUtil.defineHouseholdRace(this);
+        this.nationality = HouseholdUtil.defineHouseholdNationality(this);
         updateHouseholdType();
     }
 }

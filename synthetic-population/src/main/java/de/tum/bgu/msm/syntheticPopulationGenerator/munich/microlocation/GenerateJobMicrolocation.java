@@ -6,7 +6,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobImpl;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import de.tum.bgu.msm.SiloUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 
