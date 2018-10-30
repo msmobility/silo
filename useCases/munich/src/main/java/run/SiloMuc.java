@@ -30,6 +30,7 @@ public class SiloMuc {
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
+
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");

@@ -7,6 +7,7 @@ package de.tum.bgu.msm.models.relocation.munich;
 */
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -289,18 +290,18 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
-            	Location workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
-                workerZonesForThisHousehold.put(pp, workLocation);
+            	Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
+                jobsForThisHousehold.put(pp, workLocation);
             }
         }
         double workDistanceUtility = 1;
-        for (Location workLocation : workerZonesForThisHousehold.values()){
+        for (Job workLocation : jobsForThisHousehold.values()){
         	double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    dd, workLocation, Properties.get().main.peakHour, TransportMode.car)));
+                    dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }
         return dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
