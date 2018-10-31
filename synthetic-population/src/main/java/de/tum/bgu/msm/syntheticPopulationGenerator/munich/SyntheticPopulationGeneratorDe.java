@@ -20,7 +20,7 @@ public class SyntheticPopulationGeneratorDe {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
+        SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
         try {
             PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.MUNICH);
             PropertiesUtil.writePropertiesForThisRun(args[0]);
