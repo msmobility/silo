@@ -1,15 +1,9 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 /**
  * @author dziemke
@@ -25,7 +19,7 @@ public final class SiloMatsim {
      * Option to set the matsim config directly, at this point meant for tests.
      */
     public SiloMatsim(String args, Config config, Implementation implementation) {
-        properties = SiloUtil.siloInitialization(args, implementation);
+        properties = SiloUtil.siloInitialization(implementation, args);
         matsimConfig = config;
     }
 

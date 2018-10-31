@@ -41,7 +41,7 @@ public class SiloUtil {
     public static PrintWriter trackWriter;
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static Properties siloInitialization(String propertiesPath, Implementation implementation) {
+    public static Properties siloInitialization(Implementation implementation, String propertiesPath) {
 
         loadHdf5Lib();
 
