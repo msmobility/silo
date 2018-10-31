@@ -1,16 +1,11 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.capeTown.SyntheticPopCT;
-import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.SyntheticPopDe;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 public class SyntheticPopulationManipulator {
 

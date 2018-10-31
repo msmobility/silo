@@ -66,7 +66,11 @@ public class MainPropertiesSynPop {
     public final TableDataSet jobLocationlist;
     public final TableDataSet schoolLocationlist;
 
+    private final boolean runMicrolocation;
+
     public MainPropertiesSynPop(ResourceBundle bundle) {
+
+        PropertiesUtil.newPropertySubmodule("SP: main properties");
 
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         microDataFile = PropertiesUtil.getStringProperty(bundle, "micro.data", "PATH_TO_MICRO_DATA");
@@ -74,6 +78,7 @@ public class MainPropertiesSynPop {
         runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
         runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", false);
         twoGeographicalAreasIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.city.and.county", true);
+        runMicrolocation = PropertiesUtil.getBooleanProperty(bundle,"run.sp.microlocation",false);
 
         //todo I would read these attributes from a file, probable, the same as read in the next property
         attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality", new String[]{"smallDwellings","mediumDwellings",
@@ -172,9 +177,15 @@ public class MainPropertiesSynPop {
         }
 
         //todo do not need to ride always?
-        buildingLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/buildingLocation.csv"));
-        jobLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/jobLocation.csv"));
-        schoolLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "schoolLocation.list", "input/syntheticPopulation/schoolLocation.csv"));
+        if (runMicrolocation) {
+            buildingLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/buildingLocation.csv"));
+            jobLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/jobLocation.csv"));
+            schoolLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "schoolLocation.list", "input/syntheticPopulation/schoolLocation.csv"));
+        } else {
+            buildingLocationlist = null;
+            jobLocationlist = null;
+            schoolLocationlist = null;
+        }
 
     }
 

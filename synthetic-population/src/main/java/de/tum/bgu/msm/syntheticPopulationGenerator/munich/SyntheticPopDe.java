@@ -10,7 +10,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microlocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization.Optimization;
+import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -30,10 +30,7 @@ public class SyntheticPopDe implements SyntheticPopI {
     public static final Logger logger = Logger.getLogger(SyntheticPopDe.class);
     private final DataSetSynPop dataSetSynPop;
 
-    private ResourceBundle rb;
-
     public SyntheticPopDe(DataSetSynPop dataSetSynPop) {
-        this.rb = rb;
         this.dataSetSynPop = dataSetSynPop;
     }
 

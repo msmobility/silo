@@ -184,7 +184,8 @@ public class SyntheticPopCT implements SyntheticPopI {
             int persons = readMicroDataCT();
             createMicroHouseholdsAndMicroPersons(persons);
             //checkHouseholdRelationship();
-            runIPUbyCityAndCounty(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            //runIPUbyCityAndCounty(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            readIPU();
             generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
             /*generateJobs(); //Generate the jobs by type. Allocated to TAZ level
             assignJobs(); //Workplace allocation
