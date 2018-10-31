@@ -13,7 +13,7 @@ public class SyntheticPopulationManipulator {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
+        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
 
         logger.info("Load silo data container");
         SiloDataContainer siloDataContainer = SiloDataContainer.loadSiloDataContainer(properties);

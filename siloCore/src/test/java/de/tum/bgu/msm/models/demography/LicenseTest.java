@@ -20,7 +20,7 @@ public class LicenseTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         model = new DriversLicense(dataContainer);
     }

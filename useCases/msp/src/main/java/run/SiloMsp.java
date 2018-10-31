@@ -18,7 +18,6 @@ package run;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -39,7 +38,7 @@ public class SiloMsp {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MSP);
+        Properties properties = SiloUtil.siloInitialization(Implementation.MSP, args[0]);
         logger.info("Starting SILO for Minneapolis/St. Paul");
         SiloModel model = new SiloModel(properties);
         model.runModel();
