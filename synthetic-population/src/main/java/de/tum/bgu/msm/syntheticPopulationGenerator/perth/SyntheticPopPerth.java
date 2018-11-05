@@ -35,7 +35,9 @@ import java.util.*;
  *
  */
 
-public class SyntheticPopPerth implements SyntheticPopI {
+public class
+
+SyntheticPopPerth implements SyntheticPopI {
 
     protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
     protected static final String PROPERTIES_PUMS_FAMILIES           = "pums.families";
@@ -280,6 +282,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             int geographicArea = (int) pumsFamilies.getValueAt(rowHh, "Areaenum Geographic area of enumeration");
 
             // hier weitere household attribute einfügen
+            // keine gefunden...
 
             boolean personsOfThisHouseholdFound = false;
             for (int rowPp = 1; rowPp <= pumsPersons.getRowCount(); rowPp++) {
@@ -289,11 +292,17 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     hhSize++;
 
                     // hier weitere Personen Attribute einfügen
-//                    int age = (int) pumsPersons.getValueAt(rowPp, "");
-//                    int sex = (int) pumsPersons.getValueAt(rowPp, "");
-//                    int income = (int) pumsPersons.getValueAt(rowPp, "");
-//                    int occupation = (int) pumsPersons.getValueAt(rowPp, "");
-//                    int race = (int) pumsPersons.getValueAt(rowPp, "");
+                    int age = (int) pumsPersons.getValueAt(rowPp, "AGEP Age");
+                    int sex = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
+                    int income = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
+                    int occupation = (int) pumsPersons.getValueAt(rowPp, "OCC06P Occupation");
+                    int race = (int) pumsPersons.getValueAt(rowPp, "BPLP Country of Birth of Person");
+//                    int industry = (int) pumsPersons.getValueAt(rowPp, "IND06P Industry of Employment");
+//                    int travelmode = (int) pumsPersons.getValueAt(rowPp, "MTWP Method of Travel to Work");
+//                    int moved1 = (int) pumsPersons.getValueAt(rowPp, "REGU1P Region of Usual Residence One Year Ago");
+//                    int moved5 = (int) pumsPersons.getValueAt(rowPp, "REGU5P Region of Usual Residence Five Years Ago");
+//                    int employed = (int) pumsPersons.getValueAt(rowPp, "LFS06P Labour Force Status");
+//                    int married = (int) pumsPersons.getValueAt(rowPp, "MSTP Registered Marital Status");
                 }
             }
             boolean dwellingOfThisHouseholdFound = false;
@@ -303,6 +312,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     dwellingOfThisHouseholdFound = true;
 
                     // hier dwelling attribute einfügen
+                    int bedrooms = (int) pumsPersons.getValueAt(rowDd, "BEDD Number of Bedrooms in Private Dwelling");
+                    int vacancy = (int) pumsPersons.getValueAt(rowDd, "DWTD Dwelling Type");
+                    int loan = (int) pumsPersons.getValueAt(rowDd, "HLRD01 Housing Loan Repayments (monthly) ranges");
+                    int rent = (int) pumsPersons.getValueAt(rowDd, "RNTD01 Rent (weekly) ranges");
+                    int type = (int) pumsPersons.getValueAt(rowDd, "STRD Dwelling Structure");
+                    int cars = (int) pumsPersons.getValueAt(rowDd, "VEHD Number of Motor Vehicles");
+
                 }
             }
             if (!personsOfThisHouseholdFound) logger.error("Could not find any corresponding persons for household with identifier " + householdId + ".");
