@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
+package de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization;
 
 
 import com.google.common.primitives.Ints;

@@ -48,7 +48,6 @@ public class RealEstateDataManager {
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
-        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     public void saveDwellings (DwellingImpl[] dds) {
@@ -271,6 +270,8 @@ public class RealEstateDataManager {
 
     public void summarizeDwellings () {
         // aggregate dwellings
+
+        logger.info("****** Average Price is Written *******");
 
         SummarizeData.resultFile("QualityLevel,Dwellings");
         for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {

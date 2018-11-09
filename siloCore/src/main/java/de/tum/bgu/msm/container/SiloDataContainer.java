@@ -99,6 +99,8 @@ public class SiloDataContainer {
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
         realEstateData.readAcresNeededByDwellingType();
+        realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
+
 
         new JobType(properties.jobData.jobTypes);
 
