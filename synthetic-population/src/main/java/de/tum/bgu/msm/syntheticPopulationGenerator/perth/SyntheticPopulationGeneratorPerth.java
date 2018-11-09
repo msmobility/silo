@@ -22,12 +22,12 @@ public class SyntheticPopulationGeneratorPerth {
     public static void main (String[] args) {
 
         SiloUtil.siloInitialization(Implementation.PERTH, args[0]);
-        try {
-            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.PERTH);
+//        try {
+//            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.PERTH);
             PropertiesUtil.writePropertiesForThisRun(args[0]);
-        } catch (IOException e) {
-            logger.error("File not found: " + args[0]);
-        }
+//        } catch (IOException e) {
+//            logger.error("File not found: " + args[0]);
+//        }
         SyntheticPopI syntheticPop;
         syntheticPop = new SyntheticPopDe(dataSetSynPop);
         syntheticPop.runSP();
