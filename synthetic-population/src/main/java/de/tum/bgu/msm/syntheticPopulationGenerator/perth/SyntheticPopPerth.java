@@ -296,13 +296,14 @@ SyntheticPopPerth implements SyntheticPopI {
                     int sex = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
                     int income = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
                     int occupation = (int) pumsPersons.getValueAt(rowPp, "OCC06P Occupation");
-                    int race = (int) pumsPersons.getValueAt(rowPp, "BPLP Country of Birth of Person");
-//                    int industry = (int) pumsPersons.getValueAt(rowPp, "IND06P Industry of Employment");
+//                    int race = (int) pumsPersons.getValueAt(rowPp, "BPLP Country of Birth of Person");
+                    int industry = (int) pumsPersons.getValueAt(rowPp, "IND06P Industry of Employment");
 //                    int travelmode = (int) pumsPersons.getValueAt(rowPp, "MTWP Method of Travel to Work");
 //                    int moved1 = (int) pumsPersons.getValueAt(rowPp, "REGU1P Region of Usual Residence One Year Ago");
 //                    int moved5 = (int) pumsPersons.getValueAt(rowPp, "REGU5P Region of Usual Residence Five Years Ago");
 //                    int employed = (int) pumsPersons.getValueAt(rowPp, "LFS06P Labour Force Status");
 //                    int married = (int) pumsPersons.getValueAt(rowPp, "MSTP Registered Marital Status");
+//                    int hoursWorked = (int) pumsPersons.getValueAt(rowPp, "HRSP Hours Worked");
                 }
             }
             boolean dwellingOfThisHouseholdFound = false;
@@ -314,10 +315,10 @@ SyntheticPopPerth implements SyntheticPopI {
                     // hier dwelling attribute einfügen
                     int bedrooms = (int) pumsPersons.getValueAt(rowDd, "BEDD Number of Bedrooms in Private Dwelling");
                     int vacancy = (int) pumsPersons.getValueAt(rowDd, "DWTD Dwelling Type");
-                    int loan = (int) pumsPersons.getValueAt(rowDd, "HLRD01 Housing Loan Repayments (monthly) ranges");
+                    int mortgage = (int) pumsPersons.getValueAt(rowDd, "HLRD01 Housing Loan Repayments (monthly) ranges");
                     int rent = (int) pumsPersons.getValueAt(rowDd, "RNTD01 Rent (weekly) ranges");
                     int type = (int) pumsPersons.getValueAt(rowDd, "STRD Dwelling Structure");
-                    int cars = (int) pumsPersons.getValueAt(rowDd, "VEHD Number of Motor Vehicles");
+                    int autos = (int) pumsPersons.getValueAt(rowDd, "VEHD Number of Motor Vehicles");
 
                 }
             }
