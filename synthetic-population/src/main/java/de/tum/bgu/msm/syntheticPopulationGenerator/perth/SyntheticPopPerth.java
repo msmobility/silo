@@ -7,25 +7,16 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
-import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -43,36 +34,24 @@ SyntheticPopPerth implements SyntheticPopI {
     protected static final String PROPERTIES_PUMS_FAMILIES           = "pums.families";
     protected static final String PROPERTIES_PUMS_PERSONS            = "pums.persons";
     protected static final String PROPERTIES_PUMS_DWELLINGS          = "pums.dwellings";
-    protected static final String PROPERTIES_PARTLY_COVERED_PUMAS    = "partly.covered.pumas";
-    protected static final String PROPERTIES_AGE_DISTRIBUTION_90PLUS = "age.distribution.90.plus";
-    protected static final String PROPERTIES_HOUSEHOLD_CONTROL_TOTAL = "household.control.total";
-    protected static final String PROPERTIES_HOUSEHOLD_DISTRIBUTION  = "household.distribution";
     protected static final String PROPERTIES_VACANCY_RATES           = "vacancy.rate.by.type";
     protected static final String PROPERTIES_COUNTY_VACANCY_RATES    = "county.vacancy.rates";
     protected static final String PROPERTIES_VALIDATE_SYNTH_POP      = "validate.synth.pop";
-    //    protected static final String PROPERTIES_FILENAME_HH_VALIDATION  = "file.name.hh.validation";
-    //    protected static final String PROPERTIES_FILENAME_DD_VALIDATION  = "file.name.dd.validation";
 
     protected transient Logger logger = Logger.getLogger(SyntheticPopPerth.class);
-    protected int[] pumas;
-    protected int[] simplifiedPumas;
-    protected HashMap<Integer, int[]> tazByPuma;
-    // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
-    // next higher level. Keep PUMA work zones separate from more detailed PUMA zones.
-    protected HashMap<Integer, int[]> tazByWorkZonePuma;
-    protected HashMap<String, Integer> householdTarget;
-    protected TableDataSet hhDistribution;
-    protected HashMap<Integer, int[]> vacantJobsByZone;
-    protected HashMap<Integer, Integer> jobErrorCounter;
 
     private ResourceBundle rb;
-    private GeoDataMstm geoData;
-    private Accessibility accessibility;
-    private RealEstateDataManager realEstateDataManager;
-    private HouseholdDataManager householdDataManager;
+    protected HashMap<Integer, int[]> tazByWorkZonePuma;
+    protected HouseholdDataManager householdDataManager;
+    protected RealEstateDataManager realEstateDataManager;
+    protected JobDataManager jobDataManager;
     private JobDataManager jobData;
-    private SkimTravelTimes travelTimes;
-
+    protected HashMap<Integer, int[]> vacantJobsByZone;
+    private String baseDirectory;
+    private PrintWriter pwhh;
+    private PrintWriter pwpp;
+    private PrintWriter pwdd;
+    private PrintWriter pwjj;
 
     public SyntheticPopPerth(ResourceBundle rb) {
         // constructor
@@ -86,97 +65,51 @@ SyntheticPopPerth implements SyntheticPopI {
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SP)) return;
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
-//        readControlTotals();
-//        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.PERTH);
-//        jobData = dataContainer.getJobData();
+        baseDirectory = Properties.get().main.baseDirectory;
+        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.PERTH);
+        realEstateDataManager = dataContainer.getRealEstateData();
+        householdDataManager = dataContainer.getHouseholdData();
+        jobDataManager = dataContainer.getJobData();
+        jobData = dataContainer.getJobData();
+        //todo: is 2006 the correct year?
+        openFilesToWriteSyntheticPopulation(2006);
 //        createJobs();
-//        geoData = (GeoDataMstm) dataContainer.getGeoData();
-//        geoData.readData();
-//        travelTimes = new SkimTravelTimes();
-//        accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
-
-//        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
-//        travelTimes.readSkim(TransportMode.pt, transitSkimFile,
-//                    Properties.get().accessibility.transitPeakSkim, Properties.get().accessibility.skimFileFactorTransit);
-
-//        final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
-//        travelTimes.readSkim(TransportMode.car, carSkimFile,
-//                    Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
-
-//        accessibility.initialize();
         processMicroData();
-
-//        realEstateDataManager = dataContainer.getRealEstateData();
-//        householdDataManager = dataContainer.getHouseholdData();
-
-//        generateAutoOwnership(dataContainer);
-//        SummarizeData.summarizeAutoOwnershipByCounty(accessibility, dataContainer);
 //        addVacantDwellings();
-        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
 //        logger.info ("  Total number of households created " + householdDataManager.getHouseholds().size());
 //        logger.info ("  Total number of persons created    " + householdDataManager.getPersons().size());
 //        logger.info ("  Total number of dwellings created  " + realEstateDataManager.getDwellings().size());
 //        logger.info ("  Total number of jobs created       " + jobData.getJobs().size());
 //        calculateVacancyRate();
-        if (!jobErrorCounter.isEmpty()) {
-            logger.warn("  Could not find sufficient number of jobs in these PUMA zones (note that most of these " +
-                    "zones are outside the MSTM area):");
-            Set<Integer> list = jobErrorCounter.keySet();
-            for (Integer puma: list) logger.warn("  -> " + puma + " is missing " + jobErrorCounter.get(puma) + " jobs.");
-        } else {
-            logger.info("  Succeeded in assigning job to every worker.");
-        }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
 //        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
-//        writeSyntheticPopulation();
+        closeFilesForSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
 
 
-    private void identifyUniquePUMAzones() {
-        // walk through list of zones and collect unique PUMA zone IDs within the study area
-
-        tazByPuma = new HashMap<>();
-        ArrayList<Integer> alHomePuma = new ArrayList<>();
-        ArrayList<Integer> alWorkPuma = new ArrayList<>();
-        for (Zone zone: geoData.getZones().values()) {
-            int homePuma = ((MstmZone)zone).getPuma();
-            int workPuma = ((MstmZone)zone).getSimplifiedPuma();
-            if (!alHomePuma.contains(homePuma)) {
-                alHomePuma.add(homePuma);
-            }
-            if (!alWorkPuma.contains(workPuma)) {
-                alWorkPuma.add(workPuma);
-            }
-            if (tazByPuma.containsKey(homePuma)) {
-                int[] zones = tazByPuma.get(homePuma);
-                int[] newZones = SiloUtil.expandArrayByOneElement(zones, zone.getZoneId());
-                tazByPuma.put(homePuma, newZones);
-            } else {
-                int[] zoneArray = {zone.getZoneId()};
-                tazByPuma.put(homePuma, zoneArray);
-            }
-        }
-        pumas = SiloUtil.convertIntegerArrayListToArray(alHomePuma);
-        simplifiedPumas = SiloUtil.convertIntegerArrayListToArray(alWorkPuma);
+    private void openFilesToWriteSyntheticPopulation (int year) {
+        String filehh = baseDirectory + "/microData/hh_" + year + ".csv";
+        String filepp = baseDirectory + "/microData/pp_" + year + ".csv";
+        String filedd = baseDirectory + "/microData/dd_" + year + ".csv";
+        String filejj = baseDirectory + "/microData/jj_" + year + ".csv";
+        pwhh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwhh.println("id,dwelling,zone,hhSize,autos");
+        pwpp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwdd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        pwjj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwjj.println("id,zone,personId,type");
     }
 
 
-    private void readControlTotals () {
-        // read control totals of households by size and dwellings
-
-        logger.info("  Reading control total data for households and dwellings");
-        TableDataSet pop = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
-        householdTarget = new HashMap<>();
-        for (int row = 1; row <= pop.getRowCount(); row++) {
-            String fips = String.valueOf(pop.getValueAt(row, "Fips"));
-            // note: doesn't make much sense to store these data in a HashMap. It's legacy code.
-            householdTarget.put(fips, (int) pop.getValueAt(row, "TotalHouseholds"));
-        }
-        hhDistribution = SiloUtil.readCSVfile(Properties.get().main.baseDirectory +
-                ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
-        hhDistribution.buildIndex(hhDistribution.getColumnPosition(";SMZ_N"));
+    private void closeFilesForSyntheticPopulation() {
+        pwhh.close();
+        pwpp.close();
+        pwdd.close();
+        pwjj.close();
     }
 
 
@@ -188,7 +121,8 @@ SyntheticPopPerth implements SyntheticPopI {
         new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][taz]
-        final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
+        // todo: set highest zone id
+        final int highestZoneId = 100;
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestZoneId + 1];
         tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
@@ -198,7 +132,8 @@ SyntheticPopPerth implements SyntheticPopI {
 
         for (int row = 1; row <= jobs.getRowCount(); row++) {
             int taz = (int) jobs.getValueAt(row, "SMZ");
-            int pumaOfWorkZone = geoData.getSimplifiedPUMAofZone(taz);
+            //todo relate taz to puma work zone
+            int pumaOfWorkZone = taz;
             if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
                 int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
                 int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
@@ -212,7 +147,8 @@ SyntheticPopPerth implements SyntheticPopI {
         }
 
         // create base year employment
-        for (int zone: geoData.getZones().keySet()) {
+        //todo: get zone array
+        for (int zone: new int[5]) {
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
                 if (jobInventory[jobTp][zone] > 0) {
                     for (int i = 1; i <= jobInventory[jobTp][zone]; i++) {
@@ -255,195 +191,370 @@ SyntheticPopPerth implements SyntheticPopI {
     private void processMicroData() {
         // read PUMS data of the Australian Bureau Of Statistics for Population
 
-        logger.info ("  Reading PUMS data");
-
-        String baseDirectory = Properties.get().main.baseDirectory;
-        int highestPUMA = 5500000;
-        float[] pumaScaler = SiloUtil.createArrayWithValue((highestPUMA), 1f);
-
-//        String age90plusFile = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_AGE_DISTRIBUTION_90PLUS);
-//        TableDataSet age90plus = SiloUtil.readCSVfile(age90plusFile);
-//        float[] probAge90plusMale = age90plus.getColumnAsFloat("male");
-//        float[] probAge90plusFemale = age90plus.getColumnAsFloat("female");
-
-        jobErrorCounter = new HashMap<>();
-        //GeoData geoData = new GeoDataMstm(rb);
+        logger.info("  Reading Australian PUMS data");
 
         String pumsFileFamilies = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FAMILIES);
         TableDataSet pumsFamilies = SiloUtil.readCSVfile(pumsFileFamilies);
-        String pumsFilePersons  = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_PERSONS);
+        String pumsFilePersons = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_PERSONS);
         TableDataSet pumsPersons = SiloUtil.readCSVfile(pumsFilePersons);
         String pumsFileDwellings = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_DWELLINGS);
         TableDataSet pumsDwellings = SiloUtil.readCSVfile(pumsFileDwellings);
 
+        int hhCount = 0;
+        int ppCount = 0;
+        int ddCount = 0;
         for (int rowHh = 1; rowHh <= pumsFamilies.getRowCount(); rowHh++) {
             String householdId = pumsFamilies.getStringValueAt(rowHh, "ABSFID Family Record Identifier");
             int hhSize = 0;
             int geographicArea = (int) pumsFamilies.getValueAt(rowHh, "Areaenum Geographic area of enumeration");
-
-            // hier weitere household attribute einfügen
-            // keine gefunden...
-
+            hhCount++;
             boolean personsOfThisHouseholdFound = false;
+            int[] age = new int[100];
+            int[] sex = new int[100];
+            int[] income = new int[100];
+            int[] occupation = new int[100];
+            int[] race = new int[100];
+            int[] industry = new int[100];
             for (int rowPp = 1; rowPp <= pumsPersons.getRowCount(); rowPp++) {
                 String personId = pumsPersons.getStringValueAt(rowPp, "ABSFID Family Record Identifier");
                 if (personId.equals(householdId)) {
                     personsOfThisHouseholdFound = true;
-                    hhSize++;
+                    ppCount++;
 
                     // hier weitere Personen Attribute einfügen
-                    int age = (int) pumsPersons.getValueAt(rowPp, "AGEP Age");
-                    int sex = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
-                    int income = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
-                    int occupation = (int) pumsPersons.getValueAt(rowPp, "OCC06P Occupation");
+                    int ageGroup = (int) pumsPersons.getValueAt(rowPp, "AGEP Age");
+                    age[hhSize] = convertAge(ageGroup);
+                    sex[hhSize] = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
+                    int incomeCode = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
+                    income[hhSize] = convertIncome(incomeCode);
+                    //todo: Check if method below called translateOccupation() can be applied here.
+                    occupation[hhSize] = (int) pumsPersons.getValueAt(rowPp, "OCC06P Occupation");
 //                    int race = (int) pumsPersons.getValueAt(rowPp, "BPLP Country of Birth of Person");
-                    int industry = (int) pumsPersons.getValueAt(rowPp, "IND06P Industry of Employment");
+                    industry[hhSize] = (int) pumsPersons.getValueAt(rowPp, "IND06P Industry of Employment");
 //                    int travelmode = (int) pumsPersons.getValueAt(rowPp, "MTWP Method of Travel to Work");
 //                    int moved1 = (int) pumsPersons.getValueAt(rowPp, "REGU1P Region of Usual Residence One Year Ago");
 //                    int moved5 = (int) pumsPersons.getValueAt(rowPp, "REGU5P Region of Usual Residence Five Years Ago");
 //                    int employed = (int) pumsPersons.getValueAt(rowPp, "LFS06P Labour Force Status");
 //                    int married = (int) pumsPersons.getValueAt(rowPp, "MSTP Registered Marital Status");
 //                    int hoursWorked = (int) pumsPersons.getValueAt(rowPp, "HRSP Hours Worked");
+                    hhSize++;
                 }
             }
             boolean dwellingOfThisHouseholdFound = false;
+            int bedRooms = 0;
+            int vacancy = 0;
+            int mortgage = 0;
+            int rent = 0;
+            int type = 0;
+            int autos = 0;
+
             for (int rowDd = 1; rowDd <= pumsDwellings.getRowCount(); rowDd++) {
                 String dwellingId = pumsDwellings.getStringValueAt(rowDd, "ABSFID Family Record Identifier");
                 if (dwellingId.equals(householdId)) {
                     dwellingOfThisHouseholdFound = true;
+                    ddCount++;
 
                     // hier dwelling attribute einfügen
-                    int bedrooms = (int) pumsPersons.getValueAt(rowDd, "BEDD Number of Bedrooms in Private Dwelling");
-                    int vacancy = (int) pumsPersons.getValueAt(rowDd, "DWTD Dwelling Type");
-                    int mortgage = (int) pumsPersons.getValueAt(rowDd, "HLRD01 Housing Loan Repayments (monthly) ranges");
-                    int rent = (int) pumsPersons.getValueAt(rowDd, "RNTD01 Rent (weekly) ranges");
-                    int type = (int) pumsPersons.getValueAt(rowDd, "STRD Dwelling Structure");
-                    int autos = (int) pumsPersons.getValueAt(rowDd, "VEHD Number of Motor Vehicles");
-
+                    int bedRoomCode = (int) pumsDwellings.getValueAt(rowDd, "BEDD Number of Bedrooms in Private Dwelling");
+                    bedRooms = convertBedrooms(bedRoomCode);
+                    vacancy = (int) pumsDwellings.getValueAt(rowDd, "DWTD Dwelling Type");
+                    int mortgageCode = (int) pumsDwellings.getValueAt(rowDd, "HLRD01 Housing Loan Repayments (monthly) ranges");
+                    mortgage = convertMortgage(mortgageCode);
+                    int rentCode = (int) pumsDwellings.getValueAt(rowDd, "RNTD01 Rent (weekly) ranges");
+                    rent = convertRent(rentCode);
+                    type = (int) pumsDwellings.getValueAt(rowDd, "STRD Dwelling Structure");
+                    int autoCode = (int) pumsDwellings.getValueAt(rowDd, "VEHD Number of Motor Vehicles");
+                    autos = convertAutos(autoCode);
                 }
             }
-            if (!personsOfThisHouseholdFound) logger.error("Could not find any corresponding persons for household with identifier " + householdId + ".");
-            if (!dwellingOfThisHouseholdFound) logger.error("Could not find any corresponding dwelling for the household with the identifier " + householdId + ".");
+            if (!personsOfThisHouseholdFound)
+                logger.error("Could not find any corresponding persons for household with identifier " + householdId + ".");
+            if (!dwellingOfThisHouseholdFound)
+                logger.error("Could not find any corresponding dwelling for the household with the identifier " + householdId + ".");
+            //todo: is the weight 100 correct?
+            //todo: is there any quality variable for dwellings? Compare method guessQuality() further below
+            savePumsRecord(geographicArea, 100, hhSize, type, bedRooms, autos, rent, mortgage, 4,
+                    sex, age, race, occupation, income);
         }
 
-        logger.info("Read files successfully.");
-        System.exit(0);
+        logger.info("  Read " + hhCount + " PUMS family records from file: " + pumsFileFamilies);
+        logger.info("  Read " + ddCount + " PUMS dwelling records from file: " + pumsFileDwellings);
+        logger.info("  Read " + ppCount + " PUMS person records from file: " + pumsFilePersons);
+    }
 
-        String recString = "";
-        int recCount = 0;
-        int hhCount = 0;
-        int recInStudyAreaCount = 0;
 
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(pumsFileFamilies));
-            int hhSize = 0;
-            int personCounter = 0;
-            // define variables
-            int pumaZone = 0;
-            int weight = 0;
-            int ddType = 0;
-            int bedRooms = 0;
-            int autos = 0;
-            int rent = 0;
-            int mortgage = 0;
-            int quality = 0;
-            int yearBuilt = 0;
-            int[] relShp = new int[100];
-            int[] gender = new int[100];
-            int[] age = new int[100];
-            Race[] race = new Race[100];
-            int[] occupation = new int[100];
-            int[] workPumaZone = new int[100];
-            int[] workState = new int[100];
-            int[] income = new int[100];
-//                boolean[] fullTime = new boolean[100];
-            while ((recString = in.readLine()) != null) {
-                recCount++;
-                String recType = recString.substring(0, 1);
-                switch (recType) {
-                    case "H":
-                        if (hhSize != personCounter) logger.error("Inconsistent PUMS data: Found " + personCounter +
-                                " person(s) in dwelling with " + hhSize + " residents (Record " + (recCount - 1) + ").");
-                        hhCount++;
-                        hhSize = convertToInteger(recString.substring(105, 107));
-                        int vacancy = convertToInteger(recString.substring(110, 111));
-                        if ((hhSize != 0 && vacancy != 0) || (hhSize == 0 && vacancy == 0))
-                            logger.error("Inconsistent PUMS " + "data: Found hhSize " + hhSize +
-                                    " in dwelling with vacancy code " + vacancy + " (rec " + recCount + ")");
-                        pumaZone = convertToInteger(recString.substring(9, 11) + recString.substring(13, 18));
-                        weight = convertToInteger(recString.substring(101, 105));
+    private int convertAge(int ageGroup) {
 
-                        // some PUMA zones are only partly covered by MSTM study area. Therefore, weight needs
-                        // to be reduced by the share of population in this PUMA that is covered by MSTM
-                        weight = (int) ((weight * 1f) * pumaScaler[pumaZone] + 0.5);
-
-                        ddType = convertToInteger(recString.substring(114, 116));
-                        bedRooms = convertToInteger(recString.substring(123, 124));
-                        autos = convertToInteger(recString.substring(133, 134));
-                        rent = convertToInteger(recString.substring(161, 165));
-                        mortgage = convertToInteger(recString.substring(170, 175));
-                        yearBuilt = convertToInteger(recString.substring(117, 118));
-                        int completePlumbing = convertToInteger(recString.substring(126, 127));
-                        int completeKitchen = convertToInteger(recString.substring(127, 128));
-                        quality = guessQuality(completePlumbing, completeKitchen, yearBuilt);
-                        personCounter = 0;
-                        for (int i = 0; i < gender[i]; i++)
-                            gender[i] = 0;   // set gender variable to zero which practically erases previous household
-                        break;
-                    case "P":
-                        relShp[personCounter] = convertToInteger(recString.substring(16, 18));
-                        gender[personCounter] = convertToInteger(recString.substring(22, 23));
-                        age[personCounter] = convertToInteger(recString.substring(24, 26));
-//                        if (age[personCounter] >= 90) {
-//                            if (gender[personCounter] == 1) age[personCounter] = 90 + SiloUtil.select(probAge90plusMale);
-//                            else age[personCounter] = 90 + SiloUtil.select(probAge90plusFemale);
-//                        }
-                        int hispanic = convertToInteger(recString.substring(27, 29));
-                        int singleRace = convertToInteger(recString.substring(37, 38));
-                        race[personCounter] = defineRace(hispanic, singleRace);
-//                            int school = convertToInteger(recString.substring(48, 49));
-                        occupation[personCounter] = convertToInteger(recString.substring(153, 154));
-                        workPumaZone[personCounter] = convertToInteger(recString.substring(160, 165));
-                        workState[personCounter] = convertToInteger(recString.substring(156,159));
-//                            fullTime[personCounter] = false;
-//                            int hoursWorked = convertToInteger(recString.substring(240, 242));
-//                            if (hoursWorked > 34) fullTime[personCounter] = true;
-
-                        income[personCounter] = Math.max(convertToInteger(recString.substring(296, 303)), 0);  // PUMS reports negative income for loss, which cannot be long-term income
-                        personCounter++;
-                        break;
-                    default:
-                        logger.error("Wrong record type in PUMS data in line " + recCount);
-                        break;
-                }
-                // "personCounter == hhSize" after all person records for this household have been read
-                if (personCounter == hhSize && checkIfPumaInStudyArea(pumaZone)) {
-                    recInStudyAreaCount++;
-                    savePumsRecord(pumaZone, weight, hhSize, ddType, bedRooms, autos, rent, mortgage, quality,
-                            yearBuilt, gender, age, race, relShp, occupation, workPumaZone, workState, income);
-                }
+        // select actual age from bins provided in microdata
+        //Ages: 1-25: 0-24 years singly
+        //        26: 25-29 years
+        //        27: 30–34 years
+        //        28: 35–39 years
+        //        29: 40–44 years
+        //        30: 45–49 years
+        //        31: 50–54 years
+        //        32: 55–59 years
+        //        33: 60–64 years
+        //        34: 65–69 years
+        //        35: 70–74 years
+        //        36: 75–79 years
+        //        37: 80–84 years
+        //        38: 85 years and over
+        int selectedAge = 0;
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        if (ageGroup <= 25){
+            selectedAge = ageGroup - 1;
+        }
+        else{
+            switch (ageGroup) {
+                case 26: selectedAge = (int) (25 + rnd * 5);
+                    break;
+                case 27: selectedAge = (int) (30 + rnd * 5);
+                    break;
+                case 28: selectedAge = (int) (35 + rnd * 5);
+                    break;
+                case 29: selectedAge = (int) (40 + rnd * 5);
+                    break;
+                case 30: selectedAge = (int) (45 + rnd * 5);
+                    break;
+                case 31: selectedAge = (int) (50 + rnd * 5);
+                    break;
+                case 32: selectedAge = (int) (55 + rnd * 5);
+                    break;
+                case 33: selectedAge = (int) (60 + rnd * 5);
+                    break;
+                case 34: selectedAge = (int) (65 + rnd * 5);
+                    break;
+                case 35: selectedAge = (int) (70 + rnd * 5);
+                    break;
+                case 36: selectedAge = (int) (75 + rnd * 5);
+                    break;
+                case 37: selectedAge = (int) (80 + rnd * 5);
+                    break;
+                case 38: selectedAge = (int) (85 + rnd * 15);
+                    break;
             }
-            logger.info("  Read " + hhCount + " PUMS household records from file: " + pumsFileFamilies);
-            logger.info("       " + recInStudyAreaCount + " thereof located in study area");
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop household file: " + pumsFileFamilies);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        return selectedAge;
+    }
+
+
+    private int convertAutos(int autoCode)  {
+        // select actual number of autos from indicators provided in ABS microdata
+        // 1: None
+        // 2: 1 motor vehicle
+        // 3: 2 motor vehicles
+        // 4: 3 motor vehicles
+        // 5: 4 or more motor vehicles
+        // 6: Not stated
+        // 7: Not applicable
+        if (autoCode <= 4){
+            return autoCode - 1;
+        } else if (autoCode == 5) {
+            //todo: I think this will create too many cars. Also, it is irrelevant how many cars you have once you are beyond 4... Why not simply set to 4?
+            float rnd = SiloUtil.getRandomNumberAsFloat();
+            return (int) (4 + rnd * 5);
+        } else {
+            return 0;
         }
     }
 
 
-
-    private boolean checkIfPumaInStudyArea(int pumaZone) {
-        // check if puma zone is part of study area
-        for (int p: pumas) if (pumaZone == p) return true;
-        return false;
+    private int convertBedrooms(int bedroomCode) {
+        // select actual number of from indicators provided in ABS microdata
+        //  1: None (includes bedsitters)
+        //  2: 1 bedroom
+        //  3: 2 bedrooms
+        //  4: 3 bedrooms
+        //  5: 4 bedrooms
+        //  6: 5 or more bedrooms
+        //  7: Not stated
+        //  8: Not applicable
+        if (bedroomCode <= 5){
+            return bedroomCode - 1;
+        }
+        else if (bedroomCode == 6) {
+            float rnd = SiloUtil.getRandomNumberAsFloat();
+            return (int) (5 + rnd * 5);
+        } else {
+            return 0;
+        }
     }
 
 
-    private boolean checkIfSimplifiedPumaInStudyArea(int simplifiedPumaZone) {
-        // check if puma zone is part of study area
-        for (int p: simplifiedPumas) if (simplifiedPumaZone == p) return true;
-        return false;
+    private int convertIncome(int incomeCode) {
+        // select actual income from bins provided in microdata
+        //  1: Negative income
+        //  2: Nil income
+        //  3: $1–$149
+        //  4: $150–$249
+        //  5: $250–$399
+        //  6: $400–$599
+        //  7: $600–$799
+        //  8: $800–$999
+        //  9: $1,000–$1,299
+        // 10: $1,300–$1,599
+        // 11: $1,600–$1,999
+        // 12: $2,000 or more
+        // 13: Not stated
+        // 14: Not applicable
+        // 15: Overseas visitor
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        switch (incomeCode) {
+            case 1: return 0;
+            case 2: return 0;
+            case 3: return (int) (1 + rnd * 150);
+            case 4: return (int) (150 + rnd * 100);
+            case 5: return (int) (250 + rnd * 150);
+            case 6: return (int) (400 + rnd * 200);
+            case 7: return (int) (600 + rnd * 200);
+            case 8: return (int) (800 + rnd * 200);
+            case 9: return (int) (1000 + rnd * 300);
+            case 10: return (int) (1300 + rnd * 300);
+            case 11: return (int) (1600 + rnd * 400);
+            case 12: return (int) (2000 + rnd * 20000);
+            case 13: return 0;
+            case 14: return 0;
+            case 15: return 0;
+            default: logger.error("Unknown income code " + incomeCode);
+            return 0;
+        }
+    }
+
+
+    private int convertMortgage(int mortgageCode) {
+        // select actual mortgage from bins provided in microdata
+        //  1: $1–$149
+        //  2: $150–$249
+        //  3: $250–$399
+        //  4: $400–$549
+        //  5: $550–$649
+        //  6: $650–$749
+        //  7: $750–$849
+        //  8: $850–$949
+        //  9: $950–$1,04
+        // 10: $1,050–$1,199
+        // 11: $1,200–$1,399
+        // 12: $1,400–$1,599
+        // 13: $1,600–$1,999
+        // 14: $2,000–$2,399
+        // 15: $2,400–$2,999
+        // 16: $3,000–$3,999
+        // 17: $4,000 and over
+        // 18: Not stated
+        // 19: Not applicable
+
+        int selectedMortgage = 0;
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        switch (mortgageCode) {
+            case 1: selectedMortgage = (int) (1 + rnd * 149);
+                break;
+            case 2: selectedMortgage = (int) (150 + rnd * 100);
+                break;
+            case 3: selectedMortgage = (int) (250 + rnd * 150);
+                break;
+            case 4: selectedMortgage = (int) (400 + rnd * 150);
+                break;
+            case 5: selectedMortgage = (int) (550 + rnd * 100);
+                break;
+            case 6: selectedMortgage = (int) (650 + rnd * 100);
+                break;
+            case 7: selectedMortgage = (int) (750 + rnd * 100);
+                break;
+            case 8: selectedMortgage = (int) (850 + rnd * 100);
+                break;
+            case 9: selectedMortgage = (int) (950 + rnd * 100);
+                break;
+            case 10: selectedMortgage = (int) (1050 + rnd * 150);
+                break;
+            case 11: selectedMortgage = (int) (1200 + rnd * 200);
+                break;
+            case 12: selectedMortgage = (int) (1400 + rnd * 200);
+                break;
+            case 13: selectedMortgage = (int) (1600 + rnd * 400);
+                break;
+            case 14: selectedMortgage = (int) (2000 + rnd * 400);
+                break;
+            case 15: selectedMortgage = (int) (2400 + rnd * 600);
+                break;
+            case 16: selectedMortgage = (int) (3000 + rnd * 1000);
+                break;
+            case 17: selectedMortgage = (int) (4000 + rnd * 1000000);
+                break;
+            case 18: selectedMortgage = 0;
+            // todo: Check if case 18 ever appears
+                break;
+            case 19: selectedMortgage = 0;
+            // todo: Check if case 19 ever appears
+                break;
+        }
+        return selectedMortgage;
+    }
+
+
+    private int convertRent (int rentCode) {
+        // select actual rent from bins provided in microdata
+        //  1: $0–$49
+        //  2: $50–$74
+        //  3: $75–$99
+        //  4: $100–$119
+        //  5: $120–$139
+        //  6: $140–$159
+        //  7: $160–$179
+        //  8: $180–$199
+        //  9: $200–$224
+        // 10: $225–$249
+        // 11: $250–$274
+        // 12: $275–$299
+        // 13: $300–$349
+        // 14: $350–$449
+        // 15: $450–$549
+        // 16: $550 and over
+        // 17: Not stated
+        // 18: Not applicable
+        int selectedRent = 0;
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        switch (rentCode) {
+            case 1: selectedRent = (int) (0 + rnd * 50);
+                break;
+            case 2: selectedRent = (int) (50 + rnd * 25);
+                break;
+            case 3: selectedRent = (int) (75 + rnd * 25);
+                break;
+            case 4: selectedRent = (int) (100 + rnd * 20);
+                break;
+            case 5: selectedRent = (int) (120 + rnd * 20);
+                break;
+            case 6: selectedRent = (int) (140 + rnd * 20);
+                break;
+            case 7: selectedRent = (int) (160 + rnd * 20);
+                break;
+            case 8: selectedRent = (int) (180 + rnd * 20);
+                break;
+            case 9: selectedRent = (int) (200 + rnd * 20);
+                break;
+            case 10: selectedRent = (int) (225 + rnd * 25);
+                break;
+            case 11: selectedRent = (int) (250 + rnd * 25);
+                break;
+            case 12: selectedRent = (int) (275 + rnd * 25);
+                break;
+            case 13: selectedRent = (int) (300 + rnd * 50);
+                break;
+            case 14: selectedRent = (int) (350 + rnd * 20);
+                break;
+            case 15: selectedRent = (int) (450 + rnd * 25);
+                break;
+            case 16: selectedRent = (int) (550 + rnd * 2450);
+                break;
+            case 17: selectedRent = 0;
+            // todo: Check if code 17 ever appears
+                break;
+            case 18: selectedRent = 0;
+            // todo: Check if code 18 ever appears
+                break;
+        }
+        return selectedRent;
     }
 
 
@@ -475,130 +586,36 @@ SyntheticPopPerth implements SyntheticPopI {
 
 
     private void savePumsRecord (int pumaZone, int weight, int hhSize, int pumsDdType, int bedRooms,
-                                 int autos, int rent, int mortgage, int quality, int yearBuilt, int[] gender, int[] age,
-                                 Race[] race, int[] relShp, int[] occupation, int[] workPumaZone,
-                                 int[] workState, int[] income) {
+                                 int autos, int rent, int mortgage, int quality, int[] gender, int[] age,
+                                 int[] race, int[] occupation, int[] income) {
         // add record to PUMS record storage
 
-        if (pumsDdType == 10 || pumsDdType == -999) return;   // skip this record if PUMS dwelling type is 10 (Boat, RV, Van) or -999 (unknown)
-        DwellingType ddType = translateDwellingType(pumsDdType);
+        // todo: need to select TAZ within pumaZone
         for (int count = 0; count < weight; count++) {
+            //Write Dwellings
             int newDdId = RealEstateDataManager.getNextDwellingId();
-            int newHhId;
-            if (gender[0] == 0) newHhId = -1;
-            else newHhId = householdDataManager.getNextHouseholdId();
-            int taz = locateDwelling(pumaZone);
-            int zone = taz;
-
+            //todo: Please check if there are any vacant dwellings in your dataset; if so, skip writing hh and pp for this records
+            int newHhId = householdDataManager.getNextHouseholdId();
+            //todo: Please check if you want the next step
             int price = getDwellingPrice(rent, mortgage);
-            int selectedYear = selectYear(yearBuilt);
-            Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone, null, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
-            realEstateDataManager.addDwelling(dwelling);
-            if (gender[0] == 0) return;   // this dwelling is empty, do not create household
-            Household hh = HouseholdUtil.getFactory().createHousehold(newHhId, newDdId, autos);
-            householdDataManager.addHousehold(hh);
+            pwdd.println(newDdId+","+pumaZone+","+pumsDdType+","+newHhId+","+bedRooms+","+quality+","+price);
+
+            //Write Households
+            pwhh.println(newHhId+","+newDdId+","+pumaZone+","+hhSize+","+autos);
+
+            //Write Persons
+            //todo: Develop plausible method to assign person roles married, single and child
+            String[] personRoles = definePersonRolesInHousehold(hhSize);
             for (int s = 0; s < hhSize; s++) {
                 int newPpId = householdDataManager.getNextPersonId();
-
-                Occupation occ = translateOccupation(occupation[s]);
-                int workplace = -1;
-                if (occ == Occupation.EMPLOYED) {
-
-                    if (workPumaZone[s]==0 || workState[s] == 0) {
-                        // no workplace PUMA provided by PUMS (person did not go to work during week interviewed because of vacation, leave, etc.)
-                        workplace = selectWorkplaceByTripLengthFrequencyDistribution(workPumaZone[s], workState[s], taz);
-                    } else {
-                        // workplace PUMA provided by PUMS
-                        // workplace = selectWorkplace(workPumaZone[s], workState[s]);
-                        // update: As the distribution of requested workplaces according to PUMS is very different from the available MSTM employment data all jobs are chosen based on trip length frequency distributions
-                        workplace = selectWorkplaceByTripLengthFrequencyDistribution(workPumaZone[s], workState[s], taz);
-                    }
-                    if (workplace != -2) {
-                        jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
-                    }
-                }
-                Person pp = PersonUtils.getFactory().createPerson(newPpId, age[s], Gender.valueOf(gender[s]), race[s], occ, workplace, income[s]);
-                householdDataManager.addPerson(pp);
-                householdDataManager.addPersonToHousehold(pp, hh);
+                pwpp.println(newPpId+","+newHhId+","+age[s]+","+gender[s]+","+"RELATIONSHIP_MISSING"+","+race[s]+","+
+                        occupation[s]+","+"WORKPLACE_MISSING"+","+income[s]);
             }
-            definePersonRolesInHousehold(hh, relShp);
-            // trace persons, households and dwellings
-            for (Person pp: hh.getPersons().values()) if (pp.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Generated person with following attributes:");
-                SiloUtil.trackWriter.println(pp.toString());
-            }
-            if (newHhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Generated household with following attributes:");
-                SiloUtil.trackWriter.println(hh.toString());
-            }
-            if (newDdId == SiloUtil.trackDd) {
-                SiloUtil.trackWriter.println("Generated dwelling with following attributes:");
-                SiloUtil.trackWriter.println(realEstateDataManager.getDwelling(newDdId).toString());
-            }
-
         }
     }
 
 
-    private int selectYear (int yearBuilt) {
-        // select actual year the dwelling was built
-
-        //Ages: 1. 1999 to 2000, 2. 1995 to 1998, 3. 1990 to 1994, 4. 1980 to 1989, 5. 1970 to 1979, 6. 1960 to 1969, 7. 1950 to 1959, 8. 1940 to 1949, 9. 1939 or earlier
-        int selectedYear = 0;
-        float rnd = SiloUtil.getRandomNumberAsFloat();
-        switch (yearBuilt) {
-            case 1: selectedYear = (int) (1999 + rnd * 2);
-                break;
-            case 2: selectedYear = (int) (1995 + rnd * 4);
-                break;
-            case 3: selectedYear = (int) (1990 + rnd * 5);
-                break;
-            case 4: selectedYear = (int) (1980 + rnd * 10);
-                break;
-            case 5: selectedYear = (int) (1970 + rnd * 10);
-                break;
-            case 6: selectedYear = (int) (1960 + rnd * 10);
-                break;
-            case 7: selectedYear = (int) (1950 + rnd * 10);
-                break;
-            case 8: selectedYear = (int) (1940 + rnd * 10);
-                break;
-            case 9: selectedYear = (int) (1930 + rnd * 10);
-                break;
-        }
-        return selectedYear;
-    }
-
-
-    private DwellingType translateDwellingType (int pumsDdType) {
-        // translate 10 PUMA into 6 MetCouncil Dwelling Types
-
-        // todo: consider keeping more dwelling types for MSTM implementation. Available in PUMS:
-//        V 01 . A mobile home
-//        V 02 . A one-family house detached from any other house
-//        V 03 . A one-family house attached to one or more houses
-//        V 04 . A building with 2 apartments
-//        V 05 . A building with 3 or 4 apartments
-//        V 06 . A building with 5 to 9 apartments
-//        V 07 . A building with 10 to 19 apartments
-//        V 08 . A building with 20 to 49 apartments
-//        V 09 . A building with 50 or more apartments
-//        V 10 . Boat, RV, van, etc.
-
-        DwellingType type;
-        if (pumsDdType == 1) type = DwellingType.MH;
-        else if (pumsDdType == 2) type = DwellingType.SFD;
-        else if (pumsDdType == 3) type = DwellingType.SFA;
-        else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MF234;
-        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DwellingType.MF5plus;
-        else {
-            logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
-            type = null;
-        }
-        return type;
-    }
-
-
+/*
     private int locateDwelling (int pumaZone) {
         // select TAZ within PUMA zone
 
@@ -610,6 +627,7 @@ SyntheticPopPerth implements SyntheticPopI {
         int select = SiloUtil.select(weights);
         return zones[select];
     }
+*/
 
 
     private int getDwellingPrice (int rent, int mortgage) {
@@ -622,93 +640,6 @@ SyntheticPopPerth implements SyntheticPopI {
         else price = 500;
         return price;
     }
-
-
-    private int selectWorkplaceByTripLengthFrequencyDistribution (int workPumaZone, int workState, int homeTaz) {
-        // for some workers, a workzone is not specified in PUMS data. Select workplace based on trip length frequency distribution
-
-        // todo: A couple of issues deserve further attention:
-        // - People working in a RMZ are assigned -2 as workplace. Would be good to select external zones
-        // - People living in a RMZ but working in a SMZ are disregarded at this point. Therefore, 917,985 jobs remain vacant in base year
-        // - Full-time and part-time employees are not distinguished. Every employee occupies one job, even though jobs should be provided as full-time equivalents in MSTM.
-        // - Nobody explicitly works from home, though a couple of people will select a job in their home zone. Should be controlled by number of workers working from home.
-        // - School/University locations are not assigned as 'workplace' yet. Note that some worker have a job and go to school at the same time.
-
-        int fullPumaZone = workState * 100000 + workPumaZone;
-        if (!checkIfSimplifiedPumaInStudyArea(fullPumaZone) && workPumaZone != 0) {
-            return -2;  // person does work in puma zone outside of study area
-        }
-
-        Map<Zone, Double> zoneProbabilities = new HashMap<>();
-        for (Zone zone: geoData.getZones().values()) {
-            if (vacantJobsByZone.containsKey(zone.getZoneId())) {
-                int numberOfJobsInThisZone = vacantJobsByZone.get(zone.getZoneId()).length;
-                if (numberOfJobsInThisZone > 0) {
-                	Zone homeZone = geoData.getZones().get(homeTaz);
-                	Zone destinationZone = zone;
-                    int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().main.peakHour, "car") + 0.5);
-                    zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
-                } else {
-                    zoneProbabilities.put(zone, 0.);
-                }
-            } else {
-                zoneProbabilities.put(zone, 0.);
-            }
-        }
-
-        // in rare cases, no job within the common commute distance is available. Assign job location outside of MSTM area.
-        if (SiloUtil.getSum(zoneProbabilities.values()) == 0) {
-            return -2;
-        }
-
-        Zone selectedZone = SiloUtil.select(zoneProbabilities);
-        int[] jobsInThisZone = vacantJobsByZone.get(selectedZone.getZoneId());
-        int selectedJobIndex = SiloUtil.select(jobsInThisZone.length) - 1;
-        int[] newVacancies = SiloUtil.removeOneElementFromZeroBasedArray(jobsInThisZone, selectedJobIndex);
-        if (newVacancies.length > 0) {
-            vacantJobsByZone.put(selectedZone.getZoneId(), newVacancies);
-        } else {
-            vacantJobsByZone.remove(selectedZone.getZoneId());
-        }
-        return jobsInThisZone[selectedJobIndex];
-    }
-
-
-//    private int selectWorkplace (int pumaZone, int state) {
-//        // select a workplace within pumaZone based on PUMS data
-//        // Note: Not used as the allocation of work zones in PUMS data appears to be problematic.
-//        // Method 'selectWorkplaceByTripLengthFrequencyDistribution()' is used instead.
-//
-//        if (state > 56) return -2;     // Island area, Puerto Rico, foreign country, or at sea
-//        int fullPumaZone = state * 100000 + pumaZone;
-//
-//        if (!tazByWorkZonePuma.containsKey(fullPumaZone)) return -2;   // works outside MSTM study area
-//
-//        int [] zonesThisPuma = tazByWorkZonePuma.get(fullPumaZone);
-//        double[] weightZone = new double[zonesThisPuma.length];
-//        for (int i = 0; i < zonesThisPuma.length; i++) {
-//            if (vacantJobsByZone.containsKey(zonesThisPuma[i])) {
-//                weightZone[i] = vacantJobsByZone.get(zonesThisPuma[i]).length;
-//            } else {
-//                weightZone[i] = 0;
-//            }
-//        }
-//        if (SiloUtil.getSum(weightZone) == 0) {
-//            if (jobErrorCounter.containsKey(fullPumaZone)) {
-//                int count = jobErrorCounter.get(fullPumaZone);
-//                jobErrorCounter.put(fullPumaZone, count + 1);
-//            } else {
-//                jobErrorCounter.put(fullPumaZone, 1);
-//            }
-//            return -2;                 // make person unemployed because no job could be found
-//        }
-//        int selectedWorkZoneIndex = SiloUtil.select(weightZone);
-//        int[] jobsInThisZone = vacantJobsByZone.get(zonesThisPuma[selectedWorkZoneIndex]);
-//        int selectedJobIndex = SiloUtil.select(jobsInThisZone.length - 1);
-//        int[] newVacancies = SiloUtil.removeOneElementFromZeroBasedArray(jobsInThisZone, selectedJobIndex);
-//        vacantJobsByZone.put(zonesThisPuma[selectedWorkZoneIndex], newVacancies);
-//        return jobsInThisZone[selectedJobIndex];
-//    }
 
 
     private Occupation translateOccupation (int pumsOccupation) {
@@ -733,36 +664,12 @@ SyntheticPopPerth implements SyntheticPopI {
     }
 
 
-    private void definePersonRolesInHousehold (Household hh, int[] relShp) {
+    private String[] definePersonRolesInHousehold (int hhSize ) {
         // define roles as single, married or child
 
-        Person[] pp = hh.getPersons().values().toArray(new Person[0]);
-        HashMap<Integer, Integer> coupleCounter = new HashMap<>();
-        coupleCounter.put(1, 0);
-        coupleCounter.put(2, 0);
-        for (int i = 0; i < pp.length; i++) {
-            //      Householder      husband/wife  unmarried Partner
-            if (relShp[i] == 1 || relShp[i] == 2 || relShp[i] == 19) {
-                int cnt = coupleCounter.get(pp[i].getGender()) + 1;
-                coupleCounter.put(pp[i].getGender().ordinal()+1, cnt);
-            }
-        }
-        int numberOfCouples = Math.min(coupleCounter.get(1), coupleCounter.get(2));
-        int[] marriedPersons = new int[]{numberOfCouples, numberOfCouples};
-        if (numberOfCouples > 0) {
-            pp[0].setRole(PersonRole.MARRIED);
-            marriedPersons[pp[0].getGender().ordinal()] -= 1;
-        } else pp[0].setRole(PersonRole.SINGLE);
-
-        for (int i = 1; i < pp.length; i++) {
-            if ((relShp[i] == 2 || relShp[i] == 19) && marriedPersons[pp[i].getGender().ordinal()] > 0) {
-                pp[i].setRole(PersonRole.MARRIED);
-                marriedPersons[pp[i].getGender().ordinal()] -= 1;
-                //   natural child     adopted child        step child        grandchild       foster child
-            } else if (relShp[i] == 3 || relShp[i] == 4 || relShp[i] == 5 || relShp[i] == 8 || relShp[i] == 20)
-                pp[i].setRole(PersonRole.CHILD);
-            else pp[i].setRole(PersonRole.SINGLE);
-        }
+        String[] personRoles = new String[hhSize];
+        for (int person = 0; person < hhSize; person++) personRoles[person] = "single";
+        return personRoles;
     }
 
 
@@ -785,18 +692,7 @@ SyntheticPopPerth implements SyntheticPopI {
         }
     }
 
-
-    private void generateAutoOwnership (SiloDataContainer dataContainer) {
-        // select number of cars for every household
-        dataContainer.getJobData().calculateJobDensityByZone();
-        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility);   // calculate auto-ownership probabilities
-        Map<Integer, int[]> households = new HashMap<>();
-        for (Household hh: householdDataManager.getHouseholds()) {
-            households.put(hh.getId(), null);
-        }
-    }
-
-
+/*
     private void addVacantDwellings () {
         // PUMS generates too few vacant dwellings, add vacant dwellings to match vacancy rate
 
@@ -869,59 +765,7 @@ SyntheticPopPerth implements SyntheticPopI {
                 }
             }
         }
-    }
-
-
-    private void validateHHandDD () {
-        // compare number of generated households and dwellings with target data
-        String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/validation/";
-        SiloUtil.createDirectoryIfNotExistingYet(dir);
-//        String hhFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_HH_VALIDATION);
-//        String ddFile = dir + rbLandUse.getString(PROPERTIES_FILENAME_DD_VALIDATION);
-
-
-        // todo: Continue here!!!
-//        logger.info ("  Validating households");
-//        int hhByPumaSize[][][] = new int[pumas.length][4][2];  // summary by puma, size and age
-//        for (Household hh: Household.getHouseholdArray()) {
-//            int taz = Dwelling.getDwelling(hh.getDwellingId()).getZone();
-//            int puma = SiloUtil.getPUMAofZone(taz);
-//            int hhSize = Math.min(hh.getHhSize(), 4);         // aggregate households >= 4 persons
-//            int age = hh.getPersons()[0].getAge();            // get age of householder
-//            if (age < 65) hhByPumaSize[SiloUtil.findPositionInArray(puma, pumas)][hhSize - 1][0]++;
-//            else          hhByPumaSize[SiloUtil.findPositionInArray(puma, pumas)][hhSize - 1][1]++;
-//        }
-//
-//        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(hhFile);
-//        pwh.println("Puma,hhSize,Age,Target,Model");
-//        for (int puma = 0; puma < pumas.length; puma++) {
-//            for (int hhSize = 1; hhSize <= 4; hhSize++) {
-//                for (int age = 0; age <= 1; age++) {
-//                    int hhTarget = 0;
-//                    if (age == 0) {
-//                        for (int i = 1; i <= 3; i++) {
-//                            String code = pumas[puma] + "_" + hhSize + "_" + i;
-//                            if (householdTarget.containsKey(code)) hhTarget += householdTarget.get(code);
-//                        }
-//                    } else {
-//                        String code = pumas[puma] + "_" + hhSize + "_" + 4;
-//                        if (householdTarget.containsKey(code)) hhTarget = householdTarget.get(code);
-//                    }
-//                    pwh.println(puma + "," + hhSize + "," + age + "," + hhTarget + "," + hhByPumaSize[puma][hhSize - 1][age]);
-//                }
-//            }
-//        }
-//        pwh.close();
-//        logger.info ("  Validating dwellings");
-//        int ddByPumaType[][] = new int[pumas.length][DwellingType.values().length];  // summary by puma and dwelling type
-//        for (Dwelling dd: Dwelling.getDwellings()) {
-//            int taz = dd.getZone();
-//            int puma = SiloUtil.getPUMAofZone(taz);
-//            int ddType = dd.getType().ordinal();
-//            ddByPumaType[SiloUtil.findPositionInArray(puma, pumas)][ddType]++;
-//        }
-
-    }
+    }*/
 
 
     private void calculateVacancyRate () {
@@ -940,52 +784,5 @@ SyntheticPopPerth implements SyntheticPopI {
                     ((float) ddCount[tp.ordinal()]), 2);
             logger.info("  Vacancy rate for " + tp + ": " + rate + "%");
         }
-    }
-
-
-    private void summarizeVacantJobsByRegion () {
-        // write out vacant jobs by region
-        logger.info("----Vacant Jobs By Region Start----");
-        final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
-        int[] vacantJobsByRegion = new int[highestRegionId + 1];
-        for (Zone zone: geoData.getZones().values()) {
-            if (vacantJobsByZone.containsKey(zone.getZoneId())) {
-                vacantJobsByRegion[zone.getRegion().getId()] +=
-                        vacantJobsByZone.get(zone).length;
-            }
-        }
-        for (int region: geoData.getRegions().keySet()) {
-            logger.info("----,"+region+","+vacantJobsByRegion[region]);
-        }
-        logger.info("----Vacant Jobs By Region End----");
-        logger.info("----Vacant Jobs By PUMA Start----");
-        int[] vacantJobsByPuma = new int[9999999];
-        for (Zone zone: geoData.getZones().values()) {
-            if (vacantJobsByZone.containsKey(zone.getZoneId())) {
-                vacantJobsByPuma[((MstmZone) zone).getPuma()] +=
-                        vacantJobsByZone.get(zone).length;
-            }
-        }
-        for (int i = 0; i < 9999999; i++)
-            if (vacantJobsByPuma[i] > 0) logger.info("----,"+i+","+vacantJobsByPuma[i]);
-        logger.info("----Vacant Jobs By PUMA End----");
-    }
-
-
-    private void summarizeByPersonRelationship () {
-        // summarize number of people by PersonRole (married, single, child)
-
-        int[][] roleCounter = new int[101][3];
-        for (Person pp: householdDataManager.getPersons()) {
-            if (pp.getGender() == Gender.MALE) {
-                continue;
-            }
-            int age = Math.min(100, pp.getAge());
-            roleCounter[age][pp.getRole().ordinal()]++;
-        }
-        logger.info("Person role distribution for women:");
-        logger.info("age,single,married,child");
-        for (int i = 0; i <= 100; i++) logger.info(i + "," + roleCounter[i][0] + "," + roleCounter[i][1] + "," +
-                roleCounter[i][2]);
     }
 }

@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
  * @author moeckel
  * The Silo Data Container holds all the various Data classes used by the SILO events.
  * Once the SiloDataContainer is created using the resourceBundle, each module can be retrieved
- * using the repsective getter.  \n
+ * using the respective getter.  \n
  * All the data items are constructed within the SiloModelContainer
  */
 public class SiloDataContainer {
@@ -48,8 +48,12 @@ public class SiloDataContainer {
             case MUNICH:
                 geoData = new GeoDataMuc();
                 break;
+            case PERTH:
+                // todo: this might need to be replace by GeoDataPerth
+                geoData = new GeoDataMstm();
+                break;
             default:
-                LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
+                LOGGER.error(implementation + " is an invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
