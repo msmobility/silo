@@ -9,34 +9,61 @@ import java.util.stream.Collectors;
 
 public class TransportModelPropertiesModule {
 
-    public final Set<Integer> modelYears;
+    /**
+     * Peak hour in seconds.
+     */
+    public final double peakHour_s;
 
+    /**
+     * Years in which the transport model is ran.
+     */
+    public final Set<Integer> transportModelYears;
 
-    public final boolean runTravelDemandModel;
-    public final String demandModelPropertiesPath;
+    /**
+     * Identifier for the transport model {@link TransportModelIdentifier}: MITO, MATSIM, NONE.
+     */
+    public final TransportModelIdentifier transportModelIdentifier;
 
-    public final boolean runMatsim;
-    public final String matsimZoneShapeFile;
-    public final String matsimZoneCRS;
-    public final String matsimZoneShapeIdField;
+    /**
+     * Path to mito properties file.
+     */
+    public final String mitoPropertiesPath;
+
+    /**
+     * Events file at the base year for warm start of travel times based on MATSim.
+     */
     public final String matsimInitialEventsFile;
 
+    /**
+     * Scale factor for MATSim transport model.
+     */
+    public final double matsimScaleFactor;
+
+    /**
+     * Share of people working at peak times (only peak traffic is simulated) by car
+     */
+    public final double matsimWorkersShare;
+
+    public enum TransportModelIdentifier {
+        MITO, MATSIM, NONE;
+    }
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Transport model properties");
-        modelYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "transport.model.years", new int[]{2024,2037,2050}))
+        transportModelYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "transport.model.years", new int[]{2024,2037,2050}))
                 .boxed().collect(Collectors.toSet());
+        peakHour_s = PropertiesUtil.getDoubleProperty(bundle, "peak.hour", 8*60*60);
+
+        PropertiesUtil.newPropertySubmodule("Transport model identifier (MITO, MATSIM, NONE, or empty)");
+        transportModelIdentifier = TransportModelIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "transport.model", "NONE").toUpperCase());
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-mito-matsim");
-        runTravelDemandModel = PropertiesUtil.getBooleanProperty(bundle, "mito.run.travel.model", false);
-        demandModelPropertiesPath = PropertiesUtil.getStringProperty(bundle, "mito.properties.file","javaFiles/mito.properties");
+        mitoPropertiesPath = PropertiesUtil.getStringProperty(bundle, "mito.properties.file","mito.properties");
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
-        runMatsim = PropertiesUtil.getBooleanProperty(bundle, "matsim.run.travel.model", false);
-        matsimZoneShapeFile = PropertiesUtil.getStringProperty(bundle, "matsim.zones.shapefile", "input/zonesShapefile/zones.shp");
-        matsimZoneCRS = PropertiesUtil.getStringProperty(bundle, "matsim.zones.crs", "EPSG:4326");
-        matsimZoneShapeIdField = PropertiesUtil.getStringProperty(bundle, "matsim.zones.sahape.id.field", "id");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
+        matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
+        matsimWorkersShare = PropertiesUtil.getDoubleProperty(bundle, "matsim.workers.share", .66);
     }
 
 }

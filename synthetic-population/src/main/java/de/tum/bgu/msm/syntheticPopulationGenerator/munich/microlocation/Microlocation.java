@@ -32,15 +32,9 @@ public class Microlocation extends ModuleSynPop {
         }
         dataSetSynPop.setZoneFeatureMap(zoneFeatureMap);
 
-        if (Properties.get().main.runDwellingMicrolocation) {
+        if (Properties.get().main.useMicrolocation) {
             generateDwellingMicrolocation();
-        }
-
-        if (Properties.get().main.runJobMicrolocation) {
             generateJobMicrolocation();
-        }
-
-        if (Properties.get().main.runSchoolMicrolocation) {
             generateSchoolMicrolocation();
         }
 

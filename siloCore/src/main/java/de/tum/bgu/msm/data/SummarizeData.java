@@ -53,7 +53,7 @@ public class SummarizeData {
 
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE +
-                properties.main.gregorianIterator + ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
+                ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
         resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE + "_" + properties.main.endYear + ".csv", false);
     }
 
@@ -96,7 +96,7 @@ public class SummarizeData {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
-                        Properties.get().main.gregorianIterator + ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
+                        ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
                 spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL + "_" + Properties.get().main.endYear + ".csv", false);
                 break;
             case "close":
@@ -342,8 +342,7 @@ public class SummarizeData {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/bem/";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
 
-        String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
+        String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + ".csv");
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
         pw.println("id,zone,type,size,yearBuilt,occupied");
@@ -493,7 +492,7 @@ public class SummarizeData {
                 pwp.print(",");
                 try {
                     pwp.print(pp.getSchoolZoneId());
-                } catch (NullPointerException e){
+                } catch (NullPointerException e) {
                     pwp.print(0);
                 }
                 pwp.print(",");
@@ -503,7 +502,7 @@ public class SummarizeData {
                     pwp.print(schoolCoord.x);
                     pwp.print(",");
                     pwp.print(schoolCoord.y);
-                } catch (NullPointerException e){
+                } catch (NullPointerException e) {
                     pwp.print(0);
                     pwp.print(",");
                     pwp.print(0);
@@ -701,7 +700,7 @@ public class SummarizeData {
         // summarize housing costs by income group in SILO region
 
         String fileName = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
-                Properties.get().main.prestoSummaryFile + Properties.get().main.gregorianIterator + ".csv");
+                Properties.get().main.prestoSummaryFile + ".csv");
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != Properties.get().main.implementation.BASE_YEAR);
         pw.println(year + ",Housing costs by income group");
         pw.print("Income");

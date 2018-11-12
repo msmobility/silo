@@ -48,9 +48,9 @@ public interface Dwelling extends Location, Id {
 
     int getBuildingSize();
 
-    void setUsage(DwellingImpl.Usage usage);
+    void setUsage(DwellingUsage usage);
 
-    DwellingImpl.Usage getUsage();
+    DwellingUsage getUsage();
 
     //TODO: magic numbers
     //TODO: use case specific

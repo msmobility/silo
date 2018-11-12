@@ -39,7 +39,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer) {
     	super(dataContainer);
     	this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
-		this.propertiesPath = Objects.requireNonNull(Properties.get().transportModel.demandModelPropertiesPath);
+		this.propertiesPath = Objects.requireNonNull(Properties.get().transportModel.mitoPropertiesPath);
 		this.baseDirectory = Objects.requireNonNull(baseDirectory);
 	}
 

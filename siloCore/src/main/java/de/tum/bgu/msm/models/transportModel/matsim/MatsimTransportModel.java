@@ -66,15 +66,17 @@ public final class MatsimTransportModel implements TransportModelI  {
 	
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
-//	private TripRouter tripRouter = null;
+	private Properties properties;
+	//	private TripRouter tripRouter = null;
 	private final SiloDataContainer dataContainer;
 	private final Network network;
 
 
-	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig) {
+	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig, Properties properties) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
 		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
+		this.properties = properties;
 		network = NetworkUtils.createNetwork();
 		new MatsimNetworkReader(network).readFile(matsimConfig.network().getInputFileURL(matsimConfig.getContext()).getFile());
 		travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
@@ -84,11 +86,8 @@ public final class MatsimTransportModel implements TransportModelI  {
 	public void runTransportModel(int year) {
 		LOG.warn("Running MATSim transport model for year " + year + ".");
 
-		String scenarioName = Properties.get().main.scenarioName;
+		String scenarioName = properties.main.scenarioName;
 
-		initialMatsimConfig.global().setCoordinateSystem(Properties.get().transportModel.matsimZoneCRS);
-//		String zoneShapeFile = Properties.get().main.baseDirectory + "/" + Properties.get().transportModel.matsimZoneShapeFile;
-		
 		// In the current implementation, MATSim is used to reflect the functionality that was previously
 		// covered by MSTM. As such, based on the MATSim transport simulation, a travel time matrix (skim)
 		// is computed. To do so, random coordinates in each zone are taken to measure the zone-to-zone
@@ -97,19 +96,11 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		int numberOfCalcPoints = 1;
 		boolean writePopulation = false;
 
-		double populationScalingFactor = 0.01;
-//		double populationScalingFactor = 1.; // For test
+		double populationScalingFactor = properties.transportModel.matsimScaleFactor;
 		
-		// people working at non-peak times (only peak traffic is simulated), and people going by a mode other
-		// than car in case a car is still available to them
-		double workerScalingFactor = 0.66;
-		
-//		Map<Integer,SimpleFeature> zoneFeatureMap = new HashMap<>();
-//		for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-//			Integer zoneId = (Integer) feature.getAttribute("SMZRMZ");
-//			// (may fail, then go back to first converting to string and then Integer.valueOf(...)) ;
-//			zoneFeatureMap.put(zoneId,feature);
-//		}
+
+		double workerScalingFactor = properties.transportModel.matsimWorkersShare;
+
 		
 		String matsimRunId = scenarioName + "_" + year;
 		

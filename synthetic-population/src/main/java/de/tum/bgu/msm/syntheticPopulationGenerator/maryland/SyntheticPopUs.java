@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -598,7 +599,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 if (numberOfJobsInThisZone > 0) {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
                 	Zone destinationZone = zone;
-                    int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().main.peakHour, "car") + 0.5);
+                    int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().transportModel.peakHour_s, "car") + 0.5);
                     zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);

@@ -4,15 +4,12 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -1696,7 +1693,7 @@ public class SyntheticPopCT implements SyntheticPopI {
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
-            dd.setUsage(DwellingImpl.Usage.valueOf((int)dwellings.getValueAt(i,"usage")));
+            dd.setUsage(DwellingUsage.valueOf((int)dwellings.getValueAt(i,"usage")));
         }
         logger.info("   Generated households, persons and dwellings");
 
@@ -1984,7 +1981,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, taz, null, id, type , bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstate.addDwelling(dwell);
                 dwell.setFloorSpace(floorSpace);
-                dwell.setUsage(DwellingImpl.Usage.valueOf(usage));
+                dwell.setUsage(DwellingUsage.valueOf(usage));
                 dwell.setBuildingSize(buildingSize);
                 counterMunicipality = updateCountersDwelling(dwell,counterMunicipality,municipality,yearBracketsDwelling,sizeBracketsDwelling);
                 realEstate.addDwelling(dwell);
@@ -2082,7 +2079,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, zone, null, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstate.addDwelling(dwell);
-                dwell.setUsage(DwellingImpl.Usage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
+                dwell.setUsage(DwellingUsage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
                 dwell.setBuildingSize(buildingSizeAndYearBuilt[0]);
                 vacantCounter++;
@@ -2688,7 +2685,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount, int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
-        if (dwelling.getUsage() == DwellingImpl.Usage.OWNED){
+        if (dwelling.getUsage() == DwellingUsage.OWNED){
             attributesCount.setIndexedValueAt(mun,"ownDwellings",attributesCount.getIndexedValueAt(mun,"ownDwellings") + 1);
         } else {
             attributesCount.setIndexedValueAt(mun,"rentedDwellings",attributesCount.getIndexedValueAt(mun,"rentedDwellings") + 1);

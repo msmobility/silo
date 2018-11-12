@@ -20,6 +20,7 @@ package de.tum.bgu.msm.data;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.job.Job;
@@ -373,7 +374,7 @@ public class JobDataManager {
             for (Region reg : regions) {
                 if (vacantJobsByRegionPos[reg.getId()] > 0) {
                     int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
-                    		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    		Properties.get().transportModel.peakHour_s, TransportMode.car) + 0.5);
                     regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
@@ -382,7 +383,7 @@ public class JobDataManager {
                 for (Region reg : regions) {
                     if (vacantJobsByRegionPos[reg.getId()] > 0) {
                     	int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
-                        		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                                Properties.get().transportModel.peakHour_s, TransportMode.car) + 0.5);
                     	regionProb.put(reg, 1. / distance);
                     }
                 }

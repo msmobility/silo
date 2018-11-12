@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -24,7 +25,6 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.IncomeCategory;
-import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -34,7 +34,6 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 import static de.tum.bgu.msm.data.household.HouseholdUtil.getHHLicenseHolders;
@@ -260,7 +259,7 @@ public class HouseholdDataManager {
 //                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
                 Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZoneId());
                 double ds = dataContainer.getTravelTimes().
-                		getTravelTime(zone, destination, Properties.get().main.peakHour, TransportMode.car);
+                		getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()] ++;
             }

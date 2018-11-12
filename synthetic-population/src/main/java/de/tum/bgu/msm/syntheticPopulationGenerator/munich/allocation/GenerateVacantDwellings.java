@@ -1,12 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -94,10 +91,10 @@ public class GenerateVacantDwellings {
                 int bedRooms = microDataManager.guessBedrooms(floorSpace);
                 int quality = selectQualityVacant(municipality, extractYear(buildingYearSize));
                 int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
-                int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, DwellingImpl.Usage.VACANT);
+                int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, DwellingUsage.VACANT);
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstateDataManager.addDwelling(dwell);
-                dwell.setUsage(DwellingImpl.Usage.VACANT);
+                dwell.setUsage(DwellingUsage.VACANT);
                 dwell.setFloorSpace(floorSpace);
                 dwell.setYearConstructionDE(year);
                 vacantCounter++;

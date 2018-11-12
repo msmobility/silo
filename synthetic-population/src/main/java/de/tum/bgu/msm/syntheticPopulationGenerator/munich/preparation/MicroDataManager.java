@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
+import de.tum.bgu.msm.data.dwelling.DwellingUsage;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Nationality;
@@ -533,17 +533,17 @@ public class MicroDataManager {
         return bedrooms;
     }
 
-    public DwellingImpl.Usage translateDwellingUsage(int use){
-        DwellingImpl.Usage usage = DwellingImpl.Usage.OWNED;
+    public DwellingUsage translateDwellingUsage(int use){
+        DwellingUsage usage = DwellingUsage.OWNED;
         if (use == 2){
-            usage = DwellingImpl.Usage.RENTED;
+            usage = DwellingUsage.RENTED;
         } else if (use == 3){
-            usage = DwellingImpl.Usage.VACANT;
+            usage = DwellingUsage.VACANT;
         }
         return usage;
     }
 
-    public int guessPrice(float brw, int quality, int size, DwellingImpl.Usage use) {
+    public int guessPrice(float brw, int quality, int size, DwellingUsage use) {
 
         //coefficient by quality of the dwelling
         float qualityReduction = 1;
@@ -558,9 +558,9 @@ public class MicroDataManager {
         float convertToMonth = 0.0057f;
         //increase price for rented dwellings
         float rentedIncrease = 1; //by default, the price is not reduced/increased
-        if (use.equals(DwellingImpl.Usage.RENTED)){
+        if (use.equals(DwellingUsage.RENTED)){
             rentedIncrease = 1.2f; //rented dwelling
-        } else if (use.equals(DwellingImpl.Usage.VACANT)){
+        } else if (use.equals(DwellingUsage.VACANT)){
             rentedIncrease = 1; //vacant dwelling
         }
         //extra costs for power, water, etc (Nebenkosten)

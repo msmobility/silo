@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.job.Job;
@@ -34,10 +33,8 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             int id = ids.get(i);
             synchronized (Job.class) {
                 Coordinate coordinate = null;
-                if(Properties.get().main.implementation == Implementation.MUNICH) {
-                    if(Properties.get().main.runDwellingMicrolocation) {
-                        coordinate = zone.getRandomCoordinate();
-                    }
+                if (Properties.get().main.useMicrolocation) {
+                    coordinate = zone.getRandomCoordinate();
                 }
                 final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
                 ((JobFactoryImpl) factory).assignWorkingTimesFromDistribution(job);

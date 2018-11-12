@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.demography;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Zone;
@@ -94,7 +95,7 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 Zone bacheloretteZone = data.getGeoData().getZones().get(
                 		data.getRealEstateData().getDwelling(bacheloretteHh.getDwellingId()).getZoneId());
                 double travelTime = data.getTravelTimes().getTravelTime(
-                		bachelorZone, bacheloretteZone, Properties.get().main.peakHour, TransportMode.car);
+                		bachelorZone, bacheloretteZone, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
                 double educationOffset = Math.abs(bachelor.getEducationLevel() - bachelorette.getEducationLevel());
                 double nationalityBias = bachelor.getNationality() == bachelorette.getNationality() ? 1: 0.5;

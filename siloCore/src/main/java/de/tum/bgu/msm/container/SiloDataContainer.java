@@ -17,7 +17,11 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier;
 import org.apache.log4j.Logger;
+
+import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.*;
 
 /**
  * @author moeckel
@@ -117,7 +121,7 @@ public class SiloDataContainer {
 
         jobData.setHighestJobId();
 
-        if (properties.transportModel.runMatsim) {
+        if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
         } else {
             travelTimes = new SkimTravelTimes();
