@@ -6,7 +6,8 @@ public enum Implementation {
     //TODO: Define base year for Cape-Town
     CAPE_TOWN(2011),
     PERTH(2010),
-    MSP(2000);
+    MSP(2000),
+    KAGAWA(2010);
 
     public final int BASE_YEAR;
 

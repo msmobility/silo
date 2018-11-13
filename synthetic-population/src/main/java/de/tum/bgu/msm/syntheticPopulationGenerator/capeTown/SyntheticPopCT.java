@@ -1689,7 +1689,6 @@ public class SyntheticPopCT implements SyntheticPopI {
                     (int)dwellings.getValueAt(i,"quality"),(int) price,
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             realEstate.addDwelling(dd);
-            realEstate.addDwelling(dd);
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
             dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
             dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
