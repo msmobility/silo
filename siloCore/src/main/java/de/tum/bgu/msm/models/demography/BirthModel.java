@@ -27,11 +27,14 @@ import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.commons.math.distribution.NormalDistribution;
+import org.apache.commons.math.distribution.NormalDistributionImpl;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import static de.tum.bgu.msm.data.person.Gender.FEMALE;
@@ -47,11 +50,13 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
     private final PersonFactory factory;
     private BirthJSCalculator calculator;
+    private HashMap<PersonRole,HashMap<Integer, double[]>> birthProbabilities;
 
     public BirthModel(SiloDataContainer dataContainer, PersonFactory factory) {
         super(dataContainer);
         this.factory = factory;
-        setupBirthModel();
+        //setupBirthModel();
+        birthProbabilities = setupBirthModelDistribution();
     }
 
     private void setupBirthModel() {
@@ -63,6 +68,55 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         }
         float localScaler = Properties.get().demographics.localScaler;
         calculator = new BirthJSCalculator(reader, localScaler);
+    }
+
+
+    private HashMap<PersonRole,HashMap<Integer, double[]>> setupBirthModelDistribution(){
+        NormalDistribution d0 = new NormalDistributionImpl(29.73, 5.40);
+        NormalDistribution d1 = new NormalDistributionImpl(32.23, 5.04);
+        NormalDistribution d2 = new NormalDistributionImpl(33.43, 5.21);
+        NormalDistribution d3 = new NormalDistributionImpl(34.41, 5.32);
+        double scale0 = 1654.92f * 2.243;
+        double scale1 = 1213.75f * 2.243;
+        double scale2 = 422.01f * 2.243;
+        double scale3 = 206.29f * 2.243;
+        double scale0single = 1654.92f * 0.1;
+        double scale1single = 1213.75f * 0.1;
+        double scale2single = 422.01f * 0.1;
+        double scale3single = 206.29f * 0.1;
+        double localScaler = 0.87f;
+        double[] prob0married = new double[100];
+        double[] prob1married = new double[100];
+        double[] prob2married = new double[100];
+        double[] prob3married = new double[100];
+        double[] prob0single = new double[100];
+        double[] prob1single = new double[100];
+        double[] prob2single = new double[100];
+        double[] prob3single = new double[100];
+        for (int age = 15; age < 50; age++){
+            prob0married[age] = d0.density((double) age) * scale0 * localScaler;
+            prob1married[age] = d1.density((double) age) * scale1 * localScaler;
+            prob2married[age] = d2.density((double) age) * scale2 * localScaler;
+            prob3married[age] = d3.density((double) age) * scale3 * localScaler;
+            prob0single[age] = prob0married[age] * scale0single;
+            prob1single[age] = prob0married[age] * scale1single;
+            prob2single[age] = prob0married[age] * scale2single;
+            prob3single[age] = prob0married[age] * scale3single;
+        }
+        HashMap<PersonRole,HashMap<Integer, double[]>> probabilities = new HashMap<>();
+        HashMap<Integer, double[]> married = new HashMap<>();
+        married.put(0,prob0married);
+        married.put(1,prob1married);
+        married.put(2,prob2married);
+        married.put(3,prob3married);
+        HashMap<Integer, double[]> single = new HashMap<>();
+        single.put(0,prob0single);
+        single.put(1,prob1single);
+        single.put(2,prob2single);
+        single.put(3,prob3single);
+        probabilities.put(PersonRole.MARRIED, married);
+        probabilities.put(PersonRole.SINGLE, single);
+        return probabilities;
     }
 
     @Override
@@ -79,7 +133,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
     @Override
     public boolean handleEvent(BirthEvent event) {
-        return chooseBirth(event.getPersonId());
+        return chooseBirthDistribution(event.getPersonId());
     }
 
     @Override
@@ -98,6 +152,20 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             } else {
                 birthProb *= Properties.get().demographics.singleScaler;
             }
+            if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
+                giveBirth(person);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private boolean chooseBirthDistribution(int perId) {
+        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Person person = householdData.getPersonFromId(perId);
+        if (person != null && personCanGiveBirth(person)) {
+            double birthProb = birthProbabilities.get(person.getRole()).get(HouseholdUtil.getNumberOfChildren(person.getHousehold()))[person.getAge()];
             if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
                 giveBirth(person);
                 return true;
@@ -130,7 +198,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
 
     private double getProbabilityForGirl() {
-        return calculator.getProbabilityForGirl();
+        //return calculator.getProbabilityForGirl();
+        return 0.4867;
     }
 
     private boolean personCanGiveBirth(Person person) {

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.household.Household;
@@ -17,20 +18,24 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author Greg Erhardt, Rolf Moeckel
+ * @author Greg Erhardt, Rolf Moeckel, Ana Moreno
  * Created on Dec 2, 2009
  * Revised on Jan 19, 2018
+ * Revised on Nov 14, 2018 to use precalculated probabilities from parametrized distribution
  */
 public class DeathModel extends AbstractModel implements MicroEventModel<DeathEvent> {
 
     private DeathJSCalculator calculator;
+    private HashMap<Gender, double[]> deathProbabilities;
 
     public DeathModel(SiloDataContainer dataContainer) {
         super(dataContainer);
-        setupDeathModel();
+        //setupDeathModel();
+        deathProbabilities = setupDeathModelDistribution();
     }
 
     private void setupDeathModel() {
@@ -43,6 +48,23 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         calculator = new DeathJSCalculator(reader);
     }
 
+    private HashMap<Gender, double[]> setupDeathModelDistribution(){
+        double alphaFemale = 0.104163121;
+        double alphaMale = 0.09156481;
+        double scaleFemale = 1.19833E-05;
+        double scaleMale = 4.56581E-05;
+        double[] probFemale = new double[100];
+        double[] probMale = new double[100];
+        for (int age = 0; age < 100; age++){
+            probFemale[age] = scaleFemale * Math.exp(age * alphaFemale);
+            probMale[age] = scaleMale * Math.exp(age * alphaMale);
+        }
+        HashMap<Gender, double[]> probabilities = new HashMap<>();
+        probabilities.put(Gender.FEMALE,probFemale);
+        probabilities.put(Gender.MALE, probMale);
+        return probabilities;
+    }
+
     @Override
     public boolean handleEvent(DeathEvent event) {
 
@@ -51,7 +73,8 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         final Person person = householdData.getPersonFromId(event.getPersonId());
         if (person != null) {
             final int age = Math.min(person.getAge(), 100);
-            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+            //if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+            if (SiloUtil.getRandomNumberAsDouble() < deathProbabilities.get(person.getGender())[age]) {
                 return die(person);
             }
         }
