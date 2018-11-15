@@ -105,4 +105,10 @@ public class BirthTest {
         Assert.assertEquals((2.927/1000.*scaler), probabilities.get(PersonRole.SINGLE).get(1)[40], 0.00001);
     }
 
+    public void testModelOneFourChildren() {
+
+        float scaler = 0.87f;
+        Assert.assertEquals((2.927/1000.*scaler), probabilities.get(PersonRole.SINGLE).get(1)[40], 0.00001);
+    }
+
 }

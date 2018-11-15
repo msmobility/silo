@@ -82,9 +82,9 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         LogNormalDistribution maleDistribution = new LogNormalDistribution(3.15199,0.1819);
         double scaleFemale = 0.43609131;
         double scaleMale = 0.41366882;
-        double[] probFemale = new double[100];
-        double[] probMale = new double[100];
-        for (int age = 15; age < 100; age++){
+        double[] probFemale = new double[101];
+        double[] probMale = new double[101];
+        for (int age = 15; age <= 100; age++){
             probFemale[age] = scaleFemale * femaleDistribution.density((double) age);
             probMale[age] = scaleMale * maleDistribution.density((double) age);
         }

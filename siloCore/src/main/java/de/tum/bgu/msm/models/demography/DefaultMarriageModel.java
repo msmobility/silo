@@ -115,15 +115,15 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         GammaDistribution maleGammaDistribution = new GammaDistribution(33.1783079, 1.01027592);
         double scaleFemale = 0.78372893;
         double scaleMale = 0.75316272;
-        double[] probFemaleSingleHh = new double[100];
-        double[] probMaleSingleHh = new double[100];
-        double[] probFemaleMultipersonHh = new double[100];
-        double[] probMaleMultipersonHh = new double[100];
-        for (int age = 0; age < 100; age++){
+        double[] probFemaleSingleHh = new double[101];
+        double[] probMaleSingleHh = new double[101];
+        double[] probFemaleMultipersonHh = new double[101];
+        double[] probMaleMultipersonHh = new double[101];
+        for (int age = 0; age <= 100; age++){
             probFemaleMultipersonHh[age] = scaleFemale * scaleCohabitation *
-                    (femaleNormalDistribution.density((double) age) + femaleGammaDistribution.density((double) age));
+                    (femaleNormalDistribution.density((double) age) + femaleGammaDistribution.density((double) age)) / 2;
             probMaleMultipersonHh[age] = scaleMale * scaleCohabitation *
-                    (maleNormalDistribution.density((double) age) + maleGammaDistribution.density((double) age));
+                    (maleNormalDistribution.density((double) age) + maleGammaDistribution.density((double) age)) / 2;
             probFemaleSingleHh[age] = probFemaleMultipersonHh[age] * scaleSingleHousehold;
             probMaleSingleHh[age] = probMaleMultipersonHh[age] * scaleSingleHousehold;
         }
@@ -142,10 +142,11 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         double scaleAgeDifference = 2.50662;
         HashMap<Integer, Double> probAgeDifferenceFemale = new HashMap<>();
         HashMap<Integer, Double> probAgeDifferenceMale = new HashMap<>();
-        for (int age = -10; age < 10; age++){
+        for (int age = -10; age <= 10; age++){
             probAgeDifferenceFemale.put(age, scaleAgeDifference * ageDifferenceNormalDistribution.density((double) age));
             probAgeDifferenceMale.put(-age, probAgeDifferenceFemale.get(age));
         }
+        ageDifferenceProbabilities = new HashMap<>();
         ageDifferenceProbabilities.put(Gender.FEMALE, probAgeDifferenceFemale);
         ageDifferenceProbabilities.put(Gender.MALE, probAgeDifferenceMale);
 

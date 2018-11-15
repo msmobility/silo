@@ -65,9 +65,9 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
         double scaleMaleNormal = 0.4357;
         double scaleFemaleGamma = 0.2364;
         double scaleMaleGamma = 0.2476;
-        double[] probFemale = new double[100];
-        double[] probMale = new double[100];
-        for (int age = 15; age < 100; age++){
+        double[] probFemale = new double[101];
+        double[] probMale = new double[101];
+        for (int age = 15; age <= 100; age++){
             probFemale[age] = scaleFemaleNormal * femaleNormalDistribution.density((double) age) +
                     scaleFemaleGamma * femaleGammaDistribution.density((double) age);
             probMale[age] = scaleMaleNormal * maleNormalDistribution.density((double) age) +
@@ -105,7 +105,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
         Person per = householdData.getPersonFromId(perId);
         if (per != null && per.getRole() == PersonRole.MARRIED) {
             //final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
-            final double probability = divorceProbabilities.get(per.getGender())[per.getAge()];
+            final double probability = divorceProbabilities.get(per.getGender())[per.getAge()] / 2;
             if (SiloUtil.getRandomNumberAsDouble() < probability) {
                 // check if vacant dwelling is available
 

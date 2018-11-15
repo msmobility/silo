@@ -128,6 +128,7 @@ public class DemographicDistributionBirthTest {
     }
 
     private void setupDistribution(){
+        //Dummy distributions for second or more children, only to calculate runtime (for the first child is correct)
         d0 = new NormalDistributionImpl(31.175, 5.5318);
         d1 = new NormalDistributionImpl(31.175, 5.5318);
         d2 = new NormalDistributionImpl(31.175, 5.5318);
@@ -139,6 +140,7 @@ public class DemographicDistributionBirthTest {
     }
 
     private void precalculateDistribution(){
+        //Dummy distributions for second or more children, only to calculate runtime (for the first child is correct)
         NormalDistribution d0 = new NormalDistributionImpl(31.175, 5.5318);
         NormalDistribution d1 = new NormalDistributionImpl(31.175, 5.5318);
         NormalDistribution d2 = new NormalDistributionImpl(31.175, 5.5318);

@@ -76,23 +76,27 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         NormalDistribution d1 = new NormalDistributionImpl(32.23, 5.04);
         NormalDistribution d2 = new NormalDistributionImpl(33.43, 5.21);
         NormalDistribution d3 = new NormalDistributionImpl(34.41, 5.32);
-        double scale0 = 1654.92f * 2.243;
-        double scale1 = 1213.75f * 2.243;
-        double scale2 = 422.01f * 2.243;
-        double scale3 = 206.29f * 2.243;
-        double scale0single = 1654.92f * 0.1;
-        double scale1single = 1213.75f * 0.1;
-        double scale2single = 422.01f * 0.1;
-        double scale3single = 206.29f * 0.1;
+        double scale0 = 1.65492f * 2.243;
+        double scale1 = 1.21375f * 2.243;
+        double scale2 = 0.42201f * 2.243;
+        double scale3 = 0.20629f * 2.243;
+        double scale0single = 1.65492f * 0.1;
+        double scale1single = 1.21375f * 0.1;
+        double scale2single = 0.42201f * 0.1;
+        double scale3single = 0.20629f * 0.1;
         double localScaler = 0.87f;
-        double[] prob0married = new double[100];
-        double[] prob1married = new double[100];
-        double[] prob2married = new double[100];
-        double[] prob3married = new double[100];
-        double[] prob0single = new double[100];
-        double[] prob1single = new double[100];
-        double[] prob2single = new double[100];
-        double[] prob3single = new double[100];
+        double[] prob0married = new double[101];
+        double[] prob1married = new double[101];
+        double[] prob2married = new double[101];
+        double[] prob3married = new double[101];
+        double[] prob0single = new double[101];
+        double[] prob1single = new double[101];
+        double[] prob2single = new double[101];
+        double[] prob3single = new double[101];
+        double[] prob0child = new double[101];
+        double[] prob1child = new double[101];
+        double[] prob2child = new double[101];
+        double[] prob3child = new double[101];
         for (int age = 15; age < 50; age++){
             prob0married[age] = d0.density((double) age) * scale0 * localScaler;
             prob1married[age] = d1.density((double) age) * scale1 * localScaler;
@@ -116,6 +120,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         birthProbabilities = new HashMap<>();
         birthProbabilities.put(PersonRole.MARRIED, married);
         birthProbabilities.put(PersonRole.SINGLE, single);
+        birthProbabilities.put(PersonRole.CHILD, single);
     }
 
     @Override
@@ -164,7 +169,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(perId);
         if (person != null && personCanGiveBirth(person)) {
-            double birthProb = birthProbabilities.get(person.getRole()).get(HouseholdUtil.getNumberOfChildren(person.getHousehold()))[person.getAge()];
+            int numberOfChildren = Math.min(HouseholdUtil.getNumberOfChildren(person.getHousehold()), 3);
+            double birthProb = birthProbabilities.get(person.getRole()).get(numberOfChildren)[person.getAge()];
             if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
                 giveBirth(person);
                 return true;
@@ -202,6 +208,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     private boolean personCanGiveBirth(Person person) {
-        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold())) > 0;
+        int numberOfChildren = Math.min(HouseholdUtil.getNumberOfChildren(person.getHousehold()), 3);
+        return person.getGender() == FEMALE && birthProbabilities.get(person.getRole()).get(numberOfChildren)[person.getAge()] > 0;
+                //calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold())) > 0;
     }
 }
