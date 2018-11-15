@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
@@ -31,11 +32,13 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -50,6 +53,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     private final HouseholdFactory hhFactory;
     private final MovesModelI movesModel;
     private HouseholdDataManager householdData;
+    private HashMap<Gender, double[]> leaveParentalHhProbabilities;
 
     public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move,
                               CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory) {
@@ -59,7 +63,8 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         this.hhFactory = hhFactory;
         this.householdData = dataContainer.getHouseholdData();
 
-        setupLPHModel();
+        //setupLPHModel();
+        leaveParentalHhProbabilities = setupLPHModelDistribution();
     }
 
     private void setupLPHModel() {
@@ -70,6 +75,23 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
             reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
         }
         calculator = new LeaveParentHhJSCalculator(reader);
+    }
+
+    private HashMap<Gender, double[]> setupLPHModelDistribution() {
+        LogNormalDistribution femaleDistribution = new LogNormalDistribution(3.11674006,0.17902129);
+        LogNormalDistribution maleDistribution = new LogNormalDistribution(3.15199,0.1819);
+        double scaleFemale = 0.43609131;
+        double scaleMale = 0.41366882;
+        double[] probFemale = new double[100];
+        double[] probMale = new double[100];
+        for (int age = 0; age < 100; age++){
+            probFemale[age] = scaleFemale * femaleDistribution.density((double) age);
+            probMale[age] = scaleMale * maleDistribution.density((double) age);
+        }
+        HashMap<Gender, double[]> probabilities = new HashMap<>();
+        probabilities.put(Gender.FEMALE,probFemale);
+        probabilities.put(Gender.MALE, probMale);
+        return probabilities;
     }
 
     @Override
@@ -87,7 +109,8 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     public boolean handleEvent(LeaveParentsEvent event) {
         final Person per = householdData.getPersonFromId(event.getPersonId());
         if (per != null && qualifiesForParentalHHLeave(per)) {
-            final double prob = calculator.calculateLeaveParentsProbability(per.getType());
+            final double prob = leaveParentalHhProbabilities.get(per.getGender())[per.getAge()];
+            //final double prob = calculator.calculateLeaveParentsProbability(per.getType());
             if (SiloUtil.getRandomNumberAsDouble() < prob) {
                 return leaveHousehold(per);
             }
