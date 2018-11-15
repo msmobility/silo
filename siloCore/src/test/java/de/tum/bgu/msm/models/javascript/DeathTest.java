@@ -56,8 +56,13 @@ public class DeathTest {
 
 
     @Test
-    public void testProbabilityOneBis(){
+    public void testProbabilityOneMale(){
         Assert.assertEquals(0.000780309, probabilities.get(Gender.MALE)[31], 0.000001);
+    }
+
+    @Test
+    public void testProbabilityOneFemale(){
+        Assert.assertEquals(0.000302648, probabilities.get(Gender.FEMALE)[31], 0.000001);
     }
 
 

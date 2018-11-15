@@ -64,7 +64,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         this.householdData = dataContainer.getHouseholdData();
 
         //setupLPHModel();
-        leaveParentalHhProbabilities = setupLPHModelDistribution();
+        setupLPHModelDistribution();
     }
 
     private void setupLPHModel() {
@@ -77,21 +77,20 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         calculator = new LeaveParentHhJSCalculator(reader);
     }
 
-    private HashMap<Gender, double[]> setupLPHModelDistribution() {
+    private void setupLPHModelDistribution() {
         LogNormalDistribution femaleDistribution = new LogNormalDistribution(3.11674006,0.17902129);
         LogNormalDistribution maleDistribution = new LogNormalDistribution(3.15199,0.1819);
         double scaleFemale = 0.43609131;
         double scaleMale = 0.41366882;
         double[] probFemale = new double[100];
         double[] probMale = new double[100];
-        for (int age = 0; age < 100; age++){
+        for (int age = 15; age < 100; age++){
             probFemale[age] = scaleFemale * femaleDistribution.density((double) age);
             probMale[age] = scaleMale * maleDistribution.density((double) age);
         }
-        HashMap<Gender, double[]> probabilities = new HashMap<>();
-        probabilities.put(Gender.FEMALE,probFemale);
-        probabilities.put(Gender.MALE, probMale);
-        return probabilities;
+        leaveParentalHhProbabilities = new HashMap<>();
+        leaveParentalHhProbabilities.put(Gender.FEMALE,probFemale);
+        leaveParentalHhProbabilities.put(Gender.MALE, probMale);
     }
 
     @Override

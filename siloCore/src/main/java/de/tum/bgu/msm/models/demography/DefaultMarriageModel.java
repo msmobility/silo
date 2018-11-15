@@ -35,6 +35,8 @@ import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -59,7 +61,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
 
-    private float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
+    //private float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
 
     private final static int AGE_OFFSET = 10;
     private final static ContiguousSet<Integer> AGE_DIFF_RANGE
@@ -70,6 +72,11 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     // (e.g., for 25-old person consider partners from 20 to 34). ageOffset is 10 and not 9 to
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
+    private HashMap<Integer, HashMap<Gender, double[]>> marryProbabilities;
+    private HashMap<Gender, HashMap<Integer, Double>> ageDifferenceProbabilities;
+    private double interRacialMarriageShareDist;
+    private float scaleSingleHousehold;
+    private float scaleCohabitation;
 
     public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
                                 InOutMigration iomig, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
@@ -78,7 +85,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         this.iomig = iomig;
         this.carOwnership = carOwnership;
         this.hhFactory = hhFactory;
-        setupModel();
+        //setupModel();
+        setupModelDistribution();
     }
 
     private void setupModel() {
@@ -93,6 +101,54 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         }
         calculator = new MarryDivorceJSCalculator(reader, scale);
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
+    }
+
+    private void setupModelDistribution(){
+
+        interRacialMarriageShareDist = 0.02;
+        scaleSingleHousehold = 2;
+        scaleCohabitation = 1.1f;
+        //marriage probabilities
+        NormalDistribution femaleNormalDistribution = new NormalDistribution(44.2565465,12.6221495);
+        NormalDistribution maleNormalDistribution = new NormalDistribution(52.1206204,13.0923808);
+        GammaDistribution femaleGammaDistribution = new GammaDistribution(36.5023455, 0.85680438);
+        GammaDistribution maleGammaDistribution = new GammaDistribution(33.1783079, 1.01027592);
+        double scaleFemale = 0.78372893;
+        double scaleMale = 0.75316272;
+        double[] probFemaleSingleHh = new double[100];
+        double[] probMaleSingleHh = new double[100];
+        double[] probFemaleMultipersonHh = new double[100];
+        double[] probMaleMultipersonHh = new double[100];
+        for (int age = 0; age < 100; age++){
+            probFemaleMultipersonHh[age] = scaleFemale * scaleCohabitation *
+                    (femaleNormalDistribution.density((double) age) + femaleGammaDistribution.density((double) age));
+            probMaleMultipersonHh[age] = scaleMale * scaleCohabitation *
+                    (maleNormalDistribution.density((double) age) + maleGammaDistribution.density((double) age));
+            probFemaleSingleHh[age] = probFemaleMultipersonHh[age] * scaleSingleHousehold;
+            probMaleSingleHh[age] = probMaleMultipersonHh[age] * scaleSingleHousehold;
+        }
+        marryProbabilities = new HashMap<>();
+        HashMap<Gender, double[]> innerSingle = new HashMap<>();
+        HashMap<Gender, double[]> innerMultiperson = new HashMap<>();
+        innerMultiperson.put(Gender.FEMALE,probFemaleMultipersonHh);
+        innerMultiperson.put(Gender.MALE, probMaleMultipersonHh);
+        innerSingle.put(Gender.FEMALE,probFemaleSingleHh);
+        innerSingle.put(Gender.MALE, probMaleSingleHh);
+        marryProbabilities.put(1,innerSingle);
+        marryProbabilities.put(2, innerMultiperson);
+
+        //age difference probabilities
+        NormalDistribution ageDifferenceNormalDistribution = new NormalDistribution(2.3, 1);
+        double scaleAgeDifference = 2.50662;
+        HashMap<Integer, Double> probAgeDifferenceFemale = new HashMap<>();
+        HashMap<Integer, Double> probAgeDifferenceMale = new HashMap<>();
+        for (int age = -10; age < 10; age++){
+            probAgeDifferenceFemale.put(age, scaleAgeDifference * ageDifferenceNormalDistribution.density((double) age));
+            probAgeDifferenceMale.put(-age, probAgeDifferenceFemale.get(age));
+        }
+        ageDifferenceProbabilities.put(Gender.FEMALE, probAgeDifferenceFemale);
+        ageDifferenceProbabilities.put(Gender.MALE, probAgeDifferenceMale);
+
     }
 
     @Override
@@ -195,14 +251,16 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
         final Gender partnerGender = person.getGender().opposite();
-        final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
+        //final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
+        final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShareDist;
 
         final Map<Integer, Double> probabilityByAge = new HashMap<>();
 
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
-            double probability = ageDiffProbabilityByGender.get(ageDiff, person.getGender());
+            //double probability = ageDiffProbabilityByGender.get(ageDiff, person.getGender());
+            double probability = ageDifferenceProbabilities.get(person.getGender()).get(ageDiff);
             probability *= market.getFittingPartners(resultingAge, partnerGender).size();
             sum += probability;
             probabilityByAge.put(resultingAge, probability);
@@ -223,10 +281,14 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
      * thus, emphasize prop to initialize marriage for people from single-person households.
      */
     private double getMarryProb(Person pp) {
-        double marryProb = calculator.calculateMarriageProbability(pp);
+        //double marryProb = calculator.calculateMarriageProbability(pp);
+        double marryProb;
         Household hh = pp.getHousehold();
         if (hh.getHhSize() == 1) {
-            marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
+            //marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
+            marryProb = marryProbabilities.get(1).get(pp.getGender())[pp.getAge()];
+        } else {
+            marryProb = marryProbabilities.get(2).get(pp.getGender())[pp.getAge()];
         }
         return marryProb;
     }
@@ -235,7 +297,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         float share = 0.1f;
         Household hh = person.getHousehold();
         if (hh.getHhSize() == 1) {
-            share *= Properties.get().demographics.onePersonHhMarriageBias;
+            //share *= Properties.get().demographics.onePersonHhMarriageBias;
+            share *= scaleSingleHousehold;
         }
         return SiloUtil.getRandomNumberAsFloat() < share;
     }

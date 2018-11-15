@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
@@ -16,11 +17,14 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 public class DivorceModel extends AbstractModel implements MicroEventModel<DivorceEvent> {
@@ -30,11 +34,13 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     private final HouseholdFactory hhFactory;
 
     private MarryDivorceJSCalculator calculator;
+    private HashMap<Gender, double[]> divorceProbabilities;
 
     public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
         super(dataContainer);
         this.hhFactory = hhFactory;
-        setupModel();
+        //setupModel();
+        setupModelDistribution();
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
     }
@@ -47,6 +53,29 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
             reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         }
         calculator = new MarryDivorceJSCalculator(reader, 0);
+    }
+
+
+    private void setupModelDistribution(){
+        LogNormalDistribution femaleNormalDistribution = new LogNormalDistribution(3.739433, 0.25);
+        LogNormalDistribution maleNormalDistribution = new LogNormalDistribution(3.7451,0.2459);
+        GammaDistribution femaleGammaDistribution = new GammaDistribution(27.2130, 0.903879);
+        GammaDistribution maleGammaDistribution = new GammaDistribution(25.4355, 0.9712);
+        double scaleFemaleNormal = 0.4446;
+        double scaleMaleNormal = 0.4357;
+        double scaleFemaleGamma = 0.2364;
+        double scaleMaleGamma = 0.2476;
+        double[] probFemale = new double[100];
+        double[] probMale = new double[100];
+        for (int age = 15; age < 100; age++){
+            probFemale[age] = scaleFemaleNormal * femaleNormalDistribution.density((double) age) +
+                    scaleFemaleGamma * femaleGammaDistribution.density((double) age);
+            probMale[age] = scaleMaleNormal * maleNormalDistribution.density((double) age) +
+                    scaleMaleGamma * maleGammaDistribution.density((double) age);
+        }
+        divorceProbabilities = new HashMap<>();
+        divorceProbabilities.put(Gender.FEMALE,probFemale);
+        divorceProbabilities.put(Gender.MALE, probMale);
     }
 
     @Override
@@ -75,7 +104,8 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Person per = householdData.getPersonFromId(perId);
         if (per != null && per.getRole() == PersonRole.MARRIED) {
-            final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
+            //final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
+            final double probability = divorceProbabilities.get(per.getGender())[per.getAge()];
             if (SiloUtil.getRandomNumberAsDouble() < probability) {
                 // check if vacant dwelling is available
 

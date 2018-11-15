@@ -51,10 +51,10 @@ public class BirthTest {
             prob1married[age] = d1.density((double) age)*scale1*regionScaler;
             prob2married[age] = d2.density((double) age)*scale2*regionScaler;
             prob3married[age] = d3.density((double) age)*scale3*regionScaler;
-            prob0single[age] = prob0married[age] * scale0single;
-            prob1single[age] = prob0married[age] * scale1single;
-            prob2single[age] = prob0married[age] * scale2single;
-            prob3single[age] = prob0married[age] * scale3single;
+            prob0single[age] = d0.density((double) age)*scale0single*regionScaler;
+            prob1single[age] = d1.density((double) age)*scale1single*regionScaler;
+            prob2single[age] = d2.density((double) age)*scale2single*regionScaler;
+            prob3single[age] = d3.density((double) age)*scale3single*regionScaler;
         }
         probabilities = new HashMap<>();
         HashMap<Integer, double[]> married = new HashMap<>();
@@ -88,7 +88,7 @@ public class BirthTest {
     }
 
     @Test
-    public void testModelOneDistribution() {
+    public void testModelOneMarried() {
         float scaler = 0.87f;
         Assert.assertEquals((65.66/1000.*scaler), probabilities.get(PersonRole.MARRIED).get(1)[40], 0.00001);
     }
@@ -97,6 +97,12 @@ public class BirthTest {
     public void testModelTwoDistribution() {
         float scaler = 0.87f;
         Assert.assertEquals((0/1000.*scaler), probabilities.get(PersonRole.MARRIED).get(1)[60], 0.00001);
+    }
+
+    @Test
+    public void testModelOneSingle() {
+        float scaler = 0.87f;
+        Assert.assertEquals((2.927/1000.*scaler), probabilities.get(PersonRole.SINGLE).get(1)[40], 0.00001);
     }
 
 }

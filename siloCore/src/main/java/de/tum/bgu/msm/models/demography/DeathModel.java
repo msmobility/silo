@@ -35,7 +35,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     public DeathModel(SiloDataContainer dataContainer) {
         super(dataContainer);
         //setupDeathModel();
-        deathProbabilities = setupDeathModelDistribution();
+        setupDeathModelDistribution();
     }
 
     private void setupDeathModel() {
@@ -48,7 +48,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         calculator = new DeathJSCalculator(reader);
     }
 
-    private HashMap<Gender, double[]> setupDeathModelDistribution(){
+    private void setupDeathModelDistribution(){
         double alphaFemale = 0.104163121;
         double alphaMale = 0.09156481;
         double scaleFemale = 1.19833E-05;
@@ -59,10 +59,9 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
             probFemale[age] = scaleFemale * Math.exp(age * alphaFemale);
             probMale[age] = scaleMale * Math.exp(age * alphaMale);
         }
-        HashMap<Gender, double[]> probabilities = new HashMap<>();
-        probabilities.put(Gender.FEMALE,probFemale);
-        probabilities.put(Gender.MALE, probMale);
-        return probabilities;
+        deathProbabilities = new HashMap<>();
+        deathProbabilities.put(Gender.FEMALE,probFemale);
+        deathProbabilities.put(Gender.MALE, probMale);
     }
 
     @Override

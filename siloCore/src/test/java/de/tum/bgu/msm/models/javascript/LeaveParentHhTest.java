@@ -30,7 +30,7 @@ public class LeaveParentHhTest {
         double scaleMale = 0.41366882;
         double[] probFemale = new double[100];
         double[] probMale = new double[100];
-        for (int age = 0; age < 100; age++){
+        for (int age = 15; age < 100; age++){
             probFemale[age] = scaleFemale * femaleDistribution.density((double) age);
             probMale[age] = scaleMale * maleDistribution.density((double) age);
         }
@@ -45,8 +45,19 @@ public class LeaveParentHhTest {
     }
 
     @Test
-    public void testModelOneDistribution() {
+    public void testModelOneFemale() {
         Assert.assertEquals(0.01682, probabilities.get(Gender.FEMALE)[28], 0.0001);
     }
+
+    @Test
+    public void testModelOneMale() {
+        Assert.assertEquals(0.01983389, probabilities.get(Gender.MALE)[28], 0.0001);
+    }
+
+    @Test
+    public void testModelChildRunAway() {
+        Assert.assertEquals(0., probabilities.get(Gender.MALE)[8], 0.0001);
+    }
+
 
 }

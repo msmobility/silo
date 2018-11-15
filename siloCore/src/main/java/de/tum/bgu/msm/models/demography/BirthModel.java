@@ -56,7 +56,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         super(dataContainer);
         this.factory = factory;
         //setupBirthModel();
-        birthProbabilities = setupBirthModelDistribution();
+        setupBirthModelDistribution();
     }
 
     private void setupBirthModel() {
@@ -71,7 +71,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
 
-    private HashMap<PersonRole,HashMap<Integer, double[]>> setupBirthModelDistribution(){
+    private void setupBirthModelDistribution(){
         NormalDistribution d0 = new NormalDistributionImpl(29.73, 5.40);
         NormalDistribution d1 = new NormalDistributionImpl(32.23, 5.04);
         NormalDistribution d2 = new NormalDistributionImpl(33.43, 5.21);
@@ -98,12 +98,11 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             prob1married[age] = d1.density((double) age) * scale1 * localScaler;
             prob2married[age] = d2.density((double) age) * scale2 * localScaler;
             prob3married[age] = d3.density((double) age) * scale3 * localScaler;
-            prob0single[age] = prob0married[age] * scale0single;
-            prob1single[age] = prob0married[age] * scale1single;
-            prob2single[age] = prob0married[age] * scale2single;
-            prob3single[age] = prob0married[age] * scale3single;
+            prob0single[age] = d0.density((double) age) * scale0single * localScaler;
+            prob1single[age] = d1.density((double) age) * scale1single * localScaler;
+            prob2single[age] = d2.density((double) age) * scale2single * localScaler;
+            prob3single[age] = d3.density((double) age) * scale3single * localScaler;
         }
-        HashMap<PersonRole,HashMap<Integer, double[]>> probabilities = new HashMap<>();
         HashMap<Integer, double[]> married = new HashMap<>();
         married.put(0,prob0married);
         married.put(1,prob1married);
@@ -114,9 +113,9 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         single.put(1,prob1single);
         single.put(2,prob2single);
         single.put(3,prob3single);
-        probabilities.put(PersonRole.MARRIED, married);
-        probabilities.put(PersonRole.SINGLE, single);
-        return probabilities;
+        birthProbabilities = new HashMap<>();
+        birthProbabilities.put(PersonRole.MARRIED, married);
+        birthProbabilities.put(PersonRole.SINGLE, single);
     }
 
     @Override
