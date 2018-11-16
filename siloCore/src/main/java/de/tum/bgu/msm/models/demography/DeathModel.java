@@ -49,10 +49,10 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     }
 
     private void setupDeathModelDistribution(){
-        double alphaFemale = 0.104163121;
-        double alphaMale = 0.09156481;
-        double scaleFemale = 1.19833E-05;
-        double scaleMale = 4.56581E-05;
+        double alphaFemale = 0.13180278;
+        double alphaMale = 0.10676915;
+        double scaleFemale = 1.073E-06;
+        double scaleMale = 1.2306E-05;
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
         for (int age = 0; age <= 100; age++){
