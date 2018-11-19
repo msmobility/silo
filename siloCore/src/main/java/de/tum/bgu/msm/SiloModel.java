@@ -19,6 +19,8 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
@@ -110,8 +112,8 @@ public final class SiloModel {
 		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
         setupContainer();
         setupYears();
-        setupTravelTimes();
-        setupAccessibility();
+        //setupTravelTimes();
+        //setupAccessibility();
         setupMicroSim();
         IssueCounter.logIssues(data.getGeoData());
 
@@ -127,11 +129,12 @@ public final class SiloModel {
         data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
 		data.getHouseholdData().calculateInitialSettings();
-		data.getJobData().calculateEmploymentForecast();
+		//removed for machine learning exercise
+		/*data.getJobData().calculateEmploymentForecast();
 		data.getJobData().identifyVacantJobs();
 		data.getJobData().calculateJobDensityByZone();
 		data.getRealEstateData().fillQualityDistribution();
-		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
+		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();*/
 		data.getRealEstateData().identifyVacantDwellings();
         modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties, parametersMap);
     }
@@ -233,6 +236,9 @@ public final class SiloModel {
             timeTracker.setCurrentYear(year);
 
             timeTracker.reset();
+			data.getRealEstateData().updateVacantDwellingMap();
+            //removed for machine learning exercise
+/*
             if (scalingYears.contains(year)) {
                 SummarizeData.scaleMicroDataToExogenousForecast(year, data);
             }
@@ -256,7 +262,7 @@ public final class SiloModel {
 			if (year != properties.main.implementation.BASE_YEAR) {
 			    householdData.adjustIncome();
             }
-			timeTracker.record("planIncomeChange");
+			timeTracker.record("planIncomeChange");*/
 
 			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, data, combinationId);
@@ -264,7 +270,8 @@ public final class SiloModel {
 
             microSim.simulate(year);
 
-			timeTracker.reset();
+			//removed for machine learning exercise
+/*			timeTracker.reset();
 			int[] carChangeCounter = modelContainer.getUpdateCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
 			householdData.clearUpdatedHouseholds();
 			timeTracker.recordAndReset("updateCarOwnership");
@@ -291,9 +298,9 @@ public final class SiloModel {
 			timeTracker.recordAndReset("calcAccessibilities");
 
 			modelContainer.getPrm().updatedRealEstatePrices();
-			timeTracker.record("updateRealEstatePrices");
+			timeTracker.record("updateRealEstatePrices");*/
 
-			microSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
+			microSim.finishYear(year, data);
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			householdSizeDistribution.put(year, householdData.getHouseholdSizeDistribution());
@@ -309,17 +316,18 @@ public final class SiloModel {
 	}
 
 	private void endSimulation(int combinationId) {
-		if (scalingYears.contains(properties.main.endYear)) {
+    	//removed for machine learning exercise
+/*		if (scalingYears.contains(properties.main.endYear)) {
             SummarizeData.scaleMicroDataToExogenousForecast(properties.main.endYear, data);
         }
 
 		if (properties.main.endYear != 2040) {
 			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
-		}
-
+		}*/
 		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
+		SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);

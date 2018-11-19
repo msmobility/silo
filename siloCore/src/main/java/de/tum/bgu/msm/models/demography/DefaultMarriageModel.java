@@ -297,9 +297,9 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         Household hh = pp.getHousehold();
         if (hh.getHhSize() == 1) {
             //marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
-            marryProb = marryProbabilities.get(1).get(pp.getGender())[pp.getAge()];
+            marryProb = marryProbabilities.get(1).get(pp.getGender())[Math.min(pp.getAge(),100)];
         } else {
-            marryProb = marryProbabilities.get(2).get(pp.getGender())[pp.getAge()];
+            marryProb = marryProbabilities.get(2).get(pp.getGender())[Math.min(pp.getAge(),100)];
         }
         return marryProb;
     }

@@ -111,7 +111,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     public boolean handleEvent(LeaveParentsEvent event) {
         final Person per = householdData.getPersonFromId(event.getPersonId());
         if (per != null && qualifiesForParentalHHLeave(per)) {
-            final double prob = leaveParentalHhProbabilities.get(per.getGender())[per.getAge()];
+            final double prob = leaveParentalHhProbabilities.get(per.getGender())[Math.min(per.getAge(),100)];
             //final double prob = calculator.calculateLeaveParentsProbability(per.getType());
             if (SiloUtil.getRandomNumberAsDouble() < prob) {
                 return leaveHousehold(per);

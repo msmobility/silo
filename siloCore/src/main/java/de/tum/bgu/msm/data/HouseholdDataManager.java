@@ -235,7 +235,8 @@ public class HouseholdDataManager {
         SummarizeData.resultFile(row);
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
-        float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
+        //removed for machine learning exercise
+        //float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         for (Person per: persons.values()) {
             int age = per.getAge();
             Gender gender = per.getGender();
@@ -247,7 +248,7 @@ public class HouseholdDataManager {
             else if (age >= 18) ageGroup = 1;
             if (employed) labP[1][gender.ordinal()][ageGroup]++;
             else labP[0][gender.ordinal()][ageGroup]++;
-            if (employed) {
+            /*if (employed) {
                 Zone zone = null;
                 Household household = households.get(per.getHousehold().getId());
                 Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
@@ -262,9 +263,11 @@ public class HouseholdDataManager {
                 		getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()] ++;
-            }
+            }*/
         }
-        String[] grp = {"<18","18-29","30-49","50-64",">=65"};
+
+        //removed for machine learning exercise
+        /*String[] grp = {"<18","18-29","30-49","50-64",">=65"};
         SummarizeData.resultFile("laborParticipationRateByAge,male,female");
         for (int ag = 0; ag < 5; ag++) {
             Formatter f = new Formatter();
@@ -284,7 +287,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("0cars," + carOwnership[0]);
         SummarizeData.resultFile("1car," + carOwnership[1]);
         SummarizeData.resultFile("2cars," + carOwnership[2]);
-        SummarizeData.resultFile("3+cars," + carOwnership[3]);
+        SummarizeData.resultFile("3+cars," + carOwnership[3]);*/
     }
 
     public int[] getHouseholdSizeDistribution() {

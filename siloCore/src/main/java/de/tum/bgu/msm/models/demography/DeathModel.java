@@ -99,9 +99,10 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     boolean die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
-        if (person.getWorkplace() > 0) {
+        //removed for machine learning exercise
+/*        if (person.getWorkplace() > 0) {
             dataContainer.getJobData().quitJob(true, person);
-        }
+        }*/
         final Household hhOfPersonToDie = person.getHousehold();
 
         if (person.getRole() == PersonRole.MARRIED) {

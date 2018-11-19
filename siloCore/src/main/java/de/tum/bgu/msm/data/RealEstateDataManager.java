@@ -46,6 +46,8 @@ public class RealEstateDataManager {
     private static float[] medianRent;
     private HashMap<DwellingType, Float> acresByDwellingType;
 
+    private static HashMap<Integer, Integer> vacantDwellingsByRegionYear;
+
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
     }
@@ -538,6 +540,22 @@ public class RealEstateDataManager {
             geoData.reduceDevelopmentCapacityByOneDwelling(zone);
         } else {
             geoData.reduceDevelopmentCapacityByDevelopableAcres(zone, acres);
+        }
+    }
+
+
+    public static int getRegionToMoveFromVacantDwellings(){
+        return SiloUtil.select(vacantDwellingsByRegionYear);
+    }
+
+
+    public void updateVacantDwellingMap(){
+        if (vacantDwellingsByRegionYear == null){
+            vacantDwellingsByRegionYear = new HashMap<>();
+        }
+        final GeoData geoData = dataContainer.getGeoData();
+        for (int region: geoData.getRegions().keySet()) {
+            vacantDwellingsByRegionYear.put(region, RealEstateDataManager.getNumberOfVacantDDinRegion(region));
         }
     }
 }

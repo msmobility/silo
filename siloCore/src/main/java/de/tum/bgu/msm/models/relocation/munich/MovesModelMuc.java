@@ -172,7 +172,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     public int searchForNewDwelling(Household household) {
         // search alternative dwellings
 
-        // data preparation
+/*        // data preparation
         int householdIncome = 0;
         Nationality nationality = null;
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
@@ -268,7 +268,16 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         }
         if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
         int selected = SiloUtil.select(expProbs, sumProbs);
-        return vacantDwellings[selected];
+        return vacantDwellings[selected];*/
+
+        Map<Integer, Integer> vacantDdByRegion = new HashMap<>();
+        for (int region: geoData.getRegions().keySet()) {
+            vacantDdByRegion.put(region, RealEstateDataManager.getNumberOfVacantDDinRegion(region));
+        }
+        int selectedRegionId = SiloUtil.select(vacantDdByRegion);
+        int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
+
+        return vacantDwellings[vacantDwellings.length - 1];
     }
 
     @Override

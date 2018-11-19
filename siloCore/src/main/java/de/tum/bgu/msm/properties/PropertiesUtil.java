@@ -45,7 +45,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getDoubleProperty(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + defaultValue + " for property " + key);
+            //logger.info("Using default value of " + defaultValue + " for property " + key);
             printOutProperty(key, defaultValue, true);
             return defaultValue;
         }
@@ -68,7 +68,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getBooleanProperty(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + defaultValue + " for property " + key);
+            //logger.info("Using default value of " + defaultValue + " for property " + key);
             printOutProperty(key, defaultValue, true);
             return defaultValue;
         }
@@ -91,7 +91,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getStringProperty(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + defaultValue + " for property " + key);
+            //logger.info("Using default value of " + defaultValue + " for property " + key);
             printOutProperty(key, defaultValue, true);
             return defaultValue;
         }
@@ -126,7 +126,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getIntPropertyArray(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
+            //logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
             printOutArrayProperty(key, Arrays.stream(defaultValue).boxed().toArray(), true);
             return defaultValue;
         }
@@ -151,7 +151,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getDoublePropertyArray(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
+            //logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
             printOutArrayProperty(key, Arrays.stream(defaultValue).boxed().toArray(), true);
             return defaultValue;
         }
@@ -174,7 +174,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getStringPropertyArray(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
+            //logger.info("Using default value of " + Arrays.toString(defaultValue) + " for property " + key);
             printOutArrayProperty(key, defaultValue, true);
             return defaultValue;
         }
@@ -232,9 +232,9 @@ public class PropertiesUtil {
         }
     }
 
-    public static void writePropertiesForThisRun(String inputPropertiesPath) {
+    public static void writePropertiesForThisRun(String inputPropertiesPath, int combinationId) {
         Properties properties = Properties.get();
-        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId;
         SiloUtil.copyFile(inputPropertiesPath, parent + "/inputProperties.properties");
         printOutPropertiesOfThisRun(parent);
     }

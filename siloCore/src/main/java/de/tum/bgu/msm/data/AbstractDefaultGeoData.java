@@ -62,7 +62,8 @@ public abstract class AbstractDefaultGeoData implements GeoData {
                 zone.setZoneFeature(feature);
                 zoneFeatureMap.put(zoneId,feature);
             }else{
-                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+                //removed for machine learning exercise
+                //logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
             }
         }
 	}

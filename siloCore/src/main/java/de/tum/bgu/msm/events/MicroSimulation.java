@@ -94,4 +94,19 @@ public final class MicroSimulation {
 
         events.clear();
     }
+
+    public void finishYear(int year, SiloDataContainer dataContainer) {
+        for(MicroEventModel model: models.values()) {
+            model.finishYear(year);
+        }
+        SummarizeData.resultFile("Count of simulated events");
+        LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
+        for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
+            final int count = eventCounter.count(event);
+            SummarizeData.resultFile(event.getSimpleName() + "," + count);
+            LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
+        }
+
+        events.clear();
+    }
 }

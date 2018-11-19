@@ -162,7 +162,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
         if (hhId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         }
-        JobDataManager jobData = dataContainer.getJobData();
+        //removed for machine learning exercise
+/*        JobDataManager jobData = dataContainer.getJobData();
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         for (Map.Entry<Integer, ? extends Person> person: hh.getPersons().entrySet()) {
             if (person.getValue().getWorkplace() > 0) {
@@ -171,7 +172,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             if (person.getKey() == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println(" Person " + person.getKey() + " outmigrated.");
             }
-        }
+        }*/
         dataContainer.getHouseholdData().removeHousehold(hhId);
         return true;
     }

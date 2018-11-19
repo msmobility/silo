@@ -51,7 +51,7 @@ public class SiloUtil {
         SummarizeData.openResultFile(properties, combinationId);
         SummarizeData.resultFileSpatial("open", combinationId);
 
-        PropertiesUtil.writePropertiesForThisRun(propertiesPath);
+        PropertiesUtil.writePropertiesForThisRun(propertiesPath, combinationId);
 
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
@@ -1066,17 +1066,19 @@ public class SiloUtil {
 
         SummarizeData.resultFile("Year " + year, false);
         dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
-        dataContainer.getRealEstateData().summarizeDwellings();
-        dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
+        //removed for machine learning exercise
+        /*dataContainer.getRealEstateData().summarizeDwellings();
+        dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());*/
 
         SummarizeData.resultFileSpatial("Year " + year, false, combinationId);
         SummarizeData.summarizeSpatially(year, modelContainer, dataContainer, combinationId);
-        if (Properties.get().main.createHousingEnvironmentImpactFile) {
+        //removed for machine learning exercise
+/*        if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }
         if (Properties.get().main.createPrestoSummary) {
             SummarizeData.summarizePrestoRegion(year, dataContainer);
-        }
+        }*/
     }
 
 
@@ -1105,5 +1107,17 @@ public class SiloUtil {
                 Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.implementation.BASE_YEAR);
         pw.write(timeTracker.toString());
         pw.close();
+    }
+
+    public static int getWithEqualProbability(int numberOfElements){
+        double selPos = rand.nextDouble() * numberOfElements;
+        double sum = 0;
+        for (int i = 0; i < numberOfElements; i++) {
+            sum ++;
+            if (sum > selPos) {
+                return i + 1;
+            }
+        }
+        return numberOfElements;
     }
 }

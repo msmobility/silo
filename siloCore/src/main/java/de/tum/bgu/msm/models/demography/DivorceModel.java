@@ -111,7 +111,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
         Person per = householdData.getPersonFromId(perId);
         if (per != null && per.getRole() == PersonRole.MARRIED) {
             //final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
-            final double probability = divorceProbabilities.get(per.getGender())[per.getAge()] / 2;
+            final double probability = divorceProbabilities.get(per.getGender())[Math.min(per.getAge(),100)] / 2;
             if (SiloUtil.getRandomNumberAsDouble() < probability) {
                 // check if vacant dwelling is available
 
