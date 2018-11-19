@@ -24,10 +24,6 @@ public class OmxSkimTest {
     public void init() {
         SiloUtil.loadHdf5Lib();
         mockZone = new Zone() {
-            @Override
-            public void setRegion(Region region) {
-
-            }
 
             @Override
             public Region getRegion() {
@@ -40,7 +36,7 @@ public class OmxSkimTest {
             }
 
             @Override
-            public float getArea() {
+            public float getArea_sqmi() {
                 return 0;
             }
 

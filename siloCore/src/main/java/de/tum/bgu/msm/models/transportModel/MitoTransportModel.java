@@ -59,7 +59,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
-			MitoZone zone = new MitoZone(siloZone.getZoneId(), siloZone.getArea(), ((MunichZone)siloZone).getAreaType());
+			MitoZone zone = new MitoZone(siloZone.getZoneId(), siloZone.getArea_sqmi(), ((MunichZone)siloZone).getAreaType());
 			zones.put(zone.getId(), zone);
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);

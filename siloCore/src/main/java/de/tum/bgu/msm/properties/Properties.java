@@ -56,7 +56,7 @@ public final class Properties {
 
         main = new MainProperties(propFile.getParent(), bundle, implementation);
         transportModel = new TransportModelPropertiesModule(bundle);
-        geo = new GeoProperties(bundle, implementation);
+        geo = new GeoProperties(bundle);
         realEstate = new RealEstateProperties(bundle);
         householdData = new HouseholdDataProperties(bundle);
         jobData = new JobDataProperties(bundle);

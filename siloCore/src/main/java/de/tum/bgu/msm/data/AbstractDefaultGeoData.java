@@ -44,7 +44,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     public void readData() {
         readZones();
         readShapes();
-        readRegionDefinition();
         readLandUse();
         readDeveloperData();
     }
@@ -127,8 +126,6 @@ public abstract class AbstractDefaultGeoData implements GeoData {
 
 
     protected abstract void readZones();
-
-    protected abstract void readRegionDefinition();
 
     private void readDeveloperData() {
         String baseDirectory = Properties.get().main.baseDirectory;

@@ -63,8 +63,8 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
             double regionalCrimeRate = 0.;
             double regionalArea = 0.;
             for(Zone zone: region.getZones()) {
-                regionalCrimeRate += ((MstmZone)zone).getCounty().getCrimeRate() * zone.getArea();
-                regionalArea += zone.getArea();
+                regionalCrimeRate += ((MstmZone)zone).getCounty().getCrimeRate() * zone.getArea_sqmi();
+                regionalArea += zone.getArea_sqmi();
             }
             regionalCrimeRate /= regionalArea;
             ((MstmRegion) region).setCrimeRate(regionalCrimeRate);
@@ -81,6 +81,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
         int[] simplifiedPuma = zonalData.getColumnAsInt("simplifiedPUMA");
         int[] countyData = zonalData.getColumnAsInt(COUNTY_COLUMN_NAME);
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+        int[] regionData = zonalData.getColumnAsInt("Region");
 
         for(int i = 0; i < zoneIds.length; i++) {
             County county;
@@ -90,35 +91,22 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
                 county = new County(countyData[i]);
                 counties.put(county.getId(), county);
             }
-            Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county);
+
+            Region region;
+            int regionId = regionData[i];
+            if (regions.containsKey(regionId)) {
+                region = regions.get(regionId);
+            } else {
+                region = new MstmRegion(regionId);
+                regions.put(region.getId(), region);
+            }
+
+            Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county, region);
+            region.addZone(zone);
             zones.put(zoneIds[i], zone);
         }
     }
 
-    @Override
-    protected void readRegionDefinition() {
-        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
-        TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
-        for (int row = 1; row <= regDef.getRowCount(); row++) {
-            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
-            int regionId = (int) regDef.getValueAt(row, regionColumnName);
-            Zone zone = zones.get(taz);
-            if (zone != null) {
-                Region region;
-                if (regions.containsKey(regionId)) {
-                    region = regions.get(regionId);
-                    region.addZone(zone);
-                } else {
-                    region = new MstmRegion(regionId);
-                    region.addZone(zone);
-                    regions.put(region.getId(), region);
-                }
-                zone.setRegion(region);
-            } else {
-                throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
-            }
-        }
-    }
     /**
      * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
      */

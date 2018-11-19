@@ -1,30 +1,34 @@
 package de.tum.bgu.msm.properties.modules;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
-public class GeoProperties {
+public final class GeoProperties {
 
+    /**
+     * Zone system filepath.
+     */
     public final String zonalDataFile;
-    public final String regionDefinitionFile;
+    /**
+     *  Zone system Shape filepath.
+     */
+    public final String zoneShapeFile;
+
     public final String zonalSchoolQualityFile;
     public final String countyCrimeFile;
     public final String landUseAreaFile;
     public final int[] developableLandUseTypes;
     public final String developmentRestrictionsFile;
     public final boolean useCapacityForDwellings;
-    //public final String transitAccessTime;
-    //public final String zonalAttributesFile;
     public final String capacityFile;
-    public final String zoneShapeFile;
 
-    public GeoProperties(ResourceBundle bundle, Implementation implementation) {
+
+    public GeoProperties(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Geo properties");
         zonalDataFile = PropertiesUtil.getStringProperty(bundle, "zonal.data.file", "input/zoneSystem.csv");
         zoneShapeFile = PropertiesUtil.getStringProperty(bundle, "zones.shapefile", "input/zonesShapefile/zones.shp" );
-        regionDefinitionFile = PropertiesUtil.getStringProperty(bundle, "region.definition.file", "input/regionDefinition.csv");
+
         zonalSchoolQualityFile = PropertiesUtil.getStringProperty(bundle, "school.quality.index", "input/schoolQualityIndex.csv");
         countyCrimeFile = PropertiesUtil.getStringProperty(bundle, "crime.index", "input/crimeIndex.csv");
         landUseAreaFile = PropertiesUtil.getStringProperty(bundle, "land.use.area.by.taz", "landUse");
