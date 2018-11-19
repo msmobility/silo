@@ -38,7 +38,7 @@ public class DemographicDistributionBirthTest {
 
     @BeforeClass
     public static void setupModel() {
-        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
+        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);

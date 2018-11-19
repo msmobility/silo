@@ -87,7 +87,7 @@ public class AccessibilityTest {
 
     @Test
     public void testIntegration()  {
-        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "test/scenarios/annapolis/javaFiles/siloMstm.properties");
+        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
 
         SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();

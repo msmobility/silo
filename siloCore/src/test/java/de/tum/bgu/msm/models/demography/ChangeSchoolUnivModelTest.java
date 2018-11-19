@@ -20,7 +20,7 @@ public class ChangeSchoolUnivModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         model = new ChangeSchoolUnivModel(dataContainer);
     }

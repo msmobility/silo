@@ -287,6 +287,15 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
+    public int[] getHouseholdSizeDistribution() {
+        int[] householdSizeDistribution = new int[11];
+        for (Household hh : households.values()){
+            int size = Math.min(hh.getHhSize(), 10);
+            householdSizeDistribution[size - 1]++;
+        }
+        return householdSizeDistribution;
+    }
+
     public void setHighestHouseholdAndPersonId () {
         // identify highest household ID and highest person ID in use
         highestHouseholdIdInUse = 0;

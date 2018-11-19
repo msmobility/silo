@@ -28,12 +28,12 @@ public class SiloMuc {
 
         for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
 
-            Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+            Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0], i);
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
 
             logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-            SiloModel model = new SiloModel(config, properties, parametersMap);
+            SiloModel model = new SiloModel(config, properties, parametersMap, i);
             model.runModel();
             logger.info("Finished SILO.");
         }

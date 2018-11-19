@@ -15,7 +15,7 @@ public class ThreadSafeRandomsTest {
 
     @Test
     public void test() {
-        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
 
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for(int i= 0; i<5; i++) {

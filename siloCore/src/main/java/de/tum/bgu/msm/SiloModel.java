@@ -39,6 +39,7 @@ import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,8 @@ public final class SiloModel {
     private final Set<Integer> scalingYears = new HashSet<>();
 	private final Properties properties;
 	private Map<String, Double> parametersMap;
+	private Map<Integer, int[]> householdSizeDistribution;
+	private final int combinationId;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer data;
@@ -66,7 +69,7 @@ public final class SiloModel {
     private final TimeTracker timeTracker = new TimeTracker();
 
     public SiloModel(Properties properties) {
-		this(null, properties) ;
+		this(null, properties, null, 0) ;
 	}
 
 	public SiloModel(Config matsimConfig, Properties properties) {
@@ -74,28 +77,31 @@ public final class SiloModel {
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
+		this.combinationId = 0;
 	}
 
-	public SiloModel(Config matsimConfig, Properties properties, Map<String, Double> parametersMap) {
+	public SiloModel(Config matsimConfig, Properties properties, Map<String, Double> parametersMap, int combinationId) {
 		IssueCounter.setUpCounter();
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
 		this.parametersMap = parametersMap;
+		this.combinationId = combinationId;
 	}
 
 	public void runModel() {
 		logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
 		long startTime = System.currentTimeMillis();
+		householdSizeDistribution = new HashMap<>();
 		try{
 			setupModel();
 			runYearByYear();
-			endSimulation();
+			endSimulation(combinationId);
 		} catch (Exception e){
 			logger.error("Error running SILO.");
 			throw new RuntimeException(e);
 		} finally {
-			SiloUtil.closeAllFiles(startTime, timeTracker);
+			SiloUtil.closeAllFiles(startTime, timeTracker, combinationId);
 		}
 
 	}
@@ -253,7 +259,7 @@ public final class SiloModel {
 			timeTracker.record("planIncomeChange");
 
 			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
-                SiloUtil.summarizeMicroData(year, modelContainer, data);
+                SiloUtil.summarizeMicroData(year, modelContainer, data, combinationId);
             }
 
             microSim.simulate(year);
@@ -290,6 +296,7 @@ public final class SiloModel {
 			microSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
+			householdSizeDistribution.put(year, householdData.getHouseholdSizeDistribution());
 			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					data.getRealEstateData().getDwellings().size() + " dwellings.");
@@ -301,7 +308,7 @@ public final class SiloModel {
 		}
 	}
 
-	private void endSimulation() {
+	private void endSimulation(int combinationId) {
 		if (scalingYears.contains(properties.main.endYear)) {
             SummarizeData.scaleMicroDataToExogenousForecast(properties.main.endYear, data);
         }
@@ -311,7 +318,8 @@ public final class SiloModel {
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}
 
-		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data);
+		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
+		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);

@@ -23,9 +23,6 @@ public final class Properties {
 
     public static Properties initializeProperties(String path, Implementation implementation) {
 
-        if(instance != null) {
-            throw new RuntimeException("Already initialized properties!");
-        }
         instance = new Properties(path, implementation);
         return instance;
     }

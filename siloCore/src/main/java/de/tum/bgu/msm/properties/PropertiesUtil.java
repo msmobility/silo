@@ -22,7 +22,7 @@ public class PropertiesUtil {
             bundle.getString(key);
             return getIntProperty(bundle, key);
         } catch (MissingResourceException e) {
-            logger.info("Using default value of " + defaultValue + " for property " + key);
+            //logger.info("Using default value of " + defaultValue + " for property " + key);
             printOutProperty(key, defaultValue, true);
             return defaultValue;
         }

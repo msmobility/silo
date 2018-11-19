@@ -48,10 +48,10 @@ public class SummarizeData {
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
     private static final String RESULT_FILE = "resultFile";
 
-    public static void openResultFile(Properties properties) {
+    public static void openResultFile(Properties properties, int combinationId) {
         // open summary file
 
-        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId;
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE +
                 ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);
         resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE + "_" + properties.main.endYear + ".csv", false);
@@ -86,15 +86,15 @@ public class SummarizeData {
         }
     }
 
-    public static void resultFileSpatial(String action) {
-        resultFileSpatial(action, true);
+    public static void resultFileSpatial(String action, int combinationId) {
+        resultFileSpatial(action, true, combinationId);
     }
 
-    public static void resultFileSpatial(String action, Boolean writeFinal) {
+    public static void resultFileSpatial(String action, Boolean writeFinal, int combinationId) {
         // handle summary file
         switch (action) {
             case "open":
-                String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+                String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + combinationId;;
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
                         ".csv", Properties.get().main.startYear != Properties.get().main.implementation.BASE_YEAR);
                 spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL + "_" + Properties.get().main.endYear + ".csv", false);
@@ -110,13 +110,13 @@ public class SummarizeData {
         }
     }
 
-    public static void summarizeSpatially(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public static void summarizeSpatially(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId) {
         // write out results by zone
 
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
         for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++)
             hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
-        resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther", combinationId);
 
         final int highestZonalId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
@@ -163,7 +163,7 @@ public class SummarizeData {
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
 //            String txt = f.toString();
-            resultFileSpatial(txt);
+            resultFileSpatial(txt, combinationId);
         }
     }
 

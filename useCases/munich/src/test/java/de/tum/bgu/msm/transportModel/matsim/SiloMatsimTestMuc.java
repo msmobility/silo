@@ -54,7 +54,7 @@ public class SiloMatsimTestMuc {
 		config.qsim().setNumberOfThreads(1);
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MUNICH);
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MUNICH, 0);
 			siloMatsim.run();
 		} catch (Exception e) {
 			e.printStackTrace();

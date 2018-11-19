@@ -41,15 +41,15 @@ public class SiloUtil {
     public static PrintWriter trackWriter;
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static Properties siloInitialization(Implementation implementation, String propertiesPath) {
+    public static Properties siloInitialization(Implementation implementation, String propertiesPath, int combinationId) {
 
         loadHdf5Lib();
 
         Properties properties = Properties.initializeProperties(propertiesPath, implementation);
 
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-        SummarizeData.openResultFile(properties);
-        SummarizeData.resultFileSpatial("open");
+        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId);
+        SummarizeData.openResultFile(properties, combinationId);
+        SummarizeData.resultFileSpatial("open", combinationId);
 
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
 
@@ -1026,11 +1026,11 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime, TimeTracker timeTracker) {
+    public static void closeAllFiles (long startTime, TimeTracker timeTracker, int combinationId) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
-        SummarizeData.resultFileSpatial("close");
+        SummarizeData.resultFileSpatial("close", combinationId);
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
@@ -1057,7 +1057,7 @@ public class SiloUtil {
     }
 
 
-    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId) {
         // aggregate micro data
 
         if (trackHh != -1 || trackPp != -1 || trackDd != -1)
@@ -1069,8 +1069,8 @@ public class SiloUtil {
         dataContainer.getRealEstateData().summarizeDwellings();
         dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
 
-        SummarizeData.resultFileSpatial("Year " + year, false);
-        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+        SummarizeData.resultFileSpatial("Year " + year, false, combinationId);
+        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer, combinationId);
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }
@@ -1079,6 +1079,23 @@ public class SiloUtil {
         }
     }
 
+
+    public static void summarizeHouseholdSizeDistribution(Map<Integer, int[]> distributionByYear, int combinationId){
+        String fileName = Properties.get().main.baseDirectory + "scenOutput/" +
+                Properties.get().main.scenarioName + combinationId + "/householdSizeDistribution.csv";
+        PrintWriter pw = openFileForSequentialWriting(fileName, false);
+        pw.println("Year,HHsize1,HHsize2,HHsize3,HHsize4,HHsize5,HHsize6,HHsize7,HHsize8,HHsize9,HHsize10");
+        for (int year =  Properties.get().main.startYear; year <  Properties.get().main.endYear; year ++) {
+            String line = Integer.toString(year);
+            int[] sizes = distributionByYear.get(year);
+            for(int i = 1; i <= 10; i++){
+                line = line + "," + sizes[i - 1];
+            }
+            pw.println(line);
+        }
+        pw.close();
+
+    }
 
     public static void writeOutTimeTracker (TimeTracker timeTracker) {
         // write file summarizing run times
