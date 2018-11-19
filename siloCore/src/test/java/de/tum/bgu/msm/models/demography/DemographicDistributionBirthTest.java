@@ -41,7 +41,7 @@ public class DemographicDistributionBirthTest {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);
         model = modelContainer.getBirth();
 
         Household household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);

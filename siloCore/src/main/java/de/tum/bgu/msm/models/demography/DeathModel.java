@@ -16,10 +16,7 @@ import de.tum.bgu.msm.properties.Properties;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Greg Erhardt, Rolf Moeckel, Ana Moreno
@@ -31,11 +28,14 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
 
     private DeathJSCalculator calculator;
     private HashMap<Gender, double[]> deathProbabilities;
+    private Map<String, Double> parametersMap;
 
-    public DeathModel(SiloDataContainer dataContainer) {
+    public DeathModel(SiloDataContainer dataContainer,  Map<String, Double> parametersMap) {
         super(dataContainer);
+        this.parametersMap = parametersMap;
         //setupDeathModel();
         setupDeathModelDistribution();
+
     }
 
     private void setupDeathModel() {
@@ -49,10 +49,13 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     }
 
     private void setupDeathModelDistribution(){
-        double alphaFemale = 0.13180278;
-        double alphaMale = 0.10676915;
-        double scaleFemale = 1.073E-06;
-        double scaleMale = 1.2306E-05;
+
+        double alphaFemale = parametersMap.get("DeathFemaleAlpha");
+        double scaleFemale = parametersMap.get("DeathFemaleScale");
+
+        double alphaMale = parametersMap.get("DeathMaleAlpha");
+        double scaleMale = parametersMap.get("DeathMaleScale");
+
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
         for (int age = 0; age <= 100; age++){

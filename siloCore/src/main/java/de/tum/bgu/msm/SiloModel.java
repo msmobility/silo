@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.NONE;
@@ -56,6 +57,7 @@ public final class SiloModel {
 	private final Set<Integer> skimYears = new HashSet<>();
     private final Set<Integer> scalingYears = new HashSet<>();
 	private final Properties properties;
+	private Map<String, Double> parametersMap;
 
 	private SiloModelContainer modelContainer;
 	private SiloDataContainer data;
@@ -72,6 +74,14 @@ public final class SiloModel {
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
+	}
+
+	public SiloModel(Config matsimConfig, Properties properties, Map<String, Double> parametersMap) {
+		IssueCounter.setUpCounter();
+		this.properties = properties;
+		SiloUtil.modelStopper("initialize");
+		this.matsimConfig = matsimConfig ;
+		this.parametersMap = parametersMap;
 	}
 
 	public void runModel() {
@@ -105,6 +115,8 @@ public final class SiloModel {
 		}
 	}
 
+
+
     private void setupContainer() {
         data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
@@ -115,7 +127,7 @@ public final class SiloModel {
 		data.getRealEstateData().fillQualityDistribution();
 		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
 		data.getRealEstateData().identifyVacantDwellings();
-        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties);
+        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties, parametersMap);
     }
 
     private void setupTravelTimes() {

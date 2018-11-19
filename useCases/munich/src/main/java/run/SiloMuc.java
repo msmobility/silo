@@ -2,11 +2,13 @@ package run;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.io.ParametersReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
+
+import java.util.Map;
 
 /**
  * Implements SILO for the Munich Metropolitan Area
@@ -17,19 +19,23 @@ import org.matsim.core.config.ConfigUtils;
 public class SiloMuc {
 
     private static Logger logger = Logger.getLogger(SiloMuc.class);
+    private static Map<Integer, Map<String, Double>> completeParametersMap;
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+        ParametersReader reader = new ParametersReader();
+        completeParametersMap = reader.readData(args[1]);
 
-        Config config = null;
-        if (args.length > 1 && args[1] != null) {
+        for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
 
-            config = ConfigUtils.loadConfig(args[1]);
+            Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+            Config config = null;
+            Map<String, Double> parametersMap = completeParametersMap.get(i);
+
+            logger.info("Starting SILO land use model for the Munich Metropolitan Area");
+            SiloModel model = new SiloModel(config, properties, parametersMap);
+            model.runModel();
+            logger.info("Finished SILO.");
         }
-        logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-        SiloModel model = new SiloModel(config, properties);
-        model.runModel();
-        logger.info("Finished SILO.");
     }
 }

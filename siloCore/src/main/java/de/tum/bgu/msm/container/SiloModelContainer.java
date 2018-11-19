@@ -25,6 +25,8 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
+import java.util.Map;
+
 /**
  * @author joemolloy
  * The Silo Model Container holds all the various models used by the SILO events.
@@ -64,7 +66,7 @@ public class SiloModelContainer {
     private final TransportModelI transportModel;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(SiloDataContainer, Config, Properties)}}
+     * The contructor is private, with a factory method {link {}}
      * being used to encapsulate the object creation.
      *
      * @param iomig
@@ -127,7 +129,7 @@ public class SiloModelContainer {
      * @return A SiloModelContainer, with each model created within
      */
     public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer, Config matsimConfig,
-                                                              Properties properties) {
+                                                              Properties properties, Map<String, Double> parametersMap) {
 
         TransportModelI transportModel = null;
         switch (properties.transportModel.transportModelIdentifier) {
@@ -144,8 +146,8 @@ public class SiloModelContainer {
         }
 
         Accessibility acc = new Accessibility(dataContainer);
-        DeathModel death = new DeathModel(dataContainer);
-        BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory());
+        DeathModel death = new DeathModel(dataContainer, parametersMap);
+        BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory(),parametersMap);
         BirthdayModel birthday = new BirthdayModel(dataContainer);
         ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
         DriversLicense driversLicense = new DriversLicense(dataContainer);
@@ -178,13 +180,16 @@ public class SiloModelContainer {
         ConstructionModel cons = new ConstructionModel(dataContainer, move, acc, DwellingUtils.getFactory());
         EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
         updateCarOwnershipModel.initialize();
-        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
+        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory(),
+                parametersMap);
         InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense,
                 PersonUtils.getFactory(), HouseholdUtil.getFactory());
         DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
-        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel, HouseholdUtil.getFactory());
+        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel, HouseholdUtil.getFactory(),
+                parametersMap);
 //        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);
-        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
+        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory(),
+                parametersMap);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,

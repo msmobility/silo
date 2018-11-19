@@ -28,13 +28,14 @@ public class MarriageModelTest {
 
     private static SiloDataContainer dataContainer;
     private static HouseholdDataManager singleHouseholds;
+    private static Map<String, Double> parametersMap;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);
         model = (DefaultMarriageModel) modelContainer.getMarriage();
 
         couple1 = new int[]{1,2};

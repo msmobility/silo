@@ -36,10 +36,7 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Simulates children that leave the parental household
@@ -52,17 +49,18 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final HouseholdFactory hhFactory;
     private final MovesModelI movesModel;
+    private final Map<String, Double> parametersMap;
     private HouseholdDataManager householdData;
     private HashMap<Gender, double[]> leaveParentalHhProbabilities;
 
     public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move,
-                              CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory) {
+                              CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory, Map<String, Double> parametersMap) {
         super(dataContainer);
         this.movesModel = move;
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.hhFactory = hhFactory;
         this.householdData = dataContainer.getHouseholdData();
-
+        this.parametersMap = parametersMap;
         //setupLPHModel();
         setupLPHModelDistribution();
     }
@@ -78,10 +76,15 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     }
 
     private void setupLPHModelDistribution() {
-        LogNormalDistribution femaleDistribution = new LogNormalDistribution(3.11674006,0.17902129);
-        LogNormalDistribution maleDistribution = new LogNormalDistribution(3.15199,0.1819);
-        double scaleFemale = 0.43609131;
-        double scaleMale = 0.41366882;
+
+        LogNormalDistribution femaleDistribution = new LogNormalDistribution(
+                parametersMap.get("LeaveHhFemaleMean"), parametersMap.get("LeaveHhFemaleShape"));
+        double scaleFemale =  parametersMap.get("LeaveHhFemaleScale");
+
+        LogNormalDistribution maleDistribution = new LogNormalDistribution(
+                parametersMap.get("LeaveHhMaleMean"), parametersMap.get("LeaveHhMaleShape"));
+        double scaleMale =  parametersMap.get("LeaveHhMaleScale");
+
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
         for (int age = 15; age <= 100; age++){

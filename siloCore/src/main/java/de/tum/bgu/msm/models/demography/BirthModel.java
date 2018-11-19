@@ -32,10 +32,7 @@ import org.apache.commons.math.distribution.NormalDistributionImpl;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static de.tum.bgu.msm.data.person.Gender.FEMALE;
 import static de.tum.bgu.msm.data.person.Gender.MALE;
@@ -51,10 +48,12 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     private final PersonFactory factory;
     private BirthJSCalculator calculator;
     private HashMap<PersonRole,HashMap<Integer, double[]>> birthProbabilities;
+    private Map<String, Double> parametersMap;
 
-    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory) {
+    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory, Map<String, Double> parametersMap) {
         super(dataContainer);
         this.factory = factory;
+        this.parametersMap = parametersMap;
         //setupBirthModel();
         setupBirthModelDistribution();
     }
@@ -72,18 +71,22 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
 
 
     private void setupBirthModelDistribution(){
-        NormalDistribution d0 = new NormalDistributionImpl(29.73, 5.40);
-        NormalDistribution d1 = new NormalDistributionImpl(32.23, 5.04);
-        NormalDistribution d2 = new NormalDistributionImpl(33.43, 5.21);
-        NormalDistribution d3 = new NormalDistributionImpl(34.41, 5.32);
-        double scaleFirstChild = 1.65492;
-        double scaleSecondChild = 1.21375;
-        double scaleThirdChild = 0.42201;
-        double scaleFourthChild = 0.20629;
-        double scaleSingle = 0.1;
-        double marriedProportion = 0.42;
+
+        NormalDistribution d0 = new NormalDistributionImpl(parametersMap.get("BirthFirstChildMean"), parametersMap.get("BirthFirstChildDeviation"));
+        double scaleFirstChild = parametersMap.get("BirthFirstChildScale");
+        NormalDistribution d1 = new NormalDistributionImpl(parametersMap.get("BirthSecondChildMean"), parametersMap.get("BirthSecondChildDeviation"));
+        double scaleSecondChild = parametersMap.get("BirthSecondChildScale");
+        NormalDistribution d2 = new NormalDistributionImpl(parametersMap.get("BirthThirdChildMean"), parametersMap.get("BirthThirdChildDeviation"));
+        double scaleThirdChild = parametersMap.get("BirthThirdChildScale");
+        NormalDistribution d3 = new NormalDistributionImpl(parametersMap.get("BirthFourthChildMean"), parametersMap.get("BirthFourthChildDeviation"));
+        double scaleFourthChild = parametersMap.get("BirthFourthChildScale");
+
+        double scaleSingle = parametersMap.get("BirthSingleScaler");
+        double marriedProportion = parametersMap.get("BirthProportionMarried");
         double scaleMarried = (1 - scaleSingle + scaleSingle * marriedProportion) / marriedProportion;
-        double localScaler = 1.0;
+
+        double localScaler = parametersMap.get("BirthLocalScaler");
+
         double[] prob0married = new double[101];
         double[] prob1married = new double[101];
         double[] prob2married = new double[101];

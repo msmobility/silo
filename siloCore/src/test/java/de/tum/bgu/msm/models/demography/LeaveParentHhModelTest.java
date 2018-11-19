@@ -15,6 +15,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Map;
+
 public class LeaveParentHhModelTest {
 
     private static LeaveParentHhModel model;
@@ -26,7 +28,7 @@ public class LeaveParentHhModelTest {
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);
         model = modelContainer.getLph();
 
         Dwelling dd = DwellingUtils.getFactory()

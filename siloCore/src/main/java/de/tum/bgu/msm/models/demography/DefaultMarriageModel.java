@@ -60,6 +60,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
+    private Map<String, Double> parametersMap;
+
 
     //private float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
 
@@ -75,16 +77,18 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private HashMap<Integer, HashMap<Gender, double[]>> marryProbabilities;
     private HashMap<Gender, HashMap<Integer, Double>> ageDifferenceProbabilities;
     private double interRacialMarriageShareDist;
-    private float scaleSingleHousehold;
-    private float scaleCohabitation;
+    private double scaleSingleHousehold;
+    private double scaleCohabitation;
 
     public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
-                                InOutMigration iomig, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
+                                InOutMigration iomig, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
+                                Map<String, Double> parametersMap) {
         super(dataContainer);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
         this.hhFactory = hhFactory;
+        this.parametersMap = parametersMap;
         //setupModel();
         setupModelDistribution();
     }
@@ -105,16 +109,22 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private void setupModelDistribution(){
 
-        interRacialMarriageShareDist = 0.02;
-        scaleSingleHousehold = 2;
-        scaleCohabitation = 1.1f;
-        //marriage probabilities
-        NormalDistribution femaleNormalDistribution = new NormalDistribution(44.2565465,12.6221495);
-        NormalDistribution maleNormalDistribution = new NormalDistribution(52.1206204,13.0923808);
-        GammaDistribution femaleGammaDistribution = new GammaDistribution(36.5023455, 0.85680438);
-        GammaDistribution maleGammaDistribution = new GammaDistribution(33.1783079, 1.01027592);
-        double scaleFemale = 0.78372893;
-        double scaleMale = 0.75316272;
+        interRacialMarriageShareDist = parametersMap.get("MarriageInterRacialShare");
+        scaleSingleHousehold = parametersMap.get("MarriageSingleHhScale");
+        scaleCohabitation = parametersMap.get("MarriageCohabitationScale");
+
+        NormalDistribution femaleNormalDistribution = new NormalDistribution(
+                parametersMap.get("MarriageFemaleNormMean"), parametersMap.get("MarriageFemaleNormDev"));
+        GammaDistribution femaleGammaDistribution = new GammaDistribution(
+                parametersMap.get("MarriageFemaleGammaMean"), parametersMap.get("MarriageFemaleGammaShape"));
+        double scaleFemale = parametersMap.get("MarriageFemaleScale");
+
+        NormalDistribution maleNormalDistribution = new NormalDistribution(
+                parametersMap.get("MarriageMaleNormMean"),parametersMap.get("MarriageMaleNormDev"));
+        GammaDistribution maleGammaDistribution = new GammaDistribution(
+                parametersMap.get("MarriageMaleGammaMean"), parametersMap.get("MarriageMaleGammaShape"));
+        double scaleMale = parametersMap.get("MarriageMaleScale");
+
         double[] probFemaleSingleHh = new double[101];
         double[] probMaleSingleHh = new double[101];
         double[] probFemaleMultipersonHh = new double[101];

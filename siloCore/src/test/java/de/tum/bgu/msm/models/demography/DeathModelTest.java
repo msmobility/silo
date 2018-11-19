@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class DeathModelTest {
 
@@ -29,7 +30,7 @@ public class DeathModelTest {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);
         model = modelContainer.getDeath();
 
 

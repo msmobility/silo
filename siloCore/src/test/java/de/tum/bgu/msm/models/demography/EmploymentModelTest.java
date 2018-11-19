@@ -18,12 +18,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.Map;
+
 public class EmploymentModelTest {
 
     private static EmploymentModel model;
 
     private static SiloDataContainer dataContainer;
     private static SiloModelContainer modelContainer;
+    private static Map<String, Double> parametersMap;
 
     @BeforeClass
     public static void setupModel() {
@@ -31,7 +34,7 @@ public class EmploymentModelTest {
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         dataContainer.getHouseholdData().calculateInitialSettings();
         dataContainer.getJobData().identifyVacantJobs();
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);
         model = modelContainer.getEmployment();
     }
 

@@ -22,23 +22,22 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class DivorceModel extends AbstractModel implements MicroEventModel<DivorceEvent> {
 
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
+    private Map<String, Double> parametersMap;
 
     private MarryDivorceJSCalculator calculator;
     private HashMap<Gender, double[]> divorceProbabilities;
 
-    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
+    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory, Map<String, Double> parametersMap) {
         super(dataContainer);
         this.hhFactory = hhFactory;
+        this.parametersMap = parametersMap;
         //setupModel();
         setupModelDistribution();
         this.movesModel = movesModel;
@@ -57,14 +56,21 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
 
     private void setupModelDistribution(){
-        LogNormalDistribution femaleNormalDistribution = new LogNormalDistribution(3.739433, 0.25);
-        LogNormalDistribution maleNormalDistribution = new LogNormalDistribution(3.7451,0.2459);
-        GammaDistribution femaleGammaDistribution = new GammaDistribution(27.2130, 0.903879);
-        GammaDistribution maleGammaDistribution = new GammaDistribution(25.4355, 0.9712);
-        double scaleFemaleNormal = 0.4446;
-        double scaleMaleNormal = 0.4357;
-        double scaleFemaleGamma = 0.2364;
-        double scaleMaleGamma = 0.2476;
+
+        LogNormalDistribution femaleNormalDistribution = new LogNormalDistribution(
+                parametersMap.get("DivorceFemaleLogMean"), parametersMap.get("DivorceFemaleLogShape"));
+        double scaleFemaleNormal = parametersMap.get("DivorceFemaleLogScale");
+        GammaDistribution femaleGammaDistribution = new GammaDistribution(
+                parametersMap.get("DivorceFemaleGammaMean"), parametersMap.get("DivorceFemaleGammaShape"));
+        double scaleFemaleGamma = parametersMap.get("DivorceFemaleGammaScale");
+
+        LogNormalDistribution maleNormalDistribution = new LogNormalDistribution(
+                parametersMap.get("DivorceMaleLogMean"), parametersMap.get("DivorceMaleLogShape"));
+        double scaleMaleNormal = parametersMap.get("DivorceMaleLogScale");
+        GammaDistribution maleGammaDistribution = new GammaDistribution(
+                parametersMap.get("DivorceMaleGammaMean"), parametersMap.get("DivorceMaleGammaShape"));
+        double scaleMaleGamma = parametersMap.get("DivorceMaleGammaScale");
+
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
         for (int age = 15; age <= 100; age++){
