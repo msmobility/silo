@@ -28,22 +28,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     @Override
     public void readData() {
         super.readData();
-        readSchoolQuality();
         readCrimeData();
-    }
-
-    private void readSchoolQuality() {
-        String sqFileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalSchoolQualityFile;
-        TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
-        for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
-            int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
-            float schoolQuality = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
-            MstmZone zone = (MstmZone) zones.get(taz);
-            zone.setSchoolQuality(schoolQuality);
-        }
-        for (Region region: regions.values()) {
-            ((MstmRegion) region).calculateRegionalSchoolQuality();
-        }
     }
 
     private void readCrimeData() {
@@ -104,6 +89,14 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
             Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county, region);
             region.addZone(zone);
             zones.put(zoneIds[i], zone);
+        }
+
+        zonalData.buildIndex(zonalData.getColumnPosition("ZoneId"));
+        for (Region region: regions.values()) {
+            double schoolQuality = region.getZones().stream().mapToDouble(
+                    zone -> zonalData.getIndexedValueAt(zone.getId(), "SchoolQualityIndex")).average().getAsDouble();
+
+            ((MstmRegion) region).setSchoolQuality(schoolQuality);
         }
     }
 

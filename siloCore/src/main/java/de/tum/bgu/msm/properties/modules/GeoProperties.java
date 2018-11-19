@@ -17,6 +17,8 @@ public final class GeoProperties {
 
     public final String zonalSchoolQualityFile;
     public final String countyCrimeFile;
+
+
     public final String landUseAreaFile;
     public final int[] developableLandUseTypes;
     public final String developmentRestrictionsFile;
@@ -31,6 +33,7 @@ public final class GeoProperties {
 
         zonalSchoolQualityFile = PropertiesUtil.getStringProperty(bundle, "school.quality.index", "input/schoolQualityIndex.csv");
         countyCrimeFile = PropertiesUtil.getStringProperty(bundle, "crime.index", "input/crimeIndex.csv");
+
         landUseAreaFile = PropertiesUtil.getStringProperty(bundle, "land.use.area.by.taz", "landUse");
         developableLandUseTypes = PropertiesUtil.getIntPropertyArray(bundle, "developable.lu.category", new int[]{41});
         developmentRestrictionsFile = PropertiesUtil.getStringProperty(bundle, "development.restrictions", "input/developmentConstraints.csv");

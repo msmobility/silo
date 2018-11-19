@@ -15,9 +15,8 @@ public class MstmRegion extends RegionImpl {
         return this.schoolQuality;
     }
 
-    public void calculateRegionalSchoolQuality() {
-        this.schoolQuality = getZones().stream().mapToDouble(
-                zone -> ((MstmZone) zone).getSchoolQuality()).average().getAsDouble();
+    public void setSchoolQuality(double schoolQuality) {
+        this.schoolQuality = schoolQuality;
     }
 
     public double getCrimeRate() {
