@@ -58,10 +58,12 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
 
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
-        for (int age = 0; age <= 100; age++){
+        for (int age = 55; age <= 100; age++){
             probFemale[age] = scaleFemale * Math.exp(age * alphaFemale);
             probMale[age] = scaleMale * Math.exp(age * alphaMale);
         }
+        probFemale = copyDeathProbabilityFemaleYounger55(probFemale);
+        probMale = copyDeathProbabilityMaleYounger55(probMale);
         deathProbabilities = new HashMap<>();
         deathProbabilities.put(Gender.FEMALE,probFemale);
         deathProbabilities.put(Gender.MALE, probMale);
@@ -130,5 +132,127 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         }
 
         return true;
+    }
+
+    private double[] copyDeathProbabilityFemaleYounger55(double[] deathProbability){
+
+        deathProbability[0] = 0.00300213;
+        deathProbability[1] = 0.00025727;
+        deathProbability[2] = 0.00011624;
+        deathProbability[3] = 0.00011728;
+        deathProbability[4] = 0.00009002;
+        deathProbability[5] = 0.00007165;
+        deathProbability[6] = 0.00006568;
+        deathProbability[7] = 0.00005983;
+        deathProbability[8] = 0.00006457;
+        deathProbability[9] = 0.00005999;
+        deathProbability[10] = 0.00005817;
+        deathProbability[11] = 0.00006773;
+        deathProbability[12] = 0.0000829;
+        deathProbability[13] = 0.00007989;
+        deathProbability[14] = 0.0001079;
+        deathProbability[15] = 0.00012969;
+        deathProbability[16] = 0.00015128;
+        deathProbability[17] = 0.00014984;
+        deathProbability[18] = 0.00019652;
+        deathProbability[19] = 0.00019595;
+        deathProbability[20] = 0.00019742;
+        deathProbability[21] = 0.00017717;
+        deathProbability[22] = 0.00016509;
+        deathProbability[23] = 0.00023189;
+        deathProbability[24] = 0.00019089;
+        deathProbability[25] = 0.00020002;
+        deathProbability[26] = 0.00020167;
+        deathProbability[27] = 0.00021866;
+        deathProbability[28] = 0.0002504;
+        deathProbability[29] = 0.00027532;
+        deathProbability[30] = 0.00028406;
+        deathProbability[31] = 0.00032232;
+        deathProbability[32] = 0.00033938;
+        deathProbability[33] = 0.00037054;
+        deathProbability[34] = 0.00039259;
+        deathProbability[35] = 0.00042245;
+        deathProbability[36] = 0.00046718;
+        deathProbability[37] = 0.00047345;
+        deathProbability[38] = 0.00057037;
+        deathProbability[39] = 0.00063424;
+        deathProbability[40] = 0.00067117;
+        deathProbability[41] = 0.00074618;
+        deathProbability[42] = 0.00084868;
+        deathProbability[43] = 0.00092229;
+        deathProbability[44] = 0.00104142;
+        deathProbability[45] = 0.00111667;
+        deathProbability[46] = 0.00131667;
+        deathProbability[47] = 0.00146544;
+        deathProbability[48] = 0.00158135;
+        deathProbability[49] = 0.00182147;
+        deathProbability[50] = 0.00200394;
+        deathProbability[51] = 0.00230274;
+        deathProbability[52] = 0.00251072;
+        deathProbability[53] = 0.00285827;
+        deathProbability[54] = 0.00307015;
+        deathProbability[55] = 0.00336385;
+        return deathProbability;
+    }
+
+    private double[] copyDeathProbabilityMaleYounger55(double[] deathProbability){
+
+        deathProbability[0] = 0.0035171;
+        deathProbability[1] = 0.00027502;
+        deathProbability[2] = 0.00015091;
+        deathProbability[3] = 0.00014069;
+        deathProbability[4] = 0.00010809;
+        deathProbability[5] = 0.00009131;
+        deathProbability[6] = 0.00009202;
+        deathProbability[7] = 0.00008643;
+        deathProbability[8] = 0.00007416;
+        deathProbability[9] = 0.00009636;
+        deathProbability[10] = 0.00006965;
+        deathProbability[11] = 0.00008112;
+        deathProbability[12] = 0.00008548;
+        deathProbability[13] = 0.00009094;
+        deathProbability[14] = 0.0001113;
+        deathProbability[15] = 0.00015519;
+        deathProbability[16] = 0.0002484;
+        deathProbability[17] = 0.00028661;
+        deathProbability[18] = 0.00039548;
+        deathProbability[19] = 0.00043643;
+        deathProbability[20] = 0.00044619;
+        deathProbability[21] = 0.00046719;
+        deathProbability[22] = 0.00042421;
+        deathProbability[23] = 0.00047249;
+        deathProbability[24] = 0.00047635;
+        deathProbability[25] = 0.00050404;
+        deathProbability[26] = 0.00050092;
+        deathProbability[27] = 0.0005178;
+        deathProbability[28] = 0.00054553;
+        deathProbability[29] = 0.00058138;
+        deathProbability[30] = 0.00061109;
+        deathProbability[31] = 0.00068366;
+        deathProbability[32] = 0.00069727;
+        deathProbability[33] = 0.00072194;
+        deathProbability[34] = 0.00079542;
+        deathProbability[35] = 0.00088198;
+        deathProbability[36] = 0.00087339;
+        deathProbability[37] = 0.00090841;
+        deathProbability[38] = 0.00103223;
+        deathProbability[39] = 0.00111491;
+        deathProbability[40] = 0.00121116;
+        deathProbability[41] = 0.00132725;
+        deathProbability[42] = 0.00147968;
+        deathProbability[43] = 0.00167684;
+        deathProbability[44] = 0.00177439;
+        deathProbability[45] = 0.00208116;
+        deathProbability[46] = 0.00225744;
+        deathProbability[47] = 0.00252991;
+        deathProbability[48] = 0.00284653;
+        deathProbability[49] = 0.00322336;
+        deathProbability[50] = 0.00358139;
+        deathProbability[51] = 0.00401607;
+        deathProbability[52] = 0.00458896;
+        deathProbability[53] = 0.00515636;
+        deathProbability[54] = 0.00573763;
+        deathProbability[55] = 0.0063011;
+        return deathProbability;
     }
 }
