@@ -27,4 +27,7 @@ public interface Zone extends Location, Id {
 
 	Coordinate getRandomCoordinate();
 
+	Development getDevelopment();
+
+    void setDevelopment(Development development);
 }

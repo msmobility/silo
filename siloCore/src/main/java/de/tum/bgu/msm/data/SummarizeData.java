@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 /**
  * Methods to summarize model results
@@ -32,6 +31,7 @@ import java.util.ResourceBundle;
 
 
 public class SummarizeData {
+    private static final String DEVELOPMENT_FILE = "development"; ;
     static Logger logger = Logger.getLogger(SummarizeData.class);
 
 
@@ -148,7 +148,7 @@ public class SummarizeData {
             if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
             double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
             double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
-            double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
+            double availLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
             String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
@@ -770,5 +770,39 @@ public class SummarizeData {
         pw.close();
 
         logger.info("Summarized initial auto ownership");
+    }
+
+    public static void writeOutDevelopmentFile(SiloDataContainer dataContainer) {
+        // write out development capacity file to allow model run to be continued from this point later
+
+
+        String baseDirectory = Properties.get().main.baseDirectory;
+        String scenarioName = Properties.get().main.scenarioName;
+        int endYear = Properties.get().main.endYear;
+
+        String capacityFileName = baseDirectory + "scenOutput/" + scenarioName + "/" +
+                DEVELOPMENT_FILE + "_" + endYear + ".csv";
+
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Zone,");
+        for (DwellingType dwellingType : DwellingType.values()) {
+            builder.append(dwellingType.name()).append(",");
+        }
+        builder.append("DevCapacity,DevLandUse");
+        pw.println(builder);
+
+        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+            builder = new StringBuilder();
+            builder.append(zone.getId()).append(",");
+            Development development = zone.getDevelopment();
+            for (DwellingType dwellingType : DwellingType.values()) {
+                builder.append(development.isThisDwellingTypeAllowed(dwellingType)?1:0).append(",");
+            }
+            builder.append(development.getDwellingCapacity()).append(",").append(development.getDevelopableArea());
+            pw.println(builder);
+        }
+        pw.close();
+
     }
 }

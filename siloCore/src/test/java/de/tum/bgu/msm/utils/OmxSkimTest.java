@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.utils;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -53,6 +54,16 @@ public class OmxSkimTest {
             @Override
             public Coordinate getRandomCoordinate() {
                 return null;
+            }
+
+            @Override
+            public Development getDevelopment() {
+                return null;
+            }
+
+            @Override
+            public void setDevelopment(Development development) {
+
             }
 
             @Override

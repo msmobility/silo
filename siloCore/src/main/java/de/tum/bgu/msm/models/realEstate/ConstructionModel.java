@@ -135,11 +135,12 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;
                     for (int zone : zonesInThisRegion) {
-                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
-                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
+                        Development development = dataContainer.getGeoData().getZones().get(zone).getDevelopment();
+                        boolean useDwellingsAsCapacity = development.isUseDwellingCapacity();
+                        double availableLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
                                 (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
-                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
+                                !development.isThisDwellingTypeAllowed(dt)) {                 // construction of this dwelling type allowed in this zone?
                             prob[zone] = 0.;
                         } else {
                             prob[zone] = betaForZoneChoice * availableLand * util[zone];

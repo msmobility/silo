@@ -62,6 +62,11 @@ public class MainProperties {
      */
     public final boolean useMicrolocation;
 
+    /**
+     * Print out the synthetic population nd the development capacity file at the final year
+     */
+    public final boolean printOutFinalSyntheticPopulation;
+
     @Deprecated
     public final String prestoZoneFile;
     @Deprecated
@@ -97,6 +102,7 @@ public class MainProperties {
         startYear = PropertiesUtil.getIntProperty(bundle, "start.year");
         endYear = PropertiesUtil.getIntProperty(bundle, "end.year");
         randomSeed = PropertiesUtil.getIntProperty(bundle, "random.seed", -1);
+        printOutFinalSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "print.out.sp.final", true);
 
         PropertiesUtil.newPropertySubmodule("Main - runtime tracking");
         trackTime = PropertiesUtil.getBooleanProperty(bundle, "track.time", true);

@@ -15,15 +15,17 @@ public final class GeoProperties {
      */
     public final String zoneShapeFile;
 
-    public final String zonalSchoolQualityFile;
+    /**
+     * Crime index by county filepath.
+     */
     public final String countyCrimeFile;
 
 
-    public final String landUseAreaFile;
-    public final int[] developableLandUseTypes;
-    public final String developmentRestrictionsFile;
+    public final String landUseAndDevelopmentFile;
+
+
     public final boolean useCapacityForDwellings;
-    public final String capacityFile;
+
 
 
     public GeoProperties(ResourceBundle bundle) {
@@ -31,16 +33,13 @@ public final class GeoProperties {
         zonalDataFile = PropertiesUtil.getStringProperty(bundle, "zonal.data.file", "input/zoneSystem.csv");
         zoneShapeFile = PropertiesUtil.getStringProperty(bundle, "zones.shapefile", "input/zonesShapefile/zones.shp" );
 
-        zonalSchoolQualityFile = PropertiesUtil.getStringProperty(bundle, "school.quality.index", "input/schoolQualityIndex.csv");
         countyCrimeFile = PropertiesUtil.getStringProperty(bundle, "crime.index", "input/crimeIndex.csv");
 
-        landUseAreaFile = PropertiesUtil.getStringProperty(bundle, "land.use.area.by.taz", "landUse");
-        developableLandUseTypes = PropertiesUtil.getIntPropertyArray(bundle, "developable.lu.category", new int[]{41});
-        developmentRestrictionsFile = PropertiesUtil.getStringProperty(bundle, "development.restrictions", "input/developmentConstraints.csv");
+        landUseAndDevelopmentFile = PropertiesUtil.getStringProperty(bundle, "development.file", "input/development.csv");
 
-        PropertiesUtil.newPropertySubmodule("Geo - grwoth capacity model?");
+        PropertiesUtil.newPropertySubmodule("Geo - growth capacity model?");
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
-        capacityFile = PropertiesUtil.getStringProperty(bundle, "growth.capacity.file", "INSERT_DEFAULT_VALUE");
+
     }
 }
 

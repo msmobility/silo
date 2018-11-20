@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.data.geo;
 
+import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
@@ -22,6 +23,8 @@ public class ZoneImpl implements Zone {
     private final Region region;
     
     private SimpleFeature zoneFeature;
+
+    private Development development;
     
 
     public ZoneImpl(int id, int msa, float area_sqmi, Region region) {
@@ -75,7 +78,19 @@ public class ZoneImpl implements Zone {
     }
 
     @Override
+    public Development getDevelopment() {
+        return development;
+    }
+
+    @Override
+    public void setDevelopment(Development development) {
+        this.development = development;
+    }
+
+    @Override
     public int getId() {
         return getZoneId();
     }
+
+
 }
