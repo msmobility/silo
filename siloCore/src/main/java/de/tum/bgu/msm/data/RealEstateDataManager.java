@@ -11,7 +11,6 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -47,6 +46,7 @@ public class RealEstateDataManager {
     private HashMap<DwellingType, Float> acresByDwellingType;
 
     private static HashMap<Integer, Integer> vacantDwellingsByRegionYear;
+    private static Map<Integer, Map<Integer, Dwelling>> vacantDwellingsByRegion;
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
@@ -100,26 +100,36 @@ public class RealEstateDataManager {
 
         final GeoData geoData = dataContainer.getGeoData();
         int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-        numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
+/*        numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
         dwellingsByRegion = new int[highestRegion + 1];
         vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
         vacDwellingsByRegion = SiloUtil.setArrayToValue(vacDwellingsByRegion, 0);
         vacDwellingsByRegionPos = new int[highestRegion + 1];
-        vacDwellingsByRegionPos = SiloUtil.setArrayToValue(vacDwellingsByRegionPos, 0);
+        vacDwellingsByRegionPos = SiloUtil.setArrayToValue(vacDwellingsByRegionPos, 0);*/
+        vacantDwellingsByRegion = new LinkedHashMap<>();
 
         logger.info("  Identifying vacant dwellings");
         for (Dwelling dd : dwellings.values()) {
             if (dd.getResidentId() == -1) {
-                int dwellingId = dd.getId();
-                int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
-                dwellingsByRegion[region]++;
+                //int dwellingId = dd.getId();
+                //int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
+/*                dwellingsByRegion[region]++;
                 vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dwellingId;
                 if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
-                if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
-                if (dwellingId == SiloUtil.trackDd)
-                    SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
+                if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);*/
+                if (vacantDwellingsByRegion.get(1) == null){
+                    HashMap<Integer, Dwelling> dwellings = new HashMap<>();
+                    dwellings.put(dd.getId(), dd);
+                    vacantDwellingsByRegion.put(1,dwellings);
+                } else {
+                    vacantDwellingsByRegion.get(1).put(dd.getId(), dd);
+                }
+                /*if (dwellingId == SiloUtil.trackDd)
+                    SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");*/
             }
         }
+
+
     }
 
 
@@ -369,13 +379,31 @@ public class RealEstateDataManager {
     }
 
 
+    public static Map<Integer, Dwelling> getListOfVacantDwellingsInRegionDD (int region) {
+        // return array with IDs of vacant dwellings in region
+
+        /*int[] vacancies = new int[vacDwellingsByRegionPos[region]];
+        System.arraycopy(vacDwellingsByRegion[region], 0, vacancies, 0, vacDwellingsByRegionPos[region])*/;
+        return vacantDwellingsByRegion.get(region);
+    }
+
+    public static Dwelling getLastVacantDwellingInStudyAreaDD(){
+        //only for machine learning exercise, when the study area is unique
+        return vacantDwellingsByRegion.get(1).values().iterator().next();
+    }
+
+    public static int getNumberOfVacantDDinRegionDD (int region) {
+        return vacantDwellingsByRegion.get(1).size();
+    }
+
+
     public void removeDwellingFromVacancyList (int ddId) {
         // remove dwelling with ID ddId from list of vacant dwellings
 
         boolean found = false;
 
         // todo: when selecting a vacant dwelling, I should be able to store the index of this dwelling in the vacDwellingByRegion array, which should make it faster to remove the vacant dwelling from this array.
-        int region = dataContainer.getGeoData().getZones()
+        /*int region = dataContainer.getGeoData().getZones()
                 .get(dwellings.get(ddId).getZoneId()).getRegion().getId();
         for (int i = 0; i < vacDwellingsByRegionPos[region]; i++) {
             if (vacDwellingsByRegion[region][i] == ddId) {
@@ -387,20 +415,23 @@ public class RealEstateDataManager {
                 found = true;
                 break;
             }
-        }
-        if (!found) logger.warn("Consistency error: Could not find vacant dwelling " + ddId + " in vacDwellingsByRegion.");
+        }*/
+        //int region = dataContainer.getGeoData().getZones().get(dwellings.get(ddId).getZoneId()).getRegion().getId();
+        vacantDwellingsByRegion.get(1).remove(ddId);
+        //if (!found) logger.warn("Consistency error: Could not find vacant dwelling " + ddId + " in vacDwellingsByRegion.");
     }
 
 
     public void addDwellingToVacancyList (Dwelling dd) {
         // add dwelling to vacancy list
 
-        int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
+        /*int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
         vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dd.getId();
         if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
         if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD) IssueCounter.countExcessOfVacantDwellings(region);
         if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
-                " to list of vacant dwellings.");
+                " to list of vacant dwellings.");*/
+        vacantDwellingsByRegion.get(1).put(dd.getId(), dd);
     }
 
 
@@ -561,7 +592,7 @@ public class RealEstateDataManager {
         }
         final GeoData geoData = dataContainer.getGeoData();
         for (int region: geoData.getRegions().keySet()) {
-            vacantDwellingsByRegionYear.put(region, RealEstateDataManager.getNumberOfVacantDDinRegion(region));
+            vacantDwellingsByRegionYear.put(region, RealEstateDataManager.getNumberOfVacantDDinRegionDD(region));
         }
     }
 }
