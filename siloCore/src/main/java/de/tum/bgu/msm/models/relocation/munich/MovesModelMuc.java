@@ -278,7 +278,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
 
         return vacantDwellings[vacantDwellings.length - 1];*/
-        return RealEstateDataManager.getLastVacantDwellingInStudyArea();
+        return RealEstateDataManager.getLastVacantDwellingInStudyAreaDD().getId();
     }
 
     @Override
