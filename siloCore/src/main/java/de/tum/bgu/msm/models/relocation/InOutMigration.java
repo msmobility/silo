@@ -44,6 +44,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
     private Map<Integer, int[]> inmigratingHhData;
+    private Map<Integer, Map<Integer, int[]>> inmigratingHH;
     private int outMigrationPPCounter;
     private int inMigrationPPCounter;
 
@@ -92,30 +93,43 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private boolean inmigrateHh(int hhId) {
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
-        int[] imData = inmigratingHhData.get(hhId);
+        /*int[] imData = inmigratingHhData.get(hhId);
         int hhSize = imData[0];
-        int hhInc = 0;
+        //int hhInc = 0;
         int k = 0;
         for (int i = 1; i <= hhSize; i++) {
             hhInc += imData[5 + k];
             k += 6;
-        }
+        }*/
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         Household hh = hhFactory.createHousehold(hhId, -1, 0);
         householdData.addHousehold(hh);
 
-        k = 0;
+        for (int personToCopy : inmigratingHH.get(hhId).keySet()){
+            int[] attributes = inmigratingHH.get(hhId).get(personToCopy);
+            Person newPerson = factory.createPerson(householdData.getNextPersonId(), attributes[0], Gender.valueOf(attributes[1]),
+                                Race.values()[attributes[2]], Occupation.UNEMPLOYED, -1, 0);
+            newPerson.setRole(PersonRole.valueOf(attributes[3]));
+            householdData.addPerson(newPerson);
+            householdData.addPersonToHousehold(newPerson, hh);
+        }
+
+        /*k = 0;
         for (int i = 1; i <= hhSize; i++) {
             Race ppRace = Race.values()[imData[3 + k]];
             Person per = factory.createPerson(householdData.getNextPersonId(), imData[1 + k], Gender.valueOf(imData[2 + k]),
                     ppRace, Occupation.valueOf(imData[4 + k]), -1, imData[5 + k]);
+            per.setRole(PersonRole.valueOf(imData[6 + k]));
             householdData.addPerson(per);
             householdData.addPersonToHousehold(per, hh);
             k += 6;
-        }
+        }*/
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a
         // job will change the household income and household type, which can only be calculated after all
         // persons are set up.
+
+        //removed for machine learning exercise
+/*
         for (Person person : hh.getPersons().values()) {
             if (person.getOccupation() == Occupation.EMPLOYED) {
                 employment.lookForJob(person.getId());
@@ -125,15 +139,16 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             }
             driversLicense.checkLicenseCreation(person.getId());
         }
-
+*/
+/*
         HouseholdUtil.findMarriedCouple(hh);
-        HouseholdUtil.defineUnmarriedPersons(hh);
+        HouseholdUtil.defineUnmarriedPersons(hh);*/
         int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
-            if (Properties.get().main.implementation == Implementation.MUNICH) {
+/*            if (Properties.get().main.implementation == Implementation.MUNICH) {
                 carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
-            }
+            }*/
             inMigrationPPCounter += hh.getHhSize();
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
@@ -236,14 +251,27 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             }
         }
         int createdInmigrants = 0;
-        inmigratingHhData = new HashMap<>();
+        //inmigratingHhData = new HashMap<>();
+        inmigratingHH = new HashMap<>();
         //TODO Refactoring the DO-WHILE needed??
         if (inmigrants > 0) do {
-            int[] inData = new int[31];
+            //int[] inData = new int[31];
             // 0: hhSize, for p1 through p10 (1: age p1, 2: gender p1, 3: race p1, 4: occupation p1, 5: income p1, 6: workplace)
             // if this order in inData[] is changed, adjust method  "public void inmigrateHh (int hhId)" as well
             int selected = (int) (hhs.length * SiloUtil.getRandomNumberAsFloat());
-            inData[0] = Math.min(hhs[selected].getHhSize(), 5);
+
+            HashMap<Integer, int[]> personsToCopy = new HashMap<>();
+            int personOrder = 0;
+            for (Person pp: hhs[selected].getPersons().values()){
+                int[] attributes = new int[4];
+                attributes[0] = pp.getAge();
+                attributes[1] = pp.getGender().ordinal()+1;
+                attributes[2] = pp.getRace().ordinal();
+                attributes[3] = pp.getRole().ordinal();
+                personsToCopy.put(personOrder, attributes);
+                personOrder++;
+            }
+            /*inData[0] = Math.min(hhs[selected].getHhSize(), 5);
             int k = 0;
             for (Person pp : hhs[selected].getPersons().values()) {
                 if (k + 6 > inData.length) continue;  // for household size 11+, only first ten persons are recorded
@@ -254,12 +282,16 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                 inData[5 + k] = pp.getIncome();
                 // todo: Keep person role in household
                 // todo: imData[6+k] is not used, as inmigrant certainly will occupy different workplace. Remove or replace with other person attribute
-                inData[6 + k] = pp.getWorkplace();
+                inData[6 + k] = pp.getRole().ordinal();
                 k += 6;
-            }
+            }*/
             int hhId = householdData.getNextHouseholdId();
+            if (hhId == 2147837){
+                int p = 0;
+            }
             events.add(new MigrationEvent(hhId, MigrationEvent.Type.IN));
-            inmigratingHhData.put(hhId, inData);  // create new hhId for inmigrating households and save in HashMap
+            //inmigratingHhData.put(hhId, inData);  // create new hhId for inmigrating households and save in HashMap
+            inmigratingHH.put(hhId, personsToCopy);
             createdInmigrants += hhs[selected].getHhSize();
         } while (createdInmigrants < inmigrants);
 

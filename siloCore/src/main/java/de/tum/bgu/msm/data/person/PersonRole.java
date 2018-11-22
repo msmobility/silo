@@ -24,4 +24,18 @@ public enum PersonRole {
     public String toString() {
         return this.name().toLowerCase();
     }
+
+    public static PersonRole valueOf(int code) {
+        switch(code) {
+            case 0:
+                return SINGLE;
+            case 1:
+                return MARRIED;
+            case 2:
+                return CHILD;
+            default:
+                throw new IllegalArgumentException(String.format("Code %d not valid.", code));
+        }
+    }
+
 }

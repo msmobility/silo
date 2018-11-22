@@ -358,6 +358,12 @@ public class RealEstateDataManager {
     }
 
 
+    public static int getLastVacantDwellingInStudyArea(){
+        //only for machine learning exercise, when the study area is unique
+        return vacDwellingsByRegion[1][vacDwellingsByRegionPos[1] - 1];
+    }
+
+
     public static int getNumberOfVacantDDinRegion (int region) {
         return Math.max(vacDwellingsByRegionPos[region] - 1, 0);
     }

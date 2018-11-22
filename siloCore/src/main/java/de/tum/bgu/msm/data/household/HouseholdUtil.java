@@ -143,7 +143,7 @@ public class HouseholdUtil {
         if (selectedPartner == null) {
             logger.error("Could not find spouse of person " + per.getId() + " in household " + hh.getId());
             for (Person person: hh.getPersons().values()) {
-                logger.error("Houshold member " + person.getId() + " (gender: " + person.getGender() + ") is " +
+                logger.error("Household member " + person.getId() + " (gender: " + person.getGender() + ") is " +
                         person.getRole());
             }
         }

@@ -1035,7 +1035,7 @@ public class SiloUtil {
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        SiloUtil.writeOutTimeTracker(timeTracker);
+        SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
     }
 
 
@@ -1099,11 +1099,11 @@ public class SiloUtil {
 
     }
 
-    public static void writeOutTimeTracker (TimeTracker timeTracker) {
+    public static void writeOutTimeTracker (TimeTracker timeTracker, int combinationId) {
         // write file summarizing run times
 
         int startYear = Properties.get().main.startYear;
-        PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" +
+        PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" + combinationId +
                 Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.implementation.BASE_YEAR);
         pw.write(timeTracker.toString());
         pw.close();

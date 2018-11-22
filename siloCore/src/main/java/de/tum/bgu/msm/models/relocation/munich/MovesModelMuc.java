@@ -270,14 +270,15 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         int selected = SiloUtil.select(expProbs, sumProbs);
         return vacantDwellings[selected];*/
 
-        Map<Integer, Integer> vacantDdByRegion = new HashMap<>();
+/*        Map<Integer, Integer> vacantDdByRegion = new HashMap<>();
         for (int region: geoData.getRegions().keySet()) {
             vacantDdByRegion.put(region, RealEstateDataManager.getNumberOfVacantDDinRegion(region));
         }
         int selectedRegionId = SiloUtil.select(vacantDdByRegion);
         int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
 
-        return vacantDwellings[vacantDwellings.length - 1];
+        return vacantDwellings[vacantDwellings.length - 1];*/
+        return RealEstateDataManager.getLastVacantDwellingInStudyArea();
     }
 
     @Override

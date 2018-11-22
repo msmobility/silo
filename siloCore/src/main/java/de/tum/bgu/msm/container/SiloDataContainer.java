@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;
@@ -20,6 +21,9 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier;
 import org.apache.log4j.Logger;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.*;
 
@@ -40,7 +44,7 @@ public class SiloDataContainer {
     private final TravelTimes travelTimes;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {link {)}}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation) {
@@ -68,7 +72,7 @@ public class SiloDataContainer {
     }
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {link }}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation, Properties properties) {
@@ -106,8 +110,8 @@ public class SiloDataContainer {
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
-        realEstateData.readAcresNeededByDwellingType();
-        realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
+        //realEstateData.readAcresNeededByDwellingType();
+        //realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
 
 
         new JobType(properties.jobData.jobTypes);

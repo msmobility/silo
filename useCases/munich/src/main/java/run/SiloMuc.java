@@ -32,10 +32,10 @@ public class SiloMuc {
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
 
-            logger.info("Starting SILO land use model for the Munich Metropolitan Area");
+            logger.info("Starting SILO. Combination of parameters: " + i);
             SiloModel model = new SiloModel(config, properties, parametersMap, i);
             model.runModel();
-            logger.info("Finished SILO.");
+            logger.info("Finished SILO. Combination of parameters: " + i);
         }
     }
 }

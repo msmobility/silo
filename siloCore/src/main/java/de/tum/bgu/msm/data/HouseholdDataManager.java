@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;

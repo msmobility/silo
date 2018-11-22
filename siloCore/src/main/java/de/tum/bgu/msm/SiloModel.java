@@ -128,7 +128,7 @@ public final class SiloModel {
     private void setupContainer() {
         data = SiloDataContainer.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
-		data.getHouseholdData().calculateInitialSettings();
+		//data.getHouseholdData().calculateInitialSettings();
 		//removed for machine learning exercise
 		/*data.getJobData().calculateEmploymentForecast();
 		data.getJobData().identifyVacantJobs();
@@ -204,6 +204,9 @@ public final class SiloModel {
 			if (properties.eventRules.quitJob || properties.eventRules.startNewJob) {
 				microSim.registerModel(EmploymentEvent.class, modelContainer.getEmployment());
             }
+			if(properties.eventRules.outMigration || properties.eventRules.inmigration) {
+				microSim.registerModel(MigrationEvent.class, modelContainer.getIomig());
+			}
 		}
         if(properties.eventRules.allHhMoves) {
             microSim.registerModel(MoveEvent.class, modelContainer.getMove());
@@ -236,7 +239,7 @@ public final class SiloModel {
             timeTracker.setCurrentYear(year);
 
             timeTracker.reset();
-			data.getRealEstateData().updateVacantDwellingMap();
+
             //removed for machine learning exercise
 /*
             if (scalingYears.contains(year)) {
@@ -264,9 +267,9 @@ public final class SiloModel {
             }
 			timeTracker.record("planIncomeChange");*/
 
-			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
+/*			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, data, combinationId);
-            }
+            }*/
 
             microSim.simulate(year);
 
@@ -327,10 +330,10 @@ public final class SiloModel {
 		}*/
 		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
-		SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
+		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
-        SiloUtil.writeOutTimeTracker(timeTracker);
-		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + ".");
+        SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
+		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + combinationId + ".");
 	}
 }

@@ -80,10 +80,16 @@ public class DefaultDwellingReader implements DwellingReader {
                     SiloUtil.trackWriter.println(dwelling.toString());
                 }
             }
+            //add dwellings for the machine learning exercise
+            for (int i = 1; i < 450000; i++){
+                Dwelling dwelling = factory.createDwelling(recCount + i, 2, null, -1, DwellingType.MH, 10, 4, 200, 0, 2040);
+                realEstate.addDwelling(dwelling);
+            }
+
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + path);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
-        logger.info("Finished reading " + recCount + " dwellings.");
+        logger.info("Finished reading " + recCount + " dwellings." + " Number of dwellings + " + realEstate.getNextDwellingId());
     }
 }

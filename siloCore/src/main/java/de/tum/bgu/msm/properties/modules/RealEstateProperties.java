@@ -30,7 +30,7 @@ public class RealEstateProperties {
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
         dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
         dwellingTypeAcresFile = PropertiesUtil.getStringProperty(bundle, "developer.acres.per.dwelling.by.type", "input/acresPerDwellingByType.csv");
-        maxStorageOfVacantDwellings = PropertiesUtil.getIntProperty(bundle, "vacant.dd.by.reg.array", 100000);
+        maxStorageOfVacantDwellings = PropertiesUtil.getIntProperty(bundle, "vacant.dd.by.reg.array", 1000000);
         readBinaryDwellingFile = PropertiesUtil.getBooleanProperty(bundle, "read.binary.dd.file", false);
         writeBinDwellingsFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.dd.file", false);
         binaryDwellingsFile = PropertiesUtil.getStringProperty(bundle, "dwellings.file.bin", "microData/ddData.bin");
