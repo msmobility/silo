@@ -135,7 +135,7 @@ public final class SiloModel {
 		data.getJobData().calculateJobDensityByZone();
 		data.getRealEstateData().fillQualityDistribution();
 		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();*/
-		data.getRealEstateData().identifyVacantDwellings();
+		//data.getRealEstateData().identifyVacantDwellings();
         modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties, parametersMap);
     }
 
@@ -236,9 +236,9 @@ public final class SiloModel {
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
-            timeTracker.setCurrentYear(year);
+            //timeTracker.setCurrentYear(year);
 
-            timeTracker.reset();
+            //timeTracker.reset();
 
             //removed for machine learning exercise
 /*
@@ -314,7 +314,7 @@ public final class SiloModel {
 			if (SiloUtil.modelStopper("check")) {
 			    break;
             }
-            timeTracker.endYear();
+            //timeTracker.endYear();
 		}
 	}
 
@@ -333,7 +333,7 @@ public final class SiloModel {
 		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
-        SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
+        //SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
 		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + combinationId + ".");
 	}
 }

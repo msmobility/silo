@@ -1035,7 +1035,7 @@ public class SiloUtil {
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
+        //SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
     }
 
 
@@ -1070,8 +1070,8 @@ public class SiloUtil {
         /*dataContainer.getRealEstateData().summarizeDwellings();
         dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());*/
 
-        SummarizeData.resultFileSpatial("Year " + year, false, combinationId);
-        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer, combinationId);
+        //SummarizeData.resultFileSpatial("Year " + year, false, combinationId);
+        //SummarizeData.summarizeSpatially(year, modelContainer, dataContainer, combinationId);
         //removed for machine learning exercise
 /*        if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);

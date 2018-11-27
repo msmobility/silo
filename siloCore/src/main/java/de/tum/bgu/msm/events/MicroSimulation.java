@@ -42,21 +42,21 @@ public final class MicroSimulation {
 
     private void createEvents(int year) {
         LOGGER.info("  Creating events");
-        timeTracker.reset();
+        //timeTracker.reset();
         for(@SuppressWarnings("unchecked") MicroEventModel<? extends MicroEvent> model: models.values()) {
             events.addAll(model.prepareYear(year));
         }
         LOGGER.info("  Created " + events.size() + " events to simulate.");
         LOGGER.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
-        timeTracker.record("EventCreation");
+        //timeTracker.record("EventCreation");
         eventCounter.clear();
     }
 
     private void processEvents() {
         LOGGER.info("  Processing events...");
         for (MicroEvent e: events) {
-            timeTracker.reset();
+            //timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
             //<T extends Event> void registerModel(Class<T> klass, MicroEventModel<T> model)
@@ -66,7 +66,7 @@ public final class MicroSimulation {
             if(success) {
                 eventCounter.add(e.getClass());
             }
-            timeTracker.record(klass.getSimpleName());
+            //timeTracker.record(klass.getSimpleName());
         }
     }
 

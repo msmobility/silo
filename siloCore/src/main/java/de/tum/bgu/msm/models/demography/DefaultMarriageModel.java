@@ -331,7 +331,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         final Household hhOfPartner1 = partner1.getHousehold();
         final Household hhOfPartner2 = partner2.getHousehold();
 
-        final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
+        final Household moveTo = hhOfPartner1; //chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
 
         final boolean success = moveTogether(partner1, partner2, moveTo);
 
@@ -397,7 +397,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         movePerson(person1, moveTo);
         movePerson(person2, moveTo);
 
-        if (person1.getId() == SiloUtil.trackPp
+        /*if (person1.getId() == SiloUtil.trackPp
                 || person2.getId() == SiloUtil.trackPp
                 || person1.getHousehold().getId() == SiloUtil.trackHh
                 || person2.getHousehold().getId() == SiloUtil.trackHh) {
@@ -417,7 +417,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                     carOwnership.simulateCarOwnership(moveTo); // set initial car ownership of new household
                 }
             }
-        }
+        }*/
         return true;
     }
 

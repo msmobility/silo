@@ -156,12 +156,12 @@ public class HouseholdDataManager {
         // remove household and add dwelling to vacancy list
 
         Household household = households.get(householdId);
-        int dwellingId = household.getDwellingId();
+/*        int dwellingId = household.getDwellingId();
         if (dwellingId != -1) {
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(dwellingId);
             dd.setResidentID(-1);
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
-        }
+        }*/
         for(Person pp: household.getPersons().values()) {
             pp.setHousehold(null);
             persons.remove(pp.getId());
@@ -188,8 +188,8 @@ public class HouseholdDataManager {
         int hhs[] = new int[10];
         int hht[] = new int[HouseholdType.values().length + 1];
         int hhRace[] = new int[4];
-        int[] hhIncome = new int[households.size()];
-        int hhIncomePos = 0;
+       /* int[] hhIncome = new int[households.size()];
+        int hhIncomePos = 0;*/
         int hhByRegion[] = new int[dataContainer.getGeoData().getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
         SummarizeData.resultFile("Age,Men,Women");
         for (int i = 0; i <= 100; i++) {
@@ -206,15 +206,15 @@ public class HouseholdDataManager {
             hhs[hhSize - 1]++;
             hht[hh.getHouseholdType().ordinal()]++;
             hhRace[hh.getRace().ordinal()]++;
-            hhIncome[hhIncomePos] = getHhIncome(hh);
-            hhIncomePos++;
+            //hhIncome[hhIncomePos] = getHhIncome(hh);
+            //hhIncomePos++;
             int homeZone = -1;
-            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+/*            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
             if(dwelling != null) {
                 homeZone = dwelling.getZoneId();
             }
             int region = dataContainer.getGeoData().getZones().get(homeZone).getRegion().getId();
-            hhByRegion[region]++;
+            hhByRegion[region]++;*/
         }
                 SummarizeData.resultFile("hhByType,hh");
         for (HouseholdType ht: HouseholdType.values()) {
@@ -231,7 +231,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile(row);
         row = "AveHHSize," + getAverageHouseholdSize();
         SummarizeData.resultFile(row);
-        double aveHHincome = SiloUtil.getSum(hhIncome) / households.size();
+/*        double aveHHincome = SiloUtil.getSum(hhIncome) / households.size();
         row = "AveHHInc," + aveHHincome + ",MedianHHInc," + SiloUtil.getMedian(hhIncome);
         SummarizeData.resultFile(row);
         // labor participation and commuting distance
@@ -248,7 +248,7 @@ public class HouseholdDataManager {
             else if (age >= 30) ageGroup = 2;
             else if (age >= 18) ageGroup = 1;
             if (employed) labP[1][gender.ordinal()][ageGroup]++;
-            else labP[0][gender.ordinal()][ageGroup]++;
+            else labP[0][gender.ordinal()][ageGroup]++;*/
             /*if (employed) {
                 Zone zone = null;
                 Household household = households.get(per.getHousehold().getId());
@@ -265,7 +265,7 @@ public class HouseholdDataManager {
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()] ++;
             }*/
-        }
+        //}//
 
         //removed for machine learning exercise
         /*String[] grp = {"<18","18-29","30-49","50-64",">=65"};

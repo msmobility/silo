@@ -129,7 +129,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         // search if dwelling is available
         Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);
         fakeHypotheticalHousehold.addPerson(per);
-        final int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
+        /*final int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
         if (newDwellingId < 0) {
             if (per.getId() == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println(
@@ -138,7 +138,8 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
             }
             IssueCounter.countLackOfDwellingFailedLeavingChild();
             return false;
-        }
+        }*/
+        final int newDwellingId = -1;
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
         final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehold().getId());
@@ -149,12 +150,12 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         dataContainer.getHouseholdData().addHousehold(newHousehold);
         households.addPersonToHousehold(per, newHousehold);
         per.setRole(PersonRole.SINGLE);
-        dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
+        //dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
-        movesModel.moveHousehold(newHousehold, -1, newDwellingId);
+/*        movesModel.moveHousehold(newHousehold, -1, newDwellingId);
         if (Properties.get().main.implementation == Implementation.MUNICH) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
-        }
+        }*/
 
         if (per.getId() == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                 newHousehold.getId() == SiloUtil.trackHh) {

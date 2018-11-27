@@ -109,13 +109,10 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
 
         if (person.getRole() == PersonRole.MARRIED) {
             Person widow = HouseholdUtil.findMostLikelyPartner(person, hhOfPersonToDie);
-            if(widow == null) {
-                System.out.println("kff");
-            }
             widow.setRole(PersonRole.SINGLE);
         }
         householdData.removePerson(person.getId());
-        householdData.addHouseholdThatChanged(hhOfPersonToDie);
+        //householdData.addHouseholdThatChanged(hhOfPersonToDie);
 
         final boolean onlyChildrenLeft = HouseholdUtil.checkIfOnlyChildrenRemaining(hhOfPersonToDie);
         if (onlyChildrenLeft) {

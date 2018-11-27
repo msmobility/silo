@@ -143,12 +143,12 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
 /*
         HouseholdUtil.findMarriedCouple(hh);
         HouseholdUtil.defineUnmarriedPersons(hh);*/
-        int newDdId = movesModel.searchForNewDwelling(hh);
+/*        int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
-/*            if (Properties.get().main.implementation == Implementation.MUNICH) {
+*//*            if (Properties.get().main.implementation == Implementation.MUNICH) {
                 carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
-            }*/
+            }*//*
             inMigrationPPCounter += hh.getHhSize();
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
@@ -163,7 +163,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             IssueCounter.countLackOfDwellingFailedInmigration();
             outMigrateHh(hhId, true);
             return false;
-        }
+        }*/
+        return true;
     }
 
 
@@ -286,9 +287,6 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                 k += 6;
             }*/
             int hhId = householdData.getNextHouseholdId();
-            if (hhId == 2147837){
-                int p = 0;
-            }
             events.add(new MigrationEvent(hhId, MigrationEvent.Type.IN));
             //inmigratingHhData.put(hhId, inData);  // create new hhId for inmigrating households and save in HashMap
             inmigratingHH.put(hhId, personsToCopy);

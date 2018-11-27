@@ -107,21 +107,21 @@ public class SiloDataContainer {
 
         householdData.setHighestHouseholdAndPersonId();
 
-        DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
+/*        DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
-        ddReader.readData(dwellingsFile);
+        ddReader.readData(dwellingsFile);*/
         //realEstateData.readAcresNeededByDwellingType();
         //realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
 
 
-        new JobType(properties.jobData.jobTypes);
+/*        new JobType(properties.jobData.jobTypes);
 
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
             ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
         }
         JobReader jjReader = new DefaultJobReader(jobData);
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
-        jjReader.readData(jobsFile);
+        jjReader.readData(jobsFile);*/
 
         jobData.setHighestJobId();
 

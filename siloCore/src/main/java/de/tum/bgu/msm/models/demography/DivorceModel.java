@@ -117,7 +117,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
                 Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1,-1,0);
                 fakeHypotheticalHousehold.addPerson(per);
-                int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
+                int newDwellingId = -1;/*movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
                 if (newDwellingId < 0) {
                     if (perId == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
                         SiloUtil.trackWriter.println(
@@ -126,7 +126,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                     }
                     IssueCounter.countLackOfDwellingFailedDivorce();
                     return false;
-                }
+                }*/
 
                 // divorce
                 Household oldHh = householdData.getHouseholdFromId(per.getHousehold().getId());
@@ -141,7 +141,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 householdData.addPersonToHousehold(per, newHh);
 
                 // move divorced person into new dwelling
-                movesModel.moveHousehold(newHh, -1, newDwellingId);
+               /* movesModel.moveHousehold(newHh, -1, newDwellingId);
                 if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                         oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                         " has divorced from household " + oldHh + " and established the new household " +
@@ -149,7 +149,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
                 if (Properties.get().main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
-                }
+                }*/
                 return true;
             }
         }

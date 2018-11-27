@@ -34,21 +34,21 @@ public class DefaultHouseholdReader implements HouseholdReader {
             // read header
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("id", header);
-            int posDwell = SiloUtil.findPositionInArray("dwelling", header);
+/*            int posDwell = SiloUtil.findPositionInArray("dwelling", header);
             int posTaz = SiloUtil.findPositionInArray("zone", header);
             int posSize = SiloUtil.findPositionInArray("hhSize", header);
-            int posAutos = SiloUtil.findPositionInArray("autos", header);
+            int posAutos = SiloUtil.findPositionInArray("autos", header);*/
 
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id = Integer.parseInt(lineElements[posId]);
-                int dwellingID = Integer.parseInt(lineElements[posDwell]);
-                int taz = Integer.parseInt(lineElements[posTaz]);
-                int autos = Integer.parseInt(lineElements[posAutos]);
+                //int dwellingID = Integer.parseInt(lineElements[posDwell]);
+                //int taz = Integer.parseInt(lineElements[posTaz]);
+                //int autos = Integer.parseInt(lineElements[posAutos]);
 
-                Household hh = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                Household hh = factory.createHousehold(id, -1, 0);  // this automatically puts it in id->household map in Household class
                 householdData.addHousehold(hh);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
