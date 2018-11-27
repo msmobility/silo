@@ -112,7 +112,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
             widow.setRole(PersonRole.SINGLE);
         }
         householdData.removePerson(person.getId());
-        //householdData.addHouseholdThatChanged(hhOfPersonToDie);
+        householdData.addHouseholdThatChanged(hhOfPersonToDie);
 
         final boolean onlyChildrenLeft = HouseholdUtil.checkIfOnlyChildrenRemaining(hhOfPersonToDie);
         if (onlyChildrenLeft) {

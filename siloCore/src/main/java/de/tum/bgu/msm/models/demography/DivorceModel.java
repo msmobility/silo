@@ -145,9 +145,9 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                         oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                         " has divorced from household " + oldHh + " and established the new household " +
-                        newHhId + ".");
+                        newHhId + ".");*/
                 householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
-                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                 /* if (Properties.get().main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }*/
                 return true;

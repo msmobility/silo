@@ -148,8 +148,9 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             movesModel.moveHousehold(hh, -1, newDdId);
 *//*            if (Properties.get().main.implementation == Implementation.MUNICH) {
                 carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
-            }*//*
+            }*/
             inMigrationPPCounter += hh.getHhSize();
+            /*
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " inmigrated.");
             }
