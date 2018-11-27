@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.properties;
 
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -220,7 +221,7 @@ public class PropertiesUtil {
 
     public static void printOutPropertiesOfThisRun(String folder){
         try {
-            PrintWriter pw = new PrintWriter(new File(folder + "/siloProperties.properties"));
+            PrintWriter pw = new PrintWriter(new File(folder + "/fullProperties.properties"));
             pw.println("#Properties for SILO");
             pw.println(String.format("%-60s %-20s %s","#Legend", "set by user", "default"));
             propertiesInUse.values().forEach(pw::println);
@@ -229,5 +230,12 @@ public class PropertiesUtil {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void writePropertiesForThisRun(String inputPropertiesPath) {
+        Properties properties = Properties.get();
+        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        SiloUtil.copyFile(inputPropertiesPath, parent + "/inputProperties.properties");
+        printOutPropertiesOfThisRun(parent);
     }
 }

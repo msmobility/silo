@@ -32,42 +32,26 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class SiloUtil {
 
+    private static final String TIME_TRACKER_FILE = "timeTracker.csv";
     private static Random rand;
     public static int trackHh;
     public static int trackPp;
     public static int trackDd;
     public static int trackJj;
     public static PrintWriter trackWriter;
-    private static ResourceBundle rb;
-
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static Properties siloInitialization(String resourceBundleNames, Implementation implementation) {
+    public static Properties siloInitialization(Implementation implementation, String propertiesPath) {
 
         loadHdf5Lib();
 
-        File propFile = new File(resourceBundleNames);
-        try {
-            rb = new PropertyResourceBundle(new FileReader(propFile));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Properties properties = Properties.initializeProperties(rb, implementation);
-        SummarizeData.openResultFile(rb);
+        Properties properties = Properties.initializeProperties(propertiesPath, implementation);
+
+        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
+        SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
 
-        // create scenarios output directory if it does not exist yet
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-
-        PropertiesUtil.printOutPropertiesOfThisRun(properties.main.baseDirectory + "/scenOutput/" + properties.main.scenarioName);
-        // copy properties file into scenarios directory
-        String[] prop = resourceBundleNames.split("/");
-
-//        copyFile(baseDirectory + resourceBundleNames[0], baseDirectory + "scenOutput/" + scenarioName + "/" + prop[prop.length-1]);
-        // I don't see how this can work.  resourceBundleNames[0] is already the full path name, so if you prepend "baseDirectory"
-        // and it is not empty, the command cannot possibly work.  It may have worked by accident in the past if everybody
-        // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
-        copyFile(resourceBundleNames, properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/" + prop[prop.length-1]);
+        PropertiesUtil.writePropertiesForThisRun(propertiesPath);
 
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
@@ -145,11 +129,11 @@ public class SiloUtil {
     }
 
     public static void createDirectoryIfNotExistingYet (String directory) {
-        File file = new File (directory);
-        if (!file.exists()) {
-            logger.info("   Creating Directory: "+directory);
-            boolean outputDirectorySuccessfullyCreated = file.mkdir();
-            if (!outputDirectorySuccessfullyCreated) logger.error("Could not create scenarios directory " + directory);
+        File test = new File (directory);
+        test.mkdirs();
+        if(!test.exists()) {
+            logger.error("Could not create scenarios directory " + directory);
+            throw new RuntimeException();
         }
     }
 
@@ -288,7 +272,7 @@ public class SiloUtil {
                 String fileName = Properties.get().track.trackFile;
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(baseDirectory + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
+                trackWriter = openFileForSequentialWriting(baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);
@@ -901,7 +885,7 @@ public class SiloUtil {
         try {
             Files.copy(src.toPath(), dst.toPath(), REPLACE_EXISTING);
         } catch (Exception e) {
-            final String msg = "Unable to copy properties file " + source + " to scenarios output directory.";
+            final String msg = "Unable to copy file " + source + " to directory " + destination;
 		logger.warn(msg);
             throw new RuntimeException(msg) ;
             // need to throw exception since otherwise the code will not fail here but at some point later.  kai, aug'16
@@ -1042,7 +1026,7 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime, Properties properties) {
+    public static void closeAllFiles (long startTime, TimeTracker timeTracker) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
@@ -1051,14 +1035,7 @@ public class SiloUtil {
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
-        if (properties.main.trackTime) {
-            String fileName = properties.main.trackTimeFile;
-            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
-                out.println("Runtime: " + hours + " hours and " + min + " minutes.");
-            } catch (IOException e) {
-                logger.warn("Could not add run-time statement to time-tracking file.");
-            }
-        }
+        SiloUtil.writeOutTimeTracker(timeTracker);
     }
 
 
@@ -1108,7 +1085,7 @@ public class SiloUtil {
 
         int startYear = Properties.get().main.startYear;
         PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" +
-                Properties.get().main.scenarioName + "/" + Properties.get().main.trackTimeFile, startYear != Properties.get().main.implementation.BASE_YEAR);
+                Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.implementation.BASE_YEAR);
         pw.write(timeTracker.toString());
         pw.close();
     }

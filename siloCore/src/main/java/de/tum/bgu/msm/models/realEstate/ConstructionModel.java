@@ -135,11 +135,12 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;
                     for (int zone : zonesInThisRegion) {
-                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
-                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
+                        Development development = dataContainer.getGeoData().getZones().get(zone).getDevelopment();
+                        boolean useDwellingsAsCapacity = development.isUseDwellingCapacity();
+                        double availableLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
                                 (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
-                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
+                                !development.isThisDwellingTypeAllowed(dt)) {                 // construction of this dwelling type allowed in this zone?
                             prob[zone] = 0.;
                         } else {
                             prob[zone] = betaForZoneChoice * availableLand * util[zone];
@@ -200,19 +201,16 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         int price = attributes[5];
 
         Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1,
-                        DwellingType.values()[dto], size,
-                        quality, price, restriction, currentYear);
+                DwellingType.values()[dto], size,
+                quality, price, restriction, currentYear);
         dataContainer.getRealEstateData().addDwelling(dd);
         EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesByHouseholdType(utilities);
 
-        if(Properties.get().main.implementation == Implementation.MUNICH) {
-            if(Properties.get().main.runDwellingMicrolocation) {
-            	Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
-            	dd.setCoordinate(coordinate);
-            }
+        if (Properties.get().main.useMicrolocation) {
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            dd.setCoordinate(coordinate);
         }
-
 
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
 
@@ -224,7 +222,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     @Override
-    public void finishYear(int year) {}
+    public void finishYear(int year) {
+    }
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone

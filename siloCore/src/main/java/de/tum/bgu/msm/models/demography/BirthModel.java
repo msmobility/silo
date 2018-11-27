@@ -17,6 +17,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
@@ -90,7 +91,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         final Person person = householdData.getPersonFromId(perId);
         if (person != null && personCanGiveBirth(person)) {
             // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
-            double birthProb = calculator.calculateBirthProbability(person.getAge());
+            //now it distinguish by number of children at the household
+            double birthProb = calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold()));
             if (person.getRole() == PersonRole.MARRIED) {
                 birthProb *= Properties.get().demographics.marriedScaler;
             } else {
@@ -132,6 +134,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     private boolean personCanGiveBirth(Person person) {
-        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge()) > 0;
+        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold())) > 0;
     }
 }

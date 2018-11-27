@@ -7,6 +7,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.geo.RegionImpl;
@@ -69,9 +70,9 @@ public class AccessibilityTest {
         Region region1 = new RegionImpl(1);
         Region region2 = new RegionImpl(2);
         List<Region> regions = Arrays.asList(region1, region2);
-        Zone zone1 = new ZoneImpl(1, 1, 1);
-        Zone zone2 = new ZoneImpl(2, 1, 1);
-        Zone zone3 = new ZoneImpl(3, 1 ,1);
+        Zone zone1 = new ZoneImpl(1, 1, 1, region1);
+        Zone zone2 = new ZoneImpl(2, 1, 1, region1);
+        Zone zone3 = new ZoneImpl(3, 1 ,1, region2);
         region1.addZone(zone1);
         region1.addZone(zone2);
         region2.addZone(zone3);
@@ -86,7 +87,7 @@ public class AccessibilityTest {
 
     @Test
     public void testIntegration()  {
-        Properties properties = SiloUtil.siloInitialization("test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();
@@ -112,7 +113,7 @@ public class AccessibilityTest {
         for(Zone zone: geoData.getZones().values()) {
             for(Region region: geoData.getRegions().values()) {
                 minTravelTimes.setQuick(zone.getZoneId(), region.getId(),
-                		dataContainer.getTravelTimes().getTravelTimeToRegion(zone, region, Properties.get().main.peakHour, TransportMode.car));
+                		dataContainer.getTravelTimes().getTravelTimeToRegion(zone, region, Properties.get().transportModel.peakHour_s, TransportMode.car));
             }
         }
 

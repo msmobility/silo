@@ -1,16 +1,11 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.capeTown.SyntheticPopCT;
-import de.tum.bgu.msm.syntheticPopulationGenerator.maryland.SyntheticPopUs;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.SyntheticPopDe;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 public class SyntheticPopulationManipulator {
 
@@ -18,7 +13,7 @@ public class SyntheticPopulationManipulator {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(args[0], Implementation.MUNICH);
+        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
 
         logger.info("Load silo data container");
         SiloDataContainer siloDataContainer = SiloDataContainer.loadSiloDataContainer(properties);

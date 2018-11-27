@@ -30,19 +30,4 @@ public interface GeoData {
      */
     Map<Integer, SimpleFeature> getZoneFeatureMap();
 
-    boolean useNumberOfDwellingsAsCapacity();
-
-    float getDevelopmentCapacity(int zone);
-
-    void reduceDevelopmentCapacityByOneDwelling(int zone);
-
-    void reduceDevelopmentCapacityByDevelopableAcres(int zone, float acres);
-
-    int[] getDevelopableLandUseTypes();
-
-    float getAreaOfLandUse(String landUseType, int zone);
-
-    boolean isThisDwellingTypeAllowed(String dwellingType, int zone);
-
-    void writeOutDevelopmentCapacityFile(SiloDataContainer dataContainer);
 }

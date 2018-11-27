@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator.munich.optimization;
+package de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization;
 
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;

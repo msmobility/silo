@@ -48,7 +48,6 @@ public class RealEstateDataManager {
 
     public RealEstateDataManager(SiloDataContainer dataContainer) {
         this.dataContainer = dataContainer;
-        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     public void saveDwellings (DwellingImpl[] dds) {
@@ -272,6 +271,8 @@ public class RealEstateDataManager {
     public void summarizeDwellings () {
         // aggregate dwellings
 
+        logger.info("****** Average Price is Written *******");
+
         SummarizeData.resultFile("QualityLevel,Dwellings");
         for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
             String row = qual + "," + dwellingsByQuality[qual - 1];
@@ -300,7 +301,7 @@ public class RealEstateDataManager {
         double[] availLand = new double[highestId + 1];
         for (int zone: geoData.getZones().keySet()) {
             availLand[geoData.getZones().get(zone).getRegion().getId()] +=
-                    getAvailableLandForConstruction(zone);
+                    getAvailableCapacityForConstruction(zone);
         }
         for (int region: geoData.getRegions().keySet()) {
             Formatter f = new Formatter();
@@ -490,53 +491,27 @@ public class RealEstateDataManager {
     }
 
 
-    public double getAvailableLandForConstruction (int zone) {
+    public double getAvailableCapacityForConstruction(int zone) {
         // return available land in developable land-use categories
 
         double sm;
-        if (useDwellingCapacityForThisZone(zone)) {         // use absolute number of dwellings as capacity constraint
-            sm = SiloUtil.rounder(dataContainer.getGeoData().getDevelopmentCapacity(zone),0);  // some capacity values are not integer numbers, not sure why
+        Development development = dataContainer.getGeoData().getZones().get(zone).getDevelopment();
+        if (development.isUseDwellingCapacity()) {
+            sm = development.getDwellingCapacity();
         } else {
-            sm = getDevelopableLand(zone);                            // use land use data
+            sm = development.getDevelopableArea();
         }
         return sm;
     }
-
-
-    public boolean useDwellingCapacityForThisZone (int zone) {
-        // return true if capacity for number of dwellings is used in this zone, otherwise return false
-        final GeoData geoData = dataContainer.getGeoData();
-        if (!geoData.useNumberOfDwellingsAsCapacity()) {
-            return false;
-        }
-        try {
-            geoData.getDevelopmentCapacity(zone);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-
-    public double getDevelopableLand(int zone) {
-        // return number of acres of available land for development
-        final GeoData geoData = dataContainer.getGeoData();
-        double sm = 0;
-        for (int type : geoData.getDevelopableLandUseTypes()) {
-            String landUseType = "LU" + type;
-            sm += geoData.getAreaOfLandUse(landUseType, zone);
-        }
-        return sm;
-    }
-
 
     public void convertLand(int zone, float acres) {
         // remove acres from developable land
-        final GeoData geoData = dataContainer.getGeoData();
-        if (useDwellingCapacityForThisZone(zone)) {
-            geoData.reduceDevelopmentCapacityByOneDwelling(zone);
+        Development development = dataContainer.getGeoData().getZones().get(zone).getDevelopment();
+        if (development.isUseDwellingCapacity()) {
+            development.changeCapacityBy(-1);
         } else {
-            geoData.reduceDevelopmentCapacityByDevelopableAcres(zone, acres);
+            development.changeAreaBy(-acres);
         }
     }
+
 }

@@ -13,7 +13,7 @@ public class BirthTest {
 
     @Before
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
         float localScaler = 0.87f;
         calculator = new BirthJSCalculator (reader, localScaler);
     }
@@ -21,17 +21,17 @@ public class BirthTest {
     @Test
     public void testModelOne() {
         float scaler = 0.87f;
-        Assert.assertEquals((91.2/1000.*scaler), calculator.calculateBirthProbability(31), 0.);
+        Assert.assertEquals((12.1/1000.*scaler), calculator.calculateBirthProbability(40,1), 0.);
     }
 
     @Test
     public void testModelTwo() {
-        Assert.assertEquals(0.0, calculator.calculateBirthProbability(200), 0.);
+        Assert.assertEquals(0.0, calculator.calculateBirthProbability(200,0), 0.);
     }
 
     @Test(expected = RuntimeException.class)
     public void testModelFailures() {
-        calculator.calculateBirthProbability(-2);
+        calculator.calculateBirthProbability(-2,0);
     }
 
 }

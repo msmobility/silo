@@ -8,9 +8,24 @@ package de.tum.bgu.msm.data.dwelling;
 
 public enum DwellingType {
 
-    SFD,         // single-family house detached
-    SFA,         // single-family house attached or townhouse
-    MF234,       // duplexes and buildings 2-4 units (not including those that fit Attached or Townhouse definition)
-    MF5plus,     // Multi-family houses with 5+ units
-    MH           // mobile home
+    /**
+     * single-family house detached
+     */
+    SFD,
+    /**
+     * single-family house attached or townhouse
+     */
+    SFA,
+    /**
+     * duplexes and buildings 2-4 units (not including those that fit Attached or Townhouse definition)
+     */
+    MF234,
+    /**
+     * Multi-family houses with 5+ units
+     */
+    MF5plus,
+    /**
+     * mobile home
+     */
+    MH
 }

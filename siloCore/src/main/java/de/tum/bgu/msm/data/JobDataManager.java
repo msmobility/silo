@@ -373,7 +373,7 @@ public class JobDataManager {
             for (Region reg : regions) {
                 if (vacantJobsByRegionPos[reg.getId()] > 0) {
                     int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
-                    		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                    		Properties.get().transportModel.peakHour_s, TransportMode.car) + 0.5);
                     regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
@@ -382,7 +382,7 @@ public class JobDataManager {
                 for (Region reg : regions) {
                     if (vacantJobsByRegionPos[reg.getId()] > 0) {
                     	int distance = (int) (data.getTravelTimes().getTravelTimeToRegion(homeZone, reg,
-                        		Properties.get().main.peakHour, TransportMode.car) + 0.5);
+                                Properties.get().transportModel.peakHour_s, TransportMode.car) + 0.5);
                     	regionProb.put(reg, 1. / distance);
                     }
                 }
@@ -464,7 +464,7 @@ public class JobDataManager {
     public void calculateJobDensityByZone() {
         Multiset<Integer> counter = ConcurrentHashMultiset.create();
         jobs.values().parallelStream().forEach(j -> counter.add(j.getZoneId()));
-        geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea())));
+        geoData.getZones().forEach((id, zone) -> zonalJobDensity.put(id, (double) (counter.count(id) / zone.getArea_sqmi())));
     }
 
 

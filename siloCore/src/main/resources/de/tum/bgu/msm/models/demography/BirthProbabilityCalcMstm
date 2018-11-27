@@ -1,4 +1,4 @@
-var calculateBirthProbability = function(personAge, scaler) {
+var calculateBirthProbability = function(personAge, numberOfChildren, scaler) {
 
     alpha = 0.;
 

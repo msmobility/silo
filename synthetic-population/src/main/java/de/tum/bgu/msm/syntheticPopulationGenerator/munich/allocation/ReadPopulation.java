@@ -1,14 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -220,7 +217,7 @@ public class ReadPopulation {
                 int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
                 dd.setBuildingSize(building);
-                dd.setUsage(DwellingImpl.Usage.valueOf(use));
+                dd.setUsage(DwellingUsage.valueOf(use));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + fileName);

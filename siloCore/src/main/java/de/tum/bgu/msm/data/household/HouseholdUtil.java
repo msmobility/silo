@@ -28,6 +28,10 @@ public class HouseholdUtil {
         return (int) household.getPersons().values().stream().filter(p -> p.getOccupation() == Occupation.EMPLOYED).count();
     }
 
+    public static int getNumberOfChildren(Household household) {
+        return (int) household.getPersons().values().stream().filter(p -> ((Person) p).getRole() == PersonRole.CHILD).count();
+    }
+
     public static int getHHLicenseHolders(Household household) {
         return (int) household.getPersons().values().stream().filter(Person::hasDriverLicense).count();
     }

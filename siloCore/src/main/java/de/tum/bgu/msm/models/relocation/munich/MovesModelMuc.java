@@ -7,6 +7,9 @@ package de.tum.bgu.msm.models.relocation.munich;
 */
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -21,7 +24,6 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -150,7 +152,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             if (workZones != null) {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, Properties.get().main.peakHour, TransportMode.car);
+                    		workZone, region, Properties.get().transportModel.peakHour_s, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
@@ -289,18 +291,18 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Location> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
-            	Location workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
-                workerZonesForThisHousehold.put(pp, workLocation);
+            	Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
+                jobsForThisHousehold.put(pp, workLocation);
             }
         }
         double workDistanceUtility = 1;
-        for (Location workLocation : workerZonesForThisHousehold.values()){
+        for (Job workLocation : jobsForThisHousehold.values()){
         	double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    dd, workLocation, Properties.get().main.peakHour, TransportMode.car)));
+                    dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }
         return dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);

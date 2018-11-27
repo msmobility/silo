@@ -28,25 +28,6 @@ import java.util.EnumMap;
  */
 public final class DwellingImpl implements Dwelling, MicroLocation {
 
-    public enum Usage {
-        GROUP_QUARTER_OR_DEFAULT, OWNED, RENTED, VACANT;
-
-        public static Usage valueOf(int code) {
-            switch (code) {
-                case 0:
-                    return GROUP_QUARTER_OR_DEFAULT;
-                case 1:
-                    return OWNED;
-                case 2:
-                    return RENTED;
-                case 3:
-                    return VACANT;
-                default:
-                    throw new RuntimeException("Undefined dwelling usage code " + code);
-            }
-        }
-    }
-
     //Attributes that must be initialized when one dwelling is generated
     private final int id;
     private final int zoneId;
@@ -64,7 +45,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int buildingSize = 0;
     private int floorSpace = 0;
-    private Usage usage = Usage.GROUP_QUARTER_OR_DEFAULT;
+    private DwellingUsage usage = DwellingUsage.GROUP_QUARTER_OR_DEFAULT;
     private int yearConstructionDE = 0;
     private Coordinate coordinate;
 
@@ -216,13 +197,13 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
 
     //TODO: use case specific
     @Override
-    public void setUsage(Usage usage) {
+    public void setUsage(DwellingUsage usage) {
         this.usage = usage;
     }
 
     //TODO: use case specific
     @Override
-    public Usage getUsage() {
+    public DwellingUsage getUsage() {
         return usage;
     }
 

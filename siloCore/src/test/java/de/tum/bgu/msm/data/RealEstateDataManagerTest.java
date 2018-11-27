@@ -18,7 +18,7 @@ public class RealEstateDataManagerTest {
 
     @BeforeClass
     public static void setup() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
     }
 
     @Test

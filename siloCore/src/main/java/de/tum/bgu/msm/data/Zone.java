@@ -8,7 +8,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 public interface Zone extends Location, Id {
 
-    void setRegion(Region region);
 
     Region getRegion();
 
@@ -20,7 +19,7 @@ public interface Zone extends Location, Id {
     /**
      * @return the area of the zone in acres
      */
-    float getArea();
+    float getArea_sqmi();
 
 	void setZoneFeature(SimpleFeature zoneFeature);
 
@@ -28,4 +27,7 @@ public interface Zone extends Location, Id {
 
 	Coordinate getRandomCoordinate();
 
+	Development getDevelopment();
+
+    void setDevelopment(Development development);
 }

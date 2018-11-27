@@ -24,7 +24,7 @@ public class DemolitionTest {
 
     @BeforeClass
     public static void initializeProperties() {
-        SiloUtil.siloInitialization("./test/scenarios/annapolis/javaFiles/siloMstm.properties", Implementation.MARYLAND);
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
     }
 
     @Before

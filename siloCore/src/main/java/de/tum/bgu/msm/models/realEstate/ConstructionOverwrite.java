@@ -2,17 +2,14 @@ package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -48,8 +45,7 @@ public class ConstructionOverwrite extends AbstractModel {
         if (traceOverwriteDwellings) {
             String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
             SiloUtil.createDirectoryIfNotExistingYet(directory);
-            String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
-                    Properties.get().main.gregorianIterator + ".csv");
+            String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + ".csv");
             PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, false);
             traceFile.println("dwellingID,zone,type,size,quality,initialPrice,restriction,yearBuilt");
             traceFile.close();
@@ -110,8 +106,7 @@ public class ConstructionOverwrite extends AbstractModel {
         logger.info("  Adding dwellings that are given exogenously as an overwrite for the year " + year);
 
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
+        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + ".csv");
         PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, true);
         List<Integer[]> list = plannedDwellings.get(year);
         for (Integer[] data: list) {
@@ -131,12 +126,10 @@ public class ConstructionOverwrite extends AbstractModel {
             Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
             dataContainer.getRealEstateData().addDwelling(dd);
 
-            if(Properties.get().main.implementation == Implementation.MUNICH) {
-                if(Properties.get().main.runDwellingMicrolocation) {
-                	Coordinate coordinate = ((MunichZone) dataContainer.getGeoData().getZones().get(zoneId)).getRandomCoordinate();
-                    ((DwellingImpl) dd).setCoordinate(coordinate);
+                if(Properties.get().main.useMicrolocation) {
+                	Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+                   dd.setCoordinate(coordinate);
                 }
-            }
 
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
@@ -164,8 +157,7 @@ public class ConstructionOverwrite extends AbstractModel {
         }
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
+        String fileName = (directory + "/" + Properties.get().realEstate.overWriteDwellingsTraceFile + ".csv");
         TableDataSet overwriteDwellings = SiloUtil.readCSVfile(fileName);
         int[] householdId   = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);
         int[] householdSize = SiloUtil.createArrayWithValue(overwriteDwellings.getRowCount(), 0);

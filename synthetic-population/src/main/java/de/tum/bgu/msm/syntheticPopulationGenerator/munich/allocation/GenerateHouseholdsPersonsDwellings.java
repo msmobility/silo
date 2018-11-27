@@ -1,13 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -135,7 +132,7 @@ public class GenerateHouseholdsPersonsDwellings {
         int year = microDataManager.dwellingYearfromBracket(yearBracket);
         int floorSpace = dataSetSynPop.getDwellingTable().get(hhSelected, "ddFloor");
         int useInteger = dataSetSynPop.getDwellingTable().get(hhSelected, "ddUse");
-        DwellingImpl.Usage usage = DwellingImpl.Usage.valueOf(useInteger);
+        DwellingUsage usage = DwellingUsage.valueOf(useInteger);
         int buildingSize = dataSetSynPop.getDwellingTable().get(hhSelected, "ddSize");
         int ddHeatingEnergy = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingEnergy");
         int ddHeatingType = dataSetSynPop.getDwellingTable().get(hhSelected, "ddHeatingType");

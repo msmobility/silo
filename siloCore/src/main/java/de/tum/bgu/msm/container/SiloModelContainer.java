@@ -129,22 +129,18 @@ public class SiloModelContainer {
     public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer, Config matsimConfig,
                                                               Properties properties) {
 
-        boolean runMatsim = properties.transportModel.runMatsim;
-        boolean runTravelDemandModel = properties.transportModel.runTravelDemandModel;
-
-        TransportModelI transportModel;
-        if (runMatsim && (runTravelDemandModel || properties.main.createMstmOutput)) {
-            throw new RuntimeException("trying to run both MATSim and MSTM is inconsistent at this point.");
-        }
-        if (runMatsim) {
-            LOGGER.info("  MATSim is used as the transport model");
-            transportModel = new MatsimTransportModel(dataContainer, matsimConfig);
-        } else if (runTravelDemandModel) {
-            LOGGER.info("  MITO is used as the transport model");
-            transportModel = new MitoTransportModel(Properties.get().main.baseDirectory, dataContainer);
-        } else {
-            LOGGER.info(" No transport model is used");
-            transportModel = null;
+        TransportModelI transportModel = null;
+        switch (properties.transportModel.transportModelIdentifier) {
+            case MITO:
+                LOGGER.info("  MITO is used as the transport model");
+                transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer);
+                break;
+            case MATSIM:
+                LOGGER.info("  MATSim is used as the transport model");
+                transportModel = new MatsimTransportModel(dataContainer, matsimConfig, properties);
+                break;
+            case NONE:
+                LOGGER.info(" No transport model is used");
         }
 
         Accessibility acc = new Accessibility(dataContainer);
@@ -174,7 +170,7 @@ public class SiloModelContainer {
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
-                        (GeoDataMuc)dataContainer.getGeoData());
+                        (GeoDataMuc) dataContainer.getGeoData());
                 updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
                 switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
                 move = new MovesModelMuc(dataContainer, acc);
@@ -288,8 +284,8 @@ public class SiloModelContainer {
         }
     }
 
-    public SwitchToAutonomousVehicleModel getSwitchToAutonomousVehicleModel(){
-        if(switchToAutonomousVehicleModel != null){
+    public SwitchToAutonomousVehicleModel getSwitchToAutonomousVehicleModel() {
+        if (switchToAutonomousVehicleModel != null) {
             return switchToAutonomousVehicleModel;
         } else {
             throw new NullPointerException("Switch to autonomous vehicle model not available. Check implementation!");
