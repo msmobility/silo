@@ -48,13 +48,16 @@ public class SiloDataContainer {
         switch (implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             case MUNICH:
+                schoolData = new SchoolDataManager(this);
                 geoData = new GeoDataMuc();
                 break;
             case PERTH:
                 // todo: this might need to be replace by GeoDataPerth
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             default:
                 LOGGER.error(implementation + " is an invalid implementation. Choose <MSTM> or <Muc>.");
@@ -65,7 +68,7 @@ public class SiloDataContainer {
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         travelTimes = new SkimTravelTimes();
-        schoolData = new SchoolDataManager(this);
+
 
 
     }
@@ -79,9 +82,11 @@ public class SiloDataContainer {
         switch (implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             case MUNICH:
                 geoData = new GeoDataMuc();
+                schoolData = new SchoolDataManager(this);
                 break;
             default:
                 LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
@@ -91,7 +96,7 @@ public class SiloDataContainer {
         realEstateData = new RealEstateDataManager(this);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
-        schoolData = new SchoolDataManager(this);
+
         geoData.readData();
 
         int year = properties.main.startYear;
@@ -118,6 +123,10 @@ public class SiloDataContainer {
 
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
             ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
+            schoolData.setSchoolSearchTree(properties);
+            SchoolReader ssReader = new DefaultSchoolReader(schoolData);
+            String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
+            ssReader.readData(schoolsFile);
         }
         JobReader jjReader = new DefaultJobReader(jobData);
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
@@ -125,10 +134,7 @@ public class SiloDataContainer {
 
         jobData.setHighestJobId();
 
-        schoolData.setSchoolSearchTree(properties);
-        SchoolReader ssReader = new DefaultSchoolReader(schoolData);
-        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
-        ssReader.readData(schoolsFile);
+
 
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();

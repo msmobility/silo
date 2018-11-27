@@ -27,9 +27,9 @@ public class EducationModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, Properties.get());
+        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
+        dataContainer = SiloDataContainer.loadSiloDataContainer(properties);
+        SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getEducationUpdate();
     }
 
