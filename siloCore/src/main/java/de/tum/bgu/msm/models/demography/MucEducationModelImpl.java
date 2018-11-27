@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 
@@ -20,9 +19,9 @@ import java.util.List;
  * Created on 13 October 2017 in Cape Town, South Africa
  * Edited on 05 October 2018 in Munich by Qin Zhang, TUM
  **/
-public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel<EducationEvent> {
+public class MucEducationModelImpl extends AbstractModel implements EducationModel {
 
-    public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
+    public MucEducationModelImpl(SiloDataContainer dataContainer) {
         super(dataContainer);
     }
 
@@ -30,6 +29,7 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
     public boolean handleEvent(EducationEvent event) {
         //TODO: Event handled randomly, so it might happen that birthday event always happened before
         //TODO: Realschuln and Gymnasien
+        //TODO: Hard code age and probability or set in the properties?
         Person pp = dataContainer.getHouseholdData().getPersonFromId(event.getPersonId());
         if (pp != null) {
             School findSchool = null;
@@ -41,10 +41,10 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
                 if (SiloUtil.getRandomNumberAsFloat() < 0.528){
                     findSchool = findSchool(pp);
                 }else{
-                    return leaveSchoolToWork(pp,2);
+                    return leaveSchoolToWork(pp,pp.getSchoolType());
                 }
-            }else if (pp.getAge() > 23 && pp.getSchoolType() == 3){
-                return  leaveSchoolToWork(pp,3);
+            }else if (pp.getAge() > 24 && pp.getSchoolType() == 3){
+                return  leaveSchoolToWork(pp,pp.getSchoolType());
             }
 
             if (findSchool != null){
@@ -82,6 +82,7 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
 
     @Override
     public Collection<EducationEvent> prepareYear(int year) {
+        //TODO:
         final List<EducationEvent> events = new ArrayList<>();
         for(Person person: dataContainer.getHouseholdData().getPersons()) {
             events.add(new EducationEvent(person.getId()));
@@ -105,7 +106,7 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
         return true;
     }
 
-    private School findSchool(Person person) {
+    public School findSchool(Person person) {
         return dataContainer.getSchoolData().getClosestSchool(person);
     }
 

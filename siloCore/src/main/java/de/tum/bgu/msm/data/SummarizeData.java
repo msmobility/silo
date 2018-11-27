@@ -508,6 +508,8 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("disability");
             pwp.print(",");
+            pwp.print("schoolId");
+            pwp.print(",");
             pwp.print("schoolCoordX");
             pwp.print(",");
             pwp.print("schoolCoordY");
@@ -559,6 +561,8 @@ public class SummarizeData {
                 }
                 pwp.print(",");
                 pwp.print(0);
+                pwp.print(",");
+                pwp.print(pp.getSchoolId());
                 pwp.print(",");
                 try {
                     pwp.print(schoolCoord.x);

@@ -54,7 +54,7 @@ public class SiloModelContainer {
     private final LeaveParentHhModel lph;
     private final MovesModelI move;
     private final EmploymentModel changeEmployment;
-    private final ChangeSchoolUnivModel changeSchoolUniv;
+    private final EducationModel educationUpdate;
     private final DriversLicense driversLicense;
     private final Accessibility acc;
     private final UpdateCarOwnershipModel updateCarOwnershipModel;
@@ -80,7 +80,7 @@ public class SiloModelContainer {
      * @param lph
      * @param move
      * @param changeEmployment
-     * @param changeSchoolUniv
+     * @param educationUpdate
      * @param driversLicense
      * @param acc
      * @param updateCarOwnershipModel
@@ -92,7 +92,7 @@ public class SiloModelContainer {
                                ConstructionOverwrite ddOverwrite, RenovationModel renov, DemolitionModel demol,
                                PricingModel prm, BirthModel birth, BirthdayModel birthday, DeathModel death, MarriageModel marriage,
                                DivorceModel divorce, LeaveParentHhModel lph, MovesModelI move, EmploymentModel changeEmployment,
-                               ChangeSchoolUnivModel changeSchoolUniv, DriversLicense driversLicense,
+                               EducationModel educationUpdate, DriversLicense driversLicense,
                                Accessibility acc, UpdateCarOwnershipModel updateCarOwnershipModel, UpdateJobs updateJobs,
                                CreateCarOwnershipModel createCarOwnershipModel, SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel,
                                TransportModelI transportModel) {
@@ -110,7 +110,7 @@ public class SiloModelContainer {
         this.lph = lph;
         this.move = move;
         this.changeEmployment = changeEmployment;
-        this.changeSchoolUniv = changeSchoolUniv;
+        this.educationUpdate = educationUpdate;
         this.driversLicense = driversLicense;
         this.acc = acc;
         this.updateCarOwnershipModel = updateCarOwnershipModel;
@@ -151,7 +151,7 @@ public class SiloModelContainer {
         DeathModel death = new DeathModel(dataContainer);
         BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory());
         BirthdayModel birthday = new BirthdayModel(dataContainer);
-        ChangeSchoolUnivModel changeSchoolUniv = new ChangeSchoolUnivModel(dataContainer);
+
         DriversLicense driversLicense = new DriversLicense(dataContainer);
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
@@ -164,10 +164,13 @@ public class SiloModelContainer {
         UpdateCarOwnershipModel updateCarOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
         SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel = null;
+
+        EducationModel educationUpdate;
         switch (Properties.get().main.implementation) {
             case MARYLAND:
                 updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc);
                 move = new MovesModelMstm(dataContainer, acc);
+                educationUpdate = new MstmEducationModelImpl(dataContainer);
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
@@ -175,6 +178,7 @@ public class SiloModelContainer {
                 updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
                 switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
                 move = new MovesModelMuc(dataContainer, acc);
+                educationUpdate = new MucEducationModelImpl(dataContainer);
                 break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
@@ -191,7 +195,7 @@ public class SiloModelContainer {
         DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
-                prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, changeSchoolUniv, driversLicense, acc,
+                prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, educationUpdate, driversLicense, acc,
                 updateCarOwnershipModel, updateJobs, createCarOwnershipModel, switchToAutonomousVehicleModel, transportModel);
     }
 
@@ -252,8 +256,8 @@ public class SiloModelContainer {
         return changeEmployment;
     }
 
-    public ChangeSchoolUnivModel getChangeSchoolUniv() {
-        return changeSchoolUniv;
+    public EducationModel getEducationUpdate() {
+        return educationUpdate;
     }
 
     public DriversLicense getDriversLicense() {

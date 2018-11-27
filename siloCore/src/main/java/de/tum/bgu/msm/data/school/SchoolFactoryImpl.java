@@ -2,13 +2,8 @@ package de.tum.bgu.msm.data.school;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

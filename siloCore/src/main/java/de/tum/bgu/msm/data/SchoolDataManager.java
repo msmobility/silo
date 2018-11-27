@@ -19,6 +19,7 @@ package de.tum.bgu.msm.data;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.properties.Properties;
@@ -92,7 +93,8 @@ public class SchoolDataManager {
     }
 
     public School getClosestSchool(Person person) {
-        Coordinate coordinate = ((MicroLocation)person).getCoordinate();
+        Dwelling dwelling = data.getRealEstateData().getDwelling(person.getHousehold().getDwellingId());
+        Coordinate coordinate = ((MicroLocation)dwelling).getCoordinate();
         switch (person.getSchoolType()+1){
             case 1:
                 return primarySearchTree.getClosest(coordinate.x,coordinate.y);
