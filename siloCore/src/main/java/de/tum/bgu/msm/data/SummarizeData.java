@@ -343,8 +343,7 @@ public class SummarizeData {
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/bem/";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
 
-        String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + "_" +
-                Properties.get().main.gregorianIterator + ".csv");
+        String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + ".csv");
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
         pw.println("id,zone,type,size,yearBuilt,occupied");
@@ -553,8 +552,6 @@ public class SummarizeData {
                 pwp.print(pp.getSchoolType());
                 pwp.print(",");
                 try {
-                    pwp.print(pp.getSchoolZoneId());
-                } catch (NullPointerException e) {
                     pwp.print(pp.getSchoolPlace());
                 } catch (NullPointerException e){
                     pwp.print(0);
