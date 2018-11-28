@@ -20,9 +20,7 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Methods to summarize model results
@@ -770,5 +768,295 @@ public class SummarizeData {
         pw.close();
 
         logger.info("Summarized initial auto ownership");
+    }
+
+
+    public static void writeOutSyntheticPopulationReduced(int year, HouseholdDataManager householdData, RealEstateDataManager realEstateData, JobDataManager jobData) {
+        String relativePathToHhFile;
+        String relativePathToPpFile;
+        String relativePathToDdFile;
+        String relativePathToJjFile;
+        if (year == Properties.get().main.implementation.BASE_YEAR) {
+            //printing out files for the synthetic population at the base year - store as input files
+            relativePathToHhFile = Properties.get().householdData.householdFileName;
+            relativePathToPpFile = Properties.get().householdData.personFileName;
+            relativePathToDdFile = Properties.get().realEstate.dwellingsFileName;
+            relativePathToJjFile = Properties.get().jobData.jobsFileName;
+        } else {
+            //printing out files for the synthetic population at any other year - store as output files
+            relativePathToHhFile = Properties.get().householdData.householdFinalFileName;
+            relativePathToPpFile = Properties.get().householdData.personFinalFileName;
+            relativePathToDdFile = Properties.get().realEstate.dwellingsFinalFileName;
+            relativePathToJjFile = Properties.get().jobData.jobsFinalFileName;
+        }
+
+        String filehh = Properties.get().main.baseDirectory + relativePathToHhFile + "_" + year + "R.csv";
+        Map<Integer, Household> reducedHousehold = writeHouseholdsReduced(filehh, householdData, realEstateData);
+
+        String filepp = Properties.get().main.baseDirectory + relativePathToPpFile + "_" + year + "R.csv";
+        writePersonsReduced(filepp, householdData, reducedHousehold, realEstateData);
+
+        String filedd = Properties.get().main.baseDirectory + relativePathToDdFile + "_" + year + "R.csv";
+        writeDwellingsReduced(filedd, householdData, reducedHousehold, realEstateData);
+
+        String filejj = Properties.get().main.baseDirectory + relativePathToJjFile + "_" + year + "R.csv";
+        writeJobsReduced(filejj, jobData);
+    }
+
+    private static Map<Integer, Household> writeHouseholdsReduced(String filehh, HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
+
+        logger.info("  Writing household file to " + filehh);
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        Map<Integer, Household> reducedHousehold = new HashMap<>();
+        int i = 0;
+        for (Household hh : householdData.getHouseholds()) {
+            if (i % 10 == 0) {
+                reducedHousehold.put(i,hh);
+                if (hh.getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
+                    SiloUtil.trackWriter.println(hh.toString());
+                }
+                pwh.print(hh.getId());
+                pwh.print(",");
+                pwh.print(hh.getDwellingId());
+                pwh.print(",");
+                int zone = -1;
+                Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+                if (dwelling != null) {
+                    zone = dwelling.getZoneId();
+                }
+                pwh.print(zone);
+                pwh.print(",");
+                pwh.print(hh.getHhSize());
+                pwh.print(",");
+                pwh.println(hh.getAutos());
+            }
+            i++;
+        }
+        pwh.close();
+        return  reducedHousehold;
+
+    }
+
+    private static void writePersonsReduced(String filepp, HouseholdDataManager householdData, Map<Integer, Household> reducedHousehold, RealEstateDataManager realEstateData) {
+
+        logger.info("  Writing person file to " + filepp);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwp.print("id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwp.print(",");
+            pwp.print("nationality");
+            pwp.print(",");
+            pwp.print("education");
+            pwp.print(",");
+            pwp.print("homeZone");
+            pwp.print(",");
+            pwp.print("workZone");
+            pwp.print(",");
+            pwp.print("schoolDE");
+            pwp.print(",");
+            pwp.print("schoolTAZ");
+            pwp.print(",");
+            pwp.print("disability");
+            pwp.print(",");
+            pwp.print("schoolCoordX");
+            pwp.print(",");
+            pwp.print("schoolCoordY");
+        }
+        pwp.println();
+        for (Household hh : reducedHousehold.values()) {
+            Collection<? extends Person> members = householdData.getHouseholdFromId(hh.getId()).getPersons().values();
+            for (Person pp : members){
+                pwp.print(pp.getId());
+                pwp.print(",");
+                pwp.print(pp.getHousehold().getId());
+                pwp.print(",");
+                pwp.print(pp.getAge());
+                pwp.print(",");
+                pwp.print(pp.getGender().getCode());
+                pwp.print(",\"");
+                String role = pp.getRole().toString();
+                pwp.print(role);
+                pwp.print("\",\"");
+                pwp.print(pp.getRace());
+                pwp.print("\",");
+                pwp.print(pp.getOccupation().getCode());
+                pwp.print(",");
+                if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                    pwp.print(pp.hasDriverLicense());
+                } else {
+                    pwp.print(0);
+                }
+                pwp.print(",");
+                pwp.print(pp.getWorkplace());
+                pwp.print(",");
+                pwp.print(pp.getIncome());
+                if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                    pwp.print(",");
+                    pwp.print(pp.getNationality().toString());
+                    pwp.print(",");
+                    pwp.print(pp.getEducationLevel());
+                    pwp.print(",");
+                    //Dwelling dd = realEstateData.getDwelling(pp.getHousehold().getDwellingId());
+                    pwp.print(-1);
+                    pwp.print(",");
+                    pwp.print(pp.getJobTAZ());
+                    pwp.print(",");
+                    Coordinate schoolCoord = pp.getSchoolLocation();
+                    pwp.print(pp.getSchoolType());
+                    pwp.print(",");
+                    try {
+                        pwp.print(pp.getSchoolZoneId());
+                    } catch (NullPointerException e) {
+                        pwp.print(0);
+                    }
+                    pwp.print(",");
+                    pwp.print(0);
+                    pwp.print(",");
+                    try {
+                        pwp.print(schoolCoord.x);
+                        pwp.print(",");
+                        pwp.print(schoolCoord.y);
+                    } catch (NullPointerException e) {
+                        pwp.print(0);
+                        pwp.print(",");
+                        pwp.print(0);
+                    }
+                }
+                pwp.println();
+
+
+                if (pp.getId() == SiloUtil.trackPp) {
+                    SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
+                    SiloUtil.trackWriter.println(pp.toString());
+                }
+            }
+        }
+        pwp.close();
+
+    }
+
+    private static void writeDwellingsReduced(String filedd, HouseholdDataManager householdData, Map<Integer, Household> reducedHousehold, RealEstateDataManager realEstateData) {
+        logger.info("  Writing dwelling file to " + filedd);
+
+        PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwd.print(",");
+            pwd.print("floor");
+            pwd.print(",");
+            pwd.print("building");
+            pwd.print(",");
+            pwd.print("year");
+            pwd.print(",");
+            pwd.print("usage");
+            pwd.print(",");
+            pwd.print("coordX");
+            pwd.print(",");
+            pwd.print("coordY");
+        }
+        pwd.println();
+
+
+        for (Household hh : reducedHousehold.values()) {
+            Dwelling dd = realEstateData.getDwelling(hh.getId());
+            pwd.print(dd.getId());
+            pwd.print(",");
+            pwd.print(dd.getZoneId());
+            pwd.print(",\"");
+            pwd.print(dd.getType());
+            pwd.print("\",");
+            pwd.print(dd.getResidentId());
+            pwd.print(",");
+            pwd.print(dd.getBedrooms());
+            pwd.print(",");
+            pwd.print(dd.getQuality());
+            pwd.print(",");
+            pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getRestriction());
+            pwd.print(",");
+            pwd.print(dd.getYearBuilt());
+            if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                pwd.print(",");
+                pwd.print(dd.getFloorSpace());
+                pwd.print(",");
+                pwd.print(dd.getBuildingSize());
+                pwd.print(",");
+                pwd.print(dd.getYearConstructionDE());
+                pwd.print(",");
+                pwd.print(dd.getUsage());
+                pwd.print(",");
+                try {
+                    pwd.print(((DwellingImpl) dd).getCoordinate().x);
+                    pwd.print(",");
+                    pwd.print(((DwellingImpl) dd).getCoordinate().y);
+                } catch (NullPointerException e) {
+                    pwd.print(0);
+                    pwd.print(",");
+                    pwd.print(0);
+                }
+            }
+            pwd.println();
+            if (dd.getId() == SiloUtil.trackDd) {
+                SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
+                SiloUtil.trackWriter.println(dd.toString());
+            }
+        }
+
+        pwd.close();
+    }
+
+    private static void writeJobsReduced(String filejj, JobDataManager jobData) {
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwj.print("id,zone,personId,type");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwj.print(",");
+            pwj.print("coordX");
+            pwj.print(",");
+            pwj.print("coordY");
+            pwj.print(",");
+            pwj.print("startTime");
+            pwj.print(",");
+            pwj.print("duration");
+        }
+        pwj.println();
+        for (Job jj : jobData.getJobs()) {
+            pwj.print(jj.getId());
+            pwj.print(",");
+            pwj.print(jj.getZoneId());
+            pwj.print(",");
+            pwj.print(jj.getWorkerId());
+            pwj.print(",\"");
+            pwj.print(jj.getType());
+            pwj.print("\"");
+            if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                try {
+                    Coordinate coordinate = ((MicroLocation) jj).getCoordinate();
+                    pwj.print(",");
+                    pwj.print(coordinate.x);
+                    pwj.print(",");
+                    pwj.print(coordinate.y);
+                } catch (Exception e) {
+                    pwj.print(",");
+                    pwj.print(0);
+                    pwj.print(",");
+                    pwj.print(0);
+                }
+                pwj.print(",");
+                pwj.print(jj.getStartTimeInSeconds());
+                pwj.print(",");
+                pwj.print(jj.getWorkingTimeInSeconds());
+            }
+            pwj.println();
+            if (jj.getId() == SiloUtil.trackJj) {
+                SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
+                SiloUtil.trackWriter.println(jj.toString());
+            }
+        }
+        pwj.close();
+
+
     }
 }
