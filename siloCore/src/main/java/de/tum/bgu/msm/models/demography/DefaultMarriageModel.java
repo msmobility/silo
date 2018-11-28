@@ -331,7 +331,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         final Household hhOfPartner1 = partner1.getHousehold();
         final Household hhOfPartner2 = partner2.getHousehold();
 
-        final Household moveTo = hhOfPartner1; //chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
+        final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
 
         final boolean success = moveTogether(partner1, partner2, moveTo);
 
@@ -375,11 +375,12 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                 moveTo = household2;
             } else if (hhSize1 == hhSize2) {
                 // if hhSize is identical, move into larger dwelling
-                Dwelling dwelling1 = dataContainer.getRealEstateData().getDwelling(household1.getDwellingId());
+/*                Dwelling dwelling1 = dataContainer.getRealEstateData().getDwelling(household1.getDwellingId());
                 Dwelling dwelling2 = dataContainer.getRealEstateData().getDwelling(household2.getDwellingId());
                 if (dwelling1.getBedrooms() < dwelling2.getBedrooms()) {
                     moveTo = household2;
-                }
+                }*/
+                moveTo = household1;
             }
         }
 
