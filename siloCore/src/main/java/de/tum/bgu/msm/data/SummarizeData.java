@@ -819,10 +819,10 @@ public class SummarizeData {
                 }
                 pwh.print(hh.getId());
                 pwh.print(",");
-                pwh.print(hh.getDwellingId());
+                pwh.print(hh.getId());
                 pwh.print(",");
                 int zone = -1;
-                Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
+                Dwelling dwelling = realEstateData.getDwelling(hh.getId());
                 if (dwelling != null) {
                     zone = dwelling.getZoneId();
                 }
