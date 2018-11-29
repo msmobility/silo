@@ -93,7 +93,9 @@ public interface Person extends Id {
 
     Coordinate getSchoolLocation();
 
-    int getSchoolZoneId();
+    int getSchoolId();
+
+    void setSchoolId(int schoolId);
 
     void setSchoolCoordinate(Coordinate schoolLocation, int schoolZoneId);
 }

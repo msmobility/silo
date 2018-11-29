@@ -16,6 +16,7 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
@@ -383,18 +384,21 @@ public class SummarizeData {
         String relativePathToPpFile;
         String relativePathToDdFile;
         String relativePathToJjFile;
+        String relativePathToSsFile;
         if (year == Properties.get().main.implementation.BASE_YEAR) {
             //printing out files for the synthetic population at the base year - store as input files
             relativePathToHhFile = Properties.get().householdData.householdFileName;
             relativePathToPpFile = Properties.get().householdData.personFileName;
             relativePathToDdFile = Properties.get().realEstate.dwellingsFileName;
             relativePathToJjFile = Properties.get().jobData.jobsFileName;
+            relativePathToSsFile = Properties.get().schoolData.schoolsFileName;
         } else {
             //printing out files for the synthetic population at any other year - store as output files
             relativePathToHhFile = Properties.get().householdData.householdFinalFileName;
             relativePathToPpFile = Properties.get().householdData.personFinalFileName;
             relativePathToDdFile = Properties.get().realEstate.dwellingsFinalFileName;
             relativePathToJjFile = Properties.get().jobData.jobsFinalFileName;
+            relativePathToSsFile = Properties.get().schoolData.schoolsFinalFileName;
         }
 
         String filehh = Properties.get().main.baseDirectory + relativePathToHhFile + "_" + year + ".csv";
@@ -408,6 +412,61 @@ public class SummarizeData {
 
         String filejj = Properties.get().main.baseDirectory + relativePathToJjFile + "_" + year + ".csv";
         writeJobs(filejj, dataContainer);
+
+        String filess = Properties.get().main.baseDirectory + relativePathToSsFile + "_" + year + ".csv";
+        writeSchools(filess, dataContainer);
+    }
+
+    private static void writeSchools(String filess, SiloDataContainer dataContainer) {
+        PrintWriter pws = SiloUtil.openFileForSequentialWriting(filess, false);
+        pws.print("id,zone,type,capacity,occupancy");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pws.print(",");
+            pws.print("coordX");
+            pws.print(",");
+            pws.print("coordY");
+            pws.print(",");
+            pws.print("startTime");
+            pws.print(",");
+            pws.print("duration");
+        }
+        pws.println();
+        for (School ss : dataContainer.getSchoolData().getSchools()) {
+            pws.print(ss.getId());
+            pws.print(",");
+            pws.print(ss.getZoneId());
+            pws.print(",");
+            pws.print(ss.getType());
+            pws.print(",");
+            pws.print(ss.getCapacity());
+            pws.print(",");
+            pws.print(ss.getOccupancy());
+            if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                try {
+                    Coordinate coordinate = ((MicroLocation) ss).getCoordinate();
+                    pws.print(",");
+                    pws.print(coordinate.x);
+                    pws.print(",");
+                    pws.print(coordinate.y);
+                } catch (Exception e) {
+                    pws.print(",");
+                    pws.print(0);
+                    pws.print(",");
+                    pws.print(0);
+                }
+                pws.print(",");
+                pws.print(ss.getStartTimeInSeconds());
+                pws.print(",");
+                pws.print(ss.getStudyTimeInSeconds());
+            }
+            pws.println();
+//            if (ss.getId() == SiloUtil.trackSs) {
+//                SiloUtil.trackingFile("Writing ss " + ss.getId() + " to micro data file.");
+//                SiloUtil.trackWriter.println(ss.toString());
+//            }
+        }
+        pws.close();
+
     }
 
     private static void writeHouseholds(String filehh, SiloDataContainer dataContainer) {
@@ -461,6 +520,8 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("disability");
             pwp.print(",");
+            pwp.print("schoolId");
+            pwp.print(",");
             pwp.print("schoolCoordX");
             pwp.print(",");
             pwp.print("schoolCoordY");
@@ -506,12 +567,14 @@ public class SummarizeData {
                 pwp.print(pp.getSchoolType());
                 pwp.print(",");
                 try {
-                    pwp.print(pp.getSchoolZoneId());
-                } catch (NullPointerException e) {
+                    pwp.print(pp.getSchoolPlace());
+                } catch (NullPointerException e){
                     pwp.print(0);
                 }
                 pwp.print(",");
                 pwp.print(0);
+                pwp.print(",");
+                pwp.print(pp.getSchoolId());
                 pwp.print(",");
                 try {
                     pwp.print(schoolCoord.x);

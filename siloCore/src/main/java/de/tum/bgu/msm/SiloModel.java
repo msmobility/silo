@@ -175,7 +175,7 @@ public final class SiloModel {
 				microSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
 			}
 			if (properties.eventRules.schoolUniversity) {
-				microSim.registerModel(EducationEvent.class, modelContainer.getChangeSchoolUniv());
+				microSim.registerModel(EducationEvent.class, modelContainer.getEducationUpdate());
 			}
 			if (properties.eventRules.driversLicense) {
 				microSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());

@@ -42,6 +42,7 @@ public final class Properties {
     public final AccessibilityProperties accessibility;
     public final MovesProperties moves;
     public final TrackProperties track;
+    public final SchoolDataProperties schoolData;
     private final String path;
 
     private Properties(String path, Implementation implementation) {
@@ -65,6 +66,7 @@ public final class Properties {
         accessibility = new AccessibilityProperties(bundle, main.startYear);
         moves = new MovesProperties(bundle);
         track = new TrackProperties(bundle);
+        schoolData = new SchoolDataProperties(bundle);
 
 
 
