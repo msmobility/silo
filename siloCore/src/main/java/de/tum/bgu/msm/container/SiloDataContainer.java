@@ -2,6 +2,8 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;

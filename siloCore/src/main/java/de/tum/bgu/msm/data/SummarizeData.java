@@ -413,8 +413,11 @@ public class SummarizeData {
         String filejj = Properties.get().main.baseDirectory + relativePathToJjFile + "_" + year + ".csv";
         writeJobs(filejj, dataContainer);
 
-        String filess = Properties.get().main.baseDirectory + relativePathToSsFile + "_" + year + ".csv";
-        writeSchools(filess, dataContainer);
+        //todo do not print schools if implementation is not Munich (carlos)
+        if(Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            String filess = Properties.get().main.baseDirectory + relativePathToSsFile + "_" + year + ".csv";
+            writeSchools(filess, dataContainer);
+        }
     }
 
     private static void writeSchools(String filess, SiloDataContainer dataContainer) {
