@@ -134,6 +134,6 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     }
 
     private boolean personCanGiveBirth(Person person) {
-        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold())) > 0;
+        return person.getGender() == FEMALE && calculator.calculateBirthProbability(person.getAge(), 0) > 0; //no need to calculate here the exact birth probability, just the possibility of give birth
     }
 }
