@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.models.realEstate.ConstructionLocationJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,6 +21,6 @@ public class ConstructionLocationTest {
 
     @Test
     public void testModel() {
-        Assert.assertEquals(100, calculator.calculateConstructionProbability(DwellingType.SFD, 100, 100), 0.);
+        Assert.assertEquals(100, calculator.calculateConstructionProbability(DefaultDwellingTypeImpl.SFD, 100, 100), 0.);
     }
 }

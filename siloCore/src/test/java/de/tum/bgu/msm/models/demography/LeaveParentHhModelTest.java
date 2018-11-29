@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -30,7 +30,7 @@ public class LeaveParentHhModelTest {
         model = modelContainer.getLph();
 
         Dwelling dd = DwellingUtils.getFactory()
-                .createDwelling(999, 1093, null, -1, DwellingType.SFD, 1, 1, 0, 1, 1999);
+                .createDwelling(999, 1093, null, -1, DefaultDwellingTypeImpl.SFD, 1, 1, 0, 1, 1999);
         dataContainer.getRealEstateData().addDwelling(dd);
 
         household = HouseholdUtil.getFactory().createHousehold(999, 1, 0);

@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.realEstate;
 
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Updates prices of dwellings based on current demand
@@ -30,7 +31,6 @@ public final class PricingModel extends AbstractModel {
     private double slopeMain;
     private double slopeHigh;
     private double maxDelta;
-    private double[] structuralVacancy;
 
 
     public PricingModel (SiloDataContainer dataContainer) {
@@ -50,7 +50,6 @@ public final class PricingModel extends AbstractModel {
         slopeMain = pricingCalculator.getMainSlope();
         slopeHigh = pricingCalculator.getHighSlope();
         maxDelta = pricingCalculator.getMaximumChange();
-        structuralVacancy = Properties.get().realEstate.structuralVacancy;
     }
 
 
@@ -60,16 +59,17 @@ public final class PricingModel extends AbstractModel {
 
         // get vacancy rate
         double[][] vacRate = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
-
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
         HashMap<String, Integer> priceChange = new HashMap<>();
 
-        int[] cnt = new int[DwellingType.values().length];
-        double[] sumOfPrices = new double[DwellingType.values().length];
+        int[] cnt = new int[dwellingTypes.size()];
+        double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
             if (dd.getRestriction() != 0) continue;  // dwelling is under affordable-housing constraints, rent cannot be raised
-            int dto = dd.getType().ordinal();
-            float structuralVacLow = (float) (structuralVacancy[dto] * inflectionLow);
-            float structuralVacHigh = (float) (structuralVacancy[dto] * inflectionHigh);
+            int dto = dwellingTypes.indexOf(dd.getType());
+            float structuralVacancyRate = dd.getType().getStructuralVacancyRate();
+            float structuralVacLow = (float) (structuralVacancyRate * inflectionLow);
+            float structuralVacHigh = (float) (structuralVacancyRate * inflectionHigh);
             int currentPrice = dd.getPrice();
 
             int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
@@ -77,15 +77,15 @@ public final class PricingModel extends AbstractModel {
             if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply
                 changeRate = 1 - structuralVacLow * slopeLow +
-                        (-structuralVacancy[dto] * slopeMain + structuralVacLow * slopeMain) +
+                        (-structuralVacancyRate * slopeMain + structuralVacLow * slopeMain) +
                         slopeLow * vacRate[dto][region];
             } else if (vacRate[dto][region] < structuralVacHigh) {
                 // vacancy is within a normal range, prices change gradually
-                changeRate = 1 - structuralVacancy[dto] * slopeMain + slopeMain * vacRate[dto][region];
+                changeRate = 1 - structuralVacancyRate * slopeMain + slopeMain * vacRate[dto][region];
             } else {
                 // vacancy is very low, prices do not change much anymore
                 changeRate = 1 - structuralVacHigh * slopeHigh +
-                        (-structuralVacancy[dto]*slopeMain + structuralVacHigh * slopeMain) +
+                        (-structuralVacancyRate *slopeMain + structuralVacHigh * slopeMain) +
                         slopeHigh * vacRate[dto][region];
             }
             changeRate = Math.min(changeRate, 1f + maxDelta);
@@ -108,9 +108,9 @@ public final class PricingModel extends AbstractModel {
             }
 
         }
-        double[] averagePrice = new double[DwellingType.values().length];
-        for (DwellingType dt: DwellingType.values()) {
-            int dto = dt.ordinal();
+        double[] averagePrice = new double[dwellingTypes.size()];
+        for (DwellingType dt: dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             averagePrice[dto] = sumOfPrices[dto] / cnt[dto];
         }
         dataContainer.getRealEstateData().setAvePriceByDwellingType(averagePrice);

@@ -5,6 +5,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.job.Job;
@@ -771,15 +772,16 @@ SyntheticPopPerth implements SyntheticPopI {
     private void calculateVacancyRate () {
         //calculate and log vacancy rate
 
-        int[] ddCount = new int[DwellingType.values().length];
-        int[] occCount = new int[DwellingType.values().length];
+        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
+        int[] ddCount = new int[DefaultDwellingTypeImpl.values().length];
+        int[] occCount = new int[DefaultDwellingTypeImpl.values().length];
         for (Dwelling dd: realEstateDataManager.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
-            ddCount[tp.ordinal()]++;
-            if (id > 0) occCount[tp.ordinal()]++;
+            ddCount[dwellingTypes.indexOf(tp)]++;
+            if (id > 0) occCount[dwellingTypes.indexOf(tp)]++;
         }
-        for (DwellingType tp: DwellingType.values()) {
+        for (DefaultDwellingTypeImpl tp: DefaultDwellingTypeImpl.values()) {
             float rate = SiloUtil.rounder(((float) ddCount[tp.ordinal()] - occCount[tp.ordinal()]) * 100 /
                     ((float) ddCount[tp.ordinal()]), 2);
             logger.info("  Vacancy rate for " + tp + ": " + rate + "%");

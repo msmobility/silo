@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -32,7 +32,7 @@ public class BirthModelTest {
         Household household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);
         dataContainer.getHouseholdData().addHousehold(household1);
 
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, -1, null, 1, DwellingType.MF234, 4, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, -1, null, 1, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
         Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);

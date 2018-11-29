@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data.munich;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.*;
@@ -10,6 +11,8 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+
+import java.util.List;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model

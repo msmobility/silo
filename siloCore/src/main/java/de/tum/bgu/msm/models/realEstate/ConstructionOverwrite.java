@@ -2,12 +2,12 @@ package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -76,7 +76,7 @@ public class ConstructionOverwrite extends AbstractModel {
             int quantity = (int) overwrite.getValueAt(row, "quantity");
             data[0] = zone;
             data[1] = -1;
-            for (DwellingType dt: DwellingType.values()) if (dt.toString().equalsIgnoreCase(type)) data[1] = dt.ordinal();
+            for (DwellingType dt: dataContainer.getRealEstateData().getDwellingTypes()) if (dt.toString().equalsIgnoreCase(type)) data[1] = dataContainer.getRealEstateData().getDwellingTypes().indexOf(dt);
             if (data[1] == -1) logger.error("Invalid dwelling type in row " + row + " in file " + fileName + ".");
             data[2] = bedrooms;
             data[3] = quality;
@@ -123,7 +123,7 @@ public class ConstructionOverwrite extends AbstractModel {
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
                 price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, DwellingType.values()[dto], size, quality, price, restriction, year);
+            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateData().getDwellingTypes().get(dto), size, quality, price, restriction, year);
             dataContainer.getRealEstateData().addDwelling(dd);
 
                 if(Properties.get().main.useMicrolocation) {
@@ -132,7 +132,7 @@ public class ConstructionOverwrite extends AbstractModel {
                 }
 
 
-            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," + DwellingType.values()[dto] + "," + size + "," +
+            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateData().getDwellingTypes().get(dto).toString() + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");

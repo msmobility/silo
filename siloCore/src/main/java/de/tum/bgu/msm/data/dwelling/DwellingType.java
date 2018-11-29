@@ -1,31 +1,18 @@
 package de.tum.bgu.msm.data.dwelling;
 
-/**
- * Dwelling types that are distinguished in the model
- * Author: Rolf Moeckel, PB Albuquerque
- * Created on 21 March 2011 in Santa Fe (which is J.S. Bach's 326th birthday)
- **/
-
-public enum DwellingType {
+public interface DwellingType {
 
     /**
-     * single-family house detached
+     * Returns the area needed for one dwelling of this type
+     * @return
      */
-    SFD,
+    float getAreaPerDwelling();
+
     /**
-     * single-family house attached or townhouse
+     * Returns the structural vacancy rate of this type
+     * @return
      */
-    SFA,
-    /**
-     * duplexes and buildings 2-4 units (not including those that fit Attached or Townhouse definition)
-     */
-    MF234,
-    /**
-     * Multi-family houses with 5+ units
-     */
-    MF5plus,
-    /**
-     * mobile home
-     */
-    MH
+    float getStructuralVacancyRate();
+
+
 }

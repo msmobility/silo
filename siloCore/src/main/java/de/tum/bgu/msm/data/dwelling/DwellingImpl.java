@@ -231,10 +231,11 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         return yearConstructionDE;
     }
 
+
     @Override
     public String toString() {
         return "Attributes of dwelling  " + id
-//                +"\nLocated in zone         "+(zone)
+                +"\nLocated in zone         "+ zoneId
                 + "\nLocated at		        " + (coordinate.toString()) // TODO implement toString methods
                 + "\nOccupied by household   " + (hhId)
                 + "\nDwelling type           " + (type.toString())
@@ -244,4 +245,5 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
                 + "\nAffordable housing      " + (restriction)
                 + "\nYear dwelling was built " + (yearBuilt);
     }
+
 }

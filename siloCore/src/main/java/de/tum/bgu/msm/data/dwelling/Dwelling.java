@@ -58,4 +58,5 @@ public interface Dwelling extends Location, Id {
 
     //TODO: use case specific
     int getYearConstructionDE();
+
 }

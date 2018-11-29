@@ -4,12 +4,13 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
@@ -22,6 +23,7 @@ import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Methods to summarize model results
@@ -113,14 +115,21 @@ public class SummarizeData {
     public static void summarizeSpatially(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // write out results by zone
 
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
-        for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++)
+        for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) {
             hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
-        resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        }
+        for (DwellingType dwellingType : dwellingTypes){
+            hd = hd.concat("dd_" + dwellingType.toString());
+        }
+
+        hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        resultFileSpatial(hd);
 
         final int highestZonalId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
-        int[][] dds = new int[DwellingType.values().length + 1][highestZonalId + 1];
+        int[][] dds = new int[dwellingTypes.size()][highestZonalId + 1];
         int[] prices = new int[highestZonalId + 1];
         int[] jobs = new int[highestZonalId + 1];
         int[] hhs = new int[highestZonalId + 1];
@@ -133,7 +142,7 @@ public class SummarizeData {
             hhs[zone]++;
         }
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            dds[dd.getType().ordinal()][dd.getZoneId()]++;
+            dds[dataContainer.getRealEstateData().getDwellingTypes().indexOf(dd.getType())][dd.getZoneId()]++;
             prices[dd.getZoneId()] += dd.getPrice();
         }
         for (Job jj : dataContainer.getJobData().getJobs()) {
@@ -144,8 +153,12 @@ public class SummarizeData {
         for (int taz : dataContainer.getGeoData().getZones().keySet()) {
             float avePrice = -1;
             int ddThisZone = 0;
-            for (DwellingType dt : DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
-            if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
+            for (DwellingType dt : dwellingTypes) {
+                ddThisZone += dds[dwellingTypes.indexOf(dt)][taz];
+            }
+            if (ddThisZone > 0) {
+                avePrice = prices[taz] / ddThisZone;
+            }
             double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
             double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
             double availLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(taz);
@@ -154,7 +167,9 @@ public class SummarizeData {
             String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
             for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++)
                 txt = txt.concat("," + hhInc[inc][taz]);
-            for (DwellingType dt : DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
+            for (DwellingType dt : dwellingTypes){
+                txt = txt.concat("," + dds[dwellingTypes.indexOf(dt)][taz]);
+            }
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
                     // todo: make the summary application specific, Munich does not work with these race categories
                     "0,0,0,0");
@@ -786,8 +801,9 @@ public class SummarizeData {
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
         StringBuilder builder = new StringBuilder();
         builder.append("Zone,");
-        for (DwellingType dwellingType : DwellingType.values()) {
-            builder.append(dwellingType.name()).append(",");
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
+        for (DwellingType dwellingType : dwellingTypes) {
+            builder.append(dwellingType.toString()).append(",");
         }
         builder.append("DevCapacity,DevLandUse");
         pw.println(builder);
@@ -796,7 +812,7 @@ public class SummarizeData {
             builder = new StringBuilder();
             builder.append(zone.getId()).append(",");
             Development development = zone.getDevelopment();
-            for (DwellingType dwellingType : DwellingType.values()) {
+            for (DwellingType dwellingType : dwellingTypes) {
                 builder.append(development.isThisDwellingTypeAllowed(dwellingType)?1:0).append(",");
             }
             builder.append(development.getDwellingCapacity()).append(",").append(development.getDevelopableArea());

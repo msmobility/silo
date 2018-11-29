@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.javascript;
 
-import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.models.realEstate.ConstructionDemandJSCalculator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +21,7 @@ public class ConstructionDemandTest {
 
     @Test
     public void testModelOne() throws ScriptException {
-        Assert.assertEquals(0.00501, calculator.calculateConstructionDemand(0.05, DwellingType.MF234), 0.00001);
+        Assert.assertEquals(0.00501, calculator.calculateConstructionDemand(0.05, DefaultDwellingTypeImpl.MF234), 0.00001);
     }
 }
 

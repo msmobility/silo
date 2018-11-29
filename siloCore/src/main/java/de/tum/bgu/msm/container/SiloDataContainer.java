@@ -5,6 +5,8 @@ import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;
@@ -20,6 +22,10 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier;
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.*;
 
@@ -40,10 +46,14 @@ public class SiloDataContainer {
     private final TravelTimes travelTimes;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {@link SiloDataContainer#loadSiloDataContainer(Properties)}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation) {
+
+        //todo modify when different dwelling types are available
+        List<DwellingType> dwellingTypeList = new ArrayList<>();
+        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
 
         switch (implementation) {
             case MARYLAND:
@@ -61,17 +71,21 @@ public class SiloDataContainer {
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
-        realEstateData = new RealEstateDataManager(this);
+        realEstateData = new RealEstateDataManager(this, dwellingTypeList);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         travelTimes = new SkimTravelTimes();
     }
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {@link SiloDataContainer#loadSiloDataContainer(Properties)}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation, Properties properties) {
+
+        //todo modify when different dwelling types are available
+        List<DwellingType> dwellingTypeList = new ArrayList<>();
+        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
 
         switch (implementation) {
             case MARYLAND:
@@ -85,10 +99,12 @@ public class SiloDataContainer {
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
-        realEstateData = new RealEstateDataManager(this);
+        realEstateData = new RealEstateDataManager(this, dwellingTypeList);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
+
         geoData.readData();
+        realEstateData.readDevelopmentData();
 
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
@@ -106,7 +122,6 @@ public class SiloDataContainer {
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
-        realEstateData.readAcresNeededByDwellingType();
         realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
 
 

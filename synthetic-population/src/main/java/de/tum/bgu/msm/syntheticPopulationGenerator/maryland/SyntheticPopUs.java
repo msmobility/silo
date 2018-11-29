@@ -3,12 +3,12 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -434,7 +434,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // add record to PUMS record storage
 
         if (pumsDdType == 10 || pumsDdType == -999) return;   // skip this record if PUMS dwelling type is 10 (Boat, RV, Van) or -999 (unknown)
-        DwellingType ddType = translateDwellingType(pumsDdType);
+        DefaultDwellingTypeImpl ddType = translateDwellingType(pumsDdType);
         for (int count = 0; count < weight; count++) {
             int newDdId = RealEstateDataManager.getNextDwellingId();
             int newHhId;
@@ -523,7 +523,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private DwellingType translateDwellingType (int pumsDdType) {
+    private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate 10 PUMA into 6 MetCouncil Dwelling Types
 
         // todo: consider keeping more dwelling types for MSTM implementation. Available in PUMS:
@@ -538,12 +538,12 @@ public class SyntheticPopUs implements SyntheticPopI {
 //        V 09 . A building with 50 or more apartments
 //        V 10 . Boat, RV, van, etc.
 
-        DwellingType type;
-        if (pumsDdType == 1) type = DwellingType.MH;
-        else if (pumsDdType == 2) type = DwellingType.SFD;
-        else if (pumsDdType == 3) type = DwellingType.SFA;
-        else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MF234;
-        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DwellingType.MF5plus;
+        DefaultDwellingTypeImpl type;
+        if (pumsDdType == 1) type = DefaultDwellingTypeImpl.MH;
+        else if (pumsDdType == 2) type = DefaultDwellingTypeImpl.SFD;
+        else if (pumsDdType == 3) type = DefaultDwellingTypeImpl.SFA;
+        else if (pumsDdType == 4 || pumsDdType == 5) type = DefaultDwellingTypeImpl.MF234;
+        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DefaultDwellingTypeImpl.MF5plus;
         else {
             logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
@@ -755,15 +755,16 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Adding empty dwellings to match vacancy rate");
 
+        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
         HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
-        int[][][] ddCount = new int [highestZoneId + 1][DwellingType.values().length][2];
+        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypeImpl.values().length][2];
         for (Dwelling dd: realEstateDataManager.getDwellings()) {
             int taz = dd.getZoneId();
             int occ = dd.getResidentId();
-            ddCount[taz][dd.getType().ordinal()][0]++;
-            if (occ > 0) ddCount[taz][dd.getType().ordinal()][1]++;
+            ddCount[taz][dwellingTypes.indexOf(dd.getType())][0]++;
+            if (occ > 0) ddCount[taz][dwellingTypes.indexOf(dd.getType())][1]++;
             // set pointer to this dwelling
             String code = taz + "_" + dd.getType();
             if (ddPointer.containsKey(code)) {
@@ -790,13 +791,13 @@ public class SyntheticPopUs implements SyntheticPopI {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
             }
             int ddInThisTaz = 0;
-            for (DwellingType dt: DwellingType.values()) {
+            for (DwellingType dt: DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
                 if (!ddPointer.containsKey(code)) continue;
                 ddInThisTaz += ddPointer.get(code).size();
             }
             int targetVacantDdThisZone = (int) (ddInThisTaz * vacRateCountyTarget + 0.5);
-            for (DwellingType dt: DwellingType.values()) {
+            for (DefaultDwellingTypeImpl dt: DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
                 if (!ddPointer.containsKey(code)) continue;
                 ArrayList<Integer> dList = ddPointer.get(code);
@@ -880,15 +881,17 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void calculateVacancyRate () {
         //calculate and log vacancy rate
 
-        int[] ddCount = new int[DwellingType.values().length];
-        int[] occCount = new int[DwellingType.values().length];
+        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
+
+        int[] ddCount = new int[dwellingTypes.size()];
+        int[] occCount = new int[DefaultDwellingTypeImpl.values().length];
         for (Dwelling dd: realEstateDataManager.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
-            ddCount[tp.ordinal()]++;
-            if (id > 0) occCount[tp.ordinal()]++;
+            ddCount[dwellingTypes.indexOf(tp)]++;
+            if (id > 0) occCount[dwellingTypes.indexOf(tp)]++;
         }
-        for (DwellingType tp: DwellingType.values()) {
+        for (DefaultDwellingTypeImpl tp: DefaultDwellingTypeImpl.values()) {
             float rate = SiloUtil.rounder(((float) ddCount[tp.ordinal()] - occCount[tp.ordinal()]) * 100 /
                     ((float) ddCount[tp.ordinal()]), 2);
             logger.info("  Vacancy rate for " + tp + ": " + rate + "%");

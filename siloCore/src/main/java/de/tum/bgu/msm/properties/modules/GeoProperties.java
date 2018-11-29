@@ -20,10 +20,14 @@ public final class GeoProperties {
      */
     public final String countyCrimeFile;
 
-
+    /**
+     * Land use development capacity (in acres and/or dwellings). Default is input/development.csv
+     */
     public final String landUseAndDevelopmentFile;
 
-
+    /**
+     * Use dwelling capacity as development capacity (instead of land use area). Default is false
+     */
     public final boolean useCapacityForDwellings;
 
 
@@ -32,12 +36,10 @@ public final class GeoProperties {
         PropertiesUtil.newPropertySubmodule("Geo properties");
         zonalDataFile = PropertiesUtil.getStringProperty(bundle, "zonal.data.file", "input/zoneSystem.csv");
         zoneShapeFile = PropertiesUtil.getStringProperty(bundle, "zones.shapefile", "input/zonesShapefile/zones.shp" );
-
         countyCrimeFile = PropertiesUtil.getStringProperty(bundle, "crime.index", "input/crimeIndex.csv");
 
+        PropertiesUtil.newPropertySubmodule("Development properties");
         landUseAndDevelopmentFile = PropertiesUtil.getStringProperty(bundle, "development.file", "input/development.csv");
-
-        PropertiesUtil.newPropertySubmodule("Geo - growth capacity model?");
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
 
     }

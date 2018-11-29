@@ -92,7 +92,7 @@ public class GenerateVacantDwellings {
                 int quality = selectQualityVacant(municipality, extractYear(buildingYearSize));
                 int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
                 int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, DwellingUsage.VACANT);
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstateDataManager.addDwelling(dwell);
                 dwell.setUsage(DwellingUsage.VACANT);
                 dwell.setFloorSpace(floorSpace);
@@ -206,17 +206,17 @@ public class GenerateVacantDwellings {
 
     private DwellingType extractDwellingType (int buildingYear, float ddType1Prob, float ddType3Prob){
 
-        DwellingType type = DwellingType.SFA;
+        DwellingType type = DefaultDwellingTypeImpl.SFA;
 
         if (buildingYear < 10){
             if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
-                type = DwellingType.SFD;
+                type = DefaultDwellingTypeImpl.SFD;
             } else {
-                type = DwellingType.SFA;
+                type = DefaultDwellingTypeImpl.SFA;
             }
         } else {
             if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
-                type = DwellingType.MF5plus;
+                type = DefaultDwellingTypeImpl.MF5plus;
             }
         }
 
