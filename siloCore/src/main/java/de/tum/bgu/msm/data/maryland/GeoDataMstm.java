@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data.maryland;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -8,6 +9,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.data.AbstractDefaultGeoData;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,22 +30,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
     @Override
     public void readData() {
         super.readData();
-        readSchoolQuality();
         readCrimeData();
-    }
-
-    private void readSchoolQuality() {
-        String sqFileName = Properties.get().main.baseDirectory + Properties.get().geo.zonalSchoolQualityFile;
-        TableDataSet tblSchoolQualityIndex = SiloUtil.readCSVfile(sqFileName);
-        for (int row = 1; row <= tblSchoolQualityIndex.getRowCount(); row++) {
-            int taz = (int) tblSchoolQualityIndex.getValueAt(row, "Zone");
-            float schoolQuality = tblSchoolQualityIndex.getValueAt(row, "SchoolQualityIndex");
-            MstmZone zone = (MstmZone) zones.get(taz);
-            zone.setSchoolQuality(schoolQuality);
-        }
-        for (Region region: regions.values()) {
-            ((MstmRegion) region).calculateRegionalSchoolQuality();
-        }
     }
 
     private void readCrimeData() {
@@ -63,8 +50,8 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
             double regionalCrimeRate = 0.;
             double regionalArea = 0.;
             for(Zone zone: region.getZones()) {
-                regionalCrimeRate += ((MstmZone)zone).getCounty().getCrimeRate() * zone.getArea();
-                regionalArea += zone.getArea();
+                regionalCrimeRate += ((MstmZone)zone).getCounty().getCrimeRate() * zone.getArea_sqmi();
+                regionalArea += zone.getArea_sqmi();
             }
             regionalCrimeRate /= regionalArea;
             ((MstmRegion) region).setCrimeRate(regionalCrimeRate);
@@ -81,6 +68,7 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
         int[] simplifiedPuma = zonalData.getColumnAsInt("simplifiedPUMA");
         int[] countyData = zonalData.getColumnAsInt(COUNTY_COLUMN_NAME);
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+        int[] regionData = zonalData.getColumnAsInt("Region");
 
         for(int i = 0; i < zoneIds.length; i++) {
             County county;
@@ -90,35 +78,30 @@ public class GeoDataMstm extends AbstractDefaultGeoData {
                 county = new County(countyData[i]);
                 counties.put(county.getId(), county);
             }
-            Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county);
+
+            Region region;
+            int regionId = regionData[i];
+            if (regions.containsKey(regionId)) {
+                region = regions.get(regionId);
+            } else {
+                region = new MstmRegion(regionId);
+                regions.put(region.getId(), region);
+            }
+
+            Zone zone = new MstmZone(zoneIds[i], zoneMsa[i], zoneAreas[i], puma[i], simplifiedPuma[i], county, region);
+            region.addZone(zone);
             zones.put(zoneIds[i], zone);
+        }
+
+        zonalData.buildIndex(zonalData.getColumnPosition("ZoneId"));
+        for (Region region: regions.values()) {
+            double schoolQuality = region.getZones().stream().mapToDouble(
+                    zone -> zonalData.getIndexedValueAt(zone.getId(), "SchoolQualityIndex")).average().getAsDouble();
+
+            ((MstmRegion) region).setSchoolQuality(schoolQuality);
         }
     }
 
-    @Override
-    protected void readRegionDefinition() {
-        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
-        TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
-        for (int row = 1; row <= regDef.getRowCount(); row++) {
-            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
-            int regionId = (int) regDef.getValueAt(row, regionColumnName);
-            Zone zone = zones.get(taz);
-            if (zone != null) {
-                Region region;
-                if (regions.containsKey(regionId)) {
-                    region = regions.get(regionId);
-                    region.addZone(zone);
-                } else {
-                    region = new MstmRegion(regionId);
-                    region.addZone(zone);
-                    regions.put(region.getId(), region);
-                }
-                zone.setRegion(region);
-            } else {
-                throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
-            }
-        }
-    }
     /**
      * @deprecated  As of jan'18. Use direct access method of {@link MstmZone} instead
      */

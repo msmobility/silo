@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.data.Location;
 
 public class DwellingFactoryImpl implements DwellingFactory {
 

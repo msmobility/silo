@@ -3,19 +3,18 @@ package de.tum.bgu.msm.models.realEstate;
 import com.pb.common.util.IndexSort;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
@@ -42,7 +41,6 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
-    private ArrayList<Integer[]> plannedDwellings;
     private boolean makeSomeNewDdAffordable;
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
@@ -93,28 +91,29 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
         dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
-        dataContainer.getRealEstateData().calculateRegionWidePriceAndVacancyByDwellingType();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        realEstate.calculateRegionWidePriceAndVacancyByDwellingType();
         LOGGER.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
 
         // calculate demand by region
-        double[][] vacancyByRegion = dataContainer.getRealEstateData().getVacancyRateByTypeAndRegion();
-        double[][] demandByRegion = new double[DwellingType.values().length][geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get() + 1];
+        double[][] vacancyByRegion = realEstate.getVacancyRateByTypeAndRegion();
+
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
+        double[][] demandByRegion = new double[dwellingTypes.size()][geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get() + 1];
         float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
                 demandByRegion[dto][region] = constructionDemandCalculator.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
-        int[][] existingDwellings = dataContainer.getRealEstateData().getDwellingCountByTypeAndRegion();
-        DwellingType[] dtOrder = findOrderOfDwellingTypes(dataContainer);
-        plannedDwellings = new ArrayList<>();
-        for (DwellingType dt : dtOrder) {
-            int dto = dt.ordinal();
-            float acresNeededForOneDwelling = dataContainer.getRealEstateData().getAcresNeededForOneDwelling(dt);
+        int[][] existingDwellings = realEstate.getDwellingCountByTypeAndRegion();
+        DwellingType[] sortedDwellingTypes = findOrderOfDwellingTypes(dataContainer);
+        for (DwellingType dt : sortedDwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
                 int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
                 if (demand == 0) {
@@ -135,11 +134,12 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;
                     for (int zone : zonesInThisRegion) {
-                        boolean useDwellingsAsCapacity = dataContainer.getRealEstateData().useDwellingCapacityForThisZone(zone);
-                        double availableLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(zone);
+                        Development development = dataContainer.getGeoData().getZones().get(zone).getDevelopment();
+                        boolean useDwellingsAsCapacity = development.isUseDwellingCapacity();
+                        double availableLand = realEstate.getAvailableCapacityForConstruction(zone);
                         if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
-                                (!useDwellingsAsCapacity && availableLand < acresNeededForOneDwelling) ||  // not enough land available?
-                                !geoData.isThisDwellingTypeAllowed(dt.toString(), zone)) {                 // construction of this dwelling type allowed in this zone?
+                                (!useDwellingsAsCapacity && availableLand < dt.getAreaPerDwelling()) ||  // not enough land available?
+                                !development.isThisDwellingTypeAllowed(dt)) {                 // construction of this dwelling type allowed in this zone?
                             prob[zone] = 0.;
                         } else {
                             prob[zone] = betaForZoneChoice * availableLand * util[zone];
@@ -151,37 +151,43 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                         prob[zone] = prob[zone] / probSum;
                     }
                     int zone = SiloUtil.select(prob);
-                    Integer[] attributes = new Integer[6];
-                    attributes[0] = zone;
-                    attributes[1] = dto;
-                    attributes[2] = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    attributes[3] = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
-                    attributes[4] = 0;  // set restriction for new dwellings to unrestricted by default
+                    int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
+                    int quality = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
+
+                    // set restriction for new dwellings to unrestricted by default
+                    int restriction = 0;
+
+                    int price;
+
                     if (makeSomeNewDdAffordable) {
-                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd)
-                            attributes[4] = (int) (restrictionForAffordableDd * 100);
+                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
+                            restriction = (int) (restrictionForAffordableDd * 100);
+                        }
                     }
-                    if (attributes[4] == 0) {
+                    if (restriction == 0) {
                         // dwelling is unrestricted, generate free-market price
                         float avePrice = avePriceByTypeAndZone[dto][zone];
                         if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                         if (avePrice == 0)
                             LOGGER.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
-                        attributes[5] = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
+                        price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
                         int msa = geoData.getZones().get(zone).getMsa();
-                        attributes[5] = (int) (Math.abs((attributes[4] / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
+                        price = (int) (Math.abs((restriction / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 
-                    plannedDwellings.add(attributes);
-                    dataContainer.getRealEstateData().convertLand(zone, acresNeededForOneDwelling);
+                    restriction /= 100f;
+
+                    int ddId = realEstate.getNextDwellingId();
+                    Dwelling dd = factory.createDwelling(ddId, zone, null, -1,
+                            dt, size,
+                            quality, price, restriction, currentYear);
+                    events.add(new ConstructionEvent(dd));
+                    realEstate.convertLand(zone, dt.getAreaPerDwelling());
                 }
             }
-        }
-        for (int i = 0; i < plannedDwellings.size(); i++) {
-            events.add(new ConstructionEvent(i));
         }
         return events;
     }
@@ -189,33 +195,21 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     @Override
     public boolean handleEvent(ConstructionEvent event) {
 
-        // realize dwelling project id
-        Integer[] attributes = plannedDwellings.get(event.getDwellingId());
-        int ddId = RealEstateDataManager.getNextDwellingId();
-        int zoneId = attributes[0];
-        int dto = attributes[1];
-        int size = attributes[2];
-        int quality = attributes[3];
-        float restriction = attributes[4] / 100f;
-        int price = attributes[5];
-
-        Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1,
-                DwellingType.values()[dto], size,
-                quality, price, restriction, currentYear);
-        dataContainer.getRealEstateData().addDwelling(dd);
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        Dwelling dd = event.getDwelling();
+        realEstate.addDwelling(dd);
         EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesByHouseholdType(utilities);
 
         if (Properties.get().main.useMicrolocation) {
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
             dd.setCoordinate(coordinate);
         }
 
-        dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
+        realEstate.addDwellingToVacancyList(dd);
 
-        if (ddId == SiloUtil.trackDd) {
-            SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed with these properties: ");
-            SiloUtil.trackWriter.println(dd.toString());
+        if (dd.getId() == SiloUtil.trackDd) {
+            SiloUtil.trackWriter.println("Constructed dwelling: " + dd);
         }
         return true;
     }
@@ -227,17 +221,20 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
 
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
+
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
-        float[][] avePrice = new float[DwellingType.values().length][highestZoneId + 1];
-        int[][] counter = new int[DwellingType.values().length][highestZoneId + 1];
-        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            int dt = dd.getType().ordinal();
+        float[][] avePrice = new float[dwellingTypes.size()][highestZoneId + 1];
+        int[][] counter = new int[dwellingTypes.size()][highestZoneId + 1];
+        for (Dwelling dd : realEstate.getDwellings()) {
+            int dt = dwellingTypes.indexOf(dd.getType());
             int zone = geoData.getZones().get(dd.getZoneId()).getZoneId();
             counter[dt][zone]++;
             avePrice[dt][zone] += dd.getPrice();
         }
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             float[] avePriceThisType = new float[highestZoneId + 1];
             for (int zone : geoData.getZones().keySet()) {
                 if (counter[dto][zone] > 0) {
@@ -256,18 +253,20 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
 
     private float[][] calculateScaledAveragePriceByRegion(float scaler) {
-        // calculate scaled average housing price by dwelling type and region
+
+        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
-        float[][] avePrice = new float[DwellingType.values().length][highestRegionId + 1];
-        int[][] counter = new int[DwellingType.values().length][highestRegionId + 1];
-        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            int dt = dd.getType().ordinal();
+        float[][] avePrice = new float[dwellingTypes.size()][highestRegionId + 1];
+        int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
+        for (Dwelling dd : realEstate.getDwellings()) {
+            int dt =  dwellingTypes.indexOf(dd.getType());
             int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();
         }
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             float[] avePriceThisType = new float[highestRegionId + 1];
             for (int region : geoData.getRegions().keySet()) {
                 if (counter[dto][region] > 0) {
@@ -288,16 +287,17 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     private float[][] calculateAverageSizeByTypeAndByRegion() {
         // calculate average housing size by dwelling type and region
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
-        float[][] aveSize = new float[DwellingType.values().length][highestRegionId + 1];
-        int[][] counter = new int[DwellingType.values().length][highestRegionId + 1];
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
+        float[][] aveSize = new float[dwellingTypes.size()][highestRegionId + 1];
+        int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            int dt = dd.getType().ordinal();
+            int dt = dwellingTypes.indexOf(dd.getType());
             int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
             counter[dt][region]++;
             aveSize[dt][region] += dd.getBedrooms();
         }
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
                 if (counter[dto][region] > 0) {
                     aveSize[dto][region] = aveSize[dto][region] / counter[dto][region];
@@ -307,9 +307,9 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
             }
         }
         // catch if one region should not have a given dwelling type (should almost never happen, but theoretically possible)
-        float[] totalAveSizeByType = new float[DwellingType.values().length];
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        float[] totalAveSizeByType = new float[dwellingTypes.size()];
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             int validRegions = 0;
             for (int region : geoData.getRegions().keySet()) {
                 if (aveSize[dto][region] > 0) {
@@ -319,8 +319,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
             }
             totalAveSizeByType[dto] = totalAveSizeByType[dto] / validRegions;
         }
-        for (DwellingType dt : DwellingType.values()) {
-            int dto = dt.ordinal();
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
                 if (aveSize[dto][region] == 0) aveSize[dto][region] = totalAveSizeByType[dto];
             }
@@ -332,18 +332,21 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     private DwellingType[] findOrderOfDwellingTypes(SiloDataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
-        double[] prices = dataContainer.getRealEstateData().getAveragePriceByDwellingType();
+        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+        double[] prices = realEstateData.getAveragePriceByDwellingType();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
         int[] scaledPrices = new int[prices.length];
         for (int i = 0; i < prices.length; i++) {
-            if (prices[i] * 10000 > Integer.MAX_VALUE)
-                LOGGER.error("Average housing price for " + DwellingType.values()[i] +
+            if (prices[i] * 10000 > Integer.MAX_VALUE) {
+                LOGGER.error("Average housing price for " + dwellingTypes.get(i) +
                         " with " + prices[i] + " is too large to be sorted. Adjust code.");
+            }
             scaledPrices[i] = (int) prices[i] * 10000;
         }
         int[] sortedPrices = IndexSort.indexSort(scaledPrices);
         DwellingType[] sortedDwellingTypes = new DwellingType[prices.length];
         for (int i = 0; i < prices.length; i++) {
-            sortedDwellingTypes[prices.length - i - 1] = DwellingType.values()[sortedPrices[i]];
+            sortedDwellingTypes[prices.length - i - 1] = dwellingTypes.get(sortedPrices[i]);
         }
         return sortedDwellingTypes;
     }

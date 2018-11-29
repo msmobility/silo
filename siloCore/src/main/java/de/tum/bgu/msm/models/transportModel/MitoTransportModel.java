@@ -39,7 +39,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer) {
     	super(dataContainer);
     	this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
-		this.propertiesPath = Objects.requireNonNull(Properties.get().transportModel.mitoPropertiesPath);
+		this.propertiesPath = Objects.requireNonNull(Properties.get().main.baseDirectory + Properties.get().transportModel.mitoPropertiesPath);
 		this.baseDirectory = Objects.requireNonNull(baseDirectory);
 	}
 
@@ -59,7 +59,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	private void updateData(int year) {
     	Map<Integer, MitoZone> zones = new HashMap<>();
 		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
-			MitoZone zone = new MitoZone(siloZone.getZoneId(), siloZone.getArea(), ((MunichZone)siloZone).getAreaType());
+			MitoZone zone = new MitoZone(siloZone.getZoneId(), siloZone.getArea_sqmi(), ((MunichZone)siloZone).getAreaType());
 			zones.put(zone.getId(), zone);
 		}
 		dataContainer.getJobData().fillMitoZoneEmployees(zones);
@@ -108,16 +108,23 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
 			//set mitoHousehold's microlocation
 			if (dwelling instanceof MicroLocation) {
-				household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
+
 			}
             //todo if there are housholds without adults they cannot be processed
 			if (siloHousehold.getPersons().values().stream().filter(p -> p.getAge() >= 18).count() != 0){
-                thhs.put(household.getId(), household);
+				if((((MicroLocation) dwelling).getCoordinate() != null)){
+					//todo if there are households without microlocation mito does not work
+					household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
+					thhs.put(household.getId(), household);
+				} else {
+					logger.info("no microlocation valid for mito - skip household");
+					householdsSkipped++;
+				}
             } else {
                 householdsSkipped++;
             }
 		}
-        logger.warn("There are " + householdsSkipped + " households without adults that CANNOT be processed in MITO (" +
+        logger.warn("There are " + householdsSkipped + " households without adults or with unvalid microlocations that CANNOT be processed in MITO (" +
                 householdsSkipped/dataContainer.getHouseholdData().getHouseholds().size()*100 + "%)");
 		return thhs;
 	}

@@ -175,7 +175,7 @@ public final class SiloModel {
 				microSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
 			}
 			if (properties.eventRules.schoolUniversity) {
-				microSim.registerModel(EducationEvent.class, modelContainer.getChangeSchoolUniv());
+				microSim.registerModel(EducationEvent.class, modelContainer.getEducationUpdate());
 			}
 			if (properties.eventRules.driversLicense) {
 				microSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());
@@ -294,10 +294,11 @@ public final class SiloModel {
             SummarizeData.scaleMicroDataToExogenousForecast(properties.main.endYear, data);
         }
 
-		if (properties.main.endYear != 2040) {
+		if (properties.main.printOutFinalSyntheticPopulation) {
 			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
-			data.getGeoData().writeOutDevelopmentCapacityFile(data);
+			SummarizeData.writeOutDevelopmentFile(data);
 		}
+
 
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data);
 		SiloUtil.finish(modelContainer);

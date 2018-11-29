@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.GeoData;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.data.job.JobType;
@@ -20,6 +19,12 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier;
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.*;
 
@@ -38,57 +43,76 @@ public class SiloDataContainer {
     private final JobDataManager jobData;
     private final GeoData geoData;
     private final TravelTimes travelTimes;
+    private final SchoolDataManager schoolData;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {@link SiloDataContainer#loadSiloDataContainer(Properties)}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation) {
 
+        //todo modify when different dwelling types are available
+        List<DwellingType> dwellingTypeList = new ArrayList<>();
+        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
+
         switch (implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             case MUNICH:
+                schoolData = new SchoolDataManager(this);
                 geoData = new GeoDataMuc();
                 break;
             case PERTH:
                 // todo: this might need to be replace by GeoDataPerth
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             default:
                 LOGGER.error(implementation + " is an invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
-        realEstateData = new RealEstateDataManager(this);
+        realEstateData = new RealEstateDataManager(this, dwellingTypeList);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         travelTimes = new SkimTravelTimes();
+
+
+
     }
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloDataContainer#createSiloDataContainer(Implementation)}}
+     * The contructor is private, with a factory method {@link SiloDataContainer#loadSiloDataContainer(Properties)}
      * being used to encapsulate the object creation.
      */
     private SiloDataContainer(Implementation implementation, Properties properties) {
 
+        //todo modify when different dwelling types are available
+        List<DwellingType> dwellingTypeList = new ArrayList<>();
+        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
+
         switch (implementation) {
             case MARYLAND:
                 geoData = new GeoDataMstm();
+                schoolData = null;
                 break;
             case MUNICH:
                 geoData = new GeoDataMuc();
+                schoolData = new SchoolDataManager(this);
                 break;
             default:
                 LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
         }
 
-        realEstateData = new RealEstateDataManager(this);
+        realEstateData = new RealEstateDataManager(this, dwellingTypeList);
         jobData = new JobDataManager(this);
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
+
         geoData.readData();
+        realEstateData.readDevelopmentData();
 
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
@@ -106,7 +130,6 @@ public class SiloDataContainer {
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
-        realEstateData.readAcresNeededByDwellingType();
         realEstateData.calculateRegionWidePriceAndVacancyByDwellingType();
 
 
@@ -114,6 +137,10 @@ public class SiloDataContainer {
 
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
             ((JobFactoryImpl) JobUtils.getFactory()).readWorkingTimeDistributions(properties);
+            schoolData.setSchoolSearchTree(properties);
+            SchoolReader ssReader = new DefaultSchoolReader(schoolData);
+            String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
+            ssReader.readData(schoolsFile);
         }
         JobReader jjReader = new DefaultJobReader(jobData);
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
@@ -121,11 +148,14 @@ public class SiloDataContainer {
 
         jobData.setHighestJobId();
 
+
+
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
         } else {
             travelTimes = new SkimTravelTimes();
         }
+
     }
 
     /**
@@ -168,5 +198,9 @@ public class SiloDataContainer {
 
     public TravelTimes getTravelTimes() {
         return travelTimes;
+    }
+
+    public SchoolDataManager getSchoolData() {
+        return schoolData;
     }
 }

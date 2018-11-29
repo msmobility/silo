@@ -5,7 +5,10 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
@@ -19,9 +22,6 @@ public class GenerateSchoolMicrolocation {
 
     private final SiloDataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private Map<Integer, Float> schoolX = new HashMap<>();
-    private Map<Integer, Float> schoolY = new HashMap<>();
-    Map<Integer, Integer> schoolZone = new HashMap<>();
     Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
 
 
@@ -32,8 +32,8 @@ public class GenerateSchoolMicrolocation {
 
     public void run() {
         logger.info("   Running module: school microlocation");
-        logger.info("   Start parsing schools information to hashmap");
-        readSchoolFile();
+        logger.info("   Start creating school objects from school location list");
+        createSchools();
         logger.info("   Start Selecting the school to allocate the student");
         //Select the school to allocate the student
         int errorSchool = 0;
@@ -49,19 +49,26 @@ public class GenerateSchoolMicrolocation {
                     continue;
                 }
                 int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
+                School school = dataContainer.getSchoolData().getSchoolFromId(selectedSchoolID);
                 int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
                 zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
-                Coordinate schoolLocation = new Coordinate(schoolX.get(selectedSchoolID), schoolY.get(selectedSchoolID));
-                pp.setSchoolCoordinate(schoolLocation, -1);
+                pp.setSchoolId(school.getId());
+                pp.setSchoolCoordinate(((MicroLocation)school).getCoordinate(), school.getZoneId());
             }
         }
-        logger.warn( errorSchool +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
+
+        for (School ss : dataContainer.getSchoolData().getSchools()){
+            int finalRemainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(ss.getZoneId()).get(ss.getType()).get(ss.getId());
+            ss.setOccupancy(ss.getCapacity()-finalRemainingCapacity);
+        }
+
+        logger.warn( errorSchool +"   Students cannot find specific school location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished school microlocation.");
     }
 
 
 
-    private void readSchoolFile() {
+    private void createSchools() {
 
         for (int zone : dataSetSynPop.getTazs()){
             Map<Integer,Map<Integer,Integer>> schoolLocationListForThisSchoolType = new HashMap<>();
@@ -71,7 +78,9 @@ public class GenerateSchoolMicrolocation {
             }
             zoneSchoolTypeSchoolLocationCapacity.put(zone,schoolLocationListForThisSchoolType);
         }
-        
+
+        SchoolDataManager schoolDataManager = dataContainer.getSchoolData();
+
         for (int row = 1; row <= PropertiesSynPop.get().main.schoolLocationlist.getRowCount(); row++) {
 
             int id = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"OBJECTID");
@@ -81,9 +90,8 @@ public class GenerateSchoolMicrolocation {
             int schoolCapacity = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"schoolCapacity");
             int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"schoolType");
 
-            schoolZone.put(id,zone);
-            schoolX.put(id,xCoordinate);
-            schoolY.put(id,yCoordinate);
+            Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
+            schoolDataManager.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
 
             if (zoneSchoolTypeSchoolLocationCapacity.get(zone) != null){
                 zoneSchoolTypeSchoolLocationCapacity.get(zone).get(schoolType).put(id,schoolCapacity);

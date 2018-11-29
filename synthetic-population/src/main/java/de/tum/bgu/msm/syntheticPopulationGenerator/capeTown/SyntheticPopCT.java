@@ -1678,7 +1678,7 @@ public class SyntheticPopCT implements SyntheticPopI {
             float ddType3Prob = marginalsMunicipality.getIndexedValueAt(municipality, "dwelling37");
             DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);*/
             String ddtype = dwellings.getStringValueAt(i,"type");
-            DwellingType type = guessDwellingType(ddtype);
+            DefaultDwellingTypeImpl type = guessDwellingType(ddtype);
             int size = (int) dwellings.getValueAt(i,"floor");
             int bedrooms = guessBedrooms(size);
             int quality = (int)dwellings.getValueAt(i,"quality");
@@ -1969,7 +1969,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int heatingEnergy = (int) microDataDwelling.getIndexedValueAt(hhIdMD, "dwellingHeatingEnergy");
                 int heatingAdditional = (int) microDataDwelling.getIndexedValueAt(hhIdMD, "dwellingAdHeating");
                 int quality = guessQualityDE(heatingType, heatingEnergy, heatingAdditional, year, numberofQualityLevels); //depend on year built and type of heating
-                DwellingType type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);
+                DefaultDwellingTypeImpl type = guessDwellingType(buildingSize, ddType1Prob, ddType3Prob);
                 int yearVacant = 0;
                 while (year > yearBracketsDwelling[yearVacant]) {yearVacant++;}
                 int key = municipality + yearBracketsDwelling[yearVacant] * 1000;
@@ -2076,7 +2076,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int quality = select(ddQuality.get(key)) + 1; //Based on the distribution of qualities at the municipality for that construction period
                 int year = selectVacantDwellingYear(buildingSizeAndYearBuilt[1]);
                 int floorSpaceDwelling = selectFloorSpace(vacantFloor, sizeBracketsDwelling);
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, zone, null, -1, DwellingType.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, zone, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstate.addDwelling(dwell);
                 dwell.setUsage(DwellingUsage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
@@ -2320,20 +2320,20 @@ public class SyntheticPopCT implements SyntheticPopI {
         return quality;
     }
 
-    private static DwellingType guessDwellingType(int buildingSize, float ddType1Prob, float ddType3Prob){
+    private static DefaultDwellingTypeImpl guessDwellingType(int buildingSize, float ddType1Prob, float ddType3Prob){
         //Guess dwelling type based on the number of dwellings in the building from micro data (buildingSize, from micro data)
         //and the probability of having 1 dwelling out of having 1 or 2 (distribution in the municipality, from census)
         //and the probability of having 3-6 dwellings out of having 3-3+ (distribution in the municipality, from census)
-        DwellingType type = DwellingType.MF234;
+        DefaultDwellingTypeImpl type = DefaultDwellingTypeImpl.MF234;
         if (buildingSize < 3){
             if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
-                type = DwellingType.SFD;
+                type = DefaultDwellingTypeImpl.SFD;
             } else {
-                type = DwellingType.SFA;
+                type = DefaultDwellingTypeImpl.SFA;
             }
         } else {
             if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
-                type = DwellingType.MF5plus;
+                type = DefaultDwellingTypeImpl.MF5plus;
             }
         }
 
@@ -2341,19 +2341,19 @@ public class SyntheticPopCT implements SyntheticPopI {
     }
 
 
-    private static DwellingType guessDwellingType(String ddType){
+    private static DefaultDwellingTypeImpl guessDwellingType(String ddType){
         //Guess dwelling type based on the number of dwellings in the building from micro data (buildingSize, from micro data)
         //and the probability of having 1 dwelling out of having 1 or 2 (distribution in the municipality, from census)
         //and the probability of having 3-6 dwellings out of having 3-3+ (distribution in the municipality, from census)
-        DwellingType type = DwellingType.MF234;
+        DefaultDwellingTypeImpl type = DefaultDwellingTypeImpl.MF234;
         if (ddType == "MF234"){
 
         } else if (ddType.equals("MF5plus")){
-            type = DwellingType.MF5plus;
+            type = DefaultDwellingTypeImpl.MF5plus;
         } else if (ddType.equals("SFD")) {
-            type = DwellingType.SFD;
+            type = DefaultDwellingTypeImpl.SFD;
         } else if (ddType.equals("SFA")) {
-            type = DwellingType.SFA;
+            type = DefaultDwellingTypeImpl.SFA;
         }
         return type;
     }

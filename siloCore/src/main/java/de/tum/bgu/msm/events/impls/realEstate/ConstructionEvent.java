@@ -1,15 +1,16 @@
 package de.tum.bgu.msm.events.impls.realEstate;
 
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.events.MicroEvent;
 
 public class ConstructionEvent implements MicroEvent {
-    private final int id;
+    private final Dwelling dd;
 
-    public ConstructionEvent(int id) {
-        this.id = id;
+    public ConstructionEvent(Dwelling dd) {
+        this.dd = dd;
     }
 
-    public int getDwellingId() {
-        return this.id;
+    public Dwelling getDwelling() {
+        return this.dd;
     }
 }

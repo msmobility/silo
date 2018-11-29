@@ -23,7 +23,7 @@ public class DefaultPersonReader implements PersonReader{
     }
 
     @Override
-    public void readData(String path) {    
+    public void readData(String path) {
         logger.info("Reading person micro data from ascii file");
 
         PersonFactory ppFactory = PersonUtils.getFactory();

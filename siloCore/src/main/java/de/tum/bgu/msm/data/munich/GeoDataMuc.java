@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data.munich;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.*;
@@ -10,6 +11,8 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+
+import java.util.List;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
@@ -37,40 +40,27 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         double[] centroidY = zonalData.getColumnAsDouble("centroidY");
         double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
 
-        int[] areaTypes = zonalData.getColumnAsInt("BBSR");
+        int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
+
+        int[] regionColumn = zonalData.getColumnAsInt("Region");
 
         for(int i = 0; i < zoneIds.length; i++) {
             Coord centroid = new Coord(centroidX[i], centroidY[i]);
             AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
-            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i]);
+            Region region;
+            int regionId = regionColumn[i];
+            if (regions.containsKey(regionId)) {
+                region = regions.get(regionId);
+            } else {
+                region = new RegionImpl(regionId);
+                regions.put(region.getId(), region);
+            }
+            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i], region);
+            region.addZone(zone);
             zones.put(zoneIds[i], zone);
         }
     }
 
-    @Override
-    protected void readRegionDefinition() {
-        String regFileName = Properties.get().main.baseDirectory + Properties.get().geo.regionDefinitionFile;
-        TableDataSet regDef = SiloUtil.readCSVfile(regFileName);
-        for (int row = 1; row <= regDef.getRowCount(); row++) {
-            int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
-            int regionId = (int) regDef.getValueAt(row, regionColumnName);
-            Zone zone = zones.get(taz);
-            if (zone != null) {
-                Region region;
-                if (regions.containsKey(regionId)) {
-                    region = regions.get(regionId);
-                    region.addZone(zone);
-                } else {
-                    region = new RegionImpl(regionId);
-                    region.addZone(zone);
-                    regions.put(region.getId(), region);
-                }
-                zone.setRegion(region);
-            } else {
-                throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
-            }
-        }
-    }
 
     @Override
     public void readData() {

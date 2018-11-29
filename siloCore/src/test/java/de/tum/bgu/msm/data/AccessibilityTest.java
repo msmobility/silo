@@ -70,9 +70,9 @@ public class AccessibilityTest {
         Region region1 = new RegionImpl(1);
         Region region2 = new RegionImpl(2);
         List<Region> regions = Arrays.asList(region1, region2);
-        Zone zone1 = new ZoneImpl(1, 1, 1);
-        Zone zone2 = new ZoneImpl(2, 1, 1);
-        Zone zone3 = new ZoneImpl(3, 1 ,1);
+        Zone zone1 = new ZoneImpl(1, 1, 1, region1);
+        Zone zone2 = new ZoneImpl(2, 1, 1, region1);
+        Zone zone3 = new ZoneImpl(3, 1 ,1, region2);
         region1.addZone(zone1);
         region1.addZone(zone2);
         region2.addZone(zone3);

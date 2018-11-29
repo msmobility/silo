@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -40,7 +40,7 @@ public class MarriageModelTest {
         couple1 = new int[]{1,2};
         Household household1 = HouseholdUtil.getFactory().createHousehold(1,  1, 0);
         dataContainer.getHouseholdData().addHousehold(household1);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, 999, null, 1, DwellingType.MF234, 2, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, 999, null, 1, DefaultDwellingTypeImpl.MF234, 2, 1, 1000, -1, 2000));
         Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
@@ -48,7 +48,7 @@ public class MarriageModelTest {
 
         Household household2 = HouseholdUtil.getFactory().createHousehold(2, 2, 0);
         dataContainer.getHouseholdData().addHousehold(household2);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(2, 999, null, 2, DwellingType.SFD, 4, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(2, 999, null, 2, DefaultDwellingTypeImpl.SFD, 4, 1, 1000, -1, 2000));
         Person person2 = PersonUtils.getFactory().createPerson(2, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person2);
         dataContainer.getHouseholdData().addPersonToHousehold(person2, household2);
@@ -57,7 +57,7 @@ public class MarriageModelTest {
         couple2 = new int[]{3,4};
         Household household3 = HouseholdUtil.getFactory().createHousehold(3, 3,  0);
         dataContainer.getHouseholdData().addHousehold(household3);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(3, 999, null, 3, DwellingType.MF234, 4, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(3, 999, null, 3, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
         Person person3 = PersonUtils.getFactory().createPerson(3, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person3);
         dataContainer.getHouseholdData().addPersonToHousehold(person3, household3);
@@ -65,7 +65,7 @@ public class MarriageModelTest {
 
         Household household4 = HouseholdUtil.getFactory().createHousehold(4, 4,  0);
         dataContainer.getHouseholdData().addHousehold(household4);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(4, 999, null, 4, DwellingType.SFD, 2, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(4, 999, null, 4, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
         Person person4 = PersonUtils.getFactory().createPerson(4, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person4);
         dataContainer.getHouseholdData().addPersonToHousehold(person4, household4);
@@ -74,7 +74,7 @@ public class MarriageModelTest {
         couple3 = new int[]{5,6};
         Household household5 = HouseholdUtil.getFactory().createHousehold(5, 5,  0);
         dataContainer.getHouseholdData().addHousehold(household5);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(5, 999, null, 5, DwellingType.MF234, 4, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(5, 999, null, 5, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
         Person person5 = PersonUtils.getFactory().createPerson(5, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person5);
         dataContainer.getHouseholdData().addPersonToHousehold(person5, household5);
@@ -82,7 +82,7 @@ public class MarriageModelTest {
 
         Household household6 = HouseholdUtil.getFactory().createHousehold(6, 6,  0);
         dataContainer.getHouseholdData().addHousehold(household6);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(6, 999, null, 6, DwellingType.SFD, 2, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(6, 999, null, 6, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
         Person person6 = PersonUtils.getFactory().createPerson(6, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person6);
         person6.setRole(PersonRole.SINGLE);
@@ -95,7 +95,7 @@ public class MarriageModelTest {
         couple4 = new int[]{7,8};
         Household household7 = HouseholdUtil.getFactory().createHousehold(7, 7,  0);
         dataContainer.getHouseholdData().addHousehold(household7);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(7, 999, null, 7, DwellingType.MF234, 4, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(7, 999, null, 7, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
         Person person7 = PersonUtils.getFactory().createPerson(7, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person7);
         dataContainer.getHouseholdData().addPersonToHousehold(person7, household7);
@@ -116,7 +116,7 @@ public class MarriageModelTest {
 
         Household household8 = HouseholdUtil.getFactory().createHousehold(8, 8,  0);
         dataContainer.getHouseholdData().addHousehold(household8);
-        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(8, 999, null, 8, DwellingType.SFD, 2, 1, 1000, -1, 2000));
+        dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(8, 999, null, 8, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
         Person person8 = PersonUtils.getFactory().createPerson(8, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
         dataContainer.getHouseholdData().addPerson(person8);
         dataContainer.getHouseholdData().addPersonToHousehold(person8, household8);

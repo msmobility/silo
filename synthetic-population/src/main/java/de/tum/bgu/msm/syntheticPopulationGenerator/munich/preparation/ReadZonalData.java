@@ -4,8 +4,9 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import omx.OmxFile;
@@ -140,10 +141,10 @@ public class ReadZonalData {
                 probabilityZone.put(city, probabilities);
             }
             Map<DwellingType, Integer> prices = new HashMap<>();
-            prices.put(DwellingType.SFA, priceSFA);
-            prices.put(DwellingType.SFD, priceSFD);
-            prices.put(DwellingType.MF234, priceMF234);
-            prices.put(DwellingType.MF5plus, priceMF5plus);
+            prices.put(DefaultDwellingTypeImpl.SFA, priceSFA);
+            prices.put(DefaultDwellingTypeImpl.SFD, priceSFD);
+            prices.put(DefaultDwellingTypeImpl.MF234, priceMF234);
+            prices.put(DefaultDwellingTypeImpl.MF5plus, priceMF5plus);
             dwellingPriceByTypeAndZone.put(taz,prices);
             schoolCapacity.put(taz,1,capacityPrimary);
             schoolCapacity.put(taz, 2, capacitySecondary);

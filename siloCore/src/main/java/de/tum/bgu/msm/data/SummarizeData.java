@@ -4,17 +4,19 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
@@ -22,7 +24,7 @@ import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.ResourceBundle;
+import java.util.List;
 
 /**
  * Methods to summarize model results
@@ -32,6 +34,7 @@ import java.util.ResourceBundle;
 
 
 public class SummarizeData {
+    private static final String DEVELOPMENT_FILE = "development"; ;
     static Logger logger = Logger.getLogger(SummarizeData.class);
 
 
@@ -113,14 +116,21 @@ public class SummarizeData {
     public static void summarizeSpatially(int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
         // write out results by zone
 
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
-        for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++)
+        for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) {
             hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
-        resultFileSpatial(hd + ",dd_SFD,dd_SFA,dd_MF234,dd_MF5plus,dd_MH,availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        }
+        for (DwellingType dwellingType : dwellingTypes){
+            hd = hd.concat("dd_" + dwellingType.toString());
+        }
+
+        hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        resultFileSpatial(hd);
 
         final int highestZonalId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
-        int[][] dds = new int[DwellingType.values().length + 1][highestZonalId + 1];
+        int[][] dds = new int[dwellingTypes.size()][highestZonalId + 1];
         int[] prices = new int[highestZonalId + 1];
         int[] jobs = new int[highestZonalId + 1];
         int[] hhs = new int[highestZonalId + 1];
@@ -133,7 +143,7 @@ public class SummarizeData {
             hhs[zone]++;
         }
         for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            dds[dd.getType().ordinal()][dd.getZoneId()]++;
+            dds[dataContainer.getRealEstateData().getDwellingTypes().indexOf(dd.getType())][dd.getZoneId()]++;
             prices[dd.getZoneId()] += dd.getPrice();
         }
         for (Job jj : dataContainer.getJobData().getJobs()) {
@@ -144,17 +154,23 @@ public class SummarizeData {
         for (int taz : dataContainer.getGeoData().getZones().keySet()) {
             float avePrice = -1;
             int ddThisZone = 0;
-            for (DwellingType dt : DwellingType.values()) ddThisZone += dds[dt.ordinal()][taz];
-            if (ddThisZone > 0) avePrice = prices[taz] / ddThisZone;
+            for (DwellingType dt : dwellingTypes) {
+                ddThisZone += dds[dwellingTypes.indexOf(dt)][taz];
+            }
+            if (ddThisZone > 0) {
+                avePrice = prices[taz] / ddThisZone;
+            }
             double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
             double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
-            double availLand = dataContainer.getRealEstateData().getAvailableLandForConstruction(taz);
+            double availLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
             String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
             for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++)
                 txt = txt.concat("," + hhInc[inc][taz]);
-            for (DwellingType dt : DwellingType.values()) txt = txt.concat("," + dds[dt.ordinal()][taz]);
+            for (DwellingType dt : dwellingTypes){
+                txt = txt.concat("," + dds[dwellingTypes.indexOf(dt)][taz]);
+            }
             txt = txt.concat("," + availLand + "," + avePrice + "," + jobs[taz] + "," +
                     // todo: make the summary application specific, Munich does not work with these race categories
                     "0,0,0,0");
@@ -368,18 +384,21 @@ public class SummarizeData {
         String relativePathToPpFile;
         String relativePathToDdFile;
         String relativePathToJjFile;
+        String relativePathToSsFile;
         if (year == Properties.get().main.implementation.BASE_YEAR) {
             //printing out files for the synthetic population at the base year - store as input files
             relativePathToHhFile = Properties.get().householdData.householdFileName;
             relativePathToPpFile = Properties.get().householdData.personFileName;
             relativePathToDdFile = Properties.get().realEstate.dwellingsFileName;
             relativePathToJjFile = Properties.get().jobData.jobsFileName;
+            relativePathToSsFile = Properties.get().schoolData.schoolsFileName;
         } else {
             //printing out files for the synthetic population at any other year - store as output files
             relativePathToHhFile = Properties.get().householdData.householdFinalFileName;
             relativePathToPpFile = Properties.get().householdData.personFinalFileName;
             relativePathToDdFile = Properties.get().realEstate.dwellingsFinalFileName;
             relativePathToJjFile = Properties.get().jobData.jobsFinalFileName;
+            relativePathToSsFile = Properties.get().schoolData.schoolsFinalFileName;
         }
 
         String filehh = Properties.get().main.baseDirectory + relativePathToHhFile + "_" + year + ".csv";
@@ -393,6 +412,64 @@ public class SummarizeData {
 
         String filejj = Properties.get().main.baseDirectory + relativePathToJjFile + "_" + year + ".csv";
         writeJobs(filejj, dataContainer);
+
+        //todo do not print schools if implementation is not Munich (carlos)
+        if(Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            String filess = Properties.get().main.baseDirectory + relativePathToSsFile + "_" + year + ".csv";
+            writeSchools(filess, dataContainer);
+        }
+    }
+
+    private static void writeSchools(String filess, SiloDataContainer dataContainer) {
+        PrintWriter pws = SiloUtil.openFileForSequentialWriting(filess, false);
+        pws.print("id,zone,type,capacity,occupancy");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pws.print(",");
+            pws.print("coordX");
+            pws.print(",");
+            pws.print("coordY");
+            pws.print(",");
+            pws.print("startTime");
+            pws.print(",");
+            pws.print("duration");
+        }
+        pws.println();
+        for (School ss : dataContainer.getSchoolData().getSchools()) {
+            pws.print(ss.getId());
+            pws.print(",");
+            pws.print(ss.getZoneId());
+            pws.print(",");
+            pws.print(ss.getType());
+            pws.print(",");
+            pws.print(ss.getCapacity());
+            pws.print(",");
+            pws.print(ss.getOccupancy());
+            if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                try {
+                    Coordinate coordinate = ((MicroLocation) ss).getCoordinate();
+                    pws.print(",");
+                    pws.print(coordinate.x);
+                    pws.print(",");
+                    pws.print(coordinate.y);
+                } catch (Exception e) {
+                    pws.print(",");
+                    pws.print(0);
+                    pws.print(",");
+                    pws.print(0);
+                }
+                pws.print(",");
+                pws.print(ss.getStartTimeInSeconds());
+                pws.print(",");
+                pws.print(ss.getStudyTimeInSeconds());
+            }
+            pws.println();
+//            if (ss.getId() == SiloUtil.trackSs) {
+//                SiloUtil.trackingFile("Writing ss " + ss.getId() + " to micro data file.");
+//                SiloUtil.trackWriter.println(ss.toString());
+//            }
+        }
+        pws.close();
+
     }
 
     private static void writeHouseholds(String filehh, SiloDataContainer dataContainer) {
@@ -446,6 +523,8 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("disability");
             pwp.print(",");
+            pwp.print("schoolId");
+            pwp.print(",");
             pwp.print("schoolCoordX");
             pwp.print(",");
             pwp.print("schoolCoordY");
@@ -491,12 +570,14 @@ public class SummarizeData {
                 pwp.print(pp.getSchoolType());
                 pwp.print(",");
                 try {
-                    pwp.print(pp.getSchoolZoneId());
-                } catch (NullPointerException e) {
+                    pwp.print(pp.getSchoolPlace());
+                } catch (NullPointerException e){
                     pwp.print(0);
                 }
                 pwp.print(",");
                 pwp.print(0);
+                pwp.print(",");
+                pwp.print(pp.getSchoolId());
                 pwp.print(",");
                 try {
                     pwp.print(schoolCoord.x);
@@ -770,5 +851,40 @@ public class SummarizeData {
         pw.close();
 
         logger.info("Summarized initial auto ownership");
+    }
+
+    public static void writeOutDevelopmentFile(SiloDataContainer dataContainer) {
+        // write out development capacity file to allow model run to be continued from this point later
+
+
+        String baseDirectory = Properties.get().main.baseDirectory;
+        String scenarioName = Properties.get().main.scenarioName;
+        int endYear = Properties.get().main.endYear;
+
+        String capacityFileName = baseDirectory + "scenOutput/" + scenarioName + "/" +
+                DEVELOPMENT_FILE + "_" + endYear + ".csv";
+
+        PrintWriter pw = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Zone,");
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateData().getDwellingTypes();
+        for (DwellingType dwellingType : dwellingTypes) {
+            builder.append(dwellingType.toString()).append(",");
+        }
+        builder.append("DevCapacity,DevLandUse");
+        pw.println(builder);
+
+        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+            builder = new StringBuilder();
+            builder.append(zone.getId()).append(",");
+            Development development = zone.getDevelopment();
+            for (DwellingType dwellingType : dwellingTypes) {
+                builder.append(development.isThisDwellingTypeAllowed(dwellingType)?1:0).append(",");
+            }
+            builder.append(development.getDwellingCapacity()).append(",").append(development.getDevelopableArea());
+            pw.println(builder);
+        }
+        pw.close();
+
     }
 }

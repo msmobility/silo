@@ -8,11 +8,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUsage;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -903,7 +899,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (int i = 1; i <= dwellings.getRowCount(); i++){
             Dwelling dd = DwellingUtils.getFactory().createDwelling((int)dwellings.getValueAt(i,"id"),
                     (int) dwellings.getValueAt(i,"zone"),null,
-                    (int)dwellings.getValueAt(i,"hhID"), DwellingType.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
+                    (int)dwellings.getValueAt(i,"hhID"), DefaultDwellingTypeImpl.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
                     (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),
                     (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
             realEstate.addDwelling(dd);
@@ -1194,7 +1190,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                     int floorSpace = select(sizeDistribution, sizeBracketsDwelling)[0];
                     int usage = (int) microDwellings.getIndexedValueAt(selectedHh, "H_");
                     int buildingSize = (int) microDwellings.getIndexedValueAt(selectedHh, "ddT_");
-                    DwellingType ddType = translateDwellingType(buildingSize);
+                    DefaultDwellingTypeImpl ddType = translateDwellingType(buildingSize);
                     int quality = guessQualityJP(year,numberofQualityLevels); //depend on year built and type of heating
                     year = selectDwellingYear(year); //convert from year class to actual 4-digit year
                     float averageSqmPrice = averagePriceDistribution[buildingSize - 1];
@@ -1270,7 +1266,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 int year = ddToCopy.getYearBuilt();
                 DwellingType type = ddToCopy.getType(); //using always type MF234
                 int floorSpaceDwelling = ddToCopy.getFloorSpace();
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, DwellingType.MF234, bedRooms, quality, price, 0, year);
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, 0, year);
                 dwell.setUsage(DwellingUsage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
                 vacantCounter++;
@@ -1287,7 +1283,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
 
-    private DwellingType translateDwellingType (int pumsDdType) {
+    private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate micro census dwelling types into 6 MetCouncil Dwelling Types
 
         // Available in MICRO CENSUS:
@@ -1301,14 +1297,14 @@ public class SyntheticPopJP implements SyntheticPopI {
 //        V -5 . Moved in the last 12 months
 
 
-        DwellingType type;
-        if (pumsDdType == 2) type = DwellingType.MF234; //duplexes and buildings 2-4 units
-        else if (pumsDdType == 1) type = DwellingType.SFD; //single-family house detached
+        DefaultDwellingTypeImpl type;
+        if (pumsDdType == 2) type = DefaultDwellingTypeImpl.MF234; //duplexes and buildings 2-4 units
+        else if (pumsDdType == 1) type = DefaultDwellingTypeImpl.SFD; //single-family house detached
             //else if (pumsDdType == 3) type = DwellingType.SFA;//single-family house attached or townhouse
             //else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MH; //mobile home
-        else if (pumsDdType >= 3 ) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that not stated are 5+units
-        else if (pumsDdType == 0) type = DwellingType.MF5plus; //multifamily houses with 5+ units. Assumes that group quarters are 5+ units
-        else if (pumsDdType == -5) type = DwellingType.MH; //mobile home; //mobile home. Assumes that group quarters are 5+ units
+        else if (pumsDdType >= 3 ) type = DefaultDwellingTypeImpl.MF5plus; //multifamily houses with 5+ units. Assumes that not stated are 5+units
+        else if (pumsDdType == 0) type = DefaultDwellingTypeImpl.MF5plus; //multifamily houses with 5+ units. Assumes that group quarters are 5+ units
+        else if (pumsDdType == -5) type = DefaultDwellingTypeImpl.MH; //mobile home; //mobile home. Assumes that group quarters are 5+ units
         else {
             //logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;

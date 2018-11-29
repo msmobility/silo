@@ -16,9 +16,9 @@ import java.util.List;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventModel<EducationEvent> {
+public class MstmEducationModelImpl extends AbstractModel implements EducationModel {
 
-    public ChangeSchoolUnivModel(SiloDataContainer dataContainer) {
+    public MstmEducationModelImpl(SiloDataContainer dataContainer) {
         super(dataContainer);
     }
 
@@ -58,4 +58,6 @@ public class ChangeSchoolUnivModel extends AbstractModel implements MicroEventMo
         }
         return true;
     }
+
+
 }

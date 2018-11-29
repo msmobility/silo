@@ -2,12 +2,9 @@ package de.tum.bgu.msm.io;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingFactory;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
@@ -61,7 +58,7 @@ public class DefaultDwellingReader implements DwellingReader {
                 int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
-                DwellingType type = DwellingType.valueOf(tp);
+                DwellingType type = DefaultDwellingTypeImpl.valueOf(tp);
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);

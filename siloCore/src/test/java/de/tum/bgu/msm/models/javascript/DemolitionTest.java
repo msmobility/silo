@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.models.realEstate.DemolitionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
@@ -32,9 +32,9 @@ public class DemolitionTest {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader);
         SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
-        dwelling1 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DwellingType.SFD, 1,1,1,1,1);
+        dwelling1 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DefaultDwellingTypeImpl.SFD, 1,1,1,1,1);
         dataContainer.getRealEstateData().addDwelling(dwelling1);
-        dwelling2 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DwellingType.SFD, 1,5,1,1,5);
+        dwelling2 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DefaultDwellingTypeImpl.SFD, 1,5,1,1,5);
         dataContainer.getRealEstateData().addDwelling(dwelling2);
 
     }

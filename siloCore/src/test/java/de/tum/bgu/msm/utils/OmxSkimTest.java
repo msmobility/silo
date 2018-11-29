@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.utils;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -24,10 +25,6 @@ public class OmxSkimTest {
     public void init() {
         SiloUtil.loadHdf5Lib();
         mockZone = new Zone() {
-            @Override
-            public void setRegion(Region region) {
-
-            }
 
             @Override
             public Region getRegion() {
@@ -40,7 +37,7 @@ public class OmxSkimTest {
             }
 
             @Override
-            public float getArea() {
+            public float getArea_sqmi() {
                 return 0;
             }
 
@@ -57,6 +54,16 @@ public class OmxSkimTest {
             @Override
             public Coordinate getRandomCoordinate() {
                 return null;
+            }
+
+            @Override
+            public Development getDevelopment() {
+                return null;
+            }
+
+            @Override
+            public void setDevelopment(Development development) {
+
             }
 
             @Override
