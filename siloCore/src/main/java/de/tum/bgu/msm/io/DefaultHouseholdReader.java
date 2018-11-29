@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DefaultHouseholdReader implements HouseholdReader {
 
@@ -61,5 +63,18 @@ public class DefaultHouseholdReader implements HouseholdReader {
         }
         logger.info("Finished reading " + recCount + " households.");
 
+    }
+
+    @Override
+    public void copyData(Map<Integer, Household> householdsToCopy){
+        HouseholdFactory factory = HouseholdUtil.getFactory();
+        int recCount = 0;
+        for (Household hhToCopy : householdsToCopy.values()){
+            recCount++;
+            int id = hhToCopy.getId();
+            Household hh = factory.createHousehold(id, -1, 0);  // this automatically puts it in id->household map in Household class
+            householdData.addHousehold(hh);
+        }
+        logger.info("Finished copying " + recCount + " households.");
     }
 }

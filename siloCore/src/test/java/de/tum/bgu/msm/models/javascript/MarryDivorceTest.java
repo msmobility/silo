@@ -39,7 +39,7 @@ public class MarryDivorceTest {
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         calculator = new MarryDivorceJSCalculator(reader, SCALE);
-        this.dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        this.dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get(), null, null);
     }
 
     @Before

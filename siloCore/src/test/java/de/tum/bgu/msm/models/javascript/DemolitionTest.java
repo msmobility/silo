@@ -31,7 +31,7 @@ public class DemolitionTest {
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader);
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get(), null, null);
         dwelling1 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DwellingType.SFD, 1,1,1,1,1);
         dataContainer.getRealEstateData().addDwelling(dwelling1);
         dwelling2 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DwellingType.SFD, 1,5,1,1,5);

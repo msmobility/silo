@@ -23,7 +23,7 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testdwellingCountByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get(), null, null);
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         int[][] count = realEstate.getDwellingCountByTypeAndRegion();
 
@@ -46,7 +46,7 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testVacancyRateByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get(), null, null);
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         double[][] vacRate = realEstate.getVacancyRateByTypeAndRegion();
 

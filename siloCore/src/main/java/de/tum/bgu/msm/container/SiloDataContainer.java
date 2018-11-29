@@ -12,6 +12,7 @@ import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -23,6 +24,7 @@ import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.Transpor
 import org.apache.log4j.Logger;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.*;
@@ -75,7 +77,8 @@ public class SiloDataContainer {
      * The contructor is private, with a factory method {link }}
      * being used to encapsulate the object creation.
      */
-    private SiloDataContainer(Implementation implementation, Properties properties) {
+    private SiloDataContainer(Implementation implementation, Properties properties, Map<Integer, Household> householdMap,
+                              Map<Integer, Person> personMap) {
 
         switch (implementation) {
             case MARYLAND:
@@ -94,16 +97,18 @@ public class SiloDataContainer {
         householdData = new HouseholdDataManager(this, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         geoData.readData();
 
-        int year = properties.main.startYear;
+/*        int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
-        householdFile += "_" + year + ".csv";
+        householdFile += "_" + year + ".csv";*/
         HouseholdReader hhReader = new DefaultHouseholdReader(householdData);
-        hhReader.readData(householdFile);
+        //hhReader.readData(householdFile);
+        hhReader.copyData(householdMap);
 
-        String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
-        personFile += "_" + year + ".csv";
+/*        String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
+        personFile += "_" + year + ".csv";*/
         PersonReader personReader = new DefaultPersonReader(householdData);
-        personReader.readData(personFile);
+        //personReader.readData(personFile);
+        personReader.copyData(personMap);
 
         householdData.setHighestHouseholdAndPersonId();
 
@@ -132,15 +137,17 @@ public class SiloDataContainer {
         }
     }
 
+
     /**
      * This factory method is used to create a fully set up data container with
      * all input data read in defined in the properties.
      *
      * @return A SiloDataContainer, with each data object created within
      */
-    public static SiloDataContainer loadSiloDataContainer(Properties properties) {
+    public static SiloDataContainer loadSiloDataContainer(Properties properties, Map<Integer, Household> householdMap,
+                                                          Map<Integer, Person> personMap) {
         LOGGER.info("  Creating Data Objects for SiloDataContainer");
-        return new SiloDataContainer(properties.main.implementation, properties);
+        return new SiloDataContainer(properties.main.implementation, properties, householdMap, personMap);
     }
 
     /**

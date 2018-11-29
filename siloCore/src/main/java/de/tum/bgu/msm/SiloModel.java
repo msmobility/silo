@@ -22,6 +22,8 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroSimulation;
@@ -70,8 +72,11 @@ public final class SiloModel {
     private MicroSimulation microSim;
     private final TimeTracker timeTracker = new TimeTracker();
 
+    private Map<Integer, Household> householdMap;
+    private Map<Integer, Person> personMap;
+
     public SiloModel(Properties properties) {
-		this(null, properties, null, 0) ;
+		this(null, properties, null, 0, null, null) ;
 	}
 
 	public SiloModel(Config matsimConfig, Properties properties) {
@@ -82,13 +87,16 @@ public final class SiloModel {
 		this.combinationId = 0;
 	}
 
-	public SiloModel(Config matsimConfig, Properties properties, Map<String, Double> parametersMap, int combinationId) {
+	public SiloModel(Config matsimConfig, Properties properties, Map<String, Double> parametersMap, int combinationId,
+					 Map<Integer, Household> householdMap, Map<Integer, Person> personMap) {
 		IssueCounter.setUpCounter();
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
 		this.parametersMap = parametersMap;
 		this.combinationId = combinationId;
+		this.householdMap = householdMap;
+		this.personMap = personMap;
 	}
 
 	public void runModel() {
@@ -126,7 +134,7 @@ public final class SiloModel {
 
 
     private void setupContainer() {
-        data = SiloDataContainer.loadSiloDataContainer(properties);
+        data = SiloDataContainer.loadSiloDataContainer(properties, householdMap, personMap);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
 		//data.getHouseholdData().calculateInitialSettings();
 		//removed for machine learning exercise

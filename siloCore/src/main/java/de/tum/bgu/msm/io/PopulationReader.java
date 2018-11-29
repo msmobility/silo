@@ -2,11 +2,11 @@ package de.tum.bgu.msm.io;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -15,22 +15,47 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultPersonReader implements PersonReader{
+public class PopulationReader {
 
-    private final static Logger logger = Logger.getLogger(DefaultPersonReader.class);
-    private final HouseholdDataManager householdData;
+    private final static Logger logger = Logger.getLogger(PopulationReader.class);
 
-    public DefaultPersonReader(HouseholdDataManager householdData) {
-        this.householdData = householdData;
+    public Map<Integer, Household> readHouseholdFile(String fileName){
+
+        HouseholdFactory factory = HouseholdUtil.getFactory();
+        Map<Integer, Household> households = new HashMap<>();
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId = SiloUtil.findPositionInArray("id", header);
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                String[] lineElements = recString.split(",");
+                int id = Integer.parseInt(lineElements[posId]);
+                Household hh = factory.createHousehold(id, -1, 0);  // this automatically puts it in id->household map in Household class
+                households.put(hh.getId(), hh);
+            }
+        } catch (IOException e) {
+
+        }
+        logger.info("Finished reading " + recCount + " households.");
+        return households;
     }
 
-    @Override
-    public void readData(String path) {    
-        logger.info("Reading person micro data from ascii file");
+
+    public Map<Integer, Person> readPersonFile (String path, Map<Integer, Household> householdMap) {
 
         PersonFactory ppFactory = PersonUtils.getFactory();
         String recString = "";
         int recCount = 0;
+        Implementation implementation = Implementation.MUNICH;
+        Map<Integer, Person> persons = new HashMap<>();
         try {
             BufferedReader in = new BufferedReader(new FileReader(path));
             recString = in.readLine();
@@ -66,18 +91,15 @@ public class DefaultPersonReader implements PersonReader{
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
                 //todo temporary assign driving license since this is not in the current SP version
                 //boolean license = MicroDataManager.obtainLicense(gender, age);
-                Household household = householdData.getHouseholdFromId(hhid);
+                Household household = householdMap.get(hhid);
                 if(household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
                 Person pp = ppFactory.createPerson(id, age, gender, race, occupation, workplace, income);
-                householdData.addPerson(pp);
-                householdData.addPersonToHousehold(pp, household);
                 pp.setRole(pr);
                 pp.setDriverLicense(license);
-
                 //TODO: remove it when we implement interface
-                if(Properties.get().main.implementation == Implementation.MUNICH){
+                if(implementation == Implementation.MUNICH){
                     int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
                     int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
                     // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
@@ -86,52 +108,25 @@ public class DefaultPersonReader implements PersonReader{
                     pp.setSchoolCoordinate(schoolCoord, -1);
                 }
 
-                if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + path);
-                    SiloUtil.trackWriter.println(pp.toString());
-                }
+                persons.put(id, pp);
+                addPersonToHousehold(pp, household);
             }
         } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop household file: " + path);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
         logger.info("Finished reading " + recCount + " persons.");
+        return persons;
     }
 
-    @Override
-    public void copyData(Map<Integer, Person> personsToCopyMap){
-        PersonFactory ppFactory = PersonUtils.getFactory();
-        Implementation implementation = Implementation.MUNICH;
-        int recCount = 0;
-        for (Person ppToCopy : personsToCopyMap.values()){
-            recCount++;
-            int id = ppToCopy.getId();
-            int hhid = ppToCopy.getHousehold().getId();
-            int age = ppToCopy.getAge();
-            Gender gender = ppToCopy.getGender();
-            PersonRole pr  = ppToCopy.getRole();
-            Race race = ppToCopy.getRace();
-            Occupation occupation = ppToCopy.getOccupation();
-            int workplace  = ppToCopy.getWorkplace();
-            int income     = ppToCopy.getIncome();
-            boolean license = ppToCopy.hasDriverLicense();
-            //todo temporary assign driving license since this is not in the current SP version
-            //boolean license = MicroDataManager.obtainLicense(gender, age);
-            Household household = householdData.getHouseholdFromId(hhid);
-            if(household == null) {
-                throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
-            }
-            Person pp = ppFactory.createPerson(id, age, gender, race, occupation, workplace, income);
-            householdData.addPerson(pp);
-            householdData.addPersonToHousehold(pp, household);
-            pp.setRole(pr);
-            pp.setDriverLicense(license);
-            //TODO: remove it when we implement interface
-            if(implementation == Implementation.MUNICH){
-                Coordinate schoolCoord = ppToCopy.getSchoolLocation();
-                pp.setSchoolCoordinate(schoolCoord, -1);
-            }
+
+    private void addPersonToHousehold(Person person, Household household) {
+        if(household.getPersons().containsKey(person.getId())) {
+            throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + household.getId());
         }
-        logger.info("Finished copying " + recCount + " persons.");
+        household.addPerson(person);
+        person.setHousehold(household);
+        if (person.getId() == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
+            SiloUtil.trackWriter.println("A person " +
+                    "(not a child) named " + person.getId() + " was added to household " + household.getId() + ".");
+        }
     }
 }
