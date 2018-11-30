@@ -8,6 +8,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
@@ -414,6 +415,24 @@ public class SiloUtil {
         return null;
     }
 
+    public static int selectequal(Map<Integer, Dwelling> mappedProbabilities) {
+        // select item based on probabilities (for mapped double probabilities)
+        return selectequal(mappedProbabilities, mappedProbabilities.size());
+    }
+
+    public static int selectequal(Map<Integer, Dwelling> mappedProbabilities, int sum) {
+        // select item based on probabilities (for mapped double probabilities)
+        double selectedWeight = rand.nextDouble() * sum;
+        double select = 0;
+        for (Map.Entry<Integer, Dwelling> entry : mappedProbabilities.entrySet()) {
+            select ++;
+            if (select > selectedWeight) {
+                return entry.getKey();
+            }
+        }
+        logger.info("Error selecting item from weighted probabilities");
+        return 0;
+    }
 
     public static double getSum(Collection<? extends Number> values) {
         double sm = 0;

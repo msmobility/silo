@@ -15,16 +15,13 @@ import java.util.ResourceBundle;
 public class SyntheticPopulationGeneratorCT {
 
     static Logger logger = Logger.getLogger(SyntheticPopulationGeneratorCT.class);
-    private static DataSetSynPop dataSetSynPop = new DataSetSynPop();
     private static ResourceBundle rb;
 
     public static void main (String[] args) {
 
         SiloUtil.siloInitialization(Implementation.CAPE_TOWN, args[0]);
         try {
-            //PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.CAPE_TOWN);
             rb = new PropertyResourceBundle(new FileReader(args[0]));
-            //PropertiesUtil.writePropertiesForThisRun(args[0]);
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);
         }
