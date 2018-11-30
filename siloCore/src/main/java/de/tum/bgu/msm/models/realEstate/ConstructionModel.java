@@ -181,10 +181,10 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                     restriction /= 100f;
 
                     int ddId = realEstate.getNextDwellingId();
-                    Dwelling dd = factory.createDwelling(ddId, zone, null, -1,
-                            dt, size,
-                            quality, price, restriction, currentYear);
-                    events.add(new ConstructionEvent(dd));
+                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, null, -1,
+                            dt, size, quality, price, restriction, currentYear);
+                    // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
+                    events.add(new ConstructionEvent(plannedDwelling));
                     realEstate.convertLand(zone, dt.getAreaPerDwelling());
                 }
             }
