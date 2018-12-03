@@ -122,7 +122,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
             int age = pp.getAge();
             if (age > 99) continue;  // people older than 99 will always be unemployed/retired
             Gender gender = pp.getGender();
-            boolean employed = pp.getWorkplace() > 0;
+            boolean employed = pp.getJobId() > 0;
             if (employed) {
                 currentlyEmployed[gender.ordinal()][age]++;
             } else {
@@ -152,7 +152,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
                 continue;  // people older than 99 will always be unemployed/retired
             }
             int gen = pp.getGender().ordinal();
-            boolean employed = pp.getWorkplace() > 0;
+            boolean employed = pp.getJobId() > 0;
 
             // find job
             if (changeRate[gen][age] > 0 && !employed) {
@@ -182,7 +182,7 @@ public class EmploymentModel extends AbstractModel implements MicroEventModel<Em
                 continue;  // people older than 99 will always be unemployed/retired
             }
             int gender = pp.getGender().ordinal();
-            boolean employed = pp.getWorkplace() > 0;
+            boolean employed = pp.getJobId() > 0;
             if (employed) laborParticipationShares[gender][age]++;
             count[gender][age]++;
         }

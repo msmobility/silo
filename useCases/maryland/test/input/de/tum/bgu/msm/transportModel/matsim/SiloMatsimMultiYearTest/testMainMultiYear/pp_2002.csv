@@ -48,7 +48,6 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 49,25,88,2,"single","white",0,0,-1,10554
 51,27,88,2,"single","white",0,0,-1,6929
 52,28,88,2,"single","white",0,0,-1,10554
-54,30,88,2,"single","white",0,0,-1,5479
 55,31,88,2,"single","white",0,0,-1,8379
 56,32,88,2,"single","white",0,0,-1,6929
 57,33,88,2,"single","white",0,0,-1,10554
@@ -57,6 +56,7 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 60,36,88,2,"single","white",0,0,-1,10554
 61,37,88,2,"single","white",0,0,-1,10554
 62,38,88,2,"single","white",0,0,-1,7654
+63,39,88,2,"single","white",0,0,-1,3304
 64,40,88,2,"single","white",0,0,-1,5479
 65,41,52,1,"married","white",2,0,-1,13566
 66,41,51,2,"married","white",0,0,-1,0
@@ -64,8 +64,8 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 68,42,52,1,"married","white",2,0,-1,15152
 69,42,51,2,"married","white",0,0,-1,2616
 70,42,18,1,"child","white",0,0,-1,0
-71,43,52,1,"married","white",2,0,-1,16907
-72,43,51,2,"married","white",0,0,-1,0
+71,101,52,1,"single","white",2,0,-1,16907
+72,43,51,2,"single","white",0,0,-1,0
 73,43,18,1,"child","white",0,0,-1,0
 74,44,52,1,"married","white",1,0,5314506,28178
 75,44,51,2,"married","white",0,0,-1,0
@@ -232,6 +232,7 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 236,89,83,2,"single","black",0,0,-1,7028
 237,90,83,2,"single","black",0,0,-1,5108
 238,91,83,2,"single","black",0,0,-1,7028
+239,92,83,2,"single","black",0,0,-1,7028
 240,93,83,2,"single","black",0,0,-1,5588
 241,94,83,2,"single","black",0,0,-1,7028
 242,95,83,2,"single","black",0,0,-1,5108
@@ -245,7 +246,12 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 251,64,1,2,"child","white",0,0,0,0
 252,59,1,2,"child","white",0,0,0,0
 253,55,1,1,"child","white",0,0,0,0
-254,71,0,1,"child","black",0,0,0,0
-255,81,0,2,"child","black",0,0,0,0
-256,68,0,2,"child","black",0,0,0,0
-257,69,0,2,"child","black",0,0,0,0
+254,77,0,2,"child","black",0,0,0,0
+255,57,0,1,"child","white",0,0,0,0
+256,79,0,1,"child","black",0,0,0,0
+257,81,0,1,"child","black",0,0,0,0
+258,60,0,2,"child","white",0,0,0,0
+259,73,0,2,"child","black",0,0,0,0
+260,71,0,2,"child","black",0,0,0,0
+261,83,0,2,"child","black",0,0,0,0
+262,48,0,2,"child","white",0,0,0,0

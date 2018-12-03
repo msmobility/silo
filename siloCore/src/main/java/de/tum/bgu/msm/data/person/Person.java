@@ -57,7 +57,7 @@ public interface Person extends Id {
 
     PersonRole getRole();
 
-    int getWorkplace();
+    int getJobId();
 
     void setEducationLevel(int educationLevel);
 

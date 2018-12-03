@@ -319,7 +319,7 @@ public class JobDataManager {
         if (person == null) {
             return;
         }
-        final int workplace = person.getWorkplace();
+        final int workplace = person.getJobId();
         Job jb = jobs.get(workplace);
         if (makeJobAvailableToOthers) {
             addJobToVacancyList(jb.getZoneId(), workplace);

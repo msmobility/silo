@@ -70,9 +70,9 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				MitoPerson mitoPerson = convertToMitoPp(person);
 				Coordinate workplaceCoordinate = null;
 				//todo need to mode the transitions between new born, student, unemployed and worker in a better way
-				if (person.getWorkplace()>0) {
+				if (person.getJobId()>0) {
 					//is a worker
-					Job job = dataContainer.getJobData().getJobFromId(person.getWorkplace());
+					Job job = dataContainer.getJobData().getJobFromId(person.getJobId());
 					if (job instanceof MicroLocation) {
 						//is a worker with a microlocated job
 						mitoPerson.setOccupationLocation(((MicroLocation) job).getCoordinate());
@@ -136,7 +136,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	private MitoPerson convertToMitoPp(Person person) {
 		final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
 		final MitoOccupation mitoOccupation = MitoOccupation.valueOf(person.getOccupation().getCode());
-		final int workPlace = person.getWorkplace();
+		final int workPlace = person.getJobId();
 		int workzone = -1;
 		if(workPlace > 0) {
 			workzone = dataContainer.getJobData().getJobFromId(workPlace).getZoneId();

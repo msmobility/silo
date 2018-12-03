@@ -16,11 +16,7 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier;
 import org.apache.log4j.Logger;
-
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,7 +121,7 @@ public class SiloDataContainer {
         PersonReader personReader = new DefaultPersonReader(householdData);
         personReader.readData(personFile);
 
-        householdData.setHighestHouseholdAndPersonId();
+        householdData.identifyHighestHouseholdAndPersonId();
 
         DwellingReader ddReader = new DefaultDwellingReader(realEstateData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";

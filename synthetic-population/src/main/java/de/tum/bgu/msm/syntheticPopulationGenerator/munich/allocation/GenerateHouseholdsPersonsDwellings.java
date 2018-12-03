@@ -110,10 +110,9 @@ public class GenerateHouseholdsPersonsDwellings {
             int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
-            Person pers = factory.createPerson(id, age, gender, race, occupation, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            Person pers = factory.createPerson(id, age, gender, race, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
             householdDataManager.addPerson(pers);
             householdDataManager.addPersonToHousehold(pers, hh);
-            pers.setRole(personRole);
             pers.setNationality(nationality1);
             pers.setDriverLicense(license);
             pers.setEducationLevel(educationDegree);

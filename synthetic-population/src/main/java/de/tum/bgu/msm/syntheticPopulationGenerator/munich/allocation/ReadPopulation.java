@@ -129,9 +129,8 @@ public class ReadPopulation {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = factory.createPerson(id, age, gender, race, occupation, workplace, income); //this automatically puts it in id->person map in Person class
+                Person pp = factory.createPerson(id, age, gender, race, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
                 householdData.addPerson(pp);
-                pp.setRole(pr);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
                 Nationality nat = Nationality.GERMAN;

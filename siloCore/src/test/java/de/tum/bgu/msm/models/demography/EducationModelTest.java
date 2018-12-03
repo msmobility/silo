@@ -8,13 +8,9 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.person.Gender;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonUtils;
-import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,7 +31,7 @@ public class EducationModelTest {
 
     @Test
     public void testSchoolChange() {
-        Person person = PersonUtils.getFactory().createPerson(0, 20, Gender.FEMALE, Race.other, Occupation.EMPLOYED, 0, 0);
+        Person person = PersonUtils.getFactory().createPerson(0, 20, Gender.FEMALE, Race.other, Occupation.EMPLOYED, PersonRole.CHILD, 0, 0);
         person.setSchoolPlace(10);
         Assert.assertEquals(0, person.getEducationLevel());
         ((MstmEducationModelImpl)model).updateEducation(person);

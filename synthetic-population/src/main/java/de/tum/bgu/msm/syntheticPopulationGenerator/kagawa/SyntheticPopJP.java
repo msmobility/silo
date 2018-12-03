@@ -875,7 +875,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 int hhID = (int) persons.getValueAt(aux, "hhid");
                 Person pp = factory.createPerson((int) persons.getValueAt(aux, "id"),
                         (int) persons.getValueAt(aux, "age"), Gender.valueOf((int) persons.getValueAt(aux, "gender")),
-                        race, Occupation.valueOf((int) persons.getValueAt(aux, "occupation")), (int) persons.getValueAt(aux, "workplace"),
+                        race, Occupation.valueOf((int) persons.getValueAt(aux, "occupation")), null,  (int) persons.getValueAt(aux, "workplace"),
                         (int) persons.getValueAt(aux, "income"));
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
@@ -1150,7 +1150,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                                 e.printStackTrace();
                             }
                         }
-                        Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                        Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                         householdDataManager.addPerson(pers);
                         householdDataManager.addPersonToHousehold(pers, household);
                         pers.setEducationLevel(education);

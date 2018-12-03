@@ -127,7 +127,7 @@ public class SiloMatsimUtils {
     			continue;
     		}
 
-    		int siloWorkplaceId = siloPerson.getWorkplace();
+    		int siloWorkplaceId = siloPerson.getJobId();
     		if (siloWorkplaceId == -2) { // i.e. person has workplace outside study area
     			continue;
     		}

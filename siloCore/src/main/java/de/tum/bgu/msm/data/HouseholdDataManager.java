@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -239,7 +238,7 @@ public class HouseholdDataManager {
         for (Person per: persons.values()) {
             int age = per.getAge();
             Gender gender = per.getGender();
-            boolean employed = per.getWorkplace() > 0;
+            boolean employed = per.getJobId() > 0;
             int ageGroup = 0;
             if (age >= 65) ageGroup = 4;
             else if (age >= 50) ageGroup = 3;
@@ -257,7 +256,7 @@ public class HouseholdDataManager {
 //                double ds = siloModelContainer.getAcc()
 //                        .getPeakAutoTravelTime(zone.getZoneId(),
 //                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
-                Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZoneId());
+                Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getJobId()).getZoneId());
                 double ds = dataContainer.getTravelTimes().
                 		getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
@@ -287,7 +286,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
-    public void setHighestHouseholdAndPersonId () {
+    public void identifyHighestHouseholdAndPersonId() {
         // identify highest household ID and highest person ID in use
         highestHouseholdIdInUse = 0;
         for (Household hh: households.values()) {
@@ -513,5 +512,23 @@ public class HouseholdDataManager {
 
     public HouseholdFactory getHouseholdFactory() {
         return this.hhFactory;
+    }
+
+    /**
+     * Duplicates the given household by copying household attributes and individual persons.
+     * Ids of persons and the household as well as spatial relationships like dwelling, jobs and schools
+     * are not copied. Household roles are preserved.
+     * @param original the original household to be copied
+     * @return a duplication of the original household and its persons
+     */
+    public Household duplicateHousehold(Household original) {
+        Household duplicate = hhFactory.duplicate(original, getNextHouseholdId());
+        for(Person originalPerson: original.getPersons().values()) {
+            Person personDuplicate = ppFactory.duplicate(originalPerson, getNextPersonId());
+            personDuplicate.setRole(originalPerson.getRole());
+            personDuplicate.setHousehold(duplicate);
+            duplicate.addPerson(personDuplicate);
+        }
+        return duplicate;
     }
 }

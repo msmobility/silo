@@ -1649,7 +1649,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
             Person pp = factory.createPerson((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), Gender.valueOf((int) persons.getValueAt(i, "gender")),
-                    race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")), (int) persons.getValueAt(i, "workplace"),
+                    race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")),null,  (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
             householdDataManager.addPerson(pp);
             householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
@@ -1931,7 +1931,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                     } catch (MathException e) {
                         e.printStackTrace();
                     }
-                    Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                    Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     householdDataManager.addPerson(pers);
                     householdDataManager.addPersonToHousehold(pers, household);
                     pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "educationLevel"));

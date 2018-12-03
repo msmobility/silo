@@ -39,7 +39,7 @@ public class EmploymentModelTest {
     public void setupMicroData() {
         Household household1 = HouseholdUtil.getFactory().createHousehold(1,-1,0);
         dataContainer.getHouseholdData().addHousehold(household1);
-        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
@@ -51,14 +51,14 @@ public class EmploymentModelTest {
     public void testTakeJob() {
         dataContainer.getHouseholdData().clearUpdatedHouseholds();
         final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
-        Assert.assertEquals(-1, person.getWorkplace());
+        Assert.assertEquals(-1, person.getJobId());
         Assert.assertEquals(Occupation.UNEMPLOYED, person.getOccupation());
         Assert.assertEquals(0, person.getIncome());
 
         Job job = JobUtils.getFactory().createJob(1, -1, null, -1, "dummy");
         dataContainer.getJobData().addJob(job);
         model.takeNewJob(person, job);
-        Assert.assertEquals(1, person.getWorkplace());
+        Assert.assertEquals(1, person.getJobId());
         Assert.assertEquals(1, job.getWorkerId());
         Assert.assertEquals(Occupation.EMPLOYED, person.getOccupation());
         Assert.assertEquals(1022, person.getIncome());
@@ -69,7 +69,7 @@ public class EmploymentModelTest {
     public void testTakeAndQuitJob() {
         dataContainer.getHouseholdData().clearUpdatedHouseholds();
         final Person person = dataContainer.getHouseholdData().getPersonFromId(1);
-        Assert.assertEquals(-1, person.getWorkplace());
+        Assert.assertEquals(-1, person.getJobId());
         Assert.assertEquals(Occupation.UNEMPLOYED, person.getOccupation());
         Assert.assertEquals(0, person.getIncome());
 
