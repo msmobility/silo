@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.MicroLocation;
@@ -60,14 +61,12 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
 
         person.setOccupation(Occupation.UNEMPLOYED);
         person.setSchoolType(0);
-        person.setSchoolId(-1);
         person.setSchoolCoordinate(null,-1);
         //TODO: schoolType and educationLevel code needs to be aligned! 09 Oct 2018 QZ'
         person.setEducationLevel(educationLevel);
-
         School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
         school.setOccupancy(school.getOccupancy() + 1);
-
+        person.setSchoolId(-1);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " leaved from school to job market. ");
@@ -96,7 +95,12 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
         person.setSchoolType(school.getType());
         person.setSchoolId(school.getId());
         person.setOccupation(Occupation.STUDENT);
-        person.setSchoolCoordinate(((MicroLocation)school).getCoordinate(),school.getZoneId());
+
+        if (Properties.get().main.useMicrolocation) {
+            person.setSchoolCoordinate(((MicroLocation) school).getCoordinate(), school.getZoneId());
+        }else{
+            person.setSchoolCoordinate(null, school.getZoneId());
+        }
         school.setOccupancy(school.getOccupancy()-1);
 
         if (person.getId() == SiloUtil.trackPp) {
@@ -107,7 +111,7 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
     }
 
     public School findSchool(Person person) {
-        return dataContainer.getSchoolData().getClosestSchool(person);
+            return dataContainer.getSchoolData().getClosestSchool(person);
     }
 
 
