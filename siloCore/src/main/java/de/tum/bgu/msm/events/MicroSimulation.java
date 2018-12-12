@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.events;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -19,7 +20,7 @@ public final class MicroSimulation {
 
     private final static Logger LOGGER = Logger.getLogger(MicroSimulation.class);
 
-    private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
+    private final Multiset<Class<? extends MicroEvent>> eventCounter = LinkedHashMultiset.create();
 
     private final Map<Class<? extends MicroEvent>, MicroEventModel> models = new LinkedHashMap<>();
 
@@ -37,7 +38,10 @@ public final class MicroSimulation {
 
     public void simulate(int year) {
         createEvents(year);
+//        double randomNumber1b = SiloUtil.getRandomNumberAsDouble();
         processEvents();
+//        double randomNumber1c = SiloUtil.getRandomNumberAsDouble();
+//        System.out.println("test");
     }
 
     private void createEvents(int year) {
@@ -55,7 +59,11 @@ public final class MicroSimulation {
 
     private void processEvents() {
         LOGGER.info("  Processing events...");
+//        int counter = 0;
         for (MicroEvent e: events) {
+//            if(counter == 4964) {
+//                System.out.println("Stop!");
+//            }
             timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
@@ -64,10 +72,23 @@ public final class MicroSimulation {
             @SuppressWarnings("unchecked")
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
-                eventCounter.add(e.getClass());
+                // randomNumberAsDouble = SiloUtil.getRandomNumberAsDouble();
+            //    SiloUtil.trackWriter.println("success " + klass.getName() + " rand: " + randomNumberAsDouble);
+                eventCounter.add(klass);
+            } else {
+                // randomNumberAsDouble = SiloUtil.getRandomNumberAsDouble();
+            //    SiloUtil.trackWriter.println("unsuccessful " + klass.getName() + " rand: " + randomNumberAsDouble);
             }
             timeTracker.record(klass.getSimpleName());
+//            counter++;
         }
+      //  SiloUtil.trackWriter.flush();
+//        LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
+//        for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
+//            final int count = eventCounter.count(event);
+//            SummarizeData.resultFile(event.getSimpleName() + "," + count);
+//            LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
+//        }
     }
 
     public void finishYear(int year, int[] carChangeCounter, int avSwitchCounter, SiloDataContainer dataContainer) {

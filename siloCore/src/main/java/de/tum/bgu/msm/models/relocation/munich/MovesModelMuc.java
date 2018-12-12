@@ -125,7 +125,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
             EnumMap<Nationality, Map<Integer, Double>> utilitiesByNationalityRegionForThisIncome = new EnumMap<>(Nationality.class);
             for (Nationality nationality: Nationality.values()) {
-                Map<Integer, Double> utilitiesByRegionForThisNationalityAndIncome = new HashMap<>();
+                Map<Integer, Double> utilitiesByRegionForThisNationalityAndIncome = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()){
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
@@ -144,7 +144,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold
-                = new HashMap<>(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
+                = new LinkedHashMap<>(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
@@ -174,7 +174,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         // data preparation
         int householdIncome = 0;
         Nationality nationality = null;
-        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Zone> workerZonesForThisHousehold = new LinkedHashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
@@ -194,8 +194,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
-        Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
-        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHouesehold(ht,nationality,workerZonesForThisHousehold.values()));
+        Map<Integer, Double> regionUtilitiesForThisHousehold = getUtilitiesByRegionForThisHouesehold(ht,nationality,workerZonesForThisHousehold.values());
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "powerOfPopulation";
@@ -290,7 +289,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
+        Map<Person, Job> jobsForThisHousehold = new LinkedHashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {

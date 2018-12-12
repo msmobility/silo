@@ -183,7 +183,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             driversLicense.checkLicenseCreation(person.getId());
         }
 
-                int newDdId = movesModel.searchForNewDwelling(hh);
+        int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
             if (Properties.get().main.implementation == Implementation.MUNICH) {

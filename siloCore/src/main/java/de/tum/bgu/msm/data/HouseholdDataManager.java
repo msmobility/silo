@@ -116,8 +116,7 @@ public class HouseholdDataManager {
         household.addPerson(person);
         person.setHousehold(household);
         if (person.getId() == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("A person " +
-                    "(not a child) named " + person.getId() + " was added to household " + household.getId() + ".");
+            SiloUtil.trackWriter.println("A person " + person.getId() + " was added to household " + household.getId() + ".");
         }
     }
 
