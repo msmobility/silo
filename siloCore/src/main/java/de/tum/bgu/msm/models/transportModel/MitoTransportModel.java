@@ -130,7 +130,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	}
 
 	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household), household.getAutos(), zone);
+    	//convert yearly income of silo to monthly income in mito
+		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household) / 12, household.getAutos(), zone);
 	}
 
 	private MitoPerson convertToMitoPp(Person person) {

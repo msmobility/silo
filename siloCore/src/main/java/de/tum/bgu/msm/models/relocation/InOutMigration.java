@@ -2,15 +2,15 @@ package de.tum.bgu.msm.models.relocation;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -19,9 +19,13 @@ import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.DriversLicense;
 import de.tum.bgu.msm.models.demography.EmploymentModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Adds exogenously given inmigrating and outmigrating households
@@ -199,6 +203,9 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                 }
             }
             householdData.addHousehold(hh);
+            for(Person person: hh.getPersons().values()) {
+                householdData.addPerson(person);
+            }
             return true;
         } else {
             IssueCounter.countLackOfDwellingFailedInmigration();
