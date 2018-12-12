@@ -109,7 +109,7 @@ public class HouseholdDataManager {
 
     public void addPersonToHousehold(Person person, Household household) {
         // add existing person per (not a newborn child) to household
-        if(household.getPersons().containsKey(person.getId())) {
+        if (household.getPersons().containsKey(person.getId())) {
             throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + household.getId());
         }
         household.addPerson(person);
@@ -122,7 +122,7 @@ public class HouseholdDataManager {
 
     public int getTotalPopulation() {
         int tp = 0;
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             tp += hh.getHhSize();
         }
         return tp;

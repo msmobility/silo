@@ -83,8 +83,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
-				//logger.warn("Person " + person.getZoneId() + " refers to non-existing household " + hhId
-				//		+ " and will thus NOT be considered in the transport model.");
+				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
+						+ " and will thus NOT be considered in the transport model.");
 			}
 		}
         logger.info("  SILO data being sent to MITO");
@@ -111,7 +111,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
 			}
             //todo if there are housholds without adults they cannot be processed
-			if (siloHousehold.getPersons().values().stream().filter(p -> p.getAge() >= 18).count() != 0){
+			if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)){
 				if((((MicroLocation) dwelling).getCoordinate() != null)){
 					//todo if there are households without microlocation mito does not work
 					household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
@@ -130,7 +130,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	}
 
 	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household), household.getAutos(), zone);
+    	//convert yearly income of silo to monthly income in mito
+		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household) / 12, household.getAutos(), zone);
 	}
 
 	private MitoPerson convertToMitoPp(Person person) {
