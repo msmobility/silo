@@ -232,9 +232,9 @@ public class PropertiesUtil {
         }
     }
 
-    public static void writePropertiesForThisRun(String inputPropertiesPath, int combinationId) {
+    public static void writePropertiesForThisRun(String inputPropertiesPath) {
         Properties properties = Properties.get();
-        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId;
+        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         SiloUtil.copyFile(inputPropertiesPath, parent + "/inputProperties.properties");
         printOutPropertiesOfThisRun(parent);
     }

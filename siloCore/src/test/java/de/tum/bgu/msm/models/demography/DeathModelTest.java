@@ -27,7 +27,7 @@ public class DeathModelTest {
 
     @BeforeClass
     public static void setupModel() {
-        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
+        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get(), null, null);
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties, null);

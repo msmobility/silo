@@ -19,7 +19,7 @@ public final class SiloMatsim {
      * Option to set the matsim config directly, at this point meant for tests.
      */
     public SiloMatsim(String args, Config config, Implementation implementation, int combinationId) {
-        properties = SiloUtil.siloInitialization(implementation, args, combinationId);
+        properties = SiloUtil.siloInitialization(implementation, args);
         matsimConfig = config;
     }
 

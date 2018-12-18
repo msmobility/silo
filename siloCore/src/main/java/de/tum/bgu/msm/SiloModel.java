@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.NONE;
+import static de.tum.bgu.msm.utils.SiloUtil.initializeRandomNumber;
 
 /**
  * @author Greg Erhardt
@@ -111,19 +112,21 @@ public final class SiloModel {
 			logger.error("Error running SILO.");
 			throw new RuntimeException(e);
 		} finally {
-			SiloUtil.closeAllFiles(startTime, timeTracker, combinationId);
+			SiloUtil.closeAllFiles(startTime);
 		}
 
 	}
 
 	private void setupModel() {
 		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
-        setupContainer();
+		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
+		setupContainer();
         setupYears();
         //setupTravelTimes();
         //setupAccessibility();
         setupMicroSim();
         IssueCounter.logIssues(data.getGeoData());
+
 
 
 		if (properties.main.createPrestoSummary) {
@@ -337,7 +340,7 @@ public final class SiloModel {
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}*/
 		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
-		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
+		//SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
 		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");

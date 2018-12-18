@@ -32,7 +32,7 @@ public class MarryDivorceTest {
 
     @BeforeClass
     public static void intitializeProperties() {
-        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties", 0);
+        SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
     }
 
     @Before

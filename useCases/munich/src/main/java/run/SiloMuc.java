@@ -28,6 +28,7 @@ public class SiloMuc {
 
     public static void main(String[] args) {
 
+        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
         ParametersReader reader = new ParametersReader();
         completeParametersMap = reader.readData(args[1]);
         PopulationReader popReader = new PopulationReader();
@@ -36,7 +37,6 @@ public class SiloMuc {
 
         for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
 
-            Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0], i);
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
 
