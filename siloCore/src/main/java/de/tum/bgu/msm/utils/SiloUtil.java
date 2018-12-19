@@ -47,13 +47,7 @@ public class SiloUtil {
 
         Properties properties = Properties.initializeProperties(propertiesPath, implementation);
 
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-        SummarizeData.openResultFile(properties);
-        SummarizeData.resultFileSpatial("open");
-
-        PropertiesUtil.writePropertiesForThisRun(propertiesPath);
-
-        //initializeRandomNumber(properties.main.randomSeed);
+        initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
         return properties;
     }
@@ -1026,11 +1020,11 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime) {
+    public static void closeAllFiles (long startTime, int combinationId) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFile("close");
-        SummarizeData.resultFileSpatial("close");
+        SummarizeData.resultFileSpatial("close", combinationId);
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
@@ -1039,7 +1033,7 @@ public class SiloUtil {
     }
 
 
-    public static boolean modelStopper (String action) {
+    /*public static boolean modelStopper (String action) {
         // provide option for a clean model stop after every simulation period is completed
         String fileName = Properties.get().main.baseDirectory + "status.csv";
         if (action.equalsIgnoreCase("initialize")) {
@@ -1055,7 +1049,7 @@ public class SiloUtil {
         }
         return false;
     }
-
+*/
 
     public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId) {
         // aggregate micro data
@@ -1084,7 +1078,7 @@ public class SiloUtil {
 
     public static void summarizeHouseholdSizeDistribution(Map<Integer, int[]> distributionByYear, int combinationId){
         String fileName = Properties.get().main.baseDirectory + "scenOutput/" +
-                Properties.get().main.scenarioName + "/householdSizeDistribution.csv";
+                Properties.get().main.scenarioName + combinationId + "/householdSizeDistribution.csv";
         PrintWriter pw = openFileForSequentialWriting(fileName, false);
         pw.println("combinationId,Year,HHsize1,HHsize2,HHsize3,HHsize4,HHsize5,HHsize6,HHsize7,HHsize8,HHsize9,HHsize10");
         for (int year =  Properties.get().main.startYear; year <  Properties.get().main.endYear; year ++) {

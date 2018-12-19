@@ -232,10 +232,10 @@ public class PropertiesUtil {
         }
     }
 
-    public static void writePropertiesForThisRun(String inputPropertiesPath) {
+    public static void writePropertiesForThisRun(String inputPropertiesPath, int combinationId) {
         Properties properties = Properties.get();
-        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        SiloUtil.copyFile(inputPropertiesPath, parent + "/inputProperties.properties");
+        String parent = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId;
+        SiloUtil.copyFile(inputPropertiesPath, parent +"/inputProperties.properties");
         printOutPropertiesOfThisRun(parent);
     }
 }

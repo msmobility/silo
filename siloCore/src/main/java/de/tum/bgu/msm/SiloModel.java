@@ -36,6 +36,7 @@ import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
@@ -47,15 +48,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.NONE;
+import static de.tum.bgu.msm.utils.SiloUtil.createDirectoryIfNotExistingYet;
 import static de.tum.bgu.msm.utils.SiloUtil.initializeRandomNumber;
 
 /**
  * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
-public final class SiloModel {
+public final class SiloModel implements Callable {
 
 	private final static Logger logger = Logger.getLogger(SiloModel.class);
 
@@ -83,7 +86,6 @@ public final class SiloModel {
 	public SiloModel(Config matsimConfig, Properties properties) {
 		IssueCounter.setUpCounter();
 		this.properties = properties;
-		SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
 		this.combinationId = 0;
 	}
@@ -92,12 +94,19 @@ public final class SiloModel {
 					 Map<Integer, Household> householdMap, Map<Integer, Person> personMap) {
 		IssueCounter.setUpCounter();
 		this.properties = properties;
-		SiloUtil.modelStopper("initialize");
+		//SiloUtil.modelStopper("initialize");
 		this.matsimConfig = matsimConfig ;
 		this.parametersMap = parametersMap;
 		this.combinationId = combinationId;
 		this.householdMap = householdMap;
 		this.personMap = personMap;
+	}
+
+	@Override
+	public Object call() {
+		// first, try to eliminate only jobs that are vacant
+		runModel();
+		return null;
 	}
 
 	public void runModel() {
@@ -112,14 +121,19 @@ public final class SiloModel {
 			logger.error("Error running SILO.");
 			throw new RuntimeException(e);
 		} finally {
-			SiloUtil.closeAllFiles(startTime);
+			SiloUtil.closeAllFiles(startTime, combinationId);
 		}
 
 	}
 
 	private void setupModel() {
 		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
-		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
+
+		createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName  + combinationId);
+		//SummarizeData.openResultFile(properties, combinationId);
+		//SummarizeData.resultFileSpatial("open", combinationId);
+		PropertiesUtil.writePropertiesForThisRun(properties.main.baseDirectory, combinationId);
+
 		setupContainer();
         setupYears();
         //setupTravelTimes();
@@ -322,9 +336,9 @@ public final class SiloModel {
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					data.getRealEstateData().getDwellings().size() + " dwellings.");
 
-			if (SiloUtil.modelStopper("check")) {
+			/*if (SiloUtil.modelStopper("check")) {
 			    break;
-            }
+            }*/
             //timeTracker.endYear();
 		}
 	}
@@ -343,7 +357,7 @@ public final class SiloModel {
 		//SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
 		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
-		SiloUtil.modelStopper("removeFile");
+		//SiloUtil.modelStopper("removeFile");
         //SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
 		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + combinationId + ".");
 	}

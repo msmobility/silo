@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.io.ParametersReader;
 import de.tum.bgu.msm.io.PopulationReader;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -28,6 +29,7 @@ public class SiloMuc {
 
     public static void main(String[] args) {
 
+        long timeStart = System.currentTimeMillis();
         Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
         ParametersReader reader = new ParametersReader();
         completeParametersMap = reader.readData(args[1]);
@@ -35,15 +37,18 @@ public class SiloMuc {
         householdMap = popReader.readHouseholdFile(args[2]);
         personMap = popReader.readPersonFile(args[3],householdMap);
 
+        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
         for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
-
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
-
             logger.info("Starting SILO. Combination of parameters: " + i);
-            SiloModel model = new SiloModel(config, properties, parametersMap, i, householdMap, personMap);
-            model.runModel();
+            executor.addTaskToQueue(new SiloModel(config, properties, parametersMap, i, householdMap, personMap));
             logger.info("Finished SILO. Combination of parameters: " + i);
         }
+        executor.execute();
+
+        long timeFinish = (System.currentTimeMillis() - timeStart)/1000;
+        logger.info("Finished all SILO in " + timeFinish);
     }
+
 }
