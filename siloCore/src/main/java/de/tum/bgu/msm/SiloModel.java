@@ -101,7 +101,7 @@ public final class SiloModel {
 	}
 
 	public void runModel() {
-		logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
+		//logger.info("Scenario: " + properties.main.scenarioName + ", Simulation start year: " + properties.main.startYear);
 		long startTime = System.currentTimeMillis();
 		householdSizeDistribution = new HashMap<>();
 		try{
@@ -118,7 +118,7 @@ public final class SiloModel {
 	}
 
 	private void setupModel() {
-		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
+		//logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
 		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
 		setupContainer();
         setupYears();
@@ -318,9 +318,9 @@ public final class SiloModel {
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			householdSizeDistribution.put(year, householdData.getHouseholdSizeDistribution());
-			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
+/*			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
-					data.getRealEstateData().getDwellings().size() + " dwellings.");
+					data.getRealEstateData().getDwellings().size() + " dwellings.");*/
 
 			if (SiloUtil.modelStopper("check")) {
 			    break;

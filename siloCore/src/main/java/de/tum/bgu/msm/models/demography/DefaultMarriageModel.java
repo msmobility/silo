@@ -183,7 +183,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     }
 
     List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
-        LOGGER.info("  Selecting couples to get married this year");
+        //LOGGER.info("  Selecting couples to get married this year");
 
         final List<MarriageEvent> couplesToMarryThisYear = new ArrayList<>();
         final MarriageMarket market = defineMarriageMarket(persons);
@@ -198,13 +198,13 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                 }
             }
         }
-        LOGGER.info(couplesToMarryThisYear.size() + " couples created.");
+        //LOGGER.info(couplesToMarryThisYear.size() + " couples created.");
         return couplesToMarryThisYear;
     }
 
     private MarriageMarket defineMarriageMarket(Collection<Person> persons) {
 
-        LOGGER.info("Defining Marriage Market");
+        //LOGGER.info("Defining Marriage Market");
 
         final List<Person> activePartners = new ArrayList<>();
         final Table<Integer, Gender, List<Person>> partnersByAgeAndGender = ArrayTable.create(
@@ -226,7 +226,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                 }
             }
         }
-        LOGGER.info(activePartners.size() + " persons actively looking for partner");
+        //LOGGER.info(activePartners.size() + " persons actively looking for partner");
         return new MarriageMarket(activePartners, partnersByAgeAndGender);
     }
 

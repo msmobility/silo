@@ -32,7 +32,7 @@ public final class MicroSimulation {
 
     public <T extends MicroEvent> void registerModel(Class<T> klass, MicroEventModel<T> model) {
         this.models.put(klass, model);
-        LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
+        //LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
 
     public void simulate(int year) {
@@ -41,20 +41,20 @@ public final class MicroSimulation {
     }
 
     private void createEvents(int year) {
-        LOGGER.info("  Creating events");
+        //LOGGER.info("  Creating events");
         //timeTracker.reset();
         for(@SuppressWarnings("unchecked") MicroEventModel<? extends MicroEvent> model: models.values()) {
             events.addAll(model.prepareYear(year));
         }
-        LOGGER.info("  Created " + events.size() + " events to simulate.");
-        LOGGER.info("  Shuffling events...");
+        //LOGGER.info("  Created " + events.size() + " events to simulate.");
+        //LOGGER.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
         //timeTracker.record("EventCreation");
         eventCounter.clear();
     }
 
     private void processEvents() {
-        LOGGER.info("  Processing events...");
+        //LOGGER.info("  Processing events...");
         for (MicroEvent e: events) {
             //timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
@@ -100,11 +100,11 @@ public final class MicroSimulation {
             model.finishYear(year);
         }
         SummarizeData.resultFile("Count of simulated events");
-        LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
+        //LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
         for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
             SummarizeData.resultFile(event.getSimpleName() + "," + count);
-            LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
+            //LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
         }
 
         events.clear();

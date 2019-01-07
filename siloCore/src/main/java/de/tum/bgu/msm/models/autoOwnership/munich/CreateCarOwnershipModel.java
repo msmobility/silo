@@ -28,7 +28,7 @@ public class CreateCarOwnershipModel {
     private final GeoDataMuc geoDataMuc;
 
     public CreateCarOwnershipModel(SiloDataContainer dataContainer, GeoDataMuc geoDataMuc) {
-        logger.info(" Setting up probabilities for car ownership model");
+        //logger.info(" Setting up probabilities for car ownership model");
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
         calculator = new CreateCarOwnershipJSCalculator(reader);
         this.dataContainer = dataContainer;

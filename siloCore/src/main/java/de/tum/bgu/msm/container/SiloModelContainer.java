@@ -142,7 +142,7 @@ public class SiloModelContainer {
                 transportModel = new MatsimTransportModel(dataContainer, matsimConfig, properties);
                 break;
             case NONE:
-                LOGGER.info(" No transport model is used");
+                //LOGGER.info(" No transport model is used");
         }
 
         Accessibility acc = new Accessibility(dataContainer);

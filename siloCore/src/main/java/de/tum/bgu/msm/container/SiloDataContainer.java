@@ -146,7 +146,7 @@ public class SiloDataContainer {
      */
     public static SiloDataContainer loadSiloDataContainer(Properties properties, Map<Integer, Household> householdMap,
                                                           Map<Integer, Person> personMap) {
-        LOGGER.info("  Creating Data Objects for SiloDataContainer");
+        //LOGGER.info("  Creating Data Objects for SiloDataContainer");
         return new SiloDataContainer(properties.main.implementation, properties, householdMap, personMap);
     }
 

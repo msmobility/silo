@@ -43,7 +43,7 @@ public class SiloUtil {
 
     public static Properties siloInitialization(Implementation implementation, String propertiesPath) {
 
-        loadHdf5Lib();
+        //loadHdf5Lib();
 
         Properties properties = Properties.initializeProperties(propertiesPath, implementation);
 
@@ -60,10 +60,10 @@ public class SiloUtil {
 
     public static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
-        logger.info("Trying to set up native hdf5 lib");
+        //logger.info("Trying to set up native hdf5 lib");
         String path = null;
         if(SystemUtils.IS_OS_WINDOWS) {
-            logger.info("Detected windows OS.");
+            //logger.info("Detected windows OS.");
             try {
                 path = classLoader.getResource("lib/win32/jhdf5.dll").getFile();
                 System.load(path);
@@ -119,7 +119,7 @@ public class SiloUtil {
             }
         }
         if(path != null) {
-            logger.info("Hdf5 library successfully located.");
+            //logger.info("Hdf5 library successfully located.");
             System.setProperty("ncsa.hdf.hdf5lib.H5.hdf5lib", path);
         } else {
             logger.warn("Could not load native hdf5 library automatically." +

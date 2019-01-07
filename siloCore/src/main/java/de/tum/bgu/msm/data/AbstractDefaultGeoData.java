@@ -43,7 +43,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     @Override
     public void readData() {
         readZones();
-        readShapes();
+        //readShapes();
         readRegionDefinition();
         readLandUse();
         readDeveloperData();
@@ -155,7 +155,7 @@ public abstract class AbstractDefaultGeoData implements GeoData {
     }
 
     private void readLandUse() {
-        logger.info("Reading land use data");
+        //logger.info("Reading land use data");
         String fileName;
         String baseDirectory = Properties.get().main.baseDirectory;
         int startYear = Properties.get().main.startYear;

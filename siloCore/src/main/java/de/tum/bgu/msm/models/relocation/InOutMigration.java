@@ -217,7 +217,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     public Collection<MigrationEvent> prepareYear(int year) {
         final List<MigrationEvent> events = new ArrayList<>();
 
-        LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
+        //LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         // create outmigrants
