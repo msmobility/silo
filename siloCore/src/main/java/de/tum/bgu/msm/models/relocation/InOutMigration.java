@@ -209,8 +209,8 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
 
     @Override
     public void finishYear(int year) {
-        SummarizeData.resultFile("InmigrantsPP," + inMigrationPPCounter);
-        SummarizeData.resultFile("OutmigrantsPP," + outMigrationPPCounter);
+        //SummarizeData.resultFile("InmigrantsPP," + inMigrationPPCounter);
+        //SummarizeData.resultFile("OutmigrantsPP," + outMigrationPPCounter);
     }
 
     @Override

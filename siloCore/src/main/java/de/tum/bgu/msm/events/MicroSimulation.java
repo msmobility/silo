@@ -3,6 +3,7 @@ package de.tum.bgu.msm.events;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.utils.TimeTracker;
@@ -95,15 +96,15 @@ public final class MicroSimulation {
         events.clear();
     }
 
-    public void finishYear(int year, SiloDataContainer dataContainer) {
+    public void finishYear(int year, int combinationId) {
         for(MicroEventModel model: models.values()) {
             model.finishYear(year);
         }
-        SummarizeData.resultFile("Count of simulated events");
+        //SummarizeData.resultFile("Count of simulated events");
         //LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
         for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
-            SummarizeData.resultFile(event.getSimpleName() + "," + count);
+            SummarizeData.resultFile(combinationId + "," + year + "," + event.getSimpleName() + "," + count);
             //LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
         }
 

@@ -54,7 +54,7 @@ public class SiloMatsimMultiYearTest {
 		config.qsim().setNumberOfThreads(1);
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MARYLAND);
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MARYLAND,0);
 			siloMatsim.run();
 		} catch (Exception e) {
 			e.printStackTrace();

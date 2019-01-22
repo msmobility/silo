@@ -47,14 +47,14 @@ public class SiloUtil {
 
         Properties properties = Properties.initializeProperties(propertiesPath, implementation);
 
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
+/*      createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
         SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
 
-        PropertiesUtil.writePropertiesForThisRun(propertiesPath);
+        PropertiesUtil.writePropertiesForThisRun(propertiesPath);*/
 
-        //initializeRandomNumber(properties.main.randomSeed);
-        trackingFile("open");
+        initializeRandomNumber(properties.main.randomSeed);
+        //trackingFile("open");
         return properties;
     }
 
@@ -581,8 +581,8 @@ public class SiloUtil {
 
 
     public static void finish (SiloModelContainer modelContainer) {
-        SummarizeData.resultFile("close");
-        trackingFile("close");
+        //SummarizeData.resultFile("close");
+        //trackingFile("close");
         if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
         if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
     }
@@ -1026,11 +1026,11 @@ public class SiloUtil {
     }
 
 
-    public static void closeAllFiles (long startTime) {
+    public static void closeAllFiles (long startTime, int combinationId) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
-        trackingFile("close");
-        SummarizeData.resultFile("close");
-        SummarizeData.resultFileSpatial("close");
+        //trackingFile("close");
+        //SummarizeData.resultFile("close");
+        //SummarizeData.resultFileSpatial("close", combinationId);
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
@@ -1060,12 +1060,12 @@ public class SiloUtil {
     public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId) {
         // aggregate micro data
 
-        if (trackHh != -1 || trackPp != -1 || trackDd != -1)
+/*        if (trackHh != -1 || trackPp != -1 || trackDd != -1)
             trackWriter.println("Started simulation for year " + year);
-        logger.info("  Summarizing micro data for year " + year);
+        logger.info("  Summarizing micro data for year " + year);*/
 
-        SummarizeData.resultFile("Year " + year, false);
-        dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
+        SummarizeData.resultFile("close", false);
+        //dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
         //removed for machine learning exercise
         /*dataContainer.getRealEstateData().summarizeDwellings();
         dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());*/
@@ -1084,7 +1084,7 @@ public class SiloUtil {
 
     public static void summarizeHouseholdSizeDistribution(Map<Integer, int[]> distributionByYear, int combinationId){
         String fileName = Properties.get().main.baseDirectory + "scenOutput/" +
-                Properties.get().main.scenarioName + "/householdSizeDistribution.csv";
+                Properties.get().main.scenarioName + combinationId + "/householdSizeDistribution.csv";
         PrintWriter pw = openFileForSequentialWriting(fileName, false);
         pw.println("combinationId,Year,HHsize1,HHsize2,HHsize3,HHsize4,HHsize5,HHsize6,HHsize7,HHsize8,HHsize9,HHsize10");
         for (int year =  Properties.get().main.startYear; year <  Properties.get().main.endYear; year ++) {

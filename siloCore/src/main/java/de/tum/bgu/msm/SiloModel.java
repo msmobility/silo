@@ -26,6 +26,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.MicroSimulation;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -112,13 +113,14 @@ public final class SiloModel {
 			logger.error("Error running SILO.");
 			throw new RuntimeException(e);
 		} finally {
-			SiloUtil.closeAllFiles(startTime);
+			SiloUtil.closeAllFiles(startTime, combinationId);
 		}
 
 	}
 
 	private void setupModel() {
 		//logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
+		SummarizeData.openResultFile(properties, combinationId);
 		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
 		setupContainer();
         setupYears();
@@ -246,7 +248,7 @@ public final class SiloModel {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             IssueCounter.setUpCounter();    // setup issue counter for this simulation period
-            SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
+            //SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
             //timeTracker.setCurrentYear(year);
 
             //timeTracker.reset();
@@ -314,7 +316,7 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			timeTracker.record("updateRealEstatePrices");*/
 
-			microSim.finishYear(year, data);
+			microSim.finishYear(year, combinationId);
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			householdSizeDistribution.put(year, householdData.getHouseholdSizeDistribution());
@@ -340,7 +342,7 @@ public final class SiloModel {
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}*/
 		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
-		//SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
+		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
 		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");

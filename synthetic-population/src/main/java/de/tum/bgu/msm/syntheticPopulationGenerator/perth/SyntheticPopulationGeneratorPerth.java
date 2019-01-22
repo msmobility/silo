@@ -27,7 +27,7 @@ public class SyntheticPopulationGeneratorPerth {
         try {
 //            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.PERTH);
         rb = new PropertyResourceBundle(new FileReader(args[0]));
-        PropertiesUtil.writePropertiesForThisRun(args[0]);
+        PropertiesUtil.writePropertiesForThisRun(args[0],0);
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);
         }
