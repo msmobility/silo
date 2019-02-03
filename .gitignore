@@ -1,9 +1,10 @@
 .idea/workspace.xml
 out
-/.classpath
-/.project
+*.gitignore
+*.classpath
+*.project
 /bin/
-/.settings/
+*.settings/
 /target/
 .idea/
 *.iml
