@@ -16,6 +16,7 @@ scenOutput
 status.csv
 test/output/*
 test/scenarios/annapolis/null_t.csv
+*.DS_Store
 
 tripAttraction.csv
 
