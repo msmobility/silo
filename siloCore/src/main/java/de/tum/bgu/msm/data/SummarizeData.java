@@ -551,7 +551,8 @@ public class SummarizeData {
                 pwp.print(0);
             }
             pwp.print(",");
-            pwp.print(pp.getJobId());
+            final int jobId = pp.getJobId();
+            pwp.print(jobId);
             pwp.print(",");
             pwp.print(pp.getIncome());
             if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
@@ -563,8 +564,12 @@ public class SummarizeData {
                 Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
-                int jobTaz = dataContainer.getJobData().getJobFromId(pp.getJobId()).getZoneId();
-                pwp.print(jobTaz);
+                if(jobId <= 0) {
+                    pwp.print("-1");
+                } else {
+                    int jobTaz = dataContainer.getJobData().getJobFromId(jobId).getZoneId();
+                    pwp.print(jobTaz);
+                }
                 pwp.print(",");
                 Coordinate schoolCoord = pp.getSchoolLocation();
                 pwp.print(pp.getSchoolType());
