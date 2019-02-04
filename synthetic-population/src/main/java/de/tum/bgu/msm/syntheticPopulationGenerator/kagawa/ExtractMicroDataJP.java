@@ -1,7 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -21,6 +24,7 @@ import java.util.ResourceBundle;
 public class ExtractMicroDataJP {
 
     private ResourceBundle rb;
+    private final DataSetSynPop dataSetSynPop;
 
     //Routes of the input data
     protected static final String PROPERTIES_MICRODATA_JP                 = "micro.data";
@@ -71,9 +75,15 @@ public class ExtractMicroDataJP {
     private HashMap<String, String> attributesDictionary;
 
 
-    public ExtractMicroDataJP(ResourceBundle rb) {
+    private Table<Integer, String, Integer> personTable = HashBasedTable.create();
+    private Table<Integer, String, Integer> householdTable = HashBasedTable.create();
+    private Table<Integer, String, Integer> dwellingTable = HashBasedTable.create();
+
+
+    public ExtractMicroDataJP(ResourceBundle rb, DataSetSynPop dataSetSynPop) {
         // Constructor
         this.rb = rb;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
     public TableDataSet getFrequencyMatrix() {
@@ -200,38 +210,57 @@ public class ExtractMicroDataJP {
                 microHouseholds.setValueAt(hhCount,"id",hhCount);
                 microHouseholds.setValueAt(hhCount,"H_Code",householdNumber);
                 microHouseholds.setValueAt(hhCount,"firstPerson",personCount);
+                householdTable.put(hhCount,"id", hhCount);
+                householdTable.put(hhCount, "H_Code", householdNumber);
+                householdTable.put(hhCount,"firstPerson", personCount);
                 for (int j = 0; j < attributesMicroData.get("Household").length; j++){
                     int value = (int) microData.getValueAt(i,attributesMicroData.get("Household")[j]);
                     microHouseholds.setValueAt(hhCount,attributesMicroData.get("Household")[j],value);
+                    householdTable.put(hhCount, attributesMicroData.get("Household")[j],value);
                 }
                 microDwellings.setValueAt(hhCount,"id",hhCount);
+                dwellingTable.put(hhCount, "id", hhCount);
                 for (int j = 0; j < attributesMicroData.get("Dwelling").length; j++){
                     int value = (int) microData.getValueAt(i,attributesMicroData.get("Dwelling")[j]);
                     microDwellings.setValueAt(hhCount,attributesMicroData.get("Dwelling")[j],value);
+                    dwellingTable.put(hhCount,attributesMicroData.get("Dwelling")[j],value);
                 }
+                dwellingTable.put(hhCount,"PtResCode", hhCount);
                 microPersons.setValueAt(personCount,"id",personCount);
                 microPersons.setValueAt(personCount,"idHH",hhCount);
                 microPersons.setValueAt(personCount,"H_Code",householdNumber);
+                personTable.put(personCount, "id", personCount);
+                personTable.put(personCount,"idHh",hhCount);
+                personTable.put(personCount,"H_Code",householdNumber);
                 for (int j = 0; j < attributesMicroData.get("Person").length; j++){
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
+                    personTable.put(personCount,attributesMicroData.get("Person")[j],value);
                 }
                 int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
                 microPersons.setValueAt(personCount,"occupation", job[0]);
                 microPersons.setValueAt(personCount,"jobType", job[1]);
+                personTable.put(personCount,"occupation", job[0]);
+                personTable.put(personCount,"jobType", job[1]);
                 previoushhID = householdNumber;
             } else {
                 personCount++;
                 microPersons.setValueAt(personCount,"id",personCount);
                 microPersons.setValueAt(personCount,"idHH",hhCount);
                 microPersons.setValueAt(personCount,"H_Code",householdNumber);
+                personTable.put(personCount, "id", personCount);
+                personTable.put(personCount,"idHh",hhCount);
+                personTable.put(personCount,"H_Code",householdNumber);
                 for (int j = 0; j < attributesMicroData.get("Person").length; j++){
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
+                    personTable.put(personCount,attributesMicroData.get("Person")[j],value);
                 }
                 int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
                 microPersons.setValueAt(personCount,"occupation", job[0]);
                 microPersons.setValueAt(personCount,"jobType", job[1]);
+                personTable.put(personCount,"occupation", job[0]);
+                personTable.put(personCount,"jobType", job[1]);
             }
         }
         ppFileName = ("microData/interimFiles/microPersons.csv");
@@ -240,6 +269,12 @@ public class ExtractMicroDataJP {
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
         ddFileName = ("microData/interimFiles/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
+        dataSetSynPop.setPersonTable(personTable);
+        dataSetSynPop.setHouseholdTable(householdTable);
+        dataSetSynPop.setDwellingTable(dwellingTable);
+        dataSetSynPop.setPersonDataSet(microPersons);
+        dataSetSynPop.setHouseholdDataSet(microHouseholds);
+        dataSetSynPop.setDwellingDataSet(microDwellings);
     }
 
 
@@ -284,6 +319,7 @@ public class ExtractMicroDataJP {
             frequencyMatrix.setValueAt(i,"population",hhSize);
         }
         SiloUtil.writeTableDataSet(frequencyMatrix,"microData/interimFiles/frequencyMatrix.csv");
+        dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
         logger.info("   Finished creating the frequency matrix");
     }
 
@@ -414,6 +450,7 @@ public class ExtractMicroDataJP {
         addIntegerColumnToTableDataSet(microPersons,"H_Code");
         addIntegerColumnToTableDataSet(microPersons,"idHH");
         addIntegerColumnToTableDataSet(microDwellings,"id",hhCountTotal);
+        addIntegerColumnToTableDataSet(microDwellings,"PtResCode", hhCountTotal);
 
         for (int i = 0; i < attributesMicroData.get("Person").length; i++){
             addIntegerColumnToTableDataSet(microPersons,attributesMicroData.get("Person")[i]);
