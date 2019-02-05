@@ -8,8 +8,7 @@ public enum Implementation {
     PERTH(2011),
     MSP(2000),
     KAGAWA(2010),
-    // to do: set base year for Austin as 2010 or 2000, depending on available data
-	AUSTIN(2010);
+	AUSTIN(2017);
 
     public final int BASE_YEAR;
 
