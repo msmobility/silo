@@ -8,6 +8,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -165,9 +166,9 @@ public class SyntheticPopJP implements SyntheticPopI {
         long startTime = System.nanoTime();
         //Run fitting procedure
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
-            runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-            //createWeightsAndErrorsCity();
-            //new IPUbyCity(dataSetSynPop).run();
+            //runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            createWeightsAndErrorsCity();
+            new IPUbyCity(dataSetSynPop).run();
         } else {
             readIPU(); //Read the weights to select the household
         }
@@ -177,6 +178,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         assignSchools(); //School allocation
         //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         //SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
+        SummarizeData.writeOutSyntheticPopulation(2000,dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -549,7 +551,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     private void readIPU(){
         //Read entry data for household selection
         logger.info("   Reading the weights matrix");
-        weightsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
+        weightsTable = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
         weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
 
         logger.info("   Finishing reading the results from the IPU");
@@ -1145,7 +1147,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
                     //copy the private household characteristics
                     int householdSize = (int) microHouseholds.getIndexedValueAt(selectedHh, "HHsize");
-                    int householdCars = (int) microHouseholds.getIndexedValueAt(selectedHh, "N_Car");
+                    int householdCars = Math.min((int) microHouseholds.getIndexedValueAt(selectedHh, "N_Car"),3);
                     id = householdDataManager.getNextHouseholdId();
                     int newDdId = RealEstateDataManager.getNextDwellingId();
                     Household household = householdFactory.createHousehold(id, newDdId, householdCars); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
@@ -1190,11 +1192,12 @@ public class SyntheticPopJP implements SyntheticPopI {
                         householdDataManager.addPersonToHousehold(pers, household);
                         pers.setEducationLevel(education);
                         pers.setTelework(jobType);
-                        PersonRole role = PersonRole.SINGLE; //default value = single
-                        if (pers.getAge() < 15) { //the person is the grandchild of the household head
-                           role = PersonRole.CHILD;
+                        PersonRole role = PersonRole.CHILD; //default value = child
+                        if ((int)microPersons.getValueAt(personCounter, "personRole") == 1) { //the person is single
+                           role = PersonRole.SINGLE;
+                        } else if ((int)microPersons.getValueAt(personCounter, "personRole") == 2) { // the person is married
+                            role = PersonRole.MARRIED;
                         }
-                        //todo. check for household relationships!
                         pers.setRole(role);
                         pers.setNationality(Nationality.GERMAN);
                         boolean license = false;
