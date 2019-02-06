@@ -5,7 +5,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -271,7 +270,7 @@ public class SummarizeData {
                             pwp.print(",");
                             pwp.print(pp.getOccupation());
                             pwp.print(",0,");
-                            pwp.print(pp.getWorkplace());
+                            pwp.print(pp.getJobId());
                             pwp.print(",");
                             pwp.println(pp.getIncome());
                         }
@@ -300,7 +299,7 @@ public class SummarizeData {
                                     pwp.print(",");
                                     pwp.print(pp.getOccupation());
                                     pwp.print(",0,");
-                                    pwp.print(pp.getWorkplace());
+                                    pwp.print(pp.getJobId());
                                     pwp.print(",");
                                     pwp.println(pp.getIncome());
                                     artificialPpId++;
@@ -332,7 +331,7 @@ public class SummarizeData {
                                 pwp.print(",");
                                 pwp.print(pp.getOccupation());
                                 pwp.print(",0,");
-                                pwp.print(pp.getWorkplace());
+                                pwp.print(pp.getJobId());
                                 pwp.print(",");
                                 pwp.println(pp.getIncome());
                             }
@@ -552,7 +551,8 @@ public class SummarizeData {
                 pwp.print(0);
             }
             pwp.print(",");
-            pwp.print(pp.getWorkplace());
+            final int jobId = pp.getJobId();
+            pwp.print(jobId);
             pwp.print(",");
             pwp.print(pp.getIncome());
             if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
@@ -564,7 +564,12 @@ public class SummarizeData {
                 Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
-                pwp.print(pp.getJobTAZ());
+                if(jobId <= 0) {
+                    pwp.print("-1");
+                } else {
+                    int jobTaz = dataContainer.getJobData().getJobFromId(jobId).getZoneId();
+                    pwp.print(jobTaz);
+                }
                 pwp.print(",");
                 Coordinate schoolCoord = pp.getSchoolLocation();
                 pwp.print(pp.getSchoolType());

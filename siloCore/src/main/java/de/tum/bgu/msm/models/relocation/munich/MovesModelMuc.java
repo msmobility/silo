@@ -9,7 +9,6 @@ package de.tum.bgu.msm.models.relocation.munich;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -179,8 +178,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
-            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
-            	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getWorkplace()).getZoneId());
+            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
+            	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getJobId()).getZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
                 householdIncome += pp.getIncome();
             }
@@ -294,8 +293,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         Map<Person, Job> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
-            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getWorkplace() != -2) {
-            	Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getWorkplace()));
+            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
+            	Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
                 jobsForThisHousehold.put(pp, workLocation);
             }
         }

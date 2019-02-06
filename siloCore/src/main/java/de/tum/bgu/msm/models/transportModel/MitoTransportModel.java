@@ -70,9 +70,9 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				MitoPerson mitoPerson = convertToMitoPp(person);
 				Coordinate workplaceCoordinate = null;
 				//todo need to mode the transitions between new born, student, unemployed and worker in a better way
-				if (person.getWorkplace()>0) {
+				if (person.getJobId()>0) {
 					//is a worker
-					Job job = dataContainer.getJobData().getJobFromId(person.getWorkplace());
+					Job job = dataContainer.getJobData().getJobFromId(person.getJobId());
 					if (job instanceof MicroLocation) {
 						//is a worker with a microlocated job
 						mitoPerson.setOccupationLocation(((MicroLocation) job).getCoordinate());
@@ -83,8 +83,8 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {
-				//logger.warn("Person " + person.getZoneId() + " refers to non-existing household " + hhId
-				//		+ " and will thus NOT be considered in the transport model.");
+				logger.warn("Person " + person.getId() + " refers to non-existing household " + hhId
+						+ " and will thus NOT be considered in the transport model.");
 			}
 		}
         logger.info("  SILO data being sent to MITO");
@@ -111,7 +111,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
 			}
             //todo if there are housholds without adults they cannot be processed
-			if (siloHousehold.getPersons().values().stream().filter(p -> p.getAge() >= 18).count() != 0){
+			if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)){
 				if((((MicroLocation) dwelling).getCoordinate() != null)){
 					//todo if there are households without microlocation mito does not work
 					household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
@@ -130,13 +130,14 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 	}
 
 	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household), household.getAutos(), zone);
+    	//convert yearly income of silo to monthly income in mito
+		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household) / 12, household.getAutos(), zone);
 	}
 
 	private MitoPerson convertToMitoPp(Person person) {
 		final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
 		final MitoOccupation mitoOccupation = MitoOccupation.valueOf(person.getOccupation().getCode());
-		final int workPlace = person.getWorkplace();
+		final int workPlace = person.getJobId();
 		int workzone = -1;
 		if(workPlace > 0) {
 			workzone = dataContainer.getJobData().getJobFromId(workPlace).getZoneId();

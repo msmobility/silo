@@ -115,9 +115,8 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             gender = FEMALE;
         }
         final Person child = factory.createPerson(id, 0, gender, household.getRace(),
-                Occupation.TODDLER, 0, 0);
+                Occupation.TODDLER,PersonRole.CHILD, 0, 0);
         householdData.addPerson(child);
-        child.setRole(PersonRole.CHILD);
         householdData.addPersonToHousehold(child, household);
         householdData.addHouseholdThatChanged(household);
         if (id == SiloUtil.trackPp

@@ -68,10 +68,9 @@ public class DefaultPersonReader implements PersonReader{
                 if(household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                Person pp = ppFactory.createPerson(id, age, gender, race, occupation, workplace, income);
+                Person pp = ppFactory.createPerson(id, age, gender, race, occupation,pr, workplace, income);
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, household);
-                pp.setRole(pr);
                 pp.setDriverLicense(license);
 
                 //TODO: remove it when we implement interface

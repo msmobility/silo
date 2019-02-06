@@ -35,19 +35,19 @@ public class LeaveParentHhModelTest {
 
         household = HouseholdUtil.getFactory().createHousehold(999, 1, 0);
         dataContainer.getHouseholdData().addHousehold(household);
-        Person parent1 = PersonUtils.getFactory().createPerson(123, 40, Gender.MALE, Race.other, Occupation.EMPLOYED, 0, 0);
-        Person parent2 = PersonUtils.getFactory().createPerson(456, 40, Gender.FEMALE, Race.other, Occupation.EMPLOYED, 0, 0);
+        Person parent1 = PersonUtils.getFactory().createPerson(123, 40, Gender.MALE, Race.other, Occupation.EMPLOYED, PersonRole.SINGLE, 0, 0);
+        Person parent2 = PersonUtils.getFactory().createPerson(456, 40, Gender.FEMALE, Race.other, Occupation.EMPLOYED, PersonRole.SINGLE, 0, 0);
         dataContainer.getHouseholdData().addPerson(parent1);
         dataContainer.getHouseholdData().addPerson(parent2);
 
-        person = PersonUtils.getFactory().createPerson(0, 20, Gender.FEMALE, Race.other, Occupation.STUDENT, 0, 0);
+        person = PersonUtils.getFactory().createPerson(0, 20, Gender.FEMALE, Race.other, Occupation.STUDENT, PersonRole.SINGLE, 0, 0);
         dataContainer.getHouseholdData().addPerson(person);
         person.setRole(PersonRole.CHILD);
         dataContainer.getHouseholdData().addPersonToHousehold(person, household);
         dataContainer.getHouseholdData().addPersonToHousehold(parent1, household);
         dataContainer.getHouseholdData().addPersonToHousehold(parent2, household);
 
-        dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
+        dataContainer.getHouseholdData().identifyHighestHouseholdAndPersonId();
         dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
