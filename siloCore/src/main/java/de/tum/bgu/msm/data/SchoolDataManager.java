@@ -58,10 +58,10 @@ public class SchoolDataManager {
 
     public void setSchoolSearchTree(Properties properties) {
         Envelope bounds = loadEnvelope(properties);
-        double minX = bounds.getMinX();
-        double minY = bounds.getMinY();
-        double maxX = bounds.getMaxX();
-        double maxY = bounds.getMaxY();
+        double minX = bounds.getMinX()-1;
+        double minY = bounds.getMinY()-1;
+        double maxX = bounds.getMaxX()+1;
+        double maxY = bounds.getMaxY()+1;
         this.primarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.secondarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.tertiarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
