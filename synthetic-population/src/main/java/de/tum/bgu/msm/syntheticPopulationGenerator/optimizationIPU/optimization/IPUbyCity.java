@@ -36,6 +36,7 @@ public class IPUbyCity {
 
     public void run(){
         for (int municipality : dataSetSynPop.getCityIDs()){
+            logger.info("   Municipality " + municipality + ". IPU starts");
             initializeErrorsandTotals(municipality);
             while (finish == 0 & iteration < PropertiesSynPop.get().main.maxIterations) {
                 calculateWeights(municipality);
@@ -44,6 +45,7 @@ public class IPUbyCity {
                 iteration++;
             }
             summarizeErrorsAndWeights(municipality, iteration);
+            logger.info("   IPU finished after : " + iteration + " iterations with a minimum average error of: " + minError * 100 + " %.");
             resetErrorsandTotals();
         }
 

@@ -176,6 +176,14 @@ public class SiloModelContainer {
                 move = new MovesModelMuc(dataContainer, acc);
                 educationUpdate = new MucEducationModelImpl(dataContainer);
                 break;
+            case KAGAWA:
+                createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
+                        (GeoDataMuc) dataContainer.getGeoData());
+                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
+                switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
+                move = new MovesModelMuc(dataContainer, acc);
+                educationUpdate = new MucEducationModelImpl(dataContainer);
+                break;
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
