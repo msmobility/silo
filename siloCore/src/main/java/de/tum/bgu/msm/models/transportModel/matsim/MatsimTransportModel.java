@@ -161,7 +161,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 //		if (config.transit().isUseTransit() && Properties.get().main.implementation == Implementation.MUNICH) {
 //			MatsimPTDistances matsimPTDistances = new MatsimPTDistances(config, scenario, (GeoDataMuc) dataContainer.getGeoData());
 //		}
-		travelTimes.update(tripRouter, leastCoastPathTree);
+		travelTimes.update(tripRouter, leastCoastPathTree, travelTime, disutility);
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
 

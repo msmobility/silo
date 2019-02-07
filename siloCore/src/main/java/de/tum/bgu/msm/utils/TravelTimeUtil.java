@@ -42,7 +42,9 @@ public class TravelTimeUtil {
 
         for (Zone origin : zones) {
             for (Zone destination : zones) {
-                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
+//                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
+                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), 50);
+
             }
         }
         return matrix;

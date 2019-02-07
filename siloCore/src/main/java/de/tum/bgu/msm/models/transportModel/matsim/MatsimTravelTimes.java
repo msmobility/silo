@@ -22,6 +22,8 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.facilities.Facility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 
@@ -32,7 +34,9 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 	private SkimTravelTimes delegate = new SkimTravelTimes() ;
 	private LeastCostPathTree leastCoastPathTree;
-	private Network network;
+    private TravelTime travelTime;
+    private TravelDisutility disutility;
+    private Network network;
 	private TripRouter tripRouter;
 	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 	private final static int NUMBER_OF_CALC_POINTS = 1;
@@ -43,10 +47,12 @@ public final class MatsimTravelTimes implements TravelTimes {
 	public MatsimTravelTimes() {
 	}
 
-	void update(TripRouter tripRouter, LeastCostPathTree leastCoastPathTree) {
+	void update(TripRouter tripRouter, LeastCostPathTree leastCoastPathTree, TravelTime travelTime, TravelDisutility disutility) {
 		this.tripRouter = tripRouter;
 		this.leastCoastPathTree = leastCoastPathTree;
-		this.treesForNodesByTimes.clear();
+        this.travelTime = travelTime;
+        this.disutility = disutility;
+        this.treesForNodesByTimes.clear();
 		TravelTimeUtil.updateTransitSkim(delegate,
 				Properties.get().main.startYear, Properties.get());
 	}
@@ -102,7 +108,19 @@ public final class MatsimTravelTimes implements TravelTimes {
 		}
 	}
 
-	@Override
+    public TravelTime getTravelTime() {
+        return travelTime;
+    }
+
+    public TravelDisutility getDisutility() {
+        return disutility;
+    }
+
+    public Network getNetwork() {
+        return network;
+    }
+
+    @Override
 	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
 		if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
 			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();

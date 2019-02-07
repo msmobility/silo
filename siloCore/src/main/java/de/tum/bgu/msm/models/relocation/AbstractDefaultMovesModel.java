@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.relocation;
 
-import de.tum.bgu.msm.utils.SiloUtil;
+import com.google.common.collect.Iterables;
+import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -8,17 +9,28 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.FastDijkstraFactory;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
@@ -51,16 +63,17 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected abstract void setupSelectDwellingModel();
 
     protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
+
     protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
 
 
     @Override
-    public EnumMap<HouseholdType,Double> updateUtilitiesOfVacantDwelling(Dwelling dd) {
+    public EnumMap<HouseholdType, Double> updateUtilitiesOfVacantDwelling(Dwelling dd) {
         // Calculate utility of this dwelling for each household type
-        EnumMap<HouseholdType,Double> utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
+        EnumMap<HouseholdType, Double> utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
         //double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht : HouseholdType.values()) {
-            utilitiesByHouseholdType.put(ht, calculateDwellingUtilityForHouseholdType(ht,  dd));
+            utilitiesByHouseholdType.put(ht, calculateDwellingUtilityForHouseholdType(ht, dd));
 
             //utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
         }
@@ -153,19 +166,68 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
                 "household types");
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            if (dd.getResidentId() == -1) {
-                // dwelling is vacant, evaluate for all household types
-                EnumMap<HouseholdType, Double> utilitiesByHhtype = updateUtilitiesOfVacantDwelling(dd);
-                dd.setUtilitiesByHouseholdType(utilitiesByHhtype);
-            } else {
-                // dwelling is occupied, evaluate for the current household
-                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
-                double util = calculateDwellingUtilityForHouseholdType(hh.getHouseholdType(), dd);
-                util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
-                dd.setUtilOfResident(util);
-            }
+        JobDataManager jobData = dataContainer.getJobData();
+
+        AtomicInteger counter = new AtomicInteger(0);
+
+
+        final Collection<Dwelling> dwellings = dataContainer.getRealEstateData().getDwellings();
+        Iterable<List<Dwelling>> partitions = Iterables.partition(dwellings, (dwellings.size() / 16) + 1);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(16);
+        for (List<Dwelling> partition : partitions) {
+            executor.addTaskToQueue(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    final MatsimTravelTimes travelTimes = (MatsimTravelTimes) dataContainer.getTravelTimes();
+                    LeastCostPathCalculator tree = new FastDijkstraFactory().createPathCalculator(travelTimes.getNetwork(),
+                            travelTimes.getDisutility(), travelTimes.getTravelTime());
+
+                    for (Dwelling dd : partition) {
+                        Household hh = householdData.getHouseholdFromId(dd.getResidentId());
+
+                        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
+                        for (Person pp : hh.getPersons().values()) {
+                            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
+                                Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
+                                jobsForThisHousehold.put(pp, workLocation);
+                            }
+                        }
+                        double workDistanceUtility = 1;
+                        for (Job workLocation : jobsForThisHousehold.values()) {
+                            Coord originCoord = CoordUtils.createCoord(((MicroLocation) dd).getCoordinate());
+                            Coord destinationCoord = CoordUtils.createCoord(((MicroLocation) workLocation).getCoordinate());
+                            final Node originNode = NetworkUtils.getNearestNode(travelTimes.getNetwork(), originCoord);
+                            final Node destinationNode = NetworkUtils.getNearestNode(travelTimes.getNetwork(), destinationCoord);
+                            double travelTime = tree.calcLeastCostPath(originNode, destinationNode,
+                                    workLocation.getStartTimeInSeconds(), null, null).travelTime;
+                            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1, (int) travelTime));
+                            workDistanceUtility *= factorForThisZone;
+                        }
+                        final int i = counter.incrementAndGet();
+                        if (LongMath.isPowerOfTwo(i)) {
+                            LOGGER.info(i);
+                        }
+                    }
+                    return null;
+                }
+            });
         }
+        executor.execute();
+
+
+//        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
+//            if (dd.getResidentId() == -1) {
+//                // dwelling is vacant, evaluate for all household types
+//                EnumMap<HouseholdType, Double> utilitiesByHhtype = updateUtilitiesOfVacantDwelling(dd);
+//                dd.setUtilitiesByHouseholdType(utilitiesByHhtype);
+//            } else {
+//                // dwelling is occupied, evaluate for the current household
+//                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
+//                double util = calculateDwellingUtilityForHouseholdType(hh.getHouseholdType(), dd);
+//                util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
+//                dd.setUtilOfResident(util);
+//            }
+//        }
     }
 
     protected double convertPriceToUtility(int price, HouseholdType ht) {
@@ -212,8 +274,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         }
         return (int) ((priceSum * 1f) / (counter * 1f) + 0.5f);
     }
-
-
 
 
     protected double convertAccessToUtility(double accessibility) {
