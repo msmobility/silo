@@ -3,6 +3,7 @@ package de.tum.bgu.msm.utils.concurrent;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.network.Link;
@@ -25,6 +26,7 @@ public class ParallelRoutingTest {
     private static Logger logger = Logger.getLogger(ParallelRoutingTest.class);
 
     @Test
+    @Ignore
     public void testParallelRouting() {
 
         Network network = NetworkUtils.createNetwork();
