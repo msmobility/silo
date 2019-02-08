@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
 
     protected final static Logger LOGGER = Logger.getLogger(AbstractDefaultMovesModel.class);
-    protected final static Logger traceLogger = Logger.getLogger("trace");
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
@@ -47,7 +46,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     protected abstract void setupSelectRegionModel();
-
     protected abstract void setupSelectDwellingModel();
 
     protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
@@ -58,11 +56,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     public EnumMap<HouseholdType,Double> updateUtilitiesOfVacantDwelling(Dwelling dd) {
         // Calculate utility of this dwelling for each household type
         EnumMap<HouseholdType,Double> utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
-        //double[] utilByHhType = new double[HouseholdType.values().length];
         for (HouseholdType ht : HouseholdType.values()) {
             utilitiesByHouseholdType.put(ht, calculateDwellingUtilityForHouseholdType(ht,  dd));
-
-            //utilByHhType[ht.ordinal()] = calculateDwellingUtilityOfHousehold(ht, -1, dd);
         }
         return utilitiesByHouseholdType;
     }
@@ -90,7 +85,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (!moveOrNot(household)) {
             return false;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
         }
-        int oldDd = household.getDwellingId();
         int idNewDD = searchForNewDwelling(household);  // Step 2: Choose new dwelling
         if (idNewDD > 0) {
             moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
@@ -105,7 +99,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
                 SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
                         "could not find an adequate dwelling.");
         }
-
         return false;
     }
 
@@ -113,42 +106,21 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     public void finishYear(int year) {
     }
 
-
     private void setupEvaluateDwellings() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
         dwellingUtilityJSCalculator = new DwellingUtilityJSCalculator(reader);
     }
 
     private void setupMoveOrNotMove() {
-        /*int moveOrNotModelSheetNumber = Properties.get().moves.moveOrNotSheet;
-        UtilityExpressionCalculator moveOrNotModel = new UtilityExpressionCalculator(new File(uecFileName),
-                moveOrNotModelSheetNumber,
-                dataSheetNumber,
-                SiloUtil.getRbHashMap(),
-                MovesDMU.class);
-        MovesDMU moveOrNotDmu = new MovesDMU();
-        // everything is available
-        numAltsMoveOrNot = moveOrNotModel.getNumberOfAlternatives();
-        int[] moveOrNotAvail = new int[numAltsMoveOrNot + 1];
-        for (int i = 1; i < moveOrNotAvail.length; i++) moveOrNotAvail[i] = 1;
-        // set DMU attributes
-        moveOrNotModel.solve(moveOrNotDmu.getDmuIndexValues(), moveOrNotDmu, moveOrNotAvail);
-        // todo: looks wrong, parameter should be read from UEC file, not from properties file
-        parameter_MoveOrNotSlope = Properties.get().moves.moveOrNotSlope;
-        parameter_MoveOrNotShift = Properties.get().moves.moveOrNotShift;
-        if (logCalculationDwelling) {
-            moveOrNotModel.logAnswersArray(traceLogger, "Move-Or-Not Model");
-        }
-*/
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
         movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
-
     }
 
+    /**
+     * Walks through each dwelling and evaluate utility of current resident. For vacant dwellings, expected utility
+     * for each household type is calculated.
+     */
     private void evaluateAllDwellingUtilities() {
-        // walk through each dwelling and evaluate utility of current resident
-        // also, calculate utility of vacant dwellings for all household types
-
         LOGGER.info("  Evaluating utility of dwellings for current residents and utility of vacant dwellings for all " +
                 "household types");
 
@@ -172,21 +144,29 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
         IncomeCategory incCategory = ht.getIncomeCategory();
         Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
-        int priceCategory = (int) (price / 200f + 0.5);   // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        int priceCategory = (int) (price / 200f + 0.5);
         priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
         double util = 0;
-        for (int i = 0; i <= priceCategory; i++) util += shares.get(i);
-        return (1f - util);   // invert utility, as lower price has higher utility
+        for (int i = 0; i <= priceCategory; i++) {
+            util += shares.get(i);
+        }
+        // invert utility, as lower price has higher utility
+        return (1f - util);
     }
 
     protected double convertPriceToUtility(int price, IncomeCategory incCategory) {
 
         Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
-        int priceCategory = (int) (price / 200f);   // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        int priceCategory = (int) (price / 200f);
         priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
         double util = 0;
-        for (int i = 0; i <= priceCategory; i++) util += shares.get(i);
-        return (1f - util);   // invert utility, as lower price has higher utility
+        for (int i = 0; i <= priceCategory; i++) {
+            util += shares.get(i);
+        }
+        // invert utility, as lower price has higher utility
+        return (1f - util);
     }
 
     protected double convertQualityToUtility(int quality) {
@@ -196,25 +176,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected double convertAreaToUtility(int area) {
         return (float) area / (float) RealEstateDataManager.largestNoBedrooms;
     }
-
-
-    protected int calculateRegPrice(int region) {
-        // calculate the average price across all dwelling types
-
-        int priceSum = 0;
-        int counter = 0;
-        for (Dwelling d : dataContainer.getRealEstateData().getDwellings()) {
-
-            if (geoData.getZones().get(d.getZoneId()).getRegion().getId() == region) {
-                priceSum += d.getPrice();
-                counter++;
-            }
-        }
-        return (int) ((priceSum * 1f) / (counter * 1f) + 0.5f);
-    }
-
-
-
 
     protected double convertAccessToUtility(double accessibility) {
         return accessibility / 100f;
@@ -240,8 +201,6 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         double currentUtil = dd.getUtilOfResident();
 
         double[] prop = new double[2];
-//        prop[0] = 1. - 1. / (1. + parameter_MoveOrNotShift *
-//                Math.exp(parameter_MoveOrNotSlope * (averageHousingSatisfaction[hhType.ordinal()] - currentUtil)));
 
         prop[0] = movesOrNotJSCalculator.getMovingProbability(averageHousingSatisfaction[hhType.ordinal()], currentUtil);
         prop[1] = 1. - prop[0];
@@ -252,7 +211,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
         // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
         if (dd.getRestriction() <= 0) {
-            return true;   // Dwelling is not income restricted
+            // Dwelling is not income restricted
+            return true;
         }
         int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
         return HouseholdUtil.getHhIncome(hh) <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
@@ -278,9 +238,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
         // if this household had a dwelling in this study area before, vacate old dwelling
         if (idOldDD > 0) {
-            Dwelling dd = dataContainer.getRealEstateData().getDwelling(idOldDD);
-            dd.setResidentID(-1);
-            dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
+            dataContainer.getRealEstateData().vacateDwelling(idOldDD);
         }
         dataContainer.getRealEstateData().removeDwellingFromVacancyList(idNewDD);
         hh.setDwelling(idNewDD);
