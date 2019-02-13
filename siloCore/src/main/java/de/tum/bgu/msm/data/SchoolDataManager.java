@@ -58,10 +58,10 @@ public class SchoolDataManager {
 
     public void setSchoolSearchTree(Properties properties) {
         Envelope bounds = loadEnvelope(properties);
-        double minX = bounds.getMinX();
-        double minY = bounds.getMinY();
-        double maxX = bounds.getMaxX();
-        double maxY = bounds.getMaxY();
+        double minX = bounds.getMinX()-1;
+        double minY = bounds.getMinY()-1;
+        double maxX = bounds.getMaxX()+1;
+        double maxY = bounds.getMaxY()+1;
         this.primarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.secondarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.tertiarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
@@ -93,7 +93,7 @@ public class SchoolDataManager {
         return schools.values();
     }
 
-    public School getClosestSchool(Person person) {
+    public School getClosestSchool(Person person, int schoolType) {
         Dwelling dwelling = data.getRealEstateData().getDwelling(person.getHousehold().getDwellingId());
 
         Coordinate coordinate = null;
@@ -102,7 +102,7 @@ public class SchoolDataManager {
         } else{
             coordinate = geoData.getZones().get(dwelling.getZoneId()).getRandomCoordinate();
         }
-        switch (person.getSchoolType()+1){
+        switch (schoolType){
             case 1:
                 return primarySearchTree.getClosest(coordinate.x,coordinate.y);
             case 2:
@@ -110,7 +110,7 @@ public class SchoolDataManager {
             case 3:
                 return tertiarySearchTree.getClosest(coordinate.x,coordinate.y);
             default:
-                throw new IllegalArgumentException(String.format("schoolType %d not valid.", person.getSchoolType()+1));
+                throw new IllegalArgumentException(String.format("schoolType %d not valid.", schoolType));
         }
     }
 

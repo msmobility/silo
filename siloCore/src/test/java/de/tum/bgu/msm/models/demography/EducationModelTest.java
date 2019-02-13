@@ -32,10 +32,8 @@ public class EducationModelTest {
     @Test
     public void testSchoolChange() {
         Person person = PersonUtils.getFactory().createPerson(0, 20, Gender.FEMALE, Race.other, Occupation.EMPLOYED, PersonRole.CHILD, 0, 0);
-        person.setSchoolPlace(10);
-        Assert.assertEquals(0, person.getEducationLevel());
+        person.setSchoolId(10);
         ((MstmEducationModelImpl)model).updateEducation(person);
-        Assert.assertEquals(2, person.getEducationLevel());
-        Assert.assertEquals(0, person.getSchoolPlace());
+        Assert.assertEquals(-1, person.getSchoolPlace());
     }
 }

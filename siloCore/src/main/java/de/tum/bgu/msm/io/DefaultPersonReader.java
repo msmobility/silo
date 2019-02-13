@@ -75,12 +75,14 @@ public class DefaultPersonReader implements PersonReader{
 
                 //TODO: remove it when we implement interface
                 if(Properties.get().main.implementation == Implementation.MUNICH){
-                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
-                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
-                    // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
-                    Coordinate schoolCoord = new Coordinate(
-                            Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
-                    pp.setSchoolCoordinate(schoolCoord, -1);
+                    int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
+                    int schoolId = Integer.parseInt(lineElements[posSchoolId]);
+                    if(schoolId == 0){
+                        pp.setSchoolId(-1);
+                    }else {
+                        pp.setSchoolId(schoolId);
+                    }
+
                 }
 
                 if (id == SiloUtil.trackPp) {

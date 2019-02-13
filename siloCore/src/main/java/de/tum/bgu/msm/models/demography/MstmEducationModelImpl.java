@@ -47,14 +47,13 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
 
     // todo: Implement logical rules how students change from one school type to another or graduate from school/university
     boolean updateEducation(Person person) {
-        int schoolId = 0;
-        person.setSchoolPlace(schoolId);
+        int schoolId = -1;
+        person.setSchoolId(schoolId);
         // todo if 2 is the right code for someone who graduates from high school
         //todo also check occupation transition to worker? 'nk
-        person.setEducationLevel(2);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
-                    " changed school. New school place (0 = left school) " + schoolId);
+                    " changed school. New school place (-1 = left school) " + schoolId);
         }
         return true;
     }

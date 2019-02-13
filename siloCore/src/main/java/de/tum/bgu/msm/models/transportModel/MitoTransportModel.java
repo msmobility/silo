@@ -2,6 +2,7 @@ package de.tum.bgu.msm.models.transportModel;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.MitoModel;
+import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
@@ -77,9 +78,12 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 						//is a worker with a microlocated job
 						mitoPerson.setOccupationLocation(((MicroLocation) job).getCoordinate());
 					}
-				} else if (person.getSchoolLocation() instanceof MicroLocation) {
+				} else if (person.getSchoolId()>0) {
 					//is a student with a microlocated school
-					mitoPerson.setOccupationLocation(person.getSchoolLocation());
+					School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
+					if(school instanceof MicroLocation) {
+						mitoPerson.setOccupationLocation(((MicroLocation) school).getCoordinate());
+					}
 				}
 				households.get(hhId).addPerson(mitoPerson);
 			} else {

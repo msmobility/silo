@@ -514,19 +514,9 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("homeZone");
             pwp.print(",");
-            pwp.print("workZone");
-            pwp.print(",");
-            pwp.print("schoolDE");
-            pwp.print(",");
-            pwp.print("schoolTAZ");
-            pwp.print(",");
             pwp.print("disability");
             pwp.print(",");
             pwp.print("schoolId");
-            pwp.print(",");
-            pwp.print("schoolCoordX");
-            pwp.print(",");
-            pwp.print("schoolCoordY");
         }
         pwp.println();
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
@@ -563,31 +553,9 @@ public class SummarizeData {
                 Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
-                int jobTaz = dataContainer.getJobData().getJobFromId(pp.getJobId()).getZoneId();
-                pwp.print(jobTaz);
-                pwp.print(",");
-                Coordinate schoolCoord = pp.getSchoolLocation();
-                pwp.print(pp.getSchoolType());
-                pwp.print(",");
-                try {
-                    pwp.print(pp.getSchoolPlace());
-                } catch (NullPointerException e){
-                    pwp.print(0);
-                }
-                pwp.print(",");
                 pwp.print(0);
                 pwp.print(",");
                 pwp.print(pp.getSchoolId());
-                pwp.print(",");
-                try {
-                    pwp.print(schoolCoord.x);
-                    pwp.print(",");
-                    pwp.print(schoolCoord.y);
-                } catch (NullPointerException e) {
-                    pwp.print(0);
-                    pwp.print(",");
-                    pwp.print(0);
-                }
             }
             pwp.println();
 
