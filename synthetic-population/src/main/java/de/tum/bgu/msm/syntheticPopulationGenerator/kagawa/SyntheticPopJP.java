@@ -8,6 +8,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -16,7 +17,11 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.IPUbyCity;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import omx.OmxFile;
 import omx.OmxLookup;
@@ -32,6 +37,7 @@ import java.util.logging.Logger;
 public class SyntheticPopJP implements SyntheticPopI {
 
     private ResourceBundle rb;
+    private final DataSetSynPop dataSetSynPop;
     //Options to run de synthetic population
     protected static final String PROPERTIES_RUN_IPU                      = "run.ipu.synthetic.pop";
     protected static final String PROPERTIES_RUN_SYNTHETIC_POPULATION     = "run.synth.pop.generator";
@@ -62,9 +68,8 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected static final String PROPERTIES_SCHOOL_TYPES_DE              = "school.types";
     protected static final String PROPERTIES_JOB_ALPHA                    = "employment.choice.alpha";
     protected static final String PROPERTIES_JOB_GAMMA                    = "employment.choice.gamma";
-    protected static final String PROPERTIES_UNIVERSITY_ALPHA             = "university.choice.alpha";
-    protected static final String PROPERTIES_UNIVERSITY_GAMMA             = "university.choice.gamma";
-    protected static final String PROPERTIES_EMPLOYMENT_BY_GENDER_EDU     = "employment.probability";
+    protected static final String PROPERTIES_UNIVERSITY_ALPHA             = "employment.choice.alpha";
+    protected static final String PROPERTIES_UNIVERSITY_GAMMA             = "employment.choice.gamma";
     //Read the synthetic population
     protected static final String PROPERTIES_HOUSEHOLD_SYN_POP            = "household.file.ascii";
     protected static final String PROPERTIES_PERSON_SYN_POP               = "person.file.ascii";
@@ -121,7 +126,6 @@ public class SyntheticPopJP implements SyntheticPopI {
 
     protected double alphaJob;
     protected double gammaJob;
-    protected TableDataSet probabilitiesJob;
 
     protected Matrix distanceMatrix;
     protected Matrix distanceImpedance;
@@ -132,9 +136,10 @@ public class SyntheticPopJP implements SyntheticPopI {
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
 
 
-    public SyntheticPopJP(ResourceBundle rb) {
+    public SyntheticPopJP(ResourceBundle rb, DataSetSynPop dataSetSynPop) {
         // Constructor
         this.rb = rb;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
 
@@ -144,7 +149,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         //TODO: change to cape town implementation
         dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
-        ExtractMicroDataJP extractMicroData = new ExtractMicroDataJP(rb);
+        ExtractMicroDataJP extractMicroData = new ExtractMicroDataJP(rb, dataSetSynPop);
         extractMicroData.run();
         frequencyMatrix = extractMicroData.getFrequencyMatrix();
         microDataDwelling = extractMicroData.getMicroDwellings();
@@ -161,7 +166,9 @@ public class SyntheticPopJP implements SyntheticPopI {
         long startTime = System.nanoTime();
         //Run fitting procedure
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
-            runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            //runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
+            createWeightsAndErrorsCity();
+            new IPUbyCity(dataSetSynPop).run();
         } else {
             readIPU(); //Read the weights to select the household
         }
@@ -171,6 +178,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         assignSchools(); //School allocation
         //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
         //SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
+        SummarizeData.writeOutSyntheticPopulation(2000,dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -190,6 +198,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
+        HashMap<Integer, ArrayList> municipalitiesByCounty;
         municipalitiesByCounty = new HashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
@@ -200,17 +209,23 @@ public class SyntheticPopJP implements SyntheticPopI {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
-                    int[] citiesInThisCounty = municipalitiesByCounty.get(county);
-                    int[] expandedCityList = SiloUtil.expandArrayByOneElement(citiesInThisCounty, city);
-                    municipalitiesByCounty.put(county, expandedCityList);
+                    ArrayList<Integer> citiesInThisCounty = municipalitiesByCounty.get(county);
+                    citiesInThisCounty.add(city);
+                    municipalitiesByCounty.put(county, citiesInThisCounty);
                 } else {
-                    municipalitiesByCounty.put(county, new int[]{city});
+                    ArrayList<Integer> citiesInThisCounty = new ArrayList<>();
+                    citiesInThisCounty.add(city);
+                    municipalitiesByCounty.put(county, citiesInThisCounty);
                 }
             }
         }
         cityID = SiloUtil.convertArrayListToIntArray(municipalities);
         countyID = SiloUtil.convertArrayListToIntArray(counties);
-
+        dataSetSynPop.setCityIDs(cityID);
+        dataSetSynPop.setCountyIDs(countyID);
+        dataSetSynPop.setMunicipalities(municipalities);
+        dataSetSynPop.setCounties(counties);
+        dataSetSynPop.setMunicipalitiesByCounty(municipalitiesByCounty);
 
         //TAZ attributes
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
@@ -228,6 +243,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 cityTAZ.put(city,previousTaz);
             }
         }
+        dataSetSynPop.setTazByMunicipality(cityTAZ);
 
 
         //Read the skim matrix
@@ -248,6 +264,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
             }
         }
+        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
     }
 
@@ -534,7 +551,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     private void readIPU(){
         //Read entry data for household selection
         logger.info("   Reading the weights matrix");
-        weightsTable = SiloUtil.readCSVfile(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
+        weightsTable = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_WEIGHTS_MATRIX));
         weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
 
         logger.info("   Finishing reading the results from the IPU");
@@ -634,11 +651,6 @@ public class SyntheticPopJP implements SyntheticPopI {
         Collections.shuffle(workerArrayList);
 
 
-        //Job type probabilities
-        probabilitiesJob = SiloUtil.readCSVfile(rb.getString(PROPERTIES_EMPLOYMENT_BY_GENDER_EDU));
-        probabilitiesJob.buildStringIndex(1);
-
-
         //Start the selection of the jobs in random order to avoid geographical bias
         logger.info("   Started assigning workplaces");
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
@@ -647,7 +659,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
-            int selectedJobType = selectJobType(pp);
+            int selectedJobType = pp.getTelework() - 1; //1 Agr, 2 Ind; 3 Srv
 
             int[] keys = idZonesVacantJobsByType.get(selectedJobType);
             int lengthKeys = numberZonesByType.get(selectedJobType);
@@ -749,24 +761,23 @@ public class SyntheticPopJP implements SyntheticPopI {
         identifyVacantSchoolsByZoneByType();
 
 
-        //For validation - obtain the trip length distribution
+        /*//For validation - obtain the trip length distribution
         Frequency travelSecondary = new Frequency();
         Frequency travelUniversity = new Frequency();
         Frequency travelPrimary = new Frequency();
         validationCommutersFlow(); //Generates the validation tabledatasets
         int[] flow = SiloUtil.createArrayWithValue(odMunicipalityFlow.getRowCount(),0);
         odMunicipalityFlow.appendColumn(flow,Integer.toString(count));
-
+*/
 
         //Produce one array list with students' ID
-        Map<Integer, Person> personMap = (Map<Integer, Person>) dataContainer.getHouseholdData().getPersons();
+        Collection<Person> persons = dataContainer.getHouseholdData().getPersons();
         ArrayList<Person> studentArrayList = new ArrayList<>();
         int[] studentsByType2 = new int[schoolTypes.length];
-        for (Map.Entry<Integer, Person> pair : personMap.entrySet()) {
-            int school = pair.getValue().getSchoolType();
-            if (school > 0) { //They are studying
-                studentArrayList.add(pair.getValue());
-                studentsByType2[school - 1] = studentsByType2[school - 1] + 1;
+        for (Person person : persons) {
+            if (person.getSchoolType() > 0) { //They are studying
+                studentArrayList.add(person);
+                studentsByType2[person.getSchoolType() - 1] = studentsByType2[person.getSchoolType() - 1] + 1;
             }
         }
         //Randomize the order of the students
@@ -795,14 +806,14 @@ public class SyntheticPopJP implements SyntheticPopI {
                 if (schoolType == 3) {
                     schoolPlace = selectWorkplace(origin, numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, universityDistanceImpedance);
-                    travelUniversity.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
+                    //travelUniversity.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
                 } else {
                     schoolPlace = selectClosestSchool(origin, numberVacantSchoolsByZoneByType,
                             keys, lengthKeys, schoolDistanceImpedance);
                     if (schoolType == 1){
-                        travelPrimary.addValue((int) distanceMatrix.getValueAt(origin,schoolPlace[0] / 100));
+                        //travelPrimary.addValue((int) distanceMatrix.getValueAt(origin,schoolPlace[0] / 100));
                     } else if (schoolType == 2){
-                        travelSecondary.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
+                        //travelSecondary.addValue((int) distanceMatrix.getValueAt(origin, schoolPlace[0] / 100));
                     }
                 }
 
@@ -810,12 +821,12 @@ public class SyntheticPopJP implements SyntheticPopI {
                 pp.setSchoolPlace(schoolPlace[0] / 100);
                 //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
 
-                //For validation OD TableDataSet
+               /* //For validation OD TableDataSet
                 int homeMun = (int) cellsMatrix.getIndexedValueAt(origin, "smallID");
                 int workMun = (int) cellsMatrix.getIndexedValueAt(pp.getSchoolPlace(), "smallID");
                 int odPair = homeMun * 1000 + workMun;
                 odMunicipalityFlow.setIndexedValueAt(odPair,Integer.toString(count),odMunicipalityFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
-
+*/
                 //Update counts of vacant school places
                 numberVacantSchoolsByZoneByType.put(schoolPlace[0], numberVacantSchoolsByZoneByType.get(schoolPlace[0]) - 1);
                 if (numberVacantSchoolsByZoneByType.get(schoolPlace[0]) < 1) {
@@ -836,10 +847,10 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
         //For validation - trip length distribution
-        checkTripLengthDistribution(travelPrimary, 0, 0, "microData/interimFiles/tripLengthDistributionPrimary.csv", 1);
+        /*checkTripLengthDistribution(travelPrimary, 0, 0, "microData/interimFiles/tripLengthDistributionPrimary.csv", 1);
         checkTripLengthDistribution(travelSecondary, 0, 0, "microData/interimFiles/tripLengthDistributionSecondary.csv", 1); //Trip length frequency distribution
-        checkTripLengthDistribution(travelUniversity, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionUniversity.csv", 1);
-        SiloUtil.writeTableDataSet(odMunicipalityFlow,"microData/interimFiles/odMunicipalityFlow.csv");
+        checkTripLengthDistribution(travelUniversity, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionUniversity.csv", 1);*/
+        //SiloUtil.writeTableDataSet(odMunicipalityFlow,"microData/interimFiles/odMunicipalityFlow.csv");
         for (int i = 0; i < schoolTypes.length; i++) {
             logger.info("  School type: " + schoolTypes[i] + ". " + studentsOutside[schoolTypes[i] - 1] + " students out of " + studentsByType[schoolTypes[i] - 1] + " study outside the area");
         }
@@ -1025,6 +1036,21 @@ public class SyntheticPopJP implements SyntheticPopI {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdData();
         HouseholdFactory householdFactory = HouseholdUtil.getFactory();
 
+        regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
+        regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
+        householdsForFrequencyMatrix = new HashMap<>();
+        for (int i = 1; i <= microDataDwelling.getRowCount();i++){
+            int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
+            int ddID = (int) microDataDwelling.getValueAt(i,"id");
+            if (householdsForFrequencyMatrix.containsKey(v2Zone)) {
+                householdsForFrequencyMatrix.get(v2Zone).put(ddID, 1);
+            } else {
+                HashMap<Integer, Integer> map = new HashMap<>();
+                map.put(ddID, 1);
+                householdsForFrequencyMatrix.put(v2Zone, map);
+            }
+        }
+
         //Selection of households, persons, jobs and dwellings per municipality
         for (int municipality = 0; municipality < cityID.length; municipality++){
             logger.info("   Municipality " + cityID[municipality] + ". Starting to generate households.");
@@ -1121,13 +1147,13 @@ public class SyntheticPopJP implements SyntheticPopI {
 
                     //copy the private household characteristics
                     int householdSize = (int) microHouseholds.getIndexedValueAt(selectedHh, "HHsize");
-                    int householdCars = (int) microHouseholds.getIndexedValueAt(selectedHh, "N_Car");
+                    int householdCars = Math.min((int) microHouseholds.getIndexedValueAt(selectedHh, "N_Car"),3);
                     id = householdDataManager.getNextHouseholdId();
                     int newDdId = RealEstateDataManager.getNextDwellingId();
                     Household household = householdFactory.createHousehold(id, newDdId, householdCars); //(int id, int dwellingID, int homeZone, int hhSize, int autos)
                     householdDataManager.addHousehold(household);
                     hhTotal++;
-                    counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipality);
+
 
 
 
@@ -1138,7 +1164,18 @@ public class SyntheticPopJP implements SyntheticPopI {
                         int personCounter = (int) microHouseholds.getIndexedValueAt(selectedHh, "firstPerson") + rowPerson;
                         int age = (int) microPersons.getValueAt(personCounter, "age");
                         Gender gender = Gender.valueOf((int) microDataPerson.getValueAt(personCounter, "gender"));
-                        Occupation occupation = Occupation.valueOf((int) microDataPerson.getValueAt(personCounter, "occupation"));
+                        Occupation occupation = Occupation.UNEMPLOYED;
+                        int jobType = 1;
+                        if ((int) microDataPerson.getValueAt(personCounter, "occupation") == 1) {
+                            occupation = Occupation.EMPLOYED;
+                            if ((int) microDataPerson.getValueAt(personCounter, "jobType") == 1){
+                                jobType = 1;
+                            } else if ((int) microDataPerson.getValueAt(personCounter, "jobType") == 2){
+                                jobType = 2;
+                            } else {
+                                jobType = 3;
+                            }
+                        }
                         int income = 0;
                         int education = 0;
                         if (age > 15){
@@ -1154,25 +1191,15 @@ public class SyntheticPopJP implements SyntheticPopI {
                         householdDataManager.addPerson(pers);
                         householdDataManager.addPersonToHousehold(pers, household);
                         pers.setEducationLevel(education);
-                        PersonRole role = PersonRole.SINGLE; //default value = single
-                        if (microPersons.getValueAt(personCounter, "personStatus") == 2) {
+                        pers.setTelework(jobType);
+                        PersonRole role = PersonRole.CHILD; //default value = child
+                        if ((int)microPersons.getValueAt(personCounter, "personRole") == 1) { //the person is single
+                           role = PersonRole.SINGLE;
+                        } else if ((int)microPersons.getValueAt(personCounter, "personRole") == 2) { // the person is married
                             role = PersonRole.MARRIED;
-                            Person firstPersonInHousehold = household.getPersons().get(0);  // get first person in household and make it married (if one person within the household is the partner)
-                            firstPersonInHousehold.setRole(PersonRole.MARRIED);
-                        } else if (microPersons.getValueAt(personCounter, "personStatus") == 3) { //if the person is not the household head nor his spouse
-                            if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 3) { //the person is son/daughter of the household head
-                                role = PersonRole.CHILD;
-                            } else if (microPersons.getValueAt(personCounter,"relationshipHousehold") == 4) { //the person is the grandchild of the household head
-                                role = PersonRole.CHILD;
-                            }
                         }
                         pers.setRole(role);
-                        int nationality = (int) microDataPerson.getValueAt(personCounter,"nationality");
-                        if (nationality == 1) {
-                            pers.setNationality(Nationality.GERMAN);
-                        } else {
-                            pers.setNationality(Nationality.OTHER);
-                        }
+                        pers.setNationality(Nationality.GERMAN);
                         boolean license = false;
                         if (microPersons.getValueAt(personCounter, "DrivLicense") == 1){
                             license = true;
@@ -1180,9 +1207,9 @@ public class SyntheticPopJP implements SyntheticPopI {
                         pers.setDriverLicense(license);
                         pers.setSchoolType((int) microPersons.getValueAt(personCounter, "school"));
                         hhPersons++;
-                        counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipality,ageBracketsPerson);
+                        //counterMunicipality = updateCountersPerson(pers, counterMunicipality, municipality,ageBracketsPerson);
                     }
-
+                    //counterMunicipality = updateCountersHousehold(household, counterMunicipality, municipality);
 
                     //Copy the dwelling of that household
                     int bedRooms = 1; //Not on the micro data
@@ -1196,9 +1223,11 @@ public class SyntheticPopJP implements SyntheticPopI {
                     float averageSqmPrice = averagePriceDistribution[buildingSize - 1];
                     int price = Math.round(floorSpace * averageSqmPrice);
                     Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, selectedTAZ, null, id, ddType , bedRooms, quality, price, 0, year);
+                    realEstate.addDwelling(dwell);
                     dwell.setFloorSpace(floorSpace);
                     dwell.setUsage(DwellingUsage.valueOf(usage));
                     dwell.setBuildingSize(buildingSize);
+                    generatedHouseholds.put(dwell.getId(), 1);
                 }
                 int households = householdDataManager.getHighestHouseholdIdInUse() - previousHouseholds;
                 int persons = householdDataManager.getHighestPersonIdInUse() - previousPersons;
@@ -1209,14 +1238,14 @@ public class SyntheticPopJP implements SyntheticPopI {
                 //Consider if I need to add also the errors from other attributes. They must be at the marginals file, or one extra file
                 //For county level they should be calculated on a next step, outside this loop.
                 float averageError = 0f;
-                for (int attribute = 1; attribute < attributesHouseholdIPU.length; attribute++){
+                /*for (int attribute = 1; attribute < attributesHouseholdIPU.length; attribute++){
                     float error = Math.abs((counterMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]) -
                             marginalsMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute])) /
                             marginalsMunicipality.getIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute]));
                     errorMunicipality.setIndexedValueAt(municipalityID,attributesHouseholdIPU[attribute],error);
                     averageError = averageError + error;
                 }
-                averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;
+                averageError = averageError / (1 + attributesHouseholdIPU.length) * 100;*/
                 householdByMunicipality.put(municipalityID, generatedHouseholds);
 
                 logger.info("   Municipality " + municipalityID + ". Generated " + hhPersons + " persons in " + hhTotal + " households. Average error of " + averageError + " %.");
@@ -1935,17 +1964,17 @@ public class SyntheticPopJP implements SyntheticPopI {
     public static TableDataSet updateCountersHousehold (Household household, TableDataSet attributesCount, int mun){
         /* method to update the counters with the characteristics of the generated private household*/
         if (household.getHhSize() == 1){
-            attributesCount.setIndexedValueAt(mun,"hhSize1",attributesCount.getIndexedValueAt(mun,"hhSize1") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_1",attributesCount.getIndexedValueAt(mun,"nHH_1") + 1);
         } else if (household.getHhSize() == 2){
-            attributesCount.setIndexedValueAt(mun,"hhSize2",attributesCount.getIndexedValueAt(mun,"hhSize2") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_2",attributesCount.getIndexedValueAt(mun,"nHH_2") + 1);
         } else if (household.getHhSize() == 3){
-            attributesCount.setIndexedValueAt(mun,"hhSize3",attributesCount.getIndexedValueAt(mun,"hhSize3") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_3",attributesCount.getIndexedValueAt(mun,"nHH_3") + 1);
         } else if (household.getHhSize() == 4){
-            attributesCount.setIndexedValueAt(mun,"hhSize4",attributesCount.getIndexedValueAt(mun,"hhSize4") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_4",attributesCount.getIndexedValueAt(mun,"nHH_4") + 1);
         } else if (household.getHhSize() == 5){
-            attributesCount.setIndexedValueAt(mun,"hhSize5",attributesCount.getIndexedValueAt(mun,"hhSize5") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_5",attributesCount.getIndexedValueAt(mun,"nHH_5") + 1);
         } else if (household.getHhSize() > 5){
-            attributesCount.setIndexedValueAt(mun,"hhSize5",attributesCount.getIndexedValueAt(mun,"hhSize5") + 1);
+            attributesCount.setIndexedValueAt(mun,"nHH_5",attributesCount.getIndexedValueAt(mun,"nHH_5") + 1);
         }
         attributesCount.setIndexedValueAt(mun,"hhTotal",attributesCount.getIndexedValueAt(mun,"hhTotal") + 1);
         return attributesCount;
@@ -1954,16 +1983,13 @@ public class SyntheticPopJP implements SyntheticPopI {
     public static TableDataSet updateCountersPerson (Person person, TableDataSet attributesCount,int mun, int[] ageBracketsPerson) {
         /* method to update the counters with the characteristics of the generated person in a private household*/
         attributesCount.setIndexedValueAt(mun, "population", attributesCount.getIndexedValueAt(mun, "population") + 1);
-        if (person.getNationality() == Nationality.OTHER) {
-            attributesCount.setIndexedValueAt(mun, "foreigners", attributesCount.getIndexedValueAt(mun, "foreigners") + 1);
-        }
         if (person.getGender() == Gender.MALE) {
             if (person.getOccupation() == Occupation.EMPLOYED) {
-                attributesCount.setIndexedValueAt(mun, "maleWorkers", attributesCount.getIndexedValueAt(mun, "maleWorkers") + 1);
+                attributesCount.setIndexedValueAt(mun, "M_Agr", attributesCount.getIndexedValueAt(mun, "M_Agr") + 1);
             }
         } else {
             if (person.getOccupation() == Occupation.EMPLOYED) {
-                attributesCount.setIndexedValueAt(mun, "femaleWorkers", attributesCount.getIndexedValueAt(mun, "femaleWorkers") + 1);
+                attributesCount.setIndexedValueAt(mun, "F_Agr", attributesCount.getIndexedValueAt(mun, "F_Agr") + 1);
             }
         }
         int age = person.getAge();
@@ -1972,10 +1998,10 @@ public class SyntheticPopJP implements SyntheticPopI {
             row1++;
         }
         if (person.getGender() == Gender.FEMALE) {
-            String name = "male" + ageBracketsPerson[row1];
+            String name = "M_" + ageBracketsPerson[row1];
             attributesCount.setIndexedValueAt(mun, name, attributesCount.getIndexedValueAt(mun, name) + 1);
         } else {
-            String name = "female" + ageBracketsPerson[row1];
+            String name = "F_" + ageBracketsPerson[row1];
             attributesCount.setIndexedValueAt(mun, name, attributesCount.getIndexedValueAt(mun, name) + 1);
         }
         return attributesCount;
@@ -1985,15 +2011,17 @@ public class SyntheticPopJP implements SyntheticPopI {
     public static TableDataSet updateCountersDwelling (Dwelling dwelling, TableDataSet attributesCount, int mun, int[] yearBrackets, int[] sizeBrackets){
         /* method to update the counters with the characteristics of the generated dwelling*/
         if (dwelling.getUsage() == DwellingUsage.OWNED){
-            attributesCount.setIndexedValueAt(mun,"ownDwellings",attributesCount.getIndexedValueAt(mun,"ownDwellings") + 1);
+            attributesCount.setIndexedValueAt(mun,"H_Own",attributesCount.getIndexedValueAt(mun,"H_Own") + 1);
         } else {
-            attributesCount.setIndexedValueAt(mun,"rentedDwellings",attributesCount.getIndexedValueAt(mun,"rentedDwellings") + 1);
+            attributesCount.setIndexedValueAt(mun,"H_Rent",attributesCount.getIndexedValueAt(mun,"H_Rent") + 1);
         }
         if (dwelling.getBuildingSize() == 1){
-            attributesCount.setIndexedValueAt(mun,"smallDwellings",attributesCount.getIndexedValueAt(mun,"smallDwellings") + 1);
+            attributesCount.setIndexedValueAt(mun,"ddT_Detached",attributesCount.getIndexedValueAt(mun,"ddT_Detached") + 1);
+        } else if (dwelling.getBuildingSize() == 2){
+            attributesCount.setIndexedValueAt(mun,"ddT_Apart",attributesCount.getIndexedValueAt(mun,"ddT_Apart") + 1);
         } else {
-            attributesCount.setIndexedValueAt(mun,"mediumDwellings",attributesCount.getIndexedValueAt(mun,"mediumDwellings") + 1);
-        }
+        attributesCount.setIndexedValueAt(mun,"ddT_Multi",attributesCount.getIndexedValueAt(mun,"ddT_Multi") + 1);
+    }
         return attributesCount;
     }
 
@@ -2288,37 +2316,20 @@ public class SyntheticPopJP implements SyntheticPopI {
             counterMunicipality.appendColumn(dummy2, attributesMunicipality[attribute]);
             errorMunicipality.appendColumn(dummy3, attributesMunicipality[attribute]);
         }
+        double[] dummy4 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+        double[] dummy5 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+        counterMunicipality.appendColumn(dummy4,"population");
+        errorMunicipality.appendColumn(dummy5, "population");
+        double[] dummy6 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+        double[] dummy7 = SiloUtil.createArrayWithValue(cityID.length,0.0);
+        counterMunicipality.appendColumn(dummy6, "hhTotal");
+        errorMunicipality.appendColumn(dummy7,"hhTotal");
         counterMunicipality.buildIndex(counterMunicipality.getColumnPosition("ID_city"));
         errorMunicipality.buildIndex(errorMunicipality.getColumnPosition("ID_city"));
 
 
     }
 
-    public int selectJobType(Person person) {
-        //given a person, select the job type. It is based on the probabilities
-
-        double[] probabilities = new double[jobStringTypes.length];
-        int[] jobTypes = new int[jobStringTypes.length];
-        //Person and job type values
-        String name = "";
-        if (person.getGender() == Gender.MALE) {
-            name = "maleEducation";
-        } else {
-            name = "femaleEducation";
-        }
-        name = name + person.getEducationLevel();
-
-        //if (jobStringTypes.length == probabilitiesJob.getRowCount()) {
-        //    probabilities = probabilitiesJob.getColumnAsDouble(name);
-        //} else {
-        for (int job = 0; job < jobStringTypes.length; job++){
-            jobTypes[job] = jobIntTypes.get(jobStringTypes[job]);
-            probabilities[job] = probabilitiesJob.getStringIndexedValueAt(jobStringTypes[job],name);
-        }
-        //}
-        return new EnumeratedIntegerDistribution(jobTypes, probabilities).sample();
-
-    }
 
     public int[] selectClosestSchool(int home, HashMap<Integer, Integer> vacantJobsByZoneByType,
                                      int[] zoneJobKeys, int lengthZoneKeys, Matrix impedanceMatrix) {
@@ -2339,6 +2350,23 @@ public class SyntheticPopJP implements SyntheticPopI {
             }
         }
         return min;
+    }
+
+    private void createWeightsAndErrorsCity(){
+
+        int[] microDataIds = dataSetSynPop.getFrequencyMatrix().getColumnAsInt("ID");
+        dataSetSynPop.getFrequencyMatrix().buildIndex(dataSetSynPop.getFrequencyMatrix().getColumnPosition("ID"));
+        dataSetSynPop.setWeights(new TableDataSet());
+        dataSetSynPop.getWeights().appendColumn(microDataIds, "ID");
+
+        TableDataSet errorsMunicipality = new TableDataSet();
+        TableDataSet errorsSummary = new TableDataSet();
+        String[] labels = new String[]{"error", "iterations","time"};
+        errorsMunicipality =  SiloUtil.initializeTableDataSet(errorsMunicipality,
+                PropertiesSynPop.get().main.attributesMunicipality, dataSetSynPop.getCityIDs());
+        errorsSummary =  SiloUtil.initializeTableDataSet(errorsSummary, labels, dataSetSynPop.getCityIDs());
+        dataSetSynPop.setErrorsMunicipality(errorsMunicipality);
+        dataSetSynPop.setErrorsSummary(errorsSummary);
     }
 
 }

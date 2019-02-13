@@ -2,153 +2,200 @@ package de.tum.bgu.msm.models.transportModel;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.MitoModel;
-import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.jobTypes.kagawa.KagawaJobType;
+import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.travelDistances.TravelDistances;
+import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.Input;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * Implementation of Transport Model Interface for MITO
+ *
  * @author Rolf Moeckel
  * Created on February 18, 2017 in Munich, Germany
  */
 public final class MitoTransportModel extends AbstractModel implements TransportModelI {
 
-    private static final Logger logger = Logger.getLogger( MitoTransportModel.class );
-	private MitoModel mito;
+    private static final Logger logger = Logger.getLogger(MitoTransportModel.class);
     private TravelTimes travelTimes;
-    private TravelDistances travelDistancesAuto;
     private final String propertiesPath;
     private final String baseDirectory;
 
     public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer) {
-    	super(dataContainer);
-    	this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
-		this.propertiesPath = Objects.requireNonNull(Properties.get().main.baseDirectory + Properties.get().transportModel.mitoPropertiesPath);
-		this.baseDirectory = Objects.requireNonNull(baseDirectory);
-	}
+        super(dataContainer);
+        this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
+        this.propertiesPath = Objects.requireNonNull(Properties.get().main.baseDirectory + Properties.get().transportModel.mitoPropertiesPath);
+        this.baseDirectory = Objects.requireNonNull(baseDirectory);
+    }
 
     @Override
     public void runTransportModel(int year) {
-		this.mito = MitoModel.initializeModelFromSilo(propertiesPath);
-		this.mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
-		setBaseDirectory(baseDirectory);
-    	MitoModel.setScenarioName (Properties.get().main.scenarioName);
-    	updateData(year);
-    	logger.info("  Running travel demand model MITO for the year " + year);
-    	mito.runModel();
-		travelTimes = mito.getData().getTravelTimes();
-		travelDistancesAuto = mito.getData().getTravelDistancesAuto();
-    }
-
-	private void updateData(int year) {
-    	Map<Integer, MitoZone> zones = new HashMap<>();
-		for (Zone siloZone: dataContainer.getGeoData().getZones().values()) {
-			MitoZone zone = new MitoZone(siloZone.getZoneId(), siloZone.getArea_sqmi(), ((MunichZone)siloZone).getAreaType());
-			zones.put(zone.getId(), zone);
-		}
-		dataContainer.getJobData().fillMitoZoneEmployees(zones);
-		Map<Integer, MitoHousehold> households = convertHhs(zones);
-		for(Person person: dataContainer.getHouseholdData().getPersons()) {
-			int hhId = person.getHousehold().getId();
-			if(households.containsKey(hhId)) {
-				MitoPerson mitoPerson = convertToMitoPp(person);
-				Coordinate workplaceCoordinate = null;
-				//todo need to mode the transitions between new born, student, unemployed and worker in a better way
-				if (person.getJobId()>0) {
-					//is a worker
-					Job job = dataContainer.getJobData().getJobFromId(person.getJobId());
-					if (job instanceof MicroLocation) {
-						//is a worker with a microlocated job
-						mitoPerson.setOccupationLocation(((MicroLocation) job).getCoordinate());
-					}
-				} else if (person.getSchoolId()>0) {
-					//is a student with a microlocated school
-					School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
-					if(school instanceof MicroLocation) {
-						mitoPerson.setOccupationLocation(((MicroLocation) school).getCoordinate());
-					}
-				}
-				households.get(hhId).addPerson(mitoPerson);
-			} else {
-				//logger.warn("Person " + person.getZoneId() + " refers to non-existing household " + hhId
-				//		+ " and will thus NOT be considered in the transport model.");
-			}
-		}
+        logger.info("  Running travel demand model MITO for the year " + year);
+        DataSet dataSet = convertData(year);
         logger.info("  SILO data being sent to MITO");
-        Input.InputFeed feed = new Input.InputFeed(zones, travelTimes, travelDistancesAuto, households, year, dataContainer.getGeoData().getZoneFeatureMap());
-        mito.feedData(feed);
+        MitoModel mito = MitoModel.initializeModelFromSilo(propertiesPath, dataSet, Properties.get().main.scenarioName);
+        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+        mito.setBaseDirectory(baseDirectory);
+        mito.runModel();
     }
 
-	private Map<Integer, MitoHousehold> convertHhs(Map<Integer, MitoZone> zones) {
-		Map<Integer, MitoHousehold> thhs = new HashMap<>();
-		RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-		int householdsSkipped = 0;
-		for (Household siloHousehold : dataContainer.getHouseholdData().getHouseholds()) {
-			int zoneId = -1;
-			Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
-			if(dwelling != null) {
-				zoneId = dwelling.getZoneId();
+    private DataSet convertData(int year) {
+        DataSet dataSet = new DataSet();
+        convertZones(dataSet);
+        fillMitoZoneEmployees(dataSet);
+        convertSchools(dataSet);
+        convertHhs(dataSet);
+        dataSet.setTravelTimes(travelTimes);
+        dataSet.setYear(year);
+        return dataSet;
+    }
 
-			}
-			MitoZone zone = zones.get(zoneId);
+    private void convertZones(DataSet dataSet) {
+        for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((MunichZone) siloZone).getAreaType());
+            zone.setShapeFeature(siloZone.getZoneFeature());
+            dataSet.addZone(zone);
+        }
+    }
 
-			MitoHousehold household = convertToMitoHh(siloHousehold, zone);
-			//set mitoHousehold's microlocation
-			if (dwelling instanceof MicroLocation) {
+    private void convertSchools(DataSet dataSet) {
+        Map<Integer, MitoZone> zones = dataSet.getZones();
+        for (School school : dataContainer.getSchoolData().getSchools()) {
+            MitoZone zone = zones.get(school.getZoneId());
+            Coordinate coordinate;
+            if (school instanceof SchoolImpl) {
+                coordinate = ((SchoolImpl) school).getCoordinate();
+            } else {
+                coordinate = zone.getRandomCoord();
+            }
+            MitoSchool mitoSchool = new MitoSchool(zones.get(school.getZoneId()), coordinate, school.getId());
+            zone.addSchoolEnrollment(school.getOccupancy());
+            dataSet.addSchool(mitoSchool);
+        }
+    }
 
-			}
+    private void convertHhs(DataSet dataSet) {
+        Map<Integer, MitoZone> zones = dataSet.getZones();
+        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+        int householdsSkipped = 0;
+        int randomCoordCounter = 0;
+        for (Household siloHousehold : dataContainer.getHouseholdData().getHouseholds()) {
+            int zoneId = -1;
+            Dwelling dwelling = realEstateData.getDwelling(siloHousehold.getDwellingId());
+            if (dwelling != null) {
+                zoneId = dwelling.getZoneId();
+
+            }
+            MitoZone zone = zones.get(zoneId);
+
+            MitoHousehold household = new MitoHousehold(
+                    siloHousehold.getId(),
+                    HouseholdUtil.getHhIncome(siloHousehold) / 12,
+                    siloHousehold.getAutos(), zone);
+
+            Coordinate coordinate;
+            if(dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
+                coordinate = ((MicroLocation) dwelling).getCoordinate();
+            } else {
+                randomCoordCounter++;
+                coordinate = zone.getRandomCoord();
+            }
+
             //todo if there are housholds without adults they cannot be processed
-			if (siloHousehold.getPersons().values().stream().filter(p -> p.getAge() >= 18).count() != 0){
-				if((((MicroLocation) dwelling).getCoordinate() != null)){
-					//todo if there are households without microlocation mito does not work
-					household.setHomeLocation(((MicroLocation) dwelling).getCoordinate());
-					thhs.put(household.getId(), household);
-				} else {
-					logger.info("no microlocation valid for mito - skip household");
-					householdsSkipped++;
-				}
+            if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)) {
+                    household.setHomeLocation(coordinate);
+                    zone.addHousehold();
+                    dataSet.addHousehold(household);
+                    for (Person person : siloHousehold.getPersons().values()) {
+                        MitoPerson mitoPerson = convertToMitoPp(person, dataSet);
+                        household.addPerson(mitoPerson);
+                        dataSet.addPerson(mitoPerson);
+                    }
             } else {
                 householdsSkipped++;
             }
-		}
-        logger.warn("There are " + householdsSkipped + " households without adults or with unvalid microlocations that CANNOT be processed in MITO (" +
-                householdsSkipped/dataContainer.getHouseholdData().getHouseholds().size()*100 + "%)");
-		return thhs;
-	}
+        }
+        logger.warn("There are " + randomCoordCounter + " households that were assigned a random coord inside their zone (" +
+                randomCoordCounter / dataContainer.getHouseholdData().getHouseholds().size() * 100 + "%)");
+        logger.warn("There are " + householdsSkipped + " households without adults that CANNOT be processed in MITO (" +
+                householdsSkipped / dataContainer.getHouseholdData().getHouseholds().size() * 100 + "%)");
+    }
 
-	private MitoHousehold convertToMitoHh(Household household, MitoZone zone) {
-		return new MitoHousehold(household.getId(), HouseholdUtil.getHhIncome(household), household.getAutos(), zone);
-	}
 
-	private MitoPerson convertToMitoPp(Person person) {
-		final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
-		final MitoOccupation mitoOccupation = MitoOccupation.valueOf(person.getOccupation().getCode());
-		final int workPlace = person.getJobId();
-		int workzone = -1;
-		if(workPlace > 0) {
-			workzone = dataContainer.getJobData().getJobFromId(workPlace).getZoneId();
-		}
-		return new MitoPerson(person.getId(), mitoOccupation, workzone, person.getAge(), mitoGender, person.hasDriverLicense());
-	}
+    private MitoPerson convertToMitoPp(Person person, DataSet dataSet) {
+        final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
+        final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
-    private void setBaseDirectory (String baseDirectory) {
-        mito.setBaseDirectory(baseDirectory);
+        MitoOccupation mitoOccupation = null;
+        switch (mitoOccupationStatus) {
+            case WORKER:
+                if (person.getJobId() > 0) {
+                    Job job = dataContainer.getJobData().getJobFromId(person.getJobId());
+                    MitoZone zone = dataSet.getZones().get(job.getZoneId());
+                    final Coordinate coordinate;
+                    if (job instanceof MicroLocation) {
+                        coordinate = ((MicroLocation) job).getCoordinate();
+                    } else {
+                        coordinate = zone.getRandomCoord();
+                    }
+                    mitoOccupation = new MitoJob(zone, coordinate, job.getId());
+                }
+                break;
+            case UNEMPLOYED:
+                break;
+            case STUDENT:
+                if (person.getSchoolId() > 0) {
+                    mitoOccupation = dataSet.getSchools().get(person.getSchoolId());
+                }
+                break;
+        }
+
+        return new MitoPerson(
+                person.getId(),
+                mitoOccupationStatus,
+                mitoOccupation,
+                person.getAge(),
+                mitoGender,
+                person.hasDriverLicense());
+    }
+
+    private void fillMitoZoneEmployees(DataSet dataSet) {
+
+        final Map<Integer, MitoZone> zones = dataSet.getZones();
+
+        for (Job jj : dataContainer.getJobData().getJobs()) {
+            final MitoZone zone = zones.get(jj.getZoneId());
+            final String type = jj.getType().toUpperCase();
+            try {
+                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
+                switch (Properties.get().main.implementation) {
+                    case MUNICH:
+                        mitoJobType = MunichJobType.valueOf(type);
+                        break;
+                    case KAGAWA:
+                        mitoJobType = KagawaJobType.valueOf(type);
+                    default:
+                        logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
+                }
+                zone.addEmployeeForType(mitoJobType);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
+            }
+        }
     }
 }

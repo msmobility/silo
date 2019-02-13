@@ -41,7 +41,6 @@ import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
 /**
  * @author Greg Erhardt
  * Created on Dec 2, 2009
- *
  */
 public class HouseholdDataManager {
     private final static Logger LOGGER = Logger.getLogger(HouseholdDataManager.class);
@@ -93,9 +92,9 @@ public class HouseholdDataManager {
         return persons.values();
     }
 
-    public void removePersonFromHousehold (Person person) {
+    public void removePersonFromHousehold(Person person) {
         Household household = person.getHousehold();
-        if(household != null ) {
+        if (household != null) {
             household.removePerson(person.getId());
             person.setHousehold(null);
             if (household.getPersons().isEmpty()) {
@@ -110,7 +109,7 @@ public class HouseholdDataManager {
 
     public void addPersonToHousehold(Person person, Household household) {
         // add existing person per (not a newborn child) to household
-        if(household.getPersons().containsKey(person.getId())) {
+        if (household.getPersons().containsKey(person.getId())) {
             throw new IllegalArgumentException("Person " + person.getId() + " was already added to household " + household.getId());
         }
         household.addPerson(person);
@@ -121,9 +120,9 @@ public class HouseholdDataManager {
         }
     }
 
-    public int getTotalPopulation () {
+    public int getTotalPopulation() {
         int tp = 0;
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             tp += hh.getHhSize();
         }
         return tp;
@@ -132,11 +131,11 @@ public class HouseholdDataManager {
     private float getAverageHouseholdSize() {
         float ahs = 0;
         int cnt = 0;
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             ahs += hh.getHhSize();
             cnt++;
         }
-        return ahs/(float) cnt;
+        return ahs / (float) cnt;
     }
 
     public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
@@ -147,7 +146,7 @@ public class HouseholdDataManager {
             }
         }
         // if income is larger than highest category
-        return IncomeCategory.values()[IncomeCategory.values().length-1];
+        return IncomeCategory.values()[IncomeCategory.values().length - 1];
     }
 
     public void removeHousehold(int householdId) {
@@ -160,7 +159,7 @@ public class HouseholdDataManager {
             dd.setResidentID(-1);
             dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         }
-        for(Person pp: household.getPersons().values()) {
+        for (Person pp : household.getPersons().values()) {
             pp.setHousehold(null);
             persons.remove(pp.getId());
         }
@@ -171,13 +170,13 @@ public class HouseholdDataManager {
         }
     }
 
-    public void summarizePopulation (SiloDataContainer dataContainer, SiloModelContainer siloModelContainer) {
+    public void summarizePopulation(SiloDataContainer dataContainer, SiloModelContainer siloModelContainer) {
         // summarize population for summary file
 
         final GeoData geoData = dataContainer.getGeoData();
         int pers[][] = new int[2][101];
         int ppRace[] = new int[4];
-        for (Person per: persons.values()) {
+        for (Person per : persons.values()) {
             Gender gender = per.getGender();
             int age = Math.min(per.getAge(), 100);
             pers[gender.ordinal()][age] += 1;
@@ -199,7 +198,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("black," + ppRace[1]);
         SummarizeData.resultFile("hispanic," + ppRace[2]);
         SummarizeData.resultFile("other," + ppRace[3]);
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             int hhSize = Math.min(hh.getHhSize(), 10);
             hhs[hhSize - 1]++;
             hht[hh.getHouseholdType().ordinal()]++;
@@ -208,14 +207,14 @@ public class HouseholdDataManager {
             hhIncomePos++;
             int homeZone = -1;
             Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
-            if(dwelling != null) {
+            if (dwelling != null) {
                 homeZone = dwelling.getZoneId();
             }
             int region = dataContainer.getGeoData().getZones().get(homeZone).getRegion().getId();
             hhByRegion[region]++;
         }
-                SummarizeData.resultFile("hhByType,hh");
-        for (HouseholdType ht: HouseholdType.values()) {
+        SummarizeData.resultFile("hhByType,hh");
+        for (HouseholdType ht : HouseholdType.values()) {
             String row = ht + "," + hht[ht.ordinal()];
             SummarizeData.resultFile(row);
         }
@@ -225,7 +224,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("hispanic," + hhRace[2]);
         SummarizeData.resultFile("other," + hhRace[3]);
         String row = "hhBySize";
-        for (int i: hhs) row = row + "," + i;
+        for (int i : hhs) row = row + "," + i;
         SummarizeData.resultFile(row);
         row = "AveHHSize," + getAverageHouseholdSize();
         SummarizeData.resultFile(row);
@@ -235,7 +234,7 @@ public class HouseholdDataManager {
         // labor participation and commuting distance
         float[][][] labP = new float[2][2][5];
         float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
-        for (Person per: persons.values()) {
+        for (Person per : persons.values()) {
             int age = per.getAge();
             Gender gender = per.getGender();
             boolean employed = per.getJobId() > 0;
@@ -250,7 +249,7 @@ public class HouseholdDataManager {
                 Zone zone = null;
                 Household household = households.get(per.getHousehold().getId());
                 Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-                if(dwelling != null) {
+                if (dwelling != null) {
                     zone = geoData.getZones().get(dwelling.getZoneId());
                 }
 //                double ds = siloModelContainer.getAcc()
@@ -258,25 +257,25 @@ public class HouseholdDataManager {
 //                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
                 Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getJobId()).getZoneId());
                 double ds = dataContainer.getTravelTimes().
-                		getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
+                        getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 commDist[0][zone.getRegion().getId()] += ds;
-                commDist[1][zone.getRegion().getId()] ++;
+                commDist[1][zone.getRegion().getId()]++;
             }
         }
-        String[] grp = {"<18","18-29","30-49","50-64",">=65"};
+        String[] grp = {"<18", "18-29", "30-49", "50-64", ">=65"};
         SummarizeData.resultFile("laborParticipationRateByAge,male,female");
         for (int ag = 0; ag < 5; ag++) {
             Formatter f = new Formatter();
-            f.format("%s,%f,%f", grp[ag], labP[1][0][ag]/(labP[0][0][ag]+labP[1][0][ag]), labP[1][1][ag]/(labP[0][1][ag]+labP[1][1][ag]));
+            f.format("%s,%f,%f", grp[ag], labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]), labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]));
             SummarizeData.resultFile(f.toString());
         }
         // todo: Add distance in kilometers to this summary
         SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
-        for (int i: geoData.getRegions().keySet()) {
+        for (int i : geoData.getRegions().keySet()) {
             SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
         }
         int[] carOwnership = new int[4];
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             carOwnership[hh.getAutos()]++;
         }
         SummarizeData.resultFile("carOwnershipLevel,households");
@@ -289,20 +288,20 @@ public class HouseholdDataManager {
     public void identifyHighestHouseholdAndPersonId() {
         // identify highest household ID and highest person ID in use
         highestHouseholdIdInUse = 0;
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             highestHouseholdIdInUse = Math.max(highestHouseholdIdInUse, hh.getId());
         }
         highestPersonIdInUse = 0;
-        for (Person pp: persons.values()) {
+        for (Person pp : persons.values()) {
             highestPersonIdInUse = Math.max(highestPersonIdInUse, pp.getId());
         }
     }
 
-    public int getNextHouseholdId () {
+    public int getNextHouseholdId() {
         return ++highestHouseholdIdInUse;
     }
 
-    public int getNextPersonId () {
+    public int getNextPersonId() {
         return ++highestPersonIdInUse;
     }
 
@@ -314,7 +313,7 @@ public class HouseholdDataManager {
         return highestPersonIdInUse;
     }
 
-    public void calculateInitialSettings () {
+    public void calculateInitialSettings() {
         initialIncomeDistribution = calculateIncomeDistribution();
     }
 
@@ -323,7 +322,7 @@ public class HouseholdDataManager {
 
         float[][][] averageIncome = new float[2][100][2];              // income by gender, age and unemployed/employed
         int[][][] count = new int[2][100][2];
-        for (Person pp: persons.values()) {
+        for (Person pp : persons.values()) {
             int age = Math.min(99, pp.getAge());
             int occupation = 0;
             if (pp.getOccupation() == Occupation.EMPLOYED) {
@@ -343,8 +342,8 @@ public class HouseholdDataManager {
         for (int i = 0; i < averageIncome.length; i++) {
             for (int j = 2; j < averageIncome[i].length - 2; j++) {
                 for (int k = 0; k < averageIncome[i][j].length; k++) {
-                    averageIncome[i][j][k] = (averageIncome[i][j-2][k]/4f + averageIncome[i][j-1][k]/2f +
-                            averageIncome[i][j][k] + averageIncome[i][j+1][k]/2f + averageIncome[i][j+2][k]/4f) / 2.5f;
+                    averageIncome[i][j][k] = (averageIncome[i][j - 2][k] / 4f + averageIncome[i][j - 1][k] / 2f +
+                            averageIncome[i][j][k] + averageIncome[i][j + 1][k] / 2f + averageIncome[i][j + 2][k] / 4f) / 2.5f;
                 }
             }
         }
@@ -357,13 +356,13 @@ public class HouseholdDataManager {
         float[][][] currentIncomeDistribution = calculateIncomeDistribution();
         float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
-        for (Person person: persons.values()) {
+        for (Person person : persons.values()) {
             executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, initialIncomeDistribution));
         }
         executor.execute();
     }
 
-    public void selectIncomeForPerson (Person person) {
+    public void selectIncomeForPerson(Person person) {
         final Gender gender = person.getGender();
         final int age = Math.min(99, person.getAge());
         final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
@@ -386,15 +385,15 @@ public class HouseholdDataManager {
     }
 
 
-    public HashMap<Integer, int[]> getHouseholdsByZone () {
+    public HashMap<Integer, int[]> getHouseholdsByZone() {
         // return HashMap<Zone, ArrayOfHouseholdIds>
 
         HashMap<Integer, int[]> hhByZone = new HashMap<>();
         RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             int zone = -1;
             Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
-            if(dwelling != null) {
+            if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
             if (hhByZone.containsKey(zone)) {
@@ -413,10 +412,10 @@ public class HouseholdDataManager {
 
         HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-        for (Household hh: households.values()) {
+        for (Household hh : households.values()) {
             int zone = -1;
             Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
-            if(dwelling != null) {
+            if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
             int homeMSA = geoData.getZones().get(zone).getMsa();
@@ -430,7 +429,7 @@ public class HouseholdDataManager {
             }
         }
         medianIncome = new float[99999];
-        for (Integer thisMsa: rentHashMap.keySet()) {
+        for (Integer thisMsa : rentHashMap.keySet()) {
             medianIncome[thisMsa] = SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(rentHashMap.get(thisMsa)));
         }
     }
@@ -441,7 +440,7 @@ public class HouseholdDataManager {
     }
 
 
-    public void addHouseholdThatChanged (Household hh){
+    public void addHouseholdThatChanged(Household hh) {
         // Add one household that probably had changed their attributes for the car updating model
         // Households are added to this HashMap only once, even if several changes happen to them. They are only added
         // once, because this HashMap stores the previous socio-demographics before any change happened in a given year.
@@ -455,12 +454,12 @@ public class HouseholdDataManager {
         }
     }
 
-    public void addHouseholdThatMoved (Household hh){
+    public void addHouseholdThatMoved(Household hh) {
         // Add one household that moved out for the car updating model
         // Different from method addHouseholdThatChanged(), because here the hasMoved-flag is set from 0 to 1
         if (updatedHouseholds.containsKey(hh.getId())) {
             int[] currentHouseholdAttributes = updatedHouseholds.get(hh.getId());
-            currentHouseholdAttributes [3] = 1;
+            currentHouseholdAttributes[3] = 1;
             updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
         } else {
             int[] currentHouseholdAttributes = new int[4];
@@ -480,12 +479,12 @@ public class HouseholdDataManager {
         return updatedHouseholds;
     }
 
-    public HashMap<Integer, int[]> getConventionalCarsHouseholds(){
+    public HashMap<Integer, int[]> getConventionalCarsHouseholds() {
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future
-        for (Household hh: households.values()){
-            if(hh.getAutos() > hh.getAutonomous()){
+        for (Household hh : households.values()) {
+            if (hh.getAutos() > hh.getAutonomous()) {
                 int[] hhAttributes = new int[1];
                 hhAttributes[0] = getHhIncome(hh);
                 conventionalCarsHouseholds.put(hh.getId(), hhAttributes);
@@ -494,7 +493,7 @@ public class HouseholdDataManager {
         return conventionalCarsHouseholds;
     }
 
-    public void clearConventionalCarsHouseholds(){
+    public void clearConventionalCarsHouseholds() {
         conventionalCarsHouseholds.clear();
     }
 
@@ -518,16 +517,16 @@ public class HouseholdDataManager {
      * Duplicates the given household by copying household attributes and individual persons.
      * Ids of persons and the household as well as spatial relationships like dwelling, jobs and schools
      * are not copied. Household roles are preserved.
+     *
      * @param original the original household to be copied
      * @return a duplication of the original household and its persons
      */
     public Household duplicateHousehold(Household original) {
         Household duplicate = hhFactory.duplicate(original, getNextHouseholdId());
-        for(Person originalPerson: original.getPersons().values()) {
+        for (Person originalPerson : original.getPersons().values()) {
             Person personDuplicate = ppFactory.duplicate(originalPerson, getNextPersonId());
             personDuplicate.setRole(originalPerson.getRole());
-            personDuplicate.setHousehold(duplicate);
-            duplicate.addPerson(personDuplicate);
+            addPersonToHousehold(personDuplicate, duplicate);
         }
         return duplicate;
     }

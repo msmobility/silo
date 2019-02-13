@@ -201,10 +201,8 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         EnumMap<HouseholdType, Double> utilities = moves.updateUtilitiesOfVacantDwelling(dd);
         dd.setUtilitiesByHouseholdType(utilities);
 
-        if (Properties.get().main.useMicrolocation) {
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
-            dd.setCoordinate(coordinate);
-        }
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
+        dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);
 
@@ -260,7 +258,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
         float[][] avePrice = new float[dwellingTypes.size()][highestRegionId + 1];
         int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
         for (Dwelling dd : realEstate.getDwellings()) {
-            int dt =  dwellingTypes.indexOf(dd.getType());
+            int dt = dwellingTypes.indexOf(dd.getType());
             int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
             counter[dt][region]++;
             avePrice[dt][region] += dd.getPrice();

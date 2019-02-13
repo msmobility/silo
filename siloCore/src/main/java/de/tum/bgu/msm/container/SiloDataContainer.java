@@ -98,6 +98,10 @@ public class SiloDataContainer {
                 geoData = new GeoDataMuc();
                 schoolData = new SchoolDataManager(this);
                 break;
+            case KAGAWA:
+                geoData = new GeoDataMuc();
+                schoolData = new SchoolDataManager(this);
+                break;
             default:
                 LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");

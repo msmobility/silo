@@ -489,4 +489,13 @@ public class RealEstateDataManager {
 
     }
 
+    /**
+     * Vacates a dwelling by setting resident id to -1 and adding the dwelling to the vacancy list.
+     * @param idOldDD
+     */
+    public void vacateDwelling(int idOldDD) {
+        Dwelling dd = dataContainer.getRealEstateData().getDwelling(idOldDD);
+        dd.setResidentID(-1);
+        dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
+    }
 }
