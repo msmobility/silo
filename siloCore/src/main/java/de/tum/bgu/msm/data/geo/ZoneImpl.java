@@ -14,11 +14,15 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.shape.random.RandomPointsBuilder;
 
+import java.util.Random;
+
 public class ZoneImpl implements Zone {
 
     private final int id;
     private final int msa;
     private final float area_sqmi;
+
+    private final Random random;
 
     private final Region region;
     
@@ -32,6 +36,7 @@ public class ZoneImpl implements Zone {
         this.msa = msa;
         this.area_sqmi = area_sqmi;
         this.region = region;
+        this.random = new Random(SiloUtil.getRandomObject().nextLong());
     }
 
 
@@ -68,8 +73,7 @@ public class ZoneImpl implements Zone {
     @Override
 	public Coordinate getRandomCoordinate() {
         //TODO:this can be optimized by using the same (static) points builder multiple times instead of recreating it
-        RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(),
-                SiloUtil.getRandomObject());
+        RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(), random);
         randomPointsBuilder.setNumPoints(1);
         randomPointsBuilder.setExtent((Geometry) zoneFeature.getDefaultGeometry());
         Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];

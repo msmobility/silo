@@ -126,11 +126,8 @@ public class ConstructionOverwrite extends AbstractModel {
             Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateData().getDwellingTypes().get(dto), size, quality, price, restriction, year);
             dataContainer.getRealEstateData().addDwelling(dd);
 
-                if(Properties.get().main.useMicrolocation) {
-                	Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
-                   dd.setCoordinate(coordinate);
-                }
-
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateData().getDwellingTypes().get(dto).toString() + "," + size + "," +
                     quality + "," + price + "," + restriction + "," + year);

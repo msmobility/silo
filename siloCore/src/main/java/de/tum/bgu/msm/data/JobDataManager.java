@@ -20,16 +20,14 @@ package de.tum.bgu.msm.data;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.jobTypes.kagawa.KagawaJobType;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
-import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -89,30 +87,6 @@ public class JobDataManager {
     public void removeJob(int id) {
         jobs.remove(id);
     }
-
-    public void fillMitoZoneEmployees(Map<Integer, MitoZone> zones) {
-
-        for (Job jj : jobs.values()) {
-            final MitoZone zone = zones.get(jj.getZoneId());
-            final String type = jj.getType().toUpperCase();
-            try {
-                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
-                switch (Properties.get().main.implementation) {
-                    case MUNICH:
-                        mitoJobType = MunichJobType.valueOf(type);
-                        break;
-                    case KAGAWA:
-                        mitoJobType = KagawaJobType.valueOf(type);
-                        default:
-                        logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
-                }
-                zone.addEmployeeForType(mitoJobType);
-            } catch (IllegalArgumentException e) {
-                logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
-            }
-        }
-    }
-
 
     public void setHighestJobId() {
         // identify highest job ID in use

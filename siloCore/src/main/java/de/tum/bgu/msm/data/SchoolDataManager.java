@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.matsim.core.utils.collections.QuadTree;
-import org.osgeo.proj4j.CoordinateTransformFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,8 +95,8 @@ public class SchoolDataManager {
     public School getClosestSchool(Person person) {
         Dwelling dwelling = data.getRealEstateData().getDwelling(person.getHousehold().getDwellingId());
 
-        Coordinate coordinate = null;
-        if (Properties.get().main.useMicrolocation) {
+        Coordinate coordinate;
+        if (dwelling instanceof MicroLocation) {
             coordinate = ((MicroLocation) dwelling).getCoordinate();
         } else{
             coordinate = geoData.getZones().get(dwelling.getZoneId()).getRandomCoordinate();
