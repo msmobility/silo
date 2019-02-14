@@ -20,11 +20,20 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.ControlerConfigGroup;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.FastDijkstraFactory;
+import org.matsim.core.router.NetworkRoutingModule;
+import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.pt.router.TransitPassengerRoute;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -182,7 +191,13 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
                     LeastCostPathCalculator tree = new FastDijkstraFactory().createPathCalculator(travelTimes.getNetwork(),
                             travelTimes.getDisutility(), travelTimes.getTravelTime());
 
-                    for (Dwelling dd : partition) {
+//			    TripRouter.Builder bd = new TripRouter.Builder( ConfigUtils.createConfig() );
+//			    RoutingModule carRoutingModule = new NetworkRoutingModule( TransportMode.car, PopulationUtils.getFactory(), travelTimes.getNetwork(), tree ) ;
+//			    bd.setRoutingModule( TransportMode.car, carRoutingModule ) ;
+//			    TripRouter tr = bd.build();
+//			    tr.calcRoute( mainMode, fromFacility, toFacility, departureTime, null ) ;
+
+			    for (Dwelling dd : partition) {
                         Household hh = householdData.getHouseholdFromId(dd.getResidentId());
 
                         Map<Person, Job> jobsForThisHousehold = new HashMap<>();
