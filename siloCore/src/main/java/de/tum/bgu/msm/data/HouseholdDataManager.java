@@ -16,9 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -30,6 +28,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -51,15 +50,14 @@ public class HouseholdDataManager {
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
 
-    private float[][][] initialIncomeDistribution;              // income by age, gender and occupation
-    public static int[] quitJobPersonIds;
+    private float[][][] incomeByAgeGenderOccupation;
     private static float[] medianIncome;
 
     private final Map<Integer, Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
     private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
-    private HashMap<Integer, int[]> conventionalCarsHouseholds = new HashMap<>();
+    private Map<Integer, int[]> conventionalCarsHouseholds = new HashMap<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer, PersonFactory ppFactory, HouseholdFactory hhFactory) {
         this.dataContainer = dataContainer;
@@ -170,7 +168,7 @@ public class HouseholdDataManager {
         }
     }
 
-    public void summarizePopulation(SiloDataContainer dataContainer, SiloModelContainer siloModelContainer) {
+    public void summarizePopulation(SiloDataContainer dataContainer) {
         // summarize population for summary file
 
         final GeoData geoData = dataContainer.getGeoData();
@@ -252,9 +250,6 @@ public class HouseholdDataManager {
                 if (dwelling != null) {
                     zone = geoData.getZones().get(dwelling.getZoneId());
                 }
-//                double ds = siloModelContainer.getAcc()
-//                        .getPeakAutoTravelTime(zone.getZoneId(),
-//                                dataContainer.getJobData().getJobFromId(per.getWorkplace()).getZone());
                 Zone destination = geoData.getZones().get(dataContainer.getJobData().getJobFromId(per.getJobId()).getZoneId());
                 double ds = dataContainer.getTravelTimes().
                         getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
@@ -314,7 +309,7 @@ public class HouseholdDataManager {
     }
 
     public void calculateInitialSettings() {
-        initialIncomeDistribution = calculateIncomeDistribution();
+        incomeByAgeGenderOccupation = calculateIncomeDistribution();
     }
 
     private float[][][] calculateIncomeDistribution() {
@@ -355,9 +350,9 @@ public class HouseholdDataManager {
         // select who will get a raise or drop in salary
         float[][][] currentIncomeDistribution = calculateIncomeDistribution();
         float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
-        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.cachedService();
         for (Person person : persons.values()) {
-            executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, initialIncomeDistribution));
+            executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, incomeByAgeGenderOccupation));
         }
         executor.execute();
     }
@@ -376,12 +371,8 @@ public class HouseholdDataManager {
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
         final int sel = SiloUtil.select(prob);
-        final int inc = Math.max((int) initialIncomeDistribution[gender.ordinal()][age][person.getOccupation().getCode()] + change[sel], 0);
+        final int inc = Math.max((int) incomeByAgeGenderOccupation[gender.ordinal()][age][person.getOccupation().getCode()] + change[sel], 0);
         person.setIncome(inc);
-    }
-
-    public static int[] getQuitJobPersonIds() {
-        return quitJobPersonIds;
     }
 
 
@@ -479,7 +470,7 @@ public class HouseholdDataManager {
         return updatedHouseholds;
     }
 
-    public HashMap<Integer, int[]> getConventionalCarsHouseholds() {
+    public Map<Integer, int[]> getConventionalCarsHouseholds() {
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future

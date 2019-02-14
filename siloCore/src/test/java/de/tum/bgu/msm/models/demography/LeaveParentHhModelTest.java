@@ -30,7 +30,7 @@ public class LeaveParentHhModelTest {
         model = modelContainer.getLph();
 
         Dwelling dd = DwellingUtils.getFactory()
-                .createDwelling(999, 1093, null, -1, DefaultDwellingTypeImpl.SFD, 1, 1, 0, 1, 1999);
+                .createDwelling(999, 99, null, -1, DefaultDwellingTypeImpl.SFD, 1, 1, 0, 1, 1999);
         dataContainer.getRealEstateData().addDwelling(dd);
 
         household = HouseholdUtil.getFactory().createHousehold(999, 1, 0);

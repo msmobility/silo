@@ -322,7 +322,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(adjustedUtility);
 
         }
-        if (SiloUtil.getSum(expProbs) == 0) return -1;    // could not find dwelling that fits restrictions
+        if (SiloUtil.getSum(expProbs) == 0) {
+            return -1;    // could not find dwelling that fits restrictions
+        }
         int selected = SiloUtil.select(expProbs);
         return vacantDwellings[selected];
     }
