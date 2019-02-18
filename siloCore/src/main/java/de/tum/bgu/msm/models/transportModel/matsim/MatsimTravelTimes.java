@@ -154,7 +154,12 @@ public final class MatsimTravelTimes implements TravelTimes {
 		return 0;
 	}
 
-	private static class DummyFacility implements Facility {
+	public TravelTimes duplicate() {
+		//TODO: return new instance with its own router for thread-safety.
+		return this;
+	}
+
+    private static class DummyFacility implements Facility {
 
 		private final Coord coord;
 

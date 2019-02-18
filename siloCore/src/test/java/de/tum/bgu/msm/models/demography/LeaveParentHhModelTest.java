@@ -52,7 +52,7 @@ public class LeaveParentHhModelTest {
         dataContainer.getRealEstateData().identifyVacantDwellings();
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
         dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());
-        modelContainer.getMove().calculateRegionalUtilities();
+        modelContainer.getMove().prepareYear(0);
     }
 
     @Test

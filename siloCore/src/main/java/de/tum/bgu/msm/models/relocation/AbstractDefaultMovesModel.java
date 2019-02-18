@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.relocation;
 
-import com.google.common.collect.EnumMultiset;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Iterables;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -8,15 +9,20 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
@@ -26,42 +32,40 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    private final EnumMap<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
-    private final Map<Integer, Double> satisfactionByHousehold = new HashMap<>();
+    private final Map<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
+    private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
 
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
-    protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         setupMoveOrNotMove();
-        setupEvaluateDwellings();
-        setupSelectRegionModel();
         setupSelectDwellingModel();
     }
 
-    protected abstract void setupSelectRegionModel();
-
     protected abstract void setupSelectDwellingModel();
 
-    private void setupEvaluateDwellings() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
-        dwellingUtilityJSCalculator = new DwellingUtilityJSCalculator(reader);
-    }
+    protected abstract void calculateRegionalUtilities();
+
+    /**
+     * Calculates housing satisfaction for a household. Must be thread-safe!
+     * A thread-safe traveltimes reference is provided.
+     * @return The satisfaction / utility the given household gets from living in the given dwelling.
+     */
+    protected abstract double calculateHousingSatisfaction(Household household, Dwelling dwelling, TravelTimes travelTimes);
 
     private void setupMoveOrNotMove() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
         movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
     }
 
-    protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
-
-    protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
-
     @Override
     public List<MoveEvent> prepareYear(int year) {
+        calculateRegionalUtilities();
+        calculateAverageHousingSatisfaction();
+
         final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
@@ -186,24 +190,41 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         return HouseholdUtil.getHhIncome(hh) <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 
-    @Override
-    public void calculateAverageHousingSatisfaction() {
+    private void calculateAverageHousingSatisfaction() {
         logger.info("Evaluating housing satisfaction.");
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
         satisfactionByHousehold.clear();
 
-        EnumMultiset<HouseholdType> hhByType = EnumMultiset.create(HouseholdType.class);
-        for (Household hh : householdData.getHouseholds()) {
-            final HouseholdType householdType = hh.getHouseholdType();
-            Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
-            double util = calculateDwellingUtilityForHouseholdType(householdType, dd);
-            util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
-            satisfactionByHousehold.put(dd.getResidentId(), util);
-            averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
-            hhByType.add(householdType);
+        final Collection<Household> households = householdData.getHouseholds();
+        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads)) + 1;
+        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
+        ConcurrentExecutor<Void> executor =
+                ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
+
+        for (final List<Household> partition : partitions) {
+            executor.addTaskToQueue(() -> {
+                TravelTimes travelTimes = null;
+                if(dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
+                    travelTimes = dataContainer.getTravelTimes();
+                } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes){
+                    travelTimes = ((MatsimTravelTimes)dataContainer.getTravelTimes()).duplicate();
+                }
+                for (Household hh : partition) {
+                    final HouseholdType householdType = hh.getHouseholdType();
+                    hhByType.add(householdType);
+                    Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+                    final double util = calculateHousingSatisfaction(hh, dd, travelTimes);
+                    satisfactionByHousehold.put(hh.getId(), util);
+                    averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+                }
+                return null;
+            });
         }
+        executor.execute();
+
         averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
                 satisfaction / (1. * hhByType.count(householdType)));
     }

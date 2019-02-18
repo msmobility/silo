@@ -62,6 +62,11 @@ public class MainProperties {
      */
     public final boolean printOutFinalSyntheticPopulation;
 
+    /**
+     * Returns the number of logical threads available at runtime.
+     */
+    public final int numberOfThreads = Runtime.getRuntime().availableProcessors();
+
     @Deprecated
     public final String prestoZoneFile;
     @Deprecated

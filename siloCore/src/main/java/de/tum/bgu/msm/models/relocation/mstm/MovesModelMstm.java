@@ -8,7 +8,6 @@ package de.tum.bgu.msm.models.relocation.mstm;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -20,23 +19,22 @@ import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
+import de.tum.bgu.msm.models.relocation.DwellingUtilityJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
 
-//import com.pb.common.calculator.UtilityExpressionCalculator;
-//import de.tum.bgu.msm.models.relocation.MovesDMU;
-
 public class MovesModelMstm extends AbstractDefaultMovesModel {
 
-    private SelectRegionJSCalculator regionCalculator;
     private EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
     private DoubleMatrix2D zonalRacialComposition;
@@ -47,13 +45,30 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     private SelectDwellingJSCalculator dwellingCalculator;
 
+    private SelectRegionJSCalculator regionCalculator;
+    private DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
+
     public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer, accessibility);
+
+        setupSelectRegionModel();
+        setupEvaluateDwellings();
+
         selectDwellingRaceRelevance = Properties.get().moves.racialRelevanceInZone;
         provideRentSubsidyToLowIncomeHh = Properties.get().moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
             dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
+    }
+
+    private void setupSelectRegionModel() {
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalcMstm"));
+        regionCalculator = new SelectRegionJSCalculator(reader);
+    }
+
+    private void setupEvaluateDwellings() {
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
+        dwellingUtilityJSCalculator = new DwellingUtilityJSCalculator(reader);
     }
 
     private void calculateRacialCompositionByZoneAndRegion() {
@@ -146,14 +161,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 //    }
 
     @Override
-    protected void setupSelectRegionModel() {
-        // set up model for selection of region
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalcMstm"));
-        regionCalculator = new SelectRegionJSCalculator(reader);
-
-    }
-
-    @Override
     public void calculateRegionalUtilities() {
         // this method calculates generic utilities by household type, race and region and stores them in utilityRegion
 
@@ -199,6 +206,21 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
+    @Override
+    protected double calculateHousingSatisfaction(Household household, Dwelling dd, TravelTimes travelTimes) {
+        HouseholdType ht = household.getHouseholdType();
+        double ddQualityUtility = convertQualityToUtility(dd.getQuality());
+        double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZoneId()));
+        double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
+        double util = dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+                ddQualityUtility, ddAutoAccessibilityUtility,
+                transitAccessibilityUtility);
+        double personalUtil = personalizeDwellingUtilityForThisHousehold(household, dd, util);
+        return personalUtil;
+    }
+
     private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Race race, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race));
@@ -226,13 +248,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
-
     @Override
     public int searchForNewDwelling(Household household) {
         // search alternative dwellings for the list of persons in the household
 
         // data preparation -- > count workers, store working zones, define income, define race
-        int householdIncome = 0;
         Race householdRace = null;
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
@@ -241,7 +261,6 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getJobId()).getZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);
-                householdIncome += pp.getIncome();
             }
             if(householdRace == null) {
                 householdRace = pp.getRace();
@@ -299,21 +318,20 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
+        int income = HouseholdUtil.getHhIncome(household);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
             int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
-                    householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
+                    income > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
             double racialShare = 1;
             if (householdRace != Race.other) {
                 racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZoneId()).getZoneId(), householdRace);
             }
             // multiply by racial share to make zones with higher own racial share more attractive
 
-            double utility = calculateDwellingUtilityForHouseholdType(ht, dd);
-            utility = personalizeDwellingUtilityForThisHousehold(household, dd, householdIncome, utility);
-
+            double utility = calculateHousingSatisfaction(household, dd, null);
 
             double adjustedUtility = Math.pow(utility, (1 - selectDwellingRaceRelevance)) *
                     Math.pow(racialShare, selectDwellingRaceRelevance);
@@ -329,25 +347,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         return vacantDwellings[selected];
     }
 
-
-
-    @Override
-    protected double calculateDwellingUtilityForHouseholdType(HouseholdType ht, Dwelling dd) {
-
-        double ddQualityUtility = convertQualityToUtility(dd.getQuality());
-        double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
-        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZoneId()));
-        double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
-
-        return dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
-                ddQualityUtility, ddAutoAccessibilityUtility,
-                transitAccessibilityUtility);
-    }
-
-    @Override
-    protected double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dd, int income, double genericUtility) {
+    private double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dd, double genericUtility) {
         HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
+        int income = HouseholdUtil.getHhIncome(household);
         if (householdQualifiesForSubsidy(income, geoData.getZones().get(dd.getZoneId()).getZoneId(), dd.getPrice())) {
             //need to recalculate the generic utility
 
