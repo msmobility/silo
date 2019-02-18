@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.relocation;
 
-import de.tum.bgu.msm.utils.SiloUtil;
+import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -11,29 +11,26 @@ import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDefaultMovesModel extends AbstractModel implements MovesModelI {
 
-    protected final static Logger LOGGER = Logger.getLogger(AbstractDefaultMovesModel.class);
+    protected final static Logger logger = Logger.getLogger(AbstractDefaultMovesModel.class);
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
 
-    private double[] averageHousingSatisfaction;
+    private final EnumMap<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
+    private final Map<Integer, Double> satisfactionByHousehold = new HashMap<>();
+
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
-
     protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
-
-    protected int year;
 
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
@@ -46,65 +43,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     protected abstract void setupSelectRegionModel();
+
     protected abstract void setupSelectDwellingModel();
-
-    protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
-    protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
-
-
-    @Override
-    public EnumMap<HouseholdType,Double> updateUtilitiesOfVacantDwelling(Dwelling dd) {
-        // Calculate utility of this dwelling for each household type
-        EnumMap<HouseholdType,Double> utilitiesByHouseholdType = new EnumMap<>(HouseholdType.class);
-        for (HouseholdType ht : HouseholdType.values()) {
-            utilitiesByHouseholdType.put(ht, calculateDwellingUtilityForHouseholdType(ht,  dd));
-        }
-        return utilitiesByHouseholdType;
-    }
-
-    @Override
-    public List<MoveEvent> prepareYear(int year) {
-        this.year = year;
-        final List<MoveEvent> events = new ArrayList<>();
-        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            events.add(new MoveEvent(hh.getId()));
-        }
-        return events;
-    }
-
-    @Override
-    public boolean handleEvent(MoveEvent event) {
-
-        // simulates (a) if this household moves and (b) where this household moves
-
-        int hhId = event.getHouseholdId();
-        Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-        if (household == null) {
-            return false;  // Household does not exist anymore
-        }
-        if (!moveOrNot(household)) {
-            return false;                                                             // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
-        }
-        int idNewDD = searchForNewDwelling(household);  // Step 2: Choose new dwelling
-        if (idNewDD > 0) {
-            moveHousehold(household, household.getDwellingId(), idNewDD);    // Step 3: Move household
-            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
-            if (hhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                        household.getDwellingId());
-            }
-            return true;
-        } else {
-            if (hhId == SiloUtil.trackHh)
-                SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
-                        "could not find an adequate dwelling.");
-        }
-        return false;
-    }
-
-    @Override
-    public void finishYear(int year) {
-    }
 
     private void setupEvaluateDwellings() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
@@ -116,29 +56,62 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
     }
 
-    /**
-     * Walks through each dwelling and evaluate utility of current resident. For vacant dwellings, expected utility
-     * for each household type is calculated.
-     */
-    private void evaluateAllDwellingUtilities() {
-        LOGGER.info("  Evaluating utility of dwellings for current residents and utility of vacant dwellings for all " +
-                "household types");
+    protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        for (Dwelling dd : dataContainer.getRealEstateData().getDwellings()) {
-            if (dd.getResidentId() == -1) {
-                // dwelling is vacant, evaluate for all household types
-                EnumMap<HouseholdType, Double> utilitiesByHhtype = updateUtilitiesOfVacantDwelling(dd);
-                dd.setUtilitiesByHouseholdType(utilitiesByHhtype);
-            } else {
-                // dwelling is occupied, evaluate for the current household
-                Household hh = householdData.getHouseholdFromId(dd.getResidentId());
-                double util = calculateDwellingUtilityForHouseholdType(hh.getHouseholdType(), dd);
-                util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
-                dd.setUtilOfResident(util);
+    protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
+
+    @Override
+    public List<MoveEvent> prepareYear(int year) {
+        final List<MoveEvent> events = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
+            events.add(new MoveEvent(hh.getId()));
+        }
+        return events;
+    }
+
+    @Override
+    public void finishYear(int year) {
+    }
+
+
+    /**
+     * Simulates (a) if this household moves and (b) where this household moves
+     */
+    @Override
+    public boolean handleEvent(MoveEvent event) {
+
+        int hhId = event.getHouseholdId();
+        Household household = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
+        if (household == null) {
+            // Household does not exist anymore
+            return false;
+        }
+
+        // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+        if (!moveOrNot(household)) {
+            return false;
+        }
+
+        // Step 2: Choose new dwelling
+        int idNewDD = searchForNewDwelling(household);
+        if (idNewDD > 0) {
+
+            // Step 3: Move household
+            moveHousehold(household, household.getDwellingId(), idNewDD);
+            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
+            if (hhId == SiloUtil.trackHh) {
+                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+                        household.getDwellingId());
             }
+            return true;
+        } else {
+            if (hhId == SiloUtil.trackHh)
+                SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
+                        "could not find an adequate dwelling.");
+            return false;
         }
     }
+
 
     protected double convertPriceToUtility(int price, HouseholdType ht) {
 
@@ -192,20 +165,15 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     protected boolean moveOrNot(Household household) {
-
         HouseholdType hhType = household.getHouseholdType();
         Dwelling dd = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
         if (!isHouseholdEligibleToLiveHere(household, dd)) {
             return true;
         }
-        double currentUtil = dd.getUtilOfResident();
-
-        double[] prop = new double[2];
-
-        prop[0] = movesOrNotJSCalculator.getMovingProbability(averageHousingSatisfaction[hhType.ordinal()], currentUtil);
-        prop[1] = 1. - prop[0];
-
-        return SiloUtil.select(prop) == 0;
+        final double currentUtil = satisfactionByHousehold.get(household.getId());
+        final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
+        final double prop = movesOrNotJSCalculator.getMovingProbability(avgSatisfaction, currentUtil);
+        return SiloUtil.getRandomNumberAsDouble() <= prop;
     }
 
     private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
@@ -220,19 +188,26 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     @Override
     public void calculateAverageHousingSatisfaction() {
-        evaluateAllDwellingUtilities();
-        averageHousingSatisfaction = new double[HouseholdType.values().length];
-        int[] hhCountyByType = new int[HouseholdType.values().length];
-        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            double util = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getUtilOfResident();
-            int count = hh.getHouseholdType().ordinal();
-            averageHousingSatisfaction[count] += util;
-            hhCountyByType[count]++;
+        logger.info("Evaluating housing satisfaction.");
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+
+        averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
+        satisfactionByHousehold.clear();
+
+        EnumMultiset<HouseholdType> hhByType = EnumMultiset.create(HouseholdType.class);
+        for (Household hh : householdData.getHouseholds()) {
+            final HouseholdType householdType = hh.getHouseholdType();
+            Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+            double util = calculateDwellingUtilityForHouseholdType(householdType, dd);
+            util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
+            satisfactionByHousehold.put(dd.getResidentId(), util);
+            averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+            hhByType.add(householdType);
         }
-        for (int hhType = 0; hhType < HouseholdType.values().length; hhType++) {
-            averageHousingSatisfaction[hhType] = averageHousingSatisfaction[hhType] / (1. * hhCountyByType[hhType]);
-        }
+        averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
+                satisfaction / (1. * hhByType.count(householdType)));
     }
+
 
     @Override
     public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
@@ -241,8 +216,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
             dataContainer.getRealEstateData().vacateDwelling(idOldDD);
         }
         dataContainer.getRealEstateData().removeDwellingFromVacancyList(idNewDD);
-        hh.setDwelling(idNewDD);
         dataContainer.getRealEstateData().getDwelling(idNewDD).setResidentID(hh.getId());
+        hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Household " +
                     hh.getId() + " moved from dwelling " + idOldDD + " to dwelling " + idNewDD + ".");
