@@ -19,7 +19,7 @@ public class SyntheticPopulationGeneratorCT {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.CAPE_TOWN, args[0]);
+        SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
         try {
             rb = new PropertyResourceBundle(new FileReader(args[0]));
         } catch (IOException e) {

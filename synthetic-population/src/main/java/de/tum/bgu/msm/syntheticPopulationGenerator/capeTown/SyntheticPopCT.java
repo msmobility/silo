@@ -101,6 +101,7 @@ public class SyntheticPopCT implements SyntheticPopI {
     protected HashMap<Integer, int[]> cityTAZ;
     private ArrayList<Integer> municipalities;
     private ArrayList<Integer> counties;
+    private HashMap<Integer, Integer> tazToTazOriginal;
 
     protected String[] attributesCounty;
     protected String[] attributesMunicipality;
@@ -137,8 +138,6 @@ public class SyntheticPopCT implements SyntheticPopI {
 
     protected Matrix distanceMatrix;
     protected Matrix distanceImpedance;
-    protected TableDataSet odMunicipalityFlow;
-    protected TableDataSet odCountyFlow;
 
     protected HashMap<Integer, HashMap<String, Integer>> households;
     protected HashMap<Integer, HashMap<Integer, HashMap<String, Integer>>> personsInHouseholds;
@@ -190,9 +189,9 @@ public class SyntheticPopCT implements SyntheticPopI {
             //runIPUbyCityAndCounty(); //IPU fitting with one geographical constraint. Each municipality is independent of others
             readIPU();
             generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-            /*generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-            assignJobs(); //Workplace allocation
-            assignSchools(); //School allocation
+            generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+            //assignJobs(); //Workplace allocation
+            /*assignSchools(); //School allocation
             addCars(false);*/
             SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
 /*        } else { //read the synthetic population  // todo: this part will be removed after testing is completed
@@ -207,9 +206,6 @@ public class SyntheticPopCT implements SyntheticPopI {
     }
 
 
-    public void analyzeSP(){
-        SyntheticPopulationAnalyzer analyze = new SyntheticPopulationAnalyzer();
-    }
 
     private void readAttributes() {
         //Read attributes and process dictionary
@@ -361,9 +357,11 @@ public class SyntheticPopCT implements SyntheticPopI {
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
         cityTAZ = new HashMap<>();
+        tazToTazOriginal = new HashMap<>();
         for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
             int city = (int) cellsMatrix.getValueAt(i,"ID_city");
             int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
+            int tazOriginal = (int) cellsMatrix.getValueAt(i,"taz_ID_city");
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
                 previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
@@ -372,6 +370,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int[] previousTaz = {taz};
                 cityTAZ.put(city,previousTaz);
             }
+            tazToTazOriginal.put(taz, tazOriginal);
         }
 
 
@@ -1334,7 +1333,6 @@ public class SyntheticPopCT implements SyntheticPopI {
         logger.info("   Starting to generate jobs");
 
         String[] jobStringType = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
-        int[] rasterCellsIDs = cellsMatrix.getColumnAsInt("ID_cell");
         JobDataManager jobDataManager = dataContainer.getJobData();
 
         //For each municipality
@@ -1355,19 +1353,13 @@ public class SyntheticPopCT implements SyntheticPopI {
             //generate jobs
             for (int row = 0; row < jobStringType.length; row++) {
                 String jobType = jobStringType[row];
-                int totalJobs = (int) marginalsMunicipality.getIndexedValueAt(municipalityID, jobType);
-                if (totalJobs > 0.1) {
                     //Obtain the number of jobs of that type in each TAZ of the municipality
-                    double[] jobsInTaz = new double[tazInCity.length];
-                    for (int i = 0; i < tazInCity.length; i++) {
-                        jobsInTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobType);
-                    }
-                    //Create and allocate jobs to TAZs (with replacement)
+                for (int i : tazInCity) {
+                    int totalJobs = (int) cellsMatrix.getIndexedValueAt(i, jobType);
                     for (int job = 0; job < totalJobs; job++) {
-                        int[] records = select(jobsInTaz, tazInCity);
-                        jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
                         int id = jobDataManager.getNextJobId();
-                        jobDataManager.addJob(JobUtils.getFactory().createJob(id, records[0], null, -1, jobType)); //(int id, int zone, int workerId, String type)
+                        int taz = tazToTazOriginal.get(i);
+                        jobDataManager.addJob(JobUtils.getFactory().createJob(id, taz, null, -1, jobType)); //(int id, int zone, int workerId, String type)
                     }
                 }
             }
@@ -1538,9 +1530,6 @@ public class SyntheticPopCT implements SyntheticPopI {
         Frequency travelSecondary = new Frequency();
         Frequency travelUniversity = new Frequency();
         Frequency travelPrimary = new Frequency();
-        validationCommutersFlow(); //Generates the validation tabledatasets
-        int[] flow = SiloUtil.createArrayWithValue(odMunicipalityFlow.getRowCount(),0);
-        odMunicipalityFlow.appendColumn(flow,Integer.toString(count));
 
 
         //Produce one array list with students' ID
@@ -1595,12 +1584,6 @@ public class SyntheticPopCT implements SyntheticPopI {
                 pp.setSchoolPlace(schoolPlace[0] / 100);
                 //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
 
-                //For validation OD TableDataSet
-                int homeMun = (int) cellsMatrix.getIndexedValueAt(origin, "smallID");
-                int workMun = (int) cellsMatrix.getIndexedValueAt(pp.getSchoolPlace(), "smallID");
-                int odPair = homeMun * 1000 + workMun;
-                odMunicipalityFlow.setIndexedValueAt(odPair,Integer.toString(count),odMunicipalityFlow.getIndexedValueAt(odPair,Integer.toString(count))+ 1);
-
                 //Update counts of vacant school places
                 numberVacantSchoolsByZoneByType.put(schoolPlace[0], numberVacantSchoolsByZoneByType.get(schoolPlace[0]) - 1);
                 if (numberVacantSchoolsByZoneByType.get(schoolPlace[0]) < 1) {
@@ -1624,7 +1607,6 @@ public class SyntheticPopCT implements SyntheticPopI {
         checkTripLengthDistribution(travelPrimary, 0, 0, "microData/interimFiles/tripLengthDistributionPrimary.csv", 1);
         checkTripLengthDistribution(travelSecondary, 0, 0, "microData/interimFiles/tripLengthDistributionSecondary.csv", 1); //Trip length frequency distribution
         checkTripLengthDistribution(travelUniversity, alphaJob, gammaJob, "microData/interimFiles/tripLengthDistributionUniversity.csv", 1);
-        SiloUtil.writeTableDataSet(odMunicipalityFlow,"microData/interimFiles/odMunicipalityFlow.csv");
         for (int i = 0; i < schoolTypes.length; i++) {
             logger.info("  School type: " + schoolTypes[i] + ". " + studentsOutside[schoolTypes[i] - 1] + " students out of " + studentsByType[schoolTypes[i] - 1] + " study outside the area");
         }
@@ -1750,76 +1732,6 @@ public class SyntheticPopCT implements SyntheticPopI {
     }
 
 
-    private void validationCommutersFlow(){
-
-        //For checking
-        //OD matrix from the commuters data, for validation
-        TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
-        selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
-        int[] allCounties = selectedMunicipalities.getColumnAsInt("smallCenter");
-        TableDataSet observedODFlow = SiloUtil.readCSVfile("input/syntheticPopulation/odMatrixCommuters.csv");
-        observedODFlow.buildIndex(observedODFlow.getColumnPosition("ID_city"));
-        //OD matrix for the core cities, obtained from the commuters data
-        TableDataSet observedCoreODFlow = new TableDataSet();
-        int [] selectedCounties = SiloUtil.idendifyUniqueValues(allCounties);
-        observedCoreODFlow.appendColumn(selectedCounties,"smallCenter");
-        for (int i = 0; i < selectedCounties.length; i++){
-            int[] dummy = SiloUtil.createArrayWithValue(selectedCounties.length,0);
-            observedCoreODFlow.appendColumn(dummy,Integer.toString(selectedCounties[i]));
-        }
-        observedCoreODFlow.buildIndex(observedCoreODFlow.getColumnPosition("smallCenter"));
-        int ini = 0;
-        int end = 0;
-        // We decided to read this file here again, as this method is likely to be removed later, which is why we did not
-        // want to create a global variable for TableDataSet selectedMunicipalities (Ana and Rolf, 29 Mar 2017)
-
-        int[] citySmallID = selectedMunicipalities.getColumnAsInt("smallID");
-        for (int i = 0; i < cityID.length; i++){
-            ini = (int) selectedMunicipalities.getIndexedValueAt(cityID[i],"smallCenter");
-            for (int j = 0; j < cityID.length; j++){
-                end = (int) selectedMunicipalities.getIndexedValueAt(cityID[j],"smallCenter");
-                observedCoreODFlow.setIndexedValueAt(ini,Integer.toString(end),
-                        observedCoreODFlow.getIndexedValueAt(ini,Integer.toString(end)) + observedODFlow.getIndexedValueAt(cityID[i],Integer.toString(cityID[j])));
-            }
-        }
-        //OD flows at the municipality level in one TableDataSet, to facilitate visualization of the deviation between the observed data and the estimated data
-        odMunicipalityFlow = new TableDataSet();
-        int[] cityKeys = new int[citySmallID.length * citySmallID.length];
-        int[] odData = new int[citySmallID.length * citySmallID.length];
-        int k = 0;
-        for (int row = 0; row < citySmallID.length; row++){
-            for (int col = 0; col < citySmallID.length; col++){
-                cityKeys[k] = citySmallID[row] * 1000 + citySmallID[col];
-                odData[k] = (int) observedODFlow.getIndexedValueAt(cityID[row],Integer.toString(cityID[col]));
-                k++;
-            }
-        }
-        int[] initial = SiloUtil.createArrayWithValue(cityKeys.length, 0);
-        odMunicipalityFlow.appendColumn(cityKeys,"ID_od");
-        odMunicipalityFlow.appendColumn(odData,"ObservedFlow");
-        odMunicipalityFlow.appendColumn(initial,"SimulatedFlow");
-        odMunicipalityFlow.buildIndex(odMunicipalityFlow.getColumnPosition("ID_od"));
-
-        //OD flows at the regional level (5 core cities)
-        odCountyFlow = new TableDataSet();
-        int[] regionKeys = new int[selectedCounties.length * selectedCounties.length];
-        int[] regionalFlows = new int[selectedCounties.length * selectedCounties.length];
-        k = 0;
-        for (int row = 0; row < selectedCounties.length; row++){
-            for (int col = 0; col < selectedCounties.length; col++){
-                regionKeys[k] = selectedCounties[row] * 1000 + selectedCounties[col];
-                regionalFlows[k] = (int) observedCoreODFlow.getIndexedValueAt(selectedCounties[row],Integer.toString(selectedCounties[col]));
-                k++;
-            }
-        }
-        int[] initialFlow = SiloUtil.createArrayWithValue(regionKeys.length, 0);
-        odCountyFlow.appendColumn(regionKeys,"ID_od");
-        odCountyFlow.appendColumn(regionalFlows,"ObservedFlow");
-        odCountyFlow.appendColumn(initialFlow,"SimulatedFlow");
-        odCountyFlow.buildIndex(odCountyFlow.getColumnPosition("ID_od"));
-    }
-
-
     private void generateHouseholdsPersonsDwellings(){
         //Generate the synthetic population using Monte Carlo (select the households according to the weight)
         //Once the household is selected, all the characteristics of the household will be copied (including the household members)
@@ -1831,15 +1743,8 @@ public class SyntheticPopCT implements SyntheticPopI {
         int previousHouseholds = 0;
         int previousPersons = 0;
 
-
-
-
-        //Driver license probability
-        //TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
-
         generateCountersForValidation();
         occupiedDwellingsByZone = new HashMap<>();
-
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdData();
@@ -1893,7 +1798,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
                 //Select the taz to allocate the household (without replacement)
                 int[] recordsCell = select(probTaz, tazInCity, tazRemaining);
-                int taz =recordsCell[0];
+                int taz = tazToTazOriginal.get(recordsCell[0]);
 
                 //copy the private household characteristics
                 int householdSize = (int) dataHousehold.getIndexedValueAt(hhIdMD, "DERH_HSIZE1");
