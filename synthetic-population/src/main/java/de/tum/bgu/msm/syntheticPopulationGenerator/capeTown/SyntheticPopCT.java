@@ -1644,17 +1644,22 @@ public class SyntheticPopCT implements SyntheticPopI {
             Race race = Race.white;
             if ((int) persons.getValueAt(i,"nationality") > 1){race = Race.black;}
             int hhID = (int) persons.getValueAt(i, "hhid");
+            PersonRole ppRole = PersonRole.SINGLE;
+            if (persons.getStringValueAt(i, "relationShip").equals("married")) {
+                ppRole = PersonRole.MARRIED;
+            } else {
+                ppRole = PersonRole.CHILD;
+            }
 
             Person pp = factory.createPerson((int) persons.getValueAt(i, "id"),
                     (int) persons.getValueAt(i, "age"), Gender.valueOf((int) persons.getValueAt(i, "gender")),
-                    race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")), (int) persons.getValueAt(i, "workplace"),
+                    race, Occupation.valueOf((int) persons.getValueAt(i, "occupation")), ppRole,
+                    (int) persons.getValueAt(i, "workplace"),
                     (int) persons.getValueAt(i, "income"));
             householdDataManager.addPerson(pp);
             householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
             pp.setEducationLevel((int) persons.getValueAt(i, "education"));
-            if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
-            else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
-            else pp.setRole(PersonRole.CHILD);
+
             if (persons.getValueAt(i,"driversLicense") == 1) pp.setDriverLicense(true);
             int nationality = (int) persons.getValueAt(i,"nationality");
             if (nationality == 1) {
@@ -1822,11 +1827,11 @@ public class SyntheticPopCT implements SyntheticPopI {
                                                                                 dataPerson.getStringValueAt(personCounter, "p17_schoolattend"));
                     int income = microDataManager.translateIncome(dataPerson.getStringValueAt(personCounter, "p16_income"));
                     Race raceStr = microDataManager.translateRace(dataPerson.getStringValueAt(personCounter,"p05_pop_group"));
-                    Person pers = factory.createPerson(idPerson, age, gender, raceStr, occupation, 0, income);
+                    PersonRole ppRole = microDataManager.translateRole(dataPerson.getStringValueAt(personCounter, "p03_marital_st"), age);
+                    Person pers = factory.createPerson(idPerson, age, gender, raceStr, occupation, ppRole,0, income);
                     householdDataManager.addPerson(pers);
                     householdDataManager.addPersonToHousehold(pers, household);
                     //pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "p20_edulevel"));
-                    pers.setRole(microDataManager.translateRole(dataPerson.getStringValueAt(personCounter, "p03_marital_st"), age));
                     pers.setNationality(microDataManager.translateNationality(dataPerson.getStringValueAt(personCounter, "p09_citizenship")));
                     pers.setDriverLicense(false);
                     pers.setSchoolType(0);
