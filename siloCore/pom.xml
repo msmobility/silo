@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.tum.bgu.msm</groupId>
@@ -100,7 +101,8 @@
                     <!-- avoid out of memory errors: -->
                     <argLine>-Xmx2000m -Djava.awt.headless=true
 
-                        -Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
+                        -Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -327,31 +329,14 @@
             <artifactId>jxl</artifactId>
             <version>2.6</version>
         </dependency>
-        <!-- 		This would be the "standard" deployment, which currently (10/jan/2016) fails:
-                    This version works on my computer (and even is necessary to pull in changes from MITO directly,
-                    but it generates an error with travis-cl. Unclear why. Therefore, this dependency is commented out
-                    for the official version, and the jitpack dependency below is used instead. This way, travis-cl is
-                    happy. On my computer, I have to use the first dependency, not the jitpack dependency. (RM, 23 Mar 2017)
-         -->
-        <!--  			really?  Works for me (but am using eclipse).  kai, jun'17
-         -->
-        <!--		<dependency>
-                   <groupId>de.tum.bgu.msm</groupId>
-                   <artifactId>mito</artifactId>
-                   <version>0.3.0-SNAPSHOT</version>
-               </dependency>
-       -->
         <!--  		This is the "jitpack" deployment:
          -->
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <!-- 			<version>0.3.0-SNAPSHOT</version> -->
-            <version>master</version>
-            <!-- 		The jitpack version refers to the github branch.  Since you only have a master branch for mito, you can only use master-SNAPSHOT.  If
-                    you want to have this dependency stay with an older version of mito, you will have to put that older version on a branch and leave it there.
-                    I just introduced a 0.2.x branch. But it does not work with that either. kai, jun'17	 -->
+            <version>2b79e7e2b5</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>

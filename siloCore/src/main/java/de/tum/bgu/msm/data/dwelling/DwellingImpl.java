@@ -117,15 +117,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         return restriction;
     }
 
-    public EnumMap<HouseholdType, Double> getUtilitiesByHouseholdType() {
-        return utilitiesByHouseholdType;
-    }
-
-    @Override
-    public double getUtilOfResident() {
-        return utilOfResident;
-    }
-
     @Override
     public void setResidentID(int residentID) {
         this.hhId = residentID;
@@ -145,16 +136,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     public void setRestriction(float restriction) {
         // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
         this.restriction = restriction;
-    }
-
-    @Override
-    public void setUtilitiesByHouseholdType(EnumMap<HouseholdType, Double> utilitiesByHouseholdType) {
-        this.utilitiesByHouseholdType = utilitiesByHouseholdType;
-    }
-
-    @Override
-    public void setUtilOfResident(double utilOfResident) {
-        this.utilOfResident = utilOfResident;
     }
 
     @Override

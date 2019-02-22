@@ -175,6 +175,7 @@
         <module>maryland</module>
         <module>msp</module>
         <module>perth</module>
+        <module>kagawa</module>
     </modules>
 
     <repositories>

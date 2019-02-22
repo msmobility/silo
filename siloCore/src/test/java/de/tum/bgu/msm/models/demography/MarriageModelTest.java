@@ -41,101 +41,87 @@ public class MarriageModelTest {
         Household household1 = HouseholdUtil.getFactory().createHousehold(1,  1, 0);
         dataContainer.getHouseholdData().addHousehold(household1);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1, 999, null, 1, DefaultDwellingTypeImpl.MF234, 2, 1, 1000, -1, 2000));
-        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
-        person1.setRole(PersonRole.SINGLE);
 
         Household household2 = HouseholdUtil.getFactory().createHousehold(2, 2, 0);
         dataContainer.getHouseholdData().addHousehold(household2);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(2, 999, null, 2, DefaultDwellingTypeImpl.SFD, 4, 1, 1000, -1, 2000));
-        Person person2 = PersonUtils.getFactory().createPerson(2, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person2 = PersonUtils.getFactory().createPerson(2, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person2);
         dataContainer.getHouseholdData().addPersonToHousehold(person2, household2);
-        person2.setRole(PersonRole.SINGLE);
 
         couple2 = new int[]{3,4};
         Household household3 = HouseholdUtil.getFactory().createHousehold(3, 3,  0);
         dataContainer.getHouseholdData().addHousehold(household3);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(3, 999, null, 3, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
-        Person person3 = PersonUtils.getFactory().createPerson(3, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person3 = PersonUtils.getFactory().createPerson(3, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person3);
         dataContainer.getHouseholdData().addPersonToHousehold(person3, household3);
-        person3.setRole(PersonRole.SINGLE);
 
         Household household4 = HouseholdUtil.getFactory().createHousehold(4, 4,  0);
         dataContainer.getHouseholdData().addHousehold(household4);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(4, 999, null, 4, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
-        Person person4 = PersonUtils.getFactory().createPerson(4, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person4 = PersonUtils.getFactory().createPerson(4, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person4);
         dataContainer.getHouseholdData().addPersonToHousehold(person4, household4);
-        person4.setRole(PersonRole.SINGLE);
 
         couple3 = new int[]{5,6};
         Household household5 = HouseholdUtil.getFactory().createHousehold(5, 5,  0);
         dataContainer.getHouseholdData().addHousehold(household5);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(5, 999, null, 5, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
-        Person person5 = PersonUtils.getFactory().createPerson(5, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person5 = PersonUtils.getFactory().createPerson(5, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person5);
         dataContainer.getHouseholdData().addPersonToHousehold(person5, household5);
-        person5.setRole(PersonRole.SINGLE);
 
         Household household6 = HouseholdUtil.getFactory().createHousehold(6, 6,  0);
         dataContainer.getHouseholdData().addHousehold(household6);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(6, 999, null, 6, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
-        Person person6 = PersonUtils.getFactory().createPerson(6, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person6 = PersonUtils.getFactory().createPerson(6, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person6);
-        person6.setRole(PersonRole.SINGLE);
+
         dataContainer.getHouseholdData().addPersonToHousehold(person6, household6);
-        Person person6Child = PersonUtils.getFactory().createPerson(61, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person6Child = PersonUtils.getFactory().createPerson(61, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person6Child);
         dataContainer.getHouseholdData().addPersonToHousehold(person6Child, household6);
-        person6.setRole(PersonRole.CHILD);
 
         couple4 = new int[]{7,8};
         Household household7 = HouseholdUtil.getFactory().createHousehold(7, 7,  0);
         dataContainer.getHouseholdData().addHousehold(household7);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(7, 999, null, 7, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
-        Person person7 = PersonUtils.getFactory().createPerson(7, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person7 = PersonUtils.getFactory().createPerson(7, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person7);
         dataContainer.getHouseholdData().addPersonToHousehold(person7, household7);
-        person7.setRole(PersonRole.SINGLE);
 
-        Person person7Child1 = PersonUtils.getFactory().createPerson(71, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person7Child1 = PersonUtils.getFactory().createPerson(71, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.CHILD, -1, 0);
         dataContainer.getHouseholdData().addPerson(person7Child1);
         dataContainer.getHouseholdData().addPersonToHousehold(person7Child1, household7);
-        person7Child1.setRole(PersonRole.CHILD);
-        Person person7Child2 = PersonUtils.getFactory().createPerson(72, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person7Child2 = PersonUtils.getFactory().createPerson(72, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.CHILD, -1, 0);
         dataContainer.getHouseholdData().addPerson(person7Child2);
         dataContainer.getHouseholdData().addPersonToHousehold(person7Child2, household7);
-        person7Child2.setRole(PersonRole.CHILD);
-        Person person7Child3 = PersonUtils.getFactory().createPerson(73, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person7Child3 = PersonUtils.getFactory().createPerson(73, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.CHILD, -1, 0);
         dataContainer.getHouseholdData().addPerson(person7Child3);
         dataContainer.getHouseholdData().addPersonToHousehold(person7Child3, household7);
-        person7Child3.setRole(PersonRole.CHILD);
 
         Household household8 = HouseholdUtil.getFactory().createHousehold(8, 8,  0);
         dataContainer.getHouseholdData().addHousehold(household8);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(8, 999, null, 8, DefaultDwellingTypeImpl.SFD, 2, 1, 1000, -1, 2000));
-        Person person8 = PersonUtils.getFactory().createPerson(8, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person8 = PersonUtils.getFactory().createPerson(8, 30, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED,PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person8);
         dataContainer.getHouseholdData().addPersonToHousehold(person8, household8);
-        person8.setRole(PersonRole.SINGLE);
 
-        Person person8Child1 = PersonUtils.getFactory().createPerson(81, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person8Child1 = PersonUtils.getFactory().createPerson(81, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED,PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person8Child1);
         dataContainer.getHouseholdData().addPersonToHousehold(person8Child1, household8);
-        person8Child1.setRole(PersonRole.CHILD);
-        Person person8Child2 = PersonUtils.getFactory().createPerson(82, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person8Child2 = PersonUtils.getFactory().createPerson(82, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.CHILD, -1, 0);
         dataContainer.getHouseholdData().addPerson(person8Child2);
         dataContainer.getHouseholdData().addPersonToHousehold(person8Child2, household8);
-        person8Child2.setRole(PersonRole.CHILD);
-        Person person8Child3 = PersonUtils.getFactory().createPerson(83, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person8Child3 = PersonUtils.getFactory().createPerson(83, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.CHILD, -1, 0);
         dataContainer.getHouseholdData().addPerson(person8Child3);
         dataContainer.getHouseholdData().addPersonToHousehold(person8Child3, household8);
-        person8Child3.setRole(PersonRole.CHILD);
 
-        dataContainer.getHouseholdData().setHighestHouseholdAndPersonId();
+        dataContainer.getHouseholdData().identifyHighestHouseholdAndPersonId();
         dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
         modelContainer.getMove().calculateRegionalUtilities();
@@ -149,9 +135,8 @@ public class MarriageModelTest {
         for(int i = 0; i < 10000; i++) {
             final Household household = HouseholdUtil.getFactory().createHousehold(i,i,0);
                     singleHouseholds.addHousehold(household);
-            final Person p = PersonUtils.getFactory().createPerson(i, ages.nextInt(), Gender.valueOf(genders.nextInt()), races.next(), Occupation.valueOf(occupations.nextInt()), 0, 0);
+            final Person p = PersonUtils.getFactory().createPerson(i, ages.nextInt(), Gender.valueOf(genders.nextInt()), races.next(), Occupation.valueOf(occupations.nextInt()), PersonRole.SINGLE,0, 0);
             singleHouseholds.addPerson(p);
-            p.setRole(PersonRole.SINGLE);
             singleHouseholds.addPersonToHousehold(p, household);
         }
 

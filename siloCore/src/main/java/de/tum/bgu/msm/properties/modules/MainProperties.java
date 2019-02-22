@@ -58,11 +58,6 @@ public class MainProperties {
     public final Implementation implementation;
 
     /**
-     * Use microlocation (XY coordinates) of dwellings, jobs and schools.
-     */
-    public final boolean useMicrolocation;
-
-    /**
      * Print out the synthetic population nd the development capacity file at the final year
      */
     public final boolean printOutFinalSyntheticPopulation;
@@ -112,7 +107,6 @@ public class MainProperties {
         qualityLevels = PropertiesUtil.getIntProperty(bundle, "dwelling.quality.levels.distinguished", 4);
 
         PropertiesUtil.newPropertySubmodule("Main microlocation");
-        useMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "use.microlocation", false);
 
         PropertiesUtil.newPropertySubmodule("Main = connection with other models and specific scenarios");
         createMstmOutput = PropertiesUtil.getBooleanProperty(bundle, "create.mstm.socio.econ.files", false);

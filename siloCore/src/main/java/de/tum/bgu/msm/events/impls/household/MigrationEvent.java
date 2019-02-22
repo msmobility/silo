@@ -1,21 +1,22 @@
 package de.tum.bgu.msm.events.impls.household;
 
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.MicroEvent;
 
 public class MigrationEvent implements MicroEvent {
 
     public enum Type {IN, OUT}
 
-    private final int id;
+    private final Household hh;
     private final Type type;
 
-    public MigrationEvent(int id, Type type) {
-        this.id = id;
+    public MigrationEvent(Household hh, Type type) {
+        this.hh = hh;
         this.type = type;
     }
 
-    public int getHouseholdId() {
-        return this.id;
+    public Household getHousehold() {
+        return this.hh;
     }
 
     public Type getType() {

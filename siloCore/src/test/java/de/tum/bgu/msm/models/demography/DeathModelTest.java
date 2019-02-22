@@ -36,21 +36,21 @@ public class DeathModelTest {
         Household household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);
         dataContainer.getHouseholdData().addHousehold(household1);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1,99, null, 1, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
-        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE,  -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
 
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
 
-        Person person1Child1 = PersonUtils.getFactory().createPerson(11, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child1 = PersonUtils.getFactory().createPerson(11, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED,PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1Child1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child1, household1);
         person1Child1.setRole(PersonRole.CHILD);
-        Person person1Child2 = PersonUtils.getFactory().createPerson(12, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child2 = PersonUtils.getFactory().createPerson(12, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1Child2);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child2, household1);
         person1Child2.setRole(PersonRole.CHILD);
-        Person person1Child3 = PersonUtils.getFactory().createPerson(13, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, -1, 0);
+        Person person1Child3 = PersonUtils.getFactory().createPerson(13, 10, Gender.FEMALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1Child3);
         dataContainer.getHouseholdData().addPersonToHousehold(person1Child3, household1);
         person1Child3.setRole(PersonRole.CHILD);

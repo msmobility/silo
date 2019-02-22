@@ -57,10 +57,10 @@ public class SchoolDataManager {
 
     public void setSchoolSearchTree(Properties properties) {
         Envelope bounds = loadEnvelope(properties);
-        double minX = bounds.getMinX();
-        double minY = bounds.getMinY();
-        double maxX = bounds.getMaxX();
-        double maxY = bounds.getMaxY();
+        double minX = bounds.getMinX()-1;
+        double minY = bounds.getMinY()-1;
+        double maxX = bounds.getMaxX()+1;
+        double maxY = bounds.getMaxY()+1;
         this.primarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.secondarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.tertiarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
@@ -69,7 +69,7 @@ public class SchoolDataManager {
 
     private Envelope loadEnvelope(Properties properties) {
         //TODO: Remove minX,minY,maxX,maxY when implementing study area shapefile in Geodata 09 Oct QZ'
-        File schoolsShapeFile = new File(properties.schoolData.schoolsShapeFile);
+        File schoolsShapeFile = new File(properties.main.baseDirectory + properties.schoolData.schoolsShapeFile);
 
         try {
             FileDataStore dataStore = FileDataStoreFinder.getDataStore(schoolsShapeFile);
@@ -94,7 +94,13 @@ public class SchoolDataManager {
 
     public School getClosestSchool(Person person) {
         Dwelling dwelling = data.getRealEstateData().getDwelling(person.getHousehold().getDwellingId());
-        Coordinate coordinate = ((MicroLocation)dwelling).getCoordinate();
+
+        Coordinate coordinate;
+        if (dwelling instanceof MicroLocation) {
+            coordinate = ((MicroLocation) dwelling).getCoordinate();
+        } else{
+            coordinate = geoData.getZones().get(dwelling.getZoneId()).getRandomCoordinate();
+        }
         switch (person.getSchoolType()+1){
             case 1:
                 return primarySearchTree.getClosest(coordinate.x,coordinate.y);

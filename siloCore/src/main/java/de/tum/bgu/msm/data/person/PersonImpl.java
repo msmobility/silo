@@ -33,12 +33,13 @@ public class PersonImpl implements Person{
     private boolean driverLicense = false;
     private int schoolType = 0;
 
-    PersonImpl(int id, int age, Gender gender, Race race, Occupation occupation, int workplace, int income) {
+    PersonImpl(int id, int age, Gender gender, Race race, Occupation occupation, PersonRole role, int workplace, int income) {
         this.id = id;
         this.age = age;
         this.gender = gender;
         this.race = race;
         this.occupation = occupation;
+        this.role = role;
         this.workplace = workplace;
         this.income = income;
         setType();
@@ -126,7 +127,7 @@ public class PersonImpl implements Person{
     }
 
     @Override
-    public int getWorkplace() {
+    public int getJobId() {
         return workplace;
     }
 
@@ -212,8 +213,6 @@ public class PersonImpl implements Person{
         this.schoolLocation = schoolLocation;
         this.schoolPlace = schoolZoneId;
     }
-
-
 
     @Override
     public String toString() {

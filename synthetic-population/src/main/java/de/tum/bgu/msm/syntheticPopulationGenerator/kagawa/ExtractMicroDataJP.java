@@ -1,7 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -21,6 +24,7 @@ import java.util.ResourceBundle;
 public class ExtractMicroDataJP {
 
     private ResourceBundle rb;
+    private final DataSetSynPop dataSetSynPop;
 
     //Routes of the input data
     protected static final String PROPERTIES_MICRODATA_JP                 = "micro.data";
@@ -71,9 +75,20 @@ public class ExtractMicroDataJP {
     private HashMap<String, String> attributesDictionary;
 
 
-    public ExtractMicroDataJP(ResourceBundle rb) {
+    private Table<Integer, String, Integer> personTable = HashBasedTable.create();
+    private Table<Integer, String, Integer> householdTable = HashBasedTable.create();
+    private Table<Integer, String, Integer> dwellingTable = HashBasedTable.create();
+
+    private HashMap<Integer, Integer> childrenInHousehold;
+    private HashMap<String, HashMap<Integer, Integer>> noClass;
+    private HashMap<String, HashMap<Integer, Integer>> singles;
+    private HashMap<String, HashMap<Integer, Integer>> married;
+
+
+    public ExtractMicroDataJP(ResourceBundle rb, DataSetSynPop dataSetSynPop) {
         // Constructor
         this.rb = rb;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
     public TableDataSet getFrequencyMatrix() {
@@ -113,6 +128,7 @@ public class ExtractMicroDataJP {
         setInputData();
         setAttributesToCopyFromMicroData();
         readCSVMicroData();
+        checkHouseholdRelationships();
         createFrequencyMatrix();
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -200,38 +216,57 @@ public class ExtractMicroDataJP {
                 microHouseholds.setValueAt(hhCount,"id",hhCount);
                 microHouseholds.setValueAt(hhCount,"H_Code",householdNumber);
                 microHouseholds.setValueAt(hhCount,"firstPerson",personCount);
+                householdTable.put(hhCount,"id", hhCount);
+                householdTable.put(hhCount, "H_Code", householdNumber);
+                householdTable.put(hhCount,"firstPerson", personCount);
                 for (int j = 0; j < attributesMicroData.get("Household").length; j++){
                     int value = (int) microData.getValueAt(i,attributesMicroData.get("Household")[j]);
                     microHouseholds.setValueAt(hhCount,attributesMicroData.get("Household")[j],value);
+                    householdTable.put(hhCount, attributesMicroData.get("Household")[j],value);
                 }
                 microDwellings.setValueAt(hhCount,"id",hhCount);
+                dwellingTable.put(hhCount, "id", hhCount);
                 for (int j = 0; j < attributesMicroData.get("Dwelling").length; j++){
                     int value = (int) microData.getValueAt(i,attributesMicroData.get("Dwelling")[j]);
                     microDwellings.setValueAt(hhCount,attributesMicroData.get("Dwelling")[j],value);
+                    dwellingTable.put(hhCount,attributesMicroData.get("Dwelling")[j],value);
                 }
+                dwellingTable.put(hhCount,"PtResCode", hhCount);
                 microPersons.setValueAt(personCount,"id",personCount);
                 microPersons.setValueAt(personCount,"idHH",hhCount);
                 microPersons.setValueAt(personCount,"H_Code",householdNumber);
+                personTable.put(personCount, "id", personCount);
+                personTable.put(personCount,"idHh",hhCount);
+                personTable.put(personCount,"H_Code",householdNumber);
                 for (int j = 0; j < attributesMicroData.get("Person").length; j++){
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
+                    personTable.put(personCount,attributesMicroData.get("Person")[j],value);
                 }
                 int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
                 microPersons.setValueAt(personCount,"occupation", job[0]);
                 microPersons.setValueAt(personCount,"jobType", job[1]);
+                personTable.put(personCount,"occupation", job[0]);
+                personTable.put(personCount,"jobType", job[1]);
                 previoushhID = householdNumber;
             } else {
                 personCount++;
                 microPersons.setValueAt(personCount,"id",personCount);
                 microPersons.setValueAt(personCount,"idHH",hhCount);
                 microPersons.setValueAt(personCount,"H_Code",householdNumber);
+                personTable.put(personCount, "id", personCount);
+                personTable.put(personCount,"idHh",hhCount);
+                personTable.put(personCount,"H_Code",householdNumber);
                 for (int j = 0; j < attributesMicroData.get("Person").length; j++){
                     int value = (int) microData.getValueAt(personCount,attributesMicroData.get("Person")[j]);
                     microPersons.setValueAt(personCount,attributesMicroData.get("Person")[j],value);
+                    personTable.put(personCount,attributesMicroData.get("Person")[j],value);
                 }
                 int[] job = translateOccupationJobType((int) microPersons.getValueAt(personCount,"job"));
                 microPersons.setValueAt(personCount,"occupation", job[0]);
                 microPersons.setValueAt(personCount,"jobType", job[1]);
+                personTable.put(personCount,"occupation", job[0]);
+                personTable.put(personCount,"jobType", job[1]);
             }
         }
         ppFileName = ("microData/interimFiles/microPersons.csv");
@@ -240,6 +275,12 @@ public class ExtractMicroDataJP {
         SiloUtil.writeTableDataSet(microHouseholds, hhFileName);
         ddFileName = ("microData/interimFiles/microDwellings.csv");
         SiloUtil.writeTableDataSet(microDwellings, ddFileName);
+        dataSetSynPop.setPersonTable(personTable);
+        dataSetSynPop.setHouseholdTable(householdTable);
+        dataSetSynPop.setDwellingTable(dwellingTable);
+        dataSetSynPop.setPersonDataSet(microPersons);
+        dataSetSynPop.setHouseholdDataSet(microHouseholds);
+        dataSetSynPop.setDwellingDataSet(microDwellings);
     }
 
 
@@ -284,6 +325,7 @@ public class ExtractMicroDataJP {
             frequencyMatrix.setValueAt(i,"population",hhSize);
         }
         SiloUtil.writeTableDataSet(frequencyMatrix,"microData/interimFiles/frequencyMatrix.csv");
+        dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
         logger.info("   Finished creating the frequency matrix");
     }
 
@@ -414,6 +456,8 @@ public class ExtractMicroDataJP {
         addIntegerColumnToTableDataSet(microPersons,"H_Code");
         addIntegerColumnToTableDataSet(microPersons,"idHH");
         addIntegerColumnToTableDataSet(microDwellings,"id",hhCountTotal);
+        addIntegerColumnToTableDataSet(microDwellings,"PtResCode", hhCountTotal);
+        addIntegerColumnToTableDataSet(microPersons,"personRole",personCountTotal);
 
         for (int i = 0; i < attributesMicroData.get("Person").length; i++){
             addIntegerColumnToTableDataSet(microPersons,attributesMicroData.get("Person")[i]);
@@ -461,6 +505,309 @@ public class ExtractMicroDataJP {
         }
         expanded[previous.length] = value;
         return expanded;
+    }
+
+
+    private void checkHouseholdRelationships() {
+        //method to marry the different household members
+        initialize();
+        for (int household = 1; household <= householdTable.columnKeySet().size(); household++){
+            int hhSize = householdTable.get(household, "HHsize");
+            int firstMember = householdTable.get(household, "firstPerson");
+            if (hhSize == 1){
+                setPersonAsSingle(firstMember);
+            } else {
+                obtainRolesInHousehold(firstMember, hhSize);
+                checkCohabitation();
+                setRoles();
+            }
+            resetMaps();
+        }
+
+    }
+
+    private void obtainRolesInHousehold(int firstMember, int hhSize){
+        for (int person = 0; person < hhSize; person++){
+            int row = firstMember + person;
+            int age = dataSetSynPop.getPersonTable().get(row, "age");
+            int gender = dataSetSynPop.getPersonTable().get(row, "Gender");
+            if (age < 16) {
+                childrenInHousehold.put(row, age); //children -> children
+            } else {
+                noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
+            }
+        }
+    }
+
+
+    private void checkCohabitation(){
+
+        int[] countNotClassified = new int[2];
+        HashMap<Integer, Integer> notClassifiedMales = noClass.get("male");
+        if (notClassifiedMales != null){
+            countNotClassified[0] = notClassifiedMales.size();
+        }
+        HashMap<Integer, Integer> notClassifiedFemales = noClass.get("female");
+        if (notClassifiedFemales != null){
+            countNotClassified[1] = notClassifiedFemales.size();
+        }
+        if (countNotClassified[0] == 1 & countNotClassified[1] == 1) { //one male and one female were not classified
+            checkPossibleMarriage(notClassifiedMales, notClassifiedFemales);
+        } else if (countNotClassified[0] == 0 & countNotClassified[1] > 1) { //only females were not classified
+            setAsSingle(notClassifiedFemales, "female");
+        } else if (countNotClassified[1] == 0 & countNotClassified[0] > 1) { //only males were not classified
+            setAsSingle(notClassifiedMales, "male");
+        } else if (countNotClassified[1] - countNotClassified[0] == 1) {  //check for a possible single male to get married
+            checkMostLikelyMaleForPossibleMarriage(notClassifiedMales, notClassifiedFemales);
+        } else if (countNotClassified[0] - countNotClassified[1] == 1) { //check for a possible single female to get married
+            checkMostLikelyFemaleForPossibleMarriage(notClassifiedMales, notClassifiedFemales);
+        }
+    }
+
+
+    private void setRoles(){
+        //set children in the household
+        if (childrenInHousehold != null){
+            for (Map.Entry<Integer, Integer> pair : childrenInHousehold.entrySet()){
+                int row = pair.getKey();
+                dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 3);
+                /*dataSetSynPop.getPersons().get(row).put("personRole", 3);*/
+                dataSetSynPop.getPersonTable().put(row, "personRole", 3);
+            }
+        }
+        //set singles and married in the household
+        String[] keys = {"male", "female"};
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            HashMap<Integer, Integer> inner = singles.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 1);
+                    /*dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
+                }
+            }
+            inner = married.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 2);
+                    /*dataSetSynPop.getPersons().get(row).put("personRole", 2);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 2);
+                }
+            }
+            inner = noClass.get(key);
+            if (inner != null) {
+                for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
+                    int row = pair.getKey();
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 1);
+                    /*dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
+                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
+                }
+            }
+        }
+    }
+
+
+    private void setPersonAsSingle(int ppID){
+        dataSetSynPop.getPersonDataSet().setValueAt(ppID, "personRole", 1);
+        /*dataSetSynPop.getPersons().get(ppID).put("personRole", 1);*/
+        dataSetSynPop.getPersonTable().put(ppID, "personRole", 1);
+    }
+
+
+    private void checkPossibleMarriage(HashMap<Integer, Integer> notClassifiedMales, HashMap<Integer, Integer> notClassifiedFemales){
+        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
+        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
+        int ageMale = notClassifiedMales.get(rowMale);
+        int ageFemale = notClassifiedFemales.get(rowFemale);
+        int diffAge = Math.abs(ageFemale - ageMale);
+        double threshold = (20 - diffAge) / 10;
+        if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+            married = updateInnerMap(married, 1, ageMale, rowMale);
+            married = updateInnerMap(married, 2, ageFemale, rowFemale);
+        } else {
+            singles = updateInnerMap(singles, 1, ageMale, rowMale);
+            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+        }
+    }
+
+
+    private void setAsSingle(HashMap<Integer, Integer> notClassified, String gender) {
+        int genderInt = 1;
+        if (gender.equals("female")){
+            genderInt = 2;
+        }
+        for (Map.Entry<Integer, Integer> pair : notClassified.entrySet()) {
+            int newRow = pair.getKey();
+            int newAge = pair.getValue();
+            singles = updateInnerMap(singles, genderInt, newAge, newRow);
+        }
+    }
+
+
+    private void checkMostLikelyMaleForPossibleMarriage(HashMap<Integer, Integer> notClassifiedMales, HashMap<Integer, Integer> notClassifiedFemales){
+        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
+        int ageFemale = notClassifiedFemales.get(rowFemale);
+        HashMap<Integer, Integer> singleMale = singles.get("male");
+        if (singleMale == null & notClassifiedMales == null) { //no possible single male to marry -> set as single
+            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+        } else if (singleMale != null) { //check for marriage with the male with the lowest age difference
+            int minDiff = 20;
+            int rowMarried = 0;
+            int[] rowSingles = new int[singleMale.size()];
+            for (Map.Entry<Integer, Integer> pair : singleMale.entrySet()) {
+                int age = pair.getValue();
+                if (Math.abs(ageFemale - age) < minDiff) {
+                    minDiff = Math.abs(ageFemale - age);
+                    rowMarried = pair.getKey();
+                }
+            }
+            if (rowMarried > 0) {
+                double threshold = (20 - minDiff) / 10;
+                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                    married = updateInnerMap(married, 1, minDiff, rowMarried);
+                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                } else {
+                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                }
+            } else {
+                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+            }
+        } else {
+            int minDiff = 20;
+            int rowMarried = 0;
+            for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
+                int age = pair.getValue();
+                if (Math.abs(ageFemale - age) < minDiff) {
+                    minDiff = Math.abs(ageFemale - age);
+                    rowMarried = pair.getKey();
+                }
+            }
+            if (rowMarried > 0) {
+                double threshold = (20 - minDiff) / 10;
+                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                    married = updateInnerMap(married, 1, minDiff, rowMarried);
+                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                } else {
+                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                    singles = updateInnerMap(singles, 1, minDiff, rowMarried);
+                }
+            } else {
+                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                for (int i = 0; i < notClassifiedMales.keySet().toArray().length; i++){
+                    int rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                    singles = updateInnerMap(singles, 1, ageFemale, rowMale);
+                }
+            }
+            if (notClassifiedFemales.keySet().toArray().length > 1){
+                for (int i = 1; i < notClassifiedFemales.keySet().toArray().length; i++){
+                    rowFemale = (int) notClassifiedFemales.keySet().toArray()[i];
+                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                }
+            }
+        }
+    }
+
+
+    private void checkMostLikelyFemaleForPossibleMarriage(HashMap<Integer, Integer> notClassifiedMales, HashMap<Integer, Integer> notClassifiedFemales) {
+        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
+        int ageMale = notClassifiedMales.get(rowMale);
+        HashMap<Integer, Integer> singleFemale = singles.get("female");
+        if (singleFemale == null & notClassifiedFemales == null) { //no possible single female to marry -> set as single
+            singles = updateInnerMap(singles, 1, ageMale, rowMale);
+        } else if (singleFemale != null){ //check for marriage with the female with the lowest age difference
+            int minDiff = 20;
+            int rowMarried = 0;
+            for (Map.Entry<Integer, Integer> pair : singleFemale.entrySet()) {
+                int age = pair.getValue();
+                if (Math.abs(ageMale - age) < minDiff) {
+                    minDiff = Math.abs(ageMale - age);
+                    rowMarried = pair.getKey();
+                }
+            }
+            if (rowMarried > 0) {
+                double threshold = (20 - minDiff) / 10;
+                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                    married = updateInnerMap(married, 1, ageMale, rowMale);
+                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                } else {
+                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                }
+            } else {
+                singles = updateInnerMap(singles, 1, ageMale, rowMale);
+            }
+        } else {
+            int minDiff = 20;
+            int rowMarried = 0;
+            for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
+                int age = pair.getValue();
+                if (Math.abs(ageMale - age) < minDiff) {
+                    minDiff = Math.abs(ageMale - age);
+                    rowMarried = pair.getKey();
+                }
+            }
+            if (rowMarried > 0) {
+                double threshold = (20 - minDiff) / 10;
+                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                    married = updateInnerMap(married, 1, ageMale, rowMale);
+                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                } else {
+                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                    singles = updateInnerMap(singles, 2, minDiff, rowMarried);
+                }
+            } else {
+                singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                for (int i = 0; i < notClassifiedFemales.keySet().toArray().length; i++){
+                    rowMale = (int) notClassifiedFemales.keySet().toArray()[i];
+                    singles = updateInnerMap(singles, 2, ageMale, rowMale);
+                }
+            }
+            if (notClassifiedMales.keySet().toArray().length > 1){
+                for (int i = 1; i < notClassifiedMales.keySet().toArray().length; i++){
+                    rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                }
+            }
+        }
+    }
+
+
+    private void initialize(){
+/*        microDataPerson = dataSetSynPop.getMicroDataPersons();
+        microDataHousehold = dataSetSynPop.getMicroDataHouseholds();
+        SiloUtil.addIntegerColumnToTableDataSet(microDataPerson,"personRole");
+        SiloUtil.addIntegerColumnToTableDataSet(microDataPerson, "rearrangedRole");
+        SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold,"nonClassifiedMales");
+        SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold, "nonClassifiedFemales"*//*);*/
+        childrenInHousehold = new HashMap<>();
+        noClass = new HashMap<>();
+        singles = new HashMap<>();
+        married = new HashMap<>();
+    }
+
+
+    private void resetMaps(){
+        childrenInHousehold.clear();
+        noClass.clear();
+        singles.clear();
+        married.clear();
+    }
+
+
+    private HashMap<String,HashMap<Integer,Integer>> updateInnerMap(HashMap<String, HashMap<Integer, Integer>> outer, int gender, int age, int row) {
+        String key = "male";
+        if (gender == 2) {
+            key = "female";
+        }
+        HashMap<Integer, Integer> inner = outer.get(key);
+        if (inner == null){
+            inner = new HashMap<Integer, Integer>();
+            outer.put(key, inner);
+        }
+        inner.put(row, age);
+        return outer;
     }
 
 }

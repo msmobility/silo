@@ -1,12 +1,11 @@
 package de.tum.bgu.msm.io;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -68,20 +67,19 @@ public class DefaultPersonReader implements PersonReader{
                 if(household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                Person pp = ppFactory.createPerson(id, age, gender, race, occupation, workplace, income);
+                Person pp = ppFactory.createPerson(id, age, gender, race, occupation,pr, workplace, income);
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, household);
-                pp.setRole(pr);
                 pp.setDriverLicense(license);
 
                 //TODO: remove it when we implement interface
                 if(Properties.get().main.implementation == Implementation.MUNICH){
-                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
-                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
-                    // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
-                    Coordinate schoolCoord = new Coordinate(
-                            Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
-                    pp.setSchoolCoordinate(schoolCoord, -1);
+//                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
+//                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
+//                    // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
+//                    Coordinate schoolCoord = new Coordinate(
+//                            Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
+//                    pp.setSchoolCoordinate(schoolCoord, -1);
                 }
 
                 if (id == SiloUtil.trackPp) {
