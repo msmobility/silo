@@ -206,6 +206,8 @@ public class SiloUtil {
     public static TableDataSet readCSVfile (String fileName) {
         // read csv file and return as TableDataSet
         File dataFile = new File(fileName);
+        // line 210 debugging:
+        System.out.println(new File(fileName).getAbsolutePath());
         TableDataSet dataTable;
         boolean exists = dataFile.exists();
         if (!exists) {

@@ -7,10 +7,10 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 /**
- * Implements SILO for the Austin Texas Area
+ * Implements SILO for the Maryland Statewide Transportation Model
  *
- * @author Ty Wellik
- * Created on Jan 5, 2019 in Austin, TX
+ * @author Rolf Moeckel
+ * Created on Nov 22, 2013 in Wheaton, MD
  */
 
 public class SiloAtx {
