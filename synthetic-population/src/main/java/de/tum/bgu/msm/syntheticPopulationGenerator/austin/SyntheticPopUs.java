@@ -414,7 +414,10 @@ public class SyntheticPopUs implements SyntheticPopI {
                     autos = 0;
                 }
 
-                int hhSize = Integer.parseInt(rec[hhSizeIndex]);
+               int hhSize = Integer.parseInt(rec[hhSizeIndex]);
+                //int hhSize;
+                //float hh_sz = Float.parseFloat(rec[hhSizeIndex]);
+                //hhSize = (int) hh_sz;
 
                 List<Household> households =new ArrayList<>();
                 //System.out.println("Weight " + weight);
@@ -475,7 +478,9 @@ public class SyntheticPopUs implements SyntheticPopI {
 
                 int occupationCode;
                 try {
-                    occupationCode = Integer.parseInt(rec[occupationIndex]);
+                    //occupationCode = Integer.parseInt(rec[occupationIndex]);
+                	float occup = Float.parseFloat(rec[occupationIndex]);
+                	occupationCode = (int) occup;
                 } catch (Exception e) {
                     occupationCode = 0;
                 }
@@ -483,7 +488,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
                 int income;
                 try {
-                	System.out.println(incomeIndex.getClass());
+                	//System.out.println(incomeIndex.getClass());
                 	float incomes = Float.parseFloat(rec[incomeIndex]);
                 	income = (int) incomes;
                 	income = Math.max(0, income);
@@ -494,14 +499,18 @@ public class SyntheticPopUs implements SyntheticPopI {
 
                 int workState = -1;
                 try {
-                    workState = Integer.parseInt(rec[workStateIndex]);
+                    //workState = Integer.parseInt(rec[workStateIndex]);
+                	float wrkState = Float.parseFloat(rec[workStateIndex]);
+                	workState = (int) wrkState;
                 } catch (Exception e) {
                     occ = Occupation.UNEMPLOYED;
                 }
 
                 int workPumaZone = -1;
                 try {
-                    workPumaZone = Integer.parseInt(rec[workPumaZoneIndex]);
+                    //workPumaZone = Integer.parseInt(rec[workPumaZoneIndex]);
+                	float wrkZone = Float.parseFloat(rec[workPumaZoneIndex]);
+                	workPumaZone = (int) wrkZone;
                 } catch (Exception e) {
                     occ = Occupation.UNEMPLOYED;
                 }
