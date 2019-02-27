@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -9,6 +7,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,7 +95,7 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
         person.setSchoolId(school.getId());
         person.setOccupation(Occupation.STUDENT);
 
-        if (Properties.get().main.useMicrolocation) {
+        if (school instanceof MicroLocation) {
             person.setSchoolCoordinate(((MicroLocation) school).getCoordinate(), school.getZoneId());
         }else{
             person.setSchoolCoordinate(null, school.getZoneId());

@@ -2,10 +2,7 @@ package de.tum.bgu.msm.data.dwelling;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.Location;
-
-import java.util.EnumMap;
 
 public interface Dwelling extends Location, Id {
 
@@ -23,8 +20,6 @@ public interface Dwelling extends Location, Id {
 
     float getRestriction();
 
-    double getUtilOfResident();
-
     void setResidentID(int residentID);
 
     void setQuality(int quality);
@@ -32,10 +27,6 @@ public interface Dwelling extends Location, Id {
     void setPrice(int price);
 
     void setRestriction(float restriction);
-
-    void setUtilitiesByHouseholdType(EnumMap<HouseholdType, Double> utilitiesByHouseholdType);
-
-    void setUtilOfResident(double utilOfResident);
 
     void setFloorSpace(int floorSpace);
 

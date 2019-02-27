@@ -214,8 +214,6 @@ public class PersonImpl implements Person{
         this.schoolPlace = schoolZoneId;
     }
 
-
-
     @Override
     public String toString() {
         return "Attributes of person " + id

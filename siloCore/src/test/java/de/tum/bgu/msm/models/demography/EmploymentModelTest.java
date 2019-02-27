@@ -39,10 +39,11 @@ public class EmploymentModelTest {
     public void setupMicroData() {
         Household household1 = HouseholdUtil.getFactory().createHousehold(1,-1,0);
         dataContainer.getHouseholdData().addHousehold(household1);
-        Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
+        Person person1 = PersonUtils.getFactory().createPerson(1, 24, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE, -1, 0);
         dataContainer.getHouseholdData().addPerson(person1);
         dataContainer.getHouseholdData().addPersonToHousehold(person1, household1);
         person1.setRole(PersonRole.SINGLE);
+        person1.setIncome(0);
         TravelTimeUtil.updateCarSkim((SkimTravelTimes) dataContainer.getTravelTimes(), 2000, Properties.get());
         modelContainer.getAcc().initialize();
     }
@@ -61,7 +62,7 @@ public class EmploymentModelTest {
         Assert.assertEquals(1, person.getJobId());
         Assert.assertEquals(1, job.getWorkerId());
         Assert.assertEquals(Occupation.EMPLOYED, person.getOccupation());
-        Assert.assertEquals(1022, person.getIncome());
+        Assert.assertEquals(2320, person.getIncome());
         Assert.assertTrue(dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
     }
 

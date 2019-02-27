@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
@@ -32,7 +33,7 @@ public class Microlocation extends ModuleSynPop {
         }
         dataSetSynPop.setZoneFeatureMap(zoneFeatureMap);
 
-        if (Properties.get().main.useMicrolocation) {
+        if (PropertiesSynPop.get().main.runMicrolocation) {
             generateDwellingMicrolocation();
             generateJobMicrolocation();
             generateSchoolMicrolocation();

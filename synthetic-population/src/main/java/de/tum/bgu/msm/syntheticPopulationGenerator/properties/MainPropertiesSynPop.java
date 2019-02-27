@@ -68,7 +68,7 @@ public class MainPropertiesSynPop {
     public final TableDataSet jobLocationlist;
     public final TableDataSet schoolLocationlist;
 
-    private final boolean runMicrolocation;
+    public final boolean runMicrolocation;
     public final TableDataSet zonalDataIPU;
 
     public MainPropertiesSynPop(ResourceBundle bundle) {
