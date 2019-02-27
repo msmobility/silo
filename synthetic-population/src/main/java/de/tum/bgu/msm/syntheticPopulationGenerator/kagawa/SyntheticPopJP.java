@@ -1032,9 +1032,6 @@ public class SyntheticPopJP implements SyntheticPopI {
         GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
 
 
-        //Driver license probability
-        TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
-
         //Create a map to store the household IDs by municipality
         HashMap<Integer, HashMap<Integer, Integer>> householdByMunicipality = new HashMap<>();
 
