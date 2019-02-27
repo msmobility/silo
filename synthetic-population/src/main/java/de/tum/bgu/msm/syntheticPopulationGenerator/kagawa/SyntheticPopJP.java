@@ -94,6 +94,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected int[] countyID;
     protected HashMap<Integer, int[]> municipalitiesByCounty;
     protected HashMap<Integer, int[]> cityTAZ;
+    protected ArrayList<Integer> municipalitiesWithZeroPopulation;
 
     protected String[] attributesMunicipality;
     protected int[] ageBracketsPerson;
@@ -169,6 +170,8 @@ public class SyntheticPopJP implements SyntheticPopI {
             //runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
             createWeightsAndErrorsCity();
             new IPUbyCity(dataSetSynPop).run();
+            weightsTable = dataSetSynPop.getWeights();
+            weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
         } else {
             readIPU(); //Read the weights to select the household
         }
@@ -193,6 +196,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("CODE_Z01"));
         jobsMunicipality = SiloUtil.readCSVfile(rb.getString(PROPERTIES_JOBS_MUNICIPALITY));
         jobsMunicipality.buildIndex(jobsMunicipality.getColumnPosition("CODE_Z01"));
+        municipalitiesWithZeroPopulation = new ArrayList<>();
 
         //List of municipalities and counties that are used for IPU and allocation
         TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
@@ -217,6 +221,9 @@ public class SyntheticPopJP implements SyntheticPopI {
                     citiesInThisCounty.add(city);
                     municipalitiesByCounty.put(county, citiesInThisCounty);
                 }
+                if (selectedMunicipalities.getValueAt(row,"SelectAllocation") == 0){
+                    municipalitiesWithZeroPopulation.add((int) selectedMunicipalities.getValueAt(row,"V1"));
+                }
             }
         }
         cityID = SiloUtil.convertArrayListToIntArray(municipalities);
@@ -226,6 +233,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         dataSetSynPop.setMunicipalities(municipalities);
         dataSetSynPop.setCounties(counties);
         dataSetSynPop.setMunicipalitiesByCounty(municipalitiesByCounty);
+        dataSetSynPop.setMunicipalitiesWithZeroPopulation(municipalitiesWithZeroPopulation);
 
         //TAZ attributes
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
