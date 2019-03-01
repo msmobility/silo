@@ -64,7 +64,7 @@ public final class MicroSimulation {
             @SuppressWarnings("unchecked")
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
-                eventCounter.add(e.getClass());
+                eventCounter.add(klass);
             }
             timeTracker.record(klass.getSimpleName());
         }

@@ -7,8 +7,6 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
@@ -19,9 +17,11 @@ import de.tum.bgu.msm.io.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.DefaultPersonReader;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 import junitx.framework.FileAssert;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class AccessibilityTest {
+
+    @Before
+    public void setup() {
+        SiloUtil.initializeRandomNumber(42);
+    }
 
     @Test
     public void testZoneToZoneAccessiblities() {

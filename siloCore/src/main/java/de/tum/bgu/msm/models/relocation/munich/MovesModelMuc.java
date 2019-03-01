@@ -119,7 +119,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     @Override
     public void calculateRegionalUtilities() {
-        LOGGER.info("Calculating regional utilities");
+        logger.info("Calculating regional utilities");
         calculateShareOfForeignersByZoneAndRegion();
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
@@ -177,7 +177,6 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
-        	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
             	Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getJobId()).getZoneId());
                 workerZonesForThisHousehold.put(pp, workZone);

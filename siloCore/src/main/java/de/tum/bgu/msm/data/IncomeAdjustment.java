@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.util.concurrent.RandomizableConcurrentFunction;
 
-public class IncomeAdjustment extends RandomizableConcurrentFunction {
+public class IncomeAdjustment extends RandomizableConcurrentFunction<Void> {
 
     private final Person person;
     private final float meanIncomeChange;
@@ -25,7 +25,7 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction {
     }
 
     @Override
-    public Object call() {
+    public Void call() {
         // adjust income of person with ID per
         person.setIncome(selectNewIncome());
         return null;
