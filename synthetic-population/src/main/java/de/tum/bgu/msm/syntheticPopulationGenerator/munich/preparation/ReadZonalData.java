@@ -46,6 +46,7 @@ public class ReadZonalData {
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
         municipalitiesByCounty = new HashMap<>();
+        ArrayList<Integer> municipalitiesWithZero = new ArrayList<>();
         for (int row = 1; row <= PropertiesSynPop.get().main.selectedMunicipalities.getRowCount(); row++) {
             if (PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "Select") == 1f) {
                 int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ID_city");
@@ -72,6 +73,7 @@ public class ReadZonalData {
         dataSetSynPop.setMunicipalities(municipalities);
         dataSetSynPop.setCounties(counties);
         dataSetSynPop.setMunicipalitiesByCounty(municipalitiesByCounty);
+        dataSetSynPop.setMunicipalitiesWithZeroPopulation(municipalitiesWithZero);
 
         if (PropertiesSynPop.get().main.boroughIPU) {
             HashMap<Integer, ArrayList> boroughsByCounty = new HashMap<>();
