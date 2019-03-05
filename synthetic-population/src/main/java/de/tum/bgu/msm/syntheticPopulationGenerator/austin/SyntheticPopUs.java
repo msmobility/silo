@@ -131,7 +131,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
-        SummarizeData.writeOutSyntheticPopulation(2016, dataContainer);
+        SummarizeData.writeOutSyntheticPopulation(2017, dataContainer);
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
