@@ -432,6 +432,16 @@ public class SummarizeData {
             pws.print(",");
             pws.print("duration");
         }
+        if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+            pws.print(",");
+            pws.print("coordX");
+            pws.print(",");
+            pws.print("coordY");
+            pws.print(",");
+            pws.print("startTime");
+            pws.print(",");
+            pws.print("duration");
+        }
         pws.println();
         for (School ss : dataContainer.getSchoolData().getSchools()) {
             pws.print(ss.getId());
@@ -460,6 +470,16 @@ public class SummarizeData {
                 pws.print(ss.getStartTimeInSeconds());
                 pws.print(",");
                 pws.print(ss.getStudyTimeInSeconds());
+            }
+            if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+                    pws.print(",");
+                pws.print(0);
+                pws.print(",");
+                pws.print(0);
+                pws.print(",");
+                pws.print(28800);
+                pws.print(",");
+                pws.print(28800);
             }
             pws.println();
 //            if (ss.getId() == SiloUtil.trackSs) {
@@ -518,6 +538,20 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("schoolId");
         }
+        if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+            pwp.print(",");
+            pwp.print("nationality");
+            pwp.print(",");
+            pwp.print("education");
+            pwp.print(",");
+            pwp.print("homeZone");
+            pwp.print(",");
+            pwp.print("workZone");
+            pwp.print(",");
+            pwp.print("schoolDE");
+            pwp.print(",");
+            pwp.print("schoolTAZ");
+        }
         pwp.println();
         for (Person pp : dataContainer.getHouseholdData().getPersons()) {
             pwp.print(pp.getId());
@@ -536,6 +570,8 @@ public class SummarizeData {
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                pwp.print(pp.hasDriverLicense());
+            } else if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
                 pwp.print(pp.hasDriverLicense());
             } else {
                 pwp.print(0);
@@ -557,6 +593,30 @@ public class SummarizeData {
                 pwp.print(",");
                 pwp.print(pp.getSchoolId());
             }
+            if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+                pwp.print(",");
+                pwp.print(pp.getNationality().toString());
+                pwp.print(",");
+                pwp.print(pp.getEducationLevel());
+                pwp.print(",");
+                Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
+                pwp.print(dd.getZoneId());
+                pwp.print(",");
+                if(jobId <= 0) {
+                    pwp.print("-1");
+                } else {
+                    int jobTaz = dataContainer.getJobData().getJobFromId(jobId).getZoneId();
+                    pwp.print(jobTaz);
+                }
+                pwp.print(",");
+                pwp.print(pp.getSchoolType());
+                pwp.print(",");
+                try {
+                    pwp.print(pp.getSchoolPlace());
+                } catch (NullPointerException e){
+                    pwp.print(0);
+                }
+            }
             pwp.println();
 
 
@@ -575,6 +635,20 @@ public class SummarizeData {
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(filedd, false);
         pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwd.print(",");
+            pwd.print("floor");
+            pwd.print(",");
+            pwd.print("building");
+            pwd.print(",");
+            pwd.print("year");
+            pwd.print(",");
+            pwd.print("usage");
+            pwd.print(",");
+            pwd.print("coordX");
+            pwd.print(",");
+            pwd.print("coordY");
+        }
+        if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
             pwd.print(",");
             pwd.print("floor");
             pwd.print(",");
@@ -628,6 +702,20 @@ public class SummarizeData {
                     pwd.print(0);
                 }
             }
+            if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+                pwd.print(",");
+                pwd.print(dd.getFloorSpace());
+                pwd.print(",");
+                pwd.print(dd.getBuildingSize());
+                pwd.print(",");
+                pwd.print(dd.getYearConstructionDE());
+                pwd.print(",");
+                pwd.print(dd.getUsage());
+                pwd.print(",");
+                pwd.print(0);
+                pwd.print(",");
+                pwd.print(0);
+            }
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
@@ -641,6 +729,16 @@ public class SummarizeData {
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwj.print("id,zone,personId,type");
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwj.print(",");
+            pwj.print("coordX");
+            pwj.print(",");
+            pwj.print("coordY");
+            pwj.print(",");
+            pwj.print("startTime");
+            pwj.print(",");
+            pwj.print("duration");
+        }
+        if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
             pwj.print(",");
             pwj.print("coordX");
             pwj.print(",");
@@ -677,6 +775,16 @@ public class SummarizeData {
                 pwj.print(jj.getStartTimeInSeconds());
                 pwj.print(",");
                 pwj.print(jj.getWorkingTimeInSeconds());
+            }
+            if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
+                pwj.print(",");
+                pwj.print(0);
+                pwj.print(",");
+                pwj.print(0);
+                pwj.print(",");
+                pwj.print(28800);
+                pwj.print(",");
+                pwj.print(28800);
             }
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {

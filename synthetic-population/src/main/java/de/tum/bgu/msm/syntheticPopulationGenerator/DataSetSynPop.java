@@ -58,6 +58,12 @@ public class DataSetSynPop {
 
     private Map<Integer, SimpleFeature> zoneFeatureMap;
 
+    private TableDataSet regionsforFrequencyMatrix;
+    private HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix;
+    private HashMap<Integer, Integer> municipalityCounty;
+
+
+
     public TableDataSet getWeights() {
         return weights;
     }
@@ -296,5 +302,30 @@ public class DataSetSynPop {
 
     public void setMunicipalitiesWithZeroPopulation(ArrayList<Integer> municipalitiesWithZeroPopulation) {
         this.municipalitiesWithZeroPopulation = municipalitiesWithZeroPopulation;
+    }
+
+
+    public TableDataSet getRegionsforFrequencyMatrix() {
+        return regionsforFrequencyMatrix;
+    }
+
+    public void setRegionsforFrequencyMatrix(TableDataSet regionsforFrequencyMatrix) {
+        this.regionsforFrequencyMatrix = regionsforFrequencyMatrix;
+    }
+
+    public HashMap<Integer, HashMap<Integer, Integer>> getHouseholdsForFrequencyMatrix() {
+        return householdsForFrequencyMatrix;
+    }
+
+    public void setHouseholdsForFrequencyMatrix(HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix) {
+        this.householdsForFrequencyMatrix = householdsForFrequencyMatrix;
+    }
+
+    public HashMap<Integer, Integer> getMunicipalityCounty() {
+        return municipalityCounty;
+    }
+
+    public void setMunicipalityCounty(HashMap<Integer, Integer> municipalityCounty) {
+        this.municipalityCounty = municipalityCounty;
     }
 }
