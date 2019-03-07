@@ -30,35 +30,24 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     private final Map<Integer, Double> satisfactionByHousehold = new HashMap<>();
 
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
-    protected DwellingUtilityJSCalculator dwellingUtilityJSCalculator;
 
     public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         setupMoveOrNotMove();
-        setupEvaluateDwellings();
         setupSelectRegionModel();
-        setupSelectDwellingModel();
     }
 
     protected abstract void setupSelectRegionModel();
 
-    protected abstract void setupSelectDwellingModel();
-
-    private void setupEvaluateDwellings() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
-        dwellingUtilityJSCalculator = new DwellingUtilityJSCalculator(reader);
-    }
 
     private void setupMoveOrNotMove() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
         movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
     }
 
-    protected abstract double calculateDwellingUtilityForHouseholdType(HouseholdType hhType, Dwelling dwelling);
-
-    protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
+    protected abstract double calculateHousingUtility(Household hh, Dwelling dwelling);
 
     protected abstract void calculateRegionalUtilities();
 
@@ -66,7 +55,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     @Override
     public List<MoveEvent> prepareYear(int year) {
         calculateRegionalUtilities();
-        calculateAverageHousingSatisfaction();
+        calculateAverageHousingUtility();
         final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
@@ -192,8 +181,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
 
-    private void calculateAverageHousingSatisfaction() {
-        logger.info("Evaluating housing satisfaction.");
+    private void calculateAverageHousingUtility() {
+        logger.info("Evaluate average housing utility.");
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
@@ -203,8 +192,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         for (Household hh : householdData.getHouseholds()) {
             final HouseholdType householdType = hh.getHouseholdType();
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
-            double util = calculateDwellingUtilityForHouseholdType(householdType, dd);
-            util = personalizeDwellingUtilityForThisHousehold(hh, dd, HouseholdUtil.getHhIncome(hh), util);
+            double util = calculateHousingUtility(hh, dd);
             satisfactionByHousehold.put(dd.getResidentId(), util);
             averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
             hhByType.add(householdType);
