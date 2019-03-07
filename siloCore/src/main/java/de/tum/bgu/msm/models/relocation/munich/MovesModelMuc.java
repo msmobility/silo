@@ -33,7 +33,7 @@ import java.util.*;
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private SelectRegionJSCalculator regionCalculator;
-    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeNationalityAndRegion = new EnumMap<>(IncomeCategory.class) ;
+    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class) ;
 
     private SelectDwellingJSCalculator dwellingCalculator;
     private final DoubleMatrix1D regionalShareForeigners;
@@ -45,9 +45,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
     }
 
+
     private void calculateShareOfForeignersByZoneAndRegion() {
-
-
         final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
@@ -123,28 +122,28 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         calculateShareOfForeignersByZoneAndRegion();
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
-            EnumMap<Nationality, Map<Integer, Double>> utilitiesByNationalityRegionForThisIncome = new EnumMap<>(Nationality.class);
+            EnumMap<Nationality, Map<Integer, Double>> utilityByNationalityByRegion = new EnumMap<>(Nationality.class);
             for (Nationality nationality: Nationality.values()) {
-                Map<Integer, Double> utilitiesByRegionForThisNationalityAndIncome = new HashMap<>();
+                Map<Integer, Double> utilityByRegion = new HashMap<>();
                 for (Region region : geoData.getRegions().values()){
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-                    utilitiesByRegionForThisNationalityAndIncome.put(region.getId(),
+                    utilityByRegion.put(region.getId(),
                             regionCalculator.calculateSelectRegionProbability(incomeCategory,
                                     nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region.getId())));
 
                 }
-                utilitiesByNationalityRegionForThisIncome.put(nationality, utilitiesByRegionForThisNationalityAndIncome);
+                utilityByNationalityByRegion.put(nationality, utilityByRegion);
             }
-            utilityByIncomeNationalityAndRegion.put(incomeCategory, utilitiesByNationalityRegionForThisIncome);
+            utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
         }
 
     }
 
     private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold
-                = new HashMap<>(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
+                = new HashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
