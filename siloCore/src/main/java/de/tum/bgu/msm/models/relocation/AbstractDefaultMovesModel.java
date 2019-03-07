@@ -60,8 +60,13 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     protected abstract double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dwelling, int income, double genericUtility);
 
+    protected abstract void calculateRegionalUtilities();
+
+
     @Override
     public List<MoveEvent> prepareYear(int year) {
+        calculateRegionalUtilities();
+        calculateAverageHousingSatisfaction();
         final List<MoveEvent> events = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
@@ -186,8 +191,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         return HouseholdUtil.getHhIncome(hh) <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
     }
 
-    @Override
-    public void calculateAverageHousingSatisfaction() {
+
+    private void calculateAverageHousingSatisfaction() {
         logger.info("Evaluating housing satisfaction.");
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
