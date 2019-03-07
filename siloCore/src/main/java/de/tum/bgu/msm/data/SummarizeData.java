@@ -577,6 +577,7 @@ public class SummarizeData {
                 pwp.print(0);
             }
             pwp.print(",");
+            final int jobId = pp.getJobId();
             pwp.print(pp.getJobId());
             pwp.print(",");
             pwp.print(pp.getIncome());
