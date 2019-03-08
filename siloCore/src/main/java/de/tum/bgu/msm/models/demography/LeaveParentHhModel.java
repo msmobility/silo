@@ -52,8 +52,9 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     private HouseholdDataManager householdData;
 
     public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move,
-                              CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory) {
-        super(dataContainer);
+                              CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory,
+                              Properties properties) {
+        super(dataContainer, properties);
         this.movesModel = move;
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.hhFactory = hhFactory;
@@ -64,7 +65,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
 
     private void setupLPHModel() {
         Reader reader = null;
-        switch (Properties.get().main.implementation) {
+        switch (properties.main.implementation) {
             case MARYLAND:
                 reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
                 break;
@@ -132,7 +133,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
+        if (properties.main.implementation == Implementation.MUNICH) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
         }
 

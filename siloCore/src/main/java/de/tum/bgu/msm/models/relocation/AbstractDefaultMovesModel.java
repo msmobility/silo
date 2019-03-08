@@ -31,8 +31,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
-    public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility) {
-        super(dataContainer);
+    public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+        super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         setupMoveOrNotMove();
@@ -137,7 +137,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     protected double convertQualityToUtility(int quality) {
-        return (float) quality / (float) Properties.get().main.qualityLevels;
+        return (float) quality / (float) properties.main.qualityLevels;
     }
 
     protected double convertAreaToUtility(int area) {

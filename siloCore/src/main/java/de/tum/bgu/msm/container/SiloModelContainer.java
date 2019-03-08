@@ -133,7 +133,7 @@ public class SiloModelContainer {
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO:
                 LOGGER.info("  MITO is used as the transport model");
-                transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer);
+                transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer, properties);
                 break;
             case MATSIM:
                 LOGGER.info("  MATSim is used as the transport model");
@@ -144,18 +144,18 @@ public class SiloModelContainer {
         }
 
         Accessibility acc = new Accessibility(dataContainer);
-        DeathModel death = new DeathModel(dataContainer);
-        BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory());
-        BirthdayModel birthday = new BirthdayModel(dataContainer);
+        DeathModel death = new DeathModel(dataContainer, properties);
+        BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory(), properties);
+        BirthdayModel birthday = new BirthdayModel(dataContainer, properties);
 
-        DriversLicense driversLicense = new DriversLicense(dataContainer);
+        DriversLicense driversLicense = new DriversLicense(dataContainer, properties);
 
         //SummarizeData.summarizeAutoOwnershipByCounty(acc, jobData);
         MovesModelI move;
-        RenovationModel renov = new RenovationModel(dataContainer);
-        PricingModel prm = new PricingModel(dataContainer);
-        UpdateJobs updateJobs = new UpdateJobs(dataContainer);
-        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer, DwellingUtils.getFactory());
+        RenovationModel renov = new RenovationModel(dataContainer, properties);
+        PricingModel prm = new PricingModel(dataContainer, properties);
+        UpdateJobs updateJobs = new UpdateJobs(dataContainer, properties);
+        ConstructionOverwrite ddOverwrite = new ConstructionOverwrite(dataContainer, DwellingUtils.getFactory(), properties);
 
         UpdateCarOwnershipModel updateCarOwnershipModel;
         CreateCarOwnershipModel createCarOwnershipModel = null;
@@ -164,41 +164,46 @@ public class SiloModelContainer {
         EducationModel educationUpdate;
         switch (Properties.get().main.implementation) {
             case MARYLAND:
-                updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc);
-                move = new MovesModelMstm(dataContainer, acc);
-                educationUpdate = new MstmEducationModelImpl(dataContainer);
+                updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc, properties);
+                move = new MovesModelMstm(dataContainer, acc, properties);
+                educationUpdate = new MstmEducationModelImpl(dataContainer, properties);
                 break;
             case MUNICH:
                 createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
                         (GeoDataMuc) dataContainer.getGeoData());
-                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
+                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer, properties);
                 switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
-                move = new MovesModelMuc(dataContainer, acc);
-                educationUpdate = new MucEducationModelImpl(dataContainer);
+                move = new MovesModelMuc(dataContainer, acc, properties);
+                educationUpdate = new MucEducationModelImpl(dataContainer, properties);
                 break;
             case KAGAWA:
                 createCarOwnershipModel = new CreateCarOwnershipModel(dataContainer,
                         (GeoDataMuc) dataContainer.getGeoData());
-                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer);
+                updateCarOwnershipModel = new MunichUpdateCarOwnerShipModel(dataContainer, properties);
                 switchToAutonomousVehicleModel = new SwitchToAutonomousVehicleModel(dataContainer);
-                move = new MovesModelMuc(dataContainer, acc);
-                educationUpdate = new MucEducationModelImpl(dataContainer);
+                move = new MovesModelMuc(dataContainer, acc, properties);
+                educationUpdate = new MucEducationModelImpl(dataContainer, properties);
                 break;
             case PERTH:
 
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
-        ConstructionModel cons = new ConstructionModel(dataContainer, move, acc, DwellingUtils.getFactory());
-        EmploymentModel changeEmployment = new EmploymentModel(dataContainer, acc);
+        ConstructionModel cons
+                = new ConstructionModel(dataContainer, move, acc, DwellingUtils.getFactory(), properties);
+        EmploymentModel changeEmployment
+                = new EmploymentModel(dataContainer, acc, properties);
         updateCarOwnershipModel.initialize();
-        LeaveParentHhModel lph = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
-        InOutMigration iomig = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense,
-                PersonUtils.getFactory(), HouseholdUtil.getFactory());
-        DemolitionModel demol = new DemolitionModel(dataContainer, move, iomig);
-        MarriageModel marriage = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel, HouseholdUtil.getFactory());
-//        MarriageModel marriage = new DeferredAcceptanceMarriageModel(dataContainer, acc);
-        DivorceModel divorce = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory());
+        LeaveParentHhModel lph
+                = new LeaveParentHhModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory(), properties);
+        InOutMigration iomig
+                = new InOutMigration(dataContainer, changeEmployment, move, createCarOwnershipModel, driversLicense, properties);
+        DemolitionModel demol
+                = new DemolitionModel(dataContainer, move, iomig, properties);
+        MarriageModel marriage
+                = new DefaultMarriageModel(dataContainer, move, iomig, createCarOwnershipModel, HouseholdUtil.getFactory(), properties);
+        DivorceModel divorce
+                = new DivorceModel(dataContainer, move, createCarOwnershipModel, HouseholdUtil.getFactory(), properties);
 
         return new SiloModelContainer(iomig, cons, ddOverwrite, renov, demol,
                 prm, birth, birthday, death, marriage, divorce, lph, move, changeEmployment, educationUpdate, driversLicense, acc,

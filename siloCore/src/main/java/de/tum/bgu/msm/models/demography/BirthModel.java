@@ -16,17 +16,16 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -48,20 +47,31 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
     private final PersonFactory factory;
     private BirthJSCalculator calculator;
 
-    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory) {
-        super(dataContainer);
+    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory, Properties properties) {
+        super(dataContainer, properties);
         this.factory = factory;
         setupBirthModel();
     }
 
     private void setupBirthModel() {
         final Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
+                break;
+            case PERTH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+                break;
+            case KAGAWA:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+                break;
+            default:
+                throw new RuntimeException("BirthModel implementation not applicable for " + properties.main.implementation);
         }
-        float localScaler = Properties.get().demographics.localScaler;
+        float localScaler = properties.demographics.localScaler;
         calculator = new BirthJSCalculator(reader, localScaler);
     }
 
@@ -70,7 +80,7 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
         final List<BirthEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
-            if (Properties.get().eventRules.birth && personCanGiveBirth(per)) {
+            if (properties.eventRules.birth && personCanGiveBirth(per)) {
                 events.add(new BirthEvent(id));
             }
         }
@@ -94,9 +104,9 @@ public class BirthModel extends AbstractModel implements MicroEventModel<BirthEv
             //now it distinguish by number of children at the household
             double birthProb = calculator.calculateBirthProbability(person.getAge(), HouseholdUtil.getNumberOfChildren(person.getHousehold()));
             if (person.getRole() == PersonRole.MARRIED) {
-                birthProb *= Properties.get().demographics.marriedScaler;
+                birthProb *= properties.demographics.marriedScaler;
             } else {
-                birthProb *= Properties.get().demographics.singleScaler;
+                birthProb *= properties.demographics.singleScaler;
             }
             if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
                 giveBirth(person);

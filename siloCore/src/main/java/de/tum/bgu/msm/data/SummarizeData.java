@@ -412,8 +412,7 @@ public class SummarizeData {
         String filejj = Properties.get().main.baseDirectory + relativePathToJjFile + "_" + year + ".csv";
         writeJobs(filejj, dataContainer);
 
-        //todo do not print schools if implementation is not Munich (carlos)
-        if(Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+        if(dataContainer.getSchoolData() != null) {
             String filess = Properties.get().main.baseDirectory + relativePathToSsFile + "_" + year + ".csv";
             writeSchools(filess, dataContainer);
         }

@@ -1,11 +1,12 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.LicenseEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -23,8 +24,8 @@ public class DriversLicense extends AbstractModel implements MicroEventModel<Lic
 
     private LicenseJSCalculator calculator;
 
-    public DriversLicense(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public DriversLicense(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         setup();
     }
 

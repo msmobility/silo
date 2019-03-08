@@ -50,11 +50,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private SelectDwellingJSCalculator dwellingCalculator;
     private MstmDwellingUtilityJSCalculator mstmDwellingUtilityJSCalculator;
 
-    public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility) {
-        super(dataContainer, accessibility);
+    public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+        super(dataContainer, accessibility, properties);
         setupSelectDwellingModel();
-        selectDwellingRaceRelevance = Properties.get().moves.racialRelevanceInZone;
-        provideRentSubsidyToLowIncomeHh = Properties.get().moves.provideLowIncomeSubsidy;
+        selectDwellingRaceRelevance = properties.moves.racialRelevanceInZone;
+        provideRentSubsidyToLowIncomeHh = properties.moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
             dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
@@ -212,7 +212,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             if (workZones != null) {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, Properties.get().transportModel.peakHour_s, TransportMode.car);
+                    		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }

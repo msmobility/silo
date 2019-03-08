@@ -7,10 +7,8 @@ import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -35,51 +33,46 @@ import java.util.Map;
 
 public class InOutMigration extends AbstractModel implements MicroEventModel<MigrationEvent> {
 
-    private final static Logger LOGGER = Logger.getLogger(InOutMigration.class);
+    private final static Logger logger = Logger.getLogger(InOutMigration.class);
 
     private final EmploymentModel employment;
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final DriversLicense driversLicense;
-    private final PersonFactory factory;
-    private final HouseholdFactory hhFactory;
 
     private String populationControlMethod;
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
-    private Map<Integer, int[]> inmigratingHhData;
     private int outMigrationPPCounter;
     private int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment, MovesModelI movesModel,
-                          CreateCarOwnershipModel carOwnership, DriversLicense driversLicense,
-                          PersonFactory factory, HouseholdFactory hhFactory) {
-        super(dataContainer);
+    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment,
+                          MovesModelI movesModel, CreateCarOwnershipModel carOwnership,
+                          DriversLicense driversLicense, Properties properties) {
+        super(dataContainer, properties);
         this.employment = employment;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
         this.driversLicense = driversLicense;
-        this.factory = factory;
-        this.hhFactory = hhFactory;
-        populationControlMethod = Properties.get().moves.populationControlTotal;
+        populationControlMethod = properties.moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
-            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.populationCOntrolTotalFile;
+            String fileName = properties.main.baseDirectory + properties.moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
         } else if (populationControlMethod.equalsIgnoreCase("migration")) {
-            String fileName = Properties.get().main.baseDirectory + Properties.get().moves.migrationFile;
+            String fileName = properties.main.baseDirectory + properties.moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
         } else if (populationControlMethod.equalsIgnoreCase("populationGrowthRate")) {
             tblPopulationTarget = new TableDataSet();
-            int periodLength = Properties.get().main.endYear - Properties.get().main.startYear + 1;
+            int periodLength = properties.main.endYear - properties.main.startYear + 1;
             int[] years = new int[periodLength];
             int[] populationByYear = new int[periodLength];
             int populationBaseYear = dataContainer.getHouseholdData().getPersons().size();
             for (int i = 0; i < periodLength; i++) {
-                years[i] = Properties.get().main.startYear + i;
-                populationByYear[i] = (int) Math.round(populationBaseYear * Math.pow(1 + Properties.get().moves.populationGrowthRateInPercentage / 100, i));
+                years[i] = properties.main.startYear + i;
+                populationByYear[i] = (int) Math.round(populationBaseYear * Math.pow(1 + properties.moves.populationGrowthRateInPercentage / 100, i));
             }
             tblPopulationTarget.appendColumn(years, "Year");
             tblPopulationTarget.appendColumn(populationByYear, "Population");
@@ -87,10 +80,9 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
 
 
         } else {
-            LOGGER.error("Unknown property found for population.control.total, set to population or migration");
+            logger.error("Unknown property found for population.control.total, set to population or migration");
             System.exit(0);
         }
-
     }
 
 
@@ -98,7 +90,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     public Collection<MigrationEvent> prepareYear(int year) {
         final List<MigrationEvent> events = new ArrayList<>();
 
-        LOGGER.info("  Selecting outmigrants and creating inmigrants for the year " + year);
+        logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
 
         Household[] hhs = householdData.getHouseholds().toArray(new Household[0]);
@@ -113,7 +105,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     }
 
     private void createInmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
-        HouseholdDataManager householdData = dataContainer.getHouseholdData() ;
+        HouseholdDataManager householdData = dataContainer.getHouseholdData();
         int inmigrants = 0;
         if (populationControlMethod.equalsIgnoreCase("migration")) {
             inmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Inmigration");
@@ -187,10 +179,10 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
             driversLicense.checkLicenseCreation(person.getId());
         }
 
-                int newDdId = movesModel.searchForNewDwelling(hh);
+        int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
-            if (Properties.get().main.implementation == Implementation.MUNICH) {
+            if (properties.main.implementation == Implementation.MUNICH) {
                 carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
             }
             inMigrationPPCounter += hh.getHhSize();
@@ -203,7 +195,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
                 }
             }
             householdData.addHousehold(hh);
-            for(Person person: hh.getPersons().values()) {
+            for (Person person : hh.getPersons().values()) {
                 householdData.addPerson(person);
             }
             return true;
@@ -217,7 +209,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     public boolean outMigrateHh(int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
         Household hh = dataContainer.getHouseholdData().getHouseholdFromId(hhId);
-        if (Properties.get().eventRules.outMigration && !overwriteEventRules || hh == null) {
+        if (properties.eventRules.outMigration && !overwriteEventRules || hh == null) {
             return false;
         }
         outMigrationPPCounter += hh.getHhSize();

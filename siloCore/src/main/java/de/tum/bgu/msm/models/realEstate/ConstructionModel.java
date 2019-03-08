@@ -2,7 +2,6 @@ package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.util.IndexSort;
 import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -51,8 +50,10 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
-    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves, Accessibility accessibility, DwellingFactory factory) {
-        super(dataContainer);
+    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves,
+                             Accessibility accessibility, DwellingFactory factory,
+                             Properties properties) {
+        super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
         this.moves = moves;
@@ -64,26 +65,37 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
     }
 
     private void setupConstructionModel() {
-        Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
+        final Reader reader;
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
+                break;
+            case PERTH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
+                break;
+            case KAGAWA:
+            case CAPE_TOWN:
+                default:
+                    throw new RuntimeException("ConstructionModel not applicable for " + properties.main.implementation);
         }
+
         constructionDemandCalculator = new ConstructionDemandJSCalculator(reader);
 
-        makeSomeNewDdAffordable = Properties.get().realEstate.makeSomeNewDdAffordable;
+        makeSomeNewDdAffordable = properties.realEstate.makeSomeNewDdAffordable;
         if (makeSomeNewDdAffordable) {
-            shareOfAffordableDd = Properties.get().realEstate.affordableDwellingsShare;
-            restrictionForAffordableDd = Properties.get().realEstate.levelOfAffordability;
+            shareOfAffordableDd = properties.realEstate.affordableDwellingsShare;
+            restrictionForAffordableDd = properties.realEstate.levelOfAffordability;
         }
     }
 
 
     private void setupEvaluationOfZones() {
         // set up model to evaluate zones for construction of new dwellings
-        betaForZoneChoice = Properties.get().realEstate.constructionLogModelBeta;
-        priceIncreaseForNewDwelling = Properties.get().realEstate.constructionLogModelInflator;
+        betaForZoneChoice = properties.realEstate.constructionLogModelBeta;
+        priceIncreaseForNewDwelling = properties.realEstate.constructionLogModelInflator;
     }
 
     @Override
@@ -154,7 +166,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
                     }
                     int zone = SiloUtil.select(prob);
                     int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    int quality = Properties.get().main.qualityLevels;  // set all new dwellings to highest quality level
+                    int quality = properties.main.qualityLevels;  // set all new dwellings to highest quality level
 
                     // set restriction for new dwellings to unrestricted by default
                     int restriction = 0;

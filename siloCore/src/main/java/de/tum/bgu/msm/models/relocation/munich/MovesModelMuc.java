@@ -42,8 +42,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
 
-    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
-        super(dataContainer, accessibility);
+    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+        super(dataContainer, accessibility, properties);
         setupUtilityCalculators();
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
@@ -154,7 +154,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
             if (workZones != null) {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, Properties.get().transportModel.peakHour_s, TransportMode.car);
+                    		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }

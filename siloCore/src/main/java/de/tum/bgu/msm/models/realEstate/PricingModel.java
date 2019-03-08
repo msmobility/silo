@@ -33,8 +33,8 @@ public final class PricingModel extends AbstractModel {
     private double maxDelta;
 
 
-    public PricingModel (SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public PricingModel (SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         setupPricingModel();
     }
 

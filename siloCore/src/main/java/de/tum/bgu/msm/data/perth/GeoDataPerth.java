@@ -2,15 +2,12 @@ package de.tum.bgu.msm.data.perth;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.AbstractDefaultGeoData;
-import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
-import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model

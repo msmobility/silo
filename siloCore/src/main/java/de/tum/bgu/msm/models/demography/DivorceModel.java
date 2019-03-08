@@ -31,8 +31,10 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
     private MarryDivorceJSCalculator calculator;
 
-    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
-        super(dataContainer);
+    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel,
+                        CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
+                        Properties properties) {
+        super(dataContainer, properties);
         this.hhFactory = hhFactory;
         setupModel();
         this.movesModel = movesModel;
@@ -40,11 +42,21 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     }
 
     private void setupModel() {
-        Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+        final Reader reader;
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+                break;
+            case PERTH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+                break;
+            case KAGAWA:
+            case CAPE_TOWN:
+            default:
+                throw new RuntimeException("DivorceModel implementation not applicable for " + properties.main.implementation);
         }
         calculator = new MarryDivorceJSCalculator(reader, 0);
     }
@@ -52,7 +64,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     @Override
     public Collection<DivorceEvent> prepareYear(int year) {
         final List<DivorceEvent> events = new ArrayList<>();
-        for(Person person: dataContainer.getHouseholdData().getPersons()) {
+        for (Person person : dataContainer.getHouseholdData().getPersons()) {
             if (person.getRole() == PersonRole.MARRIED) {
                 events.add(new DivorceEvent(person.getId()));
             }
@@ -62,7 +74,8 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
     @Override
     public boolean handleEvent(DivorceEvent event) {
-        return chooseDivorce(event.getPersonId());    }
+        return chooseDivorce(event.getPersonId());
+    }
 
     @Override
     public void finishYear(int year) {
@@ -79,7 +92,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
             if (SiloUtil.getRandomNumberAsDouble() < probability) {
                 // check if vacant dwelling is available
 
-                Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1,-1,0);
+                Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);
                 fakeHypotheticalHousehold.addPerson(per);
                 int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
                 if (newDwellingId < 0) {
@@ -111,7 +124,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                         " has divorced from household " + oldHh + " and established the new household " +
                         newHhId + ".");
                 householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
-                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                if (properties.main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }
                 return true;

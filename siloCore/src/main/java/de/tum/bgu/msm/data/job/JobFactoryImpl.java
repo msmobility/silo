@@ -29,8 +29,6 @@ public class JobFactoryImpl implements JobFactory {
                             intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
                     (int) (SiloUtil.select(workingTimeDistributionByJobType.get(job.getType())) +
                             intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
-        } else {
-
         }
     }
 

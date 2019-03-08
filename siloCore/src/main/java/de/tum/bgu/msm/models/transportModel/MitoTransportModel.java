@@ -36,10 +36,10 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private final String propertiesPath;
     private final String baseDirectory;
 
-    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
-        this.propertiesPath = Objects.requireNonNull(Properties.get().main.baseDirectory + Properties.get().transportModel.mitoPropertiesPath);
+        this.propertiesPath = Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath);
         this.baseDirectory = Objects.requireNonNull(baseDirectory);
     }
 
@@ -48,7 +48,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
         logger.info("  Running travel demand model MITO for the year " + year);
         DataSet dataSet = convertData(year);
         logger.info("  SILO data being sent to MITO");
-        MitoModel mito = MitoModel.initializeModelFromSilo(propertiesPath, dataSet, Properties.get().main.scenarioName);
+        MitoModel mito = MitoModel.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.setBaseDirectory(baseDirectory);
         mito.runModel();
@@ -183,18 +183,18 @@ public final class MitoTransportModel extends AbstractModel implements Transport
             final String type = jj.getType().toUpperCase();
             try {
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
-                switch (Properties.get().main.implementation) {
+                switch (properties.main.implementation) {
                     case MUNICH:
                         mitoJobType = MunichJobType.valueOf(type);
                         break;
                     case KAGAWA:
                         mitoJobType = KagawaJobType.valueOf(type);
                     default:
-                        logger.error("Implementation " + Properties.get().main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
+                        logger.error("Implementation " + properties.main.implementation + " is not yet supported by MITO", new IllegalArgumentException());
                 }
                 zone.addEmployeeForType(mitoJobType);
             } catch (IllegalArgumentException e) {
-                logger.warn("Job type " + type + " not defined for MITO implementation: " + Properties.get().main.implementation);
+                logger.warn("Job type " + type + " not defined for MITO implementation: " + properties.main.implementation);
             }
         }
     }

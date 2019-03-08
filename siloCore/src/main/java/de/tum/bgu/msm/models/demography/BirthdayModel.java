@@ -14,8 +14,8 @@ import java.util.List;
 
 public class BirthdayModel extends AbstractModel implements MicroEventModel<BirthDayEvent>{
 
-    public BirthdayModel(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public BirthdayModel(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class BirthdayModel extends AbstractModel implements MicroEventModel<Birt
         List<BirthDayEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
-            if(Properties.get().eventRules.birthday) {
+            if(properties.eventRules.birthday) {
                 events.add(new BirthDayEvent(id));
             }
         }

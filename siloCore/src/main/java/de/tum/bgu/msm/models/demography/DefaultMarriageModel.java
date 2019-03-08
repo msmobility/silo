@@ -59,7 +59,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
 
-    private float interRacialMarriageShare = Properties.get().demographics.interracialMarriageShare;
+    private float interRacialMarriageShare = properties.demographics.interracialMarriageShare;
 
     private final static int AGE_OFFSET = 10;
     private final static ContiguousSet<Integer> AGE_DIFF_RANGE
@@ -72,8 +72,9 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     // performance, the person type of this person in the marriage market is not updated.
 
     public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
-                                InOutMigration iomig, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory) {
-        super(dataContainer);
+                                InOutMigration iomig, CreateCarOwnershipModel carOwnership,
+                                HouseholdFactory hhFactory, Properties properties) {
+        super(dataContainer, properties);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
@@ -83,13 +84,23 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private void setupModel() {
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
-        double scale = Properties.get().demographics.localMarriageAdjuster;
+        double scale = properties.demographics.localMarriageAdjuster;
 
-        Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+        final Reader reader;
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+                break;
+            case PERTH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+                break;
+            case KAGAWA:
+            case CAPE_TOWN:
+            default:
+                throw new RuntimeException("Marriage model implementation not applicable for " + properties.main.implementation);
         }
         calculator = new MarryDivorceJSCalculator(reader, scale);
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
@@ -98,7 +109,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     @Override
     public Collection<MarriageEvent> prepareYear(int year) {
         final List<MarriageEvent> events = new ArrayList<>();
-        if(Properties.get().eventRules.marriage) {
+        if (properties.eventRules.marriage) {
             events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons()));
         }
         return events;
@@ -151,7 +162,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                     activePartners.add(pp);
                 } else if (isQualifiedAsPossiblePartner(pp)) {
                     final List<Person> entry = partnersByAgeAndGender.get(pp.getAge(), pp.getGender());
-                    if(entry == null) {
+                    if (entry == null) {
                         partnersByAgeAndGender.put(pp.getAge(), pp.getGender(), Lists.newArrayList(pp));
                     } else {
                         entry.add(pp);
@@ -226,7 +237,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         double marryProb = calculator.calculateMarriageProbability(pp);
         Household hh = pp.getHousehold();
         if (hh.getHhSize() == 1) {
-            marryProb *= Properties.get().demographics.onePersonHhMarriageBias;
+            marryProb *= properties.demographics.onePersonHhMarriageBias;
         }
         return marryProb;
     }
@@ -235,7 +246,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         float share = 0.1f;
         Household hh = person.getHousehold();
         if (hh.getHhSize() == 1) {
-            share *= Properties.get().demographics.onePersonHhMarriageBias;
+            share *= properties.demographics.onePersonHhMarriageBias;
         }
         return SiloUtil.getRandomNumberAsFloat() < share;
     }
@@ -339,7 +350,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                 return false;
             } else {
                 movesModel.moveHousehold(moveTo, -1, newDwellingId);
-                if (Properties.get().main.implementation == Implementation.MUNICH) {
+                if (properties.main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(moveTo); // set initial car ownership of new household
                 }
             }
@@ -384,13 +395,13 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
             for (Gender gender : probabilitiesByAgeDiffAndGender.columnKeySet()) {
                 if (gender == Gender.MALE) {
                     // man searches woman
-                    ageFactor += Properties.get().demographics.marryAbsAgeDiff;
+                    ageFactor += properties.demographics.marryAbsAgeDiff;
                 } else {
                     // woman searches man
-                    ageFactor -= Properties.get().demographics.marryAbsAgeDiff;
+                    ageFactor -= properties.demographics.marryAbsAgeDiff;
                 }
                 final double probability =
-                        1 / Math.exp(Math.pow(ageFactor, 2) * Properties.get().demographics.marryAgeSpreadFac);
+                        1 / Math.exp(Math.pow(ageFactor, 2) * properties.demographics.marryAgeSpreadFac);
                 probabilitiesByAgeDiffAndGender.put(ageDiff, gender, probability);
             }
         }
@@ -398,13 +409,13 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     }
 
 
-    private boolean ruleGetMarried (Person per) {
+    private boolean ruleGetMarried(Person per) {
         if (per == null) {
             return false;
         }
         PersonRole role = per.getRole();
         return (role == PersonRole.SINGLE || role == PersonRole.CHILD)
-                && per.getAge() >= Properties.get().demographics.minMarryAge
+                && per.getAge() >= properties.demographics.minMarryAge
                 && per.getAge() < 100;
     }
 
@@ -432,7 +443,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         }
 
         private List<Person> getFittingPartners(MarriagePreference preference) {
-            if(preference != null) {
+            if (preference != null) {
                 return getFittingPartners(preference.age, preference.gender);
             } else {
                 return null;
@@ -441,7 +452,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         private List<Person> getFittingPartners(int age, Gender gender) {
             final List<Person> entry = partnersByAgeAndGender.get(age, gender);
-            if(entry == null) {
+            if (entry == null) {
                 return Collections.emptyList();
             }
             return entry;

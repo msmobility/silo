@@ -62,8 +62,7 @@ public class SiloDataContainer {
                 geoData = new GeoDataMuc();
                 break;
             case PERTH:
-                // todo: this might need to be replace by GeoDataPerth
-                geoData = new GeoDataMstm();
+                geoData = new GeoDataPerth();
                 schoolData = null;
                 break;
             default:

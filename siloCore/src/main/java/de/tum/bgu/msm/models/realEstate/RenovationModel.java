@@ -25,8 +25,8 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
 
     private double[][] renovationProbability;
 
-    public RenovationModel(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public RenovationModel(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         setupRenovationModel();
     }
 
@@ -37,8 +37,8 @@ public class RenovationModel extends AbstractModel implements MicroEventModel<Re
         RenovationJSCalculator renovationCalculator = new RenovationJSCalculator(reader);
 
         //set renovation probabilities
-        renovationProbability = new double[Properties.get().main.qualityLevels][5];
-        for (int oldQual = 0; oldQual < Properties.get().main.qualityLevels; oldQual++) {
+        renovationProbability = new double[properties.main.qualityLevels][5];
+        for (int oldQual = 0; oldQual < properties.main.qualityLevels; oldQual++) {
             for (int alternative = 0; alternative < 5; alternative++) {
                 renovationProbability[oldQual][alternative] = renovationCalculator.calculateRenovationProbability(oldQual + 1, alternative + 1);
             }
