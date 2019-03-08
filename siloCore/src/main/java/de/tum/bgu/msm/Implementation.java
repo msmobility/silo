@@ -5,7 +5,7 @@ public enum Implementation {
     MARYLAND(2000),
     //TODO: Define base year for Cape-Town
     CAPE_TOWN(2011),
-    PERTH(2010),
+    PERTH(2011),
     MSP(2000),
     KAGAWA(2010);
 
