@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.school;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.Properties;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,17 +1,11 @@
 package de.tum.bgu.msm.models.demography;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -16,8 +16,6 @@
  */
 package de.tum.bgu.msm.data;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.person.Person;
@@ -26,6 +24,8 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.matsim.core.utils.collections.QuadTree;
 
 import java.io.File;

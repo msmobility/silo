@@ -16,9 +16,9 @@
  */
 package de.tum.bgu.msm.data.dwelling;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.household.HouseholdType;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.EnumMap;
 

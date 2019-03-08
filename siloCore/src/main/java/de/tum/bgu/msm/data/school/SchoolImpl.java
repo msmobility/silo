@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.data.school;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.MicroLocation;
+import org.locationtech.jts.geom.Coordinate;
 
 public class SchoolImpl implements School, MicroLocation {
     private final int id;

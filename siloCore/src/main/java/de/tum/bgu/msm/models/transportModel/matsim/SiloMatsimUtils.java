@@ -1,9 +1,6 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
@@ -14,7 +11,10 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -36,7 +36,6 @@ import org.matsim.core.utils.collections.Tuple;
 import java.util.Collection;
 import java.util.Map;
 
-//import com.vividsolutions.jts.geom.*;
 
 /**
  * @author dziemke

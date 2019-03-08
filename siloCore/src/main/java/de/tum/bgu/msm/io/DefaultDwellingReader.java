@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.io;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.dwelling.*;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
