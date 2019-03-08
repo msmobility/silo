@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * Generates a simple synthetic population for the Perth Study Area
+ * Generates a simple synthetic population for the perth Study Area
  * @author Rolf Moeckel (TUM) & Sonja Stemler (UWA) & Martin Porebski (UWA)
  * Created on Oct. 31st, 2018 in Munich
  */
@@ -85,7 +85,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         // open & preprocess the gender file used for the population distribution into SA1 zones
         openGenderBySA1(year);
-        // open the list of vacant dwellings in Perth
+        // open the list of vacant dwellings in perth
         dwellUnoccPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/dwellingUnoccupiedBySA1_" + year + ".csv");
         // open the files to save the data
         openFilesToWriteSyntheticPopulation(year);
@@ -969,12 +969,12 @@ SyntheticPopPerth implements SyntheticPopI
         int STUDENT = 3;
         int RETIRED = 4;
 
-        // Perth: 1 - Employed
-        // Perth: 2 - Unemployed
-        // Perth: 3 - Not in labor force
-        // Perth: 4 - Not stated
-        // Perth: 5 - Not applicable
-        // Perth: 6 - Overseas Visitor
+        // perth: 1 - Employed
+        // perth: 2 - Unemployed
+        // perth: 3 - Not in labor force
+        // perth: 4 - Not stated
+        // perth: 5 - Not applicable
+        // perth: 6 - Overseas Visitor
         // RETIREE = Not in labor force
         // EMPLOYED = Employed, at work
         // UNEMPLOYED = Unemployed

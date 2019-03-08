@@ -23,7 +23,7 @@ public class SiloPerth {
 
         }
 
-        logger.info("Starting SILO land use model for the Perth Study Area");
+        logger.info("Starting SILO land use model for the perth Study Area");
         SiloModel model = new SiloModel(config, properties);
         model.runModel();
         logger.info("Finished SILO.");

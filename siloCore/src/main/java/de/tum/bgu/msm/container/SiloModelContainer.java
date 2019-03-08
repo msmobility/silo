@@ -184,6 +184,8 @@ public class SiloModelContainer {
                 move = new MovesModelMuc(dataContainer, acc);
                 educationUpdate = new MucEducationModelImpl(dataContainer);
                 break;
+            case PERTH:
+
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }

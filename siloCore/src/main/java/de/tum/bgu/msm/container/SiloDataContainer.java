@@ -11,6 +11,7 @@ import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
+import de.tum.bgu.msm.data.perth.GeoDataPerth;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
@@ -103,12 +104,12 @@ public class SiloDataContainer {
                 schoolData = new SchoolDataManager(this);
                 break;
             case PERTH:
-                geoData = new GeoDataMuc();
+                geoData = new GeoDataPerth();
                 schoolData = null;
                 break;
             default:
-                LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
-                throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
+                LOGGER.error("Invalid implementation. Choose <KAGAWA>, <MARYLAND>, <MUNICH> or <PERTH>.");
+                throw new RuntimeException("Invalid implementation. Choose <KAGAWA>, <MARYLAND>, <MUNICH> or <PERTH>.");
         }
 
         realEstateData = new RealEstateDataManager(this, dwellingTypeList);
