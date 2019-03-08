@@ -364,18 +364,19 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             ddPriceUtility = convertPriceToUtility(price, ht);
         }
 
-        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
+        Map<Person, Zone> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
-                jobsForThisHousehold.put(pp, workLocation);
+                jobsForThisHousehold.put(pp, geoData.getZones().get(workLocation.getZoneId()));
             }
         }
         double workDistanceUtility = 1;
-        for (Job workLocation : jobsForThisHousehold.values()){
+        Zone originZone = geoData.getZones().get(dd.getZoneId());
+        for (Zone workLocation : jobsForThisHousehold.values()){
             double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car)));
+                    originZone, workLocation, 0, TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }
 
