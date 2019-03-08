@@ -3,12 +3,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
+import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
-import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -16,6 +14,7 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -169,7 +168,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_IPU) == true) {
             //runIPUbyCity(); //IPU fitting with one geographical constraint. Each municipality is independent of others
             createWeightsAndErrorsCity();
-            new IPUbyCity(dataSetSynPop).run();
+            new IPUbyCityWithSubsample(dataSetSynPop).run();
             weightsTable = dataSetSynPop.getWeights();
             weightsTable.buildIndex(weightsTable.getColumnPosition("ID"));
         } else {
@@ -179,8 +178,6 @@ public class SyntheticPopJP implements SyntheticPopI {
         generateJobs(); //Generate the jobs by type. Allocated to TAZ level
         assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
-        //summarizeData.writeOutSyntheticPopulationDE(rb, SiloUtil.getBaseYear());
-        //SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
         SummarizeData.writeOutSyntheticPopulation(2000,dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -274,6 +271,27 @@ public class SyntheticPopJP implements SyntheticPopI {
         }
         dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
+
+
+
+        //Zonal data for IPU
+        regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
+        regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
+
+        householdsForFrequencyMatrix = new HashMap<>();
+        for (int i = 1; i <= microDataDwelling.getRowCount();i++){
+            int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
+            int ddID = (int) microDataDwelling.getValueAt(i,"id");
+            if (householdsForFrequencyMatrix.containsKey(v2Zone)) {
+                householdsForFrequencyMatrix.get(v2Zone).put(ddID, 1);
+            } else {
+                HashMap<Integer, Integer> map = new HashMap<>();
+                map.put(ddID, 1);
+                householdsForFrequencyMatrix.put(v2Zone, map);
+            }
+        }
+        dataSetSynPop.setHouseholdsForFrequencyMatrix(householdsForFrequencyMatrix);
+        dataSetSynPop.setRegionsforFrequencyMatrix(regionsforFrequencyMatrix);
     }
 
 
@@ -589,25 +607,21 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
             //generate jobs
-            for (int row = 0; row < jobStringTypes.length; row++) {
-                for (int g = 0; g < gender.length; g++) {
-                    String jobType = jobStringTypes[row];
-                    String jobTypeGender = gender[g] + jobType;
-                    int totalJobs = (int) jobsMunicipality.getIndexedValueAt(municipalityID, jobTypeGender);
-                    if (totalJobs > 0.1) {
-                        //Obtain the number of jobs of that type in each TAZ of the municipality
-                        double[] jobsInTaz = new double[tazInCity.length];
-                        for (int i = 0; i < tazInCity.length; i++) {
-                            jobsInTaz[i] = rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobTypeGender);
-                        }
-                        //Create and allocate jobs to TAZs (with replacement)
-                        for (int job = 0; job < totalJobs; job++) {
-                            int[] records = select(jobsInTaz, tazInCity);
-                            jobsInTaz[records[1]] = jobsInTaz[records[1]] - 1;
+            for (String type : jobStringTypes) {
+                for (String gen : gender) {
+                    String jobTypeGender = gen + type;
+                    int totalJobs = 0;
+                    //if (totalJobs > 0.1) {
+                    //Obtain the number of jobs of that type in each TAZ of the municipality
+                    for (int i = 0; i < tazInCity.length; i++) {
+                        int jobsInTaz = (int) rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobTypeGender);
+                        //Create already allocated jobs to TAZs (with replacement)
+                        for (int job = 0; job < jobsInTaz; job++) {
                             int id = jobDataManager.getNextJobId();
-                            jobDataManager.addJob(JobUtils.getFactory().createJob(id, records[0], null, -1, jobType));
+                            jobDataManager.addJob(JobUtils.getFactory().createJob(id, tazInCity[i], null, -1, type));
                         }
-                    }
+                }
+                    //}
                 }
             }
         }
@@ -909,7 +923,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 } else {
                     pp.setNationality(Nationality.OTHER);
                 }
-                pp.setSchoolType((int) persons.getValueAt(aux,"schoolDE"));
+                pp.setSchoolType((int) persons.getValueAt(aux,"school"));
                 pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
                 aux++;
             }
@@ -1223,10 +1237,9 @@ public class SyntheticPopJP implements SyntheticPopI {
                     int usage = (int) microDwellings.getIndexedValueAt(selectedHh, "H_");
                     int buildingSize = (int) microDwellings.getIndexedValueAt(selectedHh, "ddT_");
                     DefaultDwellingTypeImpl ddType = translateDwellingType(buildingSize);
-                    int quality = guessQualityJP(year,numberofQualityLevels); //depend on year built and type of heating
+                    int quality = 1; //depend on year built and type of heating
                     year = selectDwellingYear(year); //convert from year class to actual 4-digit year
-                    float averageSqmPrice = averagePriceDistribution[buildingSize - 1];
-                    int price = Math.round(floorSpace * averageSqmPrice);
+                    int price = estimatePrice(ddType, floorSpace);
                     Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, selectedTAZ, null, id, ddType , bedRooms, quality, price, 0, year);
                     realEstate.addDwelling(dwell);
                     dwell.setFloorSpace(floorSpace);
@@ -1320,25 +1333,10 @@ public class SyntheticPopJP implements SyntheticPopI {
     private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate micro census dwelling types into 6 MetCouncil Dwelling Types
 
-        // Available in MICRO CENSUS:
-//        V 01 . Building with 1-2 apartments
-//        V 02 . Building with 3-6 apartments
-//        V 03 . Building with 1-12 apartments
-//        V 04 . Building with 13-20 apartments
-//        V 05 . Building with 21+ apartments
-//        V 09 . Not stated
-//        V -1 . Living in group quarter
-//        V -5 . Moved in the last 12 months
-
-
         DefaultDwellingTypeImpl type;
-        if (pumsDdType == 2) type = DefaultDwellingTypeImpl.MF234; //duplexes and buildings 2-4 units
-        else if (pumsDdType == 1) type = DefaultDwellingTypeImpl.SFD; //single-family house detached
-            //else if (pumsDdType == 3) type = DwellingType.SFA;//single-family house attached or townhouse
-            //else if (pumsDdType == 4 || pumsDdType == 5) type = DwellingType.MH; //mobile home
-        else if (pumsDdType >= 3 ) type = DefaultDwellingTypeImpl.MF5plus; //multifamily houses with 5+ units. Assumes that not stated are 5+units
-        else if (pumsDdType == 0) type = DefaultDwellingTypeImpl.MF5plus; //multifamily houses with 5+ units. Assumes that group quarters are 5+ units
-        else if (pumsDdType == -5) type = DefaultDwellingTypeImpl.MH; //mobile home; //mobile home. Assumes that group quarters are 5+ units
+        if (pumsDdType == 1) type = DefaultDwellingTypeImpl.SFD; //DETACHED
+        else if (pumsDdType == 2) type = DefaultDwellingTypeImpl.MF234; //apartment
+        else if (pumsDdType == 3) type = DefaultDwellingTypeImpl.MF5plus;//multiapartment
         else {
             //logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
@@ -1710,8 +1708,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
             }
         }
-
-
 
     }
 
@@ -2372,6 +2368,18 @@ public class SyntheticPopJP implements SyntheticPopI {
         errorsSummary =  SiloUtil.initializeTableDataSet(errorsSummary, labels, dataSetSynPop.getCityIDs());
         dataSetSynPop.setErrorsMunicipality(errorsMunicipality);
         dataSetSynPop.setErrorsSummary(errorsSummary);
+    }
+
+    private int estimatePrice(DefaultDwellingTypeImpl ddType, int floorSpace){
+        int averagePricePerSQM = 10;
+        if (ddType.equals(DefaultDwellingTypeImpl.MF234)){
+            averagePricePerSQM = 5;
+        } else if (ddType.equals(DefaultDwellingTypeImpl.MF5plus)){
+            averagePricePerSQM = 5;
+        }
+        int price = floorSpace * averagePricePerSQM;
+        return price;
+
     }
 
 }

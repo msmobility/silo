@@ -11,10 +11,6 @@ import de.tum.bgu.msm.events.impls.household.MoveEvent;
  */
 public interface MovesModelI extends MicroEventModel<MoveEvent> {
 
-    void calculateAverageHousingSatisfaction();
-
-    void calculateRegionalUtilities();
-
     int searchForNewDwelling(Household household);
 
     void moveHousehold(Household hh, int idOldDD, int idNewDD);
