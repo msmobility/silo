@@ -59,14 +59,6 @@ public interface Person extends Id {
 
     int getJobId();
 
-    void setEducationLevel(int educationLevel);
-
-    int getEducationLevel();
-
-    void setTelework(int telework);
-
-    int getTelework();
-
     void setNationality(Nationality nationality);
 
     Nationality getNationality();

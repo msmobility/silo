@@ -51,7 +51,6 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
         person.setSchoolPlace(schoolId);
         // todo if 2 is the right code for someone who graduates from high school
         //todo also check occupation transition to worker? 'nk
-        person.setEducationLevel(2);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school. New school place (0 = left school) " + schoolId);

@@ -124,7 +124,7 @@ public class MarriageModelTest {
         dataContainer.getHouseholdData().identifyHighestHouseholdAndPersonId();
         dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
         dataContainer.getRealEstateData().identifyVacantDwellings();
-        modelContainer.getMove().calculateRegionalUtilities();
+        //modelContainer.getMove().calculateRegionalUtilities();
 
         Random rnd = new Random(42);
         singleHouseholds = new HouseholdDataManager(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());

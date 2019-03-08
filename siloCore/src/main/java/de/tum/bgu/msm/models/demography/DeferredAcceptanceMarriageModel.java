@@ -97,9 +97,8 @@ public class DeferredAcceptanceMarriageModel implements MarriageModel {
                 double travelTime = data.getTravelTimes().getTravelTime(
                 		bachelorZone, bacheloretteZone, Properties.get().transportModel.peakHour_s, TransportMode.car);
                 double ageBias = (bachelor.getAge() -1) - bachelorette.getAge();
-                double educationOffset = Math.abs(bachelor.getEducationLevel() - bachelorette.getEducationLevel());
                 double nationalityBias = bachelor.getNationality() == bachelorette.getNationality() ? 1: 0.5;
-                double utility = 40./travelTime + 1./ageBias + 1/(1.+educationOffset) + nationalityBias;
+                double utility = 40./travelTime + 1./ageBias + nationalityBias;
                 preferences.setQuick(bachelor.getId(), bachelorette.getId(), utility);
             }
         }

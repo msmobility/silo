@@ -552,8 +552,6 @@ public class SummarizeData {
             pwp.print(",");
             pwp.print("nationality");
             pwp.print(",");
-            pwp.print("education");
-            pwp.print(",");
             pwp.print("homeZone");
             pwp.print(",");
             pwp.print("workZone");
@@ -595,8 +593,6 @@ public class SummarizeData {
                 pwp.print(",");
                 pwp.print(pp.getNationality().toString());
                 pwp.print(",");
-                pwp.print(pp.getEducationLevel());
-                pwp.print(",");
                 Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());
                 pwp.print(",");
@@ -633,8 +629,6 @@ public class SummarizeData {
             if (Properties.get().main.implementation.equals(Implementation.KAGAWA)) {
                 pwp.print(",");
                 pwp.print(pp.getNationality().toString());
-                pwp.print(",");
-                pwp.print(pp.getEducationLevel());
                 pwp.print(",");
                 Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
                 pwp.print(dd.getZoneId());

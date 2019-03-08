@@ -133,6 +133,8 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected TableDataSet odCountyFlow;
     private SiloDataContainer dataContainer;
 
+    private HashMap<Person, Integer> jobTypeByWorker;
+
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
 
 
@@ -681,7 +683,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
-            int selectedJobType = pp.getTelework() - 1; //1 Agr, 2 Ind; 3 Srv
+            int selectedJobType = jobTypeByWorker.get(pp) - 1; //1 Agr, 2 Ind; 3 Srv
 
             int[] keys = idZonesVacantJobsByType.get(selectedJobType);
             int lengthKeys = numberZonesByType.get(selectedJobType);
@@ -912,7 +914,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                         (int) persons.getValueAt(aux, "income"));
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
-                pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
                 if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
                 else pp.setRole(PersonRole.CHILD);
@@ -1209,8 +1210,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                         Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                         householdDataManager.addPerson(pers);
                         householdDataManager.addPersonToHousehold(pers, household);
-                        pers.setEducationLevel(education);
-                        pers.setTelework(jobType);
+                        jobTypeByWorker.put(pers, jobType);
                         PersonRole role = PersonRole.CHILD; //default value = child
                         if ((int)microPersons.getValueAt(personCounter, "personRole") == 1) { //the person is single
                            role = PersonRole.SINGLE;

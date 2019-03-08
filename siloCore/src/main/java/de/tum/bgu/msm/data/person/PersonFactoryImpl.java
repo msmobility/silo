@@ -19,7 +19,6 @@ public class PersonFactoryImpl implements PersonFactory {
                 -1,
                 originalPerson.getIncome());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
-        duplicate.setEducationLevel(originalPerson.getEducationLevel());
         duplicate.setNationality(originalPerson.getNationality());
         return duplicate;
     }

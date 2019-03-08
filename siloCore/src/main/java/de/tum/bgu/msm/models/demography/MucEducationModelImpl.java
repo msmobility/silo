@@ -62,7 +62,6 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
         person.setSchoolType(0);
         person.setSchoolCoordinate(null,-1);
         //TODO: schoolType and educationLevel code needs to be aligned! 09 Oct 2018 QZ'
-        person.setEducationLevel(educationLevel);
         School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
         school.setOccupancy(school.getOccupancy() + 1);
         person.setSchoolId(-1);
