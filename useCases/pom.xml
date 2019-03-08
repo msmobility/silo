@@ -13,14 +13,6 @@
         <developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>oss-jfrog-artifactory</id>
-            <name>artifactory-snapshots</name>
-            <url>http://oss.jfrog.org/oss-snapshot-local</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <defaultGoal>compiler:compile</defaultGoal>
         <resources>
@@ -180,18 +172,8 @@
 
     <repositories>
         <repository>
-            <!-- Geotools is not on Maven central -->
-            <id>osgeo</id>
-            <name>Geotools repository</name>
-            <url>http://download.osgeo.org/webdav/geotools</url>
-        </repository>
-        <repository>
             <id>matsim</id>
             <url>http://dl.bintray.com/matsim/matsim</url>
-        </repository>
-        <repository>
-            <id>ojo-snapshots</id>
-            <url>http://oss.jfrog.org/libs-snapshot</url>
         </repository>
         <repository>
             <id>bintray-msmobility-maven</id>
@@ -228,9 +210,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <svnRevision>${buildNumber}</svnRevision>
-        <geotools.version>13.0</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>0.10.0-SNAPSHOT</matsimVersion>
+        <matsimVersion>0.11.0-SNAPSHOT</matsimVersion>
         <jackson.version>2.9.5</jackson.version>
     </properties>
 </project>

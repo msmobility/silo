@@ -245,11 +245,11 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-opengis</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.geotools</groupId>-->
+            <!--<artifactId>gt-opengis</artifactId>-->
+            <!--<version>${geotools.version}</version>-->
+        <!--</dependency>-->
         <!--<dependency>-->
             <!--<groupId>com.vividsolutions</groupId>-->
             <!--<artifactId>jts</artifactId>-->
@@ -347,7 +347,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <svnRevision>${buildNumber}</svnRevision>
-        <geotools.version>20.2</geotools.version>
+        <!--<geotools.version>20.2</geotools.version>-->
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <matsimVersion>0.11.0-SNAPSHOT</matsimVersion>
         <jackson.version>2.9.5</jackson.version>

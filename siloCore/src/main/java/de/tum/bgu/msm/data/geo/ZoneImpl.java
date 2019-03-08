@@ -75,8 +75,7 @@ public class ZoneImpl implements Zone {
         RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(), random);
         randomPointsBuilder.setNumPoints(1);
         randomPointsBuilder.setExtent((Geometry) zoneFeature.getDefaultGeometry());
-//        Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];
-        Coordinate coordinate = null;
+        Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];
         Point p = MGC.coordinate2Point(coordinate);
         return new Coordinate(p.getX(), p.getY());
     }
