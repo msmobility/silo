@@ -8,7 +8,7 @@ public enum Implementation {
     PERTH(2011),
     MSP(2000),
     KAGAWA(2010),
-	AUSTIN(2017);
+    AUSTIN(2017);
 
     public final int BASE_YEAR;
 
