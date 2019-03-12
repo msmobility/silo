@@ -884,9 +884,6 @@ public class SyntheticPopUs implements SyntheticPopI {
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
                         if (relShp == 0 || relShp == 1 || relShp == 13) {
-                            if (relShp == 0) {
-                                householder = pp;
-                            }
                             coupleCounter.add(pp.getGender().ordinal() + 1);
                         }
                     } else {
@@ -895,17 +892,11 @@ public class SyntheticPopUs implements SyntheticPopI {
                 }
                 int numberOfCouples = Math.min(coupleCounter.count(1), coupleCounter.count(2));
                 int[] marriedPersons = new int[]{numberOfCouples, numberOfCouples};
-                if (numberOfCouples > 0 && householder != null) {
-                    householder.setRole(PersonRole.MARRIED);
-                    marriedPersons[householder.getGender().ordinal()] -= 1;
-                } else if (householder != null) {
-                    householder.setRole(PersonRole.SINGLE);
-                }
 
                 for (Person pp : persons.values()) {
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
-                        if ((relShp == 1 || relShp == 13) && marriedPersons[pp.getGender().ordinal()] > 0) {
+                        if ((relShp == 1 || relShp == 13 || relShp==0) && marriedPersons[pp.getGender().ordinal()] > 0) {
                             pp.setRole(PersonRole.MARRIED);
                             marriedPersons[pp.getGender().ordinal()] -= 1;
                             //   natural child     adopted child        step child        grandchild       foster child
