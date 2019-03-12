@@ -176,6 +176,7 @@
         <module>msp</module>
         <module>perth</module>
         <module>kagawa</module>
+        <module>austin</module>
     </modules>
 
     <repositories>

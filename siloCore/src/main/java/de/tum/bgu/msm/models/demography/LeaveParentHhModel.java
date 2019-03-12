@@ -67,6 +67,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
         Reader reader = null;
         switch (properties.main.implementation) {
             case MARYLAND:
+            case AUSTIN:
                 reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
                 break;
             case MUNICH:

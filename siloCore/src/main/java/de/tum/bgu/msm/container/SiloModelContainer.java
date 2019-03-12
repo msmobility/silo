@@ -184,8 +184,13 @@ public class SiloModelContainer {
                 move = new MovesModelMuc(dataContainer, acc, properties);
                 educationUpdate = new MucEducationModelImpl(dataContainer, properties);
                 break;
+            // To do: may need to replace this with Austin car ownership, moves, and education models
+            case AUSTIN:
+            	updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc, properties);
+            	move = new MovesModelMstm(dataContainer, acc, properties);
+                educationUpdate = new MstmEducationModelImpl(dataContainer, properties);
+                break;
             case PERTH:
-
             default:
                 throw new RuntimeException("Models not defined for implementation " + Properties.get().main.implementation);
         }
