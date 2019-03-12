@@ -45,8 +45,9 @@ public class GenerateSchoolMicrolocation {
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
 
                 if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType) == null){
-                	pp.setSchoolCoordinate(zone.getRandomCoordinate(), zoneID);
-                    errorSchool++;
+                	School school = dataContainer.getSchoolData().getClosestSchool(pp,pp.getSchoolType());
+                    pp.setSchoolId(school.getId());
+                	errorSchool++;
                     continue;
                 }
                 int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
@@ -54,7 +55,6 @@ public class GenerateSchoolMicrolocation {
                 int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
                 zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
                 pp.setSchoolId(school.getId());
-                pp.setSchoolCoordinate(((MicroLocation)school).getCoordinate(), school.getZoneId());
             }
         }
 
