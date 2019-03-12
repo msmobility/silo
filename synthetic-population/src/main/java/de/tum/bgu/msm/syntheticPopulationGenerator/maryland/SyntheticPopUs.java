@@ -82,6 +82,8 @@ public class SyntheticPopUs implements SyntheticPopI {
     public void runSP () {
         // main method to run the synthetic population generator
 
+        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SP)) return;
+
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MARYLAND);
         geoData = (GeoDataMstm) dataContainer.getGeoData();
