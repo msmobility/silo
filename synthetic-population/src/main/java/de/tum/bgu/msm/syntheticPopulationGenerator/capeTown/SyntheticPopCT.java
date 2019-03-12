@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -172,7 +173,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         readZonalData();
         createDirectoryForOutput();
         //TODO: change to cape town implementation
-        dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
+        dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.MUNICH);
         long startTime = System.nanoTime();
         boolean temporaryTokenForTesting = false;  // todo:  These two lines will be removed
         if (!temporaryTokenForTesting) {           // todo:  after testing is completed

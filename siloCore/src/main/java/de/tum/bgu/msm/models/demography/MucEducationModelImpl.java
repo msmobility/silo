@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -22,7 +22,7 @@ import java.util.List;
  **/
 public class MucEducationModelImpl extends AbstractModel implements EducationModel {
 
-    public MucEducationModelImpl(SiloDataContainer dataContainer, Properties properties) {
+    public MucEducationModelImpl(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 

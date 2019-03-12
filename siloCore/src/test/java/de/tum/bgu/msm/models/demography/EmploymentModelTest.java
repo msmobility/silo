@@ -2,8 +2,8 @@ package de.tum.bgu.msm.models.demography;
 
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -22,13 +22,13 @@ public class EmploymentModelTest {
 
     private static EmploymentModel model;
 
-    private static SiloDataContainer dataContainer;
+    private static SiloDataContainerImpl dataContainer;
     private static SiloModelContainer modelContainer;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         dataContainer.getHouseholdData().calculateInitialSettings();
         dataContainer.getJobData().identifyVacantJobs();
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);

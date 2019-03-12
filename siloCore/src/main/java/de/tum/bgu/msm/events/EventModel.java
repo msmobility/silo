@@ -2,7 +2,7 @@ package de.tum.bgu.msm.events;
 
 import java.util.Collection;
 
-public interface MicroEventModel<T extends MicroEvent> {
+public interface EventModel<T extends MicroEvent> {
 
     /**
      * Perform model internal preparations for the current year and return

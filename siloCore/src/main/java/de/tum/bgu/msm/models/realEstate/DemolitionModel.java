@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
@@ -24,7 +24,7 @@ import java.util.List;
  * Created on 8 January 2010 in Rhede
  **/
 
-public class DemolitionModel extends AbstractModel implements MicroEventModel<DemolitionEvent> {
+public class DemolitionModel extends AbstractModel implements EventModel<DemolitionEvent> {
 
     private final DemolitionJSCalculator calculator;
     private final MovesModelI moves;
@@ -32,7 +32,7 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
 
     private int currentYear = -1;
 
-    public DemolitionModel(SiloDataContainer dataContainer, MovesModelI moves,
+    public DemolitionModel(SiloDataContainerImpl dataContainer, MovesModelI moves,
                            InOutMigration inOutMigration, Properties properties) {
         super(dataContainer, properties);
         this.moves = moves;

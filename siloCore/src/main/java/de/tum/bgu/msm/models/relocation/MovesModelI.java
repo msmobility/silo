@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.relocation;
 
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 
 /**
@@ -9,7 +9,7 @@ import de.tum.bgu.msm.events.impls.household.MoveEvent;
  * @author Rolf Moeckel
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
  */
-public interface MovesModelI extends MicroEventModel<MoveEvent> {
+public interface MovesModelI extends EventModel<MoveEvent> {
 
     int searchForNewDwelling(Household household);
 

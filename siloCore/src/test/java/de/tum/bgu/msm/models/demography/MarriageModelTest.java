@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
@@ -27,14 +27,14 @@ public class MarriageModelTest {
     private static int[] couple3;
     private static int[] couple4;
 
-    private static SiloDataContainer dataContainer;
+    private static SiloDataContainerImpl dataContainer;
     private static HouseholdDataManager singleHouseholds;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = (DefaultMarriageModel) modelContainer.getMarriage();
 

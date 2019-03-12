@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.transportModel;
 
 import de.tum.bgu.msm.MitoModel;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -36,7 +36,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     private final String propertiesPath;
     private final String baseDirectory;
 
-    public MitoTransportModel(String baseDirectory, SiloDataContainer dataContainer, Properties properties) {
+    public MitoTransportModel(String baseDirectory, SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
         this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
         this.propertiesPath = Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath);

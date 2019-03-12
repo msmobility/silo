@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.BirthDayEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class BirthdayModel extends AbstractModel implements MicroEventModel<BirthDayEvent>{
+public class BirthdayModel extends AbstractModel implements EventModel<BirthDayEvent> {
 
-    public BirthdayModel(SiloDataContainer dataContainer, Properties properties) {
+    public BirthdayModel(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 

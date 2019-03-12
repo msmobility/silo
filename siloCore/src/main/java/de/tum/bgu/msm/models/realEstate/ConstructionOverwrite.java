@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -37,7 +37,7 @@ public class ConstructionOverwrite extends AbstractModel {
     private boolean traceOverwriteDwellings;
     private HashMap<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwrite(SiloDataContainer dataContainer, DwellingFactory factory, Properties properties) {
+    public ConstructionOverwrite(SiloDataContainerImpl dataContainer, DwellingFactory factory, Properties properties) {
         super(dataContainer, properties);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;

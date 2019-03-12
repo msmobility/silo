@@ -16,13 +16,13 @@
  */
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroSimulation;
+import de.tum.bgu.msm.events.EventSimulator;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
@@ -58,9 +58,9 @@ public final class SiloModel {
 	private final Properties properties;
 
 	private SiloModelContainer modelContainer;
-	private SiloDataContainer data;
+	private SiloDataContainerImpl data;
 	private final Config matsimConfig;
-    private MicroSimulation microSim;
+    private EventSimulator eventSim;
     private final TimeTracker timeTracker = new TimeTracker();
 
     public SiloModel(Properties properties) {
@@ -106,7 +106,7 @@ public final class SiloModel {
 	}
 
     private void setupContainer() {
-        data = SiloDataContainer.loadSiloDataContainer(properties);
+        data = SiloDataContainerImpl.loadSiloDataContainer(properties);
 		IssueCounter.regionSpecificCounters(data.getGeoData());
 		data.getHouseholdData().calculateInitialSettings();
 		data.getJobData().calculateEmploymentForecast();
@@ -153,52 +153,52 @@ public final class SiloModel {
 	}
 
 	private void setupMicroSim() {
-        microSim = new MicroSimulation(timeTracker);
+        eventSim = new EventSimulator(timeTracker);
 
 		if(properties.eventRules.allDemography) {
 			if (properties.eventRules.birthday ) {
-				microSim.registerModel(BirthDayEvent.class, modelContainer.getBirthday());
+				eventSim.registerModel(BirthDayEvent.class, modelContainer.getBirthday());
             }
             if(properties.eventRules.birth) {
-				microSim.registerModel(BirthEvent.class, modelContainer.getBirth());
+				eventSim.registerModel(BirthEvent.class, modelContainer.getBirth());
 			}
 			if (properties.eventRules.death) {
-				microSim.registerModel(DeathEvent.class, modelContainer.getDeath());
+				eventSim.registerModel(DeathEvent.class, modelContainer.getDeath());
 			}
 			if (properties.eventRules.leaveParentHh) {
-				microSim.registerModel(LeaveParentsEvent.class, modelContainer.getLph());
+				eventSim.registerModel(LeaveParentsEvent.class, modelContainer.getLph());
 			}
 			if (properties.eventRules.divorce) {
-				microSim.registerModel(MarriageEvent.class, modelContainer.getMarriage());
+				eventSim.registerModel(MarriageEvent.class, modelContainer.getMarriage());
 			}
 			if(properties.eventRules.marriage) {
-				microSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
+				eventSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
 			}
 			if (properties.eventRules.schoolUniversity) {
-				microSim.registerModel(EducationEvent.class, modelContainer.getEducationUpdate());
+				eventSim.registerModel(EducationEvent.class, modelContainer.getEducationUpdate());
 			}
 			if (properties.eventRules.driversLicense) {
-				microSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());
+				eventSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());
 			}
 			if (properties.eventRules.quitJob || properties.eventRules.startNewJob) {
-				microSim.registerModel(EmploymentEvent.class, modelContainer.getEmployment());
+				eventSim.registerModel(EmploymentEvent.class, modelContainer.getEmployment());
             }
 		}
         if(properties.eventRules.allHhMoves) {
-            microSim.registerModel(MoveEvent.class, modelContainer.getMove());
+            eventSim.registerModel(MoveEvent.class, modelContainer.getMove());
             if(properties.eventRules.outMigration || properties.eventRules.inmigration) {
-                microSim.registerModel(MigrationEvent.class, modelContainer.getIomig());
+                eventSim.registerModel(MigrationEvent.class, modelContainer.getIomig());
             }
         }
         if(properties.eventRules.allDwellingDevelopments) {
             if(properties.eventRules.dwellingChangeQuality) {
-                microSim.registerModel(RenovationEvent.class, modelContainer.getRenov());
+                eventSim.registerModel(RenovationEvent.class, modelContainer.getRenov());
             }
             if(properties.eventRules.dwellingDemolition) {
-                microSim.registerModel(DemolitionEvent.class, modelContainer.getDemol());
+                eventSim.registerModel(DemolitionEvent.class, modelContainer.getDemol());
             }
             if(properties.eventRules.dwellingConstruction) {
-                microSim.registerModel(ConstructionEvent.class, modelContainer.getCons());
+                eventSim.registerModel(ConstructionEvent.class, modelContainer.getCons());
             }
         }
     }
@@ -221,7 +221,6 @@ public final class SiloModel {
             timeTracker.recordAndReset("scaleDataToForecast");
 
             if (year != properties.main.implementation.BASE_YEAR) {
-				modelContainer.getUpdateJobs().updateJobInventoryMultiThreadedThisYear(year);
 				data.getJobData().identifyVacantJobs();
 			}
 			timeTracker.recordAndReset("setupJobChange");
@@ -238,7 +237,7 @@ public final class SiloModel {
                 SiloUtil.summarizeMicroData(year, modelContainer, data);
             }
 
-            microSim.simulate(year);
+            eventSim.simulate(year);
 
 			timeTracker.reset();
 			int[] carChangeCounter = modelContainer.getUpdateCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
@@ -269,7 +268,7 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			timeTracker.record("updateRealEstatePrices");
 
-			microSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
+			eventSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +

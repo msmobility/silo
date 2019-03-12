@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
@@ -19,13 +19,13 @@ public class BirthModelTest {
     private static BirthModel model;
 
     private static SiloModelContainer modelContainer;
-    private static SiloDataContainer dataContainer;
+    private static SiloDataContainerImpl dataContainer;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getBirth();
 

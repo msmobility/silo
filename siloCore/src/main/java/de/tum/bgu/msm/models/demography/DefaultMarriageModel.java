@@ -18,8 +18,8 @@ package de.tum.bgu.msm.models.demography;
 
 import com.google.common.collect.*;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -71,7 +71,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
+    public DefaultMarriageModel(SiloDataContainerImpl dataContainer, MovesModelI movesModel,
                                 InOutMigration iomig, CreateCarOwnershipModel carOwnership,
                                 HouseholdFactory hhFactory, Properties properties) {
         super(dataContainer, properties);

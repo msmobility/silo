@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
@@ -13,12 +13,12 @@ import org.junit.Test;
 public class EducationModelTest {
 
     private static EducationModel model;
-    private static SiloDataContainer dataContainer;
+    private static SiloDataContainerImpl dataContainer;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
-        dataContainer = SiloDataContainer.loadSiloDataContainer(properties);
+        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(properties);
         SiloModelContainer modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getEducationUpdate();
     }

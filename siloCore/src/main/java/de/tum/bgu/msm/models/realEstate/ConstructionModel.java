@@ -2,11 +2,12 @@ package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
@@ -30,7 +31,7 @@ import java.util.List;
  * Created on 4 December 2012 in Santa Fe
  **/
 
-public class ConstructionModel extends AbstractModel implements MicroEventModel<ConstructionEvent> {
+public class ConstructionModel extends AbstractModel implements EventModel<ConstructionEvent> {
 
     private final static Logger LOGGER = Logger.getLogger(ConstructionModel.class);
 
@@ -50,7 +51,7 @@ public class ConstructionModel extends AbstractModel implements MicroEventModel<
 
     private ConstructionDemandJSCalculator constructionDemandCalculator;
 
-    public ConstructionModel(SiloDataContainer dataContainer, MovesModelI moves,
+    public ConstructionModel(SiloDataContainerImpl dataContainer, MovesModelI moves,
                              Accessibility accessibility, DwellingFactory factory,
                              Properties properties) {
         super(dataContainer, properties);

@@ -8,7 +8,7 @@ package de.tum.bgu.msm.models.relocation.mstm;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -50,7 +50,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private SelectDwellingJSCalculator dwellingCalculator;
     private MstmDwellingUtilityJSCalculator mstmDwellingUtilityJSCalculator;
 
-    public MovesModelMstm(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+    public MovesModelMstm(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, accessibility, properties);
         setupSelectDwellingModel();
         selectDwellingRaceRelevance = properties.moves.racialRelevanceInZone;

@@ -5,7 +5,7 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -85,7 +85,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SP)) return;
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
-        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MARYLAND);
+        SiloDataContainerImpl dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.MARYLAND);
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         geoData.readData();
         identifyUniquePUMAzones();
@@ -904,7 +904,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private void generateAutoOwnership (SiloDataContainer dataContainer) {
+    private void generateAutoOwnership (SiloDataContainerImpl dataContainer) {
         // select number of cars for every household
         dataContainer.getJobData().calculateJobDensityByZone();
         MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get());   // calculate auto-ownership probabilities

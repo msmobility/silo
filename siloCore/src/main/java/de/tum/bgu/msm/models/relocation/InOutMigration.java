@@ -2,7 +2,7 @@ package de.tum.bgu.msm.models.relocation;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -10,7 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
@@ -31,7 +31,7 @@ import java.util.Map;
  * Created on 15 January 2010 in Albuquerque
  **/
 
-public class InOutMigration extends AbstractModel implements MicroEventModel<MigrationEvent> {
+public class InOutMigration extends AbstractModel implements EventModel<MigrationEvent> {
 
     private final static Logger logger = Logger.getLogger(InOutMigration.class);
 
@@ -47,7 +47,7 @@ public class InOutMigration extends AbstractModel implements MicroEventModel<Mig
     private int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainer dataContainer, EmploymentModel employment,
+    public InOutMigration(SiloDataContainerImpl dataContainer, EmploymentModel employment,
                           MovesModelI movesModel, CreateCarOwnershipModel carOwnership,
                           DriversLicense driversLicense, Properties properties) {
         super(dataContainer, properties);

@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -29,7 +29,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
-    public MaryLandUpdateCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+    public MaryLandUpdateCarOwnershipModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, properties);
         logger.info("  Setting up probabilities for auto-ownership model");
         this.accessibility = accessibility;

@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.models.realEstate;
 
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -21,11 +21,11 @@ import java.util.List;
  * Created on 7 January 2010 in Rhede
  **/
 
-public class RenovationModel extends AbstractModel implements MicroEventModel<RenovationEvent> {
+public class RenovationModel extends AbstractModel implements EventModel<RenovationEvent> {
 
     private double[][] renovationProbability;
 
-    public RenovationModel(SiloDataContainer dataContainer, Properties properties) {
+    public RenovationModel(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
         setupRenovationModel();
     }

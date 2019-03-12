@@ -1,12 +1,14 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
@@ -21,12 +23,12 @@ import java.util.*;
  * Revised on 11 March 2014 in College Park, MD
  **/
 
-public class UpdateJobs extends AbstractModel {
+public class UpdateJobs extends AbstractModel implements EventModel {
 
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
     private JobFactory factory;
 
-    public UpdateJobs(SiloDataContainer dataContainer, Properties properties) {
+    public UpdateJobs(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
         factory = JobUtils.getFactory();
     }
@@ -105,5 +107,23 @@ public class UpdateJobs extends AbstractModel {
                 LOGGER.warn("Had to manually remove Job " + jobId + " from job map.");
             }
         }
+    }
+
+    @Override
+    public Collection prepareYear(int year) {
+        if(year != properties.main.implementation.BASE_YEAR) {
+            updateJobInventoryMultiThreadedThisYear(year);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean handleEvent(MicroEvent event) {
+        return false;
+    }
+
+    @Override
+    public void finishYear(int year) {
+
     }
 }

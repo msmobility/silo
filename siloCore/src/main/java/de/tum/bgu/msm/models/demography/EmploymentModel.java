@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -9,8 +9,8 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -27,14 +27,14 @@ import java.util.List;
  * Created on 1 March 2013 in Santa Fe
  **/
 
-public class EmploymentModel extends AbstractModel implements MicroEventModel<EmploymentEvent> {
+public class EmploymentModel extends AbstractModel implements EventModel<EmploymentEvent> {
 
     private final static Logger LOGGER = Logger.getLogger(EmploymentModel.class);
 
     private final Accessibility accessibility;
     private float[][] laborParticipationShares;
 
-    public EmploymentModel(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+    public EmploymentModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, properties);
         this.accessibility = accessibility;
         calculateInitialLaborParticipation();

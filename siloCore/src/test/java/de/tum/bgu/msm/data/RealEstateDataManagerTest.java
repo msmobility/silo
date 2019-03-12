@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data;
 
 import cern.colt.matrix.io.MatrixVectorWriter;
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
@@ -23,7 +24,7 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testdwellingCountByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         int[][] count = realEstate.getDwellingCountByTypeAndRegion();
 
@@ -46,7 +47,7 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testVacancyRateByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         double[][] vacRate = realEstate.getVacancyRateByTypeAndRegion();
 

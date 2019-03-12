@@ -7,10 +7,10 @@ package de.tum.bgu.msm.models.relocation.munich;
 */
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -42,7 +42,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
 
-    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+    public MovesModelMuc(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, accessibility, properties);
         setupUtilityCalculators();
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());

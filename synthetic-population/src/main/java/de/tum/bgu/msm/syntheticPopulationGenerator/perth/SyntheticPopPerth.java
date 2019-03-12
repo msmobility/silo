@@ -4,19 +4,13 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobType;
-import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.io.Console;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -77,7 +71,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
-        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.PERTH);
+        SiloDataContainer dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.PERTH);
         realEstateDataManager = dataContainer.getRealEstateData();
         householdDataManager = dataContainer.getHouseholdData();
         jobDataManager = dataContainer.getJobData();

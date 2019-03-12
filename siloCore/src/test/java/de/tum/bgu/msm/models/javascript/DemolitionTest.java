@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -31,7 +32,7 @@ public class DemolitionTest {
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
         calculator = new DemolitionJSCalculator(reader);
-        SiloDataContainer dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         dwelling1 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DefaultDwellingTypeImpl.SFD, 1,1,1,1,1);
         dataContainer.getRealEstateData().addDwelling(dwelling1);
         dwelling2 = DwellingUtils.getFactory().createDwelling(1,-1, null,1, DefaultDwellingTypeImpl.SFD, 1,5,1,1,5);

@@ -4,6 +4,7 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingImpl;
@@ -378,7 +379,7 @@ public class SummarizeData {
     }
 
 
-    public static void writeOutSyntheticPopulation(int year, SiloDataContainer dataContainer) {
+    public static void writeOutSyntheticPopulation(int year, SiloDataContainerImpl dataContainer) {
         String relativePathToHhFile;
         String relativePathToPpFile;
         String relativePathToDdFile;
@@ -418,7 +419,7 @@ public class SummarizeData {
         }
     }
 
-    private static void writeSchools(String filess, SiloDataContainer dataContainer) {
+    private static void writeSchools(String filess, SiloDataContainerImpl dataContainer) {
         PrintWriter pws = SiloUtil.openFileForSequentialWriting(filess, false);
         pws.print("id,zone,type,capacity,occupancy");
         if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {

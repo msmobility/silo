@@ -17,15 +17,15 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
@@ -43,7 +43,7 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 30 December 2009 in Cologne
  **/
-public class LeaveParentHhModel extends AbstractModel implements MicroEventModel<LeaveParentsEvent> {
+public class LeaveParentHhModel extends AbstractModel implements EventModel<LeaveParentsEvent> {
 
     private LeaveParentHhJSCalculator calculator;
     private final CreateCarOwnershipModel createCarOwnershipModel;
@@ -51,7 +51,7 @@ public class LeaveParentHhModel extends AbstractModel implements MicroEventModel
     private final MovesModelI movesModel;
     private HouseholdDataManager householdData;
 
-    public LeaveParentHhModel(SiloDataContainer dataContainer, MovesModelI move,
+    public LeaveParentHhModel(SiloDataContainerImpl dataContainer, MovesModelI move,
                               CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory,
                               Properties properties) {
         super(dataContainer, properties);

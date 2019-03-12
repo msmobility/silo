@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.models.autoOwnership.munich;
 
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -27,7 +27,7 @@ public class MunichUpdateCarOwnerShipModel extends AbstractModel implements Upda
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
-    public MunichUpdateCarOwnerShipModel(SiloDataContainer dataContainer, Properties properties) {
+    public MunichUpdateCarOwnerShipModel(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 

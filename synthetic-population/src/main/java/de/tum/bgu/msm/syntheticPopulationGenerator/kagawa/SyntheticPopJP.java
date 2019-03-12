@@ -4,7 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.JobDataManager;
 import de.tum.bgu.msm.data.RealEstateDataManager;
@@ -129,7 +129,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected Matrix distanceImpedance;
     protected TableDataSet odMunicipalityFlow;
     protected TableDataSet odCountyFlow;
-    private SiloDataContainer dataContainer;
+    private SiloDataContainerImpl dataContainer;
 
     private HashMap<Person, Integer> jobTypeByWorker;
 
@@ -148,7 +148,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
         logger.info("   Starting to create the synthetic population.");
         //TODO: change to cape town implementation
-        dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
+        dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.MUNICH);
         ExtractMicroDataJP extractMicroData = new ExtractMicroDataJP(rb, dataSetSynPop);
         extractMicroData.run();
         frequencyMatrix = extractMicroData.getFrequencyMatrix();

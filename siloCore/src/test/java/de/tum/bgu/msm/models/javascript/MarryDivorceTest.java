@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.javascript;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -29,7 +30,7 @@ public class MarryDivorceTest {
     public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
         calculator = new MarryDivorceJSCalculator(reader, SCALE);
-        this.dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        this.dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
     }
 
     @Test

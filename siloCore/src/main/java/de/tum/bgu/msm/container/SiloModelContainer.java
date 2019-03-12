@@ -64,7 +64,7 @@ public class SiloModelContainer {
     private final TransportModelI transportModel;
 
     /**
-     * The contructor is private, with a factory method {link {@link SiloModelContainer#createSiloModelContainer(SiloDataContainer, Config, Properties)}}
+     * The contructor is private, with a factory method {link {@link SiloModelContainer#(SiloDataContainer, Config, Properties)}}
      * being used to encapsulate the object creation.
      *
      * @param iomig
@@ -126,7 +126,7 @@ public class SiloModelContainer {
      *
      * @return A SiloModelContainer, with each model created within
      */
-    public static SiloModelContainer createSiloModelContainer(SiloDataContainer dataContainer, Config matsimConfig,
+    public static SiloModelContainer createSiloModelContainer(SiloDataContainerImpl dataContainer, Config matsimConfig,
                                                               Properties properties) {
 
         TransportModelI transportModel = null;

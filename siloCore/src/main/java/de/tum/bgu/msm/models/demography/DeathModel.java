@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -23,11 +23,11 @@ import java.util.List;
  * Created on Dec 2, 2009
  * Revised on Jan 19, 2018
  */
-public class DeathModel extends AbstractModel implements MicroEventModel<DeathEvent> {
+public class DeathModel extends AbstractModel implements EventModel<DeathEvent> {
 
     private DeathJSCalculator calculator;
 
-    public DeathModel(SiloDataContainer dataContainer, Properties properties) {
+    public DeathModel(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
         setupDeathModel();
     }

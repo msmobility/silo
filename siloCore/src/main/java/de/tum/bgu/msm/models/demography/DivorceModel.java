@@ -1,8 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -10,7 +11,6 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DivorceModel extends AbstractModel implements MicroEventModel<DivorceEvent> {
+public class DivorceModel extends AbstractModel implements EventModel<DivorceEvent> {
 
     private final MovesModelI movesModel;
     private final CreateCarOwnershipModel carOwnership;
@@ -31,7 +31,7 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
 
     private MarryDivorceJSCalculator calculator;
 
-    public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel,
+    public DivorceModel(SiloDataContainerImpl dataContainer, MovesModelI movesModel,
                         CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
                         Properties properties) {
         super(dataContainer, properties);

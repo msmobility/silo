@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.SchoolDataManager;
 import de.tum.bgu.msm.data.Zone;
@@ -21,12 +21,12 @@ public class GenerateSchoolMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateSchoolMicrolocation.class);
 
-    private final SiloDataContainer dataContainer;
+    private final SiloDataContainerImpl dataContainer;
     private final DataSetSynPop dataSetSynPop;
     Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
 
 
-    public GenerateSchoolMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateSchoolMicrolocation(SiloDataContainerImpl dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }

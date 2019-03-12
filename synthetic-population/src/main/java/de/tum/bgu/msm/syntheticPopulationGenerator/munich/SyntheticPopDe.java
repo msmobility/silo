@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
@@ -15,8 +15,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparatio
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import org.apache.log4j.Logger;
-
-import java.util.ResourceBundle;
 
 
 /**
@@ -43,7 +41,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
-        SiloDataContainer dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
+        SiloDataContainerImpl dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.MUNICH);
         dataContainer.getGeoData().readData();
 
         long startTime = System.nanoTime();

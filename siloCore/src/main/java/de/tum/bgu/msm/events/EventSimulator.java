@@ -15,22 +15,23 @@ import java.util.*;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 8 December 2009 in Santa Fe
  **/
-public final class MicroSimulation {
+public final class EventSimulator {
 
-    private final static Logger LOGGER = Logger.getLogger(MicroSimulation.class);
+    private final static Logger LOGGER = Logger.getLogger(EventSimulator.class);
 
     private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 
-    private final Map<Class<? extends MicroEvent>, MicroEventModel> models = new LinkedHashMap<>();
+    private final Map<Class<? extends MicroEvent>, EventModel> models = new LinkedHashMap<>();
+    private final List<EventModel>
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
 
-    public MicroSimulation(TimeTracker timeTracker) {
+    public EventSimulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
     }
 
-    public <T extends MicroEvent> void registerModel(Class<T> klass, MicroEventModel<T> model) {
+    public <T extends MicroEvent> void registerModel(Class<T> klass, EventModel<T> model) {
         this.models.put(klass, model);
         LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
@@ -42,7 +43,7 @@ public final class MicroSimulation {
 
     private void createEvents(int year) {
         LOGGER.info("  Creating events");
-        for(@SuppressWarnings("unchecked") MicroEventModel<? extends MicroEvent> model: models.values()) {
+        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
             timeTracker.reset();
             events.addAll(model.prepareYear(year));
             timeTracker.record("PreparationFor" + model.getClass().getSimpleName());
@@ -59,7 +60,7 @@ public final class MicroSimulation {
             timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
-            //<T extends Event> void registerModel(Class<T> klass, MicroEventModel<T> model)
+            //<T extends Event> void registerModel(Class<T> klass, EventModel<T> model)
             // checks for the right type of model handlers
             @SuppressWarnings("unchecked")
             boolean success = this.models.get(klass).handleEvent(e);
@@ -71,7 +72,7 @@ public final class MicroSimulation {
     }
 
     public void finishYear(int year, int[] carChangeCounter, int avSwitchCounter, SiloDataContainer dataContainer) {
-        for(MicroEventModel model: models.values()) {
+        for(EventModel model: models.values()) {
             model.finishYear(year);
         }
         SummarizeData.resultFile("Count of simulated events");

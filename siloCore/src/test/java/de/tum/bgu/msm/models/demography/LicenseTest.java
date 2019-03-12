@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -12,12 +12,12 @@ import org.junit.Test;
 public class LicenseTest {
 
     private static DriversLicense model;
-    private static SiloDataContainer dataContainer;
+    private static SiloDataContainerImpl dataContainer;
 
     @BeforeClass
     public static void setupModel() {
         SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
-        dataContainer = SiloDataContainer.loadSiloDataContainer(Properties.get());
+        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         model = new DriversLicense(dataContainer, Properties.get());
     }
 

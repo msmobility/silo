@@ -16,12 +16,12 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.MicroEventModel;
+import de.tum.bgu.msm.events.EventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -42,12 +42,12 @@ import static de.tum.bgu.msm.data.person.Gender.MALE;
  * Created on 28 December 2009 in Bocholt
  **/
 
-public class BirthModel extends AbstractModel implements MicroEventModel<BirthEvent> {
+public class BirthModel extends AbstractModel implements EventModel<BirthEvent> {
 
     private final PersonFactory factory;
     private BirthJSCalculator calculator;
 
-    public BirthModel(SiloDataContainer dataContainer, PersonFactory factory, Properties properties) {
+    public BirthModel(SiloDataContainerImpl dataContainer, PersonFactory factory, Properties properties) {
         super(dataContainer, properties);
         this.factory = factory;
         setupBirthModel();

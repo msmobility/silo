@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.relocation;
 
 import com.google.common.collect.EnumMultiset;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -31,7 +31,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
 
-    public AbstractDefaultMovesModel(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+    public AbstractDefaultMovesModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = accessibility;
