@@ -9,7 +9,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
 import de.tum.bgu.msm.models.AbstractModel;

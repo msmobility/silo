@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.SiloModelContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.household.Household;
@@ -31,7 +32,7 @@ public class EmploymentModelTest {
         dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
         dataContainer.getHouseholdData().calculateInitialSettings();
         dataContainer.getJobData().identifyVacantJobs();
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getEmployment();
     }
 

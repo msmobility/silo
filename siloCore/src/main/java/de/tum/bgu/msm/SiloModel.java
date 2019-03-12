@@ -18,28 +18,26 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.container.SiloModelContainerImpl;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.EventSimulator;
-import de.tum.bgu.msm.events.impls.MarriageEvent;
-import de.tum.bgu.msm.events.impls.household.MigrationEvent;
-import de.tum.bgu.msm.events.impls.household.MoveEvent;
-import de.tum.bgu.msm.events.impls.person.*;
-import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
-import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
-import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
+import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.events.Simulator;
+import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.utils.TravelTimeUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.NONE;
@@ -60,7 +58,7 @@ public final class SiloModel {
 	private SiloModelContainer modelContainer;
 	private SiloDataContainerImpl data;
 	private final Config matsimConfig;
-    private EventSimulator eventSim;
+    private Simulator simulator;
     private final TimeTracker timeTracker = new TimeTracker();
 
     public SiloModel(Properties properties) {
@@ -115,7 +113,7 @@ public final class SiloModel {
 		data.getRealEstateData().fillQualityDistribution();
 		data.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
 		data.getRealEstateData().identifyVacantDwellings();
-        modelContainer = SiloModelContainer.createSiloModelContainer(data, matsimConfig, properties);
+        modelContainer = SiloModelContainerImpl.createSiloModelContainer(data, matsimConfig, properties);
     }
 
     private void setupTravelTimes() {
@@ -153,54 +151,13 @@ public final class SiloModel {
 	}
 
 	private void setupMicroSim() {
-        eventSim = new EventSimulator(timeTracker);
-
-		if(properties.eventRules.allDemography) {
-			if (properties.eventRules.birthday ) {
-				eventSim.registerModel(BirthDayEvent.class, modelContainer.getBirthday());
-            }
-            if(properties.eventRules.birth) {
-				eventSim.registerModel(BirthEvent.class, modelContainer.getBirth());
-			}
-			if (properties.eventRules.death) {
-				eventSim.registerModel(DeathEvent.class, modelContainer.getDeath());
-			}
-			if (properties.eventRules.leaveParentHh) {
-				eventSim.registerModel(LeaveParentsEvent.class, modelContainer.getLph());
-			}
-			if (properties.eventRules.divorce) {
-				eventSim.registerModel(MarriageEvent.class, modelContainer.getMarriage());
-			}
-			if(properties.eventRules.marriage) {
-				eventSim.registerModel(DivorceEvent.class, modelContainer.getDivorce());
-			}
-			if (properties.eventRules.schoolUniversity) {
-				eventSim.registerModel(EducationEvent.class, modelContainer.getEducationUpdate());
-			}
-			if (properties.eventRules.driversLicense) {
-				eventSim.registerModel(LicenseEvent.class, modelContainer.getDriversLicense());
-			}
-			if (properties.eventRules.quitJob || properties.eventRules.startNewJob) {
-				eventSim.registerModel(EmploymentEvent.class, modelContainer.getEmployment());
-            }
+        simulator = new Simulator(timeTracker);
+        for(Map.Entry<Class<? extends MicroEvent>, EventModel> eventModel: modelContainer.getEventModels().entrySet()) {
+        	simulator.registerEventModel(eventModel.getKey(), eventModel.getValue());
 		}
-        if(properties.eventRules.allHhMoves) {
-            eventSim.registerModel(MoveEvent.class, modelContainer.getMove());
-            if(properties.eventRules.outMigration || properties.eventRules.inmigration) {
-                eventSim.registerModel(MigrationEvent.class, modelContainer.getIomig());
-            }
-        }
-        if(properties.eventRules.allDwellingDevelopments) {
-            if(properties.eventRules.dwellingChangeQuality) {
-                eventSim.registerModel(RenovationEvent.class, modelContainer.getRenov());
-            }
-            if(properties.eventRules.dwellingDemolition) {
-                eventSim.registerModel(DemolitionEvent.class, modelContainer.getDemol());
-            }
-            if(properties.eventRules.dwellingConstruction) {
-                eventSim.registerModel(ConstructionEvent.class, modelContainer.getCons());
-            }
-        }
+		for(AnnualModel annualModel: modelContainer.getAnnualModels()) {
+			simulator.registerAnnualModel(annualModel);
+		}
     }
 
 	private void runYearByYear() {
@@ -237,7 +194,7 @@ public final class SiloModel {
                 SiloUtil.summarizeMicroData(year, modelContainer, data);
             }
 
-            eventSim.simulate(year);
+            simulator.simulate(year);
 
 			timeTracker.reset();
 			int[] carChangeCounter = modelContainer.getUpdateCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
@@ -268,7 +225,7 @@ public final class SiloModel {
 			modelContainer.getPrm().updatedRealEstatePrices();
 			timeTracker.record("updateRealEstatePrices");
 
-			eventSim.finishYear(year, carChangeCounter, avSwitchCounter, data);
+			simulator.finishYear(year, carChangeCounter, avSwitchCounter, data);
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +

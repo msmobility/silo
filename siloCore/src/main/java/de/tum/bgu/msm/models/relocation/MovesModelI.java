@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.relocation;
 
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 
 /**

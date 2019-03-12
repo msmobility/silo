@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;

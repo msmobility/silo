@@ -7,9 +7,8 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.events.EventModel;
-import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -22,8 +21,7 @@ import java.util.*;
  * Created on 25 February 2013 in Santa Fe, NM
  * Revised on 11 March 2014 in College Park, MD
  **/
-
-public class UpdateJobs extends AbstractModel implements EventModel {
+public class UpdateJobs extends AbstractModel implements AnnualModel {
 
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
     private JobFactory factory;
@@ -32,6 +30,16 @@ public class UpdateJobs extends AbstractModel implements EventModel {
         super(dataContainer, properties);
         factory = JobUtils.getFactory();
     }
+
+    @Override
+    public void prepareYear(int year) {
+        if(year != properties.main.implementation.BASE_YEAR) {
+            updateJobInventoryMultiThreadedThisYear(year);
+        }
+    }
+
+    @Override
+    public void finishYear(int year) {}
 
     public void updateJobInventoryMultiThreadedThisYear(int year) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
@@ -107,23 +115,5 @@ public class UpdateJobs extends AbstractModel implements EventModel {
                 LOGGER.warn("Had to manually remove Job " + jobId + " from job map.");
             }
         }
-    }
-
-    @Override
-    public Collection prepareYear(int year) {
-        if(year != properties.main.implementation.BASE_YEAR) {
-            updateJobInventoryMultiThreadedThisYear(year);
-        }
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean handleEvent(MicroEvent event) {
-        return false;
-    }
-
-    @Override
-    public void finishYear(int year) {
-
     }
 }

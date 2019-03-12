@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.person.BirthDayEvent;

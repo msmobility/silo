@@ -2,6 +2,7 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.SiloModelContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloModelContainer;
@@ -29,7 +30,7 @@ public class DeathModelTest {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
         dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainer.createSiloModelContainer(dataContainer, null, properties);
+        modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
         model = modelContainer.getDeath();
 
 

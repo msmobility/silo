@@ -10,7 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;

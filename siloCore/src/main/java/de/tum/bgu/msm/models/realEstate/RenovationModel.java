@@ -4,7 +4,7 @@ import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;

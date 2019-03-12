@@ -25,7 +25,7 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;

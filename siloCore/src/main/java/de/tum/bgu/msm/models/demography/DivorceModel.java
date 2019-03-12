@@ -2,7 +2,7 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;

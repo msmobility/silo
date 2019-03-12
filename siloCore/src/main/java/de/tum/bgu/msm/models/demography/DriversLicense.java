@@ -2,7 +2,7 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.EventModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.person.LicenseEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;

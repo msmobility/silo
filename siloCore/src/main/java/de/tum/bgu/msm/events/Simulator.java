@@ -3,6 +3,8 @@ package de.tum.bgu.msm.events;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.utils.TimeTracker;
@@ -15,33 +17,39 @@ import java.util.*;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 8 December 2009 in Santa Fe
  **/
-public final class EventSimulator {
+public final class Simulator {
 
-    private final static Logger LOGGER = Logger.getLogger(EventSimulator.class);
+    private final static Logger LOGGER = Logger.getLogger(Simulator.class);
 
     private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 
     private final Map<Class<? extends MicroEvent>, EventModel> models = new LinkedHashMap<>();
-    private final List<EventModel>
+    private final List<AnnualModel> annualModels = new ArrayList<>();
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
 
-    public EventSimulator(TimeTracker timeTracker) {
+    public Simulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
     }
 
-    public <T extends MicroEvent> void registerModel(Class<T> klass, EventModel<T> model) {
+    public <T extends MicroEvent> void registerEventModel(Class<T> klass, EventModel<T> model) {
         this.models.put(klass, model);
         LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
 
-    public void simulate(int year) {
-        createEvents(year);
-        processEvents();
+    public void registerAnnualModel(AnnualModel model) {
+        this.annualModels.add(model);
+        LOGGER.info("Registered annual model " + model.getClass().getSimpleName());
     }
 
-    private void createEvents(int year) {
+    public void simulate(int year) {
+        prepareYear(year);
+        processEvents();
+//        finishYear(year);
+    }
+
+    private void prepareYear(int year) {
         LOGGER.info("  Creating events");
         for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
             timeTracker.reset();
@@ -60,7 +68,7 @@ public final class EventSimulator {
             timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
-            //<T extends Event> void registerModel(Class<T> klass, EventModel<T> model)
+            //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
             // checks for the right type of model handlers
             @SuppressWarnings("unchecked")
             boolean success = this.models.get(klass).handleEvent(e);
@@ -72,6 +80,9 @@ public final class EventSimulator {
     }
 
     public void finishYear(int year, int[] carChangeCounter, int avSwitchCounter, SiloDataContainer dataContainer) {
+        for(AnnualModel annualModel: annualModels) {
+            annualModel.finishYear(year);
+        }
         for(EventModel model: models.values()) {
             model.finishYear(year);
         }
