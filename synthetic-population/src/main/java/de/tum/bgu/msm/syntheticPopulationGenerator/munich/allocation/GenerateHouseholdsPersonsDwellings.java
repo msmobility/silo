@@ -45,12 +45,15 @@ public class GenerateHouseholdsPersonsDwellings {
     private int personCounter;
     private int householdCounter;
 
+    private HashMap<Person, Integer> educationalLevel;
+
     private HouseholdDataManager householdDataManager;
 
 
-    public GenerateHouseholdsPersonsDwellings(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateHouseholdsPersonsDwellings(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.dataSetSynPop = dataSetSynPop;
+        this.educationalLevel = educationalLevel;
         microDataManager = new MicroDataManager(dataSetSynPop);
     }
 
@@ -106,7 +109,6 @@ public class GenerateHouseholdsPersonsDwellings {
             Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
             int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
             boolean license = microDataManager.obtainLicense(gender, age);
-            int telework = dataSetSynPop.getPersonTable().get(personSelected, "telework");
             int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
@@ -115,9 +117,8 @@ public class GenerateHouseholdsPersonsDwellings {
             householdDataManager.addPersonToHousehold(pers, hh);
             pers.setNationality(nationality1);
             pers.setDriverLicense(license);
-            pers.setEducationLevel(educationDegree);
             pers.setSchoolType(school);
-            pers.setTelework(telework);
+            educationalLevel.put(pers, educationDegree);
             personCounter++;
         }
     }

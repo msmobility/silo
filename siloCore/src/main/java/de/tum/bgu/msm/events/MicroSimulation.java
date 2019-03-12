@@ -42,14 +42,14 @@ public final class MicroSimulation {
 
     private void createEvents(int year) {
         LOGGER.info("  Creating events");
-        timeTracker.reset();
         for(@SuppressWarnings("unchecked") MicroEventModel<? extends MicroEvent> model: models.values()) {
+            timeTracker.reset();
             events.addAll(model.prepareYear(year));
+            timeTracker.record("PreparationFor" + model.getClass().getSimpleName());
         }
         LOGGER.info("  Created " + events.size() + " events to simulate.");
         LOGGER.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
-        timeTracker.record("EventCreation");
         eventCounter.clear();
     }
 

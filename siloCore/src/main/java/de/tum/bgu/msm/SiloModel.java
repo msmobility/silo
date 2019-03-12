@@ -226,14 +226,8 @@ public final class SiloModel {
 			}
 			timeTracker.recordAndReset("setupJobChange");
 
-
-
 			modelContainer.getDdOverwrite().addDwellings(year);
             timeTracker.recordAndReset("addOverwriteDwellings");
-
-            modelContainer.getMove().calculateRegionalUtilities();
-			modelContainer.getMove().calculateAverageHousingSatisfaction();
-			timeTracker.recordAndReset("calcAveHousingSatisfaction");
 
 			if (year != properties.main.implementation.BASE_YEAR) {
 			    householdData.adjustIncome();

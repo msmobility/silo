@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.data.job;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -29,8 +29,6 @@ public class JobFactoryImpl implements JobFactory {
                             intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
                     (int) (SiloUtil.select(workingTimeDistributionByJobType.get(job.getType())) +
                             intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
-        } else {
-
         }
     }
 

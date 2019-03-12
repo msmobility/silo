@@ -39,9 +39,12 @@ public class AssignJobs {
     private int assignedJobs;
     private int[] tazIds;
 
-    public AssignJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    private HashMap<Person, Integer> educationalLevel;
+
+    public AssignJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
+        this.educationalLevel = educationalLevel;
     }
 
 
@@ -54,7 +57,7 @@ public class AssignJobs {
         RealEstateDataManager realEstate = dataContainer.getRealEstateData();
         HouseholdDataManager households = dataContainer.getHouseholdData();
         for (Person pp : workerArrayList){
-            int selectedJobType = guessjobType(pp.getGender(), pp.getEducationLevel());
+            int selectedJobType = guessjobType(pp.getGender(), educationalLevel.get(pp));
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);

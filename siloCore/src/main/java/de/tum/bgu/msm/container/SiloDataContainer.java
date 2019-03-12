@@ -11,6 +11,7 @@ import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
+import de.tum.bgu.msm.data.perth.GeoDataPerth;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
@@ -61,10 +62,14 @@ public class SiloDataContainer {
                 geoData = new GeoDataMuc();
                 break;
             case PERTH:
-                // todo: this might need to be replace by GeoDataPerth
-                geoData = new GeoDataMstm();
+                geoData = new GeoDataPerth();
                 schoolData = null;
                 break;
+            case AUSTIN:
+            	// to do: this might need to be replaced by GeoDataAustin
+            	geoData = new GeoDataMstm();
+            	schoolData = null;
+            	break;
             default:
                 LOGGER.error(implementation + " is an invalid implementation. Choose <MSTM> or <Muc>.");
                 throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
@@ -102,9 +107,18 @@ public class SiloDataContainer {
                 geoData = new GeoDataMuc();
                 schoolData = new SchoolDataManager(this);
                 break;
+            case AUSTIN:
+            	// to do: this might need to be replaced by GeoDataAustin
+            	geoData = new GeoDataMstm();
+            	schoolData = null;
+            	break;
+            case PERTH:
+                geoData = new GeoDataPerth();
+                schoolData = null;
+                break;
             default:
-                LOGGER.error("Invalid implementation. Choose <MSTM> or <Muc>.");
-                throw new RuntimeException("Invalid implementation. Choose <MSTM> or <Muc>.");
+                LOGGER.error("Invalid implementation. Choose <KAGAWA>, <MARYLAND>, <MUNICH> or <PERTH>.");
+                throw new RuntimeException("Invalid implementation. Choose <KAGAWA>, <MARYLAND>, <MUNICH> or <PERTH>.");
         }
 
         realEstateData = new RealEstateDataManager(this, dwellingTypeList);

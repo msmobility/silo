@@ -3,10 +3,12 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -14,12 +16,9 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.IPUbyCity;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import omx.OmxFile;
@@ -27,7 +26,6 @@ import omx.OmxLookup;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
-import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 
 import java.io.*;
 import java.util.*;
@@ -132,6 +130,8 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected TableDataSet odMunicipalityFlow;
     protected TableDataSet odCountyFlow;
     private SiloDataContainer dataContainer;
+
+    private HashMap<Person, Integer> jobTypeByWorker;
 
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
 
@@ -681,7 +681,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
-            int selectedJobType = pp.getTelework() - 1; //1 Agr, 2 Ind; 3 Srv
+            int selectedJobType = jobTypeByWorker.get(pp) - 1; //1 Agr, 2 Ind; 3 Srv
 
             int[] keys = idZonesVacantJobsByType.get(selectedJobType);
             int lengthKeys = numberZonesByType.get(selectedJobType);
@@ -912,7 +912,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                         (int) persons.getValueAt(aux, "income"));
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
-                pp.setEducationLevel((int) persons.getValueAt(aux, "education"));
                 if (persons.getStringValueAt(aux, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
                 else pp.setRole(PersonRole.CHILD);
@@ -1209,8 +1208,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                         Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                         householdDataManager.addPerson(pers);
                         householdDataManager.addPersonToHousehold(pers, household);
-                        pers.setEducationLevel(education);
-                        pers.setTelework(jobType);
+                        jobTypeByWorker.put(pers, jobType);
                         PersonRole role = PersonRole.CHILD; //default value = child
                         if ((int)microPersons.getValueAt(personCounter, "personRole") == 1) { //the person is single
                            role = PersonRole.SINGLE;

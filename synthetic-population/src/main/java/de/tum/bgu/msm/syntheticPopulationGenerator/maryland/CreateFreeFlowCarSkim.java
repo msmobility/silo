@@ -1,16 +1,13 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import de.tum.bgu.msm.io.output.OmxMatrixWriter;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -24,7 +21,9 @@ import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.vehicles.Vehicle;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by zhenpeng on 1/9/2019.

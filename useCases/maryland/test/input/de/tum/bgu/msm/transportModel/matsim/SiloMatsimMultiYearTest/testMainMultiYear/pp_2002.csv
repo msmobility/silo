@@ -58,7 +58,6 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 57,33,88,2,"single","white",0,0,-1,4754
 58,34,88,2,"single","white",0,0,-1,5479
 59,35,88,2,"single","white",0,0,-1,6929
-60,36,88,2,"single","white",0,0,-1,9829
 61,37,88,2,"single","white",0,0,-1,3304
 62,38,88,2,"single","white",0,0,-1,10554
 63,39,88,2,"single","white",0,0,-1,6929
@@ -148,8 +147,8 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 148,63,39,1,"married","white",2,0,-1,20248
 149,63,6,1,"child","white",0,0,-1,0
 150,63,2,1,"child","white",0,0,-1,0
-151,103,39,2,"single","white",2,0,-1,14252
-152,64,39,1,"single","white",2,0,-1,14304
+151,64,39,2,"married","white",2,0,-1,14252
+152,64,39,1,"married","white",2,0,-1,14304
 153,64,6,1,"child","white",0,0,-1,0
 154,64,2,1,"child","white",0,0,-1,0
 155,65,39,2,"married","white",2,0,-1,16708
@@ -245,5 +244,7 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 253,102,9,1,"child","black",0,0,-1,3092
 254,102,31,2,"married","black",2,0,-1,7775
 255,59,0,2,"child","white",0,0,0,0
-256,71,0,2,"child","black",0,0,0,0
-257,56,0,1,"child","white",0,0,0,0
+256,80,0,1,"child","black",0,0,0,0
+257,70,0,1,"child","black",0,0,0,0
+258,61,0,2,"child","white",0,0,0,0
+259,66,0,1,"child","white",0,0,0,0

@@ -1,9 +1,10 @@
 .idea/workspace.xml
 out
-/.classpath
-/.project
+*.gitignore
+*.classpath
+*.project
 /bin/
-/.settings/
+*.settings/
 /target/
 .idea/
 *.iml
@@ -16,6 +17,7 @@ scenOutput
 status.csv
 test/output/*
 test/scenarios/annapolis/null_t.csv
+*.DS_Store
 
 tripAttraction.csv
 

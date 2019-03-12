@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
@@ -12,6 +10,7 @@ import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -28,17 +27,26 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
 
     private DeathJSCalculator calculator;
 
-    public DeathModel(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public DeathModel(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         setupDeathModel();
     }
 
     private void setupDeathModel() {
-        Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
+        final Reader reader;
+
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
+                break;
+            case PERTH:
+            case KAGAWA:
+            case CAPE_TOWN:
+            default:
+                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
         }
         calculator = new DeathJSCalculator(reader);
     }

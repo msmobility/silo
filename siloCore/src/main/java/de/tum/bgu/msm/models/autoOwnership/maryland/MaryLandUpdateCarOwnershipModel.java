@@ -29,8 +29,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
 
-    public MaryLandUpdateCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility) {
-        super(dataContainer);
+    public MaryLandUpdateCarOwnershipModel(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+        super(dataContainer, properties);
         logger.info("  Setting up probabilities for auto-ownership model");
         this.accessibility = accessibility;
     }
@@ -50,7 +50,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
         MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
 
-        boolean logCalculation = Properties.get().demographics.logAutoOwnership;
+        boolean logCalculation = properties.demographics.logAutoOwnership;
 
         autoOwnerShipUtil = new double[3][8][5][12][101][10];
         for (int hhSize = 0; hhSize < 8; hhSize++) {
