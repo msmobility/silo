@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
@@ -16,7 +14,6 @@ import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
 import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.models.EventModel;
-import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.MunichUpdateCarOwnerShipModel;
@@ -29,7 +26,6 @@ import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.models.relocation.munich.MovesModelMuc;
 import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
-import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -53,7 +49,7 @@ import java.util.Map;
 public class SiloModelContainerImpl implements SiloModelContainer {
 
     private final static Logger LOGGER = Logger.getLogger(SiloModelContainerImpl.class);
-    
+
     private final Map<Class<? extends MicroEvent>, EventModel> eventModels = new LinkedHashMap<>();
     private final List<AnnualModel> annualModels = new ArrayList<>();
 
@@ -63,10 +59,10 @@ public class SiloModelContainerImpl implements SiloModelContainer {
      *
      * @param inOutMigration
      * @param construction
-     * @param ddOverwrite
+     * @param constructionOverwrite
      * @param renovation
      * @param demolition
-     * @param prm
+     * @param pricing
      * @param birth
      * @param death
      * @param marriage
@@ -76,26 +72,28 @@ public class SiloModelContainerImpl implements SiloModelContainer {
      * @param changeEmployment
      * @param educationUpdate
      * @param driversLicense
-     * @param acc
-     * @param updateCarOwnershipModel
+     * @param updateCarOwnership
      * @param updateJobs
      * @param createCarOwnershipModel
      * @param switchToAutonomousVehicleModel
      */
     private SiloModelContainerImpl(InOutMigration inOutMigration, ConstructionModel construction,
-                                   ConstructionOverwrite ddOverwrite, RenovationModel renovation, DemolitionModel demolition,
-                                   PricingModel prm, BirthModel birth, BirthdayModel birthday, DeathModel death, MarriageModel marriage,
-                                   DivorceModel divorce, LeaveParentHhModel leaveParentalHousehold, MovesModelI move, EmploymentModel changeEmployment,
+                                   ConstructionOverwrite constructionOverwrite, RenovationModel renovation,
+                                   DemolitionModel demolition, PricingModel pricing,
+                                   BirthModel birth, BirthdayModel birthday,
+                                   DeathModel death, MarriageModel marriage,
+                                   DivorceModel divorce, LeaveParentHhModel leaveParentalHousehold,
+                                   MovesModelI move, EmploymentModel changeEmployment,
                                    EducationModel educationUpdate, DriversLicense driversLicense,
-                                   Accessibility acc, UpdateCarOwnershipModel updateCarOwnershipModel, UpdateJobs updateJobs,
-                                   CreateCarOwnershipModel createCarOwnershipModel, SwitchToAutonomousVehicleModel switchToAutonomousVehicleModel,
-                                   TransportModelI transportModel) {
+                                   AnnualModel updateCarOwnership,
+                                   UpdateJobs updateJobs, CreateCarOwnershipModel createCarOwnershipModel,
+                                   AnnualModel switchToAutonomousVehicle, AnnualModel transportModel) {
         Properties properties = Properties.get();
-        if(properties.eventRules.allDemography) {
-            if (properties.eventRules.birthday ) {
+        if (properties.eventRules.allDemography) {
+            if (properties.eventRules.birthday) {
                 eventModels.put(BirthDayEvent.class, birthday);
             }
-            if(properties.eventRules.birth) {
+            if (properties.eventRules.birth) {
                 eventModels.put(BirthEvent.class, birth);
             }
             if (properties.eventRules.death) {
@@ -107,7 +105,7 @@ public class SiloModelContainerImpl implements SiloModelContainer {
             if (properties.eventRules.divorce) {
                 eventModels.put(MarriageEvent.class, marriage);
             }
-            if(properties.eventRules.marriage) {
+            if (properties.eventRules.marriage) {
                 eventModels.put(DivorceEvent.class, divorce);
             }
             if (properties.eventRules.schoolUniversity) {
@@ -120,24 +118,29 @@ public class SiloModelContainerImpl implements SiloModelContainer {
                 eventModels.put(EmploymentEvent.class, changeEmployment);
             }
         }
-        if(properties.eventRules.allHhMoves) {
+        if (properties.eventRules.allHhMoves) {
             eventModels.put(MoveEvent.class, move);
-            if(properties.eventRules.outMigration || properties.eventRules.inmigration) {
+            if (properties.eventRules.outMigration || properties.eventRules.inmigration) {
                 eventModels.put(MigrationEvent.class, inOutMigration);
             }
         }
-        if(properties.eventRules.allDwellingDevelopments) {
-            if(properties.eventRules.dwellingChangeQuality) {
+        if (properties.eventRules.allDwellingDevelopments) {
+            if (properties.eventRules.dwellingChangeQuality) {
                 eventModels.put(RenovationEvent.class, renovation);
             }
-            if(properties.eventRules.dwellingDemolition) {
+            if (properties.eventRules.dwellingDemolition) {
                 eventModels.put(DemolitionEvent.class, demolition);
             }
-            if(properties.eventRules.dwellingConstruction) {
+            if (properties.eventRules.dwellingConstruction) {
                 eventModels.put(ConstructionEvent.class, construction);
             }
         }
         annualModels.add(updateJobs);
+        annualModels.add(transportModel);
+        annualModels.add(constructionOverwrite);
+        annualModels.add(pricing);
+        annualModels.add(updateCarOwnership);
+        annualModels.add(switchToAutonomousVehicle);
     }
 
     /**
@@ -149,7 +152,7 @@ public class SiloModelContainerImpl implements SiloModelContainer {
     public static SiloModelContainer createSiloModelContainer(SiloDataContainerImpl dataContainer, Config matsimConfig,
                                                               Properties properties) {
 
-        TransportModelI transportModel = null;
+        AnnualModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO:
                 LOGGER.info("  MITO is used as the transport model");
@@ -160,10 +163,12 @@ public class SiloModelContainerImpl implements SiloModelContainer {
                 transportModel = new MatsimTransportModel(dataContainer, matsimConfig, properties);
                 break;
             case NONE:
+            default:
+                transportModel = null;
                 LOGGER.info(" No transport model is used");
         }
 
-        Accessibility acc = new Accessibility(dataContainer);
+
         DeathModel death = new DeathModel(dataContainer, properties);
         BirthModel birth = new BirthModel(dataContainer, PersonUtils.getFactory(), properties);
         BirthdayModel birthday = new BirthdayModel(dataContainer, properties);
@@ -206,8 +211,8 @@ public class SiloModelContainerImpl implements SiloModelContainer {
                 break;
             // To do: may need to replace this with Austin car ownership, moves, and education models
             case AUSTIN:
-            	updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc, properties);
-            	move = new MovesModelMstm(dataContainer, acc, properties);
+                updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc, properties);
+                move = new MovesModelMstm(dataContainer, acc, properties);
                 educationUpdate = new MstmEducationModelImpl(dataContainer, properties);
                 break;
             case PERTH:

@@ -1,0 +1,79 @@
+package de.tum.bgu.msm.io;
+
+import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.AreaTypes;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.RegionImpl;
+import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
+import org.matsim.core.utils.gis.ShapeFileReader;
+import org.opengis.feature.simple.SimpleFeature;
+
+public class GeoDataReaderMuc implements GeoDataReader {
+
+    private static Logger logger = Logger.getLogger(GeoDataReaderMuc.class);
+    private GeoData geoDataMuc;
+    private final String SHAPE_IDENTIFIER = "id";
+    private final String ZONE_ID_COLUMN = "Zone";
+
+    public GeoDataReaderMuc(GeoData geoDataMuc){
+        this.geoDataMuc = geoDataMuc;
+    }
+
+    @Override
+    public void readZoneCsv(String path) {
+        TableDataSet zonalData = SiloUtil.readCSVfile(path);
+        int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
+        int[] zoneMsa = zonalData.getColumnAsInt("msa");
+        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+
+        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
+        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
+        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
+
+        int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
+
+        int[] regionColumn = zonalData.getColumnAsInt("Region");
+
+        for(int i = 0; i < zoneIds.length; i++) {
+            Coord centroid = new Coord(centroidX[i], centroidY[i]);
+            AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
+            Region region;
+            int regionId = regionColumn[i];
+            if (geoDataMuc.getRegions().containsKey(regionId)) {
+                region = geoDataMuc.getRegions().get(regionId);
+            } else {
+                region = new RegionImpl(regionId);
+                geoDataMuc.getRegions().put(region.getId(), region);
+            }
+            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i], region);
+            region.addZone(zone);
+            geoDataMuc.getZones().put(zoneIds[i], zone);
+        }
+    }
+
+    @Override
+    public void readZoneShapefile(String path) {
+
+
+
+        if (path == null) {
+            logger.error("No shape file found!");
+            throw new RuntimeException("No shape file found!");
+        }
+        for (SimpleFeature feature : ShapeFileReader.getAllFeatures(Properties.get().main.baseDirectory + path)) {
+            int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
+            Zone zone = geoDataMuc.getZones().get(zoneId);
+            if (zone != null) {
+                zone.setZoneFeature(feature);
+            } else {
+                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+            }
+        }
+    }
+}

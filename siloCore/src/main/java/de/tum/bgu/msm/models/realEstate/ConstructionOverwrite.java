@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -28,9 +29,9 @@ import java.util.List;
  * Created on 14 October 2014 in College Park
  **/
 
-public class ConstructionOverwrite extends AbstractModel {
+public class ConstructionOverwrite extends AbstractModel implements AnnualModel {
 
-    static Logger logger = Logger.getLogger(ConstructionModel.class);
+    private static Logger logger = Logger.getLogger(ConstructionModel.class);
     private final DwellingFactory factory;
 
     private boolean useOverwrite;
@@ -52,6 +53,21 @@ public class ConstructionOverwrite extends AbstractModel {
             traceFile.close();
         }
         readOverwriteFile();
+    }
+
+    @Override
+    public void setup() {
+
+    }
+
+    @Override
+    public void prepareYear(int year) {
+        addDwellings(year);
+    }
+
+    @Override
+    public void finishYear(int year) {
+
     }
 
 

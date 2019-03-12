@@ -19,6 +19,11 @@ public class BirthdayModel extends AbstractModel implements EventModel<BirthDayE
     }
 
     @Override
+    public void setup() {
+
+    }
+
+    @Override
     public Collection<BirthDayEvent> prepareYear(int year) {
         List<BirthDayEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {

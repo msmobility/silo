@@ -36,12 +36,13 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
                         Properties properties) {
         super(dataContainer, properties);
         this.hhFactory = hhFactory;
-        setupModel();
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
     }
 
-    private void setupModel() {
+
+    @Override
+    public void setup() {
         final Reader reader;
         switch (properties.main.implementation) {
             case MUNICH:
@@ -107,6 +108,7 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
 
                 // divorce
                 Household oldHh = householdData.getHouseholdFromId(per.getHousehold().getId());
+                householdData.addHouseholdAboutToChange(oldHh);
                 Person divorcedPerson = HouseholdUtil.findMostLikelyPartner(per, oldHh);
                 divorcedPerson.setRole(PersonRole.SINGLE);
                 per.setRole(PersonRole.SINGLE);
@@ -123,7 +125,6 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
                         oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                         " has divorced from household " + oldHh + " and established the new household " +
                         newHhId + ".");
-                householdData.addHouseholdThatChanged(oldHh); // consider original household for update in car ownership
                 if (properties.main.implementation == Implementation.MUNICH) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }

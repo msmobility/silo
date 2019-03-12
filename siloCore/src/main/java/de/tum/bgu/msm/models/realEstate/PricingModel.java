@@ -2,6 +2,7 @@ package de.tum.bgu.msm.models.realEstate;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -18,10 +19,9 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 24 Febuary 2010 in Santa Fe
  **/
+public final class PricingModel extends AbstractModel implements AnnualModel {
 
-public final class PricingModel extends AbstractModel {
-
-    static Logger logger = Logger.getLogger(PricingModel.class);
+    private final static Logger logger = Logger.getLogger(PricingModel.class);
 
     private PricingJSCalculator pricingCalculator;
 
@@ -35,12 +35,10 @@ public final class PricingModel extends AbstractModel {
 
     public PricingModel (SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
-        setupPricingModel();
     }
 
-
-    private void setupPricingModel() {
-
+    @Override
+    public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("PricingCalc"));
         pricingCalculator = new PricingJSCalculator(reader);
 
@@ -50,6 +48,16 @@ public final class PricingModel extends AbstractModel {
         slopeMain = pricingCalculator.getMainSlope();
         slopeHigh = pricingCalculator.getHighSlope();
         maxDelta = pricingCalculator.getMaximumChange();
+    }
+
+    @Override
+    public void prepareYear(int year) {
+
+    }
+
+    @Override
+    public void finishYear(int year) {
+        updatedRealEstatePrices();
     }
 
 
@@ -65,7 +73,9 @@ public final class PricingModel extends AbstractModel {
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
-            if (dd.getRestriction() != 0) continue;  // dwelling is under affordable-housing constraints, rent cannot be raised
+            if (dd.getRestriction() != 0) {
+                continue;  // dwelling is under affordable-housing constraints, rent cannot be raised
+            }
             int dto = dwellingTypes.indexOf(dd.getType());
             float structuralVacancyRate = dd.getType().getStructuralVacancyRate();
             float structuralVacLow = (float) (structuralVacancyRate * inflectionLow);

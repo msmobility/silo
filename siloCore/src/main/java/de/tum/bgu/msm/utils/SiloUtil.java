@@ -592,8 +592,12 @@ public class SiloUtil {
 
     public static float rounder(float value, int digits) {
         // rounds value to digits behind the decimal point
-
         return Math.round(value * Math.pow(10, digits) + 0.5)/(float) Math.pow(10, digits);
+    }
+
+    public static double rounder(double value, int digits) {
+        // rounds value to digits behind the decimal point
+        return Math.round(value * Math.pow(10, digits) + 0.5)/ Math.pow(10, digits);
     }
 
     /**

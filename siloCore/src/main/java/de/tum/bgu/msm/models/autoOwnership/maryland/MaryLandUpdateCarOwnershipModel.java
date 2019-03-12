@@ -1,28 +1,26 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.Accessibility;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.UpdateCarOwnershipModel;
+import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Map;
 
 /**
  * Simulates number of vehicles per household
  * Author: Rolf Moeckel, National Center for Smart Growth, University of Maryland
  * Created on 18 August 2014 in College Park, MD
  **/
-
-public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements UpdateCarOwnershipModel {
+public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements AnnualModel {
     private static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
 
     private final Accessibility accessibility;
@@ -35,18 +33,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
         this.accessibility = accessibility;
     }
 
-    private int getIncomeCategory(int hhIncome) {
-        // Convert income in $ into income categories of household travel survey
-
-        int[] incomeCategories = {0, 10000, 15000, 30000, 40000, 50000, 60000, 75000, 100000, 125000, 150000, 200000};
-        for (int i = 0; i < incomeCategories.length; i++) {
-            if (hhIncome < incomeCategories[i]) return i;
-        }
-        return incomeCategories.length;
-    }
-
     @Override
-    public void initialize() {
+    public void setup() {
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
         MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
 
@@ -77,13 +65,31 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
     }
 
     @Override
-    public int[] updateCarOwnership(Map<Integer, int[]> updatedHouseholds) {
+    public void prepareYear(int year) {
+
+    }
+
+    @Override
+    public void finishYear(int year) {
+        updateCarOwnership();
+    }
+
+    private int getIncomeCategory(int hhIncome) {
+        // Convert income in $ into income categories of household travel survey
+
+        int[] incomeCategories = {0, 10000, 15000, 30000, 40000, 50000, 60000, 75000, 100000, 125000, 150000, 200000};
+        for (int i = 0; i < incomeCategories.length; i++) {
+            if (hhIncome < incomeCategories[i]) return i;
+        }
+        return incomeCategories.length;
+    }
+
+    public void updateCarOwnership() {
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
         HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        for (int id: updatedHouseholds.keySet()) {
-            Household household = dataContainer.getHouseholdData().getHouseholdFromId(id);
+        for (Household household: householdData.getHouseholds()) {
             if(household == null) {
                 continue;
             }
@@ -100,6 +106,5 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Up
             prob[0] = 1 - SiloUtil.getSum(prob);
             household.setAutos(SiloUtil.select(prob));
         }
-        return new int[]{0,0};
     }
 }

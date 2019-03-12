@@ -26,6 +26,7 @@ import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

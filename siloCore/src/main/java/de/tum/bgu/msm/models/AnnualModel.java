@@ -1,21 +1,10 @@
 package de.tum.bgu.msm.models;
 
-public interface AnnualModel {
+import de.tum.bgu.msm.simulator.AnnualUpdate;
 
-    /**
-     *
-     */
-    void setup();
+/**
+ * //todo
+ */
+public interface AnnualModel extends AnnualUpdate {
 
-    /**
-     * //TODO
-     * @param year
-     */
-    void prepareYear(int year);
-
-    /**
-     * //TODO
-     * @param year
-     */
-    void finishYear(int year);
 }

@@ -8,6 +8,7 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;

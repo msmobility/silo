@@ -18,10 +18,9 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-//import Implementation;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.transportModel.TransportModelI;
+import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
@@ -48,28 +47,17 @@ import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import java.io.File;
 import java.util.Objects;
 
-//import GeoDataMuc;
-//import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-//import org.matsim.core.router.util.TravelDisutility;
-//import org.matsim.core.router.util.TravelTime;
-//import org.matsim.core.utils.gis.ShapeFileReader;
-//import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
-//import org.opengis.feature.simple.SimpleFeature;
-//import java.util.HashMap;
-//import java.util.Map;
-
 /**
  * @author dziemke
  */
-public final class MatsimTransportModel implements TransportModelI  {
+public final class MatsimTransportModel implements AnnualModel {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
 	private Properties properties;
-	//	private TripRouter tripRouter = null;
 	private final SiloDataContainer dataContainer;
-	private final Network network;
+	private Network network;
 
 
 	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig, Properties properties) {
@@ -77,12 +65,36 @@ public final class MatsimTransportModel implements TransportModelI  {
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
 		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
 		this.properties = properties;
-		network = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(network).readFile(matsimConfig.network().getInputFileURL(matsimConfig.getContext()).getFile());
-		travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
+
 	}
 
 	@Override
+	public void setup() {
+        network = NetworkUtils.createNetwork();
+        new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
+        travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
+
+        if(properties.transportModel.matsimInitialEventsFile == null) {
+            runTransportModel(properties.main.startYear);
+        } else {
+            String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+            replayFromEvents(eventsFile);
+        }
+
+    }
+
+	@Override
+	public void prepareYear(int year) {
+	}
+
+	@Override
+	public void finishYear(int year) {
+	    if(properties.transportModel.transportModelYears.contains(year+1)) {
+            runTransportModel(year+1);
+        }
+
+    }
+
 	public void runTransportModel(int year) {
 		LOG.warn("Running MATSim transport model for year " + year + ".");
 
@@ -164,6 +176,7 @@ public final class MatsimTransportModel implements TransportModelI  {
 		travelTimes.update(tripRouter, leastCoastPathTree);
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
+
 
 
 

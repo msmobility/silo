@@ -16,6 +16,7 @@
  */
 package de.tum.bgu.msm.data.household;
 
+import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
@@ -35,6 +36,7 @@ public class HouseholdImpl implements Household {
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\ImOutMigration\setupInOutMigration.java and \relocation\ImOutMigration\inmigrateHh.java as well
     private final int hhId;
     private int dwellingId;
+    private HouseholdDataManager manager
 
     private Race race;
     private Nationality nationality;

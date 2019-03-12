@@ -6,9 +6,9 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
@@ -29,26 +29,6 @@ public class DeathModel extends AbstractModel implements EventModel<DeathEvent> 
 
     public DeathModel(SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
-        setupDeathModel();
-    }
-
-    private void setupDeathModel() {
-        final Reader reader;
-
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
-                break;
-            case PERTH:
-            case KAGAWA:
-            case CAPE_TOWN:
-            default:
-                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
-        }
-        calculator = new DeathJSCalculator(reader);
     }
 
     @Override
@@ -71,6 +51,26 @@ public class DeathModel extends AbstractModel implements EventModel<DeathEvent> 
     }
 
     @Override
+    public void setup() {
+        final Reader reader;
+
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
+                break;
+            case PERTH:
+            case KAGAWA:
+            case CAPE_TOWN:
+            default:
+                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
+        }
+        calculator = new DeathJSCalculator(reader);
+    }
+
+    @Override
     public Collection<DeathEvent> prepareYear(int year) {
         final List<DeathEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
@@ -81,18 +81,18 @@ public class DeathModel extends AbstractModel implements EventModel<DeathEvent> 
 
     boolean die(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final Household hhOfPersonToDie = person.getHousehold();
+        householdData.addHouseholdAboutToChange(hhOfPersonToDie);
 
         if (person.getJobId() > 0) {
             dataContainer.getJobData().quitJob(true, person);
         }
-        final Household hhOfPersonToDie = person.getHousehold();
 
         if (person.getRole() == PersonRole.MARRIED) {
             Person widow = HouseholdUtil.findMostLikelyPartner(person, hhOfPersonToDie);
             widow.setRole(PersonRole.SINGLE);
         }
         householdData.removePerson(person.getId());
-        householdData.addHouseholdThatChanged(hhOfPersonToDie);
 
         final boolean onlyChildrenLeft = HouseholdUtil.checkIfOnlyChildrenRemaining(hhOfPersonToDie);
         if (onlyChildrenLeft) {

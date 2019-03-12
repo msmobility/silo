@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.Accessibility;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -29,7 +29,7 @@ import java.util.List;
 
 public class EmploymentModel extends AbstractModel implements EventModel<EmploymentEvent> {
 
-    private final static Logger LOGGER = Logger.getLogger(EmploymentModel.class);
+    private final static Logger logger = Logger.getLogger(EmploymentModel.class);
 
     private final Accessibility accessibility;
     private float[][] laborParticipationShares;
@@ -37,59 +37,6 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
     public EmploymentModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, properties);
         this.accessibility = accessibility;
-        calculateInitialLaborParticipation();
-    }
-
-    public boolean lookForJob(int perId) {
-        final Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
-        if (pp != null) {
-            final Job jj = findJob(pp);
-            if (jj != null) {
-                return takeNewJob(pp, jj);
-            } else {
-                IssueCounter.countMissingJob();
-            }
-        }
-        return false;
-    }
-
-    private Job findJob(Person pp) {
-        final Household household = pp.getHousehold();
-        final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
-        Zone zone = null;
-        if (dwelling != null) {
-            zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
-        }
-        final int idVacantJob = dataContainer.getJobData().findVacantJob(zone, dataContainer.getGeoData().getRegions().values(),
-                accessibility);
-        return dataContainer.getJobData().getJobFromId(idVacantJob);
-    }
-
-    boolean takeNewJob(Person person, Job job) {
-        job.setWorkerID(person.getId());
-        person.setWorkplace(job.getId());
-        person.setOccupation(Occupation.EMPLOYED);
-        dataContainer.getHouseholdData().selectIncomeForPerson(person);
-        Household household = person.getHousehold();
-        dataContainer.getHouseholdData().addHouseholdThatChanged(household);
-        if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
-        }
-        return true;
-    }
-
-    public boolean quitJob(int perId) {
-        final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
-        if (person != null) {
-            dataContainer.getJobData().quitJob(true, person);
-            Household household = person.getHousehold();
-            dataContainer.getHouseholdData().addHouseholdThatChanged(household);
-            if (perId == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
-            }
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -110,11 +57,42 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
     }
 
     @Override
+    public void setup() {
+        // calculate share of people employed by age and gender
+
+        laborParticipationShares = new float[2][100];
+        int[][] count = new int[2][100];
+        for (Person pp: dataContainer.getHouseholdData().getPersons()) {
+            int age = pp.getAge();
+            if (age > 99) {
+                continue;  // people older than 99 will always be unemployed/retired
+            }
+            int gender = pp.getGender().ordinal();
+            boolean employed = pp.getJobId() > 0;
+            if (employed) laborParticipationShares[gender][age]++;
+            count[gender][age]++;
+        }
+        // calculate shares
+        for (int gen = 0; gen <=1; gen++) {
+            for (int age = 0; age < 100; age++) {
+                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
+            }
+
+            // smooth out shares
+            for (int age = 18; age < 98; age++) {
+                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
+                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
+                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
+            }
+        }
+    }
+
+    @Override
     public Collection<EmploymentEvent> prepareYear(int year) {
         final List<EmploymentEvent> events = new ArrayList<>();
 
         // select people that will lose employment or start new job
-        LOGGER.info("  Planning job changes (hire and fire) for the year " + year);
+        logger.info("  Planning job changes (hire and fire) for the year " + year);
 
         // count currently employed people
         final float[][] currentlyEmployed = new float[2][100];
@@ -171,34 +149,55 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
         return events;
     }
 
-
-    private void calculateInitialLaborParticipation() {
-        // calculate share of people employed by age and gender
-
-        laborParticipationShares = new float[2][100];
-        int[][] count = new int[2][100];
-        for (Person pp: dataContainer.getHouseholdData().getPersons()) {
-            int age = pp.getAge();
-            if (age > 99) {
-                continue;  // people older than 99 will always be unemployed/retired
-            }
-            int gender = pp.getGender().ordinal();
-            boolean employed = pp.getJobId() > 0;
-            if (employed) laborParticipationShares[gender][age]++;
-            count[gender][age]++;
-        }
-        // calculate shares
-        for (int gen = 0; gen <=1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
-            }
-
-            // smooth out shares
-            for (int age = 18; age < 98; age++) {
-                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
-                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
-                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
+    public boolean lookForJob(int perId) {
+        final Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
+        if (pp != null) {
+            final Job jj = findJob(pp);
+            if (jj != null) {
+                return takeNewJob(pp, jj);
+            } else {
+                IssueCounter.countMissingJob();
             }
         }
+        return false;
+    }
+
+    private Job findJob(Person pp) {
+        final Household household = pp.getHousehold();
+        final Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+        Zone zone = null;
+        if (dwelling != null) {
+            zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
+        }
+        final int idVacantJob = dataContainer.getJobData().findVacantJob(zone, dataContainer.getGeoData().getRegions().values(),
+                accessibility);
+        return dataContainer.getJobData().getJobFromId(idVacantJob);
+    }
+
+    boolean takeNewJob(Person person, Job job) {
+        Household household = person.getHousehold();
+        dataContainer.getHouseholdData().addHouseholdAboutToChange(household);
+        job.setWorkerID(person.getId());
+        person.setWorkplace(job.getId());
+        person.setOccupation(Occupation.EMPLOYED);
+        dataContainer.getHouseholdData().selectIncomeForPerson(person);
+        if (person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
+        }
+        return true;
+    }
+
+    public boolean quitJob(int perId) {
+        final Person person = dataContainer.getHouseholdData().getPersonFromId(perId);
+        if (person != null) {
+            Household household = person.getHousehold();
+            dataContainer.getHouseholdData().addHouseholdAboutToChange(household);
+            dataContainer.getJobData().quitJob(true, person);
+            if (perId == SiloUtil.trackPp) {
+                SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+            }
+            return true;
+        }
+        return false;
     }
 }

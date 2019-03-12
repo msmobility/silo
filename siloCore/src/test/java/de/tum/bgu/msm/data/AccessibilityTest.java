@@ -16,6 +16,7 @@ import de.tum.bgu.msm.data.person.PersonUtils;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.io.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.DefaultPersonReader;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;

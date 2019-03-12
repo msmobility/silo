@@ -1,15 +1,13 @@
 package de.tum.bgu.msm.data.maryland;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.data.AbstractDefaultGeoData;
+import de.tum.bgu.msm.data.DefaultGeoData;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Map;
  * Author: Rolf Moeckel, University of Maryland
  * Created on 20 April 2015 in College Park
  **/
-public class GeoDataMstm extends AbstractDefaultGeoData {
+public class GeoDataMstm extends DefaultGeoData {
 
     private final Map<Integer, County> counties = new HashMap<>();
 

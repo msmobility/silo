@@ -79,10 +79,10 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         this.iomig = iomig;
         this.carOwnership = carOwnership;
         this.hhFactory = hhFactory;
-        setupModel();
     }
 
-    private void setupModel() {
+    @Override
+    public void setup() {
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
         double scale = properties.demographics.localMarriageAdjuster;
 
@@ -270,13 +270,13 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         final Household moveTo = chooseRelocationTarget(partner1, partner2, hhOfPartner1, hhOfPartner2);
 
+        householdData.addHouseholdAboutToChange(hhOfPartner1);
+        householdData.addHouseholdAboutToChange(hhOfPartner2);
         final boolean success = moveTogether(partner1, partner2, moveTo);
 
         if (success) {
             partner1.setRole(PersonRole.MARRIED);
             partner2.setRole(PersonRole.MARRIED);
-            householdData.addHouseholdThatChanged(hhOfPartner1);
-            householdData.addHouseholdThatChanged(hhOfPartner2);
             return true;
         } else {
             if (partner1.getId() == SiloUtil.trackPp

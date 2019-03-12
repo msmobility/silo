@@ -18,19 +18,19 @@ package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -59,11 +59,10 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.hhFactory = hhFactory;
         this.householdData = dataContainer.getHouseholdData();
-
-        setupLPHModel();
     }
 
-    private void setupLPHModel() {
+    @Override
+    public void setup() {
         Reader reader = null;
         switch (properties.main.implementation) {
             case MARYLAND:
@@ -124,6 +123,7 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
 
         final HouseholdDataManager households = dataContainer.getHouseholdData();
         final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehold().getId());
+        dataContainer.getHouseholdData().addHouseholdAboutToChange(hhOfThisPerson);
         households.removePersonFromHousehold(per);
 
         final int newHhId = households.getNextHouseholdId();
@@ -131,11 +131,10 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
         dataContainer.getHouseholdData().addHousehold(newHousehold);
         households.addPersonToHousehold(per, newHousehold);
         per.setRole(PersonRole.SINGLE);
-        dataContainer.getHouseholdData().addHouseholdThatChanged(hhOfThisPerson); // consider original newHousehold for update in car ownership
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
         if (properties.main.implementation == Implementation.MUNICH) {
-            createCarOwnershipModel.simulateCarOwnership(newHousehold); // set initial car ownership of new newHousehold
+            createCarOwnershipModel.simulateCarOwnership(newHousehold);
         }
 
         if (per.getId() == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||

@@ -34,7 +34,6 @@ import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
-import static de.tum.bgu.msm.data.household.HouseholdUtil.getHHLicenseHolders;
 import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
 
 /**
@@ -42,7 +41,7 @@ import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
  * Created on Dec 2, 2009
  */
 public class HouseholdDataManager {
-    private final static Logger LOGGER = Logger.getLogger(HouseholdDataManager.class);
+    private final static Logger logger = Logger.getLogger(HouseholdDataManager.class);
     private final SiloDataContainer dataContainer;
     private final PersonFactory ppFactory;
     private final HouseholdFactory hhFactory;
@@ -56,8 +55,7 @@ public class HouseholdDataManager {
     private final Map<Integer, Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
-    private Map<Integer, int[]> updatedHouseholds = new HashMap<>();
-    private Map<Integer, int[]> conventionalCarsHouseholds = new HashMap<>();
+    private List<Household> updatedHouseholds = new ArrayList<>();
 
     public HouseholdDataManager(SiloDataContainer dataContainer, PersonFactory ppFactory, HouseholdFactory hhFactory) {
         this.dataContainer = dataContainer;
@@ -431,34 +429,15 @@ public class HouseholdDataManager {
     }
 
 
-    public void addHouseholdThatChanged(Household hh) {
-        // Add one household that probably had changed their attributes for the car updating model
-        // Households are added to this HashMap only once, even if several changes happen to them. They are only added
-        // once, because this HashMap stores the previous socio-demographics before any change happened in a given year.
-        if (!updatedHouseholds.containsKey(hh.getId())) {
-            int[] currentHouseholdAttributes = new int[4];
-            currentHouseholdAttributes[0] = hh.getHhSize();
-            currentHouseholdAttributes[1] = getHhIncome(hh);
-            currentHouseholdAttributes[2] = getHHLicenseHolders(hh);
-            currentHouseholdAttributes[3] = 0;
-            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
-        }
-    }
-
-    public void addHouseholdThatMoved(Household hh) {
-        // Add one household that moved out for the car updating model
-        // Different from method addHouseholdThatChanged(), because here the hasMoved-flag is set from 0 to 1
-        if (updatedHouseholds.containsKey(hh.getId())) {
-            int[] currentHouseholdAttributes = updatedHouseholds.get(hh.getId());
-            currentHouseholdAttributes[3] = 1;
-            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
-        } else {
-            int[] currentHouseholdAttributes = new int[4];
-            currentHouseholdAttributes[0] = hh.getHhSize();
-            currentHouseholdAttributes[1] = getHhIncome(hh);
-            currentHouseholdAttributes[2] = getHHLicenseHolders(hh);
-            currentHouseholdAttributes[3] = 1;
-            updatedHouseholds.put(hh.getId(), currentHouseholdAttributes);
+    /**
+     * Add one household that probably had changed their attributes for the car updating model
+     * Households are added to this List only once, even if several changes happen to them. They are only added
+     * once, because this HashMap stores the previous socio-demographics before any change happened in a given year
+     * @param hh
+     */
+    public void addHouseholdAboutToChange(Household hh) {
+        if (!updatedHouseholds.contains(hh)) {
+            updatedHouseholds.add(duplicateHousehold(hh));
         }
     }
 
@@ -466,26 +445,12 @@ public class HouseholdDataManager {
         updatedHouseholds.clear();
     }
 
-    public Map<Integer, int[]> getUpdatedHouseholds() {
+    /**
+     * //TODO
+     * @return
+     */
+    public List<Household> getUpdatedHouseholds() {
         return updatedHouseholds;
-    }
-
-    public Map<Integer, int[]> getConventionalCarsHouseholds() {
-        // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
-        // to autonomous cars. currently income is the only household attribute used but room is left for additional
-        // attributes in the future
-        for (Household hh : households.values()) {
-            if (hh.getAutos() > hh.getAutonomous()) {
-                int[] hhAttributes = new int[1];
-                hhAttributes[0] = getHhIncome(hh);
-                conventionalCarsHouseholds.put(hh.getId(), hhAttributes);
-            }
-        }
-        return conventionalCarsHouseholds;
-    }
-
-    public void clearConventionalCarsHouseholds() {
-        conventionalCarsHouseholds.clear();
     }
 
     public void addPerson(Person person) {

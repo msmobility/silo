@@ -9,6 +9,7 @@ package de.tum.bgu.msm.models.relocation.munich;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import de.tum.bgu.msm.container.SiloDataContainerImpl;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.*;

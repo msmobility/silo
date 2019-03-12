@@ -15,6 +15,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -160,8 +161,8 @@ public class SummarizeData {
             if (ddThisZone > 0) {
                 avePrice = prices[taz] / ddThisZone;
             }
-            double autoAcc = modelContainer.getAcc().getAutoAccessibilityForZone(taz);
-            double transitAcc = modelContainer.getAcc().getTransitAccessibilityForZone(taz);
+            double autoAcc = dataContainer.getAccessibility().getAutoAccessibilityForZone(taz);
+            double transitAcc = dataContainer.getAccessibility().getTransitAccessibilityForZone(taz);
             double availLand = dataContainer.getRealEstateData().getAvailableCapacityForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
@@ -181,15 +182,6 @@ public class SummarizeData {
 //            String txt = f.toString();
             resultFileSpatial(txt);
         }
-    }
-
-    public static DoubleMatrix1D getPopulationByZone(SiloDataContainer dataContainer) {
-        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
-        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            final int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getZoneId();
-            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
-        }
-        return popByZone;
     }
 
 
@@ -957,5 +949,14 @@ public class SummarizeData {
         }
         pw.close();
 
+    }
+
+    public static DoubleMatrix1D getPopulationByZone(SiloDataContainer dataContainer) {
+        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
+            final int zone = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId()).getZoneId();
+            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
+        }
+        return popByZone;
     }
 }

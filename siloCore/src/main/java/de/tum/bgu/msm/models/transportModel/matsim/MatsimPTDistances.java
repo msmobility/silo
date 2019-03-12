@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;

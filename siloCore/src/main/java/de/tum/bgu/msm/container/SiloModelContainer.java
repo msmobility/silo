@@ -8,7 +8,16 @@ import java.util.List;
 import java.util.Map;
 
 public interface SiloModelContainer {
+
+    /**
+     * TODO
+     * @return
+     */
     Map<Class<? extends MicroEvent>, EventModel> getEventModels();
 
+    /**
+     * TODO
+     * @return
+     */
     List<AnnualModel> getAnnualModels();
 }

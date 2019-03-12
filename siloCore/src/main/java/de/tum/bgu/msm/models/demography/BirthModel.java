@@ -50,10 +50,10 @@ public class BirthModel extends AbstractModel implements EventModel<BirthEvent> 
     public BirthModel(SiloDataContainerImpl dataContainer, PersonFactory factory, Properties properties) {
         super(dataContainer, properties);
         this.factory = factory;
-        setupBirthModel();
     }
 
-    private void setupBirthModel() {
+    @Override
+    public void setup() {
         final Reader reader;
         switch (properties.main.implementation) {
             case MUNICH:
@@ -119,6 +119,7 @@ public class BirthModel extends AbstractModel implements EventModel<BirthEvent> 
     void giveBirth(Person person) {
         final HouseholdDataManager householdData = dataContainer.getHouseholdData();
         final Household household = person.getHousehold();
+        householdData.addHouseholdAboutToChange(household);
         final int id = householdData.getNextPersonId();
         Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
@@ -128,7 +129,6 @@ public class BirthModel extends AbstractModel implements EventModel<BirthEvent> 
                 Occupation.TODDLER,PersonRole.CHILD, 0, 0);
         householdData.addPerson(child);
         householdData.addPersonToHousehold(child, household);
-        householdData.addHouseholdThatChanged(household);
         if (id == SiloUtil.trackPp
                 || household.getId() == SiloUtil.trackHh
                 || person.getId() == SiloUtil.trackPp) {

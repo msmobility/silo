@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import org.opengis.feature.simple.SimpleFeature;
+import de.tum.bgu.msm.simulator.AnnualUpdate;
 
 import java.util.Map;
 
@@ -11,9 +10,7 @@ import java.util.Map;
  * Created on 5 April 2017 in Munich
  **/
 
-public interface GeoData {
-
-    void readData();
+public interface GeoData extends AnnualUpdate {
 
     /**
      * Returns an immutable map of all zones mapped to their IDs
@@ -25,9 +22,5 @@ public interface GeoData {
      */
     Map<Integer, Region> getRegions();
 
-    /**
-     * Returns an immutable map of all zoneFeatures mapped to their zone IDs
-     */
-    Map<Integer, SimpleFeature> getZoneFeatureMap();
 
 }

@@ -15,6 +15,7 @@ import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -29,12 +30,13 @@ import java.util.Objects;
  * @author Rolf Moeckel
  * Created on February 18, 2017 in Munich, Germany
  */
-public final class MitoTransportModel extends AbstractModel implements TransportModelI {
+public final class MitoTransportModel extends AbstractModel implements AnnualModel {
 
     private static final Logger logger = Logger.getLogger(MitoTransportModel.class);
     private TravelTimes travelTimes;
     private final String propertiesPath;
     private final String baseDirectory;
+
 
     public MitoTransportModel(String baseDirectory, SiloDataContainerImpl dataContainer, Properties properties) {
         super(dataContainer, properties);
@@ -44,6 +46,18 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     }
 
     @Override
+    public void setup() {}
+
+    @Override
+    public void prepareYear(int year) {}
+
+    @Override
+    public void finishYear(int year) {
+        if (properties.transportModel.transportModelYears.contains(year + 1)) {
+            runTransportModel(year + 1);
+        }
+    }
+
     public void runTransportModel(int year) {
         logger.info("  Running travel demand model MITO for the year " + year);
         DataSet dataSet = convertData(year);
@@ -109,7 +123,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
                     siloHousehold.getAutos(), zone);
 
             Coordinate coordinate;
-            if(dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
+            if (dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
                 coordinate = ((MicroLocation) dwelling).getCoordinate();
             } else {
                 randomCoordCounter++;
@@ -118,14 +132,14 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
             //todo if there are housholds without adults they cannot be processed
             if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)) {
-                    household.setHomeLocation(coordinate);
-                    zone.addHousehold();
-                    dataSet.addHousehold(household);
-                    for (Person person : siloHousehold.getPersons().values()) {
-                        MitoPerson mitoPerson = convertToMitoPp(person, dataSet);
-                        household.addPerson(mitoPerson);
-                        dataSet.addPerson(mitoPerson);
-                    }
+                household.setHomeLocation(coordinate);
+                zone.addHousehold();
+                dataSet.addHousehold(household);
+                for (Person person : siloHousehold.getPersons().values()) {
+                    MitoPerson mitoPerson = convertToMitoPp(person, dataSet);
+                    household.addPerson(mitoPerson);
+                    dataSet.addPerson(mitoPerson);
+                }
             } else {
                 householdsSkipped++;
             }

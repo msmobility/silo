@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.data.perth;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.AbstractDefaultGeoData;
+import de.tum.bgu.msm.data.DefaultGeoData;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  * Created on 8 March 2019 in Munich
  **/
 
-public class GeoDataPerth extends AbstractDefaultGeoData {
+public class GeoDataPerth extends DefaultGeoData {
 
     private static final Logger logger = Logger.getLogger(GeoDataPerth.class);
 

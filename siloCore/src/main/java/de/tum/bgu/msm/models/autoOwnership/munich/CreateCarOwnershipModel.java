@@ -6,7 +6,6 @@ import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.munich.GeoDataMuc;
 import de.tum.bgu.msm.data.munich.MunichZone;
 import org.apache.log4j.Logger;
 

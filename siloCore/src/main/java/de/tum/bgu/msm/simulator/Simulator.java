@@ -1,12 +1,13 @@
-package de.tum.bgu.msm.events;
+package de.tum.bgu.msm.simulator;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 
@@ -19,7 +20,7 @@ import java.util.*;
  **/
 public final class Simulator {
 
-    private final static Logger LOGGER = Logger.getLogger(Simulator.class);
+    private final static Logger logger = Logger.getLogger(Simulator.class);
 
     private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 
@@ -35,12 +36,26 @@ public final class Simulator {
 
     public <T extends MicroEvent> void registerEventModel(Class<T> klass, EventModel<T> model) {
         this.models.put(klass, model);
-        LOGGER.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
+        logger.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
 
     public void registerAnnualModel(AnnualModel model) {
         this.annualModels.add(model);
-        LOGGER.info("Registered annual model " + model.getClass().getSimpleName());
+        logger.info("Registered annual model " + model.getClass().getSimpleName());
+    }
+
+    public void setup() {
+        logger.info("  Setting up annual models");
+        timeTracker.reset();
+        for(AnnualModel annualModel: annualModels) {
+            annualModel.setup();
+            timeTracker.recordAndReset("SetupOf" + annualModel.getClass().getSimpleName());
+        }
+        logger.info("  Setting up event models");
+        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
+            model.setup();
+            timeTracker.recordAndReset("SetupOf" + model.getClass().getSimpleName());
+        }
     }
 
     public void simulate(int year) {
@@ -50,20 +65,25 @@ public final class Simulator {
     }
 
     private void prepareYear(int year) {
-        LOGGER.info("  Creating events");
-        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
-            timeTracker.reset();
-            events.addAll(model.prepareYear(year));
-            timeTracker.record("PreparationFor" + model.getClass().getSimpleName());
+        timeTracker.reset();
+        logger.info("  Running annual models");
+        for(AnnualModel annualModel: annualModels) {
+            annualModel.prepareYear(year);
+            timeTracker.recordAndReset("PreparationFor" + annualModel.getClass().getSimpleName());
         }
-        LOGGER.info("  Created " + events.size() + " events to simulate.");
-        LOGGER.info("  Shuffling events...");
+        logger.info("  Creating events");
+        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
+            events.addAll(model.prepareYear(year));
+            timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
+        }
+        logger.info("  Created " + events.size() + " events to simulate.");
+        logger.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
         eventCounter.clear();
     }
 
     private void processEvents() {
-        LOGGER.info("  Processing events...");
+        logger.info("  Processing events...");
         for (MicroEvent e: events) {
             timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
@@ -79,7 +99,7 @@ public final class Simulator {
         }
     }
 
-    public void finishYear(int year, int[] carChangeCounter, int avSwitchCounter, SiloDataContainer dataContainer) {
+    public void finishYear(int year, SiloDataContainer dataContainer) {
         for(AnnualModel annualModel: annualModels) {
             annualModel.finishYear(year);
         }
@@ -87,23 +107,12 @@ public final class Simulator {
             model.finishYear(year);
         }
         SummarizeData.resultFile("Count of simulated events");
-        LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
+        logger.info("Simulated " + eventCounter.size() + " successful events in total.");
         for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
             SummarizeData.resultFile(event.getSimpleName() + "," + count);
-            LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
+            logger.info("Simulated " + event.getSimpleName() + ": " + count);
         }
-        float hh = dataContainer.getHouseholdData().getHouseholds().size();
-        LOGGER.info("  Simulated household added a car" + carChangeCounter[0] + " (" +
-                SiloUtil.rounder((100f * carChangeCounter[0] / hh), 0) + "% of hh)");
-        SummarizeData.resultFile("AddedCar," + carChangeCounter[0]);
-        LOGGER.info("  Simulated household relinquished a car" + carChangeCounter[1] + " (" +
-                SiloUtil.rounder((100f * carChangeCounter[1] / hh), 0) + "% of hh)");
-        SummarizeData.resultFile("RelinquishedCar," + carChangeCounter[1]);
-        LOGGER.info(" Simulated household switched to AV" + avSwitchCounter + " (" +
-                SiloUtil.rounder((100f * avSwitchCounter / hh), 0) + "% of hh)");
-        SummarizeData.resultFile("SwitchedToAV," + avSwitchCounter);
-
         events.clear();
     }
 }
