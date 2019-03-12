@@ -186,9 +186,9 @@ public class SiloModelContainer {
                 break;
             // To do: may need to replace this with Austin car ownership, moves, and education models
             case AUSTIN:
-            	updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc);
-            	move = new MovesModelMstm(dataContainer, acc);
-                educationUpdate = new MstmEducationModelImpl(dataContainer);
+            	updateCarOwnershipModel = new MaryLandUpdateCarOwnershipModel(dataContainer, acc, properties);
+            	move = new MovesModelMstm(dataContainer, acc, properties);
+                educationUpdate = new MstmEducationModelImpl(dataContainer, properties);
                 break;
             case PERTH:
             default:
