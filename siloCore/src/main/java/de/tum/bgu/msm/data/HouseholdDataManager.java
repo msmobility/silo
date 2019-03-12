@@ -277,7 +277,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("0cars," + carOwnership[0]);
         SummarizeData.resultFile("1car," + carOwnership[1]);
         SummarizeData.resultFile("2cars," + carOwnership[2]);
-        SummarizeData.resultFile("3cars," + carOwnership[3]);
+        SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
     public void identifyHighestHouseholdAndPersonId() {
