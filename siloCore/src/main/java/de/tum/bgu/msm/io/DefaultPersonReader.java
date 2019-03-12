@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -74,12 +74,14 @@ public class DefaultPersonReader implements PersonReader{
 
                 //TODO: remove it when we implement interface
                 if(Properties.get().main.implementation == Implementation.MUNICH){
-//                    int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
-//                    int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
-//                    // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
-//                    Coordinate schoolCoord = new Coordinate(
-//                            Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
-//                    pp.setSchoolCoordinate(schoolCoord, -1);
+                    int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
+                    int schoolId = Integer.parseInt(lineElements[posSchoolId]);
+                    if(schoolId == 0){
+                        pp.setSchoolId(-1);
+                    }else {
+                        pp.setSchoolId(schoolId);
+                    }
+
                 }
 
                 if (id == SiloUtil.trackPp) {
