@@ -2,12 +2,13 @@ package de.tum.bgu.msm.models.jobmography;
 
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 
@@ -25,8 +26,8 @@ public class UpdateJobs extends AbstractModel {
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
     private JobFactory factory;
 
-    public UpdateJobs(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public UpdateJobs(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
         factory = JobUtils.getFactory();
     }
 
@@ -45,8 +46,8 @@ public class UpdateJobs extends AbstractModel {
             jobsByZone[jobTypeId][jj.getZoneId()]++;
         }
 
-        //String dir = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/employmentForecast/";
-        //String forecastFileName = dir + Properties.get().jobData.employmentForeCastFile + year + ".csv";
+        //String dir = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/employmentForecast/";
+        //String forecastFileName = dir + properties.jobData.employmentForeCastFile + year + ".csv";
         //TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 
@@ -58,7 +59,7 @@ public class UpdateJobs extends AbstractModel {
                 jobList.add(jj.getId());
                 jobsAvailableForRemoval.put(token, jobList);
             } else {
-                List<Integer> jobList = new ArrayList();
+                List<Integer> jobList = new ArrayList<>();
                 jobList.add(jj.getId());
                 jobsAvailableForRemoval.put(token, jobList);
             }

@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.utils;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
@@ -11,6 +10,7 @@ import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.TransportMode;
 import org.opengis.feature.simple.SimpleFeature;
 

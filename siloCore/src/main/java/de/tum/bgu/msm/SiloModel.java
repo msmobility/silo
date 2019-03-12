@@ -226,16 +226,8 @@ public final class SiloModel {
 			}
 			timeTracker.recordAndReset("setupJobChange");
 
-
-
 			modelContainer.getDdOverwrite().addDwellings(year);
             timeTracker.recordAndReset("addOverwriteDwellings");
-
-            modelContainer.getMove().calculateRegionalUtilities();
-			modelContainer.getMove().calculateAverageHousingSatisfaction();
-			timeTracker.recordAndReset("calcAveHousingSatisfaction");
-
-			double randomNumberAsDouble0 = SiloUtil.getRandomNumberAsDouble();
 
 			if (year != properties.main.implementation.BASE_YEAR) {
 			    householdData.adjustIncome();
@@ -246,17 +238,11 @@ public final class SiloModel {
                 SiloUtil.summarizeMicroData(year, modelContainer, data);
             }
 
-			double randomNumberAsDouble = SiloUtil.getRandomNumberAsDouble();
-
-			microSim.simulate(year);
-			double randomNumberAsDouble2 = SiloUtil.getRandomNumberAsDouble();
-
+            microSim.simulate(year);
 
 			timeTracker.reset();
 			int[] carChangeCounter = modelContainer.getUpdateCarOwnershipModel().updateCarOwnership(householdData.getUpdatedHouseholds());
 			householdData.clearUpdatedHouseholds();
-			double randomNumberAsDouble3 = SiloUtil.getRandomNumberAsDouble();
-
 			timeTracker.recordAndReset("updateCarOwnership");
 
 
@@ -266,8 +252,6 @@ public final class SiloModel {
 				householdData.clearConventionalCarsHouseholds();
 				timeTracker.recordAndReset("switchToAV");
 			}
-			double randomNumberAsDouble4 = SiloUtil.getRandomNumberAsDouble();
-
 
 			if (skimYears.contains(year) && year != properties.main.startYear) {
 				updateSkims(year);
@@ -275,9 +259,6 @@ public final class SiloModel {
 			}
 
 			if ( properties.transportModel.transportModelIdentifier != NONE && tdmYears.contains(year + 1)) {
-				double randomNumberAsDouble5 = SiloUtil.getRandomNumberAsDouble();
-				SiloUtil.trackWriter.flush();
-					SiloUtil.trackWriter.close();
                     modelContainer.getTransportModel().runTransportModel(year + 1);
 					timeTracker.recordAndReset("transportModel");
             }

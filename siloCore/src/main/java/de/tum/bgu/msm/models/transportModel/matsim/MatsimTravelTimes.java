@@ -2,7 +2,6 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -12,6 +11,7 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;

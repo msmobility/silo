@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.data.person;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.household.Household;
+import org.locationtech.jts.geom.Coordinate;
 
 public class PersonImpl implements Person{
 
@@ -25,8 +25,6 @@ public class PersonImpl implements Person{
     private PersonType type;
     private PersonRole role;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
-    private int telework = 0;
-    private int educationLevel = 0; //TODO: educationLevel and schoolType are repeated qz' 05 Oct 2018
     private Nationality nationality = Nationality.GERMAN;
     private float travelTime = 0;
     private int jobTAZ = 0;
@@ -129,26 +127,6 @@ public class PersonImpl implements Person{
     @Override
     public int getJobId() {
         return workplace;
-    }
-
-    @Override
-    public void setEducationLevel(int educationLevel) {
-        this.educationLevel = educationLevel;
-    }
-
-    @Override
-    public int getEducationLevel() {
-        return educationLevel;
-    }
-
-    @Override
-    public void setTelework(int telework) {
-        this.telework = telework;
-    }
-
-    @Override
-    public int getTelework() {
-        return telework;
     }
 
     @Override

@@ -18,14 +18,17 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ReadPopulation {
 
     private static final Logger logger = Logger.getLogger(ReadPopulation.class);
     private final SiloDataContainer dataContainer;
+    private HashMap<Person, Integer> educationalLevel;
 
-    ReadPopulation(SiloDataContainer dataContainer){
+    ReadPopulation(SiloDataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
+        this.educationalLevel = educationalLevel;
     }
 
     public void run(){
@@ -146,7 +149,7 @@ public class ReadPopulation {
                 int schoolDE = Integer.parseInt(lineElements[posSchoolDE]);
                 int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
-                pp.setEducationLevel(education);
+                educationalLevel.put(pp, education);
                 pp.setJobTAZ(workZone);
                 pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
@@ -190,7 +193,7 @@ public class ReadPopulation {
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
             int posFloor   = SiloUtil.findPositionInArray("floor",header);
             int posBuilding= SiloUtil.findPositionInArray("building",header);
-            int posUse     = SiloUtil.findPositionInArray("usage",header);
+            //int posUse     = SiloUtil.findPositionInArray("usage",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -213,7 +216,8 @@ public class ReadPopulation {
                 }
                 int floor = Integer.parseInt(lineElements[posFloor]);
                 int building = Integer.parseInt(lineElements[posBuilding]);
-                int use = Integer.parseInt(lineElements[posUse]);
+                //int use = Integer.parseInt(lineElements[posUse]);
+                int use = 1;
                 dd.setFloorSpace(floor);
                 dd.setBuildingSize(building);
                 dd.setUsage(DwellingUsage.valueOf(use));

@@ -511,7 +511,7 @@ public class ExtractMicroDataJP {
     private void checkHouseholdRelationships() {
         //method to marry the different household members
         initialize();
-        for (int household = 1; household <= householdTable.columnKeySet().size(); household++){
+        for (int household = 1; household <= householdTable.rowKeySet().size(); household++){
             int hhSize = householdTable.get(household, "HHsize");
             int firstMember = householdTable.get(household, "firstPerson");
             if (hhSize == 1){
@@ -523,7 +523,8 @@ public class ExtractMicroDataJP {
             }
             resetMaps();
         }
-
+        String ppFileName = ("microData/interimFiles/microPersons.csv");
+        SiloUtil.writeTableDataSet(microPersons, ppFileName);
     }
 
     private void obtainRolesInHousehold(int firstMember, int hhSize){
@@ -627,6 +628,8 @@ public class ExtractMicroDataJP {
         if (SiloUtil.getRandomNumberAsDouble() < threshold) {
             married = updateInnerMap(married, 1, ageMale, rowMale);
             married = updateInnerMap(married, 2, ageFemale, rowFemale);
+            notClassifiedMales.remove(rowMale);
+            notClassifiedFemales.remove(rowFemale);
         } else {
             singles = updateInnerMap(singles, 1, ageMale, rowMale);
             singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
@@ -669,6 +672,8 @@ public class ExtractMicroDataJP {
                 if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                     married = updateInnerMap(married, 1, minDiff, rowMarried);
                     married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                    notClassifiedMales.remove(rowMarried);
+                    notClassifiedFemales.remove(rowFemale);
                 } else {
                     singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
                 }
@@ -690,6 +695,8 @@ public class ExtractMicroDataJP {
                 if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                     married = updateInnerMap(married, 1, minDiff, rowMarried);
                     married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                    notClassifiedMales.remove(rowMarried);
+                    notClassifiedFemales.remove(rowFemale);
                 } else {
                     singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
                     singles = updateInnerMap(singles, 1, minDiff, rowMarried);
@@ -732,6 +739,8 @@ public class ExtractMicroDataJP {
                 if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                     married = updateInnerMap(married, 1, ageMale, rowMale);
                     married = updateInnerMap(married, 2, minDiff, rowMarried);
+                    notClassifiedMales.remove(rowMale);
+                    notClassifiedFemales.remove(rowMarried);
                 } else {
                     singles = updateInnerMap(singles, 1, ageMale, rowMale);
                 }
@@ -753,6 +762,8 @@ public class ExtractMicroDataJP {
                 if (SiloUtil.getRandomNumberAsDouble() < threshold) {
                     married = updateInnerMap(married, 1, ageMale, rowMale);
                     married = updateInnerMap(married, 2, minDiff, rowMarried);
+                    notClassifiedMales.remove(rowMale);
+                    notClassifiedFemales.remove(rowMarried);
                 } else {
                     singles = updateInnerMap(singles, 1, ageMale, rowMale);
                     singles = updateInnerMap(singles, 2, minDiff, rowMarried);

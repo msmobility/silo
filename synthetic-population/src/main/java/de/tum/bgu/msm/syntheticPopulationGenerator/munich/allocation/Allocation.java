@@ -2,17 +2,20 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
 import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Allocation extends ModuleSynPop{
 
     private static final Logger logger = Logger.getLogger(Allocation.class);
     private final SiloDataContainer dataContainer;
+    private HashMap<Person, Integer> educationalLevel;
 
     public Allocation(DataSetSynPop dataSetSynPop, SiloDataContainer dataContainer){
         super(dataSetSynPop);
@@ -44,7 +47,8 @@ public class Allocation extends ModuleSynPop{
                 addBoroughsAsCities(county);
             }
         }
-        new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop).run();
+        educationalLevel = new HashMap<>();
+        new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop, educationalLevel).run();
         if (PropertiesSynPop.get().main.boroughIPU){
             for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
                 removeBoroughsAsCities(county);
@@ -57,7 +61,7 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void assignJobs(){
-        new AssignJobs(dataContainer, dataSetSynPop).run();
+        new AssignJobs(dataContainer, dataSetSynPop, educationalLevel).run();
     }
 
     public void assignSchools(){
@@ -65,7 +69,8 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void readPopulation(){
-        new ReadPopulation(dataContainer).run();
+        educationalLevel = new HashMap<>();
+        new ReadPopulation(dataContainer, educationalLevel).run();
     }
 
     public void validateTripLengths(){

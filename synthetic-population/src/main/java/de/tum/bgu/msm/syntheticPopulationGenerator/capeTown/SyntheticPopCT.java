@@ -155,6 +155,7 @@ public class SyntheticPopCT implements SyntheticPopI {
     private String[] codeHouseholdAttributes;
     //private HashMap<>
 
+    private HashMap<Person, Integer> educationalLevelByPerson;
 
     static Logger logger = Logger.getLogger(SyntheticPopCT.class);
     private SiloDataContainer dataContainer;
@@ -1653,7 +1654,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                     (int) persons.getValueAt(i, "income"));
             householdDataManager.addPerson(pp);
             householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(hhID));
-            pp.setEducationLevel((int) persons.getValueAt(i, "education"));
+            educationalLevelByPerson.put(pp, (int) persons.getValueAt(i, "education"));
             if (persons.getStringValueAt(i, "relationShip").equals("single")) pp.setRole(PersonRole.SINGLE);
             else if (persons.getStringValueAt(i, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
             else pp.setRole(PersonRole.CHILD);
@@ -1834,7 +1835,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
         //Driver license probability
         TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
-
+        educationalLevelByPerson = new HashMap<>();
         generateCountersForValidation();
 
         //Create hashmaps to store quality of occupied dwellings
@@ -1934,7 +1935,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                     Person pers = factory.createPerson(idPerson, age, gender, Race.white, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                     householdDataManager.addPerson(pers);
                     householdDataManager.addPersonToHousehold(pers, household);
-                    pers.setEducationLevel((int) microDataPerson.getValueAt(personCounter, "educationLevel"));
+                    educationalLevelByPerson.put(pers, (int) microDataPerson.getValueAt(personCounter, "educationLevel"));
                     PersonRole role = PersonRole.SINGLE; //default value = single
                     if (microDataPerson.getValueAt(personCounter, "personRole") == 2) { //is married
                         role = PersonRole.MARRIED;
@@ -1948,7 +1949,6 @@ public class SyntheticPopCT implements SyntheticPopI {
                     } else {
                         pers.setNationality(Nationality.OTHER);
                     }
-                    pers.setTelework((int) microDataPerson.getValueAt(personCounter, "telework"));
                     //int selectedJobType = ec.selectJobType(pers, probabilitiesJob, jobTypes);
                     //pers.setJobTypeDE(selectedJobType);
                     pers.setDriverLicense(obtainDriverLicense(pers.getGender().ordinal()-1, pers.getAge(),probabilityDriverLicense));
@@ -2943,7 +2943,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         } else {
             name = "femaleEducation";
         }
-        name = name + person.getEducationLevel();
+        name = name + educationalLevelByPerson.get(person);
 
         //if (jobStringTypes.length == probabilitiesJob.getRowCount()) {
         //    probabilities = probabilitiesJob.getColumnAsDouble(name);

@@ -27,7 +27,6 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 26,13,45,2,"single","black",1,0,1979250,61000
 27,14,41,2,"single","black",2,0,-1,18000
 28,14,45,2,"single","black",1,0,2033365,61000
-29,15,41,2,"single","black",1,0,2816628,30000
 30,15,45,2,"single","black",1,0,1494034,61000
 31,16,41,2,"single","black",1,0,4099210,30000
 32,16,45,2,"single","black",1,0,2069882,61000
@@ -244,6 +243,5 @@ id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income
 245,98,82,2,"single","black",0,0,-1,7400
 246,99,82,2,"single","black",0,0,-1,7400
 247,100,82,2,"single","black",0,0,-1,7400
-248,72,0,2,"child","black",0,0,0,0
-249,55,0,2,"child","white",0,0,0,0
-250,78,0,1,"child","black",0,0,0,0
+248,69,0,2,"child","black",0,0,0,0
+249,58,0,2,"child","white",0,0,0,0

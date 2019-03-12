@@ -1,12 +1,13 @@
 var calculateSelectDwellingUtility = function (ht, ddAreaUtility, ddPriceUtility, ddQualityUtility, ddAutoAccessibility,
-ddTransitAccessibility) {
+ddTransitAccessibility, ddSchoolQuality, ddCrimeIndex, ddWorkDistanceUtility) {
 
 alpha = 0.0;
 beta = 0.0;
 gamma = 0.0;
 delta = 0.0;
 epsilon = 0.0;
-eta = 0.0;
+zeta = 0.0;
+theta = 0.0;
 
 if (ht.name()=="SIZE_1_INC_LOW"){
     //old hhtype 0
@@ -15,6 +16,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
+    zeta = 0.0;
+    theta = 0.0;
 } else if (ht.name()=="SIZE_2_INC_LOW"){
     //old hhtype 1
     alpha = 0.14;
@@ -22,6 +25,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
+    zeta = 0.025;
+    theta = 0.0;
 } else if (ht.name()=="SIZE_3_INC_LOW"){
     //old hhtype 2
     alpha = 0.16;
@@ -29,6 +34,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
+    zeta = 0.05;
+    theta = 0.0;
 } else if (ht.name()=="SIZE_4_INC_LOW"){
     //old hhtype 3
     alpha = 0.18;
@@ -36,6 +43,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.3;
     delta = 0.2;
     epsilon = 0.35;
+    zeta = 0.1;
+    theta = 0.0;
 } else if (ht.name()=="SIZE_1_INC_MEDIUM"){
     //old hhtype 4
     alpha = 0.17;
@@ -43,6 +52,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
+    zeta = 0.0;
+    theta = 0.05;
 } else if (ht.name()=="SIZE_2_INC_MEDIUM"){
     //old hhtype 5
     alpha = 0.19;
@@ -51,6 +62,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     delta = 0.35;
     epsilon = 0.3;
     eta = 0.2;
+    zeta = 0.1;
+    theta = 0.05;
 } else if (ht.name()=="SIZE_3_INC_MEDIUM"){
     //old hhtype 6
     alpha = 0.21;
@@ -58,6 +71,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
+    zeta = 0.15;
+    theta = 0.05;
 } else if (ht.name()=="SIZE_4_INC_MEDIUM"){
     //old hhtype 7
     alpha = 0.23;
@@ -65,6 +80,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.25;
     delta = 0.35;
     epsilon = 0.3;
+    zeta = 0.2;
+    theta = 0.05;
 } else if (ht.name()=="SIZE_1_INC_HIGH"){
     //old hhtype 8
     alpha = 0.22;
@@ -72,6 +89,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
+    zeta = 0.0;
+    theta = 0.08;
 } else if (ht.name()=="SIZE_2_INC_HIGH"){
     //old hhtype 9
     alpha = 0.24;
@@ -79,6 +98,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
+    zeta = 0.15;
+    theta = 0.08;
 } else if (ht.name()=="SIZE_3_INC_HIGH"){
     //old hhtype 10
     alpha = 0.26;
@@ -86,6 +107,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
+    zeta = 0.25;
+    theta = 0.08;
 } else if (ht.name()=="SIZE_4_INC_HIGH"){
     //old hhtype 11
     alpha = 0.28;
@@ -93,6 +116,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.15;
     delta = 0.5;
     epsilon = 0.1;
+    zeta = 0.3;
+    theta = 0.08;
 } else if (ht.name()=="SIZE_1_INC_VERY_HIGH"){
     //old hhtype 12
     alpha = 0.27;
@@ -100,6 +125,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
+    zeta = 0.0;
+    theta = 0.1;
 } else if (ht.name()=="SIZE_2_INC_VERY_HIGH"){
     //old hhtype 13
     alpha = 0.29;
@@ -107,6 +134,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
+    zeta = 0.3;
+    theta = 0.1;
 } else if (ht.name()=="SIZE_3_INC_VERY_HIGH"){
     //old hhtype 14
     alpha = 0.31;
@@ -114,6 +143,8 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
+    zeta = 0.3;
+    theta = 0.1;
 } else if (ht.name()=="SIZE_4_INC_VERY_HIGH"){
     //old hhtype 15
     alpha = 0.33;
@@ -121,108 +152,11 @@ if (ht.name()=="SIZE_1_INC_LOW"){
     gamma = 0.08;
     delta = 0.6;
     epsilon = 0.05;
+    zeta = 0.3;
+    theta = 0.1;
 } else {
     throw new Error("The household type is not defined!")
 }
-optFactors = alpha*ddAreaUtility+beta*ddAutoAccessibility+gamma*ddTransitAccessibility+(1.0-alpha-beta-gamma)*ddQualityUtility;
-return Math.pow(optFactors,delta)*Math.pow(ddPriceUtility,epsilon);
-}
-
-var personalizeDwellingUtility = function (ht, genericUtility, ddWorkDistanceUtility, ddTotalTravelCostsUtility) {
-
-delta = 0.0;
-epsilon = 0.0;
-eta = 0.0;
-
-if (ht.name()=="SIZE_1_INC_LOW"){
-    //old hhtype 0
-    delta = 0.2;
-    epsilon = 0.35;
-    eta = 0.175;
-} else if (ht.name()=="SIZE_2_INC_LOW"){
-    //old hhtype 1
-    alpha = 0.14;
-    beta = 0.25;
-    gamma = 0.3;
-    delta = 0.2;
-    epsilon = 0.35;
-    eta = 0.175;
-} else if (ht.name()=="SIZE_3_INC_LOW"){
-    //old hhtype 2
-    alpha = 0.16;
-    beta = 0.25;
-    gamma = 0.3;
-    delta = 0.2;
-    epsilon = 0.35;
-    eta = 0.175;
-} else if (ht.name()=="SIZE_4_INC_LOW"){
-    //old hhtype 3
-    delta = 0.2;
-    epsilon = 0.35;
-    eta = 0.175;
-} else if (ht.name()=="SIZE_1_INC_MEDIUM"){
-    //old hhtype 4
-    delta = 0.35;
-    epsilon = 0.3;
-    eta = 0.2;
-} else if (ht.name()=="SIZE_2_INC_MEDIUM"){
-    //old hhtype 5
-    delta = 0.35;
-    epsilon = 0.3;
-    eta = 0.2;
-} else if (ht.name()=="SIZE_3_INC_MEDIUM"){
-    //old hhtype 6
-    delta = 0.35;
-    epsilon = 0.3;
-    eta = 0.2;
-} else if (ht.name()=="SIZE_4_INC_MEDIUM"){
-    //old hhtype 7
-    delta = 0.35;
-    epsilon = 0.3;
-    eta = 0.2;
-} else if (ht.name()=="SIZE_1_INC_HIGH"){
-    //old hhtype 8
-    delta = 0.5;
-    epsilon = 0.1;
-    eta = 0.225;
-} else if (ht.name()=="SIZE_2_INC_HIGH"){
-    //old hhtype 9
-    delta = 0.5;
-    epsilon = 0.1;
-    eta = 0.225;
-} else if (ht.name()=="SIZE_3_INC_HIGH"){
-    //old hhtype 10
-    delta = 0.5;
-    epsilon = 0.1;
-    eta = 0.225;
-} else if (ht.name()=="SIZE_4_INC_HIGH"){
-    //old hhtype 11
-    delta = 0.5;
-    epsilon = 0.1;
-    eta = 0.225;
-} else if (ht.name()=="SIZE_1_INC_VERY_HIGH"){
-    //old hhtype 12
-    delta = 0.6;
-    epsilon = 0.05;
-    eta = 0.25;
-} else if (ht.name()=="SIZE_2_INC_VERY_HIGH"){
-    //old hhtype 13
-    delta = 0.6;
-    epsilon = 0.05;
-    eta = 0.25;
-} else if (ht.name()=="SIZE_3_INC_VERY_HIGH"){
-    //old hhtype 14
-    delta = 0.6;
-    epsilon = 0.05;
-    eta = 0.25;
-} else if (ht.name()=="SIZE_4_INC_VERY_HIGH"){
-    //old hhtype 15
-    delta = 0.6;
-    epsilon = 0.05;
-    eta = 0.25;
-} else {
-    throw new Error("The household type is not defined!")
-}
-
-return genericUtility * Math.pow(ddWorkDistanceUtility,eta)*Math.pow(ddTotalTravelCostsUtility,(1.0-delta-epsilon-eta));
+optFactors = alpha*ddAreaUtility+beta*ddAutoAccessibility+gamma*ddTransitAccessibility+zeta*ddSchoolQuality+theta*ddCrimeIndex+(1.0-alpha-beta-gamma-zeta-theta)*ddQualityUtility;
+return Math.pow(optFactors,delta)*Math.pow(ddPriceUtility,epsilon)*Math.pow(ddWorkDistanceUtility,(1-delta-epsilon));
 }

@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ import java.util.List;
  **/
 public class MucEducationModelImpl extends AbstractModel implements EducationModel {
 
-    public MucEducationModelImpl(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public MucEducationModelImpl(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
     }
 
     @Override
@@ -62,7 +63,6 @@ public class MucEducationModelImpl extends AbstractModel implements EducationMod
         person.setSchoolType(0);
         person.setSchoolCoordinate(null,-1);
         //TODO: schoolType and educationLevel code needs to be aligned! 09 Oct 2018 QZ'
-        person.setEducationLevel(educationLevel);
         School school = dataContainer.getSchoolData().getSchoolFromId(person.getSchoolId());
         school.setOccupancy(school.getOccupancy() + 1);
         person.setSchoolId(-1);

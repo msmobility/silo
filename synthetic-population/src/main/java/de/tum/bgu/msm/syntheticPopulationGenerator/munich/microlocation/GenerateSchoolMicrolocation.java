@@ -1,17 +1,18 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.SchoolDataManager;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.HashMap;
 import java.util.Map;

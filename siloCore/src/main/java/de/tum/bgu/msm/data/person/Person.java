@@ -16,9 +16,9 @@
  */
 package de.tum.bgu.msm.data.person;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.household.Household;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * @author Greg Erhardt 
@@ -58,14 +58,6 @@ public interface Person extends Id {
     PersonRole getRole();
 
     int getJobId();
-
-    void setEducationLevel(int educationLevel);
-
-    int getEducationLevel();
-
-    void setTelework(int telework);
-
-    int getTelework();
 
     void setNationality(Nationality nationality);
 

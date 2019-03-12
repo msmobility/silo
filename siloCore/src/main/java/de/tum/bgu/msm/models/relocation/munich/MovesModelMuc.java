@@ -33,21 +33,24 @@ import java.util.*;
 public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     private SelectRegionJSCalculator regionCalculator;
-    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeNationalityAndRegion = new EnumMap<>(IncomeCategory.class) ;
+    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class) ;
 
     private SelectDwellingJSCalculator dwellingCalculator;
+    private MucDwellingUtilityJSCalculator mucDwellingUtilityJSCalculator;
+
+
     private final DoubleMatrix1D regionalShareForeigners;
     private final DoubleMatrix1D hhByRegion;
 
-    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
-        super(dataContainer, accessibility);
+    public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility, Properties properties) {
+        super(dataContainer, accessibility, properties);
+        setupUtilityCalculators();
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
     }
 
+
     private void calculateShareOfForeignersByZoneAndRegion() {
-
-
         final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
@@ -123,35 +126,35 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         calculateShareOfForeignersByZoneAndRegion();
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
-            EnumMap<Nationality, Map<Integer, Double>> utilitiesByNationalityRegionForThisIncome = new EnumMap<>(Nationality.class);
+            EnumMap<Nationality, Map<Integer, Double>> utilityByNationalityByRegion = new EnumMap<>(Nationality.class);
             for (Nationality nationality: Nationality.values()) {
-                Map<Integer, Double> utilitiesByRegionForThisNationalityAndIncome = new LinkedHashMap<>();
+                Map<Integer, Double> utilityByRegion = new HashMap<>();
                 for (Region region : geoData.getRegions().values()){
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-                    utilitiesByRegionForThisNationalityAndIncome.put(region.getId(),
+                    utilityByRegion.put(region.getId(),
                             regionCalculator.calculateSelectRegionProbability(incomeCategory,
                                     nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region.getId())));
 
                 }
-                utilitiesByNationalityRegionForThisIncome.put(nationality, utilitiesByRegionForThisNationalityAndIncome);
+                utilityByNationalityByRegion.put(nationality, utilityByRegion);
             }
-            utilityByIncomeNationalityAndRegion.put(incomeCategory, utilitiesByNationalityRegionForThisIncome);
+            utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
         }
 
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold
-                = new LinkedHashMap<>(utilityByIncomeNationalityAndRegion.get(ht.getIncomeCategory()).get(nationality));
+                = new HashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));
 
         for(Region region : geoData.getRegions().values()){
             double thisRegionFactor = 1;
             if (workZones != null) {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, Properties.get().transportModel.peakHour_s, TransportMode.car);
+                    		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
@@ -160,10 +163,11 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         return utilitiesForThisHousheold;
     }
 
-    @Override
-    protected void setupSelectDwellingModel() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
-        dwellingCalculator = new SelectDwellingJSCalculator(reader);
+    private void setupUtilityCalculators() {
+        Reader selectReader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        dwellingCalculator = new SelectDwellingJSCalculator(selectReader);
+        Reader ddUtilityReader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
+            mucDwellingUtilityJSCalculator = new MucDwellingUtilityJSCalculator(ddUtilityReader);
     }
 
 
@@ -174,7 +178,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         // data preparation
         int householdIncome = 0;
         Nationality nationality = null;
-        Map<Person, Zone> workerZonesForThisHousehold = new LinkedHashMap<>();
+        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
@@ -193,7 +197,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
-        Map<Integer, Double> regionUtilitiesForThisHousehold = getUtilitiesByRegionForThisHouesehold(ht,nationality,workerZonesForThisHousehold.values());
+        Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHousehold(ht,nationality,workerZonesForThisHousehold.values()));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "powerOfPopulation";
@@ -258,8 +263,7 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
-            double util = calculateDwellingUtilityForHouseholdType(ht, dd);
-            util = personalizeDwellingUtilityForThisHousehold(household, dd, householdIncome, util);
+            double util = calculateHousingUtility(household, dd);
             expProbs[i] = dwellingCalculator.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
@@ -269,41 +273,40 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
     }
 
     @Override
-    protected double calculateDwellingUtilityForHouseholdType(HouseholdType ht, Dwelling dd) {
+    protected double calculateHousingUtility(Household hh, Dwelling dd) {
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZoneId()));
+        HouseholdType ht = hh.getHouseholdType();
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
-        return dwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
-                ddQualityUtility, ddAutoAccessibilityUtility,
-                transitAccessibilityUtility);
-    }
 
-    @Override
-    protected double personalizeDwellingUtilityForThisHousehold(Household household, Dwelling dd, int income, double genericUtility) {
+
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
-        HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Job> jobsForThisHousehold = new LinkedHashMap<>();
+        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobData = dataContainer.getJobData();
-        for (Person pp: household.getPersons().values()) {
+        for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-            	Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
+                Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
                 jobsForThisHousehold.put(pp, workLocation);
             }
         }
         double workDistanceUtility = 1;
         for (Job workLocation : jobsForThisHousehold.values()){
-        	double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
+            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
                     dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }
-        return dwellingUtilityJSCalculator.personalizeUtility(ht, genericUtility, workDistanceUtility, travelCostUtility);
+
+        return mucDwellingUtilityJSCalculator.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+                ddQualityUtility, ddAutoAccessibilityUtility,
+                transitAccessibilityUtility, workDistanceUtility);
     }
+
 
     @Override
     public void finishYear(int year) {

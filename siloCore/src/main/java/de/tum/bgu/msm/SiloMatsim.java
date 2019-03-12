@@ -25,7 +25,7 @@ public final class SiloMatsim {
 
     public final void run() {
         logger.info("Starting SILO program for MATSim");
-        SiloModel model = new SiloModel(matsimConfig, Properties.get());
+        SiloModel model = new SiloModel(matsimConfig, properties);
         model.runModel();
         logger.info("Finished SILO.");
 

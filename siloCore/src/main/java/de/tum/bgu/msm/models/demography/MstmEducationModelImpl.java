@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,8 +18,8 @@ import java.util.List;
  **/
 public class MstmEducationModelImpl extends AbstractModel implements EducationModel {
 
-    public MstmEducationModelImpl(SiloDataContainer dataContainer) {
-        super(dataContainer);
+    public MstmEducationModelImpl(SiloDataContainer dataContainer, Properties properties) {
+        super(dataContainer, properties);
     }
 
     @Override
@@ -51,7 +51,6 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
         person.setSchoolPlace(schoolId);
         // todo if 2 is the right code for someone who graduates from high school
         //todo also check occupation transition to worker? 'nk
-        person.setEducationLevel(2);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school. New school place (0 = left school) " + schoolId);

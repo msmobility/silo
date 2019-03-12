@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.dwelling;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.Location;
+import org.locationtech.jts.geom.Coordinate;
 
 public interface Dwelling extends Location, Id {
 

@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.models.realEstate;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEventModel;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
@@ -12,6 +10,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -33,16 +32,26 @@ public class DemolitionModel extends AbstractModel implements MicroEventModel<De
 
     private int currentYear = -1;
 
-    public DemolitionModel(SiloDataContainer dataContainer, MovesModelI moves, InOutMigration inOutMigration) {
-        super(dataContainer);
+    public DemolitionModel(SiloDataContainer dataContainer, MovesModelI moves,
+                           InOutMigration inOutMigration, Properties properties) {
+        super(dataContainer, properties);
         this.moves = moves;
         this.inOutMigration = inOutMigration;
-        Reader reader;
-        if (Properties.get().main.implementation == Implementation.MUNICH) {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
-        } else {
-            reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-
+        final Reader reader;
+        switch (properties.main.implementation) {
+            case MUNICH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
+                break;
+            case MARYLAND:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
+                break;
+            case PERTH:
+                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalcMuc"));
+                break;
+            case KAGAWA:
+            case CAPE_TOWN:
+            default:
+                throw new RuntimeException("DemolitionModel implementation not applicable for " + properties.main.implementation);
         }
         calculator = new DemolitionJSCalculator(reader);
     }

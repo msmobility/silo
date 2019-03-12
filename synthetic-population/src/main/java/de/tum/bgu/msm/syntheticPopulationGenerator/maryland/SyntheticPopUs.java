@@ -5,12 +5,11 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -19,18 +18,16 @@ import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmZone;
-import de.tum.bgu.msm.data.person.Gender;
-import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -858,9 +855,6 @@ public class SyntheticPopUs implements SyntheticPopI {
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
                         if (relShp == 0 || relShp == 1 || relShp == 13) {
-                            if (relShp == 0) {
-                                householder = pp;
-                            }
                             coupleCounter.add(pp.getGender().ordinal() + 1);
                         }
                     } else {
@@ -869,17 +863,11 @@ public class SyntheticPopUs implements SyntheticPopI {
                 }
                 int numberOfCouples = Math.min(coupleCounter.count(1), coupleCounter.count(2));
                 int[] marriedPersons = new int[]{numberOfCouples, numberOfCouples};
-                if (numberOfCouples > 0 && householder != null) {
-                    householder.setRole(PersonRole.MARRIED);
-                    marriedPersons[householder.getGender().ordinal()] -= 1;
-                } else if (householder != null) {
-                    householder.setRole(PersonRole.SINGLE);
-                }
 
                 for (Person pp : persons.values()) {
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
-                        if ((relShp == 1 || relShp == 13) && marriedPersons[pp.getGender().ordinal()] > 0) {
+                        if ((relShp == 1 || relShp == 13 || relShp==0) && marriedPersons[pp.getGender().ordinal()] > 0) {
                             pp.setRole(PersonRole.MARRIED);
                             marriedPersons[pp.getGender().ordinal()] -= 1;
                             //   natural child     adopted child        step child        grandchild       foster child
@@ -919,7 +907,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void generateAutoOwnership (SiloDataContainer dataContainer) {
         // select number of cars for every household
         dataContainer.getJobData().calculateJobDensityByZone();
-        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility);   // calculate auto-ownership probabilities
+        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get());   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: householdDataManager.getHouseholds()) {
             households.put(hh.getId(), null);

@@ -3,7 +3,7 @@
 # siloCode
 SILO Model Java Code
 
-
+A high-level overview of the SILO model is provided at www.silo.zone. Please see the [wiki](https://wiki.tum.de/display/msmmodels/SILO) for the technical documentation.
 
 Load into eclipse
 
