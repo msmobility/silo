@@ -8,8 +8,11 @@ package de.tum.bgu.msm.models.relocation.mstm;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.JobData;
+import de.tum.bgu.msm.data.RealEstateData;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
@@ -21,7 +24,6 @@ import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.models.relocation.AbstractDefaultMovesModel;
 import de.tum.bgu.msm.models.relocation.SelectDwellingJSCalculator;
 import de.tum.bgu.msm.models.relocation.SelectRegionJSCalculator;
@@ -30,6 +32,7 @@ import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
@@ -51,14 +54,29 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     private SelectDwellingJSCalculator dwellingCalculator;
     private MstmDwellingUtilityJSCalculator mstmDwellingUtilityJSCalculator;
 
-    public MovesModelMstm(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
-        super(dataContainer, accessibility, properties);
-        setupSelectDwellingModel();
+    private final Reader selectDwellingReader;
+    private final Reader ddUtilityReader;
+
+    public MovesModelMstm(DataContainer dataContainer, Properties properties, InputStream movesOrNotInputStream, InputStream selectDwellingInputStream, InputStream ddUtilityInputStream) {
+        super(dataContainer, properties, movesOrNotInputStream);
+        this.selectDwellingReader = new InputStreamReader(selectDwellingInputStream);
+        this.ddUtilityReader = new InputStreamReader(ddUtilityInputStream);
+    }
+
+    @Override
+    public void setup() {
+        super.setup();
+        setupUtilityCalculators();
         selectDwellingRaceRelevance = properties.moves.racialRelevanceInZone;
         provideRentSubsidyToLowIncomeHh = properties.moves.provideLowIncomeSubsidy;
         if (provideRentSubsidyToLowIncomeHh) {
             dataContainer.getRealEstateData().calculateMedianRentByMSA();
         }
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     private void calculateRacialCompositionByZoneAndRegion() {
@@ -223,11 +241,11 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
     }
 
 
-    protected void setupSelectDwellingModel() {
+    protected void setupUtilityCalculators() {
         // set up model for choice of dwelling
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
-        dwellingCalculator = new SelectDwellingJSCalculator(reader);
-        Reader ddUtilityReader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
+//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectDwellingCalc"));
+        dwellingCalculator = new SelectDwellingJSCalculator(selectDwellingReader);
+//        Reader ddUtilityReader = new InputStreamReader(this.getClass().getResourceAsStream("DwellingUtilityCalc"));
         mstmDwellingUtilityJSCalculator = new MstmDwellingUtilityJSCalculator(ddUtilityReader);
 
     }
@@ -241,7 +259,8 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         int householdIncome = 0;
         Race householdRace = null;
         Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
-        JobDataManager jobData = dataContainer.getJobData();
+        JobData jobData = dataContainer.getJobData();
+        RealEstateData realEstateData = dataContainer.getRealEstateData();
         for (Person pp: household.getPersons().values()) {
         	// Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
@@ -266,24 +285,24 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         String normalizer = "population";
         int totalVacantDd = 0;
         for (int region: geoData.getRegions().keySet()) {
-            totalVacantDd += RealEstateDataManager.getNumberOfVacantDDinRegion(region);
+            totalVacantDd += realEstateData.getNumberOfVacantDDinRegion(region);
         }
         for (int region : regionUtilitiesForThisHousehold.keySet()){
             switch (normalizer) {
                 case ("vacDd"): {
                     // Multiply utility of every region by number of vacant dwellings to steer households towards available dwellings
                     // use number of vacant dwellings to calculate attractivity of region
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (float) RealEstateDataManager.getNumberOfVacantDDinRegion(region));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (float) realEstateData.getNumberOfVacantDDinRegion(region));
                 } case ("shareVacDd"): {
                     // use share of empty dwellings to calculate attractivity of region
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * ((float) RealEstateDataManager.getNumberOfVacantDDinRegion(region) / (float) totalVacantDd));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * ((float) realEstateData.getNumberOfVacantDDinRegion(region) / (float) totalVacantDd));
                 } case ("dampenedVacRate"): {
-                    double x = (double) RealEstateDataManager.getNumberOfVacantDDinRegion(region) /
-                            (double) RealEstateDataManager.getNumberOfDDinRegion(region) * 100d;  // % vacancy
+                    double x = (double) realEstateData.getNumberOfVacantDDinRegion(region) /
+                            (double) realEstateData.getNumberOfDDinRegion(region) * 100d;  // % vacancy
                     double y = 1.4186E-03 * Math.pow(x, 3) - 6.7846E-02 * Math.pow(x, 2) + 1.0292 * x + 4.5485E-03;
                     y = Math.min(5d, y);                                                // % vacancy assumed to be ready to move in
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * RealEstateDataManager.getNumberOfDDinRegion(region)));
-                    if (RealEstateDataManager.getNumberOfVacantDDinRegion(region) < 1) {
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateData.getNumberOfDDinRegion(region)));
+                    if (realEstateData.getNumberOfVacantDDinRegion(region) < 1) {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
                 } case ("population"): {
@@ -301,7 +320,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         }
 
         // Step 2: select vacant dwelling in selected region
-        int[] vacantDwellings = RealEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
+        int[] vacantDwellings = realEstateData.getListOfVacantDwellingsInRegion(selectedRegionId);
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
@@ -310,7 +329,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             Dwelling dd = dataContainer.getRealEstateData().getDwelling(vacantDwellings[i]);
             int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
-                    householdIncome > (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction())) continue;
+                    householdIncome > (dataContainer.getHouseholdData().getMedianIncome(msa) * dd.getRestriction())) continue;
             double racialShare = 1;
             if (householdRace != Race.other) {
                 racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZoneId()).getZoneId(), householdRace);
@@ -356,9 +375,9 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
             if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
                 // housing subsidy program in place
                 int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
-                if (income < (0.5f * HouseholdDataManager.getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
+                if (income < (0.5f * dataContainer.getHouseholdData().getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                     float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
-                    float subsidy = RealEstateDataManager.getMedianRent(msa) - housingBudget;
+                    float subsidy = dataContainer.getRealEstateData().getMedianRent(msa) - housingBudget;
                     price = Math.max(0, price - (int) (subsidy + 0.5));
                 }
             }
@@ -366,7 +385,7 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
         }
 
         Map<Person, Zone> jobsForThisHousehold = new HashMap<>();
-        JobDataManager jobData = dataContainer.getJobData();
+        JobData jobData = dataContainer.getJobData();
         for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 Job workLocation = Objects.requireNonNull(jobData.getJobFromId(pp.getJobId()));
@@ -387,12 +406,10 @@ public class MovesModelMstm extends AbstractDefaultMovesModel {
 
     }
 
-
-
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
         return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * HouseholdDataManager.getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
+                income <= (0.5f * dataContainer.getHouseholdData().getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
                 price <= (0.4f * assumedIncome);
     }
 }

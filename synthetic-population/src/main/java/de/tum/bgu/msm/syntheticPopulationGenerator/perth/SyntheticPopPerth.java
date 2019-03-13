@@ -3,8 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -36,10 +36,10 @@ SyntheticPopPerth implements SyntheticPopI
 
     private ResourceBundle rb;
     //protected HashMap<Integer, int[]> tazByWorkZonePuma;
-    protected HouseholdDataManager householdDataManager;
-    protected RealEstateDataManager realEstateDataManager;
-    protected JobDataManager jobDataManager;
-    private JobDataManager jobData;
+    protected HouseholdData householdData;
+    protected RealEstateData realEstateData;
+    protected JobData jobData;
+    private JobData jobData;
     //protected HashMap<Integer, int[]> vacantJobsByZone;
     private String baseDirectory;
 
@@ -71,10 +71,10 @@ SyntheticPopPerth implements SyntheticPopI
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
-        SiloDataContainer dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.PERTH);
-        realEstateDataManager = dataContainer.getRealEstateData();
-        householdDataManager = dataContainer.getHouseholdData();
-        jobDataManager = dataContainer.getJobData();
+        DataContainer dataContainer = DataContainerImpl.createEmptySiloDataContainer(Implementation.PERTH);
+        realEstateData = dataContainer.getRealEstateData();
+        householdData = dataContainer.getHouseholdData();
+        jobData = dataContainer.getJobData();
         jobData = dataContainer.getJobData();
 
         // open & preprocess the gender file used for the population distribution into SA1 zones
@@ -103,9 +103,9 @@ SyntheticPopPerth implements SyntheticPopI
         logger.info("\t" + employedCount + " employed and " + unemployedCount + " unemployed");
         logger.info("\t" + unassignedWorker + " unassigned workers");
         /*
-        logger.info ("  Total number of households created " + householdDataManager.getHouseholds().size());
-        logger.info ("  Total number of persons created    " + householdDataManager.getPersons().size());
-        logger.info ("  Total number of dwellings created  " + realEstateDataManager.getDwellings().size());
+        logger.info ("  Total number of households created " + householdData.getHouseholds().size());
+        logger.info ("  Total number of persons created    " + householdData.getPersons().size());
+        logger.info ("  Total number of dwellings created  " + realEstateData.getDwellings().size());
         logger.info ("  Total number of jobs created       " + jobData.getJobs().size());
         calculateVacancyRate();
         summarizeVacantJobsByRegion();
@@ -145,7 +145,7 @@ SyntheticPopPerth implements SyntheticPopI
                 for(int j = 0; j < count; j++)
                 {
                     // save the record
-                    JobSlot job = new JobSlot(jobDataManager.getNextJobId(), zoneSA1, personId, type);
+                    JobSlot job = new JobSlot(jobData.getNextJobId(), zoneSA1, personId, type);
                     jobCollection.addNewJob(job);
                 }
             }
@@ -331,11 +331,11 @@ SyntheticPopPerth implements SyntheticPopI
             int saArea = translateSaZone(geoZone, hhCountM, hhCountF);
 
             // household attributes
-            int newHhId = householdDataManager.getNextHouseholdId();
+            int newHhId = householdData.getNextHouseholdId();
             int hhSize = family.size;
 
             // dwelling attributes
-            int newDdId = RealEstateDataManager.getNextDwellingId();
+            int newDdId = RealEstateData.getNextDwellingId();
             int price = getDwellingPrice(ddRent, ddMortgage);
 
             // create a new dwelling (to be saved later)
@@ -347,7 +347,7 @@ SyntheticPopPerth implements SyntheticPopI
             // save people
             for (int s = 0; s < hhSize; s++)
             {
-                int newPpId = householdDataManager.getNextPersonId();
+                int newPpId = householdData.getNextPersonId();
                 int workplace = jobCollection.assignWorker(newPpId, family.industry[s]);
 
                 pwpp.println(newPpId + "," + newHhId + "," +
@@ -533,7 +533,7 @@ SyntheticPopPerth implements SyntheticPopI
 
                             // create a new vacant dwelling using existing dwelling's properties
                             Dwelling vaccDwelling = new Dwelling();
-                            vaccDwelling.NewDdId = RealEstateDataManager.getNextDwellingId();
+                            vaccDwelling.NewDdId = RealEstateData.getNextDwellingId();
                             vaccDwelling.PumaZone = zone;
                             vaccDwelling.PumsDdType = ddType;
                             vaccDwelling.NewHhId = -1;
@@ -1503,8 +1503,8 @@ SyntheticPopPerth implements SyntheticPopI
             // todo: prob based on the commute data
 
             // Write Dwellings
-            int newDdId = RealEstateDataManager.getNextDwellingId();
-            int newHhId = householdDataManager.getNextHouseholdId();
+            int newDdId = RealEstateData.getNextDwellingId();
+            int newHhId = householdData.getNextHouseholdId();
             //todo: Please check if you want the next step
             int price = getDwellingPrice(rent, mortgage);
 
@@ -1528,7 +1528,7 @@ SyntheticPopPerth implements SyntheticPopI
             for (int s = 0; s < hhSize; s++)
             {
                 //  10/01/19 - Added relationship[s]
-                int newPpId = householdDataManager.getNextPersonId();
+                int newPpId = householdData.getNextPersonId();
                 pwpp.println(newPpId + "," + newHhId + "," + age[s] + "," + gender[s]+"," + relationship[s] + "," + race[s] + "," +
                         occupation[s] + "," + "WORKPLACE_MISSING" + "," + income[s]);
             }
@@ -1607,7 +1607,7 @@ SyntheticPopPerth implements SyntheticPopI
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         int[][][] ddCount = new int [highestZoneId + 1][DwellingType.values().length][2];
-        for (Dwelling dd: realEstateDataManager.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             int taz = dd.getZoneId();
             int occ = dd.getResidentId();
             ddCount[taz][dd.getType().ordinal()][0]++;
@@ -1656,16 +1656,16 @@ SyntheticPopPerth implements SyntheticPopI
                 Integer[] ids = dList.toArray(new Integer[dList.size()]);
                 while (vacDwellingsModel < SiloUtil.rounder(targetThisTypeThisZoneAbs,0)) {
                     int selected = SiloUtil.select(ids.length) - 1;
-                    Dwelling dd = realEstateDataManager.getDwelling(ids[selected]);
-                    int newDdId = RealEstateDataManager.getNextDwellingId();
+                    Dwelling dd = realEstateData.getDwelling(ids[selected]);
+                    int newDdId = RealEstateData.getNextDwellingId();
                     Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone.getZoneId(), null, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
                             dd.getPrice(), 0f, dd.getYearBuilt());
-                    realEstateDataManager.addDwelling(dwelling);
+                    realEstateData.addDwelling(dwelling);
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;
                     if (newDdId == SiloUtil.trackDd) {
                         SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
-                        SiloUtil.trackWriter.println(realEstateDataManager.getDwelling(newDdId).toString());
+                        SiloUtil.trackWriter.println(realEstateData.getDwelling(newDdId).toString());
                     }
                 }
             }
@@ -1678,7 +1678,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         int[] ddCount = new int[DwellingType.values().length];
         int[] occCount = new int[DwellingType.values().length];
-        for (Dwelling dd: realEstateDataManager.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
             ddCount[tp.ordinal()]++;

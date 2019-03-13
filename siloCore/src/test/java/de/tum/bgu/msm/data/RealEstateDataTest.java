@@ -2,9 +2,9 @@ package de.tum.bgu.msm.data;
 
 import cern.colt.matrix.io.MatrixVectorWriter;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import junitx.framework.FileAssert;
 import org.junit.BeforeClass;
@@ -15,7 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
 
-public class RealEstateDataManagerTest {
+public class RealEstateDataTest {
 
     @BeforeClass
     public static void setup() {
@@ -24,8 +24,8 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testdwellingCountByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        DataContainer dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         int[][] count = realEstate.getDwellingCountByTypeAndRegion();
 
         Locale.setDefault(Locale.ENGLISH);
@@ -47,8 +47,8 @@ public class RealEstateDataManagerTest {
 
     @Test
     public void testVacancyRateByTypeAndRegion() {
-        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        DataContainer dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         double[][] vacRate = realEstate.getVacancyRateByTypeAndRegion();
 
         Locale.setDefault(Locale.ENGLISH);

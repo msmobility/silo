@@ -16,9 +16,8 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
@@ -27,11 +26,12 @@ import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
-import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -49,37 +49,42 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final HouseholdFactory hhFactory;
     private final MovesModelI movesModel;
-    private HouseholdDataManager householdData;
+    private HouseholdData householdData;
+    private final Reader reader;
 
-    public LeaveParentHhModel(SiloDataContainerImpl dataContainer, MovesModelI move,
+    public LeaveParentHhModel(DataContainer dataContainer, MovesModelI move,
                               CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory,
-                              Properties properties) {
+                              Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
         this.movesModel = move;
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.hhFactory = hhFactory;
         this.householdData = dataContainer.getHouseholdData();
+        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
     public void setup() {
-        Reader reader = null;
-        switch (properties.main.implementation) {
-            case MARYLAND:
-            case AUSTIN:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
-                break;
-            case MUNICH:
-            case PERTH:
-            case KAGAWA:
-            case CAPE_TOWN:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
-        }
+//        Reader reader = null;
+//        switch (properties.main.implementation) {
+//            case MARYLAND:
+//            case AUSTIN:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
+//                break;
+//            case MUNICH:
+//            case PERTH:
+//            case KAGAWA:
+//            case CAPE_TOWN:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMuc"));
+//        }
         calculator = new LeaveParentHhJSCalculator(reader);
     }
 
     @Override
-    public Collection<LeaveParentsEvent> prepareYear(int year) {
+    public void prepareYear(int year) {}
+
+    @Override
+    public Collection<LeaveParentsEvent> getEventsForCurrentYear(int year) {
         final List<LeaveParentsEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
             if (qualifiesForParentalHHLeave(person)) {
@@ -102,7 +107,12 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
 
     }
 
@@ -121,7 +131,7 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
             return false;
         }
 
-        final HouseholdDataManager households = dataContainer.getHouseholdData();
+        final HouseholdData households = dataContainer.getHouseholdData();
         final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehold().getId());
         dataContainer.getHouseholdData().addHouseholdAboutToChange(hhOfThisPerson);
         households.removePersonFromHousehold(per);
@@ -133,7 +143,7 @@ public class LeaveParentHhModel extends AbstractModel implements EventModel<Leav
         per.setRole(PersonRole.SINGLE);
 
         movesModel.moveHousehold(newHousehold, -1, newDwellingId);
-        if (properties.main.implementation == Implementation.MUNICH) {
+        if (createCarOwnershipModel != null) {
             createCarOwnershipModel.simulateCarOwnership(newHousehold);
         }
 

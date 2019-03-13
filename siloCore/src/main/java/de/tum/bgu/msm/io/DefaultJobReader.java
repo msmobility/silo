@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.data.JobData;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -17,9 +17,9 @@ import java.io.IOException;
 public class DefaultJobReader implements JobReader {
 
     private final static Logger logger = Logger.getLogger(DefaultJobReader.class);
-    private final JobDataManager jobData;
+    private final JobData jobData;
 
-    public DefaultJobReader(JobDataManager jobData) {
+    public DefaultJobReader(JobData jobData) {
         this.jobData = jobData;
     }
 

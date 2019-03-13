@@ -4,9 +4,9 @@ import com.google.common.math.LongMath;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
@@ -24,7 +24,7 @@ public class AssignJobs {
     private static final Logger logger = Logger.getLogger(AssignJobs.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private Matrix distanceImpedance;
 
     private HashMap<String, Integer> jobIntTypes;
@@ -41,7 +41,7 @@ public class AssignJobs {
 
     private HashMap<Person, Integer> educationalLevel;
 
-    public AssignJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
+    public AssignJobs(DataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
         this.educationalLevel = educationalLevel;
@@ -54,8 +54,8 @@ public class AssignJobs {
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager households = dataContainer.getHouseholdData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
+        HouseholdData households = dataContainer.getHouseholdData();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), educationalLevel.get(pp));
             Household hh = pp.getHousehold();

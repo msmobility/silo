@@ -2,9 +2,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -19,7 +19,7 @@ public class AssignSchools {
     private static final Logger logger = Logger.getLogger(AssignSchools.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
 
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
@@ -29,7 +29,7 @@ public class AssignSchools {
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
-    public AssignSchools(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public AssignSchools(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -47,7 +47,7 @@ public class AssignSchools {
 
         double logging = 2;
         int it = 12;
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         for (Person pp : studentArrayList){
             int schooltaz;
             Household household = pp.getHousehold();

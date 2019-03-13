@@ -1,17 +1,18 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.container.SiloModelContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloModelContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
+import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -20,16 +21,17 @@ import org.junit.Test;
 public class LeaveParentHhModelTest {
 
     private static LeaveParentHhModel model;
-    private static SiloDataContainerImpl dataContainer;
+    private static DataContainerImpl dataContainer;
     private static Person person;
     private static Household household;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
-        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
-        model = modelContainer.getLph();
+        dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
+        MovesModelI moves = new MovesModelMstm(dataContainer, properties);
+        CreateCarOwnershipModel carOwnership = new CreateCarOwnershipModel(dataContainer);
+        model = new LeaveParentHhModel(dataContainer, moves, carOwnership, HouseholdUtil.getFactory(), properties);
 
         Dwelling dd = DwellingUtils.getFactory()
                 .createDwelling(999, 99, null, -1, DefaultDwellingTypeImpl.SFD, 1, 1, 0, 1, 1999);
@@ -49,11 +51,9 @@ public class LeaveParentHhModelTest {
         dataContainer.getHouseholdData().addPersonToHousehold(parent1, household);
         dataContainer.getHouseholdData().addPersonToHousehold(parent2, household);
 
-        dataContainer.getHouseholdData().identifyHighestHouseholdAndPersonId();
-        dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
-        dataContainer.getRealEstateData().identifyVacantDwellings();
         dataContainer.getRealEstateData().addDwellingToVacancyList(dd);
-        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());
+        dataContainer.getRealEstateData().setup();
+        dataContainer.getHouseholdData().setup();
     }
 
     @Ignore

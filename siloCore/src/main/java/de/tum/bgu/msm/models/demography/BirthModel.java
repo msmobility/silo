@@ -16,17 +16,18 @@
  */
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -45,38 +46,43 @@ import static de.tum.bgu.msm.data.person.Gender.MALE;
 public class BirthModel extends AbstractModel implements EventModel<BirthEvent> {
 
     private final PersonFactory factory;
+    private final Reader reader;
     private BirthJSCalculator calculator;
 
-    public BirthModel(SiloDataContainerImpl dataContainer, PersonFactory factory, Properties properties) {
+    public BirthModel(DataContainer dataContainer, PersonFactory factory, Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
         this.factory = factory;
+        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
     public void setup() {
-        final Reader reader;
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
-                break;
-            case PERTH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-                break;
-            case KAGAWA:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-                break;
-            default:
-                throw new RuntimeException("BirthModel implementation not applicable for " + properties.main.implementation);
-        }
+//        final Reader reader;
+//        switch (properties.main.implementation) {
+//            case MUNICH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+//                break;
+//            case MARYLAND:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
+//                break;
+//            case PERTH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+//                break;
+//            case KAGAWA:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
+//                break;
+//            default:
+//                throw new RuntimeException("BirthModel implementation not applicable for " + properties.main.implementation);
+//        }
         float localScaler = properties.demographics.localScaler;
         calculator = new BirthJSCalculator(reader, localScaler);
     }
 
     @Override
-    public Collection<BirthEvent> prepareYear(int year) {
+    public void prepareYear(int year) {}
+
+    @Override
+    public Collection<BirthEvent> getEventsForCurrentYear(int year) {
         final List<BirthEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdData().getPersons()) {
             final int id = per.getId();
@@ -93,11 +99,16 @@ public class BirthModel extends AbstractModel implements EventModel<BirthEvent> 
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     private boolean chooseBirth(int perId) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(perId);
         if (person != null && personCanGiveBirth(person)) {
             // todo: distinguish birth probability by neighborhood type (such as urban, suburban, rural)
@@ -117,7 +128,7 @@ public class BirthModel extends AbstractModel implements EventModel<BirthEvent> 
     }
 
     void giveBirth(Person person) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         final Household household = person.getHousehold();
         householdData.addHouseholdAboutToChange(household);
         final int id = householdData.getNextPersonId();

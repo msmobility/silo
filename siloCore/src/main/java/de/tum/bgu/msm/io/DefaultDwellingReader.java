@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -15,9 +15,9 @@ import java.io.IOException;
 public class DefaultDwellingReader implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingReader.class);
-    private final RealEstateDataManager realEstate;
+    private final RealEstateData realEstate;
 
-    public DefaultDwellingReader(RealEstateDataManager realEstate) {
+    public DefaultDwellingReader(RealEstateData realEstate) {
         this.realEstate= realEstate;
     }
 

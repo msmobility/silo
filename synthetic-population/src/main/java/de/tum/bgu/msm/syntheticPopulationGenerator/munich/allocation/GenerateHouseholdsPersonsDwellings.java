@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -22,7 +22,7 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private static final Logger logger = Logger.getLogger(GenerateHouseholdsPersonsDwellings.class);
 
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
 
     private final DataSetSynPop dataSetSynPop;
     private final MicroDataManager microDataManager;
@@ -47,10 +47,10 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private HashMap<Person, Integer> educationalLevel;
 
-    private HouseholdDataManager householdDataManager;
+    private HouseholdData householdData;
 
 
-    public GenerateHouseholdsPersonsDwellings(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
+    public GenerateHouseholdsPersonsDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.dataSetSynPop = dataSetSynPop;
         this.educationalLevel = educationalLevel;
@@ -61,7 +61,7 @@ public class GenerateHouseholdsPersonsDwellings {
         logger.info("   Running module: household, person and dwelling generation");
         previousHouseholds = 0;
         previousPersons = 0;
-        householdDataManager = dataContainer.getHouseholdData();
+        householdData = dataContainer.getHouseholdData();
         for (int municipality : dataSetSynPop.getMunicipalities()){
             initializeMunicipalityData(municipality);
             double logging = 2;
@@ -87,9 +87,9 @@ public class GenerateHouseholdsPersonsDwellings {
     private Household generateHousehold(){
 
         HouseholdFactory factory = HouseholdUtil.getFactory();
-        int id = householdDataManager.getNextHouseholdId();
+        int id = householdData.getNextHouseholdId();
         Household household = factory.createHousehold(id,id,0);
-                householdDataManager.addHousehold(household);
+                householdData.addHousehold(household);
         householdCounter++;
         return household;
     }
@@ -100,7 +100,7 @@ public class GenerateHouseholdsPersonsDwellings {
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
         PersonFactory factory = PersonUtils.getFactory();
         for (int person = 0; person < hhSize; person++) {
-            int id = householdDataManager.getNextPersonId();
+            int id = householdData.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
             Gender gender = Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
@@ -113,8 +113,8 @@ public class GenerateHouseholdsPersonsDwellings {
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
             Person pers = factory.createPerson(id, age, gender, race, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
-            householdDataManager.addPerson(pers);
-            householdDataManager.addPersonToHousehold(pers, hh);
+            householdData.addPerson(pers);
+            householdData.addPersonToHousehold(pers, hh);
             pers.setNationality(nationality1);
             pers.setDriverLicense(license);
             pers.setSchoolType(school);
@@ -126,7 +126,7 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private void generateDwelling(int hhSelected, int idHousehold, int tazSelected, int municipality){
 
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         int newDdId = realEstate.getNextDwellingId();
         int yearBracket = dataSetSynPop.getDwellingTable().get(hhSelected, "ddYear");
         int year = microDataManager.dwellingYearfromBracket(yearBracket);

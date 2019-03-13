@@ -1,14 +1,14 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.JobData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
@@ -21,27 +21,37 @@ import java.util.*;
  * Created on 25 February 2013 in Santa Fe, NM
  * Revised on 11 March 2014 in College Park, MD
  **/
-public class UpdateJobs extends AbstractModel implements AnnualModel {
+public class UpdateJobs extends AbstractModel implements ModelUpdateListener {
 
     private final Logger LOGGER = Logger.getLogger(UpdateJobs.class);
     private JobFactory factory;
 
-    public UpdateJobs(SiloDataContainerImpl dataContainer, Properties properties) {
+    public UpdateJobs(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
         factory = JobUtils.getFactory();
     }
 
     @Override
+    public void setup() {
+
+    }
+
+    @Override
     public void prepareYear(int year) {
-        if(year != properties.main.implementation.BASE_YEAR) {
+        if(year != properties.main.baseYear) {
             updateJobInventoryMultiThreadedThisYear(year);
         }
     }
 
     @Override
-    public void finishYear(int year) {}
+    public void endYear(int year) {}
 
-    public void updateJobInventoryMultiThreadedThisYear(int year) {
+    @Override
+    public void endSimulation() {
+
+    }
+
+    private void updateJobInventoryMultiThreadedThisYear(int year) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
 
         LOGGER.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
@@ -49,7 +59,7 @@ public class UpdateJobs extends AbstractModel implements AnnualModel {
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] jobsByZone = new int[JobType.getNumberOfJobTypes()][highestId + 1];
 
-        JobDataManager jobData = dataContainer.getJobData();
+        JobData jobData = dataContainer.getJobData();
 
         for (Job jj :jobData.getJobs()) {
             int jobTypeId = JobType.getOrdinal(jj.getType());
@@ -76,7 +86,7 @@ public class UpdateJobs extends AbstractModel implements AnnualModel {
         }
 
 
-        ConcurrentExecutor executor = ConcurrentExecutor.cachedService();
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.cachedService();
         //for (int row = 1; row <= forecast.getRowCount(); row++) {
         for (Zone zone : dataContainer.getGeoData().getZones().values()){
 
@@ -106,14 +116,5 @@ public class UpdateJobs extends AbstractModel implements AnnualModel {
             }
         }
         executor.execute();
-
-        // Fix job map, which for some reason keeps getting messed up
-        for (int jobId : jobData.getJobMapIDs()) {
-            Job jj = jobData.getJobFromId(jobId);
-            if (jj == null) {
-                jobData.removeJob(jobId);
-                LOGGER.warn("Had to manually remove Job " + jobId + " from job map.");
-            }
-        }
     }
 }

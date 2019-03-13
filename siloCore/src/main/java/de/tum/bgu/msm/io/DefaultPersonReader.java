@@ -2,7 +2,7 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
@@ -15,9 +15,9 @@ import java.io.IOException;
 public class DefaultPersonReader implements PersonReader{
 
     private final static Logger logger = Logger.getLogger(DefaultPersonReader.class);
-    private final HouseholdDataManager householdData;
+    private final HouseholdData householdData;
 
-    public DefaultPersonReader(HouseholdDataManager householdData) {
+    public DefaultPersonReader(HouseholdData householdData) {
         this.householdData = householdData;
     }
 

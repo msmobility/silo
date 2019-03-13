@@ -1,19 +1,18 @@
 package de.tum.bgu.msm.models.relocation;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.JobData;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.EventModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.DriversLicense;
 import de.tum.bgu.msm.models.demography.EmploymentModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -47,7 +46,7 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
     private int inMigrationPPCounter;
 
 
-    public InOutMigration(SiloDataContainerImpl dataContainer, EmploymentModel employment,
+    public InOutMigration(DataContainer dataContainer, EmploymentModel employment,
                           MovesModelI movesModel, CreateCarOwnershipModel carOwnership,
                           DriversLicense driversLicense, Properties properties) {
         super(dataContainer, properties);
@@ -55,6 +54,11 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
         this.driversLicense = driversLicense;
+    }
+
+
+    @Override
+    public void setup() {
         populationControlMethod = properties.moves.populationControlTotal;
         if (populationControlMethod.equalsIgnoreCase("population")) {
             String fileName = properties.main.baseDirectory + properties.moves.populationCOntrolTotalFile;
@@ -80,37 +84,23 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
 
 
         } else {
-            logger.error("Unknown property found for population.control.total, set to population or migration");
-            System.exit(0);
+            final String message
+                    = "Unknown property found for population.control.total, set to population or migration";
+            logger.error(message);
+            throw new RuntimeException(message);
         }
     }
 
-
     @Override
-    public Collection<MigrationEvent> prepareYear(int year) {
-        final List<MigrationEvent> events = new ArrayList<>();
-
-        logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
-
-        Household[] hhs = householdData.getHouseholds().toArray(new Household[0]);
-
-        createOutmigrants(year, events, hhs);
-        createInmigrants(year, events, hhs);
-
-        outMigrationPPCounter = 0;
-        inMigrationPPCounter = 0;
-
-        return events;
-    }
+    public void prepareYear(int year) {}
 
     private void createInmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         int inmigrants = 0;
         if (populationControlMethod.equalsIgnoreCase("migration")) {
             inmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Inmigration");
         } else {
-            int currentPopulation = householdData.getTotalPopulation();
+            int currentPopulation = householdData.getPersons().size();
             int target = (int) tblPopulationTarget.getIndexedValueAt(year, "Population");
             if (target > currentPopulation) {
                 inmigrants = target - currentPopulation;
@@ -126,12 +116,12 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
     }
 
     private void createOutmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         int outmigrants = 0;
         if (populationControlMethod.equalsIgnoreCase("migration")) {
             outmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Outmigration");
         } else {
-            int currentPopulation = householdData.getTotalPopulation();
+            int currentPopulation = householdData.getPersons().size();
             int target = (int) tblPopulationTarget.getIndexedValueAt(year, "Population");
             if (target < currentPopulation) {
                 outmigrants = currentPopulation - target;
@@ -145,6 +135,24 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
             createdOutMigrants += selectedHousehold.getHhSize();
 
         }
+    }
+
+    @Override
+    public Collection<MigrationEvent> getEventsForCurrentYear(int year) {
+        final List<MigrationEvent> events = new ArrayList<>();
+
+        logger.info("  Selecting outmigrants and creating inmigrants for the year " + year);
+        final HouseholdData householdData = dataContainer.getHouseholdData();
+
+        Household[] hhs = householdData.getHouseholds().toArray(new Household[0]);
+
+        createOutmigrants(year, events, hhs);
+        createInmigrants(year, events, hhs);
+
+        outMigrationPPCounter = 0;
+        inMigrationPPCounter = 0;
+
+        return events;
     }
 
     @Override
@@ -164,7 +172,7 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
         // Inmigrate household with hhId from HashMap inmigratingHhData<Integer, int[]>
 
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
 
         // Searching for employment has to be in a separate loop from setting up all persons, as finding a
         // job will change the household income and household type, which can only be calculated after all
@@ -182,7 +190,7 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
         int newDdId = movesModel.searchForNewDwelling(hh);
         if (newDdId > 0) {
             movesModel.moveHousehold(hh, -1, newDdId);
-            if (properties.main.implementation == Implementation.MUNICH) {
+            if (carOwnership != null) {
                 carOwnership.simulateCarOwnership(hh); // set initial car ownership of new household
             }
             inMigrationPPCounter += hh.getHhSize();
@@ -216,7 +224,7 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
         if (hhId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
         }
-        JobDataManager jobData = dataContainer.getJobData();
+        JobData jobData = dataContainer.getJobData();
         for (Map.Entry<Integer, ? extends Person> person : hh.getPersons().entrySet()) {
             if (person.getValue().getJobId() > 0) {
                 jobData.quitJob(true, person.getValue());
@@ -230,9 +238,14 @@ public class InOutMigration extends AbstractModel implements EventModel<Migratio
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
         SummarizeData.resultFile("InmigrantsPP," + inMigrationPPCounter);
         SummarizeData.resultFile("OutmigrantsPP," + outMigrationPPCounter);
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
 

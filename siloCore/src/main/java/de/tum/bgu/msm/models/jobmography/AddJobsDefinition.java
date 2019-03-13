@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.GeoData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
-import de.tum.bgu.msm.data.job.JobFactoryImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -18,9 +17,9 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
     public final GeoData geoData;
     private final JobFactory factory;
 
-    public AddJobsDefinition(Zone zone, int change, String jobType, SiloDataContainer dataContainer, JobFactory factory) {
+    public AddJobsDefinition(Zone zone, int change, String jobType, DataContainer dataContainer, JobFactory factory) {
         super(zone, change, jobType, dataContainer);
-        this.ids = jobDataManager.getNextJobIds(change);
+        this.ids = jobData.getNextJobIds(change);
         this.geoData = dataContainer.getGeoData();
         this.factory = factory;
     }
@@ -33,8 +32,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             synchronized (Job.class) {
                 Coordinate coordinate = zone.getRandomCoordinate();
                 final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
-                ((JobFactoryImpl) factory).assignWorkingTimesFromDistribution(job);
-                jobDataManager.addJob(job);
+                jobData.addJob(job);
             }
             if (id == SiloUtil.trackJj) {
                 SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +

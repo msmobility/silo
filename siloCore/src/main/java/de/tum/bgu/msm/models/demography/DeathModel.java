@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
@@ -12,6 +12,7 @@ import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -25,17 +26,28 @@ import java.util.List;
  */
 public class DeathModel extends AbstractModel implements EventModel<DeathEvent> {
 
+    private final Reader reader;
     private DeathJSCalculator calculator;
 
-    public DeathModel(SiloDataContainerImpl dataContainer, Properties properties) {
+    public DeathModel(DataContainer dataContainer, Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
+        this.reader = new InputStreamReader(inputStream);
+    }
+
+    @Override
+    public Collection<DeathEvent> getEventsForCurrentYear(int year) {
+        final List<DeathEvent> events = new ArrayList<>();
+        for (Person person : dataContainer.getHouseholdData().getPersons()) {
+            events.add(new DeathEvent(person.getId()));
+        }
+        return events;
     }
 
     @Override
     public boolean handleEvent(DeathEvent event) {
 
         // simulate if person with ID perId dies in this simulation period
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         final Person person = householdData.getPersonFromId(event.getPersonId());
         if (person != null) {
             final int age = Math.min(person.getAge(), 100);
@@ -47,40 +59,41 @@ public class DeathModel extends AbstractModel implements EventModel<DeathEvent> 
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     @Override
     public void setup() {
-        final Reader reader;
-
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
-                break;
-            case PERTH:
-            case KAGAWA:
-            case CAPE_TOWN:
-            default:
-                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
-        }
+//        final Reader reader;
+//
+//        switch (properties.main.implementation) {
+//            case MUNICH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMuc"));
+//                break;
+//            case MARYLAND:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
+//                break;
+//            case PERTH:
+//            case KAGAWA:
+//            case CAPE_TOWN:
+//            default:
+//                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
+//        }
         calculator = new DeathJSCalculator(reader);
     }
 
     @Override
-    public Collection<DeathEvent> prepareYear(int year) {
-        final List<DeathEvent> events = new ArrayList<>();
-        for (Person person : dataContainer.getHouseholdData().getPersons()) {
-            events.add(new DeathEvent(person.getId()));
-        }
-        return events;
+    public void prepareYear(int year) {
+
     }
 
     boolean die(Person person) {
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         final Household hhOfPersonToDie = person.getHousehold();
         householdData.addHouseholdAboutToChange(hhOfPersonToDie);
 

@@ -1,18 +1,21 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.container.SiloModelContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.HouseholdDataImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.relocation.InOutMigration;
+import de.tum.bgu.msm.models.relocation.MovesModelI;
+import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -28,16 +31,20 @@ public class MarriageModelTest {
     private static int[] couple3;
     private static int[] couple4;
 
-    private static SiloDataContainerImpl dataContainer;
-    private static HouseholdDataManager singleHouseholds;
+    private static DataContainerImpl dataContainer;
+    private static HouseholdData singleHouseholds;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
-        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        SiloModelContainer modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
-        model = (DefaultMarriageModel) modelContainer.getMarriage();
+        dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
+        MovesModelI moves = new MovesModelMstm(dataContainer, properties);
+        CreateCarOwnershipModel carOwnership = new CreateCarOwnershipModel(dataContainer);
+        EmploymentModel employment = new EmploymentModel(dataContainer, properties);
+        DriversLicense driversLicense = new DriversLicense(dataContainer, properties);
+        InOutMigration iomig = new InOutMigration(dataContainer, employment, moves, carOwnership, driversLicense, properties);
+        model = new DefaultMarriageModel(dataContainer, moves, iomig, carOwnership, HouseholdUtil.getFactory(), properties);
 
         couple1 = new int[]{1,2};
         Household household1 = HouseholdUtil.getFactory().createHousehold(1,  1, 0);
@@ -123,12 +130,10 @@ public class MarriageModelTest {
         dataContainer.getHouseholdData().addPerson(person8Child3);
         dataContainer.getHouseholdData().addPersonToHousehold(person8Child3, household8);
 
-        dataContainer.getHouseholdData().identifyHighestHouseholdAndPersonId();
-        dataContainer.getRealEstateData().setHighestVariablesAndCalculateRentShareByIncome();
-        dataContainer.getRealEstateData().identifyVacantDwellings();
+        dataContainer.getRealEstateData().setup();
 
         Random rnd = new Random(42);
-        singleHouseholds = new HouseholdDataManager(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());
+        singleHouseholds = new HouseholdDataImpl(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         PrimitiveIterator.OfInt ages = rnd.ints(20, 60).iterator();
         PrimitiveIterator.OfInt genders = rnd.ints(1,3).iterator();
         Iterator<Race> races = rnd.ints(0, 4).mapToObj(i -> Race.values()[i]).iterator();

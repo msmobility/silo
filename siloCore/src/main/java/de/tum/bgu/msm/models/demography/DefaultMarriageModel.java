@@ -17,10 +17,8 @@
 package de.tum.bgu.msm.models.demography;
 
 import com.google.common.collect.*;
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -31,12 +29,14 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
@@ -53,6 +53,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private final static Logger LOGGER = Logger.getLogger(DefaultMarriageModel.class);
 
     private MarryDivorceJSCalculator calculator;
+    private final Reader reader;
 
     private final InOutMigration iomig;
     private final MovesModelI movesModel;
@@ -71,14 +72,15 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public DefaultMarriageModel(SiloDataContainerImpl dataContainer, MovesModelI movesModel,
+    public DefaultMarriageModel(DataContainer dataContainer, MovesModelI movesModel,
                                 InOutMigration iomig, CreateCarOwnershipModel carOwnership,
-                                HouseholdFactory hhFactory, Properties properties) {
+                                HouseholdFactory hhFactory, Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
         this.hhFactory = hhFactory;
+        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
@@ -86,28 +88,31 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         // localMarriageAdjuster serves to adjust from national marriage rates to local conditions
         double scale = properties.demographics.localMarriageAdjuster;
 
-        final Reader reader;
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
-                break;
-            case PERTH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-                break;
-            case KAGAWA:
-            case CAPE_TOWN:
-            default:
-                throw new RuntimeException("Marriage model implementation not applicable for " + properties.main.implementation);
-        }
+//        final Reader reader;
+//        switch (properties.main.implementation) {
+//            case MUNICH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+//                break;
+//            case MARYLAND:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+//                break;
+//            case PERTH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+//                break;
+//            case KAGAWA:
+//            case CAPE_TOWN:
+//            default:
+//                throw new RuntimeException("Marriage model implementation not applicable for " + properties.main.implementation);
+//        }
         calculator = new MarryDivorceJSCalculator(reader, scale);
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
     @Override
-    public Collection<MarriageEvent> prepareYear(int year) {
+    public void prepareYear(int year) {}
+
+    @Override
+    public Collection<MarriageEvent> getEventsForCurrentYear(int year) {
         final List<MarriageEvent> events = new ArrayList<>();
         if (properties.eventRules.marriage) {
             events.addAll(selectCouplesToGetMarriedThisYear(dataContainer.getHouseholdData().getPersons()));
@@ -123,7 +128,12 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
@@ -253,7 +263,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private boolean marryCouple(int id1, int id2) {
 
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         final Person partner1 = householdData.getPersonFromId(id1);
 
         if (!ruleGetMarried(partner1)) {
@@ -350,7 +360,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
                 return false;
             } else {
                 movesModel.moveHousehold(moveTo, -1, newDwellingId);
-                if (properties.main.implementation == Implementation.MUNICH) {
+                if (carOwnership != null) {
                     carOwnership.simulateCarOwnership(moveTo); // set initial car ownership of new household
                 }
             }
@@ -359,7 +369,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     }
 
     private void movePerson(Person person1, Household moveTo) {
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         final Household household1 = person1.getHousehold();
         if (!moveTo.equals(household1)) {
             householdData.removePersonFromHousehold(person1);
@@ -372,7 +382,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
     private void moveRemainingChildren(Household oldHh, Household newHh) {
         List<Person> remainingPersons = new ArrayList<>(oldHh.getPersons().values());
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         for (Person person : remainingPersons) {
             householdData.removePersonFromHousehold(person);
             householdData.addPersonToHousehold(person, newHh);

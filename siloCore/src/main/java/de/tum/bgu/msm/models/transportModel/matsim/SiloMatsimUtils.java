@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.JobData;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -104,17 +104,17 @@ public class SiloMatsimUtils {
 		return config;
 	}
 
-//	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer,
+//	public static Population createMatsimPopulation(Config config, DataContainer dataContainer,
 //			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
-	public static Population createMatsimPopulation(Config config, SiloDataContainer dataContainer, double scalingFactor) {
+	public static Population createMatsimPopulation(Config config, DataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
-		HouseholdDataManager householdData = dataContainer.getHouseholdData();
+		HouseholdData householdData = dataContainer.getHouseholdData();
 		Collection<Person> siloPersons = householdData.getPersons();
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
-    	JobDataManager jobData = dataContainer.getJobData();
+    	JobData jobData = dataContainer.getJobData();
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not

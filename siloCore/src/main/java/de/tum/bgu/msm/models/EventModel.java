@@ -1,15 +1,11 @@
 package de.tum.bgu.msm.models;
 
 import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.simulator.UpdateListener;
 
 import java.util.Collection;
 
-public interface EventModel<T extends MicroEvent> {
-
-    /**
-     * TODO
-     */
-    void setup();
+public interface EventModel<T extends MicroEvent> extends UpdateListener {
 
     /**
      * Perform model internal preparations for the current year and return
@@ -17,7 +13,7 @@ public interface EventModel<T extends MicroEvent> {
      * @param year  the current starting year for which events shall be created
      * @return  a Collection of events that this model will handle in the current year.
      */
-    Collection<T> prepareYear(int year);
+    Collection<T> getEventsForCurrentYear(int year);
 
     /**
      * Handles the given event and returns whether the event succeeded, i.e.
@@ -28,9 +24,4 @@ public interface EventModel<T extends MicroEvent> {
      */
     boolean handleEvent(T event);
 
-    /**
-     * Entry point for post-year actions, e.g. cleaning up or summarizing temporary data
-     * @param year  the current ending year
-     */
-    void finishYear(int year);
 }

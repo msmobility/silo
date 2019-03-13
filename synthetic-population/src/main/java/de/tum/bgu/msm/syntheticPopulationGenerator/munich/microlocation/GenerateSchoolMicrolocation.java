@@ -1,8 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.SchoolDataManager;
+import de.tum.bgu.msm.container.DataContainerImpl;
+import de.tum.bgu.msm.data.SchoolData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -21,12 +20,12 @@ public class GenerateSchoolMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateSchoolMicrolocation.class);
 
-    private final SiloDataContainerImpl dataContainer;
+    private final DataContainerImpl dataContainer;
     private final DataSetSynPop dataSetSynPop;
     Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
 
 
-    public GenerateSchoolMicrolocation(SiloDataContainerImpl dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateSchoolMicrolocation(DataContainerImpl dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -80,7 +79,7 @@ public class GenerateSchoolMicrolocation {
             zoneSchoolTypeSchoolLocationCapacity.put(zone,schoolLocationListForThisSchoolType);
         }
 
-        SchoolDataManager schoolDataManager = dataContainer.getSchoolData();
+        SchoolData schoolData = dataContainer.getSchoolData();
 
         for (int row = 1; row <= PropertiesSynPop.get().main.schoolLocationlist.getRowCount(); row++) {
 
@@ -92,7 +91,7 @@ public class GenerateSchoolMicrolocation {
             int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"schoolType");
 
             Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
-            schoolDataManager.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
+            schoolData.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
 
             if (zoneSchoolTypeSchoolLocationCapacity.get(zone) != null){
                 zoneSchoolTypeSchoolLocationCapacity.get(zone).get(schoolType).put(id,schoolCapacity);

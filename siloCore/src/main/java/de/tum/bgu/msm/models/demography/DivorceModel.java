@@ -1,10 +1,7 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.models.EventModel;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -13,10 +10,13 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.EventModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -30,40 +30,45 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
     private final HouseholdFactory hhFactory;
 
     private MarryDivorceJSCalculator calculator;
+    private final Reader reader;
 
-    public DivorceModel(SiloDataContainerImpl dataContainer, MovesModelI movesModel,
+    public DivorceModel(DataContainer dataContainer, MovesModelI movesModel,
                         CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
-                        Properties properties) {
+                        Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
         this.hhFactory = hhFactory;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
+        this.reader = new InputStreamReader(inputStream);
     }
 
 
     @Override
     public void setup() {
-        final Reader reader;
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
-                break;
-            case PERTH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
-                break;
-            case KAGAWA:
-            case CAPE_TOWN:
-            default:
-                throw new RuntimeException("DivorceModel implementation not applicable for " + properties.main.implementation);
-        }
+//        final Reader reader;
+//        switch (properties.main.implementation) {
+//            case MUNICH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+//                break;
+//            case MARYLAND:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
+//                break;
+//            case PERTH:
+//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMuc"));
+//                break;
+//            case KAGAWA:
+//            case CAPE_TOWN:
+//            default:
+//                throw new RuntimeException("DivorceModel implementation not applicable for " + properties.main.implementation);
+//        }
         calculator = new MarryDivorceJSCalculator(reader, 0);
     }
 
     @Override
-    public Collection<DivorceEvent> prepareYear(int year) {
+    public void prepareYear(int year) {}
+
+    @Override
+    public Collection<DivorceEvent> getEventsForCurrentYear(int year) {
         final List<DivorceEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdData().getPersons()) {
             if (person.getRole() == PersonRole.MARRIED) {
@@ -79,14 +84,19 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
 
     }
 
     private boolean chooseDivorce(int perId) {
         // select if person gets divorced/leaves joint dwelling
 
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         Person per = householdData.getPersonFromId(perId);
         if (per != null && per.getRole() == PersonRole.MARRIED) {
             final double probability = calculator.calculateDivorceProbability(per.getType().ordinal()) / 2;
@@ -125,7 +135,7 @@ public class DivorceModel extends AbstractModel implements EventModel<DivorceEve
                         oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
                         " has divorced from household " + oldHh + " and established the new household " +
                         newHhId + ".");
-                if (properties.main.implementation == Implementation.MUNICH) {
+                if (carOwnership != null) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }
                 return true;

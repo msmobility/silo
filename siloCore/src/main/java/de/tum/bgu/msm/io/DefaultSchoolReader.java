@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.data.SchoolDataManager;
+import de.tum.bgu.msm.data.SchoolDataImpl;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolFactory;
 import de.tum.bgu.msm.data.school.SchoolUtils;
@@ -17,9 +17,9 @@ import java.io.IOException;
 public class DefaultSchoolReader implements SchoolReader {
 
     private final static Logger logger = Logger.getLogger(DefaultSchoolReader.class);
-    private final SchoolDataManager schoolData;
+    private final SchoolDataImpl schoolData;
 
-    public DefaultSchoolReader(SchoolDataManager schoolData) {
+    public DefaultSchoolReader(SchoolDataImpl schoolData) {
         this.schoolData = schoolData;
     }
 
@@ -68,7 +68,6 @@ public class DefaultSchoolReader implements SchoolReader {
 
                 School ss = factory.createSchool(id, type, capacity, occupancy, coordinate,zoneId);
                 schoolData.addSchool(ss);
-                schoolData.addSchoolToSearchTree(ss);
 //Qin???
 //                if (id == SiloUtil.trackSs) {
 //                    SiloUtil.trackWriter.println("Read school with following attributes from " + fileName);

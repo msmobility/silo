@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.simulator.AnnualUpdate;
+import de.tum.bgu.msm.simulator.UpdateListener;
 
 import java.util.Map;
 
@@ -10,17 +10,30 @@ import java.util.Map;
  * Created on 5 April 2017 in Munich
  **/
 
-public interface GeoData extends AnnualUpdate {
+public interface GeoData extends UpdateListener {
 
     /**
-     * Returns an immutable map of all zones mapped to their IDs
+     * Returns a map of all zones mapped to their IDs
      */
     Map<Integer, Zone> getZones();
 
     /**
-     * Returns an immutable map of all regions mapped to their IDs
+     * Returns a map of all regions mapped to their IDs
      */
     Map<Integer, Region> getRegions();
+
+    /**
+     * TODO
+     * @param zone
+     * @return
+     */
+    void addZone(Zone zone);
+
+    /**
+     * TODO
+     * @return
+     */
+    void addRegion(Region region);
 
 
 }

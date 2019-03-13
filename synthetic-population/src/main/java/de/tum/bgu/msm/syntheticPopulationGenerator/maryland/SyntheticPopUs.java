@@ -5,7 +5,7 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -21,6 +21,7 @@ import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.io.GeoDataReaderMstm;
 import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -66,38 +67,41 @@ public class SyntheticPopUs implements SyntheticPopI {
     protected HashMap<Integer, Integer> jobErrorCounter;
 
     private ResourceBundle rb;
+    private final Properties properties;
     private GeoDataMstm geoData;
     private Accessibility accessibility;
-    private RealEstateDataManager realEstateDataManager;
-    private HouseholdDataManager householdDataManager;
-    private JobDataManager jobData;
+    private RealEstateData realEstateData;
+    private HouseholdData householdData;
+    private JobData jobData;
     private SkimTravelTimes travelTimes;
 
 
-    public SyntheticPopUs(ResourceBundle rb) {
+    public SyntheticPopUs(ResourceBundle rb, Properties properties) {
         // constructor
         this.rb = rb;
+        this.properties = properties;
     }
 
 
     public void runSP () {
         // main method to run the synthetic population generator
 
-        if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SP)) return;
-
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
-        SiloDataContainerImpl dataContainer = SiloDataContainerImpl.createEmptySiloDataContainer(Implementation.MARYLAND);
+        DataContainerImpl dataContainer = DataContainerImpl.createEmptySiloDataContainer(Implementation.MARYLAND);
         geoData = (GeoDataMstm) dataContainer.getGeoData();
-        geoData.readData();
+        new GeoDataReaderMstm(geoData).readZoneCsv();
+        new GeoDataReaderMstm(geoData).readZoneShapefile();
+        new GeoDataReaderMstm(geoData).readCrimeData();
+
         identifyUniquePUMAzones();
         readControlTotals();
 
-        realEstateDataManager = dataContainer.getRealEstateData();
-        householdDataManager = dataContainer.getHouseholdData();
+        realEstateData = dataContainer.getRealEstateData();
+        householdData = dataContainer.getHouseholdData();
         jobData = dataContainer.getJobData();
         createJobs();
         travelTimes = new SkimTravelTimes();
-        accessibility = new Accessibility(dataContainer);                        // read in travel times and trip length frequency distribution
+        accessibility = new Accessibility(dataContainer, properties);                        // read in travel times and trip length frequency distribution
 
 //        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
 //        travelTimes.readSkim(TransportMode.pt, transitSkimFile,
@@ -107,16 +111,16 @@ public class SyntheticPopUs implements SyntheticPopI {
         travelTimes.readSkim(TransportMode.car, carSkimFile,
                     Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
 
-        accessibility.initialize();
+        accessibility.setup();
         processPums();
 
         generateAutoOwnership(dataContainer);
         //SummarizeData.summarizeAutoOwnershipByCounty(accessibility, dataContainer);
         addVacantDwellings();
 //        if (ResourceUtil.getBooleanProperty(rb, PROPERTIES_VALIDATE_SYNTH_POP)) validateHHandDD();
-        logger.info ("  Total number of households created " + householdDataManager.getHouseholds().size());
-        logger.info ("  Total number of persons created    " + householdDataManager.getPersons().size());
-        logger.info ("  Total number of dwellings created  " + realEstateDataManager.getDwellings().size());
+        logger.info ("  Total number of households created " + householdData.getHouseholds().size());
+        logger.info ("  Total number of persons created    " + householdData.getPersons().size());
+        logger.info ("  Total number of dwellings created  " + realEstateData.getDwellings().size());
         logger.info ("  Total number of jobs created       " + jobData.getJobs().size());
         calculateVacancyRate();
         if (!jobErrorCounter.isEmpty()) {
@@ -199,7 +203,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         for (int row = 1; row <= jobs.getRowCount(); row++) {
             int taz = (int) jobs.getValueAt(row, "SMZ");
-            int pumaOfWorkZone = geoData.getSimplifiedPUMAofZone(taz);
+            int pumaOfWorkZone = ((MstmZone) geoData.getZones().get(taz)).getSimplifiedPuma();
             if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
                 int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
                 int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
@@ -408,12 +412,12 @@ public class SyntheticPopUs implements SyntheticPopI {
                 for(int i = 0; i < weight; i++) {
                     //Only Create household if size >0
                     int newHhId;
-                    int newDddId = RealEstateDataManager.getNextDwellingId();
+                    int newDddId = realEstateData.getNextDwellingId();
                     if(hhSize > 0) {
-                        newHhId = householdDataManager.getNextHouseholdId();
+                        newHhId = householdData.getNextHouseholdId();
                         Household hh = HouseholdUtil.getFactory().createHousehold(newHhId, newDddId, autos);
                         households.add(hh);
-                        householdDataManager.addHousehold(hh);
+                        householdData.addHousehold(hh);
                         hhCount++;
                     } else {
                         newHhId = -1;
@@ -422,7 +426,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     int selectedYear = selectYear(yearBuilt);
 
                     Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDddId, taz, null, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
-                    realEstateDataManager.addDwelling(dwelling);
+                    realEstateData.addDwelling(dwelling);
                 }
                 householdsBySerial.put(serial, households);
             }
@@ -494,11 +498,11 @@ public class SyntheticPopUs implements SyntheticPopI {
                 if(households.containsKey(serial)) {
 
                     for (Household household : households.get(serial)) {
-                        int newPpId = householdDataManager.getNextPersonId();
+                        int newPpId = householdData.getNextPersonId();
 
                         int workplace = -1;
                         if (occ == Occupation.EMPLOYED) {
-                            Dwelling dd = realEstateDataManager.getDwelling(household.getDwellingId());
+                            Dwelling dd = realEstateData.getDwelling(household.getDwellingId());
                             workplace = selectWorkplaceByTripLengthFrequencyDistribution(workPumaZone, workState, dd.getZoneId());
                         }
                         if (workplace > 0) {
@@ -506,8 +510,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                         }
 
                         Person pp = PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), race, occ, null, workplace, income);
-                        householdDataManager.addPerson(pp);
-                        householdDataManager.addPersonToHousehold(pp, household);
+                        householdData.addPerson(pp);
+                        householdData.addPersonToHousehold(pp, household);
                         relationsHipsByPerson.put(pp.getId(), relationship);
                         ppCounter++;
                     }
@@ -905,12 +909,12 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private void generateAutoOwnership (SiloDataContainerImpl dataContainer) {
+    private void generateAutoOwnership (DataContainerImpl dataContainer) {
         // select number of cars for every household
-        dataContainer.getJobData().calculateJobDensityByZone();
+        dataContainer.getJobData().setup();
         MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get());   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
-        for (Household hh: householdDataManager.getHouseholds()) {
+        for (Household hh: householdData.getHouseholds()) {
             households.put(hh.getId(), null);
         }
     }
@@ -921,12 +925,12 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Adding empty dwellings to match vacancy rate");
 
-        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
         HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypeImpl.values().length][2];
-        for (Dwelling dd: realEstateDataManager.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             int taz = dd.getZoneId();
             int occ = dd.getResidentId();
             ddCount[taz][dwellingTypes.indexOf(dd.getType())][0]++;
@@ -975,16 +979,16 @@ public class SyntheticPopUs implements SyntheticPopI {
                 Integer[] ids = dList.toArray(new Integer[dList.size()]);
                 while (vacDwellingsModel < SiloUtil.rounder(targetThisTypeThisZoneAbs,0)) {
                     int selected = SiloUtil.select(ids.length) - 1;
-                    Dwelling dd = realEstateDataManager.getDwelling(ids[selected]);
-                    int newDdId = RealEstateDataManager.getNextDwellingId();
+                    Dwelling dd = realEstateData.getDwelling(ids[selected]);
+                    int newDdId = RealEstateData.getNextDwellingId();
                     Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone.getZoneId(), null, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
                             dd.getPrice(), 0f, dd.getYearBuilt());
-                    realEstateDataManager.addDwelling(dwelling);
+                    realEstateData.addDwelling(dwelling);
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;
                     if (newDdId == SiloUtil.trackDd) {
                         SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
-                        SiloUtil.trackWriter.println(realEstateDataManager.getDwelling(newDdId).toString());
+                        SiloUtil.trackWriter.println(realEstateData.getDwelling(newDdId).toString());
                     }
                 }
             }
@@ -1047,11 +1051,11 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void calculateVacancyRate () {
         //calculate and log vacancy rate
 
-        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
 
         int[] ddCount = new int[dwellingTypes.size()];
         int[] occCount = new int[DefaultDwellingTypeImpl.values().length];
-        for (Dwelling dd: realEstateDataManager.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
             ddCount[dwellingTypes.indexOf(tp)]++;
@@ -1098,7 +1102,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // summarize number of people by PersonRole (married, single, child)
 
         int[][] roleCounter = new int[101][3];
-        for (Person pp: householdDataManager.getPersons()) {
+        for (Person pp: householdData.getPersons()) {
             if (pp.getGender() == Gender.MALE) {
                 continue;
             }

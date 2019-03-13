@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -60,7 +60,7 @@ public class HouseholdUtil {
         // define household type based on size and income
 
         int hhSize = household.getHhSize();
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
+        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
 
         HouseholdType ht = null;
         if (hhSize == 1) {
@@ -85,6 +85,22 @@ public class HouseholdUtil {
             else ht = SIZE_4_INC_VERY_HIGH;
         }
         return ht;
+    }
+
+    /**
+     * return income category defined exogenously
+     * @param hhInc
+     * @return
+     */
+    public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
+        int[] incomeBrackets = Properties.get().main.incomeBrackets;
+        for (int i = 0; i < incomeBrackets.length; i++) {
+            if (hhInc < incomeBrackets[i]) {
+                return IncomeCategory.values()[i];
+            }
+        }
+        // if income is larger than highest category
+        return IncomeCategory.values()[IncomeCategory.values().length - 1];
     }
 
     public static Race defineHouseholdRace(Household household) {

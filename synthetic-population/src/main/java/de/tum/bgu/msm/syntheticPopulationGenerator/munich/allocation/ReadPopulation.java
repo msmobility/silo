@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.JobData;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -23,10 +23,10 @@ import java.util.HashMap;
 public class ReadPopulation {
 
     private static final Logger logger = Logger.getLogger(ReadPopulation.class);
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    ReadPopulation(SiloDataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
+    ReadPopulation(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.educationalLevel = educationalLevel;
     }
@@ -43,7 +43,7 @@ public class ReadPopulation {
     private void readHouseholdData(int year) {
         logger.info("Reading household micro data from ascii file");
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         HouseholdFactory householdFactory = HouseholdUtil.getFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         fileName += "_" + year + ".csv";
@@ -87,7 +87,7 @@ public class ReadPopulation {
     private void readPersonData(int year) {
         logger.info("Reading person micro data from ascii file");
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
         fileName += "_" + year + ".csv";
 
@@ -170,7 +170,7 @@ public class ReadPopulation {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
         fileName += "_" + year + ".csv";
 
@@ -233,7 +233,7 @@ public class ReadPopulation {
     private void readJobData(int year) {
         logger.info("Reading job micro data from ascii file");
 
-        JobDataManager jobDataManager = dataContainer.getJobData();
+        JobData jobData = dataContainer.getJobData();
         String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
@@ -258,7 +258,7 @@ public class ReadPopulation {
                 int zoneId    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                jobDataManager.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
+                jobData.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }

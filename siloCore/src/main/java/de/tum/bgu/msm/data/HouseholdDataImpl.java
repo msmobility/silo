@@ -16,12 +16,11 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -40,54 +39,93 @@ import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
  * @author Greg Erhardt
  * Created on Dec 2, 2009
  */
-public class HouseholdDataManager {
-    private final static Logger logger = Logger.getLogger(HouseholdDataManager.class);
-    private final SiloDataContainer dataContainer;
+public class HouseholdDataImpl implements HouseholdData {
+
+    private final static Logger logger = Logger.getLogger(HouseholdDataImpl.class);
+
+    private final DataContainer dataContainer;
+
     private final PersonFactory ppFactory;
     private final HouseholdFactory hhFactory;
 
     private int highestHouseholdIdInUse;
     private int highestPersonIdInUse;
 
-    private float[][][] incomeByAgeGenderOccupation;
-    private static float[] medianIncome;
+    private float[][][] avgIncomeByGenderByAgeByOccupation;
+    private final Map<Integer, Float> medianIncomeByMsa = new HashMap<>();
 
     private final Map<Integer, Person> persons = new HashMap<>();
     private final Map<Integer, Household> households = new HashMap<>();
 
     private List<Household> updatedHouseholds = new ArrayList<>();
 
-    public HouseholdDataManager(SiloDataContainer dataContainer, PersonFactory ppFactory, HouseholdFactory hhFactory) {
+    public HouseholdDataImpl(DataContainer dataContainer, PersonFactory ppFactory, HouseholdFactory hhFactory) {
         this.dataContainer = dataContainer;
         this.ppFactory = ppFactory;
         this.hhFactory = hhFactory;
     }
 
+    @Override
+    public void setup() {
+        identifyHighestHouseholdAndPersonId();
+        avgIncomeByGenderByAgeByOccupation = calculateIncomeDistribution();
+    }
+
+    @Override
+    public void prepareYear(int year) {
+        adjustIncome();
+        // needs to be calculated even if no dwellings are added this year:
+        // median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
+        calculateMedianHouseholdIncomeByMSA();
+    }
+
+    @Override
+    public void endYear(int year) {
+        updatedHouseholds.clear();
+    }
+
+    @Override
+    public void endSimulation() {
+
+    }
+
+    @Override
+    public float getMedianIncome(int msa) {
+        return medianIncomeByMsa.get(msa);
+    }
+
+    @Override
+    public float getAverageIncome(Gender gender, int age, Occupation occupation) {
+        return avgIncomeByGenderByAgeByOccupation[gender.ordinal()][age][occupation==Occupation.EMPLOYED?1:0];
+    }
+
+    @Override
     public Household getHouseholdFromId(int householdId) {
         return households.get(householdId);
     }
 
+    @Override
     public Collection<Household> getHouseholds() {
         return Collections.unmodifiableCollection(households.values());
     }
 
+    @Override
     public Person getPersonFromId(int id) {
         return persons.get(id);
     }
 
+    @Override
     public void removePerson(int id) {
         removePersonFromHousehold(persons.get(id));
         persons.remove(id);
     }
 
-    public int getPersonCount() {
-        return persons.size();
-    }
-
+    @Override
     public Collection<Person> getPersons() {
         return persons.values();
     }
 
+    @Override
     public void removePersonFromHousehold(Person person) {
         Household household = person.getHousehold();
         if (household != null) {
@@ -103,6 +141,7 @@ public class HouseholdDataManager {
         }
     }
 
+    @Override
     public void addPersonToHousehold(Person person, Household household) {
         // add existing person per (not a newborn child) to household
         if (household.getPersons().containsKey(person.getId())) {
@@ -116,35 +155,27 @@ public class HouseholdDataManager {
         }
     }
 
-    public int getTotalPopulation() {
-        int tp = 0;
-        for (Household hh : households.values()) {
-            tp += hh.getHhSize();
-        }
-        return tp;
+    @Override
+    public int getNextHouseholdId() {
+        return ++highestHouseholdIdInUse;
     }
 
-    private float getAverageHouseholdSize() {
-        float ahs = 0;
-        int cnt = 0;
-        for (Household hh : households.values()) {
-            ahs += hh.getHhSize();
-            cnt++;
-        }
-        return ahs / (float) cnt;
+    @Override
+    public int getNextPersonId() {
+        return ++highestPersonIdInUse;
     }
 
-    public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
-        // return income category defined exogenously
-        for (int i = 0; i < Properties.get().main.incomeBrackets.length; i++) {
-            if (hhInc < Properties.get().main.incomeBrackets[i]) {
-                return IncomeCategory.values()[i];
-            }
-        }
-        // if income is larger than highest category
-        return IncomeCategory.values()[IncomeCategory.values().length - 1];
+    @Override
+    public int getHighestHouseholdIdInUse() {
+        return highestHouseholdIdInUse;
     }
 
+    @Override
+    public int getHighestPersonIdInUse() {
+        return highestPersonIdInUse;
+    }
+
+    @Override
     public void removeHousehold(int householdId) {
         // remove household and add dwelling to vacancy list
 
@@ -166,7 +197,17 @@ public class HouseholdDataManager {
         }
     }
 
-    public void summarizePopulation(SiloDataContainer dataContainer) {
+    private float getAverageHouseholdSize() {
+        float ahs = 0;
+        int cnt = 0;
+        for (Household hh : households.values()) {
+            ahs += hh.getHhSize();
+            cnt++;
+        }
+        return ahs / (float) cnt;
+    }
+
+    public void summarizePopulation(DataContainer dataContainer) {
         // summarize population for summary file
 
         final GeoData geoData = dataContainer.getGeoData();
@@ -278,7 +319,7 @@ public class HouseholdDataManager {
         SummarizeData.resultFile("3+cars," + carOwnership[3]);
     }
 
-    public void identifyHighestHouseholdAndPersonId() {
+    private void identifyHighestHouseholdAndPersonId() {
         // identify highest household ID and highest person ID in use
         highestHouseholdIdInUse = 0;
         for (Household hh : households.values()) {
@@ -290,30 +331,12 @@ public class HouseholdDataManager {
         }
     }
 
-    public int getNextHouseholdId() {
-        return ++highestHouseholdIdInUse;
-    }
-
-    public int getNextPersonId() {
-        return ++highestPersonIdInUse;
-    }
-
-    public int getHighestHouseholdIdInUse() {
-        return highestHouseholdIdInUse;
-    }
-
-    public int getHighestPersonIdInUse() {
-        return highestPersonIdInUse;
-    }
-
-    public void calculateInitialSettings() {
-        incomeByAgeGenderOccupation = calculateIncomeDistribution();
-    }
 
     private float[][][] calculateIncomeDistribution() {
         // calculate income distribution by age, gender and occupation
 
-        float[][][] averageIncome = new float[2][100][2];              // income by gender, age and unemployed/employed
+        // income by gender, age and unemployed/employed
+        float[][][] averageIncome = new float[2][100][2];
         int[][][] count = new int[2][100][2];
         for (Person pp : persons.values()) {
             int age = Math.min(99, pp.getAge());
@@ -343,89 +366,42 @@ public class HouseholdDataManager {
         return averageIncome;
     }
 
-
-    public void adjustIncome() {
+    private void adjustIncome() {
         // select who will get a raise or drop in salary
-        float[][][] currentIncomeDistribution = calculateIncomeDistribution();
+        float[][][] previousIncomeDistribution = avgIncomeByGenderByAgeByOccupation;
+        float[][][] currentIncomeDistribution = calculateIncomeDistribution();;
         float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.cachedService();
         for (Person person : persons.values()) {
-            executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, incomeByAgeGenderOccupation));
+            executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, previousIncomeDistribution));
         }
         executor.execute();
     }
 
-    public void selectIncomeForPerson(Person person) {
-        final Gender gender = person.getGender();
-        final int age = Math.min(99, person.getAge());
-        final float meanIncomeChange = Properties.get().householdData.meanIncomeChange;
-        final double[] prob = new double[21];
-        final int[] change = new int[21];
-        for (int i = 0; i < prob.length; i++) {
-            // normal distribution to calculate change of income
-            //TODO: Use normal distribution from library (e.g. commons math)
-            change[i] = (int) (-5000f + 10000f * (float) i / (prob.length - 1f));
-            prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) *
-                    Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
-        }
-        final int sel = SiloUtil.select(prob);
-        final int inc = Math.max((int) incomeByAgeGenderOccupation[gender.ordinal()][age][person.getOccupation().getCode()] + change[sel], 0);
-        person.setIncome(inc);
-    }
 
+    private void calculateMedianHouseholdIncomeByMSA() {
 
-    public HashMap<Integer, int[]> getHouseholdsByZone() {
-        // return HashMap<Zone, ArrayOfHouseholdIds>
-
-        HashMap<Integer, int[]> hhByZone = new HashMap<>();
-        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+        Map<Integer, List<Integer>> incomesByMsa = new HashMap<>();
+        RealEstateData realEstateData = dataContainer.getRealEstateData();
         for (Household hh : households.values()) {
             int zone = -1;
             Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
-            if (hhByZone.containsKey(zone)) {
-                int[] oldList = hhByZone.get(zone);
-                int[] newList = SiloUtil.expandArrayByOneElement(oldList, hh.getId());
-                hhByZone.put(zone, newList);
-            } else {
-                hhByZone.put(zone, new int[]{hh.getId()});
-            }
-
-        }
-        return hhByZone;
-    }
-
-    public void calculateMedianHouseholdIncomeByMSA(GeoData geoData) {
-
-        HashMap<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
-        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
-        for (Household hh : households.values()) {
-            int zone = -1;
-            Dwelling dwelling = realEstateData.getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            }
-            int homeMSA = geoData.getZones().get(zone).getMsa();
-            if (rentHashMap.containsKey(homeMSA)) {
-                ArrayList<Integer> inc = rentHashMap.get(homeMSA);
+            int homeMSA = dataContainer.getGeoData().getZones().get(zone).getMsa();
+            if (incomesByMsa.containsKey(homeMSA)) {
+                List<Integer> inc = incomesByMsa.get(homeMSA);
                 inc.add(getHhIncome(hh));
             } else {
-                ArrayList<Integer> inc = new ArrayList<>();
+                List<Integer> inc = new ArrayList<>();
                 inc.add(getHhIncome(hh));
-                rentHashMap.put(homeMSA, inc);
+                incomesByMsa.put(homeMSA, inc);
             }
         }
-        medianIncome = new float[99999];
-        for (Integer thisMsa : rentHashMap.keySet()) {
-            medianIncome[thisMsa] = SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(rentHashMap.get(thisMsa)));
+        for (Integer thisMsa : incomesByMsa.keySet()) {
+            medianIncomeByMsa.put(thisMsa, SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(incomesByMsa.get(thisMsa))));
         }
-    }
-
-
-    public static float getMedianIncome(int msa) {
-        return medianIncome[msa];
     }
 
 
@@ -435,36 +411,38 @@ public class HouseholdDataManager {
      * once, because this HashMap stores the previous socio-demographics before any change happened in a given year
      * @param hh
      */
+    @Override
     public void addHouseholdAboutToChange(Household hh) {
         if (!updatedHouseholds.contains(hh)) {
             updatedHouseholds.add(duplicateHousehold(hh));
         }
     }
 
-    public void clearUpdatedHouseholds() {
-        updatedHouseholds.clear();
-    }
-
     /**
      * //TODO
      * @return
      */
+    @Override
     public List<Household> getUpdatedHouseholds() {
         return updatedHouseholds;
     }
 
+    @Override
     public void addPerson(Person person) {
         persons.put(person.getId(), person);
     }
 
+    @Override
     public void addHousehold(Household household) {
         households.put(household.getId(), household);
     }
 
+    @Override
     public PersonFactory getPersonFactory() {
         return this.ppFactory;
     }
 
+    @Override
     public HouseholdFactory getHouseholdFactory() {
         return this.hhFactory;
     }
@@ -477,6 +455,7 @@ public class HouseholdDataManager {
      * @param original the original household to be copied
      * @return a duplication of the original household and its persons
      */
+    @Override
     public Household duplicateHousehold(Household original) {
         Household duplicate = hhFactory.duplicate(original, getNextHouseholdId());
         for (Person originalPerson : original.getPersons().values()) {

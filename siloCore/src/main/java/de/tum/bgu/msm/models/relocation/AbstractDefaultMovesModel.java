@@ -1,8 +1,12 @@
 package de.tum.bgu.msm.models.relocation;
 
 import com.google.common.collect.EnumMultiset;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.RealEstateDataImpl;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
@@ -10,11 +14,11 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
@@ -31,41 +35,49 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     private final Map<Integer, Double> satisfactionByHousehold = new HashMap<>();
 
     private MovesOrNotJSCalculator movesOrNotJSCalculator;
+    private final Reader movesOrNotReader;
 
-    public AbstractDefaultMovesModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
+    public AbstractDefaultMovesModel(DataContainer dataContainer, Properties properties, InputStream movesOrNotInputStream) {
         super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
-        this.accessibility = accessibility;
-        setupMoveOrNotMove();
-        setupSelectRegionModel();
+        this.accessibility = dataContainer.getAccessibility();
+        this.movesOrNotReader = new InputStreamReader(movesOrNotInputStream);
     }
 
     protected abstract void setupSelectRegionModel();
 
 
-    private void setupMoveOrNotMove() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
-        movesOrNotJSCalculator = new MovesOrNotJSCalculator(reader);
+    protected void setupMoveOrNotMove() {
+//        Reader movesOrNotReader = new InputStreamReader(this.getClass().getResourceAsStream("MovesOrNotCalc"));
+        movesOrNotJSCalculator = new MovesOrNotJSCalculator(movesOrNotReader);
     }
 
     protected abstract double calculateHousingUtility(Household hh, Dwelling dwelling);
 
     protected abstract void calculateRegionalUtilities();
 
-
     @Override
-    public List<MoveEvent> prepareYear(int year) {
-        calculateRegionalUtilities();
-        calculateAverageHousingUtility();
-        final List<MoveEvent> events = new ArrayList<>();
-        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
-            events.add(new MoveEvent(hh.getId()));
-        }
-        return events;
+    public void setup() {
+        setupMoveOrNotMove();
+        setupSelectRegionModel();
     }
 
     @Override
-    public void finishYear(int year) {
+    public void prepareYear(int year) {}
+
+     @Override
+     public List<MoveEvent> getEventsForCurrentYear(int year) {
+         calculateRegionalUtilities();
+         calculateAverageHousingUtility();
+         final List<MoveEvent> events = new ArrayList<>();
+         for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
+             events.add(new MoveEvent(hh.getId()));
+         }
+         return events;
+     }
+
+    @Override
+    public void endYear(int year) {
     }
 
 
@@ -92,8 +104,8 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
         if (idNewDD > 0) {
 
             // Step 3: Move household
+            dataContainer.getHouseholdData().addHouseholdAboutToChange(household);
             moveHousehold(household, household.getDwellingId(), idNewDD);
-            dataContainer.getHouseholdData().addHouseholdThatMoved(household);
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
                         household.getDwellingId());
@@ -111,10 +123,10 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     protected double convertPriceToUtility(int price, HouseholdType ht) {
 
         IncomeCategory incCategory = ht.getIncomeCategory();
-        Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
-        // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        Map<Integer, Float> shares = dataContainer.getRealEstateData().getRentPaymentsForIncomeGroup(incCategory);
+        // 25 rent categories are defined as <rent/200>, see RealEstateData
         int priceCategory = (int) (price / 200f + 0.5);
-        priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
+        priceCategory = Math.min(priceCategory, dataContainer.getRealEstateData().RENT_CATEGORIES);
         double util = 0;
         for (int i = 0; i <= priceCategory; i++) {
             util += shares.get(i);
@@ -125,10 +137,10 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
 
     protected double convertPriceToUtility(int price, IncomeCategory incCategory) {
 
-        Map<Integer, Float> shares = RealEstateDataManager.getRentPaymentsForIncomeGroup(incCategory);
-        // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
+        Map<Integer, Float> shares = dataContainer.getRealEstateData().getRentPaymentsForIncomeGroup(incCategory);
+        // 25 rent categories are defined as <rent/200>, see RealEstateData
         int priceCategory = (int) (price / 200f);
-        priceCategory = Math.min(priceCategory, RealEstateDataManager.rentCategories);
+        priceCategory = Math.min(priceCategory, dataContainer.getRealEstateData().RENT_CATEGORIES);
         double util = 0;
         for (int i = 0; i <= priceCategory; i++) {
             util += shares.get(i);
@@ -142,7 +154,7 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
     }
 
     protected double convertAreaToUtility(int area) {
-        return (float) area / (float) RealEstateDataManager.largestNoBedrooms;
+        return (float) area / (float) RealEstateDataImpl.largestNoBedrooms;
     }
 
     protected double convertAccessToUtility(double accessibility) {
@@ -178,13 +190,13 @@ public abstract class AbstractDefaultMovesModel extends AbstractModel implements
             return true;
         }
         int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
-        return HouseholdUtil.getHhIncome(hh) <= (HouseholdDataManager.getMedianIncome(msa) * dd.getRestriction());
+        return HouseholdUtil.getHhIncome(hh) <= (dataContainer.getHouseholdData().getMedianIncome(msa) * dd.getRestriction());
     }
 
 
     private void calculateAverageHousingUtility() {
         logger.info("Evaluate average housing utility.");
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
 
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
         satisfactionByHousehold.clear();

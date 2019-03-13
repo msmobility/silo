@@ -7,8 +7,8 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DoubleFormatter;
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -96,11 +96,11 @@ public class AccessibilityTest {
     public void testIntegration()  {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
-        SiloDataContainer dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
+        DataContainer dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
         GeoData geoData = dataContainer.getGeoData();
         geoData.readData();
 
-        HouseholdDataManager hhManager = new HouseholdDataManager(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());
+        HouseholdData hhManager = new HouseholdDataImpl(dataContainer, PersonUtils.getFactory(), HouseholdUtil.getFactory());
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + properties.main.startYear + ".csv";
         new DefaultHouseholdReader(hhManager).readData(householdFile);

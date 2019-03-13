@@ -10,9 +10,9 @@ import java.util.Map;
 public class DefaultGeoData implements GeoData {
 
     private static final Logger logger = Logger.getLogger(DefaultGeoData.class);
-    protected final Map<Integer, Zone> zones = new LinkedHashMap<>();
-    protected final Map<Integer, Region> regions = new LinkedHashMap<>();
 
+    private final Map<Integer, Zone> zones = new LinkedHashMap<>();
+    private final Map<Integer, Region> regions = new LinkedHashMap<>();
 
     @Override
     public Map<Integer, Zone> getZones() {
@@ -24,6 +24,21 @@ public class DefaultGeoData implements GeoData {
         return Collections.unmodifiableMap(regions);
     }
 
+    @Override
+    public void addZone(Zone zone) {
+        final Zone previous = zones.put(zone.getId(), zone);
+        if(previous != null) {
+            logger.warn("Overwriting zone " + previous + " with " + zone);
+        }
+    }
+
+    @Override
+    public void addRegion(Region region) {
+        final Region previous = regions.put(region.getId(), region);
+        if(previous != null) {
+            logger.warn("Overwriting zone " + previous + " with " + region);
+        }
+    }
 
     @Override
     public void setup() {
@@ -36,7 +51,12 @@ public class DefaultGeoData implements GeoData {
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
 
     }
 }

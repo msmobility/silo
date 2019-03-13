@@ -1,17 +1,18 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.AnnualModel;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -20,22 +21,23 @@ import java.io.Reader;
  * Author: Rolf Moeckel, National Center for Smart Growth, University of Maryland
  * Created on 18 August 2014 in College Park, MD
  **/
-public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements AnnualModel {
+public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements ModelUpdateListener {
     private static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
 
     private final Accessibility accessibility;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
+    private final Reader reader;
 
-
-    public MaryLandUpdateCarOwnershipModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
+    public MaryLandUpdateCarOwnershipModel(DataContainer dataContainer, Accessibility accessibility, Properties properties, InputStream inputStream) {
         super(dataContainer, properties);
         logger.info("  Setting up probabilities for auto-ownership model");
         this.accessibility = accessibility;
+        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
     public void setup() {
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
+//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
         MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
 
         boolean logCalculation = properties.demographics.logAutoOwnership;
@@ -70,8 +72,13 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements An
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
         updateCarOwnership();
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     private int getIncomeCategory(int hhIncome) {
@@ -88,7 +95,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements An
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         for (Household household: householdData.getHouseholds()) {
             if(household == null) {
                 continue;

@@ -1,16 +1,15 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -29,16 +28,17 @@ import java.util.List;
  * Created on 14 October 2014 in College Park
  **/
 
-public class ConstructionOverwrite extends AbstractModel implements AnnualModel {
+public class ConstructionOverwrite extends AbstractModel implements ModelUpdateListener {
 
-    private static Logger logger = Logger.getLogger(ConstructionModel.class);
+    private final static Logger logger = Logger.getLogger(ConstructionModel.class);
     private final DwellingFactory factory;
 
     private boolean useOverwrite;
     private boolean traceOverwriteDwellings;
+
     private HashMap<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwrite(SiloDataContainerImpl dataContainer, DwellingFactory factory, Properties properties) {
+    public ConstructionOverwrite(DataContainer dataContainer, DwellingFactory factory, Properties properties) {
         super(dataContainer, properties);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;
@@ -56,9 +56,7 @@ public class ConstructionOverwrite extends AbstractModel implements AnnualModel 
     }
 
     @Override
-    public void setup() {
-
-    }
+    public void setup() {}
 
     @Override
     public void prepareYear(int year) {
@@ -66,10 +64,14 @@ public class ConstructionOverwrite extends AbstractModel implements AnnualModel 
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {}
 
+    @Override
+    public void endSimulation() {
+        if (traceOverwriteDwellings()) {
+            finishOverwriteTracer();
+        }
     }
-
 
     private void readOverwriteFile() {
         // read overwrite file
@@ -127,7 +129,7 @@ public class ConstructionOverwrite extends AbstractModel implements AnnualModel 
         PrintWriter traceFile = SiloUtil.openFileForSequentialWriting(fileName, true);
         List<Integer[]> list = plannedDwellings.get(year);
         for (Integer[] data: list) {
-            int ddId = RealEstateDataManager.getNextDwellingId();
+            int ddId = dataContainer.getRealEstateData().getNextDwellingId();
             int zoneId = data[0];
             int dto = data[1];
             int size = data[2];
@@ -138,7 +140,7 @@ public class ConstructionOverwrite extends AbstractModel implements AnnualModel 
                 // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                 // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
                 int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
-                price = (int) (Math.abs(restriction) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
+                price = (int) (Math.abs(restriction) * dataContainer.getHouseholdData().getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
             Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateData().getDwellingTypes().get(dto), size, quality, price, restriction, year);
             dataContainer.getRealEstateData().addDwelling(dd);
@@ -169,7 +171,7 @@ public class ConstructionOverwrite extends AbstractModel implements AnnualModel 
         if (!useOverwrite) {
             return;  // if overwrite is not used, now overwrite dwellings can be traced
         }
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdData householdData = dataContainer.getHouseholdData();
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String fileName = (directory + "/" + properties.realEstate.overWriteDwellingsTraceFile + ".csv");
         TableDataSet overwriteDwellings = SiloUtil.readCSVfile(fileName);

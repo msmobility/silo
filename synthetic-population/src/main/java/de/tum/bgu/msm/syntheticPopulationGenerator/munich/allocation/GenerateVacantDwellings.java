@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -38,11 +38,11 @@ public class GenerateVacantDwellings {
     private int personCounter;
     private int householdCounter;
     private int highestDwellingIdInUse;
-    private final SiloDataContainer dataContainer;
-    private RealEstateDataManager realEstateDataManager;
+    private final DataContainer dataContainer;
+    private RealEstateData realEstateData;
 
 
-    public GenerateVacantDwellings(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateVacantDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
         this.dataSetSynPop = dataSetSynPop;
         microDataManager = new MicroDataManager(dataSetSynPop);
@@ -62,13 +62,13 @@ public class GenerateVacantDwellings {
         previousHouseholds = 0;
         previousPersons = 0;
 
-        realEstateDataManager = dataContainer.getRealEstateData();
-        for (Dwelling dd: realEstateDataManager.getDwellings()){
+        realEstateData = dataContainer.getRealEstateData();
+        for (Dwelling dd: realEstateData.getDwellings()){
             int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"ID_city");
             updateQualityMap(municipality, dd.getYearBuilt(), dd.getQuality());
         }
         highestDwellingIdInUse = 0;
-        for (Dwelling dd: realEstateDataManager.getDwellings()) {
+        for (Dwelling dd: realEstateData.getDwellings()) {
             highestDwellingIdInUse = Math.max(highestDwellingIdInUse, dd.getId());
         }
 
@@ -93,7 +93,7 @@ public class GenerateVacantDwellings {
                 int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
                 int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, DwellingUsage.VACANT);
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, 0, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                realEstateDataManager.addDwelling(dwell);
+                realEstateData.addDwelling(dwell);
                 dwell.setUsage(DwellingUsage.VACANT);
                 dwell.setFloorSpace(floorSpace);
                 dwell.setYearConstructionDE(year);

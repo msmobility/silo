@@ -28,7 +28,6 @@ public class ZoneImpl implements Zone {
     private SimpleFeature zoneFeature;
 
     private Development development;
-    
 
     public ZoneImpl(int id, int msa, float area_sqmi, Region region) {
         this.id = id;
@@ -95,5 +94,8 @@ public class ZoneImpl implements Zone {
         return getZoneId();
     }
 
-
+    @Override
+    public String toString() {
+        return "Zone " + id + ": msa=" + msa + ", region=" + region.getId();
+    }
 }

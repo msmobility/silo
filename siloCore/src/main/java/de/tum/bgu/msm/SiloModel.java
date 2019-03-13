@@ -16,13 +16,13 @@
  */
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
-import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.Simulator;
@@ -43,27 +43,29 @@ public final class SiloModel {
 
 	private final static Logger logger = Logger.getLogger(SiloModel.class);
 
-	private final Set<Integer> skimYears = new HashSet<>();
     private final Set<Integer> scalingYears = new HashSet<>();
 	private final Properties properties;
 
-	private SiloModelContainer modelContainer;
-	private SiloDataContainerImpl dataContainer;
+	private ModelContainer modelContainer;
+	private DataContainer dataContainer;
 
-
-	private final Config matsimConfig;
     private Simulator simulator;
     private final TimeTracker timeTracker = new TimeTracker();
 
-    public SiloModel(Properties properties) {
-		this(null, properties) ;
-	}
-
-	public SiloModel(Config matsimConfig, Properties properties) {
-		IssueCounter.setUpCounter();
+    /**
+     *
+     * @param matsimConfig
+     * @param properties
+     * @param modelContainer
+     * @param dataContainer
+     */
+  	public SiloModel(Config matsimConfig, Properties properties,
+                     ModelContainer modelContainer, DataContainer dataContainer) {
+        this.modelContainer = modelContainer;
+        this.dataContainer = dataContainer;
+        IssueCounter.setUpCounter();
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
-		this.matsimConfig = matsimConfig ;
 	}
 
 	public void runModel() {
@@ -79,40 +81,32 @@ public final class SiloModel {
 		} finally {
 			SiloUtil.closeAllFiles(startTime, timeTracker);
 		}
-
 	}
 
 	private void setupModel() {
 
-		logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
+		logger.info("Setting up SILO Model");
 
 		simulator = new Simulator(timeTracker);
 		for(Map.Entry<Class<? extends MicroEvent>, EventModel> eventModel: modelContainer.getEventModels().entrySet()) {
 			simulator.registerEventModel(eventModel.getKey(), eventModel.getValue());
 		}
-		for(AnnualModel annualModel: modelContainer.getAnnualModels()) {
-			simulator.registerAnnualModel(annualModel);
+		for(ModelUpdateListener modelUpdateListener : modelContainer.getModelUpdateListeners()) {
+			simulator.registerAnnualModel(modelUpdateListener);
 		}
 
         setupScalingYears();
 
         dataContainer.setup();
+        simulator.setup();
 
         IssueCounter.logIssues(dataContainer.getGeoData());
         IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
 
-        simulator.setup();
-
-		if (properties.main.createPrestoSummary) {
+        if (properties.main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
 		}
 	}
-
-//    private void setupContainer() {
-//        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(properties);
-//        modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, matsimConfig, properties);
-//    }
-
 
 	private void setupScalingYears() {
 		scalingYears.addAll(properties.main.scalingYears);
@@ -121,14 +115,14 @@ public final class SiloModel {
 		}
 	}
 
-
 	private void runYearByYear() {
 
-        final HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        final HouseholdData householdData = dataContainer.getHouseholdData();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
-            IssueCounter.setUpCounter();    // setup issue counter for this simulation period
+            // setup issue counter for this simulation period
+            IssueCounter.setUpCounter();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
             timeTracker.setCurrentYear(year);
 
@@ -138,16 +132,17 @@ public final class SiloModel {
             }
             timeTracker.recordAndReset("scaleDataToForecast");
 
-			if (year == properties.main.implementation.BASE_YEAR || year != properties.main.startYear) {
+			if (year == properties.main.baseYear || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
             }
 
+            dataContainer.prepareYear(year);
             simulator.simulate(year);
+			dataContainer.endYear(year);
 
-			simulator.finishYear(year, dataContainer);
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
-			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
+			logger.info("  Finished this simulation period with " + householdData.getPersons().size() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
 
@@ -159,7 +154,10 @@ public final class SiloModel {
 	}
 
 	private void endSimulation() {
-		if (scalingYears.contains(properties.main.endYear)) {
+  	    simulator.endSimulation();
+  	    dataContainer.endSimulation();
+
+  	    if (scalingYears.contains(properties.main.endYear)) {
             SummarizeData.scaleMicroDataToExogenousForecast(properties.main.endYear, dataContainer);
         }
 
@@ -167,8 +165,6 @@ public final class SiloModel {
 			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, dataContainer);
 			SummarizeData.writeOutDevelopmentFile(dataContainer);
 		}
-
-
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, dataContainer);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");

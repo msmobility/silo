@@ -1,22 +1,22 @@
 package de.tum.bgu.msm.models.realEstate;
 
 import com.pb.common.util.IndexSort;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
     private final DwellingFactory factory;
     private final Accessibility accessibility;
 
-    private final ConstructionLocationJSCalculator constructionLocationJSCalculator;
+    private ConstructionLocationJSCalculator constructionLocationJSCalculator;
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private boolean makeSomeNewDdAffordable;
@@ -51,64 +51,64 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
     private int currentYear = -1;
 
     private ConstructionDemandJSCalculator constructionDemandCalculator;
+    private final Reader locationCalcReader;
+    private final Reader constructionDemandReader;
 
-    public ConstructionModel(SiloDataContainerImpl dataContainer, MovesModelI moves,
-                             Accessibility accessibility, DwellingFactory factory,
-                             Properties properties) {
+    public ConstructionModel(DataContainer dataContainer, MovesModelI moves, DwellingFactory factory,
+                             Properties properties, InputStream locationCalcInputStream, InputStream constructionDemandInputStream) {
         super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
-        this.accessibility = accessibility;
+        this.accessibility = dataContainer.getAccessibility();
         this.moves = moves;
         this.factory = factory;
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
-        constructionLocationJSCalculator = new ConstructionLocationJSCalculator(reader);
-        setupConstructionModel();
-        setupEvaluationOfZones();
+        this.locationCalcReader = new InputStreamReader(locationCalcInputStream);
+        this.constructionDemandReader = new InputStreamReader(constructionDemandInputStream);
     }
 
-    private void setupConstructionModel() {
-        final Reader reader;
-        switch (properties.main.implementation) {
-            case MUNICH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
-                break;
-            case MARYLAND:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
-                break;
-            case PERTH:
-                reader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
-                break;
-            case KAGAWA:
-            case CAPE_TOWN:
-                default:
-                    throw new RuntimeException("ConstructionModel not applicable for " + properties.main.implementation);
-        }
+    @Override
+    public void setup() {
+//        Reader locationCalcReader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionLocationCalc"));
+        constructionLocationJSCalculator = new ConstructionLocationJSCalculator(locationCalcReader);
+//        final Reader constructionDemandReader;
+//        switch (properties.main.implementation) {
+//            case MUNICH:
+//                constructionDemandReader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
+//                break;
+//            case MARYLAND:
+//                constructionDemandReader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMstm"));
+//                break;
+//            case PERTH:
+//                constructionDemandReader = new InputStreamReader(this.getClass().getResourceAsStream("ConstructionDemandCalcMuc"));
+//                break;
+//            case KAGAWA:
+//            case CAPE_TOWN:
+//            default:
+//                throw new RuntimeException("ConstructionModel not applicable for " + properties.main.implementation);
+//        }
 
-        constructionDemandCalculator = new ConstructionDemandJSCalculator(reader);
+        constructionDemandCalculator = new ConstructionDemandJSCalculator(constructionDemandReader);
 
         makeSomeNewDdAffordable = properties.realEstate.makeSomeNewDdAffordable;
         if (makeSomeNewDdAffordable) {
             shareOfAffordableDd = properties.realEstate.affordableDwellingsShare;
             restrictionForAffordableDd = properties.realEstate.levelOfAffordability;
         }
-    }
 
-
-    private void setupEvaluationOfZones() {
         // set up model to evaluate zones for construction of new dwellings
         betaForZoneChoice = properties.realEstate.constructionLogModelBeta;
         priceIncreaseForNewDwelling = properties.realEstate.constructionLogModelInflator;
     }
 
     @Override
-    public Collection<ConstructionEvent> prepareYear(int year) {
+    public void prepareYear(int year) {}
+
+    @Override
+    public Collection<ConstructionEvent> getEventsForCurrentYear(int year) {
         currentYear = year;
         List<ConstructionEvent> events = new ArrayList<>();
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
-        dataContainer.getHouseholdData().calculateMedianHouseholdIncomeByMSA(dataContainer.getGeoData());  // needs to be calculate even if no dwellings are added this year: median income is needed in housing search in MovesModelMstm.searchForNewDwelling (int hhId)
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        realEstate.calculateRegionWidePriceAndVacancyByDwellingType();
+        RealEstateDataImpl realEstate = dataContainer.getRealEstateData();
         LOGGER.info("  Planning dwellings to be constructed from " + year + " to " + (year + 1));
 
         // calculate demand by region
@@ -191,7 +191,7 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
                         int msa = geoData.getZones().get(zone).getMsa();
-                        price = (int) (Math.abs((restriction / 100f)) * HouseholdDataManager.getMedianIncome(msa) / 12 * 0.18 + 0.5);
+                        price = (int) (Math.abs((restriction / 100f)) * dataContainer.getHouseholdData().getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 
                     restriction /= 100f;
@@ -211,7 +211,7 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
     @Override
     public boolean handleEvent(ConstructionEvent event) {
 
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
 
@@ -227,13 +227,19 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
     }
+
+    @Override
+    public void endSimulation() {
+
+    }
+
 
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
 
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
 
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
@@ -266,7 +272,7 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
 
     private float[][] calculateScaledAveragePriceByRegion(float scaler) {
 
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
         List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
         float[][] avePrice = new float[dwellingTypes.size()][highestRegionId + 1];
@@ -341,10 +347,10 @@ public class ConstructionModel extends AbstractModel implements EventModel<Const
     }
 
 
-    private DwellingType[] findOrderOfDwellingTypes(SiloDataContainer dataContainer) {
+    private DwellingType[] findOrderOfDwellingTypes(DataContainer dataContainer) {
         // define order of dwelling types based on their average price. More expensive types are built first.
 
-        RealEstateDataManager realEstateData = dataContainer.getRealEstateData();
+        RealEstateData realEstateData = dataContainer.getRealEstateData();
         double[] prices = realEstateData.getAveragePriceByDwellingType();
         List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
         int[] scaledPrices = new int[prices.length];

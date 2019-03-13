@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.demography;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.container.SiloModelContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
+import de.tum.bgu.msm.container.ModelContainerImpl;
+import de.tum.bgu.msm.data.RealEstateDataImpl;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloModelContainer;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -22,19 +22,20 @@ public class DeathModelTest {
 
     private static DeathModel model;
  
-    private static SiloModelContainer modelContainer;
-    private static SiloDataContainerImpl dataContainer;
+    private static ModelContainer modelContainer;
+    private static DataContainerImpl dataContainer;
+    private static Household household1;
 
     @BeforeClass
     public static void setupModel() {
         Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, "./test/scenarios/annapolis/javaFiles/siloMstm.properties");
 
-        dataContainer = SiloDataContainerImpl.loadSiloDataContainer(Properties.get());
-        modelContainer = SiloModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
-        model = modelContainer.getDeath();
+        dataContainer = DataContainerImpl.loadSiloDataContainer(Properties.get());
+        modelContainer = ModelContainerImpl.createSiloModelContainer(dataContainer, null, properties);
+        model = new DeathModel(dataContainer, properties);
 
 
-        Household household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);
+        household1 = HouseholdUtil.getFactory().createHousehold(1, 1,  0);
         dataContainer.getHouseholdData().addHousehold(household1);
         dataContainer.getRealEstateData().addDwelling(DwellingUtils.getFactory().createDwelling(1,99, null, 1, DefaultDwellingTypeImpl.MF234, 4, 1, 1000, -1, 2000));
         Person person1 = PersonUtils.getFactory().createPerson(1, 30, Gender.MALE, Race.other, Occupation.UNEMPLOYED, PersonRole.SINGLE,  -1, 0);
@@ -62,21 +63,22 @@ public class DeathModelTest {
 
     @Test
     public void testDeathOfParent() {
-        dataContainer.getHouseholdData().clearUpdatedHouseholds();
-        final int[] listOfVacantDwellingsInRegion = RealEstateDataManager.getListOfVacantDwellingsInRegion(
+        dataContainer.getHouseholdData().endYear(42);
+        final RealEstateDataImpl realEstateData = dataContainer.getRealEstateData();
+        final int[] listOfVacantDwellingsInRegion = realEstateData.getListOfVacantDwellingsInRegion(
                 dataContainer.getGeoData().getZones().get(1).getRegion().getId());
         Assert.assertEquals(0,Arrays.stream(listOfVacantDwellingsInRegion).filter(value -> value == 1).count());
-        Assert.assertEquals(1, dataContainer.getRealEstateData().getDwelling(1).getResidentId());
+        Assert.assertEquals(1, realEstateData.getDwelling(1).getResidentId());
         model.die(dataContainer.getHouseholdData().getPersonFromId(1));
         Assert.assertNull(dataContainer.getHouseholdData().getHouseholdFromId(1));
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(1));
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(11));
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(12));
         Assert.assertNull(dataContainer.getHouseholdData().getPersonFromId(13));
-        Assert.assertEquals(-1, dataContainer.getRealEstateData().getDwelling(1).getResidentId());
-        final int[] listOfVacantDwellingsInRegionAfter = RealEstateDataManager.getListOfVacantDwellingsInRegion(
+        Assert.assertEquals(-1, realEstateData.getDwelling(1).getResidentId());
+        final int[] listOfVacantDwellingsInRegionAfter = realEstateData.getListOfVacantDwellingsInRegion(
                 dataContainer.getGeoData().getZones().get(1).getRegion().getId());
         Assert.assertEquals(1,Arrays.stream(listOfVacantDwellingsInRegionAfter).filter(value -> value == 1).count());
-        Assert.assertEquals(false, dataContainer.getHouseholdData().getUpdatedHouseholds().containsKey(1));
+        Assert.assertEquals(false, dataContainer.getHouseholdData().getUpdatedHouseholds().contains(household1));
     }
 }

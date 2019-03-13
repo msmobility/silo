@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.models.demography;
 
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -9,10 +8,10 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -31,64 +30,14 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
 
     private final static Logger logger = Logger.getLogger(EmploymentModel.class);
 
-    private final Accessibility accessibility;
     private float[][] laborParticipationShares;
 
-    public EmploymentModel(SiloDataContainerImpl dataContainer, Accessibility accessibility, Properties properties) {
+    public EmploymentModel(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
-        this.accessibility = accessibility;
     }
 
     @Override
-    public boolean handleEvent(EmploymentEvent event) {
-        switch(event.getType()) {
-            case FIND:
-                return lookForJob(event.getPersonId());
-            case QUIT:
-                return quitJob(event.getPersonId());
-            default:
-                throw new RuntimeException("Unknown employment event type: " + event.getType());
-        }
-    }
-
-    @Override
-    public void finishYear(int year) {
-
-    }
-
-    @Override
-    public void setup() {
-        // calculate share of people employed by age and gender
-
-        laborParticipationShares = new float[2][100];
-        int[][] count = new int[2][100];
-        for (Person pp: dataContainer.getHouseholdData().getPersons()) {
-            int age = pp.getAge();
-            if (age > 99) {
-                continue;  // people older than 99 will always be unemployed/retired
-            }
-            int gender = pp.getGender().ordinal();
-            boolean employed = pp.getJobId() > 0;
-            if (employed) laborParticipationShares[gender][age]++;
-            count[gender][age]++;
-        }
-        // calculate shares
-        for (int gen = 0; gen <=1; gen++) {
-            for (int age = 0; age < 100; age++) {
-                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
-            }
-
-            // smooth out shares
-            for (int age = 18; age < 98; age++) {
-                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
-                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
-                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
-            }
-        }
-    }
-
-    @Override
-    public Collection<EmploymentEvent> prepareYear(int year) {
+    public Collection<EmploymentEvent> getEventsForCurrentYear(int year) {
         final List<EmploymentEvent> events = new ArrayList<>();
 
         // select people that will lose employment or start new job
@@ -149,6 +98,62 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
         return events;
     }
 
+    @Override
+    public boolean handleEvent(EmploymentEvent event) {
+        switch(event.getType()) {
+            case FIND:
+                return lookForJob(event.getPersonId());
+            case QUIT:
+                return quitJob(event.getPersonId());
+            default:
+                throw new RuntimeException("Unknown employment event type: " + event.getType());
+        }
+    }
+
+    @Override
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
+
+    }
+
+    @Override
+    public void setup() {
+        // calculate share of people employed by age and gender
+
+        laborParticipationShares = new float[2][100];
+        int[][] count = new int[2][100];
+        for (Person pp: dataContainer.getHouseholdData().getPersons()) {
+            int age = pp.getAge();
+            if (age > 99) {
+                continue;  // people older than 99 will always be unemployed/retired
+            }
+            int gender = pp.getGender().ordinal();
+            boolean employed = pp.getJobId() > 0;
+            if (employed) laborParticipationShares[gender][age]++;
+            count[gender][age]++;
+        }
+        // calculate shares
+        for (int gen = 0; gen <=1; gen++) {
+            for (int age = 0; age < 100; age++) {
+                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
+            }
+
+            // smooth out shares
+            for (int age = 18; age < 98; age++) {
+                laborParticipationShares[gen][age] = (laborParticipationShares[gen][age-2]/4f +
+                        laborParticipationShares[gen][age-1]/2f + laborParticipationShares[gen][age] +
+                        laborParticipationShares[gen][age+1]/2f + laborParticipationShares[gen][age+2]/4f) / 2.5f;
+            }
+        }
+    }
+
+    @Override
+    public void prepareYear(int year) {}
+
     public boolean lookForJob(int perId) {
         final Person pp = dataContainer.getHouseholdData().getPersonFromId(perId);
         if (pp != null) {
@@ -169,8 +174,8 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
         if (dwelling != null) {
             zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
         }
-        final int idVacantJob = dataContainer.getJobData().findVacantJob(zone, dataContainer.getGeoData().getRegions().values(),
-                accessibility);
+        final int idVacantJob = dataContainer.getJobData().findVacantJob(
+                zone, dataContainer.getGeoData().getRegions().values());
         return dataContainer.getJobData().getJobFromId(idVacantJob);
     }
 
@@ -180,7 +185,26 @@ public class EmploymentModel extends AbstractModel implements EventModel<Employm
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
         person.setOccupation(Occupation.EMPLOYED);
-        dataContainer.getHouseholdData().selectIncomeForPerson(person);
+
+
+        final Gender gender = person.getGender();
+        final int age = Math.min(99, person.getAge());
+        final float meanIncomeChange = properties.householdData.meanIncomeChange;
+        final double[] prob = new double[21];
+        final int[] change = new int[21];
+        for (int i = 0; i < prob.length; i++) {
+            // normal distribution to calculate change of income
+            //TODO: Use normal distribution from library (e.g. commons math)
+            change[i] = (int) (-5000f + 10000f * (float) i / (prob.length - 1f));
+            prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) *
+                    Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
+        }
+        final int sel = SiloUtil.select(prob);
+        float avgIncome = dataContainer.getHouseholdData().getAverageIncome(gender, age, person.getOccupation());
+        final int inc = Math.max((int) avgIncome + change[sel], 0);
+        person.setIncome(inc);
+
+
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
         }

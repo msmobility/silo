@@ -16,7 +16,7 @@
  */
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
@@ -39,24 +39,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * Keeps data of schools
  * Author: Qin Zhang
  **/
+public class SchoolDataImpl implements SchoolData {
 
-public class SchoolDataManager {
-    static Logger logger = Logger.getLogger(SchoolDataManager.class);
+    private final static Logger logger = Logger.getLogger(SchoolDataImpl.class);
 
     private final GeoData geoData;
-    private final SiloDataContainer data;
+    private final Properties properties;
+    private final DataContainer data;
     private final Map<Integer, School> schools = new ConcurrentHashMap<>();
     private QuadTree<School> primarySearchTree;
     private QuadTree<School> secondarySearchTree;
     private QuadTree<School> tertiarySearchTree;
 
-    public SchoolDataManager(SiloDataContainer data) {
+    public SchoolDataImpl(DataContainer data, Properties properties) {
         this.data = data;
         this.geoData = data.getGeoData();
+        this.properties = properties;
     }
 
-    public void setSchoolSearchTree(Properties properties) {
-        Envelope bounds = loadEnvelope(properties);
+    private void setSchoolSearchTree() {
+        Envelope bounds = loadEnvelope();
         double minX = bounds.getMinX()-1;
         double minY = bounds.getMinY()-1;
         double maxX = bounds.getMaxX()+1;
@@ -67,7 +69,7 @@ public class SchoolDataManager {
     }
 
 
-    private Envelope loadEnvelope(Properties properties) {
+    private Envelope loadEnvelope() {
         //TODO: Remove minX,minY,maxX,maxY when implementing study area shapefile in Geodata 09 Oct QZ'
         File schoolsShapeFile = new File(properties.main.baseDirectory + properties.schoolData.schoolsShapeFile);
 
@@ -80,18 +82,23 @@ public class SchoolDataManager {
         }
     }
 
+    @Override
     public void addSchool(School ss) {
         this.schools.put(ss.getId(), ss);
+        addSchoolToSearchTree(ss);
     }
 
+    @Override
     public School getSchoolFromId(int id) {
         return schools.get(id);
     }
 
+    @Override
     public Collection<School> getSchools() {
         return schools.values();
     }
 
+    @Override
     public School getClosestSchool(Person person, int schoolType) {
         Dwelling dwelling = data.getRealEstateData().getDwelling(person.getHousehold().getDwellingId());
 
@@ -113,8 +120,7 @@ public class SchoolDataManager {
         }
     }
 
-    public void addSchoolToSearchTree(School school) {
-
+    private void addSchoolToSearchTree(School school) {
         int schoolType = school.getType();
         switch (schoolType){
             case 1:
@@ -126,6 +132,25 @@ public class SchoolDataManager {
             case 3:
                 tertiarySearchTree.put(((MicroLocation)school).getCoordinate().x,((MicroLocation)school).getCoordinate().y,school);
         }
+    }
+
+    @Override
+    public void setup() {
+        setSchoolSearchTree();
+    }
+
+    @Override
+    public void prepareYear(int year) {
+
+    }
+
+    @Override
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
 
     }
 }

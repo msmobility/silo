@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.RealEstateData;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -23,12 +23,12 @@ public class ValidateTripLengthDistribution {
     private static final Logger logger = Logger.getLogger(ValidateTripLengthDistribution.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private TableDataSet cellsMatrix;
     private TableDataSet municipalityODMatrix;
     private TableDataSet countyODMatrix;
 
-    public ValidateTripLengthDistribution(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public ValidateTripLengthDistribution(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -72,8 +72,8 @@ public class ValidateTripLengthDistribution {
 
     private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager households = dataContainer.getHouseholdData();
+        RealEstateData realEstate = dataContainer.getRealEstateData();
+        HouseholdData households = dataContainer.getHouseholdData();
         for (Person pp : personArrayList){
             if (pp.getJobTAZ() > 0){
                 Household hh = pp.getHousehold();
