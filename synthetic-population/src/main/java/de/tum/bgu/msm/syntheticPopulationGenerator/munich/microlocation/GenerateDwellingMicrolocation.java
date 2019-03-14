@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -17,7 +17,7 @@ public class GenerateDwellingMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateDwellingMicrolocation.class);
     private static final double PENALTY = 0.5;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
     private HashMap<Integer, Float> buildingX = new HashMap<>();
     private HashMap<Integer, Float> buildingY = new HashMap<>();
@@ -27,7 +27,7 @@ public class GenerateDwellingMicrolocation {
     Map<Integer, Float> zoneDensity = new HashMap<>();
     Map<Integer, Integer> dwellingsInTAZ = new HashMap<Integer, Integer>();
 
-    public GenerateDwellingMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }

@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data.maryland;
 
-import de.tum.bgu.msm.data.DefaultGeoData;
+import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;

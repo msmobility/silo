@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.utils;
 
-import de.tum.bgu.msm.data.Development;
+import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;

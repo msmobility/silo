@@ -31,12 +31,4 @@ import de.tum.bgu.msm.data.Location;
 
      void setWorkerID(int personID);
 
-     void setJobWorkingTime(int startTimeInSeconds, int workingTimeInSeconds);
-
-     int getStartTimeInSeconds();
-
-     int getWorkingTimeInSeconds();
-    
-    
-
 }

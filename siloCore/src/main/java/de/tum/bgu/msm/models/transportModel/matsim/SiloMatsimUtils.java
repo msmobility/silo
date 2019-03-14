@@ -2,8 +2,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.HouseholdData;
-import de.tum.bgu.msm.data.JobData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -108,13 +108,13 @@ public class SiloMatsimUtils {
 //			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 	public static Population createMatsimPopulation(Config config, DataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
-		HouseholdData householdData = dataContainer.getHouseholdData();
-		Collection<Person> siloPersons = householdData.getPersons();
+		HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+		Collection<Person> siloPersons = householdDataManager.getPersons();
     	
     	Population matsimPopulation = PopulationUtils.createPopulation(config);
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
-    	JobData jobData = dataContainer.getJobData();
+    	JobDataManager jobDataManager = dataContainer.getJobDataManager();
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
@@ -145,7 +145,7 @@ public class SiloMatsimUtils {
     			}
     		}
 
-    		Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+    		Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
     		Coordinate dwellingCoordinate;
     		if (dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
 	    		dwellingCoordinate = ((MicroLocation) dwelling).getCoordinate();
@@ -154,7 +154,7 @@ public class SiloMatsimUtils {
     		}
     		Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
 
-    		Job job = jobData.getJobFromId(siloWorkplaceId);
+    		Job job = jobDataManager.getJobFromId(siloWorkplaceId);
     		Coordinate jobCoordinate;
     		if (job instanceof MicroLocation && ((MicroLocation) job).getCoordinate() != null) {
     			jobCoordinate = ((MicroLocation) job).getCoordinate();

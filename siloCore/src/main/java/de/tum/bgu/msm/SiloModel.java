@@ -18,12 +18,12 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
-import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.models.EventModel;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.Simulator;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -89,19 +89,23 @@ public final class SiloModel {
 
 		simulator = new Simulator(timeTracker);
 		for(Map.Entry<Class<? extends MicroEvent>, EventModel> eventModel: modelContainer.getEventModels().entrySet()) {
-			simulator.registerEventModel(eventModel.getKey(), eventModel.getValue());
+			if(eventModel.getValue() != null) {
+				simulator.registerEventModel(eventModel.getKey(), eventModel.getValue());
+			}
 		}
 		for(ModelUpdateListener modelUpdateListener : modelContainer.getModelUpdateListeners()) {
-			simulator.registerAnnualModel(modelUpdateListener);
+			if(modelUpdateListener != null) {
+				simulator.registerAnnualModel(modelUpdateListener);
+			}
 		}
-
         setupScalingYears();
 
         dataContainer.setup();
         simulator.setup();
 
-        IssueCounter.logIssues(dataContainer.getGeoData());
-        IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
+        IssueCounter.setUpCounter();
+		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
+		IssueCounter.logIssues(dataContainer.getGeoData());
 
         if (properties.main.createPrestoSummary) {
 			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
@@ -117,7 +121,7 @@ public final class SiloModel {
 
 	private void runYearByYear() {
 
-        final HouseholdData householdData = dataContainer.getHouseholdData();
+        final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
@@ -142,9 +146,9 @@ public final class SiloModel {
 
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
 
-			logger.info("  Finished this simulation period with " + householdData.getPersons().size() +
-					" persons, " + householdData.getHouseholds().size() + " households and "  +
-					dataContainer.getRealEstateData().getDwellings().size() + " dwellings.");
+			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
+					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +
+					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings.");
 
 			if (SiloUtil.modelStopper("check")) {
 			    break;
@@ -162,7 +166,6 @@ public final class SiloModel {
         }
 
 		if (properties.main.printOutFinalSyntheticPopulation) {
-			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, dataContainer);
 			SummarizeData.writeOutDevelopmentFile(dataContainer);
 		}
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, dataContainer);

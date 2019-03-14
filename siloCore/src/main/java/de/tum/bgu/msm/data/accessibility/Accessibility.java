@@ -4,12 +4,14 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.dwelling.DwellingData;
+import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.simulator.AnnualUpdate;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
@@ -23,9 +25,14 @@ import java.util.Collection;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 12 December 2012 in Santa Fe
  **/
-public class Accessibility implements AnnualUpdate {
+public class Accessibility implements Data {
 
     private static final Logger logger = Logger.getLogger(Accessibility.class);
+
+    private final GeoData geoData;
+    private final TravelTimes travelTimes;
+    private final DwellingData dwellingData;
+    private final HouseholdData householdData;
 
     private final Properties properties;
 
@@ -39,28 +46,26 @@ public class Accessibility implements AnnualUpdate {
     private final float alphaTransit;
     private final float betaTransit;
 
-    private TravelTimes travelTimes;
-
     private float[] workTripLengthFrequencyDistribution;
-    private SiloDataContainer dataContainer;
 
-    public Accessibility(SiloDataContainer dataContainer,  Properties properties) {
+    public Accessibility(GeoData geoData, TravelTimes travelTimes, Properties properties, DwellingData dwellingData, HouseholdData householdData) {
+        this.geoData = geoData;
+        this.travelTimes = travelTimes;
         this.properties = properties;
-        this.dataContainer = dataContainer;
         this.autoOperatingCosts = properties.accessibility.autoOperatingCosts;
         this.alphaAuto = properties.accessibility.alphaAuto;
         this.betaAuto = properties.accessibility.betaAuto;
         this.alphaTransit = properties.accessibility.alphaTransit;
         this.betaTransit = properties.accessibility.betaTransit;
+        this.dwellingData = dwellingData;
+        this.householdData = householdData;
     }
 
     @Override
     public void setup() {
-        this.autoAccessibilities = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
-        this.transitAccessibilities = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
-        this.regionalAccessibilities = Matrices.doubleMatrix1D(dataContainer.getGeoData().getRegions().values());
-
-
+        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
         
         logger.info("Initializing trip length frequency distributions");
         readWorkTripLengthFrequencyDistribution();
@@ -72,37 +77,42 @@ public class Accessibility implements AnnualUpdate {
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
 
     }
 
 
-
     public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
-        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(dataContainer);
+        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
 
         logger.info("  Calculating zone zone accessibilities: auto");
         final DoubleMatrix2D peakTravelTimeMatrixCar =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, dataContainer.getGeoData().getZones().values());
+                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, geoData.getZones().values());
         final DoubleMatrix2D autoAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         logger.info("  Calculating zone zone accessibilities: transit");
         final DoubleMatrix2D peakTravelTimeMatrixTransit =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, dataContainer.getGeoData().getZones().values());
+                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, geoData.getZones().values());
         final DoubleMatrix2D transitAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population,
                         peakTravelTimeMatrixTransit, alphaTransit, betaTransit);
 
         logger.info("  Aggregating zone accessibilities");
-        aggregateAccessibilities(autoAccessZoneToZone, transitAccessZoneToZone, autoAccessibilities, transitAccessibilities, dataContainer.getGeoData().getZones().keySet());
+        aggregateAccessibilities(autoAccessZoneToZone, transitAccessZoneToZone,
+                autoAccessibilities, transitAccessibilities, geoData.getZones().keySet());
 
         logger.info("  Scaling zone accessibilities");
         scaleAccessibility(autoAccessibilities);
         scaleAccessibility(transitAccessibilities);
 
         logger.info("  Calculating regional accessibilities");
-        regionalAccessibilities.assign(calculateRegionalAccessibility(dataContainer.getGeoData().getRegions().values(), autoAccessibilities));
+        regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities));
     }
 
     /**

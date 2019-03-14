@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.maryland.County;
 import de.tum.bgu.msm.data.maryland.GeoDataMstm;
 import de.tum.bgu.msm.data.maryland.MstmRegion;
 import de.tum.bgu.msm.data.maryland.MstmZone;
+import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.gis.ShapeFileReader;

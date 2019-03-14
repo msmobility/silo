@@ -8,8 +8,6 @@ public class JobImpl implements Job, MicroLocation {
     private final int id;
     private int workerId;
     private final String type;
-    private int startTimeInSeconds;
-    private int workingTimeInSeconds;
     private Coordinate coordinate;
     private int zoneId;
 
@@ -39,19 +37,6 @@ public class JobImpl implements Job, MicroLocation {
 
     public void setWorkerID(int personID) {
         this.workerId = personID;
-    }
-
-    public void setJobWorkingTime(int startTimeInSeconds, int workingTimeInSeconds){
-        this.startTimeInSeconds = startTimeInSeconds;
-        this.workingTimeInSeconds = workingTimeInSeconds;
-    }
-
-    public int getStartTimeInSeconds() {
-        return startTimeInSeconds;
-    }
-
-    public int getWorkingTimeInSeconds() {
-        return workingTimeInSeconds;
     }
 
     @Override

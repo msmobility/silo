@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.properties.modules;
 
-import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;

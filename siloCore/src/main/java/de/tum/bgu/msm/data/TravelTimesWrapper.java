@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.data;
 
+import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.simulator.AnnualUpdate;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 
-public class TravelTimesWrapper implements TravelTimes, AnnualUpdate {
+public class TravelTimesWrapper implements TravelTimes, Data {
 
     private final TravelTimes delegate;
     private final Properties properties;
@@ -44,10 +44,15 @@ public class TravelTimesWrapper implements TravelTimes, AnnualUpdate {
     }
 
     @Override
-    public void finishYear(int year) {
+    public void endYear(int year) {
         if (properties.accessibility.skimYears.contains(year) && year != properties.main.startYear) {
             updateSkims(year);
         }
+    }
+
+    @Override
+    public void endSimulation() {
+
     }
 
     private void updateSkims(int year) {

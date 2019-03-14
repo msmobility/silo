@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainerImpl;
+import de.tum.bgu.msm.container.DataContainerImpl;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Person;
@@ -23,7 +23,7 @@ public class SampleGenerator {
     public static void main(String[] args) {
         final Implementation implementation = Implementation.valueOf(args[1].toUpperCase());
         final Properties properties = Properties.initializeProperties(args[0], implementation);
-        SiloDataContainerImpl dataContainer = SiloDataContainerImpl.loadSiloDataContainer(properties);
+        DataContainerImpl dataContainer = DataContainerImpl.loadSiloDataContainer(properties);
 
         double sampleFraction = Double.parseDouble(args[2]);
 

@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.jobmography;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.GeoData;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobFactory;
@@ -19,7 +19,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
 
     public AddJobsDefinition(Zone zone, int change, String jobType, DataContainer dataContainer, JobFactory factory) {
         super(zone, change, jobType, dataContainer);
-        this.ids = jobData.getNextJobIds(change);
+        this.ids = jobDataManager.getNextJobIds(change);
         this.geoData = dataContainer.getGeoData();
         this.factory = factory;
     }
@@ -32,7 +32,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             synchronized (Job.class) {
                 Coordinate coordinate = zone.getRandomCoordinate();
                 final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
-                jobData.addJob(job);
+                jobDataManager.addJob(job);
             }
             if (id == SiloUtil.trackJj) {
                 SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +

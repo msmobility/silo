@@ -2,11 +2,10 @@ package de.tum.bgu.msm.simulator;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.MicroEvent;
-import de.tum.bgu.msm.models.AnnualModel;
 import de.tum.bgu.msm.models.EventModel;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
@@ -25,7 +24,7 @@ public final class Simulator {
     private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 
     private final Map<Class<? extends MicroEvent>, EventModel> models = new LinkedHashMap<>();
-    private final List<AnnualModel> annualModels = new ArrayList<>();
+    private final List<ModelUpdateListener> modelUpdateListeners = new ArrayList<>();
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
@@ -39,17 +38,17 @@ public final class Simulator {
         logger.info("Registered " + model.getClass().getSimpleName() + " for: " + klass.getSimpleName());
     }
 
-    public void registerAnnualModel(AnnualModel model) {
-        this.annualModels.add(model);
+    public void registerAnnualModel(ModelUpdateListener model) {
+        this.modelUpdateListeners.add(model);
         logger.info("Registered annual model " + model.getClass().getSimpleName());
     }
 
     public void setup() {
         logger.info("  Setting up annual models");
         timeTracker.reset();
-        for(AnnualModel annualModel: annualModels) {
-            annualModel.setup();
-            timeTracker.recordAndReset("SetupOf" + annualModel.getClass().getSimpleName());
+        for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
+            modelUpdateListener.setup();
+            timeTracker.recordAndReset("SetupOf" + modelUpdateListener.getClass().getSimpleName());
         }
         logger.info("  Setting up event models");
         for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
@@ -61,19 +60,20 @@ public final class Simulator {
     public void simulate(int year) {
         prepareYear(year);
         processEvents();
-//        finishYear(year);
+        finishYear(year);
     }
 
     private void prepareYear(int year) {
         timeTracker.reset();
         logger.info("  Running annual models");
-        for(AnnualModel annualModel: annualModels) {
-            annualModel.prepareYear(year);
-            timeTracker.recordAndReset("PreparationFor" + annualModel.getClass().getSimpleName());
+        for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
+            modelUpdateListener.prepareYear(year);
+            timeTracker.recordAndReset("PreparationFor" + modelUpdateListener.getClass().getSimpleName());
         }
-        logger.info("  Creating events");
+        logger.info("  Preparing and creating events");
         for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
-            events.addAll(model.prepareYear(year));
+            model.prepareYear(year);
+            events.addAll(model.getEventsForCurrentYear(year));
             timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
         }
         logger.info("  Created " + events.size() + " events to simulate.");
@@ -99,12 +99,12 @@ public final class Simulator {
         }
     }
 
-    public void finishYear(int year, SiloDataContainer dataContainer) {
-        for(AnnualModel annualModel: annualModels) {
-            annualModel.finishYear(year);
+    private void finishYear(int year) {
+        for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
+            modelUpdateListener.endYear(year);
         }
         for(EventModel model: models.values()) {
-            model.finishYear(year);
+            model.endYear(year);
         }
         SummarizeData.resultFile("Count of simulated events");
         logger.info("Simulated " + eventCounter.size() + " successful events in total.");
@@ -114,5 +114,14 @@ public final class Simulator {
             logger.info("Simulated " + event.getSimpleName() + ": " + count);
         }
         events.clear();
+    }
+
+    public void endSimulation() {
+        for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
+            modelUpdateListener.endSimulation();
+        }
+        for(EventModel model: models.values()) {
+            model.endSimulation();
+        }
     }
 }

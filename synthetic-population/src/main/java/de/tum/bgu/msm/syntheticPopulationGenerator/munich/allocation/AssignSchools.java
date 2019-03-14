@@ -4,7 +4,7 @@ import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.RealEstateData;
+import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;

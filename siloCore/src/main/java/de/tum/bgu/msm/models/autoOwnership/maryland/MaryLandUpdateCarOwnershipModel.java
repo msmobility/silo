@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.autoOwnership.maryland;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -95,8 +95,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
         // Note: This method can only be executed after all households have been generated and allocated to zones,
         // as calculating accessibilities requires to know where households are living
 
-        HouseholdData householdData = dataContainer.getHouseholdData();
-        for (Household household: householdData.getHouseholds()) {
+        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+        for (Household household: householdDataManager.getHouseholds()) {
             if(household == null) {
                 continue;
             }
@@ -104,9 +104,9 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
             int hhSize = Math.min(household.getHhSize(), 8);
             int workers = Math.min(HouseholdUtil.getNumberOfWorkers(household), 4);
             int incomeCategory = getIncomeCategory(HouseholdUtil.getHhIncome(household));
-            Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(household.getDwellingId());
+            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
             int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZoneId()) + 0.5);
-            int density = dataContainer.getJobData().getJobDensityCategoryOfZone(dwelling.getZoneId());
+            int density = dataContainer.getJobDataManager().getJobDensityCategoryOfZone(dwelling.getZoneId());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];
             }

@@ -16,7 +16,6 @@
  */
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.data.HouseholdData;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;

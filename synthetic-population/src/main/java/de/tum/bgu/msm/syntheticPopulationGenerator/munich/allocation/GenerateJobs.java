@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.JobData;
+import de.tum.bgu.msm.data.job.JobData;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.austin;
 
 import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -17,13 +18,13 @@ public class RunSyntheticPopUs {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.AUSTIN, args[0]);
+        final Properties properties = SiloUtil.siloInitialization(Implementation.AUSTIN, args[0]);
         try {
             PropertyResourceBundle bundle = new PropertyResourceBundle(new FileReader(args[0]));
             PropertiesSynPop.initializePropertiesSynPop(bundle, Implementation.AUSTIN);
             PropertiesUtil.writePropertiesForThisRun(args[0]);
             SyntheticPopI syntheticPop;
-            syntheticPop = new SyntheticPopUs(bundle);
+            syntheticPop = new SyntheticPopUs(bundle, properties);
             syntheticPop.runSP();
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);

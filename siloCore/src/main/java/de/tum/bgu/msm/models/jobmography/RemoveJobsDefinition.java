@@ -54,12 +54,12 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
     }
 
     private void firePerson(Integer occupiedJob) {
-        Job jobToBeRemoved = jobData.getJobFromId(occupiedJob);
-        Person person = householdData.getPersonFromId(jobToBeRemoved.getWorkerId());
-        jobData.quitJob(false, person);
+        Job jobToBeRemoved = jobDataManager.getJobFromId(occupiedJob);
+        Person person = householdDataManager.getPersonFromId(jobToBeRemoved.getWorkerId());
+        jobDataManager.quitJob(false, person);
     }
 
     private synchronized void removeJob(int job) {
-        this.jobData.removeJob(job);
+        this.jobDataManager.removeJob(job);
     }
 }

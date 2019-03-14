@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.RealEstateData;
+import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;

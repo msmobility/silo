@@ -2,9 +2,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.RealEstateData;
+import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;

@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
 import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.data.SchoolData;
+import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;

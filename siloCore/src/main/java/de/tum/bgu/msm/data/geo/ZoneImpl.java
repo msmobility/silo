@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.geo;
 
-import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;

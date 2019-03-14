@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.properties.modules;
 
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
@@ -28,6 +27,11 @@ public class MainProperties {
     public final String baseDirectory;
 
     /**
+     * Base year of SILO input data.
+     */
+    public final int baseYear;
+
+    /**
      * Start year of SILO run.
      */
     public final int startYear;
@@ -51,11 +55,6 @@ public class MainProperties {
      * Model seed. By default it is equal to -1 and generates a random result.
      */
     public final int randomSeed;
-
-    /**
-     * Value of {@link Implementation}.
-     */
-    public final Implementation implementation;
 
     /**
      * Print out the synthetic population nd the development capacity file at the final year
@@ -85,16 +84,15 @@ public class MainProperties {
     @Deprecated
     public final String scalingControlTotals;
 
-    public MainProperties(String propertiesBasePath, ResourceBundle bundle, Implementation implementation) {
-
-        this.implementation = implementation;
+    public MainProperties(String propertiesBasePath, ResourceBundle bundle) {
 
         PropertiesUtil.newPropertySubmodule("Main properties");
         scenarioName = PropertiesUtil.getStringProperty(bundle, "scenario.name");
         //by omitting base directory one has to set up a working folder in intellij etc. which represents "." in the next line
         //add working directory as default value?
         baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", propertiesBasePath + "/");
-        startYear = PropertiesUtil.getIntProperty(bundle, "start.year");
+        baseYear = PropertiesUtil.getIntProperty(bundle, "base.year");
+        startYear = PropertiesUtil.getIntProperty(bundle, "start.year", baseYear);
         endYear = PropertiesUtil.getIntProperty(bundle, "end.year");
         randomSeed = PropertiesUtil.getIntProperty(bundle, "random.seed", -1);
         printOutFinalSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "print.out.sp.final", true);

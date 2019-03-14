@@ -1073,12 +1073,8 @@ public class SiloUtil {
         logger.info("  Summarizing micro data for year " + year);
 
         SummarizeData.resultFile("Year " + year, false);
-        dataContainer.getHouseholdData().summarizePopulation(dataContainer);
-        dataContainer.getRealEstateData().summarizeDwellings();
-        dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
-
         SummarizeData.resultFileSpatial("Year " + year, false);
-        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+        SummarizeData.summarizeSpatially(year, dataContainer);
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }

@@ -19,8 +19,8 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.models.AnnualModel;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
@@ -50,17 +50,17 @@ import java.util.Objects;
 /**
  * @author dziemke
  */
-public final class MatsimTransportModel implements AnnualModel {
+public final class MatsimTransportModel implements TransportModel {
 	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
 	
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
 	private Properties properties;
-	private final SiloDataContainer dataContainer;
+	private final DataContainer dataContainer;
 	private Network network;
 
 
-	public MatsimTransportModel(SiloDataContainer dataContainer, Config matsimConfig, Properties properties) {
+	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig, Properties properties) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
 		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
@@ -88,14 +88,19 @@ public final class MatsimTransportModel implements AnnualModel {
 	}
 
 	@Override
-	public void finishYear(int year) {
+	public void endYear(int year) {
 	    if(properties.transportModel.transportModelYears.contains(year+1)) {
             runTransportModel(year+1);
         }
 
     }
 
-	public void runTransportModel(int year) {
+    @Override
+    public void endSimulation() {
+
+    }
+
+    public void runTransportModel(int year) {
 		LOG.warn("Running MATSim transport model for year " + year + ".");
 
 		String scenarioName = properties.main.scenarioName;

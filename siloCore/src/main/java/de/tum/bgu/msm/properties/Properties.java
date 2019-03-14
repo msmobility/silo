@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.properties;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.modules.*;
 
 import java.io.File;
@@ -21,12 +20,12 @@ public final class Properties {
         return instance;
     }
 
-    public static Properties initializeProperties(String path, Implementation implementation) {
+    public static Properties initializeProperties(String path) {
 
         if(instance != null) {
             throw new RuntimeException("Already initialized properties!");
         }
-        instance = new Properties(path, implementation);
+        instance = new Properties(path);
         return instance;
     }
 
@@ -45,7 +44,7 @@ public final class Properties {
     public final SchoolDataProperties schoolData;
     private final String path;
 
-    private Properties(String path, Implementation implementation) {
+    private Properties(String path) {
         this.path = path;
         File propFile = new File(this.path);
         ResourceBundle bundle = null;
@@ -55,7 +54,7 @@ public final class Properties {
             e.printStackTrace();
         }
 
-        main = new MainProperties(propFile.getParent(), bundle, implementation);
+        main = new MainProperties(propFile.getParent(), bundle);
         transportModel = new TransportModelPropertiesModule(bundle);
         geo = new GeoProperties(bundle);
         realEstate = new RealEstateProperties(bundle);

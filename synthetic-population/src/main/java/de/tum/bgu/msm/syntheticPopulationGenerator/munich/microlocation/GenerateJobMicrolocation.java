@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobImpl;
@@ -18,7 +18,7 @@ public class GenerateJobMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateJobMicrolocation.class);
     
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobX = new HashMap<>();
     private Map<Integer, Float> jobY = new HashMap<>();
@@ -27,7 +27,7 @@ public class GenerateJobMicrolocation {
     Map<Integer, Map<String,Float>> zoneJobTypeDensity = new HashMap<>();
     Map<Integer, Map<String,Integer>> jobsByJobTypeInTAZ = new HashMap<>();
     
-    public GenerateJobMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateJobMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }

@@ -5,7 +5,9 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.RealEstateData;
+import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.job.JobData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -110,7 +112,7 @@ SyntheticPopPerth implements SyntheticPopI
         calculateVacancyRate();
         summarizeVacantJobsByRegion();
         summarizeByPersonRelationship();
-        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
+        SummarizeData.writeData(Properties.get().main.implementation.BASE_YEAR, dataContainer);
         */
 
         closeFilesForSyntheticPopulation();

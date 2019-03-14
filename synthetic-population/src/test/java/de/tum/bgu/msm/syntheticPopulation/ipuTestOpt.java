@@ -2,7 +2,7 @@ package de.tum.bgu.msm.syntheticPopulation;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.models.realEstate.ConstructionDemandJSCalculator;
+import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -18,7 +18,7 @@ public class ipuTestOpt {
 
 
     private Reader reader;
-    private ConstructionDemandJSCalculator calculator;
+    private DefaultConstructionDemandStrategy calculator;
 
     private TableDataSet controlTotalsMun;
     private TableDataSet controlTotalsCount;

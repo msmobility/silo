@@ -1,6 +1,6 @@
 package sdg;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import org.apache.log4j.Logger;
@@ -15,7 +15,7 @@ public class SDGCalculator {
 
     private static Logger logger = Logger.getLogger(SDGCalculator.class);
 
-    public static void calculateSdgIndicators(SiloDataContainer siloDataContainer, String outputPath, int year){
+    public static void calculateSdgIndicators(DataContainer dataContainer, String outputPath, int year){
 
         //load data from the container into this class
 
@@ -25,7 +25,7 @@ public class SDGCalculator {
         // AccessibilitySDGIndicators.calculateIcators(data1, data3 ,data3, fileName)
 
 
-        Collection<Household> households = siloDataContainer.getHouseholdData().getHouseholds();
+        Collection<Household> households = dataContainer.getHouseholdData().getHouseholds();
 
 
         Map<Integer,List<Household>> hhBySize = households.parallelStream().collect(Collectors.groupingBy(hh -> hh.getPersons().size()));
