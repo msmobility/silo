@@ -89,7 +89,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
     boolean die(Person person) {
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Household hhOfPersonToDie = person.getHousehold();
-        householdDataManager.addHouseholdAboutToChange(hhOfPersonToDie);
+        householdDataManager.saveHouseholdMemento(hhOfPersonToDie);
 
         if (person.getJobId() > 0) {
             dataContainer.getJobDataManager().quitJob(true, person);

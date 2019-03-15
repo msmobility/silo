@@ -3,6 +3,7 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -24,7 +25,7 @@ public class PersonWriterMuc implements PersonWriter {
 
         logger.info("  Writing person file to " + path);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
-        pwp.print("id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        pwp.print("id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income");
         pwp.print(",");
         pwp.print("nationality");
         pwp.print(",");
@@ -48,8 +49,6 @@ public class PersonWriterMuc implements PersonWriter {
             pwp.print(",\"");
             String role = pp.getRole().toString();
             pwp.print(role);
-            pwp.print("\",\"");
-            pwp.print(pp.getRace());
             pwp.print("\",");
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
@@ -61,19 +60,15 @@ public class PersonWriterMuc implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getIncome());
             pwp.print(",");
-            pwp.print(pp.getNationality().toString());
+            pwp.print(((PersonMuc)pp).getNationality().toString());
             pwp.print(",");
             Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId());
             pwp.print(dd.getZoneId());
             pwp.print(",");
             pwp.print(0);
             pwp.print(",");
-            pwp.print(pp.getSchoolId());
-
-
+            pwp.print(((PersonMuc)pp).getSchoolId());
             pwp.println();
-
-
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(pp.toString());

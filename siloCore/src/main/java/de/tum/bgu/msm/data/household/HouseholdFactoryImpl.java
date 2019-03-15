@@ -8,8 +8,7 @@ public class HouseholdFactoryImpl implements HouseholdFactory {
 
     @Override
     public HouseholdImpl duplicate(Household original, int nextHouseholdId) {
-        HouseholdImpl duplicate = new HouseholdImpl(nextHouseholdId, -1, original.getAutos());
-        duplicate.setAutonomous(original.getAutonomous());
+        HouseholdImpl duplicate = new HouseholdImpl(nextHouseholdId, original.getDwellingId(), original.getAutos());
         return duplicate;
     }
 }

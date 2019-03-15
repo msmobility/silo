@@ -47,6 +47,6 @@
 //        Assert.assertEquals(2, dataContainer.getHouseholdDataManager().getHouseholdFromId(1).getHhSize());
 //        Assert.assertTrue(dataContainer.getHouseholdDataManager().getHouseholdFromId(1).getPersons().values().stream()
 //                .anyMatch(person -> person.getRole() == PersonRole.CHILD));
-//        Assert.assertEquals(true, dataContainer.getHouseholdDataManager().getUpdatedHouseholds().containsKey(1));
+//        Assert.assertEquals(true, dataContainer.getHouseholdDataManager().getHouseholdMementos().containsKey(1));
 //    }
 //}

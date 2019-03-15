@@ -38,9 +38,21 @@ public interface HouseholdDataManager extends ModelUpdateListener {
 
     int getHighestPersonIdInUse();
 
-    void addHouseholdAboutToChange(Household hh);
+    /**
+     * Creates and saves a memento for the given household by duplicating its current state. A household will
+     * only be saved once per year. This implies that the memento of a household will, at the end of the year,
+     * contain the state of the household before the first call to this method in the given year. See also
+     * https://www.tutorialspoint.com/design_pattern/memento_pattern.htm
+     *
+     * @param hh
+     */
+    void saveHouseholdMemento(Household hh);
 
-    Collection<Household> getUpdatedHouseholds();
+    /**
+     * Returns the memento states of all households for the current year up to this point.
+     * @return
+     */
+    Collection<Household> getHouseholdMementos();
 
     void addPerson(Person person);
 

@@ -6,7 +6,7 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.RegionImpl;
-import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

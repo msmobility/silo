@@ -1,8 +1,13 @@
 package de.tum.bgu.msm.io;
 
+import de.tum.bgu.msm.data.person.PersonFactoryMuc;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Nationality;
+import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -24,7 +29,7 @@ public class PersonReaderMuc implements PersonReader {
     public void readData(String path) {
         logger.info("Reading person micro data from ascii file");
 
-        PersonFactory ppFactory = PersonUtils.getFactory();
+        PersonFactoryMuc ppFactory = new PersonFactoryMuc();
         String recString = "";
         int recCount = 0;
         try {
@@ -38,7 +43,6 @@ public class PersonReaderMuc implements PersonReader {
             int posAge = SiloUtil.findPositionInArray("age", header);
             int posGender = SiloUtil.findPositionInArray("gender", header);
             int posRelShp = SiloUtil.findPositionInArray("relationShip", header);
-            int posRace = SiloUtil.findPositionInArray("race", header);
             int posOccupation = SiloUtil.findPositionInArray("occupation", header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace", header);
             int posIncome = SiloUtil.findPositionInArray("income", header);
@@ -54,8 +58,6 @@ public class PersonReaderMuc implements PersonReader {
                 Gender gender = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr = PersonRole.valueOf(relShp.toUpperCase());
-                String strRace = lineElements[posRace].replace("\"", "");
-                Race race = Race.valueOf(strRace);
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace = Integer.parseInt(lineElements[posWorkplace]);
                 int income = Integer.parseInt(lineElements[posIncome]);
@@ -66,7 +68,11 @@ public class PersonReaderMuc implements PersonReader {
                 if (household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                Person pp = ppFactory.createPerson(id, age, gender, race, occupation, pr, workplace, income);
+                PersonMuc pp = ppFactory.createPerson(id, age, gender, occupation, pr, workplace, income);
+
+                //TODO: fix hardcoded nationality
+                pp.setNationality(Nationality.GERMAN);
+
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);

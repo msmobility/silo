@@ -1,10 +1,11 @@
 package de.tum.bgu.msm.models.carOwnership;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -12,7 +13,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -30,12 +30,10 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
     private final Map<Integer, Household> old2NewHousehold = new LinkedHashMap<>();
-    private final Reader reader;
+    private final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
 
-
-    public UpdateCarOwnershipModelMuc(DataContainer dataContainer, Properties properties, InputStream inputStream) {
+    public UpdateCarOwnershipModelMuc(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
-        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
@@ -101,8 +99,8 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
 
         int[] counter = new int[2];
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-        for (Household oldHousehold : householdDataManager.getUpdatedHouseholds()) {
-            Household newHousehold = householdDataManager.getHouseholdFromId(oldHousehold.getId());
+        for (Household oldHousehold : householdDataManager.getHouseholdMementos()) {
+            HouseholdMuc newHousehold = (HouseholdMuc) householdDataManager.getHouseholdFromId(oldHousehold.getId());
             if (newHousehold != null) {
                 int previousCars = oldHousehold.getAutos();
                 int hhSizePlus = 0;

@@ -1,9 +1,8 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.io.input.HouseholdReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -15,17 +14,17 @@ import java.io.IOException;
 public class HouseholdReaderMuc implements HouseholdReader {
 
     private final static Logger logger = Logger.getLogger(HouseholdReaderMuc.class);
-    private final HouseholdDataManager householdDataManager;
+    private final HouseholdData hhData;
+    private final HouseholdFactory factory;
 
-    public HouseholdReaderMuc(HouseholdDataManager householdDataManager) {
-        this.householdDataManager = householdDataManager;
+    public HouseholdReaderMuc(HouseholdData hhData, HouseholdFactory factory) {
+        this.hhData = hhData;
+        this.factory = factory;
     }
 
     @Override
     public void readData(String fileName) {
         logger.info("Reading household micro data from ascii file");
-
-        HouseholdFactory factory = HouseholdUtil.getFactory();
         String recString = "";
         int recCount = 0;
         try {
@@ -50,7 +49,7 @@ public class HouseholdReaderMuc implements HouseholdReader {
                 int autos = Integer.parseInt(lineElements[posAutos]);
 
                 Household hh = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
-                householdDataManager.addHousehold(hh);
+                hhData.addHousehold(hh);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     SiloUtil.trackWriter.println(hh.toString());

@@ -1078,9 +1078,6 @@ public class SiloUtil {
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }
-        if (Properties.get().main.createPrestoSummary) {
-            SummarizeData.summarizePrestoRegion(year, dataContainer);
-        }
     }
 
 

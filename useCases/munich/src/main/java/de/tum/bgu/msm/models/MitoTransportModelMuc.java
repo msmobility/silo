@@ -1,18 +1,17 @@
 package de.tum.bgu.msm.models;
 
-import de.tum.bgu.msm.DataContainerMuc;
 import de.tum.bgu.msm.MitoModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
-import de.tum.bgu.msm.data.munich.MunichZone;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -142,7 +141,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp(person, dataSet);
+                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, dataSet);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -157,7 +156,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
     }
 
 
-    private MitoPerson convertToMitoPp(Person person, DataSet dataSet) {
+    private MitoPerson convertToMitoPp(PersonMuc person, DataSet dataSet) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 

@@ -106,10 +106,6 @@ public final class SiloModel {
         IssueCounter.setUpCounter();
 		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
 		IssueCounter.logIssues(dataContainer.getGeoData());
-
-        if (properties.main.createPrestoSummary) {
-			SummarizeData.preparePrestoSummary(dataContainer.getGeoData());
-		}
 	}
 
 	private void setupScalingYears() {

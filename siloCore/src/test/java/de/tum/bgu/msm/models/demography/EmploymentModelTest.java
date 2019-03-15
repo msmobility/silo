@@ -64,7 +64,7 @@
 //        Assert.assertEquals(1, job.getWorkerId());
 //        Assert.assertEquals(Occupation.EMPLOYED, person.getOccupation());
 //        Assert.assertEquals(2320, person.getIncome());
-//        Assert.assertTrue(dataContainer.getHouseholdDataManager().getUpdatedHouseholds().containsKey(1));
+//        Assert.assertTrue(dataContainer.getHouseholdDataManager().getHouseholdMementos().containsKey(1));
 //    }
 //
 //    @Test
@@ -81,7 +81,7 @@
 //
 //        int income = person.getIncome();
 //        model.quitJob(1);
-//        Assert.assertTrue(dataContainer.getHouseholdDataManager().getUpdatedHouseholds().containsKey(1));
+//        Assert.assertTrue(dataContainer.getHouseholdDataManager().getHouseholdMementos().containsKey(1));
 //        Assert.assertEquals(-1, job.getWorkerId());
 //        Assert.assertEquals(Occupation.UNEMPLOYED, person.getOccupation());
 //        Assert.assertEquals((int)(income * 0.6 + 0.5), person.getIncome());

@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -9,9 +11,8 @@ import org.matsim.core.config.Config;
 /**
  * @author dziemke
  */
-
 public final class SiloMatsim {
-    static Logger logger = Logger.getLogger(SiloMatsim.class);
+    private final static Logger logger = Logger.getLogger(SiloMatsim.class);
 
     private final Properties properties;
     private final Config matsimConfig;// = ConfigUtils.createConfig(); // SILO-MATSim integration-specific
@@ -26,7 +27,9 @@ public final class SiloMatsim {
 
     public final void run() {
         logger.info("Starting SILO program for MATSim");
-        SiloModel model = new SiloModel(matsimConfig, properties);
+        DataContainer dataContainer = DataBuilder.getModelDataForMstm(properties);
+        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, matsimConfig);
+        SiloModel model = new SiloModel(matsimConfig, properties, modelContainer, dataContainer);
         model.runModel();
         logger.info("Finished SILO.");
 

@@ -20,7 +20,7 @@ public class DefaultPersonWriter implements PersonWriter {
     public void writePersons(String path) {
         logger.info("  Writing person file to " + path);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
-        pwp.print("id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        pwp.print("id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income");
         pwp.println();
         for (Person pp : householdData.getPersons()) {
             pwp.print(pp.getId());
@@ -33,8 +33,6 @@ public class DefaultPersonWriter implements PersonWriter {
             pwp.print(",\"");
             String role = pp.getRole().toString();
             pwp.print(role);
-            pwp.print("\",\"");
-            pwp.print(pp.getRace());
             pwp.print("\",");
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");

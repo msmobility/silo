@@ -3,7 +3,6 @@ package de.tum.bgu.msm.data;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
@@ -15,8 +14,6 @@ import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
@@ -24,7 +21,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +44,6 @@ public class SummarizeData {
     public static Boolean resultWriterReplicate = false;
 
     private static TableDataSet scalingControlTotals;
-    private static int[] prestoRegionByTaz;
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
     private static final String RESULT_FILE = "resultFile";
 
@@ -232,7 +227,7 @@ public class SummarizeData {
         PrintWriter pwh = SiloUtil.openFileForSequentialWriting(Properties.get().main.scaledMicroDataHh + year + ".csv", false);
         pwh.println("id,dwelling,zone,hhSize,autos");
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(Properties.get().main.scaledMicroDataPp + year + ".csv", false);
-        pwp.println("id,hhID,age,gender,race,occupation,driversLicense,workplace,income");
+        pwp.println("id,hhID,age,gender,occupation,driversLicense,workplace,income");
 
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int zone : dataContainer.getGeoData().getZones().keySet()) {
@@ -277,8 +272,6 @@ public class SummarizeData {
                             pwp.print(",");
                             pwp.print(pp.getGender().getCode());
                             pwp.print(",");
-                            pwp.print(pp.getRace());
-                            pwp.print(",");
                             pwp.print(pp.getOccupation());
                             pwp.print(",0,");
                             pwp.print(pp.getJobId());
@@ -305,8 +298,6 @@ public class SummarizeData {
                                     pwp.print(pp.getAge());
                                     pwp.print(",");
                                     pwp.print(pp.getGender().getCode());
-                                    pwp.print(",");
-                                    pwp.print(pp.getRace());
                                     pwp.print(",");
                                     pwp.print(pp.getOccupation());
                                     pwp.print(",0,");
@@ -337,8 +328,6 @@ public class SummarizeData {
                                 pwp.print(pp.getAge());
                                 pwp.print(",");
                                 pwp.print(pp.getGender().getCode());
-                                pwp.print(",");
-                                pwp.print(pp.getRace());
                                 pwp.print(",");
                                 pwp.print(pp.getOccupation());
                                 pwp.print(",0,");
@@ -390,100 +379,43 @@ public class SummarizeData {
 
 
 
-    public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, DataContainer dataContainer) {
-        // This calibration function summarized households by auto-ownership and quits
+//    public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, DataContainer dataContainer) {
+//        // This calibration function summarized households by auto-ownership and quits
+//
+//        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("autoOwnershipA.csv", false);
+//        pwa.println("hhSize,workers,income,transit,density,autos");
+//        int[][] autos = new int[4][60000];
+//        final RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+//        final GeoData geoData = dataContainer.getGeoData();
+//        final JobDataManager jobDataManager = dataContainer.getJobDataManager();
+//        final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+//        for (Household hh : householdDataManager.getHouseholds()) {
+//            int autoOwnership = hh.getAutos();
+//            int zone = -1;
+//            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
+//            if (dwelling != null) {
+//                zone = dwelling.getZoneId();
+//            }
+//            int county =  geoData.getZones().get(zone)).getCounty().getId();
+//            autos[autoOwnership][county]++;
+//            pwa.println(hh.getHhSize() + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
+//                    accessibility.getTransitAccessibilityForZone(zone) + "," + jobDataManager.getJobDensityInZone(zone) + "," + hh.getAutos());
+//        }
+//        pwa.close();
+//
+//        PrintWriter pw = SiloUtil.openFileForSequentialWriting("autoOwnershipB.csv", false);
+//        pw.println("County,0autos,1auto,2autos,3+autos");
+//        for (int county = 0; county < 60000; county++) {
+//            int sm = 0;
+//            for (int a = 0; a < 4; a++) sm += autos[a][county];
+//            if (sm > 0)
+//                pw.println(county + "," + autos[0][county] + "," + autos[1][county] + "," + autos[2][county] + "," + autos[3][county]);
+//        }
+//        pw.close();
+//        logger.info("Summarized auto ownership and quit.");
+//        System.exit(0);
+//    }
 
-        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("autoOwnershipA.csv", false);
-        pwa.println("hhSize,workers,income,transit,density,autos");
-        int[][] autos = new int[4][60000];
-        final RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        final GeoData geoData = dataContainer.getGeoData();
-        final JobDataManager jobDataManager = dataContainer.getJobDataManager();
-        final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-        for (Household hh : householdDataManager.getHouseholds()) {
-            int autoOwnership = hh.getAutos();
-            int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            }
-            int county = ((MstmZone) geoData.getZones().get(zone)).getCounty().getId();
-            autos[autoOwnership][county]++;
-            pwa.println(hh.getHhSize() + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
-                    accessibility.getTransitAccessibilityForZone(zone) + "," + jobDataManager.getJobDensityInZone(zone) + "," + hh.getAutos());
-        }
-        pwa.close();
-
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting("autoOwnershipB.csv", false);
-        pw.println("County,0autos,1auto,2autos,3+autos");
-        for (int county = 0; county < 60000; county++) {
-            int sm = 0;
-            for (int a = 0; a < 4; a++) sm += autos[a][county];
-            if (sm > 0)
-                pw.println(county + "," + autos[0][county] + "," + autos[1][county] + "," + autos[2][county] + "," + autos[3][county]);
-        }
-        pw.close();
-        logger.info("Summarized auto ownership and quit.");
-        System.exit(0);
-    }
-
-    public static void preparePrestoSummary(GeoData geoData) {
-
-        String prestoZoneFile = Properties.get().main.baseDirectory + Properties.get().main.prestoZoneFile;
-        TableDataSet regionDefinition = SiloUtil.readCSVfile(prestoZoneFile);
-        regionDefinition.buildIndex(regionDefinition.getColumnPosition("aggFips"));
-
-        final int highestId = geoData.getZones().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-        prestoRegionByTaz = new int[highestId + 1];
-        Arrays.fill(prestoRegionByTaz, -1);
-        for (Zone zone : geoData.getZones().values()) {
-            try {
-                prestoRegionByTaz[zone.getZoneId()] =
-                        (int) regionDefinition.getIndexedValueAt(((MstmZone) zone).getCounty().getId(), "presto");
-            } catch (Exception e) {
-                prestoRegionByTaz[zone.getZoneId()] = -1;
-            }
-        }
-    }
-
-    public static void summarizePrestoRegion(int year, DataContainer dataContainer) {
-        // summarize housing costs by income group in SILO region
-
-        String fileName = (Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" +
-                Properties.get().main.prestoSummaryFile + ".csv");
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, year != Properties.get().main.baseYear);
-        pw.println(year + ",Housing costs by income group");
-        pw.print("Income");
-        for (int i = 0; i < 10; i++) pw.print(",rent_" + ((i + 1) * 250));
-        pw.println(",averageRent");
-        int[][] rentByIncome = new int[10][10];
-        int[] rents = new int[10];
-        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            }
-            if (prestoRegionByTaz[zone] > 0) {
-                int hhInc = HouseholdUtil.getHhIncome(hh);
-                int rent = realEstate.getDwelling(hh.getDwellingId()).getPrice();
-                int incCat = Math.min((hhInc / 10000), 9);
-                int rentCat = Math.min((rent / 250), 9);
-                rentByIncome[incCat][rentCat]++;
-                rents[incCat] += rent;
-            }
-        }
-        for (int i = 0; i < 10; i++) {
-            pw.print(String.valueOf((i + 1) * 10000));
-            int countThisIncome = 0;
-            for (int r = 0; r < 10; r++) {
-                pw.print("," + rentByIncome[i][r]);
-                countThisIncome += rentByIncome[i][r];
-            }
-            pw.println("," + rents[i] / countThisIncome);
-        }
-    }
 
     public static void summarizeCarOwnershipByMunicipality(TableDataSet zonalData, DataContainer dataContainer) {
         // This calibration function summarizes household auto-ownership by municipality and quits

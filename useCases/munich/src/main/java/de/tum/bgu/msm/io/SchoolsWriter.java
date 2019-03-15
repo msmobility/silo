@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.DataContainerMuc;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.school.School;

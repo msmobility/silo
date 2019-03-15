@@ -110,7 +110,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
                 // divorce
                 Household oldHh = householdDataManager.getHouseholdFromId(per.getHousehold().getId());
-                householdDataManager.addHouseholdAboutToChange(oldHh);
+                householdDataManager.saveHouseholdMemento(oldHh);
                 Person divorcedPerson = HouseholdUtil.findMostLikelyPartner(per, oldHh);
                 divorcedPerson.setRole(PersonRole.SINGLE);
                 per.setRole(PersonRole.SINGLE);

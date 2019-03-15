@@ -227,7 +227,6 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     }
 
-
     private float[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
 

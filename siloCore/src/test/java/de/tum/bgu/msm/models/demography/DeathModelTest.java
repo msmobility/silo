@@ -79,6 +79,6 @@
 //        final int[] listOfVacantDwellingsInRegionAfter = realEstateData.getListOfVacantDwellingsInRegion(
 //                dataContainer.getGeoData().getZones().get(1).getRegion().getId());
 //        Assert.assertEquals(1,Arrays.stream(listOfVacantDwellingsInRegionAfter).filter(value -> value == 1).count());
-//        Assert.assertEquals(false, dataContainer.getHouseholdDataManager().getUpdatedHouseholds().contains(household1));
+//        Assert.assertEquals(false, dataContainer.getHouseholdDataManager().getHouseholdMementos().contains(household1));
 //    }
 //}

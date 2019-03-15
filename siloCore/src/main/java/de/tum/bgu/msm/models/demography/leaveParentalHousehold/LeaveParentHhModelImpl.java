@@ -127,7 +127,7 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
 
         final HouseholdDataManager households = dataContainer.getHouseholdDataManager();
         final Household hhOfThisPerson = households.getHouseholdFromId(per.getHousehold().getId());
-        dataContainer.getHouseholdDataManager().addHouseholdAboutToChange(hhOfThisPerson);
+        dataContainer.getHouseholdDataManager().saveHouseholdMemento(hhOfThisPerson);
         households.removePersonFromHousehold(per);
 
         final int newHhId = households.getNextHouseholdId();

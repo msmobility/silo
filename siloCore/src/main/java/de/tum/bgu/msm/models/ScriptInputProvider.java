@@ -4,6 +4,20 @@ import java.io.InputStream;
 
 public final class ScriptInputProvider {
 
+    public static InputStream getDwellingProbabilityScriptInput() {
+        return dwellingProbabilityScriptInput;
+    }
+
+    public static void setDwellingProbabilityScriptInput(InputStream dwellingProbabilityScriptInput) {
+        ScriptInputProvider.dwellingProbabilityScriptInput = dwellingProbabilityScriptInput;
+    }
+
+    private static InputStream dwellingProbabilityScriptInput
+            = ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
+
+    private ScriptInputProvider() {
+    }
+
     private static InputStream divorceProbabilityScriptInput
             = ScriptInputProvider.class.getResourceAsStream("DivorceProbabilityCalc");
     private static InputStream driversLicenseProbabilityScriptInput
@@ -64,7 +78,7 @@ public final class ScriptInputProvider {
         ScriptInputProvider.divorceProbabilityScriptInput = divorceProbabilityScriptInput;
     }
 
-    private ScriptInputProvider(){};
+    ;
 
     /**
      * TODO
@@ -102,6 +116,7 @@ public final class ScriptInputProvider {
 
     /**
      * TODO
+     *
      * @return
      */
     public static InputStream getBirthScriptInputStream() {
@@ -110,6 +125,7 @@ public final class ScriptInputProvider {
 
     /**
      * TODO
+     *
      * @param stream
      */
     public static void setBirthScriptInputStream(InputStream stream) {

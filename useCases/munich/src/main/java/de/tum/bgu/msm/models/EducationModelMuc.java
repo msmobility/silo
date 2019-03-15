@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.models;
 
-import de.tum.bgu.msm.DataContainerMuc;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
@@ -44,7 +45,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
         //TODO: Event handled randomly, so it might happen that birthday event always happened before
         //TODO: Realschuln and Gymnasien
         //TODO: Hard code age and probability or set in the properties?
-        Person pp = dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
+        PersonMuc pp = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
         if (pp != null) {
             School oldSchool = null;
             School newSchool = null;
@@ -81,9 +82,9 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     boolean leaveSchoolToWork(Person person) {
 
         person.setOccupation(Occupation.UNEMPLOYED);
-        School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
+        School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
         school.setOccupancy(school.getOccupancy() + 1);
-        person.setSchoolId(-1);
+        ((PersonMuc)person).setSchoolId(-1);
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " leaved from school to job market. ");
@@ -109,7 +110,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     public void prepareYear(int year) {}
 
 
-    boolean updateEducation(Person person, School school) {
+    boolean updateEducation(PersonMuc person, School school) {
 
         person.setSchoolId(school.getId());
         person.setOccupation(Occupation.STUDENT);
@@ -122,7 +123,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
         return true;
     }
 
-    School findSchool(Person person) {
+    School findSchool(PersonMuc person) {
         int currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId()).getType();
         return ((DataContainerMuc)dataContainer).getSchoolData().getClosestSchool(person, currentSchoolType+1);
     }

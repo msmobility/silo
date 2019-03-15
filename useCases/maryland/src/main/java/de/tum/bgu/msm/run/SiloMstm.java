@@ -1,30 +1,36 @@
 package de.tum.bgu.msm.run;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.SiloModel;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 
 /**
- * Implements SILO for the Maryland Statewide Transportation Model
+ * Implements SILO for for the Maryland Statewide Transportation Model
  *
  * @author Rolf Moeckel
- * Created on Nov 22, 2013 in Wheaton, MD
  */
-
 public class SiloMstm {
 
-    private static Logger logger = Logger.getLogger(SiloMstm.class);
-
+    private final static Logger logger = Logger.getLogger(SiloMstm.class);
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(Implementation.MARYLAND, args[0]);
-        logger.info("Starting SILO program for MSTM");
-        SiloModel model = new SiloModel(properties);
+        Properties properties = SiloUtil.siloInitialization(args[0]);
+
+        Config config = null;
+        if (args.length > 1 && args[1] != null) {
+            config = ConfigUtils.loadConfig(args[1]);
+        }
+        logger.info("Starting SILO land use model for the Munich Metropolitan Area");
+        DataContainer dataContainer = DataBuilder.getModelDataForMstm(properties);
+        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
+        SiloModel model = new SiloModel(config, properties, modelContainer, dataContainer);
         model.runModel();
         logger.info("Finished SILO.");
-
     }
 }

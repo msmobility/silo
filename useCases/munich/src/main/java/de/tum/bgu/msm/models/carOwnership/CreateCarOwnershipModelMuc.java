@@ -5,7 +5,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.munich.MunichZone;
+import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

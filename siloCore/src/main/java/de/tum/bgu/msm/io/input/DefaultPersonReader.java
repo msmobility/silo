@@ -37,7 +37,6 @@ public class DefaultPersonReader implements PersonReader{
             int posAge = SiloUtil.findPositionInArray("age",header);
             int posGender = SiloUtil.findPositionInArray("gender",header);
             int posRelShp = SiloUtil.findPositionInArray("relationShip",header);
-            int posRace = SiloUtil.findPositionInArray("race",header);
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
@@ -53,8 +52,6 @@ public class DefaultPersonReader implements PersonReader{
                 Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
-                String strRace = lineElements[posRace].replace("\"", "");
-                Race race = Race.valueOf(strRace);
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
@@ -65,7 +62,7 @@ public class DefaultPersonReader implements PersonReader{
                 if(household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                Person pp = ppFactory.createPerson(id, age, gender, race, occupation,pr, workplace, income);
+                Person pp = ppFactory.createPerson(id, age, gender, occupation,pr, workplace, income);
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);

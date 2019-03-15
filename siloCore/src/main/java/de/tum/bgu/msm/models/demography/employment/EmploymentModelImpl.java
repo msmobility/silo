@@ -181,7 +181,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
 
     boolean takeNewJob(Person person, Job job) {
         Household household = person.getHousehold();
-        dataContainer.getHouseholdDataManager().addHouseholdAboutToChange(household);
+        dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
         job.setWorkerID(person.getId());
         person.setWorkplace(job.getId());
         person.setOccupation(Occupation.EMPLOYED);
@@ -216,7 +216,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         final Person person = dataContainer.getHouseholdDataManager().getPersonFromId(perId);
         if (person != null) {
             Household household = person.getHousehold();
-            dataContainer.getHouseholdDataManager().addHouseholdAboutToChange(household);
+            dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
             dataContainer.getJobDataManager().quitJob(true, person);
             if (perId == SiloUtil.trackPp) {
                 SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");

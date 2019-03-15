@@ -20,10 +20,6 @@ public class HouseholdUtil {
     private HouseholdUtil() {
     }
 
-    public static HouseholdFactory getFactory() {
-        return factory;
-    }
-
     public static int getNumberOfWorkers(Household household) {
         return (int) household.getPersons().values().stream().filter(p -> p.getOccupation() == Occupation.EMPLOYED).count();
     }
@@ -101,18 +97,6 @@ public class HouseholdUtil {
         }
         // if income is larger than highest category
         return IncomeCategory.values()[IncomeCategory.values().length - 1];
-    }
-
-    public static Race defineHouseholdRace(Household household) {
-        Race householdRace = null;
-        for (Person pp : household.getPersons().values()) {
-            if (householdRace == null) {
-                householdRace = pp.getRace();
-            } else if (pp.getRace() != householdRace) {
-                return Race.other;
-            }
-        }
-        return householdRace;
     }
 
     public static Person findMostLikelyUnmarriedPartner (Person per, Household hh) {
@@ -217,18 +201,4 @@ public class HouseholdUtil {
             }
         }
     }
-
-    public static Nationality defineHouseholdNationality(Household household) {
-        Nationality householdNationaliy = null;
-        for (Person pp : household.getPersons().values()) {
-            if (householdNationaliy == null) {
-                householdNationaliy = pp.getNationality();
-            } else if (pp.getNationality() != householdNationaliy) {
-                return Nationality.OTHER;
-            }
-        }
-        return householdNationaliy;
-    }
-
-
 }

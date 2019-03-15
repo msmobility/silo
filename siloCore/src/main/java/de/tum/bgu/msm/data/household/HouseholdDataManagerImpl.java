@@ -16,13 +16,10 @@
  */
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.DwellingData;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -33,7 +30,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
@@ -64,7 +60,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     private float[][][] avgIncomeByGenderByAgeByOccupation;
     private final Map<Integer, Float> medianIncomeByMsa = new HashMap<>();
 
-    private Map<Integer, Household> updatedHouseholds = new HashMap<>();
+    private Map<Integer, Household> householdMementos = new HashMap<>();
 
     public HouseholdDataManagerImpl(HouseholdData householdData, DwellingData dwellingData,
                                     GeoData geoData, PersonFactory ppFactory,
@@ -95,7 +91,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     @Override
     public void endYear(int year) {
-        updatedHouseholds.clear();
+        householdMementos.clear();
     }
 
     @Override
@@ -217,7 +213,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             householdData.removePerson(pp.getId());
         }
         householdData.removeHousehold(householdId);
-        updatedHouseholds.remove(household);
+        householdMementos.remove(household);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
         }
@@ -233,117 +229,117 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         return ahs / (float) cnt;
     }
 
-    public void summarizePopulation(DataContainer dataContainer) {
-        // summarize population for summary file
-
-        final GeoData geoData = dataContainer.getGeoData();
-        int pers[][] = new int[2][101];
-        int ppRace[] = new int[4];
-        for (Person per : householdData.getPersons()) {
-            Gender gender = per.getGender();
-            int age = Math.min(per.getAge(), 100);
-            pers[gender.ordinal()][age] += 1;
-            ppRace[per.getRace().ordinal()]++;
-        }
-        int hhs[] = new int[10];
-        int hht[] = new int[HouseholdType.values().length + 1];
-        int hhRace[] = new int[4];
-        int[] hhIncome = new int[householdData.getHouseholds().size()];
-        int hhIncomePos = 0;
-        int hhByRegion[] = new int[dataContainer.getGeoData().getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
-        SummarizeData.resultFile("Age,Men,Women");
-        for (int i = 0; i <= 100; i++) {
-            String row = i + "," + pers[0][i] + "," + pers[1][i];
-            SummarizeData.resultFile(row);
-        }
-        SummarizeData.resultFile("ppByRace,hh");
-        SummarizeData.resultFile("white," + ppRace[0]);
-        SummarizeData.resultFile("black," + ppRace[1]);
-        SummarizeData.resultFile("hispanic," + ppRace[2]);
-        SummarizeData.resultFile("other," + ppRace[3]);
-        for (Household hh : householdData.getHouseholds()) {
-            int hhSize = Math.min(hh.getHhSize(), 10);
-            hhs[hhSize - 1]++;
-            hht[hh.getHouseholdType().ordinal()]++;
-            hhRace[hh.getRace().ordinal()]++;
-            hhIncome[hhIncomePos] = getHhIncome(hh);
-            hhIncomePos++;
-            int homeZone = -1;
-            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                homeZone = dwelling.getZoneId();
-            }
-            int region = dataContainer.getGeoData().getZones().get(homeZone).getRegion().getId();
-            hhByRegion[region]++;
-        }
-        SummarizeData.resultFile("hhByType,hh");
-        for (HouseholdType ht : HouseholdType.values()) {
-            String row = ht + "," + hht[ht.ordinal()];
-            SummarizeData.resultFile(row);
-        }
-        SummarizeData.resultFile("hhByRace,hh");
-        SummarizeData.resultFile("white," + hhRace[0]);
-        SummarizeData.resultFile("black," + hhRace[1]);
-        SummarizeData.resultFile("hispanic," + hhRace[2]);
-        SummarizeData.resultFile("other," + hhRace[3]);
-        String row = "hhBySize";
-        for (int i : hhs) row = row + "," + i;
-        SummarizeData.resultFile(row);
-        row = "AveHHSize," + getAverageHouseholdSize();
-        SummarizeData.resultFile(row);
-        double aveHHincome = SiloUtil.getSum(hhIncome) / householdData.getHouseholds().size();
-        row = "AveHHInc," + aveHHincome + ",MedianHHInc," + SiloUtil.getMedian(hhIncome);
-        SummarizeData.resultFile(row);
-        // labor participation and commuting distance
-        float[][][] labP = new float[2][2][5];
-        float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
-        for (Person per : householdData.getPersons()) {
-            int age = per.getAge();
-            Gender gender = per.getGender();
-            boolean employed = per.getJobId() > 0;
-            int ageGroup = 0;
-            if (age >= 65) ageGroup = 4;
-            else if (age >= 50) ageGroup = 3;
-            else if (age >= 30) ageGroup = 2;
-            else if (age >= 18) ageGroup = 1;
-            if (employed) labP[1][gender.ordinal()][ageGroup]++;
-            else labP[0][gender.ordinal()][ageGroup]++;
-            if (employed) {
-                Zone zone = null;
-                Household household = householdData.getHousehold(per.getHousehold().getId());
-                Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
-                if (dwelling != null) {
-                    zone = geoData.getZones().get(dwelling.getZoneId());
-                }
-                Zone destination = geoData.getZones().get(dataContainer.getJobDataManager().getJobFromId(per.getJobId()).getZoneId());
-                double ds = dataContainer.getTravelTimes().
-                        getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
-                commDist[0][zone.getRegion().getId()] += ds;
-                commDist[1][zone.getRegion().getId()]++;
-            }
-        }
-        String[] grp = {"<18", "18-29", "30-49", "50-64", ">=65"};
-        SummarizeData.resultFile("laborParticipationRateByAge,male,female");
-        for (int ag = 0; ag < 5; ag++) {
-            Formatter f = new Formatter();
-            f.format("%s,%f,%f", grp[ag], labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]), labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]));
-            SummarizeData.resultFile(f.toString());
-        }
-        // todo: Add distance in kilometers to this summary
-        SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
-        for (int i : geoData.getRegions().keySet()) {
-            SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
-        }
-        int[] carOwnership = new int[4];
-        for (Household hh : householdData.getHouseholds()) {
-            carOwnership[hh.getAutos()]++;
-        }
-        SummarizeData.resultFile("carOwnershipLevel,households");
-        SummarizeData.resultFile("0cars," + carOwnership[0]);
-        SummarizeData.resultFile("1car," + carOwnership[1]);
-        SummarizeData.resultFile("2cars," + carOwnership[2]);
-        SummarizeData.resultFile("3+cars," + carOwnership[3]);
-    }
+//    public void summarizePopulation(DataContainer dataContainer) {
+//        // summarize population for summary file
+//
+//        final GeoData geoData = dataContainer.getGeoData();
+//        int pers[][] = new int[2][101];
+//        int ppRace[] = new int[4];
+//        for (Person per : householdData.getPersons()) {
+//            Gender gender = per.getGender();
+//            int age = Math.min(per.getAge(), 100);
+//            pers[gender.ordinal()][age] += 1;
+//            ppRace[per.getRace().ordinal()]++;
+//        }
+//        int hhs[] = new int[10];
+//        int hht[] = new int[HouseholdType.values().length + 1];
+//        int hhRace[] = new int[4];
+//        int[] hhIncome = new int[householdData.getHouseholds().size()];
+//        int hhIncomePos = 0;
+//        int hhByRegion[] = new int[dataContainer.getGeoData().getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
+//        SummarizeData.resultFile("Age,Men,Women");
+//        for (int i = 0; i <= 100; i++) {
+//            String row = i + "," + pers[0][i] + "," + pers[1][i];
+//            SummarizeData.resultFile(row);
+//        }
+//        SummarizeData.resultFile("ppByRace,hh");
+//        SummarizeData.resultFile("white," + ppRace[0]);
+//        SummarizeData.resultFile("black," + ppRace[1]);
+//        SummarizeData.resultFile("hispanic," + ppRace[2]);
+//        SummarizeData.resultFile("other," + ppRace[3]);
+//        for (Household hh : householdData.getHouseholds()) {
+//            int hhSize = Math.min(hh.getHhSize(), 10);
+//            hhs[hhSize - 1]++;
+//            hht[hh.getHouseholdType().ordinal()]++;
+//            hhRace[hh.getRace().ordinal()]++;
+//            hhIncome[hhIncomePos] = getHhIncome(hh);
+//            hhIncomePos++;
+//            int homeZone = -1;
+//            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+//            if (dwelling != null) {
+//                homeZone = dwelling.getZoneId();
+//            }
+//            int region = dataContainer.getGeoData().getZones().get(homeZone).getRegion().getId();
+//            hhByRegion[region]++;
+//        }
+//        SummarizeData.resultFile("hhByType,hh");
+//        for (HouseholdType ht : HouseholdType.values()) {
+//            String row = ht + "," + hht[ht.ordinal()];
+//            SummarizeData.resultFile(row);
+//        }
+//        SummarizeData.resultFile("hhByRace,hh");
+//        SummarizeData.resultFile("white," + hhRace[0]);
+//        SummarizeData.resultFile("black," + hhRace[1]);
+//        SummarizeData.resultFile("hispanic," + hhRace[2]);
+//        SummarizeData.resultFile("other," + hhRace[3]);
+//        String row = "hhBySize";
+//        for (int i : hhs) row = row + "," + i;
+//        SummarizeData.resultFile(row);
+//        row = "AveHHSize," + getAverageHouseholdSize();
+//        SummarizeData.resultFile(row);
+//        double aveHHincome = SiloUtil.getSum(hhIncome) / householdData.getHouseholds().size();
+//        row = "AveHHInc," + aveHHincome + ",MedianHHInc," + SiloUtil.getMedian(hhIncome);
+//        SummarizeData.resultFile(row);
+//        // labor participation and commuting distance
+//        float[][][] labP = new float[2][2][5];
+//        float[][] commDist = new float[2][geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt() + 1];
+//        for (Person per : householdData.getPersons()) {
+//            int age = per.getAge();
+//            Gender gender = per.getGender();
+//            boolean employed = per.getJobId() > 0;
+//            int ageGroup = 0;
+//            if (age >= 65) ageGroup = 4;
+//            else if (age >= 50) ageGroup = 3;
+//            else if (age >= 30) ageGroup = 2;
+//            else if (age >= 18) ageGroup = 1;
+//            if (employed) labP[1][gender.ordinal()][ageGroup]++;
+//            else labP[0][gender.ordinal()][ageGroup]++;
+//            if (employed) {
+//                Zone zone = null;
+//                Household household = householdData.getHousehold(per.getHousehold().getId());
+//                Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
+//                if (dwelling != null) {
+//                    zone = geoData.getZones().get(dwelling.getZoneId());
+//                }
+//                Zone destination = geoData.getZones().get(dataContainer.getJobDataManager().getJobFromId(per.getJobId()).getZoneId());
+//                double ds = dataContainer.getTravelTimes().
+//                        getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
+//                commDist[0][zone.getRegion().getId()] += ds;
+//                commDist[1][zone.getRegion().getId()]++;
+//            }
+//        }
+//        String[] grp = {"<18", "18-29", "30-49", "50-64", ">=65"};
+//        SummarizeData.resultFile("laborParticipationRateByAge,male,female");
+//        for (int ag = 0; ag < 5; ag++) {
+//            Formatter f = new Formatter();
+//            f.format("%s,%f,%f", grp[ag], labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]), labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]));
+//            SummarizeData.resultFile(f.toString());
+//        }
+//        // todo: Add distance in kilometers to this summary
+//        SummarizeData.resultFile("aveCommuteDistByRegion,minutes");
+//        for (int i : geoData.getRegions().keySet()) {
+//            SummarizeData.resultFile(i + "," + commDist[0][i] / commDist[1][i]);
+//        }
+//        int[] carOwnership = new int[4];
+//        for (Household hh : householdData.getHouseholds()) {
+//            carOwnership[hh.getAutos()]++;
+//        }
+//        SummarizeData.resultFile("carOwnershipLevel,households");
+//        SummarizeData.resultFile("0cars," + carOwnership[0]);
+//        SummarizeData.resultFile("1car," + carOwnership[1]);
+//        SummarizeData.resultFile("2cars," + carOwnership[2]);
+//        SummarizeData.resultFile("3+cars," + carOwnership[3]);
+//    }
 
     private void identifyHighestHouseholdAndPersonId() {
         // identify highest household ID and highest person ID in use
@@ -430,15 +426,10 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     }
 
 
-    /**
-     * Add one household that probably had changed their attributes for the car updating model
-     * Households are added to this List only once, even if several changes happen to them. They are only added
-     * once, because this HashMap stores the previous socio-demographics before any change happened in a given year
-     * @param hh
-     */
+
     @Override
-    public void addHouseholdAboutToChange(Household hh) {
-        updatedHouseholds.putIfAbsent(hh.getId(), hh);
+    public void saveHouseholdMemento(Household hh) {
+        householdMementos.putIfAbsent(hh.getId(), hhFactory.duplicate(hh, hh.getId()));
     }
 
     /**
@@ -446,8 +437,8 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
      * @return
      */
     @Override
-    public Collection<Household> getUpdatedHouseholds() {
-        return updatedHouseholds.values();
+    public Collection<Household> getHouseholdMementos() {
+        return householdMementos.values();
     }
 
     @Override

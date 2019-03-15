@@ -46,7 +46,8 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
     private final float localScaler = properties.demographics.localScaler;
 
 
-    public BirthModelImpl(DataContainer dataContainer, PersonFactory factory, Properties properties, BirthStrategy strategy) {
+    public BirthModelImpl(DataContainer dataContainer, PersonFactory factory,
+                          Properties properties, BirthStrategy strategy) {
         super(dataContainer, properties);
         this.factory = factory;
         this.strategy = strategy;
@@ -122,14 +123,13 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
     void giveBirth(Person person) {
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Household household = person.getHousehold();
-        householdDataManager.addHouseholdAboutToChange(household);
+        householdDataManager.saveHouseholdMemento(household);
         final int id = householdDataManager.getNextPersonId();
         Gender gender = MALE;
         if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
             gender = FEMALE;
         }
-        final Person child = factory.createPerson(id, 0, gender, household.getRace(),
-                Occupation.TODDLER,PersonRole.CHILD, 0, 0);
+        final Person child = factory.giveBirth(person, id, gender);
         householdDataManager.addPerson(child);
         householdDataManager.addPersonToHousehold(child, household);
         if (id == SiloUtil.trackPp

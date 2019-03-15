@@ -1,17 +1,14 @@
 package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
-import org.locationtech.jts.geom.Coordinate;
 
-public class PersonImpl implements Person{
-
+public class PersonImpl implements Person {
 
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated
     private final int id;
     private int age;
     private final Gender gender;
-    private final Race race;
     private Occupation occupation;
     private PersonRole role;
     private int jobId;
@@ -21,21 +18,12 @@ public class PersonImpl implements Person{
     private PersonType type;
 
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
-    private Nationality nationality = Nationality.GERMAN;
-    private float travelTime = 0;
-    private int jobTAZ = 0;
     private boolean driverLicense = false;
-    private int schoolId = -1;
 
-    //Attributes that only used in synthetic population
-    private int schoolType = 0;
-    private int schoolPlace = 0;  // TAZ of school
-
-    PersonImpl(int id, int age, Gender gender, Race race, Occupation occupation, PersonRole role, int jobId, int income) {
+    public PersonImpl(int id, int age, Gender gender, Occupation occupation, PersonRole role, int jobId, int income) {
         this.id = id;
         this.age = age;
         this.gender = gender;
-        this.race = race;
         this.occupation = occupation;
         this.role = role;
         this.jobId = jobId;
@@ -100,11 +88,6 @@ public class PersonImpl implements Person{
     }
 
     @Override
-    public Race getRace() {
-        return race;
-    }
-
-    @Override
     public Occupation getOccupation() {
         return occupation;
     }
@@ -130,57 +113,10 @@ public class PersonImpl implements Person{
     }
 
     @Override
-    public void setNationality(Nationality nationality) {
-        this.nationality = nationality;
-    }
-
-    @Override
-    public Nationality getNationality() {
-        return nationality;
-    }
-
-    @Override
-    public void setTravelTime(float travelTime){ this.travelTime = travelTime;}
-
-    @Override
-    public float getTravelTime() { return travelTime; }
-
-    @Override
-    public void setJobTAZ(int jobTAZ){ this.jobTAZ = jobTAZ;}
-
-    @Override
-    public int getJobTAZ() { return jobTAZ; }
-
-    @Override
     public void setDriverLicense(boolean driverLicense){ this.driverLicense = driverLicense;}
 
     @Override
     public boolean hasDriverLicense() { return driverLicense; }
-
-    @Override
-    public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
-
-    @Override
-    public int getSchoolType() {return schoolType;}
-
-    @Override
-    public void setSchoolPlace(int schoolPlace) {
-        this.schoolPlace = schoolPlace;
-    }
-
-    @Override
-    public int getSchoolPlace() {return schoolPlace;}
-
-
-    @Override
-    public int getSchoolId() {
-        return schoolId;
-    }
-
-    @Override
-    public void setSchoolId(int schoolId) {
-        this.schoolId = schoolId;
-    }
 
     @Override
     public String toString() {
@@ -189,7 +125,6 @@ public class PersonImpl implements Person{
                 +"\nAge                  " + age
                 +"\nGender               " + gender
                 +"\nRole in household    " + role
-                +"\nRace                 " + race
                 +"\nOccupation           " + occupation
                 +"\nWorkplace ID         " + jobId
                 +"\nIncome               " + income

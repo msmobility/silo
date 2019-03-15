@@ -49,7 +49,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private int numberOfStoredVacantDD;
     private double[] avePrice;
     private double[] aveVac;
-    private float[] medianRent;
 
     private final List<DwellingType> dwellingTypes = new ArrayList<>();
 
@@ -119,11 +118,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             currentQualityShares[qual - 1] =
                     (double) dwellingsByQuality[qual - 1] / (double) SiloUtil.getSum(dwellingsByQuality);
         return currentQualityShares;
-    }
-
-    @Override
-    public float getMedianRent(int msa) {
-        return medianRent[msa];
     }
 
     @Override
@@ -253,26 +247,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
                 }
             }
             ddPriceByIncomeCategory.put(incomeCategory, shareOfRentsForThisIncCat);
-        }
-    }
-
-
-    public void calculateMedianRentByMSA() {
-        Map<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
-        for (Dwelling dd : dwellingData.getDwellings()) {
-            int dwellingMSA = geoData.getZones().get(dd.getZoneId()).getMsa();
-            if (rentHashMap.containsKey(dwellingMSA)) {
-                ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
-                rents.add(dd.getPrice());
-            } else {
-                ArrayList<Integer> rents = new ArrayList<>();
-                rents.add(dd.getPrice());
-                rentHashMap.put(dwellingMSA, rents);
-            }
-        }
-        medianRent = new float[99999];
-        for (Integer thisMsa : rentHashMap.keySet()) {
-            medianRent[thisMsa] = SiloUtil.getMedian(rentHashMap.get(thisMsa).stream().mapToInt(Integer::intValue).toArray());
         }
     }
 

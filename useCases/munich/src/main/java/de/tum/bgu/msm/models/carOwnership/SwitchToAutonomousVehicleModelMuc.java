@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.models.carOwnership;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -57,12 +58,12 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future
         for (Household hh : householdDataManager.getHouseholds()) {
-            if (hh.getAutos() > hh.getAutonomous()) {
+            if (hh.getAutos() > ((HouseholdMuc)hh).getAutonomous()) {
                 int income = HouseholdUtil.getHhIncome(hh) / 12;
                 double[] prob = calculator.calculate(income, year);
                 int action = SiloUtil.select(prob);
                 if (action == 1) {
-                    hh.setAutonomous(hh.getAutonomous() + 1);
+                    ((HouseholdMuc)hh).setAutonomous(((HouseholdMuc)hh).getAutonomous() + 1);
                     counter++;
                 }
             }
