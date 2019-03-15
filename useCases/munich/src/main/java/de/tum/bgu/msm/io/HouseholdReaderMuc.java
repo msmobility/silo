@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdData;
-import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
+import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.io.input.HouseholdReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -15,9 +15,9 @@ public class HouseholdReaderMuc implements HouseholdReader {
 
     private final static Logger logger = Logger.getLogger(HouseholdReaderMuc.class);
     private final HouseholdData hhData;
-    private final HouseholdFactory factory;
+    private final HouseholdFactoryMuc factory;
 
-    public HouseholdReaderMuc(HouseholdData hhData, HouseholdFactory factory) {
+    public HouseholdReaderMuc(HouseholdData hhData, HouseholdFactoryMuc factory) {
         this.hhData = hhData;
         this.factory = factory;
     }
@@ -36,7 +36,6 @@ public class HouseholdReaderMuc implements HouseholdReader {
             int posId = SiloUtil.findPositionInArray("id", header);
             int posDwell = SiloUtil.findPositionInArray("dwelling", header);
             int posTaz = SiloUtil.findPositionInArray("zone", header);
-            int posSize = SiloUtil.findPositionInArray("hhSize", header);
             int posAutos = SiloUtil.findPositionInArray("autos", header);
 
             // read line
@@ -45,10 +44,9 @@ public class HouseholdReaderMuc implements HouseholdReader {
                 String[] lineElements = recString.split(",");
                 int id = Integer.parseInt(lineElements[posId]);
                 int dwellingID = Integer.parseInt(lineElements[posDwell]);
-                int taz = Integer.parseInt(lineElements[posTaz]);
                 int autos = Integer.parseInt(lineElements[posAutos]);
 
-                Household hh = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                HouseholdMuc hh = factory.createHousehold(id, dwellingID, autos);
                 hhData.addHousehold(hh);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);

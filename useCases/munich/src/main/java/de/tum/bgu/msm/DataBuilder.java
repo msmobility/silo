@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactoryImpl;
+import de.tum.bgu.msm.data.person.PersonFactoryMuc;
 import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.data.school.SchoolDataImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
@@ -63,9 +63,9 @@ class DataBuilder {
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, accessibility);
 
-        final HouseholdFactoryImpl hhFactory = new HouseholdFactoryImpl();
+        final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, geoData, new PersonFactoryImpl(),
+                householdData, dwellingData, geoData, new PersonFactoryMuc(),
                 hhFactory, properties, realEstateDataManager);
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
