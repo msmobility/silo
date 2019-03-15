@@ -4,7 +4,7 @@ public class HouseholdFactoryMuc implements HouseholdFactory {
 
     @Override
     public HouseholdMuc createHousehold(int id, int dwellingID, int autos) {
-        return null;
+        return new HouseholdMuc(id, dwellingID, autos);
     }
 
     @Override

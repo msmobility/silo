@@ -52,9 +52,9 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     @Override
     public void setup() {
-        super.setup();
         regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
         hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        super.setup();
     }
 
     @Override
