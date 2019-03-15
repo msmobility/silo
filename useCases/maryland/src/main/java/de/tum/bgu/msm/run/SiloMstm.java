@@ -27,7 +27,9 @@ public class SiloMstm {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-        DataContainer dataContainer = DataBuilder.getModelDataForMstm(properties);
+        DataContainer dataContainer = DataBuilder.buildDataContainer(properties);
+        DataBuilder.readInput(properties, dataContainer);
+
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
         SiloModel model = new SiloModel(config, properties, modelContainer, dataContainer);
         model.runModel();

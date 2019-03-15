@@ -1,11 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.data.school.SchoolData;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -20,12 +21,12 @@ public class GenerateSchoolMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateSchoolMicrolocation.class);
 
-    private final DataContainerImpl dataContainer;
+    private final DataContainerMuc dataContainer;
     private final DataSetSynPop dataSetSynPop;
     Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
 
 
-    public GenerateSchoolMicrolocation(DataContainerImpl dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateSchoolMicrolocation(DataContainerMuc dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -37,7 +38,8 @@ public class GenerateSchoolMicrolocation {
         logger.info("   Start Selecting the school to allocate the student");
         //Select the school to allocate the student
         int errorSchool = 0;
-        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
+        for (Person p : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonMuc pp = (PersonMuc) p;
             if (pp.getOccupation() == Occupation.STUDENT) {
                 int zoneID = pp.getSchoolPlace();
                 int schoolType = pp.getSchoolType();

@@ -3,17 +3,17 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.google.common.math.LongMath;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdData;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -54,8 +54,8 @@ public class AssignJobs {
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
-        RealEstateData realEstate = dataContainer.getRealEstateData();
-        HouseholdData households = dataContainer.getHouseholdData();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        HouseholdDataManager households = dataContainer.getHouseholdDataManager();
         for (Person pp : workerArrayList){
             int selectedJobType = guessjobType(pp.getGender(), educationalLevel.get(pp));
             Household hh = pp.getHousehold();
@@ -94,8 +94,9 @@ public class AssignJobs {
 
     private void setWorkerAndJob(Person pp, int jobID){
 
-        dataContainer.getJobData().getJobFromId(jobID).setWorkerID(pp.getId());
-        int jobTAZ = dataContainer.getJobData().getJobFromId(jobID).getZoneId();
+        dataContainer.getJobDataManager().getJobFromId(jobID).setWorkerID(pp.getId());
+        int jobTAZ = dataContainer.getJobDataManager().getJobFromId(jobID).getZoneId();
+        //TODO not part of the public person api anymore
         pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
@@ -121,10 +122,11 @@ public class AssignJobs {
 
         workerArrayList = new ArrayList<>();
         //All employed persons look for employment, regardless they have already assigned one. That's why also workplace and jobTAZ are set to -1
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
                 pp.setWorkplace(-1);
+                //TODO not part of the public person api anymore
                 pp.setJobTAZ(-1);
             }
         }
@@ -136,7 +138,7 @@ public class AssignJobs {
     private void identifyVacantJobsByZoneType() {
 
         logger.info("  Identifying vacant jobs by zone");
-        Collection<Job> jobs = dataContainer.getJobData().getJobs();
+        Collection<Job> jobs = dataContainer.getJobDataManager().getJobs();
 
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
         jobIntTypes = new HashMap<>();

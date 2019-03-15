@@ -1,10 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
+import de.tum.bgu.msm.data.geo.GeoDataMstm;
+import de.tum.bgu.msm.io.GeoDataReaderMstm;
 import de.tum.bgu.msm.io.output.OmxMatrixWriter;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;
@@ -34,9 +35,14 @@ public class CreateFreeFlowCarSkim {
 
     public static void main(String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.MARYLAND, "T:/2Kuehnel_Nico/synpop/siloMstm.properties");
-        GeoDataMstm geoData = new GeoDataMstm();
-        geoData.readData();
+        final Properties properties = SiloUtil.siloInitialization("T:/2Kuehnel_Nico/synpop/siloMstm.properties");
+        GeoDataMstm geoData = new GeoDataMstm(properties);
+        GeoDataReaderMstm geoDataReaderMstm = new GeoDataReaderMstm(geoData);
+        String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
+        String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
+        geoDataReaderMstm.readZoneCsv(fileName);
+        geoDataReaderMstm.readZoneShapefile(pathShp);
+        geoDataReaderMstm.readCrimeData(Properties.get().main.baseDirectory + Properties.get().geo.countyCrimeFile);
 
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile("T:\\2Kuehnel_Nico/networkCleaned_epsg26918.xml.gz");
@@ -62,7 +68,6 @@ public class CreateFreeFlowCarSkim {
             Coord originCoord = new Coord(coordinate.x, coordinate.y);
             Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
             zoneCalculationNodesMap.put(zone, originNode);
-
         }
 
         final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(zones, zones);

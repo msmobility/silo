@@ -3,6 +3,9 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateData;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
@@ -61,7 +64,7 @@ public class ValidateTripLengthDistribution {
 
     private ArrayList<Person> obtainWorkers(){
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
             }
@@ -72,9 +75,10 @@ public class ValidateTripLengthDistribution {
 
     private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
-        RealEstateData realEstate = dataContainer.getRealEstateData();
-        HouseholdData households = dataContainer.getHouseholdData();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        HouseholdDataManager households = dataContainer.getHouseholdDataManager();
         for (Person pp : personArrayList){
+            //TODO not part of the public person api anymore
             if (pp.getJobTAZ() > 0){
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
@@ -116,8 +120,8 @@ public class ValidateTripLengthDistribution {
 
     private ArrayList<Person> obtainStudents (int school){
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            if (pp.getOccupation() == Occupation.STUDENT & pp.getSchoolType() == school) {
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
+            if (pp.getOccupation() == Occupation.STUDENT & ((PersonMuc)pp).getSchoolType() == school) {
                 workerArrayList.add(pp);
             }
         }

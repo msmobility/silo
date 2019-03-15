@@ -3,6 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
@@ -40,15 +42,16 @@ public class AssignSchools {
         initializeSchoolCapacity();
         shuffleStudents();
 
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             pp.setDriverLicense(obtainLicense(pp.getGender(),pp.getAge()));
         }
 
 
         double logging = 2;
         int it = 12;
-        RealEstateData realEstate = dataContainer.getRealEstateData();
-        for (Person pp : studentArrayList){
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        for (Person p : studentArrayList){
+            PersonMuc pp = ((PersonMuc)p);
             int schooltaz;
             Household household = pp.getHousehold();
             int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
@@ -59,8 +62,10 @@ public class AssignSchools {
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
+                //TODO not part of the public person api anymore
                 pp.setJobTAZ(schooltaz);
             } else {
+                //TODO not part of the public person api anymore
                 pp.setJobTAZ(-2);
             }
             if (assignedStudents == logging){
@@ -146,10 +151,12 @@ public class AssignSchools {
     private void shuffleStudents(){
 
         studentArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person p : dataContainer.getHouseholdDataManager().getPersons()){
+            PersonMuc pp = (PersonMuc) p;
             if (pp.getOccupation() == Occupation.STUDENT){
                 studentArrayList.add(pp);
                 pp.setSchoolPlace(-1);
+                //TODO not part of the public person api anymore
                 pp.setJobTAZ(-1);
             }
         }

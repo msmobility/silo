@@ -1,18 +1,19 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.models.autoOwnership.munich.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microlocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microlocation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 
@@ -40,7 +41,7 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
-        DataContainerImpl dataContainer = DataContainerImpl.createEmptySiloDataContainer(Implementation.MUNICH);
+        DataContainerMuc dataContainer = DataContainerImpl.createEmptySiloDataContainer(;
         dataContainer.getGeoData().readData();
 
         long startTime = System.nanoTime();
@@ -58,10 +59,10 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Microlocation(dataSetSynPop,dataContainer).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModel(dataContainer, (GeoDataMuc) dataContainer.getGeoData()).run();
+        new CreateCarOwnershipModelMuc(dataContainer).run();
 
         logger.info("Summary of the synthetic population");
-        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
+        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.baseYear, dataContainer);
 
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);

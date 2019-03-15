@@ -26,12 +26,12 @@ import java.util.List;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
-class DataBuilder {
+public final class DataBuilder {
 
     private DataBuilder() {
     }
 
-    public static DataContainer getModelDataForMstm(Properties properties) {
+    public static DataContainer buildDataContainer(Properties properties) {
 
         GeoDataMstm geoData = new GeoDataMstm(properties);
 
@@ -77,8 +77,11 @@ class DataBuilder {
                 geoData, realEstateManager,
                 jobManager, householdManager,
                 travelTimes, accessibility, properties);
+        return dataContainer;
+    }
 
-        final GeoDataReaderMstm geoDataReaderMstm = new GeoDataReaderMstm(geoData);
+    public static void readInput(Properties properties, DataContainer dataContainer) {
+        final GeoDataReaderMstm geoDataReaderMstm = new GeoDataReaderMstm((GeoDataMstm) dataContainer.getGeoData());
 
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -88,15 +91,14 @@ class DataBuilder {
 
         int year = properties.main.startYear;
 
-        readHouseholds(properties, householdManager, hhFactory, year);
-        readPersons(properties, householdManager, ppFactory, year);
-        readDwellings(properties, realEstateManager, year);
+        readHouseholds(properties, dataContainer.getHouseholdDataManager(),
+                (HouseholdFactoryMstm) dataContainer.getHouseholdDataManager().getHouseholdFactory(), year);
+        readPersons(properties, dataContainer.getHouseholdDataManager(), (PersonfactoryMstm) dataContainer.getHouseholdDataManager().getPersonFactory(), year);
+        readDwellings(properties, dataContainer.getRealEstateDataManager(), year);
 
-        JobReader jjReader = new DefaultJobReader(jobManager);
+        JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
-
-        return dataContainer;
     }
 
     private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, int year) {

@@ -1,16 +1,15 @@
 package de.tum.bgu.msm.models;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -24,18 +23,16 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
 
     private final Accessibility accessibility;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
-    private final Reader reader;
 
-    public MaryLandUpdateCarOwnershipModel(DataContainer dataContainer, Accessibility accessibility, Properties properties, InputStream inputStream) {
+    public MaryLandUpdateCarOwnershipModel(DataContainer dataContainer, Accessibility accessibility, Properties properties) {
         super(dataContainer, properties);
         logger.info("  Setting up probabilities for auto-ownership model");
         this.accessibility = accessibility;
-        this.reader = new InputStreamReader(inputStream);
     }
 
     @Override
     public void setup() {
-//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
+        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
         MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
 
         boolean logCalculation = properties.demographics.logAutoOwnership;

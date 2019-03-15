@@ -20,9 +20,9 @@ public class SyntheticPopulationGeneratorDe {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+        SiloUtil.siloInitialization(args[0]);
         try {
-            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.MUNICH);
+            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])));
             PropertiesUtil.writePropertiesForThisRun(args[0]);
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);

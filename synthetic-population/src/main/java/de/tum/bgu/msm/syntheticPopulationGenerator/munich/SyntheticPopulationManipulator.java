@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.DataContainerImpl;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -13,15 +13,15 @@ public class SyntheticPopulationManipulator {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+        Properties properties = SiloUtil.siloInitialization(args[0]);
 
         logger.info("Load silo data container");
-        DataContainerImpl siloDataContainer = DataContainerImpl.loadSiloDataContainer(properties);
+        DataContainerMuc siloDataContainer = DataContainerImpl.loadSiloDataContainer(properties);
 
         //manipulate objects if needed
 
         logger.info("Write out synthetic population");
-        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, siloDataContainer);
+        SummarizeData.writeOutSyntheticPopulation(Properties.get().main.baseYear, siloDataContainer);
 
 
     }

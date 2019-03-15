@@ -2,11 +2,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -39,7 +38,7 @@ public class GenerateVacantDwellings {
     private int householdCounter;
     private int highestDwellingIdInUse;
     private final DataContainer dataContainer;
-    private RealEstateData realEstateData;
+    private RealEstateDataManager realEstateData;
 
 
     public GenerateVacantDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
@@ -62,7 +61,7 @@ public class GenerateVacantDwellings {
         previousHouseholds = 0;
         previousPersons = 0;
 
-        realEstateData = dataContainer.getRealEstateData();
+        realEstateData = dataContainer.getRealEstateDataManager();
         for (Dwelling dd: realEstateData.getDwellings()){
             int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"ID_city");
             updateQualityMap(municipality, dd.getYearBuilt(), dd.getQuality());

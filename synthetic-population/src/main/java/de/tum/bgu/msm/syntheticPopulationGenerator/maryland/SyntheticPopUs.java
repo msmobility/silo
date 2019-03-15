@@ -4,26 +4,26 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.data.geo.GeoDataMstm;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobData;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.data.maryland.GeoDataMstm;
-import de.tum.bgu.msm.data.maryland.MstmZone;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.io.GeoDataReaderMstm;
-import de.tum.bgu.msm.models.autoOwnership.maryland.MaryLandUpdateCarOwnershipModel;
+import de.tum.bgu.msm.models.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -70,9 +70,9 @@ public class SyntheticPopUs implements SyntheticPopI {
     private final Properties properties;
     private GeoDataMstm geoData;
     private Accessibility accessibility;
-    private RealEstateData realEstateData;
-    private HouseholdData householdData;
-    private JobData jobData;
+    private RealEstateDataManager realEstateData;
+    private HouseholdDataManager householdData;
+    private JobDataManager jobData;
     private SkimTravelTimes travelTimes;
 
 
@@ -86,22 +86,28 @@ public class SyntheticPopUs implements SyntheticPopI {
     public void runSP () {
         // main method to run the synthetic population generator
 
+
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
-        DataContainerImpl dataContainer = DataContainerImpl.createEmptySiloDataContainer(Implementation.MARYLAND);
+        DataContainer dataContainer = DataBuilder.buildDataContainer(properties);
         geoData = (GeoDataMstm) dataContainer.getGeoData();
-        new GeoDataReaderMstm(geoData).readZoneCsv();
-        new GeoDataReaderMstm(geoData).readZoneShapefile();
-        new GeoDataReaderMstm(geoData).readCrimeData();
+        String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
+        String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
+        GeoDataReaderMstm geoDataReaderMstm = new GeoDataReaderMstm(geoData);
+        geoDataReaderMstm.readZoneCsv(fileName);
+        geoDataReaderMstm.readZoneShapefile(pathShp);
+        geoDataReaderMstm.readCrimeData(Properties.get().main.baseDirectory + Properties.get().geo.countyCrimeFile);
+
 
         identifyUniquePUMAzones();
         readControlTotals();
 
-        realEstateData = dataContainer.getRealEstateData();
-        householdData = dataContainer.getHouseholdData();
-        jobData = dataContainer.getJobData();
+        realEstateData = dataContainer.getRealEstateDataManager();
+        householdData = dataContainer.getHouseholdDataManager();
+        jobData = dataContainer.getJobDataManager();
         createJobs();
-        travelTimes = new SkimTravelTimes();
-        accessibility = new Accessibility(dataContainer, properties);                        // read in travel times and trip length frequency distribution
+        travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
+        accessibility = dataContainer.getAccessibility();
+        // read in travel times and trip length frequency distribution
 
 //        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
 //        travelTimes.readSkim(TransportMode.pt, transitSkimFile,
@@ -133,6 +139,10 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
 //        summarizeVacantJobsByRegion();
 //        summarizeByPersonRelationship();
+        //TODO: use maryland writers similar to munich (not yet implemented)
+        /**
+         * {@link de.tum.bgu.msm.io.PersonWriterMuc} {@link de.tum.bgu.msm.io.DwellingWriterMuc} etc...
+         */
         SummarizeData.writeOutSyntheticPopulation(2016, dataContainer);
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
@@ -415,7 +425,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     int newDddId = realEstateData.getNextDwellingId();
                     if(hhSize > 0) {
                         newHhId = householdData.getNextHouseholdId();
-                        Household hh = HouseholdUtil.getFactory().createHousehold(newHhId, newDddId, autos);
+                        Household hh = householdData.getHouseholdFactory().createHousehold(newHhId, newDddId, autos);
                         households.add(hh);
                         householdData.addHousehold(hh);
                         hhCount++;
@@ -509,7 +519,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                             jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                         }
 
-                        Person pp = PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), race, occ, null, workplace, income);
+                        MarylandPerson pp = (MarylandPerson) PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
+                        pp.setRace(race);
                         householdData.addPerson(pp);
                         householdData.addPersonToHousehold(pp, household);
                         relationsHipsByPerson.put(pp.getId(), relationship);
@@ -909,9 +920,9 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private void generateAutoOwnership (DataContainerImpl dataContainer) {
+    private void generateAutoOwnership (DataContainer dataContainer) {
         // select number of cars for every household
-        dataContainer.getJobData().setup();
+        dataContainer.getJobDataManager().setup();
         MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get());   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: householdData.getHouseholds()) {
@@ -980,7 +991,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 while (vacDwellingsModel < SiloUtil.rounder(targetThisTypeThisZoneAbs,0)) {
                     int selected = SiloUtil.select(ids.length) - 1;
                     Dwelling dd = realEstateData.getDwelling(ids[selected]);
-                    int newDdId = RealEstateData.getNextDwellingId();
+                    int newDdId = realEstateData.getNextDwellingId();
                     Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone.getZoneId(), null, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
                             dd.getPrice(), 0f, dd.getYearBuilt());
                     realEstateData.addDwelling(dwelling);

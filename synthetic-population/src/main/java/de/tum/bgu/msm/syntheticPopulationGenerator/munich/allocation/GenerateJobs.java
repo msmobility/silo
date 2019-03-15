@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.job.JobData;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public class GenerateJobs {
 
 
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
-        JobData jobData = dataContainer.getJobData();
+        JobDataManager jobData = dataContainer.getJobDataManager();
             int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
             for (int job = 0; job < totalJobs; job++){
                 int id = jobData.getNextJobId();

@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.DataContainerImpl;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Person;
@@ -21,14 +20,13 @@ public class SampleGenerator {
      *            2: sample fraction value (e.g. "0.2" for 20%)
      */
     public static void main(String[] args) {
-        final Implementation implementation = Implementation.valueOf(args[1].toUpperCase());
-        final Properties properties = Properties.initializeProperties(args[0], implementation);
-        DataContainerImpl dataContainer = DataContainerImpl.loadSiloDataContainer(properties);
+        final Properties properties = Properties.initializeProperties(args[0]);
+        DataContainer dataContainer = DataContainerImpl.loadSiloDataContainer(properties);
 
         double sampleFraction = Double.parseDouble(args[2]);
 
         List<Household> toRemove = new ArrayList<>();
-        for(Household household: dataContainer.getHouseholdData().getHouseholds()) {
+        for(Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
             if(Math.random() < sampleFraction) {
                 toRemove.add(household);
             }
@@ -36,12 +34,13 @@ public class SampleGenerator {
 
         for(Household household: toRemove) {
             for(Person person: household.getPersons().values()) {
-                dataContainer.getJobData().removeJob(person.getJobId());
+                dataContainer.getJobDataManager().removeJob(person.getJobId());
             }
-            dataContainer.getRealEstateData().removeDwelling(household.getDwellingId());
-            dataContainer.getHouseholdData().removeHousehold(household.getId());
+            dataContainer.getRealEstateDataManager().removeDwelling(household.getDwellingId());
+            dataContainer.getHouseholdDataManager().removeHousehold(household.getId());
         }
 
-        SummarizeData.writeOutSyntheticPopulation(implementation.BASE_YEAR, dataContainer);
+//TODO use writers
+        SummarizeData.writeOutSyntheticPopulation(dataContainer);
     }
 }
