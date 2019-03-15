@@ -20,6 +20,7 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.TravelTimesWrapper;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -63,7 +64,8 @@ public final class MatsimTransportModel implements TransportModel {
 	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig, Properties properties) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
-		this.travelTimes = (MatsimTravelTimes) Objects.requireNonNull(dataContainer.getTravelTimes());
+		this.travelTimes = (MatsimTravelTimes)
+				Objects.requireNonNull(((TravelTimesWrapper)dataContainer.getTravelTimes()).getDelegate());
 		this.properties = properties;
 
 	}
