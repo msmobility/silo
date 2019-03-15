@@ -4,13 +4,13 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -25,7 +25,7 @@ import java.util.Collection;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 12 December 2012 in Santa Fe
  **/
-public class Accessibility implements Data {
+public class Accessibility implements ModelUpdateListener {
 
     private static final Logger logger = Logger.getLogger(Accessibility.class);
 

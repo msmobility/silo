@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.models.EducationModelMuc;
+import de.tum.bgu.msm.models.MitoTransportModelMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -50,11 +51,13 @@ import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.core.config.Config;
 
 public class ModelConfigurator {
 
-    public static ModelContainer getModelContainerForMuc(DataContainer dataContainer, Properties properties) {
+    public static ModelContainer getModelContainerForMuc(DataContainer dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -73,7 +76,7 @@ public class ModelConfigurator {
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 
         DivorceModel divorceModel = new DivorceModelImpl(
-                        dataContainer, movesModel, carOwnershipModel, hhFactory,
+                dataContainer, movesModel, carOwnershipModel, hhFactory,
                 properties, new DefaultDivorceStrategy());
 
         DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
@@ -107,7 +110,19 @@ public class ModelConfigurator {
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy());
 
 
-        TransportModel transportModel = null;
+        TransportModel transportModel;
+        switch (properties.transportModel.transportModelIdentifier) {
+            case MITO:
+                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties);
+                break;
+            case MATSIM:
+                transportModel = new MatsimTransportModel(dataContainer, config, properties);
+                break;
+            case NONE:
+            default:
+                transportModel = null;
+
+        }
         return new ModelContainer(
                 birthModel, birthdayModel,
                 deathModel, marriageModel,

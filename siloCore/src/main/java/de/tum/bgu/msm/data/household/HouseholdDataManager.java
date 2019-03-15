@@ -1,15 +1,14 @@
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 
 import java.util.Collection;
-import java.util.List;
 
-public interface HouseholdDataManager extends Data {
+public interface HouseholdDataManager extends ModelUpdateListener {
 
     float getMedianIncome(int msa);
 
@@ -41,7 +40,7 @@ public interface HouseholdDataManager extends Data {
 
     void addHouseholdAboutToChange(Household hh);
 
-    List<Household> getUpdatedHouseholds();
+    Collection<Household> getUpdatedHouseholds();
 
     void addPerson(Person person);
 

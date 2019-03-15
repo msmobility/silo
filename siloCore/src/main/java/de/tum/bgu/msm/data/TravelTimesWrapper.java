@@ -1,12 +1,17 @@
 package de.tum.bgu.msm.data;
 
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 
-public class TravelTimesWrapper implements TravelTimes, Data {
+public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
+
+    @Deprecated
+    public TravelTimes getDelegate() {
+        return delegate;
+    }
 
     private final TravelTimes delegate;
     private final Properties properties;

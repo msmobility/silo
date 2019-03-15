@@ -64,7 +64,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     private float[][][] avgIncomeByGenderByAgeByOccupation;
     private final Map<Integer, Float> medianIncomeByMsa = new HashMap<>();
 
-    private List<Household> updatedHouseholds = new ArrayList<>();
+    private Map<Integer, Household> updatedHouseholds = new HashMap<>();
 
     public HouseholdDataManagerImpl(HouseholdData householdData, DwellingData dwellingData,
                                     GeoData geoData, PersonFactory ppFactory,
@@ -438,9 +438,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
      */
     @Override
     public void addHouseholdAboutToChange(Household hh) {
-        if (!updatedHouseholds.contains(hh)) {
-            updatedHouseholds.add(duplicateHousehold(hh));
-        }
+        updatedHouseholds.putIfAbsent(hh.getId(), hh);
     }
 
     /**
@@ -448,8 +446,8 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
      * @return
      */
     @Override
-    public List<Household> getUpdatedHouseholds() {
-        return updatedHouseholds;
+    public Collection<Household> getUpdatedHouseholds() {
+        return updatedHouseholds.values();
     }
 
     @Override

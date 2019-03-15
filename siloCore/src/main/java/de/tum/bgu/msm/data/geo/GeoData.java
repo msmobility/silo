@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.geo;
 
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 
 import java.util.Map;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  * Created on 5 April 2017 in Munich
  **/
 
-public interface GeoData extends Data {
+public interface GeoData extends ModelUpdateListener {
 
     /**
      * Returns a map of all zones mapped to their IDs

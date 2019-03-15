@@ -1,13 +1,13 @@
 package de.tum.bgu.msm.data.dwelling;
 
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface RealEstateDataManager extends Data {
+public interface RealEstateDataManager extends ModelUpdateListener {
 
     DwellingFactory getDwellingFactory();
 

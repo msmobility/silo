@@ -16,6 +16,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -30,7 +31,7 @@ import java.util.Objects;
  * @author Rolf Moeckel
  * Created on February 18, 2017 in Munich, Germany
  */
-public final class MitoTransportModelMuc extends AbstractModel implements ModelUpdateListener {
+public final class MitoTransportModelMuc extends AbstractModel implements TransportModel {
 
     private static final Logger logger = Logger.getLogger(MitoTransportModelMuc.class);
     private TravelTimes travelTimes;
@@ -79,7 +80,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements ModelU
         fillMitoZoneEmployees(dataSet);
         convertSchools(dataSet);
         convertHhs(dataSet);
-        dataSet.setTravelTimes(travelTimes);
+        dataSet.setTravelTimes(((TravelTimesWrapper) travelTimes).getDelegate());
         dataSet.setYear(year);
         return dataSet;
     }

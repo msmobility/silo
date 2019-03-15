@@ -1,14 +1,14 @@
 package de.tum.bgu.msm.data.job;
 
-import de.tum.bgu.msm.container.Data;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.models.ModelUpdateListener;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface JobDataManager extends Data {
+public interface JobDataManager extends ModelUpdateListener {
     Job getJobFromId(int jobId);
 
     Collection<Job> getJobs();

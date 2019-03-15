@@ -85,7 +85,7 @@ public final class Simulator {
     private void processEvents() {
         logger.info("  Processing events...");
         for (MicroEvent e: events) {
-            timeTracker.reset();
+//            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
             //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
@@ -95,7 +95,7 @@ public final class Simulator {
             if(success) {
                 eventCounter.add(klass);
             }
-            timeTracker.record(klass.getSimpleName());
+//            timeTracker.record(klass.getSimpleName());
         }
     }
 
