@@ -6,11 +6,14 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.io.output.JobWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
 
 public class JobWriterMuc implements JobWriter {
+
+    private final static Logger logger = Logger.getLogger(JobWriterMuc.class);
 
     private final DataContainer dataContainer;
 
@@ -20,6 +23,7 @@ public class JobWriterMuc implements JobWriter {
 
     @Override
     public void writeJobs(String path) {
+        logger.info("  Writing job file to " + path);
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(path, false);
         pwj.print("id,zone,personId,type");
         pwj.print(",");
