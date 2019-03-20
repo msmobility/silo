@@ -1,12 +1,10 @@
 package de.tum.bgu.msm.utils;
 
-import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -30,19 +28,19 @@ public class TravelTimeUtil {
                 properties.accessibility.autoPeakSkim, properties.accessibility.skimFileFactorCar);
     }
 
-    public static DoubleMatrix2D getPeakTravelTimeMatrix(String mode, TravelTimes travelTimes, Collection<Zone> zones) {
+    public static IndexedDoubleMatrix2D getPeakTravelTimeMatrix(String mode, TravelTimes travelTimes, Collection<Zone> zones) {
         if(zones == null || zones.isEmpty()) {
-            logger.warn("No zones specified for travel time matrix. Returning 0x0 matrix.");
-            return new DenseDoubleMatrix2D(0,0);
+            logger.warn("No zones specified for travel time matrix.");
+            throw new IllegalArgumentException("No zones specified for travel time matrix.");
         }
-        final DoubleMatrix2D matrix = Matrices.doubleMatrix2D(zones, zones);
+        final IndexedDoubleMatrix2D matrix = new IndexedDoubleMatrix2D(zones, zones);
         if (travelTimes instanceof SkimTravelTimes) {
             return matrix.assign(((SkimTravelTimes) travelTimes).getMatrixForMode(mode).viewPart(0,0, matrix.rows(), matrix.columns()));
         }
 
         for (Zone origin : zones) {
             for (Zone destination : zones) {
-                matrix.setQuick(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
+                matrix.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTimes.getTravelTime(origin, destination, TIME_OF_DAY, mode));
             }
         }
         return matrix;
