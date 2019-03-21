@@ -185,7 +185,7 @@ public class Accessibility implements ModelUpdateListener {
                 logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
                         properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
             }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "utility");
+            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "Utility");
         }
     }
 
