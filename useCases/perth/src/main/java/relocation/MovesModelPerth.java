@@ -22,6 +22,7 @@ import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
@@ -35,7 +36,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
     private final SelectRegionStrategy selectRegionStrategy;
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class) ;
 
-    private DoubleMatrix1D hhByRegion;
+    private IndexedDoubleMatrix1D hhByRegion;
 
 
     public MovesModelPerth(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
@@ -50,7 +51,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
     @Override
     public void setup() {
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        hhByRegion = new IndexedDoubleMatrix1D((geoData.getRegions().values()));
         super.setup();
     }
 
@@ -62,7 +63,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
 
     private void calculateShareOfForeignersByZoneAndRegion() {
-        final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
+        final IndexedDoubleMatrix1D hhByZone =new IndexedDoubleMatrix1D(geoData.getZones().values());
         hhByRegion.assign(0);
         for (Household hh: dataContainer.getHouseholdDataManager().getHouseholds()) {
             int zone = -1;
@@ -71,8 +72,8 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                 zone = dwelling.getZoneId();
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
-            hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
-            hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
+            hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
+            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
 
         }
 
@@ -201,11 +202,11 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
                 } case ("population"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getQuick(region));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getIndexed(region));
                 } case ("noNormalization"): {
                     // do nothing
                 }case ("powerOfPopulation"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getQuick(region),0.5));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
                 }
             }
         }

@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.person.*;
 
 public class PersonMuc implements Person {
 
-    private final PersonImpl delegate;
+    private final Person delegate;
 
     private Nationality nationality;
 

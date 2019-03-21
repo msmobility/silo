@@ -1,17 +1,17 @@
 package de.tum.bgu.msm.io.output;
 
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobData;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.PrintWriter;
 
 public class DefaultJobWriter implements JobWriter {
 
-    private final JobData jobData;
+    private final JobDataManager jobDataManager;
 
-    public DefaultJobWriter(JobData jobData) {
-        this.jobData = jobData;
+    public DefaultJobWriter(JobDataManager jobData) {
+        this.jobDataManager = jobData;
     }
 
     @Override
@@ -19,7 +19,7 @@ public class DefaultJobWriter implements JobWriter {
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(path, false);
         pwj.print("id,zone,personId,type");
         pwj.println();
-        for (Job jj : jobData.getJobs()) {
+        for (Job jj : jobDataManager.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZoneId());

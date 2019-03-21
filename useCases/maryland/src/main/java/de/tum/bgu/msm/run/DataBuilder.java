@@ -1,20 +1,16 @@
 package de.tum.bgu.msm.run;
 
-import de.tum.bgu.msm.io.GeoDataReaderMstm;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.container.DefaultDataContainer;
-import de.tum.bgu.msm.data.household.HouseholdFactoryMstm;
-import de.tum.bgu.msm.data.person.PersonfactoryMstm;
+import de.tum.bgu.msm.data.DataContainerMstm;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
-import de.tum.bgu.msm.data.household.HouseholdData;
-import de.tum.bgu.msm.data.household.HouseholdDataImpl;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdDataManagerImpl;
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
+import de.tum.bgu.msm.data.person.PersonfactoryMstm;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.GeoDataReaderMstm;
 import de.tum.bgu.msm.io.PersonReaderMstm;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
@@ -73,7 +69,7 @@ public final class DataBuilder {
                 ppFactory, hhFactory,
                 properties, realEstateManager);
 
-        DataContainer dataContainer = new DefaultDataContainer(
+        DataContainer dataContainer = new DataContainerMstm(
                 geoData, realEstateManager,
                 jobManager, householdManager,
                 travelTimes, accessibility, properties);

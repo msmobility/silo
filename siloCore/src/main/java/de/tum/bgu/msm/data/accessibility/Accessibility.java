@@ -12,6 +12,8 @@ import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
@@ -36,9 +38,9 @@ public class Accessibility implements ModelUpdateListener {
 
     private final Properties properties;
 
-    private DoubleMatrix1D autoAccessibilities;
-    private DoubleMatrix1D transitAccessibilities;
-    private DoubleMatrix1D regionalAccessibilities;
+    private IndexedDoubleMatrix1D autoAccessibilities;
+    private IndexedDoubleMatrix1D transitAccessibilities;
+    private IndexedDoubleMatrix1D regionalAccessibilities;
 
     private final float autoOperatingCosts;
     private final float alphaAuto;
@@ -63,9 +65,9 @@ public class Accessibility implements ModelUpdateListener {
 
     @Override
     public void setup() {
-        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        this.autoAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        this.transitAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        this.regionalAccessibilities = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         
         logger.info("Initializing trip length frequency distributions");
         readWorkTripLengthFrequencyDistribution();
@@ -89,17 +91,17 @@ public class Accessibility implements ModelUpdateListener {
 
     public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
-        final DoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
+        final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
 
         logger.info("  Calculating zone zone accessibilities: auto");
-        final DoubleMatrix2D peakTravelTimeMatrixCar =
+        final IndexedDoubleMatrix2D peakTravelTimeMatrixCar =
                 TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, geoData.getZones().values());
-        final DoubleMatrix2D autoAccessZoneToZone =
+        final IndexedDoubleMatrix2D autoAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         logger.info("  Calculating zone zone accessibilities: transit");
-        final DoubleMatrix2D peakTravelTimeMatrixTransit =
+        final IndexedDoubleMatrix2D peakTravelTimeMatrixTransit =
                 TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, geoData.getZones().values());
-        final DoubleMatrix2D transitAccessZoneToZone =
+        final IndexedDoubleMatrix2D transitAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population,
                         peakTravelTimeMatrixTransit, alphaTransit, betaTransit);
 
@@ -121,11 +123,11 @@ public class Accessibility implements ModelUpdateListener {
      * @param regions             the regions to calculate the accessibility for
      * @param autoAccessibilities the accessibility vector containing values for each zone
      */
-    static DoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, DoubleMatrix1D autoAccessibilities) {
-        final DoubleMatrix1D matrix = Matrices.doubleMatrix1D(regions);
+    static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, IndexedDoubleMatrix1D autoAccessibilities) {
+        final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
         regions.parallelStream().forEach(r -> {
-            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getQuick(z.getZoneId())).sum() / r.getZones().size();
-            matrix.setQuick(r.getId(), sum);
+            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getIndexed(z.getZoneId())).sum() / r.getZones().size();
+            matrix.setIndexed(r.getId(), sum);
         });
         return matrix;
     }
@@ -135,8 +137,8 @@ public class Accessibility implements ModelUpdateListener {
      *
      * @param accessibility the accessibility vector containing agregated accessbilities for every zone
      */
-    static void scaleAccessibility(DoubleMatrix1D accessibility) {
-        final double sumScaleFactor = 100.0 / accessibility.getMaxLocation()[0];
+    static void scaleAccessibility(IndexedDoubleMatrix1D accessibility) {
+        final double sumScaleFactor = 100.0 / accessibility.getMaxValAndInternalIndex()[0];
         accessibility.assign(DoubleFunctions.mult(sumScaleFactor));
     }
 
@@ -149,12 +151,11 @@ public class Accessibility implements ModelUpdateListener {
      * @param aggregatedTransit      vector to which the the aggregated transit accessibilities will be written to
      * @param keys                   zone ids that will be considered for aggregation
      */
-    static void aggregateAccessibilities(DoubleMatrix2D autoAcessibilities, DoubleMatrix2D transitAccessibilities,
-                                         DoubleMatrix1D aggregatedAuto, DoubleMatrix1D aggregatedTransit, Collection<Integer> keys) {
+    static void aggregateAccessibilities(IndexedDoubleMatrix2D autoAcessibilities, IndexedDoubleMatrix2D transitAccessibilities,
+                                         IndexedDoubleMatrix1D aggregatedAuto, IndexedDoubleMatrix1D aggregatedTransit, Collection<Integer> keys) {
         keys.forEach(i -> {
-
-            aggregatedAuto.setQuick(i, autoAcessibilities.viewRow(i).zSum());
-            aggregatedTransit.setQuick(i, transitAccessibilities.viewRow(i).zSum());
+            aggregatedAuto.setIndexed(i, autoAcessibilities.viewRow(i).zSum());
+            aggregatedTransit.setIndexed(i, transitAccessibilities.viewRow(i).zSum());
         });
     }
 
@@ -168,11 +169,11 @@ public class Accessibility implements ModelUpdateListener {
      * @param alpha       alpha parameter used for the hansen calculation
      * @param beta        beta parameter used for the hansen calculation
      */
-    static DoubleMatrix2D calculateZoneToZoneAccessibilities(DoubleMatrix1D population, DoubleMatrix2D travelTimes, double alpha, double beta) {
+    static IndexedDoubleMatrix2D calculateZoneToZoneAccessibilities(IndexedDoubleMatrix1D population, IndexedDoubleMatrix2D travelTimes, double alpha, double beta) {
         final int size = Math.toIntExact(population.size());
-        final DoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0, 0, size, size).copy();
+        final IndexedDoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0, 0, size, size).copy();
         return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
-                travelTime > 0 ? Math.pow(population.getQuick(destination), alpha) * Math.exp(beta * travelTime) : 0);
+                travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
     }
 
     private void readWorkTripLengthFrequencyDistribution() {
@@ -185,7 +186,7 @@ public class Accessibility implements ModelUpdateListener {
                 logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
                         properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
             }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "utility");
+            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "Utility");
         }
     }
 
@@ -200,15 +201,15 @@ public class Accessibility implements ModelUpdateListener {
     public double getAutoAccessibilityForZone(int zone) {
     	// Can be combined with getTransitAccessibilityForZone into one method which get the mode
     	// as an argument, nk/dz, july'18
-        return this.autoAccessibilities.getQuick(zone);
+        return this.autoAccessibilities.getIndexed(zone);
     }
 
     public double getTransitAccessibilityForZone(int zoneId) {
-        return this.transitAccessibilities.getQuick(zoneId);
+        return this.transitAccessibilities.getIndexed(zoneId);
     }
 
     public double getRegionalAccessibility(int region) {
-        return regionalAccessibilities.getQuick(region);
+        return regionalAccessibilities.getIndexed(region);
     }
 
 

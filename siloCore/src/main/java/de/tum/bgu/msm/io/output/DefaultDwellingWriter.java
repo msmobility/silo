@@ -2,6 +2,7 @@ package de.tum.bgu.msm.io.output;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -10,9 +11,9 @@ import java.io.PrintWriter;
 public class DefaultDwellingWriter implements DwellingWriter {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingWriter.class);
-    private final DwellingData dwellingData;
+    private final RealEstateDataManager dwellingData;
 
-    public DefaultDwellingWriter(DwellingData dwellingData) {
+    public DefaultDwellingWriter(RealEstateDataManager dwellingData) {
         this.dwellingData = dwellingData;
     }
 

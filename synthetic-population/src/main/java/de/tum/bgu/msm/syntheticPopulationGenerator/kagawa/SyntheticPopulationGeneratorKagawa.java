@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 
-import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.KagawaPropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -21,16 +22,16 @@ public class SyntheticPopulationGeneratorKagawa {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.KAGAWA, args[0]);
+        Properties properties = SiloUtil.siloInitialization(args[0]);
         try {
             rb = new PropertyResourceBundle(new FileReader(args[0]));
-            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.MUNICH);
+            PropertiesSynPop.initializePropertiesSynPop(new KagawaPropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0]))));
             PropertiesUtil.writePropertiesForThisRun(args[0]);
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);
         }
         SyntheticPopI syntheticPop;
-        syntheticPop = new SyntheticPopJP(rb, dataSetSynPop);
+        syntheticPop = new SyntheticPopJP(rb, dataSetSynPop,properties);
         syntheticPop.runSP();
     }
 }

@@ -6,25 +6,22 @@ package de.tum.bgu.msm.models.relocation;
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
 */
 
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdMuc;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.models.relocation.moves.*;
+import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -37,8 +34,8 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
     private final SelectRegionStrategy selectRegionStrategy;
     private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class) ;
 
-    private DoubleMatrix1D regionalShareForeigners;
-    private DoubleMatrix1D hhByRegion;
+    private IndexedDoubleMatrix1D regionalShareForeigners;
+    private IndexedDoubleMatrix1D hhByRegion;
 
     public MovesModelMuc(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
                          DwellingUtilityStrategy dwellingUtilityStrategy,
@@ -52,8 +49,8 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     @Override
     public void setup() {
-        regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        regionalShareForeigners = new IndexedDoubleMatrix1D(geoData.getRegions().values());
+        hhByRegion = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         super.setup();
     }
 
@@ -65,7 +62,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
 
     private void calculateShareOfForeignersByZoneAndRegion() {
-        final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
+        final IndexedDoubleMatrix1D hhByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
         for (Household hh: dataContainer.getHouseholdDataManager().getHouseholds()) {
@@ -75,11 +72,11 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                 zone = dwelling.getZoneId();
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
-            hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
-            hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
+            hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
+            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
 
             if (((HouseholdMuc)hh).getNationality() != Nationality.GERMAN) {
-                regionalShareForeigners.setQuick(region, regionalShareForeigners.getQuick(region)+1);
+                regionalShareForeigners.setIndexed(region, regionalShareForeigners.getIndexed(region)+1);
             }
         }
 
@@ -143,7 +140,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                     utilityByRegion.put(region.getId(),
                             selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
-                                    nationality, priceUtil, regAcc, (float) regionalShareForeigners.getQuick(region.getId())));
+                                    nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId())));
 
                 }
                 utilityByNationalityByRegion.put(nationality, utilityByRegion);
@@ -220,11 +217,11 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
                 } case ("population"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getQuick(region));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getIndexed(region));
                 } case ("noNormalization"): {
                     // do nothing
                 }case ("powerOfPopulation"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getQuick(region),0.5));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
                 }
             }
         }

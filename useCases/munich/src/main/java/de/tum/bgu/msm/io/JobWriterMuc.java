@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.io.output.JobWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -15,10 +15,10 @@ public class JobWriterMuc implements JobWriter {
 
     private final static Logger logger = Logger.getLogger(JobWriterMuc.class);
 
-    private final DataContainer dataContainer;
+    private final JobDataManager jobDataManager;
 
-    public JobWriterMuc(DataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+    public JobWriterMuc(JobDataManager dataContainer) {
+        this.jobDataManager = dataContainer;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class JobWriterMuc implements JobWriter {
         pwj.print(",");
         pwj.print("duration");
         pwj.println();
-        for (Job jj : dataContainer.getJobDataManager().getJobs()) {
+        for (Job jj : jobDataManager.getJobs()) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZoneId());

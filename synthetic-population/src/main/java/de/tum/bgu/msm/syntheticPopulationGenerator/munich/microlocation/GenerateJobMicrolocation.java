@@ -40,7 +40,7 @@ public class GenerateJobMicrolocation {
         logger.info("   Start Selecting the job to allocate the job");
         //Select the job to allocate the job
         int errorjob = 0;
-        for (Job jj: dataContainer.getJobData().getJobs()) {
+        for (Job jj: dataContainer.getJobDataManager().getJobs()) {
             int zoneID = jj.getZoneId();
             String jobType = jj.getType();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
@@ -120,13 +120,11 @@ public class GenerateJobMicrolocation {
             zoneJobTypeDensity.put(zone,densityByJobType);
         }
 
-        for (Job jj: dataContainer.getJobData().getJobs()) {
+        for (Job jj: dataContainer.getJobDataManager().getJobs()) {
             int zoneID = jj.getZoneId();
             String jobType = jj.getType();
 
-            if (jobsByJobTypeInTAZ.get(zoneID).get(jobType) ==null){
-                jobsByJobTypeInTAZ.get(zoneID).put(jobType,0);
-            }
+            jobsByJobTypeInTAZ.get(zoneID).putIfAbsent(jobType, 0);
 
             int numberOfJobs = jobsByJobTypeInTAZ.get(zoneID).get(jobType);
             jobsByJobTypeInTAZ.get(zoneID).put(jobType,numberOfJobs+1);

@@ -1,10 +1,12 @@
 package de.tum.bgu.msm.models;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +27,9 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
     public Collection<EducationEvent> getEventsForCurrentYear(int year) {
         final List<EducationEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            events.add(new EducationEvent(person.getId()));
+            if (person.getAge() == 19) {
+                events.add(new EducationEvent(person.getId()));
+            }
         }
         return events;
     }
@@ -34,9 +38,7 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
     public boolean handleEvent(EducationEvent event) {
         Person pp = dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
         if (pp != null) {
-            if (pp.getAge() == 19) {
-                return updateEducation(pp);
-            }
+            return updateEducation(pp);
         }
         return false;
     }
@@ -61,14 +63,13 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
     //TODO implement for mstm?
     // todo: Implement logical rules how students change from one school type to another or graduate from school/university
     boolean updateEducation(Person person) {
-//        int schoolId = -1;
-//        person.setSchoolId(schoolId);
-//        // todo if 2 is the right code for someone who graduates from high school
-//        //todo also check occupation transition to worker? 'nk
-//        if (person.getId() == SiloUtil.trackPp) {
-//            SiloUtil.trackWriter.println("Person " + person.getId() +
-//                    " changed school. New school place (-1 = left school) " + schoolId);
-//        }
+        person.setOccupation(Occupation.UNEMPLOYED);
+        person.setWorkplace(-1);
+        //todo also check occupation transition to worker? 'nk
+        if (person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " + person.getId() +
+                    " changed school.");
+        }
         return true;
     }
 

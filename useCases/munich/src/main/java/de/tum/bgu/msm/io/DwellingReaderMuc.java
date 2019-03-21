@@ -13,9 +13,9 @@ import java.io.IOException;
 public class DwellingReaderMuc implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DwellingReaderMuc.class);
-    private final DwellingData dwellingData;
+    private final RealEstateDataManager dwellingData;
 
-    public DwellingReaderMuc(DwellingData dwellingData) {
+    public DwellingReaderMuc(RealEstateDataManager dwellingData) {
         this.dwellingData= dwellingData;
     }
 

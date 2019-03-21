@@ -40,7 +40,7 @@ public class GenerateDwellingMicrolocation {
         logger.info("   Start Selecting the building to allocate the dwelling");
         //Select the building to allocate the dwelling
         int errorBuilding = 0;
-        for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
+        for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
             int zoneID = dd.getZoneId();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneBuildingMap.get(zoneID) == null){
@@ -86,12 +86,10 @@ public class GenerateDwellingMicrolocation {
     }
 
     private void calculateDensity() {
-        for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
+        for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
             int zoneID = dd.getZoneId();
 
-            if (dwellingsInTAZ.get(zoneID) == null) {
-                dwellingsInTAZ.put(zoneID, 0);
-            }
+            dwellingsInTAZ.putIfAbsent(zoneID, 0);
 
             int numberOfDwellings = dwellingsInTAZ.get(zoneID);
             dwellingsInTAZ.put(zoneID,numberOfDwellings+1);
