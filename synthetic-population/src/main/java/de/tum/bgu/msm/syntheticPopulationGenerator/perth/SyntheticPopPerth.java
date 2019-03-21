@@ -2,16 +2,15 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.container.DataContainerImpl;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
-import de.tum.bgu.msm.data.household.HouseholdData;
-import de.tum.bgu.msm.data.job.JobData;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import run.DataBuilder;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -38,10 +37,9 @@ SyntheticPopPerth implements SyntheticPopI
 
     private ResourceBundle rb;
     //protected HashMap<Integer, int[]> tazByWorkZonePuma;
-    protected HouseholdData householdData;
-    protected RealEstateData realEstateData;
-    protected JobData jobData;
-    private JobData jobData;
+    protected HouseholdDataManager householdData;
+    protected RealEstateDataManager realEstateData;
+    protected JobDataManager jobData;
     //protected HashMap<Integer, int[]> vacantJobsByZone;
     private String baseDirectory;
 
@@ -73,11 +71,10 @@ SyntheticPopPerth implements SyntheticPopI
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
-        DataContainer dataContainer = DataContainerImpl.createEmptySiloDataContainer(Implementation.PERTH);
-        realEstateData = dataContainer.getRealEstateData();
-        householdData = dataContainer.getHouseholdData();
-        jobData = dataContainer.getJobData();
-        jobData = dataContainer.getJobData();
+        DataContainer dataContainer = DataBuilder.buildDataContainer(Properties.get());
+        realEstateData = dataContainer.getRealEstateDataManager();
+        householdData = dataContainer.getHouseholdDataManager();
+        jobData = dataContainer.getJobDataManager();
 
         // open & preprocess the gender file used for the population distribution into SA1 zones
         openGenderBySA1(year);
@@ -337,7 +334,7 @@ SyntheticPopPerth implements SyntheticPopI
             int hhSize = family.size;
 
             // dwelling attributes
-            int newDdId = RealEstateData.getNextDwellingId();
+            int newDdId = realEstateData.getNextDwellingId();
             int price = getDwellingPrice(ddRent, ddMortgage);
 
             // create a new dwelling (to be saved later)
@@ -535,7 +532,7 @@ SyntheticPopPerth implements SyntheticPopI
 
                             // create a new vacant dwelling using existing dwelling's properties
                             Dwelling vaccDwelling = new Dwelling();
-                            vaccDwelling.NewDdId = RealEstateData.getNextDwellingId();
+                            vaccDwelling.NewDdId = realEstateData.getNextDwellingId();
                             vaccDwelling.PumaZone = zone;
                             vaccDwelling.PumsDdType = ddType;
                             vaccDwelling.NewHhId = -1;

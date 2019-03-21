@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -20,7 +21,8 @@ import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.io.GeoDataReaderMstm;
+import de.tum.bgu.msm.io.*;
+import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.models.MaryLandUpdateCarOwnershipModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilder;
@@ -143,7 +145,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         /**
          * {@link de.tum.bgu.msm.io.PersonWriterMuc} {@link de.tum.bgu.msm.io.DwellingWriterMuc} etc...
          */
-        SummarizeData.writeOutSyntheticPopulation(2016, dataContainer);
+        summarizeData(dataContainer);
 //        writeSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
@@ -1125,4 +1127,42 @@ public class SyntheticPopUs implements SyntheticPopI {
         for (int i = 0; i <= 100; i++) logger.info(i + "," + roleCounter[i][0] + "," + roleCounter[i][1] + "," +
                 roleCounter[i][2]);
     }
+
+    private void summarizeData(DataContainer dataContainer){
+
+        String filehh = properties.main.baseDirectory
+                + properties.householdData.householdFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        hhwriter.writeHouseholds(filehh);
+
+        String filepp = properties.main.baseDirectory
+                + properties.householdData.personFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        PersonWriter ppwriter = new PersonWriterMstm(dataContainer.getHouseholdDataManager());
+        ppwriter.writePersons(filepp);
+
+        String filedd = properties.main.baseDirectory
+                + properties.realEstate.dwellingsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        ddwriter.writeDwellings(filedd);
+
+        String filejj = properties.main.baseDirectory
+                + properties.jobData.jobsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager());
+        jjwriter.writeJobs(filejj);
+
+
+    }
+
 }

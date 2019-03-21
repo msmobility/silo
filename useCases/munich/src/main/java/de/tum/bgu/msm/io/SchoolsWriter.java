@@ -1,9 +1,8 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.DataContainerMuc;
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -11,10 +10,10 @@ import java.io.PrintWriter;
 
 public class SchoolsWriter {
 
-    private final DataContainer dataContainer;
+    private final SchoolData schoolData;
 
-    public SchoolsWriter(DataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+    public SchoolsWriter(SchoolData dataContainer) {
+        this.schoolData = dataContainer;
     }
 
     public void writeSchools(String path) {
@@ -31,26 +30,26 @@ public class SchoolsWriter {
         pws.print("duration");
 
         pws.println();
-        for (School ss : ((DataContainerMuc) dataContainer).getSchoolData().getSchools()) {
-            pws.print(ss.getId());
+        for (School ee : schoolData.getSchools()) {
+            pws.print(ee.getId());
             pws.print(",");
-            pws.print(ss.getZoneId());
+            pws.print(ee.getZoneId());
             pws.print(",");
-            pws.print(ss.getType());
+            pws.print(ee.getType());
             pws.print(",");
-            pws.print(ss.getCapacity());
+            pws.print(ee.getCapacity());
             pws.print(",");
-            pws.print(ss.getOccupancy());
-            Coordinate coordinate = ((MicroLocation) ss).getCoordinate();
+            pws.print(ee.getOccupancy());
+            Coordinate coordinate = ((MicroLocation) ee).getCoordinate();
             pws.print(",");
             pws.print(coordinate.x);
             pws.print(",");
             pws.print(coordinate.y);
 
             pws.print(",");
-            pws.print(ss.getStartTimeInSeconds());
+            pws.print(ee.getStartTimeInSeconds());
             pws.print(",");
-            pws.print(ss.getStudyTimeInSeconds());
+            pws.print(ee.getStudyTimeInSeconds());
             pws.println();
         }
         pws.close();
