@@ -21,7 +21,7 @@ public class PersonfactoryMstm implements PersonFactory {
 
     @Override
     public MarylandPerson duplicate(Person originalPerson, int nextPersonId) {
-        MarylandPerson duplicate = new MarylandPerson(originalPerson.getId(), originalPerson.getAge(),
+        MarylandPerson duplicate = new MarylandPerson(nextPersonId, originalPerson.getAge(),
                 originalPerson.getGender(), originalPerson.getOccupation(),
                 originalPerson.getRole(), originalPerson.getJobId(), originalPerson.getIncome());
         duplicate.setRace(((MarylandPerson) originalPerson).getRace());
