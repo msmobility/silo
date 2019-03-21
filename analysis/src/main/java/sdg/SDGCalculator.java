@@ -25,7 +25,7 @@ public class SDGCalculator {
         // AccessibilitySDGIndicators.calculateIcators(data1, data3 ,data3, fileName)
 
 
-        Collection<Household> households = dataContainer.getHouseholdData().getHouseholds();
+        Collection<Household> households = dataContainer.getHouseholdDataManager().getHouseholds();
 
 
         Map<Integer,List<Household>> hhBySize = households.parallelStream().collect(Collectors.groupingBy(hh -> hh.getPersons().size()));
