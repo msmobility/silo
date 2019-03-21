@@ -6,24 +6,27 @@ package de.tum.bgu.msm.models;
 * Revised on Apr 24, 2014 in College Park, MD
 */
 
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
-import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.RealEstateDataManagerMstm;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.geo.MstmRegion;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.MarylandPerson;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.geo.MstmRegion;
-import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.person.Race;
-import de.tum.bgu.msm.models.relocation.moves.*;
+import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -39,9 +42,9 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     private final SelectRegionStrategyMstm selectRegionStrategy;
     private EnumMap<IncomeCategory, EnumMap<Race, Map<Integer, Double>>> utilityByIncomeRaceRegion = new EnumMap<>(IncomeCategory.class) ;
 
-    private DoubleMatrix2D zonalRacialComposition;
-    private DoubleMatrix2D regionalRacialComposition;
-    private DoubleMatrix1D hhByRegion;
+    private IndexedDoubleMatrix2D zonalRacialComposition;
+    private IndexedDoubleMatrix2D regionalRacialComposition;
+    private IndexedDoubleMatrix1D hhByRegion;
     private double selectDwellingRaceRelevance;
     private boolean provideRentSubsidyToLowIncomeHh;
 
@@ -72,9 +75,9 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     }
 
     private void resetMatrices() {
-        zonalRacialComposition = Matrices.doubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
-        regionalRacialComposition = Matrices.doubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getZones().values());
+        zonalRacialComposition = new IndexedDoubleMatrix2D(geoData.getZones().values(), Arrays.asList(Race.values()));
+        regionalRacialComposition = new IndexedDoubleMatrix2D(geoData.getRegions().values(), Arrays.asList(Race.values()));
+        hhByRegion = new IndexedDoubleMatrix1D(geoData.getZones().values());
         regionalRacialComposition.assign(0);
         zonalRacialComposition.assign(0);
         hhByRegion.assign(0);
@@ -91,12 +94,12 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
 
 
             final Race race = ((MarylandHousehold) hh).getRace();
-            zonalRacialComposition.setQuick(zone, race.getId(),
-                    zonalRacialComposition.getQuick(zone,race.getId()) + 1);
-            regionalRacialComposition.setQuick(region, race.getId(),
-                    regionalRacialComposition.getQuick(region, race.getId()));
+            zonalRacialComposition.setIndexed(zone, race.getId(),
+                    zonalRacialComposition.getIndexed(zone,race.getId()) + 1);
+            regionalRacialComposition.setIndexed(region, race.getId(),
+                    regionalRacialComposition.getIndexed(region, race.getId()));
 
-            hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
+            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
         }
     }
 
@@ -117,7 +120,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     }
 
     private double getZonalRacialShare(int zone, Race race) {
-        return zonalRacialComposition.getQuick(zone, race.getId());
+        return zonalRacialComposition.getIndexed(zone, race.getId());
     }
 
 
@@ -192,7 +195,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
                     utilitiesByRegionForThisRaceIncome.put(region.getId(),
                             selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
                                     race, priceUtilitiesByRegion.get(region.getId()), accessibilityByRegion.get(region.getId()),
-                                    (float) regionalRacialComposition.get(region.getId(), race.getId()), schoolQualityByRegion.get(region.getId()),
+                                    (float) regionalRacialComposition.getIndexed(region.getId(), race.getId()), schoolQualityByRegion.get(region.getId()),
                                     crimeRateByRegion.get(region.getId())));
 
                 }
@@ -278,7 +281,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
                 } case ("population"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getQuick(region));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getIndexed(region));
                 } case ("noNormalization"): {
                     // do nothing
                 }

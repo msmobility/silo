@@ -26,8 +26,8 @@ public class DataContainerMstm implements DataContainer {
     private int[] prestoRegionByTaz;
 
     public DataContainerMstm(
-            GeoData geodata, RealEstateDataManager realEstateManager, 
-            JobDataManager jobManager, HouseholdDataManager householdManager, 
+            GeoData geodata, RealEstateDataManager realEstateManager,
+            JobDataManager jobManager, HouseholdDataManager householdManager,
             TravelTimes travelTimes, Accessibility accessibility,
             Properties properties) {
 

@@ -1,0 +1,36 @@
+var calculateSelectRegionProbability = function (incomeGroup, nationality, price, accessibility, foreignerShare) {
+
+
+        if(incomeGroup.name().equals("LOW")) {
+            alpha = 0.04;
+
+                beta = 0.55;
+
+        } else if(incomeGroup.name().equals("MEDIUM")) {
+            alpha = 0.08;
+
+                beta = 0.5;
+
+        } else if(incomeGroup.name().equals("HIGH")) {
+            alpha = 0.120;
+
+                beta = 0.45;
+
+        } else if(incomeGroup.name().equals("VERY_HIGH")) {
+            alpha = 0.16;
+
+                beta = 0.25;
+
+        } else {
+            throw new Error("Undefined income group: " + incomeGroup);
+        }
+
+
+
+
+
+        relevantShare = foreignerShare;
+
+
+    return (1 - alpha - beta) * price + alpha * accessibility + beta * relevantShare;
+}

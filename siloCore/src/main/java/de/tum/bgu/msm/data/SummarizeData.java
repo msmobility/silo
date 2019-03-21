@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.data;
 
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.development.Development;
@@ -16,7 +15,7 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -131,7 +130,7 @@ public class SummarizeData {
         int[] jobs = new int[highestZonalId + 1];
         int[] hhs = new int[highestZonalId + 1];
         int[][] hhInc = new int[Properties.get().main.incomeBrackets.length + 1][highestZonalId + 1];
-        DoubleMatrix1D pop = getPopulationByZone(dataContainer);
+        IndexedDoubleMatrix1D pop = getPopulationByZone(dataContainer);
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             int zone = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();
             int incGroup = hh.getHouseholdType().getIncomeCategory().ordinal();
@@ -154,14 +153,14 @@ public class SummarizeData {
                 ddThisZone += dds[dwellingTypes.indexOf(dt)][taz];
             }
             if (ddThisZone > 0) {
-                avePrice = prices[taz] / ddThisZone;
+                avePrice = ((float) prices[taz]) / ddThisZone;
             }
             double autoAcc = dataContainer.getAccessibility().getAutoAccessibilityForZone(taz);
             double transitAcc = dataContainer.getAccessibility().getTransitAccessibilityForZone(taz);
             double availLand = dataContainer.getRealEstateDataManager().getAvailableCapacityForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
-            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getQuick(taz) + "," + hhs[taz];
+            String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getIndexed(taz) + "," + hhs[taz];
             for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++)
                 txt = txt.concat("," + hhInc[inc][taz]);
             for (DwellingType dt : dwellingTypes){
@@ -489,21 +488,21 @@ public class SummarizeData {
 
     }
 
-    public static DoubleMatrix1D getPopulationByZone(HouseholdData householdData, GeoData geoData, DwellingData dwellingData) {
-        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
+    public static IndexedDoubleMatrix1D getPopulationByZone(HouseholdData householdData, GeoData geoData, DwellingData dwellingData) {
+        IndexedDoubleMatrix1D popByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
         for (Household hh : householdData.getHouseholds()) {
             final int zone = dwellingData.getDwelling(hh.getDwellingId()).getZoneId();
-            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
+            popByZone.setIndexed(zone, popByZone.getIndexed(zone) + hh.getHhSize());
         }
         return popByZone;
     }
 
     @Deprecated
-    public static DoubleMatrix1D getPopulationByZone(DataContainer dataContainer) {
-        DoubleMatrix1D popByZone = Matrices.doubleMatrix1D(dataContainer.getGeoData().getZones().values());
+    public static IndexedDoubleMatrix1D getPopulationByZone(DataContainer dataContainer) {
+        IndexedDoubleMatrix1D popByZone = new IndexedDoubleMatrix1D(dataContainer.getGeoData().getZones().values());
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             final int zone = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();
-            popByZone.setQuick(zone, popByZone.getQuick(zone) + hh.getHhSize());
+            popByZone.setIndexed(zone, popByZone.getIndexed(zone) + hh.getHhSize());
         }
         return popByZone;
     }
