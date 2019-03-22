@@ -934,8 +934,6 @@ public class SyntheticPopJP implements SyntheticPopI {
             realEstate.addDwelling(dd);
             realEstate.addDwelling(dd);
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
-            dd.setBuildingSize((int)dwellings.getValueAt(i,"building"));
-            dd.setYearConstructionDE((int)dwellings.getValueAt(i,"year"));
             dd.setUsage(DwellingUsage.valueOf((int)dwellings.getValueAt(i,"usage")));
         }
         logger.info("   Generated households, persons and dwellings");
@@ -1239,7 +1237,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                     realEstate.addDwelling(dwell);
                     dwell.setFloorSpace(floorSpace);
                     dwell.setUsage(DwellingUsage.valueOf(usage));
-                    dwell.setBuildingSize(buildingSize);
                     generatedHouseholds.put(dwell.getId(), 1);
                 }
                 int households = householdData.getHighestHouseholdIdInUse() - previousHouseholds;
@@ -2011,9 +2008,9 @@ public class SyntheticPopJP implements SyntheticPopI {
         } else {
             attributesCount.setIndexedValueAt(mun,"H_Rent",attributesCount.getIndexedValueAt(mun,"H_Rent") + 1);
         }
-        if (dwelling.getBuildingSize() == 1){
+        if (dwelling.getType().equals(DefaultDwellingTypeImpl.SFA)){
             attributesCount.setIndexedValueAt(mun,"ddT_Detached",attributesCount.getIndexedValueAt(mun,"ddT_Detached") + 1);
-        } else if (dwelling.getBuildingSize() == 2){
+        } else if (dwelling.getType().equals(DefaultDwellingTypeImpl.MF234)){
             attributesCount.setIndexedValueAt(mun,"ddT_Apart",attributesCount.getIndexedValueAt(mun,"ddT_Apart") + 1);
         } else {
         attributesCount.setIndexedValueAt(mun,"ddT_Multi",attributesCount.getIndexedValueAt(mun,"ddT_Multi") + 1);

@@ -184,8 +184,7 @@ public class ReadPopulation {
             int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
             int posFloor   = SiloUtil.findPositionInArray("floor",header);
-            int posBuilding= SiloUtil.findPositionInArray("building",header);
-            //int posUse     = SiloUtil.findPositionInArray("usage",header);
+            int posUse     = SiloUtil.findPositionInArray("usage",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -207,11 +206,8 @@ public class ReadPopulation {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }
                 int floor = Integer.parseInt(lineElements[posFloor]);
-                int building = Integer.parseInt(lineElements[posBuilding]);
-                //int use = Integer.parseInt(lineElements[posUse]);
-                int use = 1;
+                int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
-                dd.setBuildingSize(building);
                 dd.setUsage(DwellingUsage.valueOf(use));
             }
         } catch (IOException e) {

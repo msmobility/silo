@@ -144,7 +144,6 @@ public class GenerateHouseholdsPersonsDwellings {
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
-        dwell.setBuildingSize(buildingSize);
     }
 
 
