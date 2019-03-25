@@ -6,7 +6,7 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.geo.MstmZone;
@@ -69,7 +69,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private ResourceBundle rb;
     private final Properties properties;
     private GeoDataMstm geoData;
-    private Accessibility accessibility;
+    private AccessibilityImpl accessibility;
     private RealEstateDataManager realEstateData;
     private HouseholdDataManager householdData;
     private JobDataManager jobData;
@@ -103,7 +103,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         jobData = dataContainer.getJobDataManager();
         createJobs();
         travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
-        accessibility = dataContainer.getAccessibility();                      // read in travel times and trip length frequency distribution
+        accessibility = (AccessibilityImpl) dataContainer.getAccessibility();                      // read in travel times and trip length frequency distribution
 
 //        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
 //        travelTimes.readSkim(TransportMode.pt, transitSkimFile,

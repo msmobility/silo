@@ -8,6 +8,8 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;

@@ -1,10 +1,6 @@
 package de.tum.bgu.msm.io.output;
 
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingData;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.jboss.logging.Logger;

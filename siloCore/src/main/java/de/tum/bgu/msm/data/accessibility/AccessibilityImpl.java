@@ -85,7 +85,7 @@ public class AccessibilityImpl implements Accessibility {
     }
 
 
-    private void calculateHansenAccessibilities(int year) {
+    public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
         final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
 
@@ -182,7 +182,7 @@ public class AccessibilityImpl implements Accessibility {
                 logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
                         properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
             }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "utility");
+            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "Utility");
         }
     }
 

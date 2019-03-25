@@ -1,6 +1,5 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;

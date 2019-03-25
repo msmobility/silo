@@ -2,9 +2,8 @@ package sdg;
 
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.data.DataContainerMuc;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 public class Main {
 
