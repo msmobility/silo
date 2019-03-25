@@ -141,6 +141,11 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
     }
 
+    @Override
+    protected boolean isHouseholdEligibleToLiveHere(Household household, Dwelling dd) {
+        return true;
+    }
+
     private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold
                 = new HashMap<>(utilityByIncomeByRegion.get(ht.getIncomeCategory()));

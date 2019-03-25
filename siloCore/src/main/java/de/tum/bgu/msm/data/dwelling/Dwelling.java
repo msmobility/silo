@@ -18,15 +18,11 @@ public interface Dwelling extends Location, Id {
 
     int getYearBuilt();
 
-    float getRestriction();
-
     void setResidentID(int residentID);
 
     void setQuality(int quality);
 
     void setPrice(int price);
-
-    void setRestriction(float restriction);
 
     void setFloorSpace(int floorSpace);
 
@@ -37,6 +33,4 @@ public interface Dwelling extends Location, Id {
     void setUsage(DwellingUsage usage);
 
     DwellingUsage getUsage();
-
-
 }

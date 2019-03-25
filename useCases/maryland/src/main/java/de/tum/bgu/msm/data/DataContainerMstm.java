@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -27,7 +26,7 @@ public class DataContainerMstm implements DataContainer {
 
     public DataContainerMstm(
             GeoData geodata, RealEstateDataManager realEstateManager,
-            JobDataManager jobManager, HouseholdDataManager householdManager,
+            JobDataManager jobManager, HouseholdDataManagerMstm householdManager,
             TravelTimes travelTimes, Accessibility accessibility,
             Properties properties) {
 
@@ -37,8 +36,8 @@ public class DataContainerMstm implements DataContainer {
     }
 
     @Override
-    public HouseholdDataManager getHouseholdDataManager() {
-        return delegate.getHouseholdDataManager();
+    public HouseholdDataManagerMstm getHouseholdDataManager() {
+        return (HouseholdDataManagerMstm) delegate.getHouseholdDataManager();
     }
 
     @Override

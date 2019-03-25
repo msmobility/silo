@@ -435,7 +435,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     int taz = locateDwelling(pumaZone);
                     int selectedYear = selectYear(yearBuilt);
 
-                    Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDddId, taz, null, newHhId, ddType, bedRooms, quality, price, 0, selectedYear);
+                    Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDddId, taz, null, newHhId, ddType, bedRooms, quality, price, selectedYear);
                     realEstateData.addDwelling(dwelling);
                 }
                 householdsBySerial.put(serial, households);
@@ -993,7 +993,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     Dwelling dd = realEstateData.getDwelling(ids[selected]);
                     int newDdId = realEstateData.getNextDwellingId();
                     Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone.getZoneId(), null, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
-                            dd.getPrice(), 0f, dd.getYearBuilt());
+                            dd.getPrice(), dd.getYearBuilt());
                     realEstateData.addDwelling(dwelling);
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;

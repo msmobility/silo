@@ -7,10 +7,12 @@ package de.tum.bgu.msm.models;
 */
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
 import de.tum.bgu.msm.data.RealEstateDataManagerMstm;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingMstm;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.MstmRegion;
 import de.tum.bgu.msm.data.geo.MstmZone;
@@ -301,10 +303,10 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(vacantDwellings[i]);
+            DwellingMstm dd = (DwellingMstm) dataContainer.getRealEstateDataManager().getDwelling(vacantDwellings[i]);
             int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
-                    householdIncome > (dataContainer.getHouseholdDataManager().getMedianIncome(msa) * dd.getRestriction())) continue;
+                    householdIncome > (((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * dd.getRestriction())) continue;
             double racialShare = 1;
             if (householdRace != Race.other) {
                 racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZoneId()).getZoneId(), householdRace);
@@ -350,7 +352,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
                 // housing subsidy program in place
                 int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
-                if (income < (0.5f * dataContainer.getHouseholdDataManager().getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
+                if (income < (0.5f * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                     float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
                     float subsidy = ((RealEstateDataManagerMstm) dataContainer.getRealEstateDataManager()).getMedianRent(msa) - housingBudget;
                     price = Math.max(0, price - (int) (subsidy + 0.5));
@@ -384,7 +386,20 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
         return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * dataContainer.getHouseholdDataManager().getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
+                income <= (0.5f * ((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
                 price <= (0.4f * assumedIncome);
+    }
+
+    @Override
+    protected boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
+        // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
+        DwellingMstm ddMstm = (DwellingMstm) dd;
+
+        if (ddMstm.getRestriction() <= 0) {
+            // Dwelling is not income restricted
+            return true;
+        }
+        int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
+        return HouseholdUtil.getHhIncome(hh) <= (((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * ddMstm.getRestriction());
     }
 }

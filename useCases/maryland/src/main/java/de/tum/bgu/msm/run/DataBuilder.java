@@ -2,18 +2,25 @@ package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataContainerMstm;
+import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
-import de.tum.bgu.msm.data.household.*;
+import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdDataImpl;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdFactoryMstm;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.person.PersonfactoryMstm;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.DwellingReaderMstm;
 import de.tum.bgu.msm.io.GeoDataReaderMstm;
 import de.tum.bgu.msm.io.PersonReaderMstm;
-import de.tum.bgu.msm.io.input.*;
+import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
+import de.tum.bgu.msm.io.input.DefaultJobReader;
+import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -54,7 +61,7 @@ public final class DataBuilder {
         RealEstateDataManager realEstateManager = new RealEstateDataManagerImpl(
                 dwellingTypeList, dwellingData,
                 householdData, geoData,
-                new DwellingFactoryImpl(),
+                new DwellingfactoryMstm(),
                 properties);
 
         JobDataManager jobManager = new JobDataManagerImpl(
@@ -65,7 +72,7 @@ public final class DataBuilder {
         final HouseholdFactoryMstm hhFactory = new HouseholdFactoryMstm();
         final PersonfactoryMstm ppFactory = new PersonfactoryMstm();
 
-        HouseholdDataManager householdManager = new HouseholdDataManagerImpl(
+        HouseholdDataManagerMstm householdManager = new HouseholdDataManagerMstm(
                 householdData, dwellingData, geoData,
                 ppFactory, hhFactory,
                 properties, realEstateManager);
@@ -99,7 +106,7 @@ public final class DataBuilder {
     }
 
     private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, int year) {
-        DwellingReader ddReader = new DefaultDwellingReader(realEstateManager);
+        DwellingReaderMstm ddReader = new DwellingReaderMstm(realEstateManager);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
     }

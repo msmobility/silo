@@ -49,7 +49,7 @@ import java.util.*;
  **/
 public class MarriageModelMstm extends AbstractModel implements MarriageModel {
 
-    private final static Logger LOGGER = Logger.getLogger(MarriageModelMstm.class);
+    private final static Logger logger = Logger.getLogger(MarriageModelMstm.class);
 
     private final InOutMigrationImpl iomig;
     private final AbstractMovesModelImpl movesModel;
@@ -138,7 +138,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
     }
 
     private List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
-        LOGGER.info("  Selecting couples to get married this year");
+        logger.info("  Selecting couples to get married this year");
 
         final List<MarriageEvent> couplesToMarryThisYear = new ArrayList<>();
         final MarriageMarket market = defineMarriageMarket(persons);
@@ -153,13 +153,13 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
                 }
             }
         }
-        LOGGER.info(couplesToMarryThisYear.size() + " couples created.");
+        logger.info(couplesToMarryThisYear.size() + " couples created.");
         return couplesToMarryThisYear;
     }
 
     private MarriageMarket defineMarriageMarket(Collection<Person> persons) {
 
-        LOGGER.info("Defining Marriage Market");
+        logger.info("Defining Marriage Market");
 
         final List<Person> activePartners = new ArrayList<>();
         final Table<Integer, Gender, List<Person>> partnersByAgeAndGender = ArrayTable.create(
@@ -181,7 +181,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
                 }
             }
         }
-        LOGGER.info(activePartners.size() + " persons actively looking for partner");
+        logger.info(activePartners.size() + " persons actively looking for partner");
         return new MarriageMarket(activePartners, partnersByAgeAndGender);
     }
 
@@ -233,7 +233,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
         }
 
         if (sum == 0) {
-            LOGGER.warn("Marriage market ran empty, increase share of persons. Age: " + person.getAge());
+            logger.warn("Marriage market ran empty, increase share of persons. Age: " + person.getAge());
             return null;
         }
 

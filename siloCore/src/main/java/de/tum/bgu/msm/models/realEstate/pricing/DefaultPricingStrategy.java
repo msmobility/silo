@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.models.realEstate.pricing;
 
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.models.ScriptInputProvider;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
@@ -37,5 +38,10 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
 
     public double getMaximumChange() {
         return super.calculate("getMaximumChange");
+    }
+
+    @Override
+    public boolean shouldUpdatePrice(Dwelling dd) {
+        return true;
     }
 }

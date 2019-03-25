@@ -36,9 +36,7 @@ public class DefaultDwellingReader implements DwellingReader {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
-            int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
-
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -52,11 +50,10 @@ public class DefaultDwellingReader implements DwellingReader {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
-                float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
 
-                Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, restrict, yearBuilt);
+                Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

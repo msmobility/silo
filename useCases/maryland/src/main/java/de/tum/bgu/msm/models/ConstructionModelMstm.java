@@ -1,17 +1,17 @@
-package de.tum.bgu.msm.models.realEstate.construction;
+package de.tum.bgu.msm.models;
 
 import com.pb.common.util.IndexSort;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.development.Development;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingFactory;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
-import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionDemandStrategy;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionLocationStrategy;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -29,9 +29,10 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 4 December 2012 in Santa Fe
  **/
-public class ConstructionModelImpl extends AbstractModel implements ConstructionModel {
+public class ConstructionModelMstm extends AbstractModel implements ConstructionModel {
 
-    private final static Logger logger = Logger.getLogger(ConstructionModelImpl.class);
+
+    private final static Logger logger = Logger.getLogger(ConstructionModelMstm.class);
 
     private final GeoData geoData;
     private final DwellingFactory factory;
@@ -41,8 +42,13 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
+    private boolean makeSomeNewDdAffordable;
+    private float shareOfAffordableDd;
+    private float restrictionForAffordableDd;
 
-    public ConstructionModelImpl(DataContainer dataContainer, DwellingFactory factory,
+    private int currentYear = -1;
+
+    public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
                                  ConstructionDemandStrategy demandStrategy) {
         super(dataContainer, properties);
@@ -55,6 +61,13 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     @Override
     public void setup() {
+
+        makeSomeNewDdAffordable = properties.realEstate.makeSomeNewDdAffordable;
+        if (makeSomeNewDdAffordable) {
+            shareOfAffordableDd = properties.realEstate.affordableDwellingsShare;
+            restrictionForAffordableDd = properties.realEstate.levelOfAffordability;
+        }
+
         // set up model to evaluate zones for construction of new dwellings
         betaForZoneChoice = properties.realEstate.constructionLogModelBeta;
         priceIncreaseForNewDwelling = properties.realEstate.constructionLogModelInflator;
@@ -66,6 +79,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     @Override
     public Collection<ConstructionEvent> getEventsForCurrentYear(int year) {
+        currentYear = year;
         List<ConstructionEvent> events = new ArrayList<>();
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
@@ -131,20 +145,36 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
                     int quality = properties.main.qualityLevels;  // set all new dwellings to highest quality level
 
+                    // set restriction for new dwellings to unrestricted by default
+                    int restriction = 0;
 
                     int price;
 
-                    // dwelling is unrestricted, generate free-market price
-                    float avePrice = avePriceByTypeAndZone[dto][zone];
-                    if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                    if (avePrice == 0)
-                        logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
-                    price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
+                    if (makeSomeNewDdAffordable) {
+                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
+                            restriction = (int) (restrictionForAffordableDd * 100);
+                        }
+                    }
+                    if (restriction == 0) {
+                        // dwelling is unrestricted, generate free-market price
+                        float avePrice = avePriceByTypeAndZone[dto][zone];
+                        if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
+                        if (avePrice == 0)
+                            logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+                        price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
+                    } else {
+                        // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
+                        // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
+                        int msa = geoData.getZones().get(zone).getMsa();
+                        price = (int) (Math.abs((restriction / 100f)) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
+                    }
 
+                    restriction /= 100f;
 
                     int ddId = realEstate.getNextDwellingId();
-                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price, year);
+                    DwellingMstm plannedDwelling = (DwellingMstm) factory.createDwelling(ddId, zone, null, -1,
+                            dt, size, quality, price, currentYear);
+                    plannedDwelling.setRestriction(restriction);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));
                     realEstate.convertLand(zone, dt.getAreaPerDwelling());

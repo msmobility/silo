@@ -4,19 +4,18 @@ import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class DwellingReaderMuc implements DwellingReader {
+public class DwellingReaderMstm implements DwellingReader {
 
-    private final static Logger logger = Logger.getLogger(DwellingReaderMuc.class);
-    private final RealEstateDataManager dwellingData;
+    private final static Logger logger = Logger.getLogger(DwellingReaderMstm.class);
+    private final RealEstateDataManager realEstate;
 
-    public DwellingReaderMuc(RealEstateDataManager dwellingData) {
-        this.dwellingData= dwellingData;
+    public DwellingReaderMstm(RealEstateDataManager realEstate) {
+        this.realEstate= realEstate;
     }
 
     @Override
@@ -37,13 +36,9 @@ public class DwellingReaderMuc implements DwellingReader {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
+            int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
 
-            int posCoordX = -1;
-            int posCoordY = -1;
-
-            posCoordX = SiloUtil.findPositionInArray("coordX", header);
-            posCoordY = SiloUtil.findPositionInArray("coordY", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -57,12 +52,13 @@ public class DwellingReaderMuc implements DwellingReader {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
+                float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
-                Coordinate coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
 
-                Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
-                dwellingData.addDwelling(dwelling);
+                DwellingMstm dwelling = (DwellingMstm) factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
+                dwelling.setRestriction(restrict);
+                realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
                     SiloUtil.trackWriter.println(dwelling.toString());

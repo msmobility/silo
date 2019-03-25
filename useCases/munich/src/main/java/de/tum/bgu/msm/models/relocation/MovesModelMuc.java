@@ -149,6 +149,11 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     }
 
+    @Override
+    protected boolean isHouseholdEligibleToLiveHere(Household household, Dwelling dd) {
+        return true;
+    }
+
     private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
         Map<Integer, Double> utilitiesForThisHousheold
                 = new HashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));

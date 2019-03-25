@@ -5,10 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.models.DwellingUtilityStrategyMstm;
-import de.tum.bgu.msm.models.MovesModelMstm;
-import de.tum.bgu.msm.models.MstmEducationModelImpl;
-import de.tum.bgu.msm.models.SelectRegionStrategyMstm;
+import de.tum.bgu.msm.models.*;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -30,10 +27,12 @@ import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhMode
 import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
-import de.tum.bgu.msm.models.MarriageModelMstm;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
-import de.tum.bgu.msm.models.realEstate.construction.*;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwrite;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwriteImpl;
+import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
+import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionLocationStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
@@ -91,7 +90,7 @@ public class ModelBuilder {
 
         JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
 
-        ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
+        ConstructionModelMstm construction = new ConstructionModelMstm(dataContainer, ddFactory,
                 properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
 
 
@@ -99,7 +98,7 @@ public class ModelBuilder {
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
 
-        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
+        ConstructionOverwriteMstm constructionOverwrite = new ConstructionOverwriteMstm(dataContainer, ddFactory, properties);
 
         InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
                 null, driversLicenseModel, properties);

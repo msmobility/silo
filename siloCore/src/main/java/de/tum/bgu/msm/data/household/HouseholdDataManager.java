@@ -10,8 +10,6 @@ import java.util.Collection;
 
 public interface HouseholdDataManager extends ModelUpdateListener {
 
-    float getMedianIncome(int msa);
-
     float getAverageIncome(Gender gender, int age, Occupation occupation);
 
     Household getHouseholdFromId(int householdId);

@@ -2,15 +2,14 @@ package de.tum.bgu.msm.models.relocation.moves;
 
 import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -45,6 +44,8 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
     protected abstract double calculateHousingUtility(Household hh, Dwelling dwelling);
 
     protected abstract void calculateRegionalUtilities();
+
+    protected abstract boolean isHouseholdEligibleToLiveHere(Household household, Dwelling dd);
 
     public abstract int searchForNewDwelling(Household household);
 
@@ -175,17 +176,6 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         final double prop = strategy.getMovingProbability(avgSatisfaction, currentUtil);
         return SiloUtil.getRandomNumberAsDouble() <= prop;
     }
-
-    private boolean isHouseholdEligibleToLiveHere(Household hh, Dwelling dd) {
-        // Check if dwelling is restricted, if so check if household is still eligible to live in this dwelling (household income could exceed eligibility criterion)
-        if (dd.getRestriction() <= 0) {
-            // Dwelling is not income restricted
-            return true;
-        }
-        int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
-        return HouseholdUtil.getHhIncome(hh) <= (dataContainer.getHouseholdDataManager().getMedianIncome(msa) * dd.getRestriction());
-    }
-
 
     private void calculateAverageHousingUtility() {
         logger.info("Evaluate average housing utility.");

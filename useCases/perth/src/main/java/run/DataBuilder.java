@@ -68,7 +68,7 @@ public final class DataBuilder {
         final PersonFactory ppFactory = new PersonFactoryImpl();
 
         HouseholdDataManager householdManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, geoData,
+                householdData, dwellingData,
                 ppFactory, hhFactory,
                 properties, realEstateManager);
 

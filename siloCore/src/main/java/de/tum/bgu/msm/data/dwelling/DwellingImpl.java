@@ -34,15 +34,15 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     private int hhId;
     private int quality;
     private int price;
-    private float restriction;
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int floorSpace = 0;
     private DwellingUsage usage = DwellingUsage.GROUP_QUARTER_OR_DEFAULT;
     private Coordinate coordinate;
 
 
-    DwellingImpl(int id, int zoneId, Coordinate coordinate, int hhId, DwellingType type, int bedrooms, int quality, int price, float restriction,
-                 int year) {
+    DwellingImpl(int id, int zoneId, Coordinate coordinate,
+                 int hhId, DwellingType type, int bedrooms,
+                 int quality, int price, int year) {
         this.id = id;
         this.zoneId = zoneId;
         this.coordinate = coordinate;
@@ -51,7 +51,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         this.bedrooms = bedrooms;
         this.quality = quality;
         this.price = price;
-        this.restriction = restriction;
         this.yearBuilt = year;
     }
 
@@ -101,12 +100,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     }
 
     @Override
-    public float getRestriction() {
-        // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
-        return restriction;
-    }
-
-    @Override
     public void setResidentID(int residentID) {
         this.hhId = residentID;
     }
@@ -119,12 +112,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     @Override
     public void setPrice(int price) {
         this.price = price;
-    }
-
-    @Override
-    public void setRestriction(float restriction) {
-        // 0: no restriction, negative value: rent-controlled, positive value: rent-controlled and maximum income of renter
-        this.restriction = restriction;
     }
 
     @Override
@@ -166,8 +153,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
                 + "\nNumber of bedrooms      " + (bedrooms)
                 + "\nQuality (1 low, 4 high) " + (quality)
                 + "\nMonthly price in US$    " + (price)
-                + "\nAffordable housing      " + (restriction)
                 + "\nYear dwelling was built " + (yearBuilt);
     }
-
 }

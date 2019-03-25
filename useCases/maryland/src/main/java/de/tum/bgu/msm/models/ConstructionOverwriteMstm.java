@@ -1,14 +1,16 @@
-package de.tum.bgu.msm.models.realEstate.construction;
+package de.tum.bgu.msm.models;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
+import de.tum.bgu.msm.data.dwelling.DwellingMstm;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwrite;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -20,16 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * This method allows to add dwellings as an overwrite. New dwellings are given exogenously and added in a given year,
- * regardless of current demand.
- *
- * Author: Rolf Moeckel, National Center for Smart Growth, University of Maryland
- * Created on 14 October 2014 in College Park
- **/
-public class ConstructionOverwriteImpl extends AbstractModel implements ConstructionOverwrite {
+public class ConstructionOverwriteMstm extends AbstractModel implements ConstructionOverwrite {
 
-    private final static Logger logger = Logger.getLogger(ConstructionOverwriteImpl.class);
+    private final static Logger logger = Logger.getLogger(ConstructionOverwriteMstm.class);
     private final DwellingFactory factory;
 
     private boolean useOverwrite;
@@ -37,7 +32,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
 
     private Map<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwriteImpl(DataContainer dataContainer, DwellingFactory factory, Properties properties) {
+    public ConstructionOverwriteMstm(DataContainer dataContainer, DwellingFactory factory, Properties properties) {
         super(dataContainer, properties);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;
@@ -134,15 +129,22 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             int size = data[2];
             int quality = data[3];
             int price = data[4];
-
-            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
+            float restriction = data[5] / 100f;
+            if (restriction != 0) {
+                // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
+                // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
+                int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
+                price = (int) (Math.abs(restriction) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
+            }
+            DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
+            dd.setRestriction(restriction);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
             Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
             dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +
-                    quality + "," + price  + "," + year);
+                    quality + "," + price + "," + restriction + "," + year);
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 SiloUtil.trackWriter.println(dd.toString());
@@ -191,3 +193,4 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
         SiloUtil.writeTableDataSet(overwriteDwellings, fileName);
     }
 }
+

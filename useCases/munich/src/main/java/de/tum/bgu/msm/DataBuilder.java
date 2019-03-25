@@ -65,7 +65,7 @@ public class DataBuilder {
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, geoData, new PersonFactoryMuc(),
+                householdData, dwellingData, new PersonFactoryMuc(),
                 hhFactory, properties, realEstateDataManager);
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);

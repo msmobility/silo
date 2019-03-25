@@ -1,18 +1,20 @@
-package de.tum.bgu.msm.io.output;
+package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingMstm;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 
-public class DefaultDwellingWriter implements DwellingWriter {
+public class DwellingWriterMstm implements DwellingWriter {
 
-    private final static Logger logger = Logger.getLogger(DefaultDwellingWriter.class);
+    private final static Logger logger = Logger.getLogger(DwellingWriterMstm.class);
     private final RealEstateDataManager dwellingData;
 
-    public DefaultDwellingWriter(RealEstateDataManager dwellingData) {
+    public DwellingWriterMstm(RealEstateDataManager dwellingData) {
         this.dwellingData = dwellingData;
     }
 
@@ -20,7 +22,7 @@ public class DefaultDwellingWriter implements DwellingWriter {
     public void writeDwellings(String path) {
         logger.info("  Writing dwelling file to " + path);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(path, false);
-        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt");
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,restriction,yearBuilt");
         pwd.println();
 
         for (Dwelling dd : dwellingData.getDwellings()) {
@@ -37,6 +39,8 @@ public class DefaultDwellingWriter implements DwellingWriter {
             pwd.print(dd.getQuality());
             pwd.print(",");
             pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(((DwellingMstm)dd).getRestriction());
             pwd.print(",");
             pwd.print(dd.getYearBuilt());
             pwd.println();

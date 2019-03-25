@@ -140,7 +140,7 @@ public class GenerateHouseholdsPersonsDwellings {
         int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
         int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, usage);
 
-        Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, quality, price, 0, year);
+        Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, quality, price, year);
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);

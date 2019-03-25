@@ -929,8 +929,7 @@ public class SyntheticPopJP implements SyntheticPopI {
             Dwelling dd = DwellingUtils.getFactory().createDwelling((int)dwellings.getValueAt(i,"id"),
                     (int) dwellings.getValueAt(i,"zone"),null,
                     (int)dwellings.getValueAt(i,"hhID"), DefaultDwellingTypeImpl.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
-                    (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost"),
-                    (int)dwellings.getValueAt(i,"restriction"),(int)dwellings.getValueAt(i,"yearBuilt"));
+                    (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost") ,(int)dwellings.getValueAt(i,"yearBuilt"));
             realEstate.addDwelling(dd);
             realEstate.addDwelling(dd);
             dd.setFloorSpace((int)dwellings.getValueAt(i,"floor"));
@@ -1233,7 +1232,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                     int quality = 1; //depend on year built and type of heating
                     year = selectDwellingYear(year); //convert from year class to actual 4-digit year
                     int price = estimatePrice(ddType, floorSpace);
-                    Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, selectedTAZ, null, id, ddType , bedRooms, quality, price, 0, year);
+                    Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, selectedTAZ, null, id, ddType , bedRooms, quality, price, year);
                     realEstate.addDwelling(dwell);
                     dwell.setFloorSpace(floorSpace);
                     dwell.setUsage(DwellingUsage.valueOf(usage));
@@ -1305,7 +1304,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 int year = ddToCopy.getYearBuilt();
                 DwellingType type = ddToCopy.getType(); //using always type MF234
                 int floorSpaceDwelling = ddToCopy.getFloorSpace();
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, 0, year);
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, year);
                 dwell.setUsage(DwellingUsage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
                 vacantCounter++;

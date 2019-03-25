@@ -70,8 +70,8 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
-            if (dd.getRestriction() != 0) {
-                continue;  // dwelling is under affordable-housing constraints, rent cannot be raised
+            if (strategy.shouldUpdatePrice(dd)) {
+                continue;
             }
             int dto = dwellingTypes.indexOf(dd.getType());
             float structuralVacancyRate = dd.getType().getStructuralVacancyRate();

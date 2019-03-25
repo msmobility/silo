@@ -19,7 +19,6 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -31,9 +30,10 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.*;
-
-import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Greg Erhardt
@@ -45,7 +45,6 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     private final HouseholdData householdData;
     private final DwellingData dwellingData;
-    private final GeoData geoData;
 
     private final PersonFactory ppFactory;
     private final HouseholdFactory hhFactory;
@@ -58,17 +57,14 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     private int highestPersonIdInUse;
 
     private float[][][] avgIncomeByGenderByAgeByOccupation;
-    private final Map<Integer, Float> medianIncomeByMsa = new HashMap<>();
 
     private Map<Integer, Household> householdMementos = new HashMap<>();
 
     public HouseholdDataManagerImpl(HouseholdData householdData, DwellingData dwellingData,
-                                    GeoData geoData, PersonFactory ppFactory,
-                                    HouseholdFactory hhFactory, Properties properties,
-                                    RealEstateDataManager realEstateDataManager) {
+                                    PersonFactory ppFactory, HouseholdFactory hhFactory,
+                                    Properties properties, RealEstateDataManager realEstateDataManager) {
         this.householdData = householdData;
         this.dwellingData = dwellingData;
-        this.geoData = geoData;
         this.ppFactory = ppFactory;
         this.hhFactory = hhFactory;
         this.properties = properties;
@@ -84,9 +80,6 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     @Override
     public void prepareYear(int year) {
         adjustIncome();
-        // needs to be calculated even if no dwellings are added this year:
-        // median income is needed in housing search in MovesModelImplMstm.searchForNewDwelling (int hhId)
-        calculateMedianHouseholdIncomeByMSA();
     }
 
     @Override
@@ -109,11 +102,6 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
                 + properties.main.endYear
                 + ".csv";
         new DefaultPersonWriter(householdData).writePersons(filepp);
-    }
-
-    @Override
-    public float getMedianIncome(int msa) {
-        return medianIncomeByMsa.get(msa);
     }
 
     @Override
@@ -401,30 +389,6 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         executor.execute();
     }
 
-
-    private void calculateMedianHouseholdIncomeByMSA() {
-
-        Map<Integer, List<Integer>> incomesByMsa = new HashMap<>();
-        for (Household hh : householdData.getHouseholds()) {
-            int zone = -1;
-            Dwelling dwelling = dwellingData.getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            }
-            int homeMSA = geoData.getZones().get(zone).getMsa();
-            if (incomesByMsa.containsKey(homeMSA)) {
-                List<Integer> inc = incomesByMsa.get(homeMSA);
-                inc.add(getHhIncome(hh));
-            } else {
-                List<Integer> inc = new ArrayList<>();
-                inc.add(getHhIncome(hh));
-                incomesByMsa.put(homeMSA, inc);
-            }
-        }
-        for (Integer thisMsa : incomesByMsa.keySet()) {
-            medianIncomeByMsa.put(thisMsa, SiloUtil.getMedian(SiloUtil.convertIntegerArrayListToArray(incomesByMsa.get(thisMsa))));
-        }
-    }
 
 
 

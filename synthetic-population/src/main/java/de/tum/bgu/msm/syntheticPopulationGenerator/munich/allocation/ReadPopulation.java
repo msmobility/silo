@@ -181,7 +181,6 @@ public class ReadPopulation {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
-            int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
             int posFloor   = SiloUtil.findPositionInArray("floor",header);
             int posUse     = SiloUtil.findPositionInArray("usage",header);
@@ -198,9 +197,8 @@ public class ReadPopulation {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
-                float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 realEstate.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
