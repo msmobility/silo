@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.output.OmxMatrixWriter;
@@ -22,7 +21,7 @@ public class OmxTravelTimesWriter implements TravelTimesWriter {
     @Override
     public void writeTravelTimes(String path, String name, String mode) {
         final IndexedDoubleMatrix2D peakTravelTimeMatrix = TravelTimeUtil.getPeakTravelTimeMatrix(mode, travelTimes, zones);
-        OmxMatrixWriter.createOmxFile(path, zones.stream().mapToInt(Id::getId).max().getAsInt()+1);
+        OmxMatrixWriter.createOmxFile(path, peakTravelTimeMatrix.columns());
         OmxMatrixWriter.createOmxSkimMatrix(peakTravelTimeMatrix, path, name);
     }
 }
