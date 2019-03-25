@@ -32,11 +32,6 @@ public class OmxSkimTest {
             }
 
             @Override
-            public int getMsa() {
-                return 0;
-            }
-
-            @Override
             public float getArea_sqmi() {
                 return 0;
             }

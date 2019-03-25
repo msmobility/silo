@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.realEstate.construction.ConstructionDemandStrategy;
 import de.tum.bgu.msm.models.realEstate.construction.ConstructionLocationStrategy;
@@ -165,7 +166,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoData.getZones().get(zone).getMsa();
+                        int msa = ((MstmZone) geoData.getZones().get(zone)).getMsa();
                         price = (int) (Math.abs((restriction / 100f)) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 

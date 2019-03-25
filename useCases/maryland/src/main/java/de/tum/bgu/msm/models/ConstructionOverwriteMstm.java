@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.dwelling.DwellingMstm;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -133,7 +134,7 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
             if (restriction != 0) {
                 // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                 // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                int msa = dataContainer.getGeoData().getZones().get(zoneId).getMsa();
+                int msa = ((MstmZone) dataContainer.getGeoData().getZones().get(zoneId)).getMsa();
                 price = (int) (Math.abs(restriction) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
             DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);

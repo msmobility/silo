@@ -304,7 +304,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             DwellingMstm dd = (DwellingMstm) dataContainer.getRealEstateDataManager().getDwelling(vacantDwellings[i]);
-            int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
+            int msa = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
             if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
                     householdIncome > (((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * dd.getRestriction())) continue;
             double racialShare = 1;
@@ -351,7 +351,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             int price = dd.getPrice();
             if (provideRentSubsidyToLowIncomeHh && income > 0) {     // income equals -1 if dwelling is vacant right now
                 // housing subsidy program in place
-                int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
+                int msa = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
                 if (income < (0.5f * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa)) && price < (0.4f * income / 12f)) {
                     float housingBudget = (income / 12f * 0.18f);  // technically, the housing budget is 30%, but in PUMS data households pay 18% on the average
                     float subsidy = ((RealEstateDataManagerMstm) dataContainer.getRealEstateDataManager()).getMedianRent(msa) - housingBudget;
@@ -386,7 +386,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
         int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
         return provideRentSubsidyToLowIncomeHh &&
-                income <= (0.5f * ((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(geoData.getZones().get(zone).getMsa())) &&
+                income <= (0.5f * ((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(((MstmZone) geoData.getZones().get(zone)).getMsa())) &&
                 price <= (0.4f * assumedIncome);
     }
 
@@ -399,7 +399,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             // Dwelling is not income restricted
             return true;
         }
-        int msa = geoData.getZones().get(dd.getZoneId()).getMsa();
+        int msa = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
         return HouseholdUtil.getHhIncome(hh) <= (((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * ddMstm.getRestriction());
     }
 }

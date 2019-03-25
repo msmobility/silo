@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.properties.Properties;
@@ -31,7 +32,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     private void calculateMedianRentByMSA() {
         Map<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
         for (Dwelling dd : delegate.getDwellings()) {
-            int dwellingMSA = geoData.getZones().get(dd.getZoneId()).getMsa();
+            int dwellingMSA = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
             if (rentHashMap.containsKey(dwellingMSA)) {
                 ArrayList<Integer> rents = rentHashMap.get(dwellingMSA);
                 rents.add(dd.getPrice());

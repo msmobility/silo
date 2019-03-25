@@ -18,7 +18,6 @@ import java.util.Random;
 public class ZoneImpl implements Zone {
 
     private final int id;
-    private final int msa;
     private final float area_sqmi;
 
     private final Random random;
@@ -29,9 +28,8 @@ public class ZoneImpl implements Zone {
 
     private Development development;
 
-    public ZoneImpl(int id, int msa, float area_sqmi, Region region) {
+    public ZoneImpl(int id, float area_sqmi, Region region) {
         this.id = id;
-        this.msa = msa;
         this.area_sqmi = area_sqmi;
         this.region = region;
         this.random = new Random(SiloUtil.getRandomObject().nextLong());
@@ -46,11 +44,6 @@ public class ZoneImpl implements Zone {
     @Override
     public Region getRegion() {
         return this.region;
-    }
-
-    @Override
-    public int getMsa() {
-        return this.msa;
     }
 
     @Override
@@ -96,6 +89,6 @@ public class ZoneImpl implements Zone {
 
     @Override
     public String toString() {
-        return "Zone " + id + ": msa=" + msa + ", region=" + region.getId();
+        return "Zone " + id + ", region=" + region.getId();
     }
 }

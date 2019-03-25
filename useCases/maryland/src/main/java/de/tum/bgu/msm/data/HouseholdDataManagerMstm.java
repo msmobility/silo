@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -43,7 +44,7 @@ public class HouseholdDataManagerMstm implements HouseholdDataManager {
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
             }
-            int homeMSA = geoData.getZones().get(zone).getMsa();
+            int homeMSA = ((MstmZone) geoData.getZones().get(zone)).getMsa();
             if (incomesByMsa.containsKey(homeMSA)) {
                 List<Integer> inc = incomesByMsa.get(homeMSA);
                 inc.add(getHhIncome(hh));
