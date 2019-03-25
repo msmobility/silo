@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.io.input.HouseholdReader;
@@ -14,10 +15,10 @@ import java.io.IOException;
 public class HouseholdReaderMuc implements HouseholdReader {
 
     private final static Logger logger = Logger.getLogger(HouseholdReaderMuc.class);
-    private final HouseholdData hhData;
+    private final HouseholdDataManager hhData;
     private final HouseholdFactoryMuc factory;
 
-    public HouseholdReaderMuc(HouseholdData hhData, HouseholdFactoryMuc factory) {
+    public HouseholdReaderMuc(HouseholdDataManager hhData, HouseholdFactoryMuc factory) {
         this.hhData = hhData;
         this.factory = factory;
     }
@@ -35,7 +36,6 @@ public class HouseholdReaderMuc implements HouseholdReader {
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("id", header);
             int posDwell = SiloUtil.findPositionInArray("dwelling", header);
-            int posTaz = SiloUtil.findPositionInArray("zone", header);
             int posAutos = SiloUtil.findPositionInArray("autos", header);
 
             // read line

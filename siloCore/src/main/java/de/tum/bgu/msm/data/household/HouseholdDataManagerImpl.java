@@ -101,7 +101,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
                 + "_"
                 + properties.main.endYear
                 + ".csv";
-        new DefaultHouseholdWriter(householdData, dwellingData).writeHouseholds(filehh);
+        new DefaultHouseholdWriter(this).writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
                 + properties.householdData.personFinalFileName

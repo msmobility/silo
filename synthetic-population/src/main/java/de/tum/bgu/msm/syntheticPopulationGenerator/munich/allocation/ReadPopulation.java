@@ -1,16 +1,15 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.job.JobData;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -107,7 +106,6 @@ public class ReadPopulation {
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posNationality = SiloUtil.findPositionInArray("nationality",header);
             int posEducation = SiloUtil.findPositionInArray("education",header);
-            int posHomeZone = SiloUtil.findPositionInArray("homeZone",header);
             int posWorkZone = SiloUtil.findPositionInArray("workZone",header);
             int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
             int posSchoolDE = SiloUtil.findPositionInArray("schoolDE",header);
@@ -145,8 +143,6 @@ public class ReadPopulation {
                 int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
                 educationalLevel.put(pp, education);
-                //TODO not part of the public person api anymore
-                pp.setJobTAZ(workZone);
                 pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
@@ -188,8 +184,7 @@ public class ReadPopulation {
             int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
             int posFloor   = SiloUtil.findPositionInArray("floor",header);
-            int posBuilding= SiloUtil.findPositionInArray("building",header);
-            //int posUse     = SiloUtil.findPositionInArray("usage",header);
+            int posUse     = SiloUtil.findPositionInArray("usage",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -211,11 +206,8 @@ public class ReadPopulation {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }
                 int floor = Integer.parseInt(lineElements[posFloor]);
-                int building = Integer.parseInt(lineElements[posBuilding]);
-                //int use = Integer.parseInt(lineElements[posUse]);
-                int use = 1;
+                int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
-                dd.setBuildingSize(building);
                 dd.setUsage(DwellingUsage.valueOf(use));
             }
         } catch (IOException e) {

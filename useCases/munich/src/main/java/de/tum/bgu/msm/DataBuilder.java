@@ -25,19 +25,19 @@ import java.util.List;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
-class DataBuilder {
+public class DataBuilder {
 
     private DataBuilder() {
     }
 
-    static DataContainer getModelDataForMuc(Properties properties) {
+    public static DataContainerMuc getModelDataForMuc(Properties properties) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
 
         GeoData geoData = new DefaultGeoData(properties);
-        GeoDataReader reader = new GeoDataReaderMuc(geoData);
+
 
         TravelTimes travelTimes;
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
@@ -71,6 +71,13 @@ class DataBuilder {
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
+        return new DataContainerMuc(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+                schoolData, properties);
+    }
+
+    static public void read(Properties properties, DataContainerMuc dataContainer){
+
+        GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
@@ -79,29 +86,25 @@ class DataBuilder {
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + year + ".csv";
-        HouseholdReader hhReader = new HouseholdReaderMuc(householdData, hhFactory);
+        HouseholdReader hhReader = new HouseholdReaderMuc(dataContainer.getHouseholdDataManager(), (HouseholdFactoryMuc) dataContainer.getHouseholdDataManager().getHouseholdFactory());
         hhReader.readData(householdFile);
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new PersonReaderMuc(householdDataManager);
+        PersonReader personReader = new PersonReaderMuc(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dwellingData);
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
         new JobType(properties.jobData.jobTypes);
-        JobReader jjReader = new JobReaderMuc(jobDataManager, jobFactory);
+        JobReader jjReader = new JobReaderMuc(dataContainer.getJobDataManager(), (JobFactoryMuc) dataContainer.getJobDataManager().getFactory());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderMuc(schoolData);
+        SchoolReader ssReader = new SchoolReaderMuc(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
-
-
-        return new DataContainerMuc(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
-                schoolData, properties);
     }
 }

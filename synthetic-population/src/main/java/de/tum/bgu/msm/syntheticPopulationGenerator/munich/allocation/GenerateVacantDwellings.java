@@ -18,24 +18,15 @@ public class GenerateVacantDwellings {
 
     private final DataSetSynPop dataSetSynPop;
     private final MicroDataManager microDataManager;
-    private int previousHouseholds;
-    private int previousPersons;
     private Map<Integer, Map<Integer, Float>> ddQuality;
-    private int totalHouseholds;
     private float ddTypeProbOfSFAorSFD;
     private float ddTypeProbOfMF234orMF5plus;
-    private Map<Integer, Float> probTAZ;
-    private Map<Integer, Float> probMicroData;
     private Map<Integer, Float> probVacantBuildingSize;
     private Map<Integer, Float> probVacantFloor;
-    private double[] probabilityId;
-    private double sumProbabilities;
     private double[] probabilityTAZ;
     private double sumTAZs;
     private int[] ids;
     private int[] idTAZs;
-    private int personCounter;
-    private int householdCounter;
     private int highestDwellingIdInUse;
     private final DataContainer dataContainer;
     private RealEstateDataManager realEstateData;
@@ -49,17 +40,12 @@ public class GenerateVacantDwellings {
 
     public void run(){
         logger.info("   Running module: household, person and dwelling generation");
-        previousHouseholds = 0;
-        previousPersons = 0;
         initializeQualityAndIncomeDistributions();
         generateVacantDwellings();
     }
 
 
     private void initializeQualityAndIncomeDistributions(){
-
-        previousHouseholds = 0;
-        previousPersons = 0;
 
         realEstateData = dataContainer.getRealEstateDataManager();
         for (Dwelling dd: realEstateData.getDwellings()){
@@ -95,7 +81,6 @@ public class GenerateVacantDwellings {
                 realEstateData.addDwelling(dwell);
                 dwell.setUsage(DwellingUsage.VACANT);
                 dwell.setFloorSpace(floorSpace);
-                dwell.setYearConstructionDE(year);
                 vacantCounter++;
             }
             logger.info("Municipality " + municipality + ". Generated vacant dwellings: " + vacantCounter);
@@ -166,14 +151,12 @@ public class GenerateVacantDwellings {
         int completed = 0;
         for (int iteration = 0; iteration < 100; iteration++){
             int m = selections - completed;
-            //double[] randomChoice = new double[(int)(numberOfTrips*1.1) ];
             double[] randomChoices = new double[m];
             for (int k = 0; k < randomChoices.length; k++) {
                 randomChoices[k] = SiloUtil.getRandomNumberAsDouble();
             }
             Arrays.sort(randomChoices);
 
-            //look up for the n travellers
             int p = 0;
             double cumulative = probabilityTAZ[p];
             for (double randomNumber : randomChoices){

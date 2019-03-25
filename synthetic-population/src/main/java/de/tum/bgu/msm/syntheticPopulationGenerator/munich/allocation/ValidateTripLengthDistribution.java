@@ -2,17 +2,15 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.person.PersonMuc;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 
@@ -76,13 +74,14 @@ public class ValidateTripLengthDistribution {
     private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        HouseholdDataManager households = dataContainer.getHouseholdDataManager();
+        JobDataManager jobDataManager = dataContainer.getJobDataManager();
         for (Person pp : personArrayList){
             //TODO not part of the public person api anymore
-            if (pp.getJobTAZ() > 0){
+            if (pp.getJobId() > 0){
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
+                int destination = jobDataManager.getJobFromId(pp.getJobId()).getZoneId();
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
                 commuteDistance.addValue(value);
             }
         }

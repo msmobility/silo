@@ -34,20 +34,9 @@ public interface Dwelling extends Location, Id {
 
     void setCoordinate(Coordinate coordinate);
 
-    //TODO: magic numbers
-    void setBuildingSize(int buildingSize);
-
-    int getBuildingSize();
-
     void setUsage(DwellingUsage usage);
 
     DwellingUsage getUsage();
 
-    //TODO: magic numbers
-    //TODO: use case specific
-    void setYearConstructionDE(int yearConstructionDE);
-
-    //TODO: use case specific
-    int getYearConstructionDE();
 
 }

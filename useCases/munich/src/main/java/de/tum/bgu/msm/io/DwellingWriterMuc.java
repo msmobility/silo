@@ -28,10 +28,6 @@ public class DwellingWriterMuc implements DwellingWriter {
         pwd.print(",");
         pwd.print("building");
         pwd.print(",");
-        pwd.print("year");
-        pwd.print(",");
-        pwd.print("usage");
-        pwd.print(",");
         pwd.print("coordX");
         pwd.print(",");
         pwd.print("coordY");
@@ -58,10 +54,6 @@ public class DwellingWriterMuc implements DwellingWriter {
             pwd.print(dd.getYearBuilt());
             pwd.print(",");
             pwd.print(dd.getFloorSpace());
-            pwd.print(",");
-            pwd.print(dd.getBuildingSize());
-            pwd.print(",");
-            pwd.print(dd.getYearConstructionDE());
             pwd.print(",");
             pwd.print(dd.getUsage());
             pwd.print(",");

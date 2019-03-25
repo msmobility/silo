@@ -96,8 +96,6 @@ public class AssignJobs {
 
         dataContainer.getJobDataManager().getJobFromId(jobID).setWorkerID(pp.getId());
         int jobTAZ = dataContainer.getJobDataManager().getJobFromId(jobID).getZoneId();
-        //TODO not part of the public person api anymore
-        pp.setJobTAZ(jobTAZ);
         pp.setWorkplace(jobID);
     }
 
@@ -126,8 +124,6 @@ public class AssignJobs {
             if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
                 pp.setWorkplace(-1);
-                //TODO not part of the public person api anymore
-                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(workerArrayList);

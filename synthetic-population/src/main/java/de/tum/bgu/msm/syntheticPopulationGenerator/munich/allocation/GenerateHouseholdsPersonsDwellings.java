@@ -105,7 +105,7 @@ public class GenerateHouseholdsPersonsDwellings {
             Occupation occupation = Occupation.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "occupation"));
             Nationality nationality1 = microDataManager.translateNationality(dataSetSynPop.getPersonTable().get(personSelected, "nationality"));
             int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
-            boolean license = microDataManager.obtainLicense(gender, age);
+            boolean license = MicroDataManager.obtainLicense(gender, age);
             int educationDegree = dataSetSynPop.getPersonTable().get(personSelected, "educationDegree");
             PersonRole personRole = microDataManager.translatePersonRole(dataSetSynPop.getPersonTable().get(personSelected, "personRole"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
@@ -144,7 +144,6 @@ public class GenerateHouseholdsPersonsDwellings {
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
-        dwell.setBuildingSize(buildingSize);
     }
 
 

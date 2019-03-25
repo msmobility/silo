@@ -4,14 +4,13 @@ import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.person.PersonMuc;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.dwelling.RealEstateData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -62,11 +61,6 @@ public class AssignSchools {
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
-                //TODO not part of the public person api anymore
-                pp.setJobTAZ(schooltaz);
-            } else {
-                //TODO not part of the public person api anymore
-                pp.setJobTAZ(-2);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");
@@ -156,8 +150,6 @@ public class AssignSchools {
             if (pp.getOccupation() == Occupation.STUDENT){
                 studentArrayList.add(pp);
                 pp.setSchoolPlace(-1);
-                //TODO not part of the public person api anymore
-                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(studentArrayList);

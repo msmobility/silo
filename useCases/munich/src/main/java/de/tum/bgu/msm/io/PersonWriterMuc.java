@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.output.PersonWriter;
@@ -14,10 +13,10 @@ public class PersonWriterMuc implements PersonWriter {
 
     private final static Logger logger = Logger.getLogger(PersonWriterMuc.class);
 
-    private final DataContainer dataContainer;
+    private final HouseholdDataManager householdData;
 
-    public PersonWriterMuc(DataContainer dataContainer) {
-        this.dataContainer = dataContainer;
+    public PersonWriterMuc(HouseholdDataManager householdData) {
+        this.householdData = householdData;
     }
 
     @Override
@@ -31,14 +30,12 @@ public class PersonWriterMuc implements PersonWriter {
         pwp.print(",");
         pwp.print("education");
         pwp.print(",");
-        pwp.print("homeZone");
-        pwp.print(",");
         pwp.print("disability");
         pwp.print(",");
         pwp.print("schoolId");
 
         pwp.println();
-        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
+        for (Person pp : householdData.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
             pwp.print(pp.getHousehold().getId());
@@ -53,17 +50,12 @@ public class PersonWriterMuc implements PersonWriter {
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             pwp.print(pp.hasDriverLicense());
-
             pwp.print(",");
-            final int jobId = pp.getJobId();
             pwp.print(pp.getJobId());
             pwp.print(",");
             pwp.print(pp.getIncome());
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getNationality().toString());
-            pwp.print(",");
-            Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId());
-            pwp.print(dd.getZoneId());
             pwp.print(",");
             pwp.print(0);
             pwp.print(",");
