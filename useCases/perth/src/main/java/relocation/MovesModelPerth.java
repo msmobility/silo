@@ -6,23 +6,24 @@ package relocation;
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
 */
 
-import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.household.*;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.matrices.Matrices;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -35,7 +36,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
     private final SelectRegionStrategy selectRegionStrategy;
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class) ;
 
-    private DoubleMatrix1D hhByRegion;
+    private IndexedDoubleMatrix1D hhByRegion;
 
 
     public MovesModelPerth(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
@@ -50,7 +51,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
     @Override
     public void setup() {
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        hhByRegion = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         super.setup();
     }
 
@@ -62,17 +63,21 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
 
     private void calculateShareOfForeignersByZoneAndRegion() {
-        final DoubleMatrix1D hhByZone = Matrices.doubleMatrix1D(geoData.getZones().values());
+        final IndexedDoubleMatrix1D hhByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
         hhByRegion.assign(0);
         for (Household hh: dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int zone = -1;
+            int zone;
             Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
             if (dwelling != null) {
                 zone = dwelling.getZoneId();
+            } else {
+                logger.warn("Household " + hh.getId() + " refers to non-existing dwelling "
+                        + hh.getDwellingId() +". Should not happen!");
+                continue;
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
-            hhByZone.setQuick(zone, hhByZone.getQuick(zone) + 1);
-            hhByRegion.setQuick(region, hhByRegion.getQuick(region) + 1);
+            hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
+            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
 
         }
 
@@ -125,9 +130,10 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
+                    final double value = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
+                            null, priceUtil, regAcc, 0);
                     utilityByRegion.put(region.getId(),
-                            selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
-                                    null, priceUtil, regAcc,0));
+                            value);
                 }
 
             utilityByIncomeByRegion.put(incomeCategory, utilityByRegion);
@@ -164,9 +170,12 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-            	Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
-                workerZonesForThisHousehold.put(pp, workZone);
-                householdIncome += pp.getIncome();
+                final Job job = jobDataManager.getJobFromId(pp.getJobId());
+                if(job != null) {
+                    Zone workZone = geoData.getZones().get(job.getZoneId());
+                    workerZonesForThisHousehold.put(pp, workZone);
+                    householdIncome += pp.getIncome();
+                }
             }
         }
 
@@ -201,18 +210,22 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
                 } case ("population"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getQuick(region));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getIndexed(region));
                 } case ("noNormalization"): {
                     // do nothing
                 }case ("powerOfPopulation"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getQuick(region),0.5));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
                 }
             }
         }
 
 
         int selectedRegionId;
-        if (regionUtilitiesForThisHousehold.values().stream().mapToDouble(i -> i).sum() == 0) {
+        final double sum = regionUtilitiesForThisHousehold.values().stream().mapToDouble(i -> i).sum();
+        if (sum == 0) {
+            return -1;
+        } else if(sum < 0) {
+            System.out.println("sum is negative!");
             return -1;
         } else {
             selectedRegionId = SiloUtil.select(regionUtilitiesForThisHousehold);
@@ -250,10 +263,13 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
     @Override
     protected double calculateHousingUtility(Household hh, Dwelling dd) {
+        if(dd == null) {
+            logger.warn("Household " + hh.getId() + " has no dwelling. Setting housing satisfaction to 0");
+            return 0;
+        }
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
-        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZoneId()));
         HouseholdType ht = hh.getHouseholdType();
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 
@@ -267,8 +283,10 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                Job workLocation = Objects.requireNonNull( jobDataManager.getJobFromId(pp.getJobId()));
-                jobsForThisHousehold.put(pp, workLocation);
+                final Job job = jobDataManager.getJobFromId(pp.getJobId());
+                if(job != null) {
+                    jobsForThisHousehold.put(pp, job);
+                }
             }
         }
         double workDistanceUtility = 1;
@@ -280,6 +298,6 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
-                transitAccessibilityUtility, workDistanceUtility);
+                0, workDistanceUtility);
     }
 }

@@ -5,7 +5,6 @@ package de.tum.bgu.msm.models.relocation;
  * @author Rolf Moeckel
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
 */
-
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;

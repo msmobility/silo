@@ -98,14 +98,15 @@ public final class SiloModel {
 				simulator.registerAnnualModel(modelUpdateListener);
 			}
 		}
+
+		IssueCounter.setUpCounter();
+		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
+		IssueCounter.logIssues(dataContainer.getGeoData());
+
         setupScalingYears();
 
         dataContainer.setup();
         simulator.setup();
-
-        IssueCounter.setUpCounter();
-		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
-		IssueCounter.logIssues(dataContainer.getGeoData());
 	}
 
 	private void setupScalingYears() {

@@ -1,17 +1,21 @@
 package run;
 
+import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.data.person.PersonFactoryImpl;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.*;
+import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
+import de.tum.bgu.msm.io.input.DwellingReader;
+import de.tum.bgu.msm.io.input.JobReader;
+import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -44,7 +48,7 @@ public final class DataBuilder {
             travelTimes = new SkimTravelTimes();
         }
 
-        Accessibility accessibility = new Accessibility(geoData, travelTimes, properties, dwellingData, householdData);
+        Accessibility accessibility = new AccessibilityPerth(geoData, travelTimes, properties, dwellingData, householdData);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -88,15 +92,54 @@ public final class DataBuilder {
         readHouseholds(properties, dataContainer.getHouseholdDataManager(),
                  dataContainer.getHouseholdDataManager().getHouseholdFactory(), year);
         readPersons(properties, dataContainer.getHouseholdDataManager(), dataContainer.getHouseholdDataManager().getPersonFactory(), year);
-        readDwellings(properties, dataContainer.getRealEstateDataManager(), year);
+        readDwellings(properties, dataContainer.getRealEstateDataManager(), dataContainer.getGeoData(), year);
 
-        JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
+        List<Household> toBeRemoved = new ArrayList<>();
+
+        int counterRemoved = 0;
+        for(Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
+            for(Person person: household.getPersons().values()) {
+                if(person.getHousehold() == null) {
+                    System.out.println("j");
+                }
+            }
+
+            final Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
+            if(dwelling == null) {
+                dataContainer.getHouseholdDataManager().removeHousehold(household.getId());
+                counterRemoved++;
+            } else {
+                EnumMultiset<Gender> marriedCounter = EnumMultiset.create(Gender.class);
+                for (Person person : household.getPersons().values()) {
+                    if(person.getRole() == PersonRole.MARRIED) {
+                        marriedCounter.add(person.getGender());
+//                        if (HouseholdUtil.findMostLikelyPartner(person, household) == null) {
+//                            dwelling.setResidentID(-1);
+//                            household.setDwelling(-1);
+//                            dataContainer.getHouseholdDataManager().removeHousehold(household.getId());
+//                            counterRemoved++;
+//                            break;
+//                        }
+                    }
+                }
+                if(marriedCounter.count(Gender.MALE)!=marriedCounter.count(Gender.FEMALE)) {
+                    dwelling.setResidentID(-1);
+                    household.setDwelling(-1);
+                    dataContainer.getHouseholdDataManager().removeHousehold(household.getId());
+                    counterRemoved++;
+                }
+            }
+        }
+
+        System.out.println(counterRemoved + "households cleaned");
+
+        JobReader jjReader = new JobReaderPerth(dataContainer.getJobDataManager(), dataContainer.getGeoData());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
     }
 
-    private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, int year) {
-        DwellingReader ddReader = new DwellingReaderPerth(realEstateManager);
+    private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, GeoData geoData, int year) {
+        DwellingReader ddReader = new DwellingReaderPerth(realEstateManager, geoData);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
     }

@@ -66,7 +66,7 @@ public class DefaultDataContainer implements DataContainer {
 
     @Override
     public TravelTimes getTravelTimes() {
-        return travelTimes;
+        return travelTimes.getDelegate();
     }
 
     @Override

@@ -51,8 +51,6 @@ public class GeoDataReaderPerth implements GeoDataReader {
             region.addZone(zone);
             geoData.addZone(zone);
         }
-
-        zonalData.buildIndex(zonalData.getColumnPosition("ZoneId"));
     }
 
     @Override

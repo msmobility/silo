@@ -1,9 +1,12 @@
-package de.tum.bgu.msm.io.input;
+package run;
 
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.io.input.DefaultJobReader;
+import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -11,13 +14,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class DefaultJobReader implements JobReader {
+public class JobReaderPerth implements JobReader {
 
     private final static Logger logger = Logger.getLogger(DefaultJobReader.class);
     private final JobDataManager jobDataManager;
+    private final GeoData geoData;
 
-    public DefaultJobReader(JobDataManager jobDataManager) {
+    public JobReaderPerth(JobDataManager jobDataManager, GeoData geoData) {
         this.jobDataManager = jobDataManager;
+        this.geoData = geoData;
     }
 
     @Override
@@ -47,7 +52,7 @@ public class DefaultJobReader implements JobReader {
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
 
-                Job jj = factory.createJob(id, zoneId, null, worker, type);
+                Job jj = factory.createJob(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(), worker, type);
 
 
                 jobDataManager.addJob(jj);

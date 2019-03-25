@@ -1,6 +1,7 @@
 package run;
 
 import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -13,9 +14,11 @@ public class DwellingReaderPerth implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DwellingReaderPerth.class);
     private final RealEstateDataManager realEstate;
+    private final GeoData geoData;
 
-    public DwellingReaderPerth(RealEstateDataManager realEstate) {
+    public DwellingReaderPerth(RealEstateDataManager realEstate, GeoData geoData) {
         this.realEstate= realEstate;
+        this.geoData = geoData;
     }
 
     @Override
@@ -55,8 +58,7 @@ public class DwellingReaderPerth implements DwellingReader {
                 float restrict  = 0;
                 int yearBuilt = 1990;
 
-
-                Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, restrict, yearBuilt);
+                Dwelling dwelling = factory.createDwelling(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(), hhId, type, area, quality, price, restrict, yearBuilt);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

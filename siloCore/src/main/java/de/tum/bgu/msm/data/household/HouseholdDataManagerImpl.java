@@ -210,6 +210,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         }
         for (Person pp : household.getPersons().values()) {
             pp.setHousehold(null);
+
             householdData.removePerson(pp.getId());
         }
         householdData.removeHousehold(householdId);

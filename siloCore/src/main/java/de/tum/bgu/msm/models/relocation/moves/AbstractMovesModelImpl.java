@@ -199,7 +199,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
             final HouseholdType householdType = hh.getHouseholdType();
             Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
             double util = calculateHousingUtility(hh, dd);
-            satisfactionByHousehold.put(dd.getResidentId(), util);
+            satisfactionByHousehold.put(hh.getId(), util);
             averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
             hhByType.add(householdType);
         }

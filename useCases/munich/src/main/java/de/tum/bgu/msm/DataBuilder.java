@@ -3,6 +3,7 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -45,7 +46,7 @@ class DataBuilder {
             travelTimes = new SkimTravelTimes();
         }
 
-        Accessibility accessibility = new Accessibility(geoData, travelTimes, properties, dwellingData, householdData);
+        Accessibility accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
