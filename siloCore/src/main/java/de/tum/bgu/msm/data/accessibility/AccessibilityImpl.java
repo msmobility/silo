@@ -44,8 +44,6 @@ public class AccessibilityImpl implements Accessibility {
     private final float alphaTransit;
     private final float betaTransit;
 
-    private float[] workTripLengthFrequencyDistribution;
-
     public AccessibilityImpl(GeoData geoData, TravelTimes travelTimes, Properties properties, DwellingData dwellingData, HouseholdData householdData) {
         this.geoData = geoData;
         this.travelTimes = travelTimes;
@@ -64,9 +62,6 @@ public class AccessibilityImpl implements Accessibility {
         this.autoAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
         this.transitAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
         this.regionalAccessibilities = new IndexedDoubleMatrix1D(geoData.getRegions().values());
-        
-        logger.info("Initializing trip length frequency distributions");
-        readWorkTripLengthFrequencyDistribution();
     }
 
     @Override
@@ -170,29 +165,6 @@ public class AccessibilityImpl implements Accessibility {
         final IndexedDoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0, 0, size, size).copy();
         return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
                 travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
-    }
-
-    private void readWorkTripLengthFrequencyDistribution() {
-        String fileName = properties.main.baseDirectory + properties.accessibility.htsWorkTLFD;
-        TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
-        workTripLengthFrequencyDistribution = new float[tlfd.getRowCount() + 1];
-        for (int row = 1; row <= tlfd.getRowCount(); row++) {
-            int tt = (int) tlfd.getValueAt(row, "TravelTime");
-            if (tt > workTripLengthFrequencyDistribution.length) {
-                logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
-                        properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
-            }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "Utility");
-        }
-    }
-
-    @Override
-    public float getCommutingTimeProbability(int minutes) {
-        if (minutes < workTripLengthFrequencyDistribution.length) {
-            return workTripLengthFrequencyDistribution[minutes];
-        } else {
-            return 0;
-        }
     }
 
     @Override

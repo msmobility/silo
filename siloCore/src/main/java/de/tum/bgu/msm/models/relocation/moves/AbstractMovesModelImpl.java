@@ -4,6 +4,7 @@ import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -28,6 +29,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
+    protected final CommutingTimeProbability commutingTimeProbability;
     private final MovesStrategy strategy;
 
     private final EnumMap<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
@@ -38,6 +40,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
+        this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.strategy = strategy;
     }
 

@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.DataContainerMstm;
 import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.household.HouseholdData;
@@ -54,6 +55,7 @@ public final class DataBuilder {
         }
 
         Accessibility accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -67,7 +69,7 @@ public final class DataBuilder {
         JobDataManager jobManager = new JobDataManagerImpl(
                 properties, new JobFactoryImpl(),
                 jobData, geoData,
-                travelTimes, accessibility);
+                travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryMstm hhFactory = new HouseholdFactoryMstm();
         final PersonfactoryMstm ppFactory = new PersonfactoryMstm();
@@ -80,7 +82,7 @@ public final class DataBuilder {
         DataContainer dataContainer = new DataContainerMstm(
                 geoData, realEstateManager,
                 jobManager, householdManager,
-                travelTimes, accessibility, properties);
+                travelTimes, accessibility, commutingTimeProbability, properties);
         return dataContainer;
     }
 

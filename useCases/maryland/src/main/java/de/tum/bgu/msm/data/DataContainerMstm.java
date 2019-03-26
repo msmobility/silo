@@ -4,6 +4,7 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -28,10 +29,11 @@ public class DataContainerMstm implements DataContainer {
             GeoData geodata, RealEstateDataManager realEstateManager,
             JobDataManager jobManager, HouseholdDataManagerMstm householdManager,
             TravelTimes travelTimes, Accessibility accessibility,
+            CommutingTimeProbability commutingTimeProbability,
             Properties properties) {
 
         delegate = new DefaultDataContainer(geodata, realEstateManager, 
-                jobManager, householdManager, travelTimes, accessibility, properties);
+                jobManager, householdManager, travelTimes, accessibility, commutingTimeProbability, properties);
         this.properties = properties;
     }
 
@@ -63,6 +65,11 @@ public class DataContainerMstm implements DataContainer {
     @Override
     public Accessibility getAccessibility() {
         return delegate.getAccessibility();
+    }
+    
+    @Override
+    public CommutingTimeProbability getCommutingTimeProbability() {
+        return delegate.getCommutingTimeProbability();
     }
 
     @Override

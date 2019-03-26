@@ -24,6 +24,7 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
@@ -56,7 +57,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     private final JobData jobData;
     private final TravelTimes travelTimes;
-    private final Accessibility accessibility;
+    private final CommutingTimeProbability commutingTimeProbability;
 
     private int highestJobIdInUse;
     private int[][] vacantJobsByRegion;
@@ -68,13 +69,13 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     public JobDataManagerImpl(Properties properties,
                               JobFactory jobFactory, JobData jobData, GeoData geoData,
-                              TravelTimes travelTimes, Accessibility accessibility) {
+                              TravelTimes travelTimes, CommutingTimeProbability commutingTimeProbability) {
         this.geoData = geoData;
         this.properties = properties;
         this.jobFactory = jobFactory;
         this.jobData = jobData;
         this.travelTimes = travelTimes;
-        this.accessibility = accessibility;
+        this.commutingTimeProbability = commutingTimeProbability;
         this.zonalJobDensity = new HashMap<>();
     }
 
@@ -352,7 +353,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 if (vacantJobsByRegionPos[reg.getId()] > 0) {
                     int distance = (int) (travelTimes.getTravelTimeToRegion(homeZone, reg,
                     		properties.transportModel.peakHour_s, TransportMode.car) + 0.5);
-                    regionProb.put(reg, accessibility.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
+                    regionProb.put(reg, commutingTimeProbability.getCommutingTimeProbability(distance) * (double) getNumberOfVacantJobsByRegion(reg.getId()));
                 }
             }
             if (SiloUtil.getSum(regionProb.values()) == 0) {

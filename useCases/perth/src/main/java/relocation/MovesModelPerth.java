@@ -156,7 +156,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
                     		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                    thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
+                    thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
             utilitiesForThisHousheold.put(region.getId(),utilitiesForThisHousheold.get(region.getId())*thisRegionFactor);
@@ -296,7 +296,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
         for (Job workLocation : jobsForThisHousehold.values()){
-            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
+            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
                     dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }

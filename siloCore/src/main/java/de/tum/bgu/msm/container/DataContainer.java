@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -24,4 +25,6 @@ public interface DataContainer extends UpdateListener {
     TravelTimes getTravelTimes();
 
     Accessibility getAccessibility();
+    
+    CommutingTimeProbability getCommutingTimeProbability();
 }

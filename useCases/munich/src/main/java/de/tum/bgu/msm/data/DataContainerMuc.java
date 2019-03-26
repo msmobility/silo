@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -25,8 +26,10 @@ public class DataContainerMuc extends DefaultDataContainer {
             GeoData geoData, RealEstateDataManager realEstateDataManager,
             JobDataManager jobDataManager, HouseholdDataManager householdDataManager,
             TravelTimes travelTimes, Accessibility accessibility,
+            CommutingTimeProbability commutingTimeProbability,
             SchoolData schoolData, Properties properties) {
-        super(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility, properties);
+        super(geoData, realEstateDataManager, jobDataManager, householdDataManager,
+        		travelTimes, accessibility, commutingTimeProbability, properties);
         this.schoolData = schoolData;
     }
 

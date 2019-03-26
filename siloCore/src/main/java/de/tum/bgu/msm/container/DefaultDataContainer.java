@@ -2,6 +2,7 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.data.TravelTimesWrapper;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -27,20 +28,21 @@ public class DefaultDataContainer implements DataContainer {
     private final GeoData geoData;
     private final TravelTimesWrapper travelTimes;
     private final Accessibility accessibility;
+    private final CommutingTimeProbability commutingTimeProbability;
     protected Properties properties;
 
     public DefaultDataContainer(
             GeoData geoData, RealEstateDataManager realEstateDataManager,
             JobDataManager jobDataManager, HouseholdDataManager householdDataManager,
             TravelTimes travelTimes, Accessibility accessibility,
-            Properties properties) {
+            CommutingTimeProbability commutingTimeProbability, Properties properties) {
         this.geoData = geoData;
         this.realEstateDataManager = realEstateDataManager;
         this.jobDataManager = jobDataManager;
         this.householdDataManager = householdDataManager;
         this.travelTimes = new TravelTimesWrapper(travelTimes, properties);
         this.accessibility = accessibility;
-
+        this.commutingTimeProbability = commutingTimeProbability;
         this.properties = properties;
     }
 
@@ -73,6 +75,11 @@ public class DefaultDataContainer implements DataContainer {
     public Accessibility getAccessibility() {
         return accessibility;
     }
+    
+    @Override
+    public CommutingTimeProbability getCommutingTimeProbability() {
+    	return commutingTimeProbability;
+    }
 
     @Override
     public void setup() {
@@ -82,6 +89,7 @@ public class DefaultDataContainer implements DataContainer {
         realEstateDataManager.setup();
         travelTimes.setup();
         accessibility.setup();
+        commutingTimeProbability.setup();
     }
 
     @Override
@@ -93,6 +101,7 @@ public class DefaultDataContainer implements DataContainer {
             realEstateDataManager.prepareYear(year);
             travelTimes.prepareYear(year);
             accessibility.prepareYear(year);
+            commutingTimeProbability.prepareYear(year);
         }
     }
 
@@ -104,6 +113,7 @@ public class DefaultDataContainer implements DataContainer {
         realEstateDataManager.endYear(year);
         travelTimes.endYear(year);
         accessibility.endYear(year);
+        commutingTimeProbability.endYear(year);
     }
 
     @Override
@@ -114,5 +124,6 @@ public class DefaultDataContainer implements DataContainer {
         realEstateDataManager.endSimulation();
         travelTimes.endSimulation();
         accessibility.endSimulation();
+        commutingTimeProbability.endSimulation();
     }
 }
