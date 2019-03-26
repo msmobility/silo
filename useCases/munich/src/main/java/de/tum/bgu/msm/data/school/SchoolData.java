@@ -13,4 +13,6 @@ public interface SchoolData extends UpdateListener {
     Collection<School> getSchools();
 
     School getClosestSchool(Person person, int schoolType);
+
+    void removeSchool(int id);
 }

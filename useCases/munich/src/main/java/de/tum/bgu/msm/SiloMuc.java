@@ -1,6 +1,5 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.properties.Properties;
@@ -31,7 +30,7 @@ public class SiloMuc {
         DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
         DataBuilder.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
-        SiloModel model = new SiloModel(config, properties, modelContainer, dataContainer);
+        SiloModel model = new SiloModel(properties, modelContainer, dataContainer);
         model.runModel();
         logger.info("Finished SILO.");
     }
