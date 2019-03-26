@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.models;
 
 import de.tum.bgu.msm.data.DataContainerMuc;
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
@@ -25,80 +24,13 @@ import java.util.List;
 public class EducationModelMuc extends AbstractModel implements EducationModel {
 
     private static final Logger logger = Logger.getLogger(EducationModelMuc.class);
-    public EducationModelMuc(DataContainer dataContainer, Properties properties) {
+    private static final int MIN_PRIMARY_AGE = 6;
+    private static final int MIN_SECONDARY_AGE = 10;
+    private static final int MIN_TERTIARY_AGE = 18;
+    private static final int MAX_EDUCATION_AGE = 24;
+
+    public EducationModelMuc(DataContainerMuc dataContainer, Properties properties) {
         super(dataContainer, properties);
-    }
-
-    @Override
-    public Collection<EducationEvent> getEventsForCurrentYear(int year) {
-        //TODO:
-        final List<EducationEvent> events = new ArrayList<>();
-        for(Person person: dataContainer.getHouseholdDataManager().getPersons()) {
-            //TODO: check if really every person needs a status check
-            events.add(new EducationEvent(person.getId()));
-        }
-        return events;
-    }
-
-    @Override
-    public boolean handleEvent(EducationEvent event) {
-        //TODO: Event handled randomly, so it might happen that birthday event always happened before
-        //TODO: Realschuln and Gymnasien
-        //TODO: Hard code age and probability or set in the properties?
-        PersonMuc pp = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
-        if (pp != null) {
-            School oldSchool = null;
-            School newSchool = null;
-            if(pp.getSchoolId()>0) {
-                 oldSchool = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId());
-            }else{
-//                logger.warn("person id " + pp.getId()+" has no school" + "Age " +pp.getAge()+"Occupation "+ pp.getOccupation().name());
-                return false;
-            }
-
-            if (pp.getAge() >= 6 && pp.getAge() <= 10 && oldSchool == null) {
-                newSchool = findSchool(pp);
-            }else if (pp.getAge() > 10 && oldSchool.getType() == 1) {
-                newSchool = findSchool(pp);
-            }else if (pp.getAge() > 18 && oldSchool.getType() == 2) {
-                if (SiloUtil.getRandomNumberAsFloat() < 0.528){
-                    newSchool = findSchool(pp);
-                }else{
-                    return leaveSchoolToWork(pp);
-                }
-            }else if (pp.getAge() > 24 && oldSchool.getType() == 3){
-                return  leaveSchoolToWork(pp);
-            }
-
-            if (newSchool != null){
-                return updateEducation(pp, newSchool);
-            }
-        }
-
-        return false;
-    }
-
-    //TODO: leave school to work
-    boolean leaveSchoolToWork(Person person) {
-
-        person.setOccupation(Occupation.UNEMPLOYED);
-        School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
-        school.setOccupancy(school.getOccupancy() + 1);
-        ((PersonMuc)person).setSchoolId(-1);
-        if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() +
-                    " leaved from school to job market. ");
-        }
-        return true;
-    }
-
-
-    @Override
-    public void endYear(int year) {}
-
-    @Override
-    public void endSimulation() {
-
     }
 
     @Override
@@ -107,8 +39,91 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
 
+    }
+
+    @Override
+    public void endYear(int year) {
+
+    }
+
+    @Override
+    public void endSimulation() {
+
+    }
+
+    @Override
+    public Collection<EducationEvent> getEventsForCurrentYear(int year) {
+        //TODO: Realschuln and Gymnasien
+        //TODO: Hard code age and probability or set in the properties?
+        final List<EducationEvent> events = new ArrayList<>();
+        for(Person person: dataContainer.getHouseholdDataManager().getPersons()) {
+            Occupation occupation = person.getOccupation();
+            switch (occupation){
+                case TODDLER:
+                    if (person.getAge()>= MIN_PRIMARY_AGE){
+                        events.add(new EducationEvent(person.getId()));
+                    }
+                    break;
+                case STUDENT:
+                    School oldSchool;
+                    if(((PersonMuc)person).getSchoolId()> 0){
+                        oldSchool = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
+                    }else{
+                        logger.warn("person id " + person.getId()+" has no school." + " Age: " +person.getAge()+" Occupation: "+ person.getOccupation().name());
+                        continue;
+                    }
+
+                    if (person.getAge() > MIN_SECONDARY_AGE && oldSchool.getType() == 1) {
+                        events.add(new EducationEvent(person.getId()));
+                    }else if (person.getAge() > MIN_TERTIARY_AGE && oldSchool.getType() == 2) {
+                        events.add(new EducationEvent(person.getId()));
+                    }else if (person.getAge() > MAX_EDUCATION_AGE && oldSchool.getType() == 3){
+                        events.add(new EducationEvent(person.getId()));
+                    }
+                    break;
+            }
+        }
+        return events;
+    }
+
+    @Override
+    public boolean handleEvent(EducationEvent event) {
+        PersonMuc pp = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
+        if (pp != null) {
+            Occupation occupation = pp.getOccupation();
+            School newSchool;
+            switch (occupation) {
+                case TODDLER:
+                    newSchool = findSchool(pp, 1);
+                    break;
+                case STUDENT:
+                    int currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
+                    if (currentSchoolType == 3) {
+                        return leaveSchoolToWork(pp);
+                    } else {
+                        newSchool = findSchool(pp, currentSchoolType + 1);
+                    }
+                    break;
+                default:
+                    //logger.warn("person id " + pp.getId() + " couldn't handle update education event, because occupation doesn't fit anymore." +
+                    //        " Age: " + pp.getAge() + " Occupation: " + pp.getOccupation().name());
+                    return false;
+            }
+
+            if (newSchool != null) {
+                return updateEducation(pp, newSchool);
+            } else {
+                logger.warn("person id " + pp.getId() + " cannot find a new school." +
+                        " Age: " + pp.getAge() + " Current school id: " +
+                        pp.getSchoolId() + " Home zone id: " +
+                        dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId()).getZoneId());
+            }
+
+        }
+        return false;
+    }
 
     boolean updateEducation(PersonMuc person, School school) {
 
@@ -123,8 +138,20 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
         return true;
     }
 
-    School findSchool(PersonMuc person) {
-        int currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId()).getType();
-        return ((DataContainerMuc)dataContainer).getSchoolData().getClosestSchool(person, currentSchoolType+1);
+    boolean leaveSchoolToWork(PersonMuc person) {
+
+        person.setOccupation(Occupation.UNEMPLOYED);
+        School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
+        school.setOccupancy(school.getOccupancy() + 1);
+        person.setSchoolId(-1);
+        if (person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println("Person " + person.getId() +
+                    " leaved from school to job market. ");
+        }
+        return true;
+    }
+
+    public School findSchool(Person person, int schoolType) {
+        return ((DataContainerMuc)dataContainer).getSchoolData().getClosestSchool(person, schoolType);
     }
 }
