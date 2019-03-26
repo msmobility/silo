@@ -128,7 +128,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                 Map<Integer, Double> utilityByRegion = new HashMap<>();
                 for (Region region : geoData.getRegions().values()){
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
-                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
+                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                     final double value = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
                             null, priceUtil, regAcc, 0);
@@ -274,7 +274,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         }
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(geoData.getZones().get(dd.getZoneId())));
         HouseholdType ht = hh.getHouseholdType();
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 

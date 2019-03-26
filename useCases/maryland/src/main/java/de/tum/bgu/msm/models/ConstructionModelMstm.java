@@ -118,7 +118,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     if (avePrice == 0)
                         logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
                     // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(zone));
+                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone)));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built

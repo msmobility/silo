@@ -4,6 +4,7 @@ import cern.jet.math.tdouble.DoubleFunctions;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -77,7 +78,7 @@ public class AccessibilityPerth implements Accessibility {
     }
 
 
-    private void calculateHansenAccessibilities(int year) {
+    public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
         final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
 
@@ -156,20 +157,20 @@ public class AccessibilityPerth implements Accessibility {
     }
 
     @Override
-    public double getAutoAccessibilityForZone(int zone) {
+    public double getAutoAccessibilityForZone(Zone zone) {
         // Can be combined with getTransitAccessibilityForZone into one method which get the mode
         // as an argument, nk/dz, july'18
-        return this.autoAccessibilities.getIndexed(zone);
+        return this.autoAccessibilities.getIndexed(zone.getId());
     }
 
     @Override
-    public double getTransitAccessibilityForZone(int zoneId) {
+    public double getTransitAccessibilityForZone(Zone zone) {
         return 0;
     }
 
     @Override
-    public double getRegionalAccessibility(int region) {
-        return regionalAccessibilities.getIndexed(region);
+    public double getRegionalAccessibility(Region region) {
+        return regionalAccessibilities.getIndexed(region.getId());
     }
 
 
