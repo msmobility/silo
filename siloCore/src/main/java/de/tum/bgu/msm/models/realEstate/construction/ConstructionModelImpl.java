@@ -144,7 +144,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
                     int ddId = realEstate.getNextDwellingId();
                     Dwelling plannedDwelling = factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price, year);
+                            dt, size, quality, price);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));
                     realEstate.convertLand(zone, dt.getAreaPerDwelling());

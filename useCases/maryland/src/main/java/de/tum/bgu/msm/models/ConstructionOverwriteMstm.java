@@ -137,7 +137,8 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
                 int msa = ((MstmZone) dataContainer.getGeoData().getZones().get(zoneId)).getMsa();
                 price = (int) (Math.abs(restriction) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
+            DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price);
+            dd.setYearBuilt(year);
             dd.setRestriction(restriction);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 

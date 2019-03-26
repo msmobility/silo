@@ -16,8 +16,6 @@ public interface Dwelling extends Location, Id {
 
     int getBedrooms();
 
-    int getYearBuilt();
-
     void setResidentID(int residentID);
 
     void setQuality(int quality);

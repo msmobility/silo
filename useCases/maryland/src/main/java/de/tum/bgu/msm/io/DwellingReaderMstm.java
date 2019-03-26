@@ -56,7 +56,8 @@ public class DwellingReaderMstm implements DwellingReader {
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
 
-                DwellingMstm dwelling = (DwellingMstm) factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
+                DwellingMstm dwelling = (DwellingMstm) factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price);
+                dwelling.setYearBuilt(yearBuilt);
                 dwelling.setRestriction(restrict);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {

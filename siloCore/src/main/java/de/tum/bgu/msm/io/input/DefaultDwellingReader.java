@@ -53,7 +53,7 @@ public class DefaultDwellingReader implements DwellingReader {
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
 
-                Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
+                Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
