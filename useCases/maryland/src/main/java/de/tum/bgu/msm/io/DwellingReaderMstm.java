@@ -20,7 +20,7 @@ public class DwellingReaderMstm implements DwellingReader {
 
     @Override
     public void readData(String path) {
-        DwellingFactory factory = DwellingUtils.getFactory();
+        DwellingFactory factory = realEstate.getDwellingFactory();
         logger.info("Reading dwelling micro data from ascii file");
         String recString = "";
         int recCount = 0;
