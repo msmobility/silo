@@ -98,8 +98,8 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             final Race race = ((MarylandHousehold) hh).getRace();
             zonalRacialComposition.setIndexed(zone, race.getId(),
                     zonalRacialComposition.getIndexed(zone,race.getId()) + 1);
-            regionalRacialComposition.setIndexed(region, race.getId(),
-                    regionalRacialComposition.getIndexed(region, race.getId()));
+            double value = regionalRacialComposition.getIndexed(region, race.getId());
+            regionalRacialComposition.setIndexed(region, race.getId(), value + 1);
 
             hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
         }

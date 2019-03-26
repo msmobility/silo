@@ -1,10 +1,10 @@
-package de.tum.bgu.msm.models;
+package de.tum.bgu.msm.models.demography.education;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
-import de.tum.bgu.msm.models.demography.education.EducationModel;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
@@ -17,9 +17,9 @@ import java.util.List;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-public class MstmEducationModelImpl extends AbstractModel implements EducationModel {
+public class EducationModelImpl extends AbstractModel implements EducationModel {
 
-    public MstmEducationModelImpl(DataContainer dataContainer, Properties properties) {
+    public EducationModelImpl(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 

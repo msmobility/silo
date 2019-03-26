@@ -176,6 +176,7 @@
         <module>perth</module>
         <module>kagawa</module>
         <module>austin</module>
+        <module>capeTown</module>
     </modules>
 
     <repositories>

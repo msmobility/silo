@@ -1,29 +1,28 @@
 package de.tum.bgu.msm.io;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.data.geo.RegionImpl;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
-public class GeoDataReaderMuc implements GeoDataReader {
+public class GeoDataReaderCapeTown implements GeoDataReader {
 
-    private static Logger logger = Logger.getLogger(GeoDataReaderMuc.class);
-
-    private GeoData geoDataMuc;
+    private final GeoData geoData;
 
     private final String SHAPE_IDENTIFIER = "id";
     private final String ZONE_ID_COLUMN = "Zone";
 
-    public GeoDataReaderMuc(GeoData geoDataMuc) {
-        this.geoDataMuc = geoDataMuc;
+    private final static Logger logger = Logger.getLogger(GeoDataReaderCapeTown.class);
+
+    public GeoDataReaderCapeTown(GeoData geoData) {
+        this.geoData = geoData;
     }
 
     @Override
@@ -32,25 +31,26 @@ public class GeoDataReaderMuc implements GeoDataReader {
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
 
+        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
+        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
         double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
 
         int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
         int[] regionColumn = zonalData.getColumnAsInt("Region");
 
-        for (int i = 0; i < zoneIds.length; i++) {
-            AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
+        for(int i = 0; i < zoneIds.length; i++) {
             Region region;
             int regionId = regionColumn[i];
-            if (geoDataMuc.getRegions().containsKey(regionId)) {
-                region = geoDataMuc.getRegions().get(regionId);
+            if (geoData.getRegions().containsKey(regionId)) {
+                region = geoData.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
-                geoDataMuc.addRegion(region);
+                geoData.addRegion(region);
             }
-            MunichZone zone = new MunichZone(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
+            ZoneImpl zone = new ZoneImpl(zoneIds[i], zoneAreas[i], region);
             region.addZone(zone);
-            geoDataMuc.addZone(zone);
+            geoData.addZone(zone);
         }
     }
 
@@ -62,7 +62,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
         }
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMuc.getZones().get(zoneId);
+            Zone zone = geoData.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
             } else {

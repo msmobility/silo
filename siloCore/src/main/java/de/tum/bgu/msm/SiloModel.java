@@ -18,8 +18,8 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.models.EventModel;
@@ -29,7 +29,6 @@ import de.tum.bgu.msm.simulator.Simulator;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -54,12 +53,11 @@ public final class SiloModel {
 
     /**
      *
-     * @param matsimConfig
      * @param properties
      * @param modelContainer
      * @param dataContainer
      */
-  	public SiloModel(Config matsimConfig, Properties properties,
+  	public SiloModel(Properties properties,
                      ModelContainer modelContainer, DataContainer dataContainer) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;

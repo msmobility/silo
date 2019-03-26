@@ -154,17 +154,17 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         return true;
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
-        Map<Integer, Double> utilitiesForThisHousheold
-                = new HashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));
+             private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
+                        Map<Integer, Double> utilitiesForThisHousheold
+                                = new HashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));
 
-        for(Region region : geoData.getRegions().values()){
-            double thisRegionFactor = 1;
-            if (workZones != null) {
-                for (Zone workZone : workZones) {
-                    int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                    thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
+                        for(Region region : geoData.getRegions().values()){
+                            double thisRegionFactor = 1;
+                            if (workZones != null) {
+                                for (Zone workZone : workZones) {
+                                    int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
+                                            workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
+                                    thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
             utilitiesForThisHousheold.put(region.getId(),utilitiesForThisHousheold.get(region.getId())*thisRegionFactor);
