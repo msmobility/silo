@@ -94,7 +94,6 @@ public class DefaultDataContainer implements DataContainer {
 
     @Override
     public void prepareYear(int year) {
-<<<<<<< HEAD
     	geoData.prepareYear(year);
     	householdDataManager.prepareYear(year);
     	jobDataManager.prepareYear(year);
@@ -102,14 +101,6 @@ public class DefaultDataContainer implements DataContainer {
     	travelTimes.prepareYear(year);
     	accessibility.prepareYear(year);
     	commutingTimeProbability.prepareYear(year);
-=======
-        geoData.prepareYear(year);
-        householdDataManager.prepareYear(year);
-        jobDataManager.prepareYear(year);
-        realEstateDataManager.prepareYear(year);
-        travelTimes.prepareYear(year);
-        accessibility.prepareYear(year);
->>>>>>> refs/heads/codeSprintMarch2019
     }
 
     @Override
