@@ -61,10 +61,12 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
     }
 
     @Override
-    public void endYear(int year) {}
+    public void endYear(int year) {
+    }
 
     @Override
-    public void endSimulation() {}
+    public void endSimulation() {
+    }
 
 
     private void calculateShareOfForeignersByZoneAndRegion() {
@@ -217,23 +219,28 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                     // Multiply utility of every region by number of vacant dwellings to steer households towards available dwellings
                     // use number of vacant dwellings to calculate attractivity of region
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (float) realEstateDataManager.getNumberOfVacantDDinRegion(region));
-                } case ("shareVacDd"): {
+                }
+                case ("shareVacDd"): {
                     // use share of empty dwellings to calculate attractivity of region
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * ((float) realEstateDataManager.getNumberOfVacantDDinRegion(region) / (float) totalVacantDd));
-                } case ("dampenedVacRate"): {
+                }
+                case ("dampenedVacRate"): {
                     double x = (double) realEstateDataManager.getNumberOfVacantDDinRegion(region) /
-                            (double) realEstateDataManager.getNumberOfDDinRegion(region) * 100d;  // % vacancy
+                            (double) realEstateDataManager.getNumberOfVacantDDinRegion(region) * 100d;  // % vacancy
                     double y = 1.4186E-03 * Math.pow(x, 3) - 6.7846E-02 * Math.pow(x, 2) + 1.0292 * x + 4.5485E-03;
                     y = Math.min(5d, y);                                                // % vacancy assumed to be ready to move in
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateDataManager.getNumberOfDDinRegion(region)));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateDataManager.getNumberOfVacantDDinRegion(region)));
                     if (realEstateDataManager.getNumberOfVacantDDinRegion(region) < 1) {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }
-                } case ("population"): {
+                }
+                case ("population"): {
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * hhByRegion.getIndexed(region));
-                } case ("noNormalization"): {
+                }
+                case ("noNormalization"): {
                     // do nothing
-                }case ("powerOfPopulation"): {
+                }
+                case ("powerOfPopulation"): {
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
                 }
             }

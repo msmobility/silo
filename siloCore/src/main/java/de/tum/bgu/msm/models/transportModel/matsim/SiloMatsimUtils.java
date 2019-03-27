@@ -63,7 +63,8 @@ public class SiloMatsimUtils {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 	
 		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);
-		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
+		// writes final events into toplevel directory
+		config.vspExperimental().setWritingOutputEvents(true);
 		
 		{				
 			StrategySettings strategySettings = new StrategySettings();

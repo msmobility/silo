@@ -99,8 +99,8 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             final Race race = ((MarylandHousehold) hh).getRace();
             zonalRacialComposition.setIndexed(zone, race.getId(),
                     zonalRacialComposition.getIndexed(zone,race.getId()) + 1);
-            regionalRacialComposition.setIndexed(region, race.getId(),
-                    regionalRacialComposition.getIndexed(region, race.getId()));
+            double value = regionalRacialComposition.getIndexed(region, race.getId());
+            regionalRacialComposition.setIndexed(region, race.getId(), value + 1);
 
             hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
         }
@@ -276,10 +276,10 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * ((float) realEstateData.getNumberOfVacantDDinRegion(region) / (float) totalVacantDd));
                 } case ("dampenedVacRate"): {
                     double x = (double) realEstateData.getNumberOfVacantDDinRegion(region) /
-                            (double) realEstateData.getNumberOfDDinRegion(region) * 100d;  // % vacancy
+                            (double) realEstateData.getNumberOfVacantDDinRegion(region) * 100d;  // % vacancy
                     double y = 1.4186E-03 * Math.pow(x, 3) - 6.7846E-02 * Math.pow(x, 2) + 1.0292 * x + 4.5485E-03;
                     y = Math.min(5d, y);                                                // % vacancy assumed to be ready to move in
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateData.getNumberOfDDinRegion(region)));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateData.getNumberOfVacantDDinRegion(region)));
                     if (realEstateData.getNumberOfVacantDDinRegion(region) < 1) {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }

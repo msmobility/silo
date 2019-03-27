@@ -66,8 +66,13 @@ public class DataContainerMuc extends DefaultDataContainer {
 
     @Override
     public void prepareYear(int year) {
+<<<<<<< HEAD
     	super.prepareYear(year);
     	schoolData.prepareYear(year);
+=======
+        super.prepareYear(year);
+        schoolData.prepareYear(year);
+>>>>>>> refs/heads/codeSprintMarch2019
     }
 
     @Override

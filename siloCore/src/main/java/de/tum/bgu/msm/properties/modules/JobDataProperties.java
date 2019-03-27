@@ -8,7 +8,6 @@ import java.util.ResourceBundle;
 
 public final class JobDataProperties {
 
-    public final int maxStorageOfvacantJobs;
     public final String[] jobTypes;
     public final boolean readBinaryJobFile;
     public final boolean writeBinJobFile;
@@ -25,7 +24,6 @@ public final class JobDataProperties {
 
     public JobDataProperties(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Job data properties");
-        maxStorageOfvacantJobs = PropertiesUtil.getIntProperty(bundle, "vacant.job.by.reg.array", 100000);
         jobTypes = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
 
         PropertiesUtil.newPropertySubmodule("Job - forecasts");
@@ -40,8 +38,6 @@ public final class JobDataProperties {
                 growthRateInPercentByJobType.put(jobType, overallJobGrowthRate);
             }
         }
-
-
 
         PropertiesUtil.newPropertySubmodule("Job - synthetic jobs input");
         jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");

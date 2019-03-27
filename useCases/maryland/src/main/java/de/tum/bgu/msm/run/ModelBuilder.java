@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.models.*;
+import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -30,8 +31,6 @@ import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
-import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwrite;
-import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwriteImpl;
 import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
 import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionLocationStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
@@ -82,7 +81,7 @@ public class ModelBuilder {
 
         DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
 
-        EducationModel educationModel = new MstmEducationModelImpl(dataContainer, properties);
+        EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
 
         EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
 

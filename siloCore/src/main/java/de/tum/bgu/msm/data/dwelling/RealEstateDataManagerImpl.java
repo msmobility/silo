@@ -3,12 +3,15 @@ package de.tum.bgu.msm.data.dwelling;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.development.DevelopmentImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.*;
-import de.tum.bgu.msm.events.IssueCounter;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -32,7 +35,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private final HouseholdData householdData;
     private final GeoData geoData;
 
-
     private final DwellingFactory dwellingFactory;
     private final Properties properties;
 
@@ -43,10 +45,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private int highestDwellingIdInUse;
     private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
 
-    private int[] dwellingsByRegion;
-    private int[][] vacDwellingsByRegion;
-    private int[] vacDwellingsByRegionPos;
-    private int numberOfStoredVacantDD;
+    private Map<Integer, Set<Dwelling>> vacDwellingsByRegion = new LinkedHashMap<>();
+
     private double[] avePrice;
     private double[] aveVac;
 
@@ -74,7 +74,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         fillQualityDistribution();
         setHighestVariablesAndCalculateRentShareByIncome();
         identifyVacantDwellings();
-        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     @Override
@@ -120,22 +119,20 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         return currentQualityShares;
     }
 
-    @Override
-    public int getNumberOfDDinRegion(int region) {
-        return dwellingsByRegion[region];
-    }
-
+    /**
+     * Return array with IDs of vacant dwellings in region
+     * @param region
+     * @return
+     */
     @Override
     public int[] getListOfVacantDwellingsInRegion(int region) {
-        // return array with IDs of vacant dwellings in region
-        int[] vacancies = new int[vacDwellingsByRegionPos[region]];
-        System.arraycopy(vacDwellingsByRegion[region], 0, vacancies, 0, vacDwellingsByRegionPos[region]);
-        return vacancies;
+        return vacDwellingsByRegion.getOrDefault(region,
+                new HashSet<>()).stream().mapToInt(Id::getId).toArray();
     }
 
     @Override
     public int getNumberOfVacantDDinRegion(int region) {
-        return Math.max(vacDwellingsByRegionPos[region] - 1, 0);
+        return vacDwellingsByRegion.getOrDefault(region, new HashSet<>()).size();
     }
 
     @Override
@@ -168,25 +165,18 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         return dwellingsByQuality;
     }
 
+    /**
+     * Walk through all dwellings and identify vacant dwellings
+     * (one-time task at beginning of model run only)
+     */
     private void identifyVacantDwellings() {
-        // walk through all dwellings and identify vacant dwellings (one-time task at beginning of model run only)
-
-        int highestRegion = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-        numberOfStoredVacantDD = Properties.get().realEstate.maxStorageOfVacantDwellings;
-        dwellingsByRegion = new int[highestRegion + 1];
-        vacDwellingsByRegion = new int[highestRegion + 1][numberOfStoredVacantDD + 1];
-        vacDwellingsByRegionPos = new int[highestRegion + 1];
-
         logger.info("  Identifying vacant dwellings");
         for (Dwelling dd : dwellingData.getDwellings()) {
             if (dd.getResidentId() == -1) {
                 int dwellingId = dd.getId();
                 int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
-                dwellingsByRegion[region]++;
-                vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dwellingId;
-                if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
-                if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD)
-                    IssueCounter.countExcessOfVacantDwellings(region);
+                vacDwellingsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+                vacDwellingsByRegion.get(region).add(dd);
                 if (dwellingId == SiloUtil.trackDd)
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
             }
@@ -327,41 +317,46 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     }
 
 
+    /**
+     *  Remove dwelling with ID ddId from list of vacant dwellings
+     * @param ddId
+     */
     @Override
     public void removeDwellingFromVacancyList(int ddId) {
-        // remove dwelling with ID ddId from list of vacant dwellings
 
         boolean found = false;
 
-        // todo: when selecting a vacant dwelling, I should be able to store the index of this dwelling in the vacDwellingByRegion array, which should make it faster to remove the vacant dwelling from this array.
-        int region = geoData.getZones().get(dwellingData.getDwelling(ddId).getZoneId()).getRegion().getId();
-        for (int i = 0; i < vacDwellingsByRegionPos[region]; i++) {
-            if (vacDwellingsByRegion[region][i] == ddId) {
-                vacDwellingsByRegion[region][i] = vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1];
-                vacDwellingsByRegion[region][vacDwellingsByRegionPos[region] - 1] = 0;
-                vacDwellingsByRegionPos[region] -= 1;
-                if (ddId == SiloUtil.trackDd) SiloUtil.trackWriter.println("Removed dwelling " + ddId +
+        Dwelling dwelling = dwellingData.getDwelling(ddId);
+        int region = geoData.getZones().get(dwelling.getZoneId()).getRegion().getId();
+        Set<Dwelling> vacDwellings = vacDwellingsByRegion.get(region);
+        if (vacDwellings != null) {
+            found = vacDwellings.remove(dwelling);
+            if (ddId == SiloUtil.trackDd) {
+                SiloUtil.trackWriter.println("Removed dwelling " + ddId +
                         " from list of vacant dwellings.");
-                found = true;
-                break;
             }
         }
-        if (!found)
-            logger.warn("Consistency error: Could not find vacant dwelling " + ddId + " in vacDwellingsByRegion.");
+
+        if (!found) {
+            logger.warn("Consistency error: Could not find vacant dwelling "
+                    + ddId + " in vacDwellingsByRegion.");
+        }
     }
 
-
+    /**
+     * Add dwelling to vacancy list
+     * @param dd
+     */
     @Override
     public void addDwellingToVacancyList(Dwelling dd) {
-        // add dwelling to vacancy list
 
         int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
-        vacDwellingsByRegion[region][vacDwellingsByRegionPos[region]] = dd.getId();
-        if (vacDwellingsByRegionPos[region] < numberOfStoredVacantDD) vacDwellingsByRegionPos[region]++;
-        if (vacDwellingsByRegionPos[region] >= numberOfStoredVacantDD)
-            IssueCounter.countExcessOfVacantDwellings(region);
-        if (dd.getId() == SiloUtil.trackDd) SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
-                " to list of vacant dwellings.");
+        vacDwellingsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+        vacDwellingsByRegion.get(region).add(dd);
+        if (dd.getId() == SiloUtil.trackDd) {
+            SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
+                    " to list of vacant dwellings.");
+        }
     }
 
 
@@ -475,9 +470,13 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         return sm;
     }
 
+    /**
+     * Remove acres from developable land
+     * @param zone
+     * @param acres
+     */
     @Override
     public void convertLand(int zone, float acres) {
-        // remove acres from developable land
         Development development = geoData.getZones().get(zone).getDevelopment();
         if (development.isUseDwellingCapacity()) {
             development.changeCapacityBy(-1);

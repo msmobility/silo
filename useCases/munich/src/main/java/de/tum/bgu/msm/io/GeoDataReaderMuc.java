@@ -2,15 +2,14 @@ package de.tum.bgu.msm.io;
 
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.AreaTypes;
-import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.geo.RegionImpl;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.MunichZone;
+import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -23,7 +22,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
     private final String SHAPE_IDENTIFIER = "id";
     private final String ZONE_ID_COLUMN = "Zone";
 
-    public GeoDataReaderMuc(GeoData geoDataMuc){
+    public GeoDataReaderMuc(GeoData geoDataMuc) {
         this.geoDataMuc = geoDataMuc;
     }
 
@@ -33,16 +32,13 @@ public class GeoDataReaderMuc implements GeoDataReader {
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
 
-        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
-        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
         double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
 
         int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
         int[] regionColumn = zonalData.getColumnAsInt("Region");
 
-        for(int i = 0; i < zoneIds.length; i++) {
-            Coord centroid = new Coord(centroidX[i], centroidY[i]);
+        for (int i = 0; i < zoneIds.length; i++) {
             AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
             Region region;
             int regionId = regionColumn[i];
@@ -52,7 +48,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
                 region = new RegionImpl(regionId);
                 geoDataMuc.addRegion(region);
             }
-            MunichZone zone = new MunichZone(zoneIds[i], zoneAreas[i], centroid, type, ptDistances[i], region);
+            MunichZone zone = new MunichZone(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
             region.addZone(zone);
             geoDataMuc.addZone(zone);
         }
