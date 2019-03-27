@@ -2,6 +2,7 @@ package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
@@ -113,7 +114,8 @@ public class ModelBuilder {
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties,
+                		(MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:
             case MITO:

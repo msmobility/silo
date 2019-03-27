@@ -54,8 +54,6 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
 
     @Override
     public void setup() {
-        calculateRegionalUtilities();
-        calculateAverageHousingUtility();
     }
 
     @Override
@@ -76,7 +74,6 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
     @Override
     public void endYear(int year) {
     }
-
 
     /**
      * Simulates (a) if this household moves and (b) where this household moves
@@ -116,9 +113,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         }
     }
 
-
     protected double convertPriceToUtility(int price, HouseholdType ht) {
-
         IncomeCategory incCategory = ht.getIncomeCategory();
         Map<Integer, Float> shares = dataContainer.getRealEstateDataManager().getRentPaymentsForIncomeGroup(incCategory);
         // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
@@ -199,7 +194,6 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
                 satisfaction / (1. * hhByType.count(householdType)));
     }
-
 
     public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
         // if this household had a dwelling in this study area before, vacate old dwelling

@@ -1,20 +1,10 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.utils.SiloUtil;
+import java.util.Collection;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -22,7 +12,6 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
-import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -32,20 +21,30 @@ import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheck
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.collections.Tuple;
+import org.matsim.facilities.ActivityFacilities;
+import org.matsim.facilities.ActivityFacility;
 
-import java.util.Collection;
-import java.util.Map;
+import com.pb.common.matrix.Matrix;
 
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 /**
  * @author dziemke
  */
 public class SiloMatsimUtils {
 	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
-	
-	private final static GeometryFactory geometryFactory = new GeometryFactory();
-	
-	public static Config createMatsimConfig(Config initialConfig, String runId, double populationScalingFactor, double workerScalingFactor) {
+		
+	public static Config createMatsimConfig(Config initialConfig, String runId,	double populationScalingFactor) {
 		LOG.info("Stating creating a MATSim config.");
 		Config config = ConfigUtils.loadConfig(initialConfig.getContext());
 		config.qsim().setFlowCapFactor(populationScalingFactor);
@@ -94,18 +93,12 @@ public class SiloMatsimUtils {
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setUsingThreadpool(false);
 		
-		// TODO is this required?
-		AccessibilityConfigGroup accessibilityConfigGroup = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.GROUP_NAME, AccessibilityConfigGroup.class);
-		double timeOfDay = accessibilityConfigGroup.getTimeOfDay();
-		
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
 	
 		LOG.info("Finished creating a MATSim config.");
 		return config;
 	}
 
-//	public static Population createMatsimPopulation(Config config, DataContainer dataContainer,
-//			Map<Integer,SimpleFeature> zoneFeatureMap, double scalingFactor) {
 	public static Population createMatsimPopulation(Config config, DataContainer dataContainer, double scalingFactor) {
 		LOG.info("Starting creating a MATSim population.");
 		HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
@@ -172,25 +165,16 @@ public class SiloMatsimUtils {
     		Plan matsimPlan = matsimPopulationFactory.createPlan();
     		matsimPerson.addPlan(matsimPlan);
 
-//    		SimpleFeature homeFeature = zoneFeatureMap.get(siloHomeTazId);
-//    		//TODO remove getRandomCoordinate when implementing microlocation
-//    		Coord homeCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(homeFeature);
-//    		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
     		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
     		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-//    		SimpleFeature workFeature = zoneFeatureMap.get(workZoneId);
-//			//TODO remove getRandomCoordinate when implementing microlocation
-//    		Coord workCoordinates = SiloMatsimUtils.getRandomCoordinateInGeometry(workFeature);
-//    		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", workCoordinates);
     		Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
     		activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity2);
     		matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-//    		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", homeCoordinates);
     		Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
 
     		matsimPlan.addActivity(activity3);
@@ -198,23 +182,6 @@ public class SiloMatsimUtils {
     	LOG.info("Finished creating a MATSim population.");
     	return matsimPopulation;
     }
-	
-//	public static final Coord getRandomCoordinateInGeometry(SimpleFeature feature) {
-//		Geometry geometry = (Geometry) feature.getDefaultGeometry();
-//		Envelope envelope = geometry.getEnvelopeInternal();
-//		while (true) {
-//			Point point = getRandomPointInEnvelope(envelope);
-//			if (point.within(geometry)) {
-//				return new Coord(point.getX(), point.getY());
-//			}
-//		}
-//	}
-	
-//	public static final Point getRandomPointInEnvelope(Envelope envelope) {
-//		double x = envelope.getMinX() + SiloUtil.getRandomNumberAsDouble() * envelope.getWidth();
-//		double y = envelope.getMinY() + SiloUtil.getRandomNumberAsDouble() * envelope.getHeight();
-//		return geometryFactory.createPoint(new Coordinate(x,y));
-//	}
 	
 	public static final Matrix convertTravelTimesToImpedanceMatrix(
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int rowCount, int columnCount, int year) {
@@ -234,5 +201,30 @@ public class SiloMatsimUtils {
 			}
 		}	
 		return matrix;
+	}
+	
+	public static void determineExtentOfFacilities(ActivityFacilities activityFacilities) {
+		double xmin = Double.MAX_VALUE;
+		double xmax = Double.MIN_VALUE;
+		double ymin = Double.MAX_VALUE;
+		double ymax = Double.MIN_VALUE;
+		
+		for (ActivityFacility activityFacility : activityFacilities.getFacilities().values()) {	
+			double x = activityFacility.getCoord().getX();
+			double y = activityFacility.getCoord().getY();
+			if (x < xmin) {
+				xmin = x;
+			}
+			if (x > xmax) {
+				xmax = x;
+			}
+			if (y < ymin) {
+				ymin = y;
+			}
+			if (y > ymax) {
+				ymax = y;
+			}
+		}
+		LOG.info("Extent of facilities is: xmin = " + xmin + "; xmax = " + xmax + "; ymin = " + ymin + "; ymax = " + ymax);
 	}
 }

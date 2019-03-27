@@ -133,11 +133,12 @@ public final class SiloModel {
             }
             timeTracker.recordAndReset("scaleDataToForecast");
 
-			if (year == properties.main.baseYear || year != properties.main.startYear) {
+            dataContainer.prepareYear(year);
+
+            if (year == properties.main.baseYear || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
             }
 
-            dataContainer.prepareYear(year);
             simulator.simulate(year);
 			dataContainer.endYear(year);
 

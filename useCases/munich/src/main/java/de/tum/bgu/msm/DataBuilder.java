@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -40,13 +41,14 @@ public class DataBuilder {
 
 
         TravelTimes travelTimes;
+        Accessibility accessibility;
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
+            accessibility = new MatsimAccessibility(geoData);
         } else {
             travelTimes = new SkimTravelTimes();
+            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
         }
-
-        Accessibility accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
         CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
