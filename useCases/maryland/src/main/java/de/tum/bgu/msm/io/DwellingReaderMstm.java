@@ -20,7 +20,7 @@ public class DwellingReaderMstm implements DwellingReader {
 
     @Override
     public void readData(String path) {
-        DwellingFactory factory = DwellingUtils.getFactory();
+        DwellingFactory factory = realEstate.getDwellingFactory();
         logger.info("Reading dwelling micro data from ascii file");
         String recString = "";
         int recCount = 0;
@@ -56,7 +56,8 @@ public class DwellingReaderMstm implements DwellingReader {
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
 
-                DwellingMstm dwelling = (DwellingMstm) factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
+                DwellingMstm dwelling = (DwellingMstm) factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price);
+                dwelling.setYearBuilt(yearBuilt);
                 dwelling.setRestriction(restrict);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {

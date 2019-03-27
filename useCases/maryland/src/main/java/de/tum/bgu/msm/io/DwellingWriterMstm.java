@@ -40,9 +40,9 @@ public class DwellingWriterMstm implements DwellingWriter {
             pwd.print(",");
             pwd.print(dd.getPrice());
             pwd.print(",");
-            pwd.print(((DwellingMstm)dd).getRestriction());
+            pwd.print(((DwellingMstm) dd).getRestriction());
             pwd.print(",");
-            pwd.print(dd.getYearBuilt());
+            pwd.print(((DwellingMstm) dd).getYearBuilt());
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");

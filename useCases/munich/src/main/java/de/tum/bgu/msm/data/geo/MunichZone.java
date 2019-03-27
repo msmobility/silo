@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data.geo;
 
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.geo.ZoneImpl;
 import org.matsim.api.core.v01.Coord;
 
 public class MunichZone extends ZoneImpl {
@@ -11,8 +10,8 @@ public class MunichZone extends ZoneImpl {
     private final AreaTypes.SGType areaType;
     private final double ptDistance;
 
-    public MunichZone(int id, int msa, float area, Coord coord, AreaTypes.SGType areaType, double initialPTDistance, Region region) {
-        super(id, msa, area, region);
+    public MunichZone(int id, float area, Coord coord, AreaTypes.SGType areaType, double initialPTDistance, Region region) {
+        super(id, area, region);
         this.coord = coord;
         this.areaType = areaType;
         this.ptDistance = initialPTDistance;

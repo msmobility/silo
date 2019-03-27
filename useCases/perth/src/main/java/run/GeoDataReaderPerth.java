@@ -31,7 +31,6 @@ public class GeoDataReaderPerth implements GeoDataReader {
     public void readZoneCsv(String fileName) {
         TableDataSet zonalData = SiloUtil.readCSVfile(fileName);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
-        int[] zoneMsa = zonalData.getColumnAsInt("msa");
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
         int[] regionData = zonalData.getColumnAsInt("Region");
 
@@ -47,7 +46,7 @@ public class GeoDataReaderPerth implements GeoDataReader {
                 geoData.addRegion(region);
             }
 
-            Zone zone = new ZoneImpl(zoneIds[i], zoneMsa[i], zoneAreas[i], region);
+            Zone zone = new ZoneImpl(zoneIds[i], zoneAreas[i], region);
             region.addZone(zone);
             geoData.addZone(zone);
         }

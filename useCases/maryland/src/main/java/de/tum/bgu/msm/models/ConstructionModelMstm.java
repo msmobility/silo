@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.realEstate.construction.ConstructionDemandStrategy;
 import de.tum.bgu.msm.models.realEstate.construction.ConstructionLocationStrategy;
@@ -46,8 +47,6 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
 
-    private int currentYear = -1;
-
     public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
                                  ConstructionDemandStrategy demandStrategy) {
@@ -79,7 +78,6 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     @Override
     public Collection<ConstructionEvent> getEventsForCurrentYear(int year) {
-        currentYear = year;
         List<ConstructionEvent> events = new ArrayList<>();
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
@@ -165,7 +163,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
                         // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = geoData.getZones().get(zone).getMsa();
+                        int msa = ((MstmZone) geoData.getZones().get(zone)).getMsa();
                         price = (int) (Math.abs((restriction / 100f)) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
                     }
 
@@ -173,7 +171,8 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
                     int ddId = realEstate.getNextDwellingId();
                     DwellingMstm plannedDwelling = (DwellingMstm) factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price, currentYear);
+                            dt, size, quality, price);
+                    plannedDwelling.setYearBuilt(year);
                     plannedDwelling.setRestriction(restriction);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));

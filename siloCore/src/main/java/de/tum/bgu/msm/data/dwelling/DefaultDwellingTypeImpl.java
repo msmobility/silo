@@ -5,7 +5,6 @@ package de.tum.bgu.msm.data.dwelling;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 21 March 2011 in Santa Fe (which is J.S. Bach's 326th birthday)
  **/
-
 public enum DefaultDwellingTypeImpl implements DwellingType {
 
     /**

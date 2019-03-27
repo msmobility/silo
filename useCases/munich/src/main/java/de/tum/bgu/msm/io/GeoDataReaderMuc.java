@@ -31,7 +31,6 @@ public class GeoDataReaderMuc implements GeoDataReader {
     public void readZoneCsv(String path) {
         TableDataSet zonalData = SiloUtil.readCSVfile(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
-        int[] zoneMsa = zonalData.getColumnAsInt("msa");
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
 
         double[] centroidX = zonalData.getColumnAsDouble("centroidX");
@@ -53,7 +52,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
                 region = new RegionImpl(regionId);
                 geoDataMuc.addRegion(region);
             }
-            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i], region);
+            MunichZone zone = new MunichZone(zoneIds[i], zoneAreas[i], centroid, type, ptDistances[i], region);
             region.addZone(zone);
             geoDataMuc.addZone(zone);
         }
