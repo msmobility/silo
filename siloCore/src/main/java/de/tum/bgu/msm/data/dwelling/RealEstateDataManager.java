@@ -19,8 +19,6 @@ public interface RealEstateDataManager extends ModelUpdateListener {
 
     double[] getCurrentQualShares();
 
-    int getNumberOfDDinRegion(int region);
-
     int[] getListOfVacantDwellingsInRegion(int region);
 
     int getNumberOfVacantDDinRegion(int region);
