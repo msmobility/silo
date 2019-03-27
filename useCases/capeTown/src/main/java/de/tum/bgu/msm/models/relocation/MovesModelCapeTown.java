@@ -198,10 +198,10 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
                     regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * ((float) realEstateDataManager.getNumberOfVacantDDinRegion(region) / (float) totalVacantDd));
                 } case ("dampenedVacRate"): {
                     double x = (double) realEstateDataManager.getNumberOfVacantDDinRegion(region) /
-                            (double) realEstateDataManager.getNumberOfDDinRegion(region) * 100d;  // % vacancy
+                            (double) realEstateDataManager.getNumberOfVacantDDinRegion(region) * 100d;  // % vacancy
                     double y = 1.4186E-03 * Math.pow(x, 3) - 6.7846E-02 * Math.pow(x, 2) + 1.0292 * x + 4.5485E-03;
                     y = Math.min(5d, y);                                                // % vacancy assumed to be ready to move in
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateDataManager.getNumberOfDDinRegion(region)));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * (y / 100d * realEstateDataManager.getNumberOfVacantDDinRegion(region)));
                     if (realEstateDataManager.getNumberOfVacantDDinRegion(region) < 1) {
                         regionUtilitiesForThisHousehold.put(region, 0D);
                     }

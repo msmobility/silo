@@ -96,8 +96,7 @@ public final class SiloModel {
 		}
 
 		IssueCounter.setUpCounter();
-		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
-		IssueCounter.logIssues(dataContainer.getGeoData());
+		IssueCounter.logIssues();
 
         setupScalingYears();
 
@@ -137,7 +136,7 @@ public final class SiloModel {
 			simulator.simulate(year);
 			dataContainer.endYear(year);
 
-			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
+			IssueCounter.logIssues();           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
 					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +

@@ -38,7 +38,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private final DwellingFactory dwellingFactory;
     private final Properties properties;
 
-    public int largestNoBedrooms;
+    public static int largestNoBedrooms;
 
     private int[] dwellingsByQuality;
     private double[] initialQualityShares;
