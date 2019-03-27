@@ -26,7 +26,7 @@ public class SiloCapeTown {
         DataBuilderCapeTown.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderCapeTown.getModelContainerForCapeTown(
                 dataContainer, properties, config);
-        SiloModel model = new SiloModel(properties, modelContainer, dataContainer);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.runModel();
         logger.info("Finished SILO.");
     }

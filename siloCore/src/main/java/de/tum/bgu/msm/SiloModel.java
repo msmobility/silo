@@ -52,13 +52,12 @@ public final class SiloModel {
     private final TimeTracker timeTracker = new TimeTracker();
 
     /**
-     *
-     * @param properties
-     * @param modelContainer
+     *  @param properties
      * @param dataContainer
+     * @param modelContainer
      */
   	public SiloModel(Properties properties,
-                     ModelContainer modelContainer, DataContainer dataContainer) {
+                     DataContainer dataContainer, ModelContainer modelContainer) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;
         IssueCounter.setUpCounter();

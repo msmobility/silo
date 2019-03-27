@@ -30,7 +30,7 @@ public class SiloMuc {
         DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
         DataBuilder.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
-        SiloModel model = new SiloModel(properties, modelContainer, dataContainer);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.runModel();
         logger.info("Finished SILO.");
     }
