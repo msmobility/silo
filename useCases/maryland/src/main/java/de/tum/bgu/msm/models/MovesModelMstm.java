@@ -23,6 +23,7 @@ import de.tum.bgu.msm.data.person.MarylandPerson;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
@@ -313,7 +314,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             }
             // multiply by racial share to make zones with higher own racial share more attractive
 
-            double utility = calculateHousingUtility(household, dd);
+            double utility = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
 
             double adjustedUtility = Math.pow(utility, (1 - selectDwellingRaceRelevance)) *
                     Math.pow(racialShare, selectDwellingRaceRelevance);
@@ -332,7 +333,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
 
 
     @Override
-    protected double calculateHousingUtility(Household hh, Dwelling dd) {
+    protected double calculateHousingUtility(Household hh, Dwelling dd, TravelTimes travelTimes) {
 
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
@@ -372,8 +373,8 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         double workDistanceUtility = 1;
         Zone originZone = geoData.getZones().get(dd.getZoneId());
         for (Zone workLocation : jobsForThisHousehold.values()){
-            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    originZone, workLocation, 0, TransportMode.car)));
+        	int expectedCommuteTime = (int) travelTimes.getTravelTime(originZone, workLocation, 0, TransportMode.car);
+            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
             workDistanceUtility *= factorForThisZone;
         }
 

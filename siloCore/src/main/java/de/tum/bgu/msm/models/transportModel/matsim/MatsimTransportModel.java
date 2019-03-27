@@ -103,7 +103,7 @@ public final class MatsimTransportModel implements TransportModel {
 	public void setup() {
         network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
-        travelTimes.initialize(dataContainer.getGeoData().getZones().values(), network);
+        travelTimes.initialize(dataContainer.getGeoData().getZones(), network);
 
         LOG.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -252,7 +252,7 @@ public final class MatsimTransportModel implements TransportModel {
 	}
 
 	private void updateTravelTimes(TripRouter tripRouter, TravelTime travelTime, TravelDisutility disutility) {
-		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
+//		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
 		/*
 		 * Comments:
 		 * for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
@@ -265,8 +265,8 @@ public final class MatsimTransportModel implements TransportModel {
 		 * return tripRouter;
 		 */
 //		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
-		travelTimes.update(tripRouter, leastCoastPathTree);
-//		travelTimes.update(travelTime, disutility);
+//		travelTimes.update(tripRouter, leastCoastPathTree);
+		travelTimes.update(travelTime, disutility);
 //		tripRouter = controler.getTripRouterProvider().get();
 	}
 }

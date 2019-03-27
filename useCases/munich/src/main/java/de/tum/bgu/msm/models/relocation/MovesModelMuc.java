@@ -16,17 +16,24 @@ import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
+
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
 public class MovesModelMuc extends AbstractMovesModelImpl {
+    private final static Logger logger = Logger.getLogger(MovesModelMuc.class);
+    
+    int requestsDwellingSearch = 0;
+
 
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
@@ -174,6 +181,8 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     @Override
     public int searchForNewDwelling(Household household) {
+    	requestsDwellingSearch++;
+		if (requestsDwellingSearch % 10000 == 0) logger.info("New search for dwelling. Number of occurrences: " + requestsDwellingSearch);
         // search alternative dwellings
 
         // data preparation
@@ -259,7 +268,9 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd);
+            //
+            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes()); // interesting part!
+            //
             expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
@@ -269,7 +280,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
     }
 
     @Override
-    protected double calculateHousingUtility(Household hh, Dwelling dd) {
+    protected double calculateHousingUtility(Household hh, Dwelling dd, TravelTimes travelTimes) {
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(geoData.getZones().get(dd.getZoneId())));
@@ -293,8 +304,8 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
         for (JobMuc workLocation : jobsForThisHousehold.values()){
-            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car)));
+            int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
+			double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
             workDistanceUtility *= factorForThisZone;
         }
 

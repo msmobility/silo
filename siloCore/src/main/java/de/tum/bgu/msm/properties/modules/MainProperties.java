@@ -60,6 +60,11 @@ public class MainProperties {
      * Print out the synthetic population nd the development capacity file at the final year
      */
     public final boolean printOutFinalSyntheticPopulation;
+    
+    /**
+     * Returns the number of logical threads available at runtime.
+     */
+    public final int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
     @Deprecated
     public final String prestoZoneFile;

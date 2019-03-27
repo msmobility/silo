@@ -19,6 +19,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
@@ -257,7 +258,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd);
+            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
             expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
@@ -267,7 +268,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
     }
 
     @Override
-    protected double calculateHousingUtility(Household hh, Dwelling dd) {
+    protected double calculateHousingUtility(Household hh, Dwelling dd, TravelTimes travelTimes) {
         if(dd == null) {
             logger.warn("Household " + hh.getId() + " has no dwelling. Setting housing satisfaction to 0");
             return 0;
@@ -296,8 +297,8 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
         for (Job workLocation : jobsForThisHousehold.values()){
-            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1,(int) dataContainer.getTravelTimes().getTravelTime(
-                    dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car)));
+        	int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
+            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
             workDistanceUtility *= factorForThisZone;
         }
 
