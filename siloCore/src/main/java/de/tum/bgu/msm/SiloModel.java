@@ -60,7 +60,6 @@ public final class SiloModel {
                      DataContainer dataContainer, ModelContainer modelContainer) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;
-        IssueCounter.setUpCounter();
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 	}
@@ -130,12 +129,12 @@ public final class SiloModel {
             }
             timeTracker.recordAndReset("scaleDataToForecast");
 
-			if (year == properties.main.baseYear || year != properties.main.startYear) {
-                SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
-            }
 
-            dataContainer.prepareYear(year);
-            simulator.simulate(year);
+			dataContainer.prepareYear(year);
+			if (year == properties.main.baseYear || year != properties.main.startYear) {
+				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
+			}
+			simulator.simulate(year);
 			dataContainer.endYear(year);
 
 			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period

@@ -2,19 +2,18 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -42,9 +41,7 @@ import java.util.Map;
  */
 public class SiloMatsimUtils {
 	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
-	
-	private final static GeometryFactory geometryFactory = new GeometryFactory();
-	
+
 	public static Config createMatsimConfig(Config initialConfig, String runId, double populationScalingFactor, double workerScalingFactor) {
 		LOG.info("Stating creating a MATSim config.");
 		Config config = ConfigUtils.loadConfig(initialConfig.getContext());
@@ -64,8 +61,9 @@ public class SiloMatsimUtils {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 	
 		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);
-		config.vspExperimental().setWritingOutputEvents(true); // writes final events into toplevel directory
-		
+		// writes final events into toplevel directory
+		config.vspExperimental().setWritingOutputEvents(true);
+
 		{				
 			StrategySettings strategySettings = new StrategySettings();
 			strategySettings.setStrategyName("ChangeExpBeta");

@@ -74,7 +74,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         fillQualityDistribution();
         setHighestVariablesAndCalculateRentShareByIncome();
         identifyVacantDwellings();
-        calculateRegionWidePriceAndVacancyByDwellingType();
     }
 
     @Override

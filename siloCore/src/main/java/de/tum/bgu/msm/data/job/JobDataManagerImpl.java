@@ -83,7 +83,6 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         identifyHighestJobId();
         calculateEmploymentForecast();
         identifyVacantJobs();
-        calculateJobDensityByZone();
     }
 
     @Override

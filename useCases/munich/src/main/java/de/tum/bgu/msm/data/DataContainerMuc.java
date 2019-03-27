@@ -63,10 +63,8 @@ public class DataContainerMuc extends DefaultDataContainer {
 
     @Override
     public void prepareYear(int year) {
-        if (year != properties.main.baseYear) {
-            super.prepareYear(year);
-            schoolData.prepareYear(year);
-        }
+        super.prepareYear(year);
+        schoolData.prepareYear(year);
     }
 
     @Override

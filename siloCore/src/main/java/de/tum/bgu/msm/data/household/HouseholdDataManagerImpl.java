@@ -79,12 +79,12 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     @Override
     public void prepareYear(int year) {
-        adjustIncome();
     }
 
     @Override
     public void endYear(int year) {
         householdMementos.clear();
+        adjustIncome();
     }
 
     @Override

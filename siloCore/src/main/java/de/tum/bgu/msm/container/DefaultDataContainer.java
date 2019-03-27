@@ -86,14 +86,12 @@ public class DefaultDataContainer implements DataContainer {
 
     @Override
     public void prepareYear(int year) {
-        if (year != properties.main.baseYear) {
-            geoData.prepareYear(year);
-            householdDataManager.prepareYear(year);
-            jobDataManager.prepareYear(year);
-            realEstateDataManager.prepareYear(year);
-            travelTimes.prepareYear(year);
-            accessibility.prepareYear(year);
-        }
+        geoData.prepareYear(year);
+        householdDataManager.prepareYear(year);
+        jobDataManager.prepareYear(year);
+        realEstateDataManager.prepareYear(year);
+        travelTimes.prepareYear(year);
+        accessibility.prepareYear(year);
     }
 
     @Override
