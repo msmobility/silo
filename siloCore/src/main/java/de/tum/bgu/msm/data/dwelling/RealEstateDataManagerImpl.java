@@ -183,9 +183,11 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         }
     }
 
+    /**
+     *  Count number of dwellings by quality and calculate average quality
+     */
     private void fillQualityDistribution() {
-        // count number of dwellings by quality and calculate average quality
-        int numberOfQualityLevels = Properties.get().main.qualityLevels;
+        int numberOfQualityLevels = properties.main.qualityLevels;
         dwellingsByQuality = new int[numberOfQualityLevels];
         initialQualityShares = new double[numberOfQualityLevels];
         for (Dwelling dd : getDwellings()) {
