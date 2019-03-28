@@ -51,8 +51,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 	private TravelDisutility travelDisutility;
 	
 	// Counters
-	int nodeNewlyComputedMicro = 0;
-	int requests = 0;
 	int requestsZones = 0;
 	int requestsMicro = 0;
 	int zonesComputed = 0;
@@ -139,12 +137,9 @@ public final class MatsimTravelTimes implements TravelTimes {
 	}
 	
 	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-		requests++;
-		if (requests % 10000 == 0) LOG.info("New travel time request. Number of occurrences: " + requests);
-		
 		if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
 			requestsMicro++;
-			if (requestsMicro % 10000 == 0) LOG.info("New travel time request for microlocations. Number of occurrences: " + requestsMicro);
+			if (requestsMicro % 50000 == 0) LOG.info("New travel time request for microlocations. Number of occurrences: " + requestsMicro);
 			switch (mode) {
 				case TransportMode.car:
 					Coord originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
