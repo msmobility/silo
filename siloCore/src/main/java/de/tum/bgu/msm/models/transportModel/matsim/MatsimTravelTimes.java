@@ -55,8 +55,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 	int requestsMicro = 0;
 	int zonesComputed = 0;
 	int zonesFromCache = 0;
-	
-	final int maxSize = 2000;
     
 	Map<Id<Node>, Integer> nodeMap = new HashMap<>();
 	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
