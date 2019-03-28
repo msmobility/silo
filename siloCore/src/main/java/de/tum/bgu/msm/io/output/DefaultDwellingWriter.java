@@ -20,7 +20,7 @@ public class DefaultDwellingWriter implements DwellingWriter {
     public void writeDwellings(String path) {
         logger.info("  Writing dwelling file to " + path);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(path, false);
-        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt");
         pwd.println();
 
         for (Dwelling dd : dwellingData.getDwellings()) {
@@ -37,6 +37,8 @@ public class DefaultDwellingWriter implements DwellingWriter {
             pwd.print(dd.getQuality());
             pwd.print(",");
             pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getYearBuilt());
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");

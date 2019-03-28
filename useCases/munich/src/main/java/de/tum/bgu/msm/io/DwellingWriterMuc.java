@@ -22,7 +22,7 @@ public class DwellingWriterMuc implements DwellingWriter {
     public void writeDwellings(String path) {
         logger.info("  Writing dwelling file to " + path);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(path, false);
-        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt");
         pwd.print(",");
         pwd.print("floor");
         pwd.print(",");
@@ -48,6 +48,8 @@ public class DwellingWriterMuc implements DwellingWriter {
             pwd.print(dd.getQuality());
             pwd.print(",");
             pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getYearBuilt());
             pwd.print(",");
             pwd.print(dd.getFloorSpace());
             pwd.print(",");
