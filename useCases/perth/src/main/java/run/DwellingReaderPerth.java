@@ -52,8 +52,9 @@ public class DwellingReaderPerth implements DwellingReader {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
+                int yearBuilt = 1990;
 
-                Dwelling dwelling = factory.createDwelling(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(), hhId, type, area, quality, price);
+                Dwelling dwelling = factory.createDwelling(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(), hhId, type, area, quality, price, yearBuilt);
                 realEstate.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

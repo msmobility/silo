@@ -135,10 +135,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             int quality = data[3];
             int price = data[4];
 
-            Dwelling dd = factory.createDwelling(
-                    ddId, zoneId, null, -1,
-                    dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto),
-                    size, quality, price);
+            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
             Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();

@@ -30,6 +30,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     private final int zoneId;
     private final DwellingType type;
     private final int bedrooms;
+    private final int yearBuilt;
     private int hhId;
     private int quality;
     private int price;
@@ -41,7 +42,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
 
     DwellingImpl(int id, int zoneId, Coordinate coordinate,
                  int hhId, DwellingType type, int bedrooms,
-                 int quality, int price) {
+                 int quality, int price, int year) {
         this.id = id;
         this.zoneId = zoneId;
         this.coordinate = coordinate;
@@ -50,6 +51,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         this.bedrooms = bedrooms;
         this.quality = quality;
         this.price = price;
+        this.yearBuilt = year;
     }
 
     @Override
@@ -93,6 +95,11 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     }
 
     @Override
+    public int getYearBuilt() {
+        return yearBuilt;
+    }
+
+    @Override
     public void setResidentID(int residentID) {
         this.hhId = residentID;
     }
@@ -119,7 +126,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         return floorSpace;
     }
 
-    @Override
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
@@ -146,6 +152,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
                 + "\nDwelling type           " + (type.toString())
                 + "\nNumber of bedrooms      " + (bedrooms)
                 + "\nQuality (1 low, 4 high) " + (quality)
-                + "\nMonthly price in US$    " + (price);
+                + "\nMonthly price in US$    " + (price)
+                + "\nYear dwelling was built " + (yearBuilt);
     }
 }

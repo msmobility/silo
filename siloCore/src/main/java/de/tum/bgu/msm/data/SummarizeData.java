@@ -360,7 +360,7 @@ public class SummarizeData {
         String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + ".csv");
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
-        pw.println("id,zone,type,size,occupied");
+        pw.println("id,zone,type,size,yearBuilt,occupied");
         for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
             pw.print(dd.getId());
             pw.print(",");
@@ -369,6 +369,8 @@ public class SummarizeData {
             pw.print(dd.getType());
             pw.print(",");
             pw.print(dd.getBedrooms());
+            pw.print(",");
+            pw.print(dd.getYearBuilt());
             pw.print(",");
             pw.println((dd.getResidentId() == -1));
         }
