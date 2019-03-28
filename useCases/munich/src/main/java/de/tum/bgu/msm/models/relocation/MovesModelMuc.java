@@ -184,7 +184,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
     @Override
     public int searchForNewDwelling(Household household) {
     	requestsDwellingSearch++;
-		if (requestsDwellingSearch % 10000 == 0) logger.info("New search for dwelling. Number of occurrences: " + requestsDwellingSearch);
+		if (requestsDwellingSearch % 5000 == 0) logger.info("Number of searches for dwelling so far: " + requestsDwellingSearch);
         // search alternative dwellings
 
         // data preparation

@@ -25,7 +25,7 @@ import org.matsim.utils.leastcostpathtree.LeastCostPathTree.NodeData;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import cern.colt.map.tdouble.OpenIntDoubleHashMap;
+import cern.colt.map.tint.OpenIntIntHashMap;
 import cern.colt.map.tobject.OpenIntObjectHashMap;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
@@ -51,13 +51,12 @@ public final class MatsimTravelTimes implements TravelTimes {
 	private TravelDisutility travelDisutility;
 	
 	// Counters
-	int requestsZones = 0;
 	int requestsMicro = 0;
 	int zonesComputed = 0;
 	int zonesFromCache = 0;
     
 	Map<Id<Node>, Integer> nodeMap = new HashMap<>();
-	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
+	private final Table<Integer, Region, Double> travelTimeToRegion = HashBasedTable.create();
 
 	void update(TravelTime travelTime, TravelDisutility disutility) {
 		
@@ -100,27 +99,27 @@ public final class MatsimTravelTimes implements TravelTimes {
     }
 
 	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
-		LOG.info("Getting zone to zone travel time.");
+//		LOG.info("Getting zone to zone travel time.");
 		switch (mode) {
 			case TransportMode.car:
 				double sumTravelTime_min = 0.;
 				for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
-					OpenIntDoubleHashMap nodeTree;
+					OpenIntIntHashMap nodeTree;
 					int originNodeInt = nodeMap.get(originNode.getId());
 					if (treesForNodes.containsKey(originNodeInt)) {  // Node already checked
 						zonesFromCache++;
-						if (zonesFromCache % 100 == 0) LOG.info("Getting zone from cache. Number of occurrences: " + zonesFromCache);
-						nodeTree = (OpenIntDoubleHashMap) treesForNodes.get(originNodeInt);
+						if (zonesFromCache % 100000 == 0) LOG.info("Getting zone-to-zone travel time from cache. Number of occurrences: " + zonesFromCache);
+						nodeTree = (OpenIntIntHashMap) treesForNodes.get(originNodeInt);
 					} else {
 						zonesComputed++;
-						if (zonesComputed % 100 == 0) LOG.info("Computing new zone. Number of occurrences: " + zonesComputed);
+						if (zonesComputed % 100 == 0) LOG.info("Computing new zone-to-zone travel time. Number of occurrences: " + zonesComputed);
 						leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
 						nodeTree = createOnlyTimeTree(leastCoastPathTree.getTree());
 						treesForNodes.put(originNodeInt, nodeTree);
 					}
 	
 					for (Node destinationNode : zoneCalculationNodesMap.get(destination)) { // Several points in a given destination zone
-						double arrivalTime_s = nodeTree.get(nodeMap.get(destinationNode.getId()));
+						int arrivalTime_s = nodeTree.get(nodeMap.get(destinationNode.getId()));
 						sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
 					}
 				}
@@ -162,8 +161,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 		}
 		else if (origin instanceof Zone) { // Non-microlocations case
 			if (destination instanceof Zone) {
-				requestsZones++;
-				if (requestsZones % 10000 == 0) LOG.info("New travel time request for zones. Number of occurrences: " + requestsZones);
 				return getZoneToZoneTravelTime((Zone) origin, (Zone) destination, timeOfDay_s, mode);
 			} else if (destination instanceof Region) {
 				LOG.warn("Here region...");
@@ -195,14 +192,29 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 	@Override
 	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (origin instanceof Zone) {
+		int originZone = origin.getZoneId();
+		if (travelTimeToRegion.contains(originZone, destination)) {
+			return travelTimeToRegion.get(originZone, destination);
+		}
+		double min = Double.MAX_VALUE;
+		for (Zone zoneInRegion : destination.getZones()) {
+			double travelTime = getTravelTime(origin, zoneInRegion, timeOfDay_s, mode);
+			if (travelTime < min) {
+				min = travelTime;
+			}
+		}
+		travelTimeToRegion.put(originZone, destination, min);
+		return min;
+		} else {
+			throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
+		}
 	}
 	
-	private OpenIntDoubleHashMap createOnlyTimeTree(Map<Id<Node>, NodeData> tree) {
-		OpenIntDoubleHashMap onlyTimeTree = new OpenIntDoubleHashMap();
+	private OpenIntIntHashMap createOnlyTimeTree(Map<Id<Node>, NodeData> tree) {
+		OpenIntIntHashMap onlyTimeTree = new OpenIntIntHashMap();
 		for (Id<Node> nodeId : tree.keySet()) {
-			onlyTimeTree.put(nodeMap.get(nodeId), tree.get(nodeId).getTime());
+			onlyTimeTree.put(nodeMap.get(nodeId), (int) tree.get(nodeId).getTime());
 		}
 		return onlyTimeTree;
 	}

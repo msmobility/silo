@@ -20,7 +20,6 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
