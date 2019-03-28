@@ -13,7 +13,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.router.FastDijkstraFactory;
+import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.router.util.TravelDisutility;
@@ -69,7 +69,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 		this.leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
 
 		// For location-based route computation (very fast, but no caching)
-        this.lcpCalculator = new FastDijkstraFactory().createPathCalculator(network, disutility, travelTime);
+//        this.lcpCalculator = new FastDijkstraFactory().createPathCalculator(network, disutility, travelTime);
+        this.lcpCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
         
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
@@ -155,6 +156,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 					// TODO Check if this way of selecting a node is good
 					Node destinationNode = NetworkUtils.getNearestLink(network, destinationCoord).getToNode();
 					Path path = lcpCalculator.calcLeastCostPath(originNode, destinationNode, timeOfDay_s, null, null);
+					// TODO Use travel costs?
+					// path.travelCost;
 					return path.travelTime;
 				case TransportMode.pt:
 					//TODO: reconsider matsim pt travel times. nk apr'18

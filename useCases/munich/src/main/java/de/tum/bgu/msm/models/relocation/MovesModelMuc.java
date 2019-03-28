@@ -311,6 +311,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
         for (JobMuc workLocation : jobsForThisHousehold.values()){
+        	// TODO Think about how to apply this for other modes as well
             int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
 			double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
             workDistanceUtility *= factorForThisZone;
