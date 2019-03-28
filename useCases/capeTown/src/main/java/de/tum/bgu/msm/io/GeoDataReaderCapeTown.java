@@ -16,7 +16,7 @@ public class GeoDataReaderCapeTown implements GeoDataReader {
 
     private final GeoData geoData;
 
-    private final String SHAPE_IDENTIFIER = "id";
+    private final String SHAPE_IDENTIFIER = "ID_cell";
     private final String ZONE_ID_COLUMN = "Zone";
 
     private final static Logger logger = Logger.getLogger(GeoDataReaderCapeTown.class);
@@ -30,12 +30,6 @@ public class GeoDataReaderCapeTown implements GeoDataReader {
         TableDataSet zonalData = SiloUtil.readCSVfile(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         float[] zoneAreas = zonalData.getColumnAsFloat("Area");
-
-        double[] centroidX = zonalData.getColumnAsDouble("centroidX");
-        double[] centroidY = zonalData.getColumnAsDouble("centroidY");
-        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
-
-        int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
         int[] regionColumn = zonalData.getColumnAsInt("Region");
 

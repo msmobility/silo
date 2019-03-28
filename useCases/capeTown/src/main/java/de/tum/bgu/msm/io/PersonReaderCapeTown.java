@@ -57,7 +57,7 @@ public class PersonReaderCapeTown implements PersonReader {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace = Integer.parseInt(lineElements[posWorkplace]);
                 int income = Integer.parseInt(lineElements[posIncome]);
-                String strRace = lineElements[posRace].replace("\"", "");
+                String strRace = lineElements[posRace].replace("\"", "").toUpperCase();
                 RaceCapeTown race = RaceCapeTown.valueOf(strRace);
 
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);

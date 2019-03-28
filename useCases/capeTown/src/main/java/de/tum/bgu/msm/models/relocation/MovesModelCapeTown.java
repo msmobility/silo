@@ -46,6 +46,13 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
     }
 
     @Override
+    public void setup() {
+        ppByRegion = new IndexedDoubleMatrix1D(geoData.getRegions().values());
+        ppByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        super.setup();
+    }
+
+    @Override
     protected double calculateHousingUtility(Household hh, Dwelling dd) {
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
@@ -125,7 +132,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
                 RaceCapeTown race = ((PersonCapeTown) person).getRace();
 
                 personShareByRaceByRegion.get(region).merge(race, 1., (oldValue, newValue) -> oldValue + newValue);
-                personShareByRaceByZone.get(region).merge(race, 1., (oldValue, newValue) -> oldValue + newValue);
+                personShareByRaceByZone.get(zone).merge(race, 1., (oldValue, newValue) -> oldValue + newValue);
 
                 ppByZone.setIndexed(zone, ppByZone.getIndexed(zone) + 1);
                 ppByRegion.setIndexed(region, ppByRegion.getIndexed(region) + 1);

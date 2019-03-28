@@ -9,9 +9,9 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
-public class SiloCapeTown {
+public class SiloCT {
 
-    private final static Logger logger = Logger.getLogger(SiloCapeTown.class);
+    private final static Logger logger = Logger.getLogger(SiloCT.class);
 
     public static void main(String[] args) {
 
