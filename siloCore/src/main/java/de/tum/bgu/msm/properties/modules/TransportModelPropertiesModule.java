@@ -39,11 +39,6 @@ public class TransportModelPropertiesModule {
      */
     public final double matsimScaleFactor;
 
-    /**
-     * Share of people working at peak times (only peak traffic is simulated) by car
-     */
-    public final double matsimWorkersShare;
-
     public enum TransportModelIdentifier {
         MITO, MATSIM, NONE;
     }
@@ -63,7 +58,6 @@ public class TransportModelPropertiesModule {
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
         matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
-        matsimWorkersShare = PropertiesUtil.getDoubleProperty(bundle, "matsim.workers.share", .66);
     }
 
 }
