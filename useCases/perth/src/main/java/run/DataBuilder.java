@@ -33,7 +33,7 @@ public final class DataBuilder {
 
     public static DataContainer buildDataContainer(Properties properties) {
 
-        DefaultGeoData geoData = new DefaultGeoData(properties);
+        DefaultGeoData geoData = new DefaultGeoData();
 
         List<DwellingType> dwellingTypeList = new ArrayList<>();
         Collections.addAll(dwellingTypeList, DwellingTypePerth.values());

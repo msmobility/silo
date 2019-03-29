@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.data.geo;
 
-import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
@@ -18,8 +17,8 @@ public class GeoDataMstm extends DefaultGeoData {
 
     private final Map<Integer, County> counties = new HashMap<>();
 
-    public GeoDataMstm(Properties properties) {
-        super(properties);
+    public GeoDataMstm() {
+        super();
     }
 
     public void addCounty(County county) {

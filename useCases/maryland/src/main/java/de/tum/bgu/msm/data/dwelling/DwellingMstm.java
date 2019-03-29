@@ -115,4 +115,9 @@ public class DwellingMstm implements Dwelling {
     public float getRestriction() {
         return restriction;
     }
+
+    @Override
+    public Coordinate getCoordinate() {
+        return delegate.getCoordinate();
+    }
 }

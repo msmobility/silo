@@ -37,7 +37,7 @@ public class DataBuilder {
         JobData jobData = new JobDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
 
-        GeoData geoData = new DefaultGeoData(properties);
+        GeoData geoData = new DefaultGeoData();
 
 
         TravelTimes travelTimes;

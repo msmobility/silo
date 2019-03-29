@@ -38,7 +38,7 @@ public final class DataBuilder {
 
     public static DataContainer buildDataContainer(Properties properties) {
 
-        GeoDataMstm geoData = new GeoDataMstm(properties);
+        GeoDataMstm geoData = new GeoDataMstm();
 
         List<DwellingType> dwellingTypeList = new ArrayList<>();
         Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
