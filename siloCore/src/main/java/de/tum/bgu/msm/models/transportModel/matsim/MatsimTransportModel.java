@@ -35,8 +35,6 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
-import org.matsim.contrib.accessibility.AccessibilityConfigGroup.AccessibilityMeasureType;
-import org.matsim.contrib.accessibility.AccessibilityConfigGroup.AreaOfAccesssibilityComputation;
 import org.matsim.contrib.accessibility.AccessibilityModule;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.internal.MatsimWriter;
@@ -161,62 +159,64 @@ public final class MatsimTransportModel implements TransportModel {
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
 
-		// Opportunities
-		Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
-		Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
-		for (int zoneId : populationMap.keySet()) {
-			zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
-		}
-		final ActivityFacilities opportunities = scenario.getActivityFacilities();
-		int i = 0;
-		for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
-			activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
-			opportunities.addActivityFacility(activityFacility);
-			i++;
-		}
-		LOG.warn(i + " facilities added as opportunities.");
-
-		SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
-
-		scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
-		// End opportunities
-
-		// Accessibility settings
-		AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
-		acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
-		//
-		Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
-		Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
-		for (Zone zone : dataContainer.getGeoData().getZones().values()) {
-			zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
-		}
-		
-		for (Integer zoneId : zoneFeatureMap.keySet()) {
-			SimpleFeature feature = zoneFeatureMap.get(zoneId);
-			Geometry geometry = (Geometry) feature.getDefaultGeometry();
-			measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
-		}
-		acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
-		acg.setMeasurePointGeometryMap(measurePointGeometryMap);
-
-		acg.setTileSize_m(1000); // TODO This is only a dummy value here
-		//
-		acg.setAreaOfAccessibilityComputation(AreaOfAccesssibilityComputation.fromFacilitiesObject);
-		acg.setUseOpportunityWeights(true);
-		acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
-		LOG.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
-		acg.setAccessibilityMeasureType(AccessibilityMeasureType.rawSum);
-		// End accessibility settings
-
 		ConfigUtils.setVspDefaults(config);
-
 		final Controler controler = new Controler(scenario);
-		
-		// Accessibility module
-		AccessibilityModule module = new AccessibilityModule();
-		module.addFacilityDataExchangeListener(accessibility);
-		controler.addOverridingModule(module);
-		// End accessibility module
+
+		if(accessibility != null) {
+
+			// Opportunities
+			Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
+			Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
+			for (int zoneId : populationMap.keySet()) {
+				zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
+			}
+			final ActivityFacilities opportunities = scenario.getActivityFacilities();
+			int i = 0;
+			for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
+				activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
+				opportunities.addActivityFacility(activityFacility);
+				i++;
+			}
+			LOG.warn(i + " facilities added as opportunities.");
+
+			SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
+
+			scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
+			// End opportunities
+
+			// Accessibility settings
+			AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
+			acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
+			//
+			Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
+			Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
+			for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+				zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
+			}
+
+			for (Integer zoneId : zoneFeatureMap.keySet()) {
+				SimpleFeature feature = zoneFeatureMap.get(zoneId);
+				Geometry geometry = (Geometry) feature.getDefaultGeometry();
+				measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
+			}
+			acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
+			acg.setMeasurePointGeometryMap(measurePointGeometryMap);
+
+			acg.setTileSize_m(1000); // TODO This is only a dummy value here
+			//
+			acg.setAreaOfAccessibilityComputation(AccessibilityConfigGroup.AreaOfAccesssibilityComputation.fromFacilitiesObject);
+			acg.setUseOpportunityWeights(true);
+			acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
+			LOG.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
+			acg.setAccessibilityMeasureType(AccessibilityConfigGroup.AccessibilityMeasureType.rawSum);
+			// End accessibility settings
+			// Accessibility module
+
+			AccessibilityModule module = new AccessibilityModule();
+			module.addFacilityDataExchangeListener(accessibility);
+			controler.addOverridingModule(module);
+			// End accessibility module
+		}
 
 		controler.run();
 		LOG.warn("Running MATSim transport model for year " + year + " finished.");

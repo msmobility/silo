@@ -3,7 +3,6 @@ package de.tum.bgu.msm.data.geo;
 
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
@@ -16,11 +15,6 @@ public class DefaultGeoData implements GeoData {
 
     private final Map<Integer, Zone> zones = new LinkedHashMap<>();
     private final Map<Integer, Region> regions = new LinkedHashMap<>();
-    protected final Properties properties;
-
-    public DefaultGeoData(Properties properties) {
-        this.properties = properties;
-    }
 
     @Override
     public Map<Integer, Zone> getZones() {

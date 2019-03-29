@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
-public interface Dwelling extends Location, Id {
+public interface Dwelling extends MicroLocation, Id {
 
     int getQuality();
 

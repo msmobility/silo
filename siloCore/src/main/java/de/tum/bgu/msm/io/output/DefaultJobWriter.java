@@ -17,7 +17,7 @@ public class DefaultJobWriter implements JobWriter {
     @Override
     public void writeJobs(String path) {
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(path, false);
-        pwj.print("id,zone,personId,type");
+        pwj.print("id,zone,personId,type,coordX,coordY");
         pwj.println();
         for (Job jj : jobDataManager.getJobs()) {
             pwj.print(jj.getId());
@@ -28,6 +28,14 @@ public class DefaultJobWriter implements JobWriter {
             pwj.print(",\"");
             pwj.print(jj.getType());
             pwj.print("\"");
+            pwj.print(",");
+            if(jj.getCoordinate() != null) {
+                pwj.print(jj.getCoordinate().x);
+                pwj.print(",");
+                pwj.print(jj.getCoordinate().y);
+            } else {
+                pwj.print("NULL,NULL");
+            }
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");

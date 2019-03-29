@@ -144,7 +144,8 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
 
                     int ddId = realEstate.getNextDwellingId();
-                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, null, -1,
+                    Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate();
+                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, coordinate, -1,
                             dt, size, quality, price, year);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));
@@ -161,9 +162,6 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
-
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
-        dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);
 

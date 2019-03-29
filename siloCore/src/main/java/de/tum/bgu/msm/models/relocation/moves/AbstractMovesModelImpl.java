@@ -69,14 +69,14 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         calculateAverageHousingUtility();
     }
 
-     @Override
-     public List<MoveEvent> getEventsForCurrentYear(int year) {
-         final List<MoveEvent> events = new ArrayList<>();
-         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-             events.add(new MoveEvent(hh.getId()));
-         }
-         return events;
-     }
+    @Override
+    public List<MoveEvent> getEventsForCurrentYear(int year) {
+        final List<MoveEvent> events = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
+            events.add(new MoveEvent(hh.getId()));
+        }
+        return events;
+    }
 
     @Override
     public void endYear(int year) {
@@ -181,10 +181,10 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         final double prop = strategy.getMovingProbability(avgSatisfaction, currentUtil);
         return SiloUtil.getRandomNumberAsDouble() <= prop;
     }
-    
-    
+
+
     private void calculateAverageHousingUtility() {
-    	logger.info("Evaluate average housing utility.");
+        logger.info("Evaluate average housing utility.");
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         logger.info("Number of households = " + householdDataManager.getHouseholds().size());
 
@@ -199,26 +199,24 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
 
         for (final List<Household> partition : partitions) {
-        	logger.info("Size of partititon = " + partition.size());
+            logger.info("Size of partititon = " + partition.size());
             executor.addTaskToQueue(() -> {
                 TravelTimes travelTimes = null;
                 if (dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
                     travelTimes = dataContainer.getTravelTimes();
-                } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes){
+                } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes) {
                     travelTimes = ((MatsimTravelTimes) dataContainer.getTravelTimes()).duplicate();
                 }
-                try {
-		            for (Household hh : partition) {
-			            final HouseholdType householdType = hh.getHouseholdType();
-			            hhByType.add(householdType);
-			            Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-			            final double util = calculateHousingUtility(hh, dd, travelTimes);
-			            satisfactionByHousehold.put(hh.getId(), util);
-			            averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
-		            }
-                } catch (Exception e) {
-                	e.printStackTrace();
+                for (Household hh : partition) {
+//                for (Household hh : householdData.getHouseholds()) {
+                    final HouseholdType householdType = hh.getHouseholdType();
+                    hhByType.add(householdType);
+                    Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+                    final double util = calculateHousingUtility(hh, dd, travelTimes);
+                    satisfactionByHousehold.put(hh.getId(), util);
+                    averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                 }
+                logger.warn("Finished thread");
                 return null;
             });
         }

@@ -23,7 +23,6 @@ import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -345,18 +344,18 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
             for (Region reg : regions) {
                 int numberOfVacantJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfVacantJobs > 0) {
-                    int distance = (int) (travelTimes.getTravelTimeToRegion(homeZone, reg,
-                    		properties.transportModel.peakHour_s, TransportMode.car) + 0.5);
-                    regionProb.put(reg, commutingTimeProbability.getCommutingTimeProbability(distance) * (double) numberOfVacantJobs);
+                    int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
+                    		properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
+                    regionProb.put(reg, commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min)) * (double) numberOfVacantJobs);
                 }
             }
             if (SiloUtil.getSum(regionProb.values()) == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (getNumberOfVacantJobsByRegion(reg.getId()) > 0) {
-                    	int distance = (int) (travelTimes.getTravelTimeToRegion(homeZone, reg,
-                                properties.transportModel.peakHour_s, TransportMode.car) + 0.5);
-                    	regionProb.put(reg, 1. / distance);
+                    	int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
+                                properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
+                    	regionProb.put(reg, 1. / Math.max(1, travelTime_min));
                     }
                 }
             }
