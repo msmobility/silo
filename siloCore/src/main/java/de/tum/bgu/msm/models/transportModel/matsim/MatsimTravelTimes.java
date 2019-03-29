@@ -10,15 +10,26 @@ import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.NetworkRoutingModule;
+import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculator.Path;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.facilities.ActivityFacilitiesFactory;
+import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
+import org.matsim.facilities.ActivityFacility;
+import org.matsim.facilities.ActivityOption;
+import org.matsim.facilities.Facility;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
 import org.matsim.utils.leastcostpathtree.LeastCostPathTree.NodeData;
 
@@ -38,17 +49,21 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
  */
 public final class MatsimTravelTimes implements TravelTimes {
 	private final static Logger LOG = Logger.getLogger(MatsimTravelTimes.class);
-
-	private LeastCostPathTree leastCoastPathTree;
-	private LeastCostPathCalculator lcpCalculator;
-	private Network network;
-	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
+	
 	private final static int NUMBER_OF_CALC_POINTS = 1;
-	private final OpenIntObjectHashMap treesForNodes = new OpenIntObjectHashMap();
+	private Network network;
 	Map<Integer, Zone> zones;
+//	private ActivityFacilitiesFactory aff;
 	
 	private TravelTime travelTime;
 	private TravelDisutility travelDisutility;
+
+	private LeastCostPathTree leastCoastPathTree;
+	private LeastCostPathCalculator lcpCalculator;
+//	private TripRouter tripRouter;
+	
+	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
+	private final OpenIntObjectHashMap treesForNodes = new OpenIntObjectHashMap();
 	
 	// Counters
 	int requestsMicro = 0;
@@ -57,15 +72,30 @@ public final class MatsimTravelTimes implements TravelTimes {
     
 	Map<Id<Node>, Integer> nodeMap = new HashMap<>();
 	private final Table<Integer, Region, Double> travelTimeToRegion = HashBasedTable.create();
+	
+	public void initialize(Map<Integer, Zone> zones, Network network) {
+		this.network = network;
+		this.zones = zones;
+//		this.aff = new ActivityFacilitiesFactoryImpl();
+		
+		buildNodeMap();
+		buildZoneCalculationNodesMap();
+    }	
 
 	void update(TravelTime travelTime, TravelDisutility disutility) {
-		
 		// For zone-based route computation (not so fast, but allows caching)
 		this.leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
 
 		// For location-based route computation (very fast, but no caching)
-//        this.lcpCalculator = new FastDijkstraFactory().createPathCalculator(network, disutility, travelTime);
-        this.lcpCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
+//      this.lcpCalculator = new FastDijkstraFactory().createPathCalculator(network, disutility, travelTime);
+		this.lcpCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
+//		LeastCostPathCalculator lcpCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
+        //
+//	    TripRouter.Builder bd = new TripRouter.Builder( ConfigUtils.createConfig() );
+//	    RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), network, lcpCalculator);
+//	    bd.setRoutingModule(TransportMode.car, carRoutingModule);
+//	    tripRouter = bd.build();
+        //
         
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
@@ -73,33 +103,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 		this.treesForNodes.clear();
 	}
 
-	public void initialize(Map<Integer, Zone> zones, Network network) {
-		this.network = network;
-		this.zones = zones;
-		
-		int j = 0;
-		for (Id<Node> nodeId : network.getNodes().keySet()) {
-			nodeMap.put(nodeId, j);
-			j++;
-		}
-		
-		for (Zone zone : zones.values()) {
-            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-            	Coordinate coordinate = zone.getRandomCoordinate(); // TODO Check if random coordinate is the best representative
-				Coord originCoord = new Coord(coordinate.x, coordinate.y);
-                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
-
-				if (!zoneCalculationNodesMap.containsKey(zone)) {
-					zoneCalculationNodesMap.put(zone, new LinkedList<>());
-				}
-				zoneCalculationNodesMap.get(zone).add(originNode);
-			}
-		}
-        LOG.warn("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
-    }
-
 	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
-//		LOG.info("Getting zone to zone travel time.");
 		switch (mode) {
 			case TransportMode.car:
 				double sumTravelTime_min = 0.;
@@ -125,8 +129,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 				}
 				return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
 			case TransportMode.pt:
-				//TODO: reconsider matsim pt travel times. nk apr'18
-//	            return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
 				throw new IllegalArgumentException("Not implemented for PT yet..");
 			default:
 	        	throw new IllegalArgumentException("Other modes not implemented yet..");
@@ -142,15 +144,20 @@ public final class MatsimTravelTimes implements TravelTimes {
 					Coord originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
 					Coord destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
 					
-					// TODO Check if this way of selecting a node is good
+//					// TODO Check if this way of selecting a node is good
 					Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 					
-					// TODO Check if this way of selecting a node is good
+//					// TODO Check if this way of selecting a node is good
 					Node destinationNode = NetworkUtils.getNearestLink(network, destinationCoord).getToNode();
+//					
 					Path path = lcpCalculator.calcLeastCostPath(originNode, destinationNode, timeOfDay_s, null, null);
-					// TODO Use travel costs?
+//					// TODO Use travel costs?
 					// path.travelCost;
 					return path.travelTime;
+					
+//					Facility fromFacility = aff.createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
+//					Facility toFacility = aff.createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
+//					tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
 				case TransportMode.pt:
 					//TODO: reconsider matsim pt travel times. nk apr'18
 		            throw new IllegalArgumentException("Not implemented for PT yet..");
@@ -182,6 +189,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 			throw new IllegalArgumentException("The combination with origin of type " + origin.getClass().getName() 
 					+ " and destination of type " + destination.getClass().getName() + " is not valid.");
 		}
+		System.out.println("The combination with origin of type " + origin.getClass().getName() 
+				+ " and destination of type " + destination.getClass().getName() + " is not valid.");
 		throw new RuntimeException("Should not arrive here.");
 	}
 
@@ -211,19 +220,44 @@ public final class MatsimTravelTimes implements TravelTimes {
 		}
 	}
 	
-	private OpenIntIntHashMap createOnlyTimeTree(Map<Id<Node>, NodeData> tree) {
-		OpenIntIntHashMap onlyTimeTree = new OpenIntIntHashMap();
-		for (Id<Node> nodeId : tree.keySet()) {
-			onlyTimeTree.put(nodeMap.get(nodeId), (int) tree.get(nodeId).getTime());
-		}
-		return onlyTimeTree;
-	}
-
 	public TravelTimes duplicate() {
 		LOG.warn("Creating another TravelTimes object.");
 		MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
 		matsimTravelTimes.initialize(zones, network);
 		matsimTravelTimes.update(travelTime, travelDisutility);
 		return matsimTravelTimes;
+	}
+	
+	// Private methods
+	private void buildNodeMap() {
+		int j = 0;
+		for (Id<Node> nodeId : network.getNodes().keySet()) {
+			nodeMap.put(nodeId, j);
+			j++;
+		}
+	}
+	
+	private void buildZoneCalculationNodesMap() {
+		for (Zone zone : zones.values()) {
+            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
+            	Coordinate coordinate = zone.getRandomCoordinate(); // TODO Check if random coordinate is the best representative
+				Coord originCoord = new Coord(coordinate.x, coordinate.y);
+                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
+
+				if (!zoneCalculationNodesMap.containsKey(zone)) {
+					zoneCalculationNodesMap.put(zone, new LinkedList<>());
+				}
+				zoneCalculationNodesMap.get(zone).add(originNode);
+			}
+		}
+        LOG.warn("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
+	}
+	
+	private OpenIntIntHashMap createOnlyTimeTree(Map<Id<Node>, NodeData> tree) {
+		OpenIntIntHashMap onlyTimeTree = new OpenIntIntHashMap();
+		for (Id<Node> nodeId : tree.keySet()) {
+			onlyTimeTree.put(nodeMap.get(nodeId), (int) tree.get(nodeId).getTime());
+		}
+		return onlyTimeTree;
 	}
 }
