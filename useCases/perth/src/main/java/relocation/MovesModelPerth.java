@@ -132,7 +132,7 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                     final double value = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
-                            null, priceUtil, regAcc, 0);
+                             priceUtil, regAcc, 0);
                     utilityByRegion.put(region.getId(),
                             value);
                 }

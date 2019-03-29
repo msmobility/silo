@@ -12,6 +12,7 @@ import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonCapeTown;
 import de.tum.bgu.msm.data.person.RaceCapeTown;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
@@ -53,7 +54,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
     }
 
     @Override
-    protected double calculateHousingUtility(Household hh, Dwelling dd) {
+    protected double calculateHousingUtility(Household hh, Dwelling dd, TravelTimes travelTimes) {
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
         Zone zone = geoData.getZones().get(dd.getZoneId());
@@ -240,7 +241,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd);
+            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
             expProbs[i] = ddProbabilityStrategy.calculateSelectDwellingProbability(util);
             sumProbs =+ expProbs[i];
         }
