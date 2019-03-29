@@ -4,6 +4,8 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -38,13 +40,16 @@ public class DataBuilderCapeTown {
         GeoData geoData = new DefaultGeoData(properties);
 
         TravelTimes travelTimes;
+        Accessibility accessibility;
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
+            accessibility = new MatsimAccessibility(geoData);
         } else {
             travelTimes = new SkimTravelTimes();
+            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
         }
 
-        Accessibility accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -58,7 +63,7 @@ public class DataBuilderCapeTown {
                 dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, jobFactory, jobData, geoData, travelTimes, accessibility);
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
 
         HouseholdFactory hhFactory = new HouseholdFactoryCapeTown();
         PersonFactory ppFactory = new PersonFactoryCapeTown();
@@ -69,7 +74,8 @@ public class DataBuilderCapeTown {
         //for the time being not required
 //        SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
-        return new DefaultDataContainer(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility, properties);
+        return new DefaultDataContainer(geoData, realEstateDataManager, jobDataManager,
+                householdDataManager, travelTimes, accessibility, commutingTimeProbability, properties);
     }
 
     static public void read(Properties properties, DataContainer dataContainer){

@@ -36,6 +36,7 @@ public class DefaultDwellingReader implements DwellingReader {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
+            int posYear    = SiloUtil.findPositionInArray("yearBuilt", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -49,6 +50,7 @@ public class DefaultDwellingReader implements DwellingReader {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
+                int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
                 Dwelling dwelling = factory.createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);
                 realEstate.addDwelling(dwelling);

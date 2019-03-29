@@ -35,10 +35,9 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
-import org.matsim.contrib.accessibility.AccessibilityModule;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup.AccessibilityMeasureType;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup.AreaOfAccesssibilityComputation;
-import org.matsim.contrib.accessibility.AccessibilityConfigGroup.MeasurePointGeometryProvision;
+import org.matsim.contrib.accessibility.AccessibilityModule;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
@@ -58,12 +57,7 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.facilities.ActivityFacilities;
-import org.matsim.facilities.ActivityFacilitiesFactory;
-import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
-import org.matsim.facilities.ActivityFacility;
-import org.matsim.facilities.FacilitiesUtils;
-import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+import org.matsim.facilities.*;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
@@ -202,7 +196,7 @@ public final class MatsimTransportModel implements TransportModel {
 			Geometry geometry = (Geometry) feature.getDefaultGeometry();
 			measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
 		}
-		acg.setMeasurePointGeometryProvision(MeasurePointGeometryProvision.fromShapeFile);
+		acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
 		acg.setMeasurePointGeometryMap(measurePointGeometryMap);
 
 		acg.setTileSize_m(1000); // TODO This is only a dummy value here

@@ -56,8 +56,9 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
     protected double calculateHousingUtility(Household hh, Dwelling dd) {
         double ddQualityUtility = convertQualityToUtility(dd.getQuality());
         double ddSizeUtility = convertAreaToUtility(dd.getBedrooms());
-        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(dd.getZoneId()));
-        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(dd.getZoneId()));
+        Zone zone = geoData.getZones().get(dd.getZoneId());
+        double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(zone));
+        double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(zone));
         HouseholdType ht = hh.getHouseholdType();
         double ddPriceUtility = convertPriceToUtility(dd.getPrice(), ht);
 
@@ -76,7 +77,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
         for (Job workLocation : jobsForThisHousehold.values()) {
-            double factorForThisZone = accessibility.getCommutingTimeProbability(Math.max(1, (int) dataContainer.getTravelTimes().getTravelTime(
+            double factorForThisZone = dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(Math.max(1, (int) dataContainer.getTravelTimes().getTravelTime(
                     dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car)));
             workDistanceUtility *= factorForThisZone;
         }
@@ -97,7 +98,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
                 Map<Integer, Double> utilityByRegion = new HashMap<>();
                 for (Region region : geoData.getRegions().values()) {
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
-                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region.getId()));
+                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                     utilityByRegion.put(region.getId(),
                             regionStrategy.calculateSelectRegionProbability(incomeCategory,
@@ -259,7 +260,7 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
                             workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                    thisRegionFactor = thisRegionFactor * accessibility.getCommutingTimeProbability(timeFromZoneToRegion);
+                    thisRegionFactor = thisRegionFactor * dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
             utilitiesForThisHousehold.put(region.getId(),utilitiesForThisHousehold.get(region.getId())*thisRegionFactor);
