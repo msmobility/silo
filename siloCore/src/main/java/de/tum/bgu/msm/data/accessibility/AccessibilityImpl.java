@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.data.accessibility;
 
 import cern.jet.math.tdouble.DoubleFunctions;
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
@@ -12,8 +11,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -87,12 +84,12 @@ public class AccessibilityImpl implements Accessibility {
 
         logger.info("  Calculating zone zone accessibilities: auto");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixCar =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, geoData.getZones().values());
+                travelTimes.getPeakSkim(TransportMode.car);
         final IndexedDoubleMatrix2D autoAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         logger.info("  Calculating zone zone accessibilities: transit");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixTransit =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, geoData.getZones().values());
+                travelTimes.getPeakSkim(TransportMode.pt);
         final IndexedDoubleMatrix2D transitAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population,
                         peakTravelTimeMatrixTransit, alphaTransit, betaTransit);

@@ -201,20 +201,24 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         for (final List<Household> partition : partitions) {
             logger.info("Size of partititon = " + partition.size());
             executor.addTaskToQueue(() -> {
-                TravelTimes travelTimes = null;
-                if (dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
-                    travelTimes = dataContainer.getTravelTimes();
-                } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes) {
-                    travelTimes = ((MatsimTravelTimes) dataContainer.getTravelTimes()).duplicate();
-                }
-                for (Household hh : partition) {
-//                for (Household hh : householdData.getHouseholds()) {
-                    final HouseholdType householdType = hh.getHouseholdType();
-                    hhByType.add(householdType);
-                    Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-                    final double util = calculateHousingUtility(hh, dd, travelTimes);
-                    satisfactionByHousehold.put(hh.getId(), util);
-                    averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+                try {
+                    TravelTimes travelTimes = null;
+                    if (dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
+                        travelTimes = dataContainer.getTravelTimes();
+                    } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes) {
+                        travelTimes = ((MatsimTravelTimes) dataContainer.getTravelTimes()).duplicate();
+                    }
+                    for (Household hh : partition) {
+    //                for (Household hh : householdData.getHouseholds()) {
+                        final HouseholdType householdType = hh.getHouseholdType();
+                        hhByType.add(householdType);
+                        Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+                        final double util = calculateHousingUtility(hh, dd, travelTimes);
+                        satisfactionByHousehold.put(hh.getId(), util);
+                        averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 logger.warn("Finished thread");
                 return null;
