@@ -85,10 +85,6 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
         return delegate.getCurrentQualShares();
     }
 
-    @Override
-    public int getNumberOfDDinRegion(int region) {
-        return delegate.getNumberOfDDinRegion(region);
-    }
 
     @Override
     public int[] getListOfVacantDwellingsInRegion(int region) {
@@ -97,7 +93,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
 
     @Override
     public int getNumberOfVacantDDinRegion(int region) {
-        return delegate.getNumberOfDDinRegion(region);
+        return delegate.getNumberOfVacantDDinRegion(region);
     }
 
     @Override

@@ -146,7 +146,8 @@ public class SummarizeData {
         }
 
 
-        for (int taz : dataContainer.getGeoData().getZones().keySet()) {
+        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+        	int taz = zone.getId();
             float avePrice = -1;
             int ddThisZone = 0;
             for (DwellingType dt : dwellingTypes) {
@@ -155,8 +156,8 @@ public class SummarizeData {
             if (ddThisZone > 0) {
                 avePrice = ((float) prices[taz]) / ddThisZone;
             }
-            double autoAcc = dataContainer.getAccessibility().getAutoAccessibilityForZone(taz);
-            double transitAcc = dataContainer.getAccessibility().getTransitAccessibilityForZone(taz);
+            double autoAcc = dataContainer.getAccessibility().getAutoAccessibilityForZone(zone);
+            double transitAcc = dataContainer.getAccessibility().getTransitAccessibilityForZone(zone);
             double availLand = dataContainer.getRealEstateDataManager().getAvailableCapacityForConstruction(taz);
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
@@ -359,7 +360,7 @@ public class SummarizeData {
         String fileName = (directory + Properties.get().main.housingEnvironmentImpactFile + "_" + year + ".csv");
 
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(fileName, false);
-        pw.println("id,zone,type,size,occupied");
+        pw.println("id,zone,type,size,yearBuilt,occupied");
         for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
             pw.print(dd.getId());
             pw.print(",");
@@ -368,6 +369,8 @@ public class SummarizeData {
             pw.print(dd.getType());
             pw.print(",");
             pw.print(dd.getBedrooms());
+            pw.print(",");
+            pw.print(dd.getYearBuilt());
             pw.print(",");
             pw.println((dd.getResidentId() == -1));
         }

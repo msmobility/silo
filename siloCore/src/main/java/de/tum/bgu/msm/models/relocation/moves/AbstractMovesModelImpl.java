@@ -1,9 +1,12 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
-import com.google.common.collect.EnumMultiset;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Iterables;
+
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -11,13 +14,18 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
@@ -28,20 +36,22 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
 
     protected final GeoData geoData;
     protected final Accessibility accessibility;
+    protected final CommutingTimeProbability commutingTimeProbability;
     private final MovesStrategy strategy;
 
     private final EnumMap<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
-    private final Map<Integer, Double> satisfactionByHousehold = new HashMap<>();
+    private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
 
 
     public AbstractMovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy strategy) {
         super(dataContainer, properties);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
+        this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.strategy = strategy;
     }
 
-    protected abstract double calculateHousingUtility(Household hh, Dwelling dwelling);
+    protected abstract double calculateHousingUtility(Household hh, Dwelling dwelling, TravelTimes travelTimes);
 
     protected abstract void calculateRegionalUtilities();
 
@@ -51,8 +61,6 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
 
     @Override
     public void setup() {
-        calculateRegionalUtilities();
-        calculateAverageHousingUtility();
     }
 
     @Override
@@ -61,19 +69,18 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         calculateAverageHousingUtility();
     }
 
-     @Override
-     public List<MoveEvent> getEventsForCurrentYear(int year) {
-         final List<MoveEvent> events = new ArrayList<>();
-         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-             events.add(new MoveEvent(hh.getId()));
-         }
-         return events;
-     }
+    @Override
+    public List<MoveEvent> getEventsForCurrentYear(int year) {
+        final List<MoveEvent> events = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
+            events.add(new MoveEvent(hh.getId()));
+        }
+        return events;
+    }
 
     @Override
     public void endYear(int year) {
     }
-
 
     /**
      * Simulates (a) if this household moves and (b) where this household moves
@@ -113,9 +120,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         }
     }
 
-
     protected double convertPriceToUtility(int price, HouseholdType ht) {
-
         IncomeCategory incCategory = ht.getIncomeCategory();
         Map<Integer, Float> shares = dataContainer.getRealEstateDataManager().getRentPaymentsForIncomeGroup(incCategory);
         // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
@@ -177,26 +182,53 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         return SiloUtil.getRandomNumberAsDouble() <= prop;
     }
 
+
     private void calculateAverageHousingUtility() {
         logger.info("Evaluate average housing utility.");
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+        logger.info("Number of households = " + householdDataManager.getHouseholds().size());
 
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
         satisfactionByHousehold.clear();
 
-        EnumMultiset<HouseholdType> hhByType = EnumMultiset.create(HouseholdType.class);
-        for (Household hh : householdDataManager.getHouseholds()) {
-            final HouseholdType householdType = hh.getHouseholdType();
-            Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-            double util = calculateHousingUtility(hh, dd);
-            satisfactionByHousehold.put(hh.getId(), util);
-            averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
-            hhByType.add(householdType);
+        final Collection<Household> households = householdDataManager.getHouseholds();
+        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads)) + 1;
+        logger.info("Intended size of all of partititons = " + partitionSize);
+        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
+
+        for (final List<Household> partition : partitions) {
+            logger.info("Size of partititon = " + partition.size());
+            executor.addTaskToQueue(() -> {
+                try {
+                    TravelTimes travelTimes = null;
+                    if (dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
+                        travelTimes = dataContainer.getTravelTimes();
+                    } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes) {
+                        travelTimes = ((MatsimTravelTimes) dataContainer.getTravelTimes()).duplicate();
+                    }
+                    for (Household hh : partition) {
+    //                for (Household hh : householdData.getHouseholds()) {
+                        final HouseholdType householdType = hh.getHouseholdType();
+                        hhByType.add(householdType);
+                        Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+                        final double util = calculateHousingUtility(hh, dd, travelTimes);
+                        satisfactionByHousehold.put(hh.getId(), util);
+                        averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                logger.warn("Finished thread");
+                return null;
+            });
         }
+        executor.execute();
+
         averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
                 satisfaction / (1. * hhByType.count(householdType)));
     }
-
 
     public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
         // if this household had a dwelling in this study area before, vacate old dwelling

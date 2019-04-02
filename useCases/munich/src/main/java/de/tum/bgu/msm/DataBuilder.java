@@ -3,6 +3,8 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -35,17 +37,19 @@ public class DataBuilder {
         JobData jobData = new JobDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
 
-        GeoData geoData = new DefaultGeoData(properties);
+        GeoData geoData = new DefaultGeoData();
 
 
         TravelTimes travelTimes;
+        Accessibility accessibility;
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
+            accessibility = new MatsimAccessibility(geoData);
         } else {
             travelTimes = new SkimTravelTimes();
+            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
         }
-
-        Accessibility accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -61,7 +65,7 @@ public class DataBuilder {
                 dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, jobFactory, jobData, geoData, travelTimes, accessibility);
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
@@ -71,7 +75,7 @@ public class DataBuilder {
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
         return new DataContainerMuc(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
-                schoolData, properties);
+        		commutingTimeProbability, schoolData, properties);
     }
 
     static public void read(Properties properties, DataContainerMuc dataContainer){

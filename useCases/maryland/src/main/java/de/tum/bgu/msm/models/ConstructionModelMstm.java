@@ -47,6 +47,8 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private float shareOfAffordableDd;
     private float restrictionForAffordableDd;
 
+    private int currentYear = -1;
+
     public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
                                  ConstructionDemandStrategy demandStrategy) {
@@ -78,6 +80,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     @Override
     public Collection<ConstructionEvent> getEventsForCurrentYear(int year) {
+        currentYear = year;
         List<ConstructionEvent> events = new ArrayList<>();
 
         // plan new dwellings based on demand and available land (not immediately realized, as construction needs some time)
@@ -116,7 +119,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     if (avePrice == 0)
                         logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
                     // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(zone));
+                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone)));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
@@ -171,8 +174,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
                     int ddId = realEstate.getNextDwellingId();
                     DwellingMstm plannedDwelling = (DwellingMstm) factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price);
-                    plannedDwelling.setYearBuilt(year);
+                            dt, size, quality, price, currentYear);
                     plannedDwelling.setRestriction(restriction);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));

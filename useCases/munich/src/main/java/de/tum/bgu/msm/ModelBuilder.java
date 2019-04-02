@@ -2,6 +2,8 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
@@ -58,7 +60,7 @@ import org.matsim.core.config.Config;
 
 public class ModelBuilder {
 
-    public static ModelContainer getModelContainerForMuc(DataContainer dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerForMuc(DataContainerMuc dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -117,7 +119,8 @@ public class ModelBuilder {
                 transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties);
                 break;
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties,
+                		(MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:
             default:

@@ -1,11 +1,14 @@
 package de.tum.bgu.msm.data.household;
 
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.data.household.HouseholdType.*;
@@ -200,5 +203,18 @@ public class HouseholdUtil {
                 return;
             }
         }
+    }
+    
+    public static Map<Integer, Integer> getPopulationByZoneAsMap(DataContainer dataContainer) {
+    	Map<Integer, Integer> zonePopulationMap = new HashMap<>();
+    	for (int zone : dataContainer.getGeoData().getZones().keySet()) {
+    		zonePopulationMap.put(zone, 0);
+    	}
+
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
+            final int zone = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();
+            zonePopulationMap.put(zone, zonePopulationMap.get(zone) + hh.getHhSize());
+        }
+        return zonePopulationMap;
     }
 }

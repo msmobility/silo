@@ -4,6 +4,7 @@ import cern.jet.math.tdouble.DoubleFunctions;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -59,9 +60,6 @@ public class AccessibilityPerth implements Accessibility {
     public void setup() {
         this.autoAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
         this.regionalAccessibilities = new IndexedDoubleMatrix1D(geoData.getRegions().values());
-
-        logger.info("Initializing trip length frequency distributions");
-        readWorkTripLengthFrequencyDistribution();
     }
 
     @Override
@@ -80,7 +78,7 @@ public class AccessibilityPerth implements Accessibility {
     }
 
 
-    private void calculateHansenAccessibilities(int year) {
+    public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
         final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
 
@@ -158,44 +156,21 @@ public class AccessibilityPerth implements Accessibility {
                 travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
     }
 
-    private void readWorkTripLengthFrequencyDistribution() {
-        String fileName = properties.main.baseDirectory + properties.accessibility.htsWorkTLFD;
-        TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
-        workTripLengthFrequencyDistribution = new float[tlfd.getRowCount() + 1];
-        for (int row = 1; row <= tlfd.getRowCount(); row++) {
-            int tt = (int) tlfd.getValueAt(row, "TravelTime");
-            if (tt > workTripLengthFrequencyDistribution.length) {
-                logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
-                        properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
-            }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "utility");
-        }
-    }
-
     @Override
-    public float getCommutingTimeProbability(int minutes) {
-        if (minutes < workTripLengthFrequencyDistribution.length) {
-            return workTripLengthFrequencyDistribution[minutes];
-        } else {
-            return 0;
-        }
-    }
-
-    @Override
-    public double getAutoAccessibilityForZone(int zone) {
+    public double getAutoAccessibilityForZone(Zone zone) {
         // Can be combined with getTransitAccessibilityForZone into one method which get the mode
         // as an argument, nk/dz, july'18
-        return this.autoAccessibilities.getIndexed(zone);
+        return this.autoAccessibilities.getIndexed(zone.getId());
     }
 
     @Override
-    public double getTransitAccessibilityForZone(int zoneId) {
+    public double getTransitAccessibilityForZone(Zone zone) {
         return 0;
     }
 
     @Override
-    public double getRegionalAccessibility(int region) {
-        return regionalAccessibilities.getIndexed(region);
+    public double getRegionalAccessibility(Region region) {
+        return regionalAccessibilities.getIndexed(region.getId());
     }
 
 

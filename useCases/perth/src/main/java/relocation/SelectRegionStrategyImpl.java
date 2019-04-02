@@ -1,7 +1,6 @@
 package relocation;
 
 import de.tum.bgu.msm.data.household.IncomeCategory;
-import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.InputStreamReader;
@@ -17,8 +16,8 @@ public class SelectRegionStrategyImpl extends JavaScriptCalculator<Double> imple
         super(reader);
     }
 
-    public double calculateSelectRegionProbability(IncomeCategory incomeCategory, Nationality nationality,
+    public double calculateSelectRegionProbability(IncomeCategory incomeCategory,
                                                    float price, float accessibility, float share) {
-        return super.calculate("calculateSelectRegionProbability", incomeCategory, nationality, price, accessibility, share);
+        return super.calculate("calculateSelectRegionProbability", incomeCategory, price, accessibility, share);
     }
 }

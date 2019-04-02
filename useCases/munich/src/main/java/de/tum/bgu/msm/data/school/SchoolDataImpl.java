@@ -126,6 +126,24 @@ public class SchoolDataImpl implements SchoolData {
         }
     }
 
+    @Override
+    public void removeSchool(int id) {
+
+        final School remove = this.schools.remove(id);
+        int type = remove.getType();
+        final Coordinate coordinate = ((MicroLocation) remove).getCoordinate();
+        switch (type) {
+            case 1:
+                primarySearchTree.remove(coordinate.x, coordinate.y, remove);
+                break;
+            case 2:
+                secondarySearchTree.remove(coordinate.x, coordinate.y, remove);
+                break;
+            case 3:
+                tertiarySearchTree.remove(coordinate.x, coordinate.y, remove);
+        }
+    }
+
     private void addSchoolToSearchTree(School school) {
         int schoolType = school.getType();
         switch (schoolType){

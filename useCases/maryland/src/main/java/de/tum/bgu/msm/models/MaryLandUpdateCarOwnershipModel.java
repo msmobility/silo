@@ -35,8 +35,6 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
         Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipMstmCalc"));
         MarylandUpdateCarOwnershipJSCalculator calculator = new MarylandUpdateCarOwnershipJSCalculator(reader);
 
-        boolean logCalculation = properties.demographics.logAutoOwnership;
-
         autoOwnerShipUtil = new double[3][8][5][12][101][10];
         for (int hhSize = 0; hhSize < 8; hhSize++) {
             for (int wrk = 0; wrk < 5; wrk++) {
@@ -48,7 +46,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
                             for (int i = 0; i < 3; i++) {
                                 autoOwnerShipUtil[i][hhSize][wrk][inc][transitAcc][dens] = util[i] * prob0cars;
                             }
-                            if (logCalculation) {
+                            //TODO: log?
+                            if (false) {
                                 logger.info(hhSize + "," + wrk + "," + inc + "," + transitAcc + "," + dens + "," + prob0cars + "," +
                                         autoOwnerShipUtil[0][hhSize][wrk][inc][transitAcc][dens] + "," +
                                         autoOwnerShipUtil[1][hhSize][wrk][inc][transitAcc][dens] + "," +
@@ -100,7 +99,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
             int workers = Math.min(HouseholdUtil.getNumberOfWorkers(household), 4);
             int incomeCategory = getIncomeCategory(HouseholdUtil.getHhIncome(household));
             Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
-            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dwelling.getZoneId()) + 0.5);
+            int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dataContainer.getGeoData().getZones().get(dwelling.getZoneId())) + 0.5);
             int density = dataContainer.getJobDataManager().getJobDensityCategoryOfZone(dwelling.getZoneId());
             for (int i = 1; i < 4; i++) {
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];

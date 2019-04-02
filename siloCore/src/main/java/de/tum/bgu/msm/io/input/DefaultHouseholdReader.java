@@ -10,7 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class DefaultHouseholdReader {
+public class DefaultHouseholdReader implements HouseholdReader{
 
     private final static Logger logger = Logger.getLogger(DefaultHouseholdReader.class);
     private final HouseholdDataManager householdData;

@@ -98,13 +98,14 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                 }
                 int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getZoneId).toArray();
                 double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
-                for (int zone : zonesInThisRegion) {
-                    float avePrice = avePriceByTypeAndZone[dto][zone];
+                for (int zoneId : zonesInThisRegion) {
+                    float avePrice = avePriceByTypeAndZone[dto][zoneId];
                     if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
                     if (avePrice == 0)
                         logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
                     // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(zone));
+                    util[zoneId] = locationStrategy.calculateConstructionProbability(dt, avePrice,
+                    		accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zoneId)));
                 }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
@@ -143,8 +144,9 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
 
                     int ddId = realEstate.getNextDwellingId();
-                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price);
+                    Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate();
+                    Dwelling plannedDwelling = factory.createDwelling(ddId, zone, coordinate, -1,
+                            dt, size, quality, price, year);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
                     events.add(new ConstructionEvent(plannedDwelling));
                     realEstate.convertLand(zone, dt.getAreaPerDwelling());
@@ -160,9 +162,6 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
-
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
-        dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);
 

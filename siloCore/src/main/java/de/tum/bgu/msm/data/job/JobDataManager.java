@@ -23,11 +23,7 @@ public interface JobDataManager extends ModelUpdateListener {
 
     void quitJob(boolean makeJobAvailableToOthers, Person person);
 
-    int getNumberOfVacantJobsByRegion(int region);
-
-    int findVacantJob(Zone homeZone, Collection<Region> regions);
-
-    void addJobToVacancyList(int zone, int jobId);
+    Job findVacantJob(Zone homeZone, Collection<Region> regions);
 
     double getJobDensityInZone(int zone);
 

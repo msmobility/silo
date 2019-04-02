@@ -18,8 +18,8 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.models.EventModel;
@@ -29,7 +29,6 @@ import de.tum.bgu.msm.simulator.Simulator;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
-import org.matsim.core.config.Config;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -53,17 +52,14 @@ public final class SiloModel {
     private final TimeTracker timeTracker = new TimeTracker();
 
     /**
-     *
-     * @param matsimConfig
      * @param properties
-     * @param modelContainer
      * @param dataContainer
+     * @param modelContainer
      */
-  	public SiloModel(Config matsimConfig, Properties properties,
-                     ModelContainer modelContainer, DataContainer dataContainer) {
+  	public SiloModel(Properties properties,
+                     DataContainer dataContainer, ModelContainer modelContainer) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;
-        IssueCounter.setUpCounter();
 		this.properties = properties;
 		SiloUtil.modelStopper("initialize");
 	}
@@ -100,8 +96,7 @@ public final class SiloModel {
 		}
 
 		IssueCounter.setUpCounter();
-		IssueCounter.regionSpecificCounters(dataContainer.getGeoData());
-		IssueCounter.logIssues(dataContainer.getGeoData());
+		IssueCounter.logIssues();
 
         setupScalingYears();
 
@@ -133,15 +128,14 @@ public final class SiloModel {
             }
             timeTracker.recordAndReset("scaleDataToForecast");
 
-			if (year == properties.main.baseYear || year != properties.main.startYear) {
+            dataContainer.prepareYear(year);
+            if (year == properties.main.baseYear || year != properties.main.startYear) {
                 SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
             }
-
-            dataContainer.prepareYear(year);
             simulator.simulate(year);
 			dataContainer.endYear(year);
 
-			IssueCounter.logIssues(dataContainer.getGeoData());           // log any issues that arose during this simulation period
+			IssueCounter.logIssues();           // log any issues that arose during this simulation period
 
 			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
 					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +

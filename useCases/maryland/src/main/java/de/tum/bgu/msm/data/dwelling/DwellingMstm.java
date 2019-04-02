@@ -11,13 +11,13 @@ public class DwellingMstm implements Dwelling {
      * rent-controlled and maximum income of renter
      */
     private float restriction;
-    private int yearBuilt;
 
     public DwellingMstm(int id, int zoneId, Coordinate coordinate, int hhId,
                         DwellingType type, int bedrooms,
-                        int quality, int price) {
+                        int quality, int price,
+                        int year) {
         this.delegate = new DwellingImpl(id, zoneId, coordinate, hhId,
-                type, bedrooms, quality, price);
+                type, bedrooms, quality, price, year);
     }
 
     @Override
@@ -43,6 +43,11 @@ public class DwellingMstm implements Dwelling {
     @Override
     public int getBedrooms() {
         return delegate.getBedrooms();
+    }
+
+    @Override
+    public int getYearBuilt() {
+        return delegate.getYearBuilt();
     }
 
     @Override
@@ -111,11 +116,8 @@ public class DwellingMstm implements Dwelling {
         return restriction;
     }
 
-    public int getYearBuilt() {
-        return yearBuilt;
-    }
-
-    public void setYearBuilt(int year) {
-        this.yearBuilt = year;
+    @Override
+    public Coordinate getCoordinate() {
+        return delegate.getCoordinate();
     }
 }

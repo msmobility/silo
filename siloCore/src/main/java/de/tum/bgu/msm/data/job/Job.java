@@ -17,13 +17,13 @@
 package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 
 /**
  * Job interface
  * @author Nkuehnel
  **/
- public interface Job extends Location, Id {
+ public interface Job extends MicroLocation, Id {
 
      int getWorkerId();
 

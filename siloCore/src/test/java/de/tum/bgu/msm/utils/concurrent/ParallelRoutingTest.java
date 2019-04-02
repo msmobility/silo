@@ -32,6 +32,7 @@ public class ParallelRoutingTest {
         Network network = NetworkUtils.createNetwork();
         MatsimNetworkReader reader = new MatsimNetworkReader(network);
         reader.readFile("D:\\muc\\input\\mito\\trafficAssignment/studyNetworkLight.xml");
+//      reader.readFile("/Users/dominik/Workspace/silo-muc/input/mito/trafficAssignment/studyNetworkLight.xml");
 
         AtomicInteger counter = new AtomicInteger(0);
         final Coord originCoord = new Coord(4436689.657372447, 5368527.815536651);

@@ -37,6 +37,7 @@ public class DwellingReaderMuc implements DwellingReader {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
+            int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
 
             int posCoordX = -1;
             int posCoordY = -1;
@@ -56,10 +57,11 @@ public class DwellingReaderMuc implements DwellingReader {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
+                int yearBuilt = Integer.parseInt(lineElements[posYear]);
 
                 Coordinate coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
 
-                Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price);
+                Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 dwellingData.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

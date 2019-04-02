@@ -10,20 +10,20 @@ import java.io.PrintWriter;
 public class DefaultDwellingWriter implements DwellingWriter {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingWriter.class);
-    private final RealEstateDataManager dwellingData;
+    private final RealEstateDataManager realEstateDataManager;
 
-    public DefaultDwellingWriter(RealEstateDataManager dwellingData) {
-        this.dwellingData = dwellingData;
+    public DefaultDwellingWriter(RealEstateDataManager realEstateDataManager) {
+        this.realEstateDataManager = realEstateDataManager;
     }
 
     @Override
     public void writeDwellings(String path) {
         logger.info("  Writing dwelling file to " + path);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(path, false);
-        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt,coordX,coordY");
         pwd.println();
 
-        for (Dwelling dd : dwellingData.getDwellings()) {
+        for (Dwelling dd : realEstateDataManager.getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZoneId());
@@ -37,6 +37,16 @@ public class DefaultDwellingWriter implements DwellingWriter {
             pwd.print(dd.getQuality());
             pwd.print(",");
             pwd.print(dd.getPrice());
+            pwd.print(",");
+            pwd.print(dd.getYearBuilt());
+            pwd.print(",");
+            if(dd.getCoordinate() != null) {
+                pwd.print(dd.getCoordinate().x);
+                pwd.print(",");
+                pwd.print(dd.getCoordinate().y);
+            } else {
+                pwd.print("NULL,NULL");
+            }
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");

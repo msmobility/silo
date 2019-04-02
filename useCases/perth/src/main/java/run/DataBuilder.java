@@ -4,6 +4,7 @@ import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -32,7 +33,7 @@ public final class DataBuilder {
 
     public static DataContainer buildDataContainer(Properties properties) {
 
-        DefaultGeoData geoData = new DefaultGeoData(properties);
+        DefaultGeoData geoData = new DefaultGeoData();
 
         List<DwellingType> dwellingTypeList = new ArrayList<>();
         Collections.addAll(dwellingTypeList, DwellingTypePerth.values());
@@ -49,6 +50,7 @@ public final class DataBuilder {
         }
 
         Accessibility accessibility = new AccessibilityPerth(geoData, travelTimes, properties, dwellingData, householdData);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -62,7 +64,7 @@ public final class DataBuilder {
         JobDataManager jobManager = new JobDataManagerImpl(
                 properties, new JobFactoryImpl(),
                 jobData, geoData,
-                travelTimes, accessibility);
+                travelTimes, commutingTimeProbability);
 
         final HouseholdFactory hhFactory = new HouseholdFactoryImpl();
         final PersonFactory ppFactory = new PersonFactoryImpl();
@@ -75,7 +77,7 @@ public final class DataBuilder {
         DataContainer dataContainer = new DefaultDataContainer(
                 geoData, realEstateManager,
                 jobManager, householdManager,
-                travelTimes, accessibility, properties);
+                travelTimes, accessibility, commutingTimeProbability, properties);
         return dataContainer;
     }
 

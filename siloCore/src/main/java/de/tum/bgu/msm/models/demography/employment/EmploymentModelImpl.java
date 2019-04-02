@@ -174,9 +174,8 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         if (dwelling != null) {
             zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
         }
-        final int idVacantJob = dataContainer.getJobDataManager().findVacantJob(
+        return dataContainer.getJobDataManager().findVacantJob(
                 zone, dataContainer.getGeoData().getRegions().values());
-        return dataContainer.getJobDataManager().getJobFromId(idVacantJob);
     }
 
     boolean takeNewJob(Person person, Job job) {

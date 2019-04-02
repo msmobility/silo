@@ -7,6 +7,7 @@ import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.geo.MstmZone;
@@ -70,6 +71,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private final Properties properties;
     private GeoDataMstm geoData;
     private Accessibility accessibility;
+    private CommutingTimeProbability commutingTimeProbability;
     private RealEstateDataManager realEstateData;
     private HouseholdDataManager householdData;
     private JobDataManager jobData;
@@ -107,6 +109,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         createJobs();
         travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
         accessibility = dataContainer.getAccessibility();
+        commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         // read in travel times and trip length frequency distribution
 
 //        final String transitSkimFile = Properties.get().accessibility.transitSkimFile(Properties.get().main.startYear);
@@ -771,7 +774,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
                 	Zone destinationZone = zone;
                     int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().transportModel.peakHour_s, "car") + 0.5);
-                    zoneProbabilities.put(zone, accessibility.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
+                    zoneProbabilities.put(zone, commutingTimeProbability.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);
                 }

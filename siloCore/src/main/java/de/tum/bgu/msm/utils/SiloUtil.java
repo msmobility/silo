@@ -146,6 +146,9 @@ public class SiloUtil {
 
 
     public static Random getRandomObject() {
+        if(rand == null) {
+            rand = new Random(42);
+        }
         return rand;
     }
 

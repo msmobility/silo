@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.data.accessibility;
 
 import cern.jet.math.tdouble.DoubleFunctions;
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdData;
@@ -11,8 +11,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -44,8 +42,6 @@ public class AccessibilityImpl implements Accessibility {
     private final float alphaTransit;
     private final float betaTransit;
 
-    private float[] workTripLengthFrequencyDistribution;
-
     public AccessibilityImpl(GeoData geoData, TravelTimes travelTimes, Properties properties, DwellingData dwellingData, HouseholdData householdData) {
         this.geoData = geoData;
         this.travelTimes = travelTimes;
@@ -64,9 +60,6 @@ public class AccessibilityImpl implements Accessibility {
         this.autoAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
         this.transitAccessibilities = new IndexedDoubleMatrix1D(geoData.getZones().values());
         this.regionalAccessibilities = new IndexedDoubleMatrix1D(geoData.getRegions().values());
-        
-        logger.info("Initializing trip length frequency distributions");
-        readWorkTripLengthFrequencyDistribution();
     }
 
     @Override
@@ -91,12 +84,12 @@ public class AccessibilityImpl implements Accessibility {
 
         logger.info("  Calculating zone zone accessibilities: auto");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixCar =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.car, travelTimes, geoData.getZones().values());
+                travelTimes.getPeakSkim(TransportMode.car);
         final IndexedDoubleMatrix2D autoAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         logger.info("  Calculating zone zone accessibilities: transit");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixTransit =
-                TravelTimeUtil.getPeakTravelTimeMatrix(TransportMode.pt, travelTimes, geoData.getZones().values());
+                travelTimes.getPeakSkim(TransportMode.pt);
         final IndexedDoubleMatrix2D transitAccessZoneToZone =
                 calculateZoneToZoneAccessibilities(population,
                         peakTravelTimeMatrixTransit, alphaTransit, betaTransit);
@@ -172,44 +165,21 @@ public class AccessibilityImpl implements Accessibility {
                 travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
     }
 
-    private void readWorkTripLengthFrequencyDistribution() {
-        String fileName = properties.main.baseDirectory + properties.accessibility.htsWorkTLFD;
-        TableDataSet tlfd = SiloUtil.readCSVfile(fileName);
-        workTripLengthFrequencyDistribution = new float[tlfd.getRowCount() + 1];
-        for (int row = 1; row <= tlfd.getRowCount(); row++) {
-            int tt = (int) tlfd.getValueAt(row, "TravelTime");
-            if (tt > workTripLengthFrequencyDistribution.length) {
-                logger.error("Inconsistent trip length frequency in " + properties.main.baseDirectory +
-                        properties.accessibility.htsWorkTLFD + ": " + tt + ". Provide data in 1-min increments.");
-            }
-            workTripLengthFrequencyDistribution[tt] = tlfd.getValueAt(row, "Utility");
-        }
-    }
-
     @Override
-    public float getCommutingTimeProbability(int minutes) {
-        if (minutes < workTripLengthFrequencyDistribution.length) {
-            return workTripLengthFrequencyDistribution[minutes];
-        } else {
-            return 0;
-        }
-    }
-
-    @Override
-    public double getAutoAccessibilityForZone(int zone) {
+    public double getAutoAccessibilityForZone(Zone zone) {
     	// Can be combined with getTransitAccessibilityForZone into one method which get the mode
     	// as an argument, nk/dz, july'18
-        return this.autoAccessibilities.getIndexed(zone);
+        return this.autoAccessibilities.getIndexed(zone.getId());
     }
 
     @Override
-    public double getTransitAccessibilityForZone(int zoneId) {
-        return this.transitAccessibilities.getIndexed(zoneId);
+    public double getTransitAccessibilityForZone(Zone zone) {
+        return this.transitAccessibilities.getIndexed(zone.getId());
     }
 
     @Override
-    public double getRegionalAccessibility(int region) {
-        return regionalAccessibilities.getIndexed(region);
+    public double getRegionalAccessibility(Region region) {
+        return regionalAccessibilities.getIndexed(region.getId());
     }
 
 
