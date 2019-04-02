@@ -27,7 +27,7 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
     public Collection<EducationEvent> getEventsForCurrentYear(int year) {
         final List<EducationEvent> events = new ArrayList<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (person.getAge() == 19) {
+            if (person.getAge() >= 19 && person.getOccupation().equals(Occupation.STUDENT)) {
                 events.add(new EducationEvent(person.getId()));
             }
         }
@@ -65,7 +65,8 @@ public class MstmEducationModelImpl extends AbstractModel implements EducationMo
     boolean updateEducation(Person person) {
         person.setOccupation(Occupation.UNEMPLOYED);
         person.setWorkplace(-1);
-        //todo also check occupation transition to worker? 'nk
+        // also check occupation transition to worker? 'nk
+        // rm: don't think so, student is added to the labor market but does not necessarily find a job right away.
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " changed school.");
