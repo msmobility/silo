@@ -69,6 +69,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         TripRouter.Builder bd = new TripRouter.Builder(ConfigUtils.createConfig());
         RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), network, pathCalculator);
         bd.setRoutingModule(TransportMode.car, carRoutingModule);
+        // TODO "flexibilize" the pt router that is used here, e.g. SBB router
         TeleportationRoutingModule teleportationRoutingModule = new TeleportationRoutingModule(TransportMode.pt, PopulationUtils.getFactory(), 10, 1.3);
         bd.setRoutingModule(TransportMode.pt, teleportationRoutingModule);
         tripRouter = bd.build();
@@ -81,14 +82,12 @@ public final class MatsimTravelTimes implements TravelTimes {
     // TODO Use travel costs?
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-        // Microlocations case
         Coord originCoord;
         Coord destinationCoord;
-        if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
+        if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
             originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
-        } else if (origin instanceof Zone && destination instanceof Zone) {
-            // Non-microlocations case
+        } else if (origin instanceof Zone && destination instanceof Zone) { // Non-microlocations case
             originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord();
             destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord();
         } else {
@@ -104,6 +103,7 @@ public final class MatsimTravelTimes implements TravelTimes {
             if (e instanceof Leg) {
                 time += ((Leg) e).getTravelTime();
             } else if (e instanceof Activity) {
+            	// TODO check if this covers all "stage" activities
                 if (((Activity) e).getType().equalsIgnoreCase(PtConstants.TRANSIT_ACTIVITY_TYPE)) {
                     time += ((Activity) e).getEndTime() - ((Activity) e).getStartTime();
                 }
