@@ -190,13 +190,13 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         // data preparation
         int householdIncome = 0;
         Nationality nationality = ((HouseholdMuc)household).getNationality();
-        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
+        Set<Zone> workerZonesForThisHousehold = new LinkedHashSet<>();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
         for (Person pp: household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
             	Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
-                workerZonesForThisHousehold.put(pp, workZone);
+                workerZonesForThisHousehold.add(workZone);
                 householdIncome += pp.getIncome();
             }
         }
@@ -205,7 +205,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
         // Step 1: select region
         Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
-        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHousehold(ht,nationality,workerZonesForThisHousehold.values()));
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHousehold(ht,nationality,workerZonesForThisHousehold));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "powerOfPopulation";

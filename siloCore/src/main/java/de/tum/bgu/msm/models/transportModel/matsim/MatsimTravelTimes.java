@@ -112,7 +112,6 @@ public final class MatsimTravelTimes implements TravelTimes {
         return time;
     }
 
-    //TODO use multinodedijkstra instead
     @Override
     public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
         if (origin instanceof Zone) {
@@ -122,7 +121,7 @@ public final class MatsimTravelTimes implements TravelTimes {
             }
             double min = Double.MAX_VALUE;
             for (Zone zoneInRegion : destination.getZones()) {
-                double travelTime = getTravelTime(origin, zoneInRegion, timeOfDay_s, mode);
+                double travelTime = getPeakSkim(mode).getIndexed(originZone, zoneInRegion.getZoneId());
                 if (travelTime < min) {
                     min = travelTime;
                 }

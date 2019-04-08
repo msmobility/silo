@@ -83,7 +83,8 @@ public final class MatsimTransportModel implements TransportModel {
 	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
 			Properties properties, MatsimAccessibility accessibility) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
-		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig );
+		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
+				"No initial matsim config provided to SiloModel class!" );
 		this.travelTimes = (MatsimTravelTimes)
 				Objects.requireNonNull((dataContainer.getTravelTimes()));
 		this.properties = properties;
