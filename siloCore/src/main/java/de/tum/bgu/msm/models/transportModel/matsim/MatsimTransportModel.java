@@ -68,7 +68,7 @@ import java.util.TreeMap;
  * @author dziemke
  */
 public final class MatsimTransportModel implements TransportModel {
-	private static final Logger LOG = Logger.getLogger( MatsimTransportModel.class );
+	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
 	
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
@@ -96,7 +96,7 @@ public final class MatsimTransportModel implements TransportModel {
         new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
         travelTimes.initialize(dataContainer.getGeoData().getZones(), network);
 
-        LOG.warn("Finding coordinates that represent a given zone.");
+        logger.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
 		ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
 	    Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
@@ -136,7 +136,7 @@ public final class MatsimTransportModel implements TransportModel {
     }
 
     public void runTransportModel(int year) {
-		LOG.warn("Running MATSim transport model for year " + year + ".");
+		logger.warn("Running MATSim transport model for year " + year + ".");
 
 		String scenarioName = properties.main.scenarioName;
 
@@ -154,7 +154,7 @@ public final class MatsimTransportModel implements TransportModel {
     	}
 		
 		// Get travel Times from MATSim
-		LOG.warn("Using MATSim to compute travel times from zone to zone.");
+		logger.warn("Using MATSim to compute travel times from zone to zone.");
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
@@ -163,103 +163,90 @@ public final class MatsimTransportModel implements TransportModel {
 		final Controler controler = new Controler(scenario);
 
 		if(accessibility != null) {
-
-			// Opportunities
-			Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
-			Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
-			for (int zoneId : populationMap.keySet()) {
-				zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
-			}
-			final ActivityFacilities opportunities = scenario.getActivityFacilities();
-			int i = 0;
-			for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
-				activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
-				opportunities.addActivityFacility(activityFacility);
-				i++;
-			}
-			LOG.warn(i + " facilities added as opportunities.");
-
-			SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
-
-			scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
-			// End opportunities
-
-			// Accessibility settings
-			AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
-			acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
-			//
-			Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
-			Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
-			for (Zone zone : dataContainer.getGeoData().getZones().values()) {
-				zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
-			}
-
-			for (Integer zoneId : zoneFeatureMap.keySet()) {
-				SimpleFeature feature = zoneFeatureMap.get(zoneId);
-				Geometry geometry = (Geometry) feature.getDefaultGeometry();
-				measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
-			}
-			acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
-			acg.setMeasurePointGeometryMap(measurePointGeometryMap);
-
-			acg.setTileSize_m(1000); // TODO This is only a dummy value here
-			//
-			acg.setAreaOfAccessibilityComputation(AccessibilityConfigGroup.AreaOfAccesssibilityComputation.fromFacilitiesObject);
-			acg.setUseOpportunityWeights(true);
-			acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
-			LOG.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
-			acg.setAccessibilityMeasureType(AccessibilityConfigGroup.AccessibilityMeasureType.rawSum);
-			// End accessibility settings
-			// Accessibility module
-
-			AccessibilityModule module = new AccessibilityModule();
-			module.addFacilityDataExchangeListener(accessibility);
-			controler.addOverridingModule(module);
-			// End accessibility module
+			setupAccessibility(config, scenario, controler);
 		}
 
 		controler.run();
-		LOG.warn("Running MATSim transport model for year " + year + " finished.");
+		logger.warn("Running MATSim transport model for year " + year + " finished.");
 
 		// Get travel Times from MATSim
-		LOG.warn("Using MATSim to compute travel times from zone to zone.");
+		logger.warn("Using MATSim to compute travel times from zone to zone.");
 		TravelTime travelTime = controler.getLinkTravelTimes();
 		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-		updateTravelTimes(controler.getTripRouterProvider().get(), travelTime, travelDisutility);
+		updateTravelTimes(travelTime, travelDisutility);
 	}
 
-    /**
+	private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
+		// Opportunities
+		Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
+		Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
+		for (int zoneId : populationMap.keySet()) {
+			zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
+		}
+		final ActivityFacilities opportunities = scenario.getActivityFacilities();
+		int i = 0;
+		for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
+			activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
+			opportunities.addActivityFacility(activityFacility);
+			i++;
+		}
+		logger.warn(i + " facilities added as opportunities.");
+
+		SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
+
+		scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
+		// End opportunities
+
+		// Accessibility settings
+		AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
+		acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
+		//
+		Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
+		Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
+		for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+			zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
+		}
+
+		for (Integer zoneId : zoneFeatureMap.keySet()) {
+			SimpleFeature feature = zoneFeatureMap.get(zoneId);
+			Geometry geometry = (Geometry) feature.getDefaultGeometry();
+			measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
+		}
+		acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
+		acg.setMeasurePointGeometryMap(measurePointGeometryMap);
+
+		acg.setTileSize_m(1000); // TODO This is only a dummy value here
+		//
+		acg.setAreaOfAccessibilityComputation(AccessibilityConfigGroup.AreaOfAccesssibilityComputation.fromFacilitiesObject);
+		acg.setUseOpportunityWeights(true);
+		acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
+		logger.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
+		acg.setAccessibilityMeasureType(AccessibilityConfigGroup.AccessibilityMeasureType.rawSum);
+		// End accessibility settings
+		// Accessibility module
+
+		AccessibilityModule module = new AccessibilityModule();
+		module.addFacilityDataExchangeListener(accessibility);
+		controler.addOverridingModule(module);
+		// End accessibility module
+	}
+
+	/**
      *
      * @param eventsFile
      */
-	public void replayFromEvents(String eventsFile) {
+	private void replayFromEvents(String eventsFile) {
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
 	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
         EventsManager events = EventsUtils.createEventsManager();
         events.addHandler(ttCalculator);
         (new MatsimEventsReader(events)).readFile(eventsFile);
-        TripRouter tripRouter = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario).get();
         TravelTime travelTime = ttCalculator.getLinkTravelTimes();
         TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(tripRouter, travelTime, travelDisutility);
+        updateTravelTimes(travelTime, travelDisutility);
 	}
 
-	private void updateTravelTimes(TripRouter tripRouter, TravelTime travelTime, TravelDisutility disutility) {
-//		LeastCostPathTree leastCoastPathTree = new LeastCostPathTree(travelTime, disutility);
-		/*
-		 * Comments:
-		 * for now, pt inforamtion from MATSim not required as there are no changes in PT supply (schedule) expected currently;
-		 * 
-		 * Other idea: provide TripRouter more directly; requires more fundamental change, however
-		 * public final TripRouter getTripRouter() {
-		 * if(tripRouter == null) {
-		 * throw new RuntimeException("MATSim Transport Model needs to run at least once before trips can be queried!");
-		 * }
-		 * return tripRouter;
-		 */
-//		travelTimes.update(leastCoastPathTree, zoneFeatureMap, scenario.getNetwork(), controler.getTripRouterProvider().get() );
-//		travelTimes.update(tripRouter, leastCoastPathTree);
+	private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
 		travelTimes.update(travelTime, disutility);
-//		tripRouter = controler.getTripRouterProvider().get();
 	}
 }

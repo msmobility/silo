@@ -79,6 +79,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 
     // TODO Use travel costs?
+    @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
         // Microlocations case
         Coord originCoord;
