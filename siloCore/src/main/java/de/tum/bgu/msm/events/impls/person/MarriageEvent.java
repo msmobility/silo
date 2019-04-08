@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.events.impls;
+package de.tum.bgu.msm.events.impls.person;
 
 import de.tum.bgu.msm.events.MicroEvent;
 

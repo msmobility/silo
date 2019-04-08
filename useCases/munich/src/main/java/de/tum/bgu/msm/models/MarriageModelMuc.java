@@ -29,7 +29,7 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.IssueCounter;
-import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;

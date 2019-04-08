@@ -2,7 +2,7 @@ package de.tum.bgu.msm.container;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.events.MicroEvent;
-import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.events.impls.person.*;
