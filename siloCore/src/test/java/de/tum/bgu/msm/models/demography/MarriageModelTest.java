@@ -10,7 +10,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.properties.Properties;
 import org.junit.Assert;
 import org.junit.BeforeClass;

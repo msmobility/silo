@@ -23,7 +23,7 @@ import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroSimulation;
-import de.tum.bgu.msm.events.impls.MarriageEvent;
+import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.events.impls.person.*;
