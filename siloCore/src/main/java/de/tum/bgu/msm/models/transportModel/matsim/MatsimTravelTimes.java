@@ -57,6 +57,11 @@ public final class MatsimTravelTimes implements TravelTimes {
     private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 
     private final Table<Integer, Region, Double> travelTimeToRegion = HashBasedTable.create();
+    
+    // Counters
+ 	int requests = 0;
+ 	int requestsRegion = 0;
+ 	int requestsSkim = 0;
 
     public void initialize(Map<Integer, Zone> zones, Network network) {
         this.network = network;
@@ -82,6 +87,8 @@ public final class MatsimTravelTimes implements TravelTimes {
     // TODO Use travel costs?
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+		if (requests % 50000 == 0) logger.info("New individual travel time request. Number of occurrences so far: " + requests);
+		requests++;
         Coord originCoord;
         Coord destinationCoord;
         if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
@@ -117,6 +124,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
+    	if (requestsRegion % 50000 == 0) logger.info("New individual travel time request. Number of occurrences so far: " + requestsRegion);
+    	requestsRegion++;
         if (origin instanceof Zone) {
             int originZone = origin.getZoneId();
             if (travelTimeToRegion.contains(originZone, destination)) {
@@ -138,7 +147,10 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public IndexedDoubleMatrix2D getPeakSkim(String mode) {
+		logger.info("Getting peak skim for mode " + mode);
         if (skimsByMode.containsKey(mode)) {
+    		if (requestsSkim % 1000 == 0) logger.info("Looking up existing peak skim. Number of occurrences: " + requestsSkim);
+    		requestsSkim++;
             return skimsByMode.get(mode);
         } else {
             IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones.values(), zones.values());
