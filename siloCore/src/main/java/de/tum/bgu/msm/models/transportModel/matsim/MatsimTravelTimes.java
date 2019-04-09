@@ -109,6 +109,9 @@ public final class MatsimTravelTimes implements TravelTimes {
                 }
             }
         }
+
+        //convert to minutes
+        time /= 60.;
         return time;
     }
 
@@ -155,7 +158,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
                             Set<InitialNode> toNodes = new HashSet<>();
                             for (Zone zone : zones.values()) {
-                                for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
+                                // Several points in a given origin zone
+                                for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                                     Node originNode = zoneCalculationNodesMap.get(zone).get(0);
                                     toNodes.add(new InitialNode(originNode, 0., 0.));
                                 }
@@ -168,6 +172,10 @@ public final class MatsimTravelTimes implements TravelTimes {
                                 calculator.calcLeastCostPath(node, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
                                 for (Zone destination : zones.values()) {
                                     double travelTime = calculator.constructPath(node, zoneCalculationNodesMap.get(destination).get(0), Properties.get().transportModel.peakHour_s).travelTime;
+
+                                    //convert to minutes
+                                    travelTime /= 60.;
+
                                     skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
                                 }
                             }
@@ -184,6 +192,10 @@ public final class MatsimTravelTimes implements TravelTimes {
                             for (Zone origin : partition) {
                                 for (Zone destination : zones.values()) {
                                     double travelTime = copy.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, mode);
+
+                                    //convert to minutes
+                                    travelTime /= 60.;
+
                                     skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
                                 }
                             }
