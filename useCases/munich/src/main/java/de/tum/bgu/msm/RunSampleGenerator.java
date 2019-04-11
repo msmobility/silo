@@ -28,10 +28,11 @@ public class RunSampleGenerator {
 
         SampleGenerator.generateSampleForZones(dataContainer, zoneIds);
 
-        new DwellingWriterMuc(dataContainer).writeDwellings("C:/Users/Nico/Desktop/ddSample.csv");
-        new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager()).writeHouseholds("C:/Users/Nico/Desktop/hhSample.csv");
-        new PersonWriterMuc(dataContainer.getHouseholdDataManager()).writePersons("C:/Users/Nico/Desktop/ppSample.csv");
-        new JobWriterMuc(dataContainer.getJobDataManager()).writeJobs("C:/Users/Nico/Desktop/jjSample.csv");
-        new SchoolsWriter(dataContainer.getSchoolData()).writeSchools("C:/Users/Nico/Desktop/ssSample.csv");
+        new DwellingWriterMuc(dataContainer).writeDwellings("C:/Users/Nico/Desktop/dd_2011.csv");
+        new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager()).writeHouseholds("C:/Users/Nico/Desktop/hh_2011.csv");
+        new PersonWriterMuc(dataContainer.getHouseholdDataManager()).writePersons("C:/Users/Nico/Desktop/pp_2011.csv");
+        new JobWriterMuc(dataContainer.getJobDataManager()).writeJobs("C:/Users/Nico/Desktop/jj_2011.csv");
+        new SchoolsWriter(dataContainer.getSchoolData()).writeSchools("C:/Users/Nico/Desktop/ss_2011.csv");
+
     }
 }

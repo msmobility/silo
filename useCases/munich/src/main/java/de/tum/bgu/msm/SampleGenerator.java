@@ -46,7 +46,6 @@ public class SampleGenerator {
                 if(dwelling.getResidentId() > 0) {
                     Household household
                             = data.getHouseholdDataManager().getHouseholdFromId(dwelling.getResidentId());
-                    data.getRealEstateDataManager().removeDwelling(dwelling.getResidentId());
                     household.setDwelling(-1);
                     for (Person person : household.getPersons().values()) {
                         if (person.getJobId() > 0) {
@@ -55,6 +54,7 @@ public class SampleGenerator {
                     }
                     data.getHouseholdDataManager().removeHousehold(household.getId());
                 }
+                data.getRealEstateDataManager().removeDwelling(dwelling.getId());
             }
         }
 
