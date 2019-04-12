@@ -9,6 +9,7 @@ import de.tum.bgu.msm.events.impls.person.*;
 import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.events.impls.realEstate.RenovationEvent;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.models.demography.birth.BirthModel;
@@ -82,6 +83,7 @@ public class ModelContainer {
         modelUpdateListeners.add(pricingModel);
         modelUpdateListeners.add(constructionOverwrite);
         modelUpdateListeners.add(transportModel);
+
     }
 
     public Map<Class<? extends MicroEvent>, EventModel> getEventModels() {
@@ -99,6 +101,7 @@ public class ModelContainer {
     public void registerEventModel(Class<? extends MicroEvent> evenType, EventModel handler) {
         eventModels.put(evenType, handler);
     }
+
 
 //
 //    /**

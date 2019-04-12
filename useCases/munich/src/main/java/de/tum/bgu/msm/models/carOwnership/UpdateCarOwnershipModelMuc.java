@@ -149,11 +149,12 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
             }
         }
         final double numberOfHh = householdDataManager.getHouseholds().size();
+        //todo reconsider to print out model results and how to pass them to the ResultsMonitor
         logger.info("  Simulated household added a car" + counter[0] + " (" +
                 SiloUtil.rounder((100f * counter[0] / numberOfHh), 0) + "% of hh)");
-        SummarizeData.resultFile("AddedCar," + counter[0]);
+
         logger.info("  Simulated household relinquished a car" + counter[1] + " (" +
                 SiloUtil.rounder((100f * counter[1] / numberOfHh), 0) + "% of hh)");
-        SummarizeData.resultFile("RelinquishedCar," + counter[1]);
+
     }
 }

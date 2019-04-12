@@ -44,16 +44,9 @@ public class SummarizeData {
 
     private static TableDataSet scalingControlTotals;
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
-    private static final String RESULT_FILE = "resultFile";
 
-    public static void openResultFile(Properties properties) {
-        // open summary file
 
-        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE +
-                ".csv", properties.main.startYear != properties.main.baseYear);
-        resultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE + "_" + properties.main.endYear + ".csv", false);
-    }
+
 
 
     public static void readScalingYearControlTotals() {
@@ -65,24 +58,6 @@ public class SummarizeData {
     }
 
 
-    public static void resultFile(String action) {
-        // handle summary file
-        resultFile(action, true);
-    }
-
-    public static void resultFile(String action, Boolean writeFinal) {
-        // handle summary file
-        switch (action) {
-            case "close":
-                resultWriter.close();
-                resultWriterFinal.close();
-                break;
-            default:
-                resultWriter.println(action);
-                if (resultWriterReplicate && writeFinal) resultWriterFinal.println(action);
-                break;
-        }
-    }
 
     public static void resultFileSpatial(String action) {
         resultFileSpatial(action, true);
@@ -379,80 +354,7 @@ public class SummarizeData {
 
 
 
-//    public static void summarizeAutoOwnershipByCounty(Accessibility accessibility, DataContainer dataContainer) {
-//        // This calibration function summarized households by auto-ownership and quits
-//
-//        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("autoOwnershipA.csv", false);
-//        pwa.println("hhSize,workers,income,transit,density,autos");
-//        int[][] autos = new int[4][60000];
-//        final RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-//        final GeoData geoData = dataContainer.getGeoData();
-//        final JobDataManager jobDataManager = dataContainer.getJobDataManager();
-//        final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-//        for (Household hh : householdDataManager.getHouseholds()) {
-//            int autoOwnership = hh.getAutos();
-//            int zone = -1;
-//            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
-//            if (dwelling != null) {
-//                zone = dwelling.getZoneId();
-//            }
-//            int county =  geoData.getZones().get(zone)).getCounty().getId();
-//            autos[autoOwnership][county]++;
-//            pwa.println(hh.getHhSize() + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
-//                    accessibility.getTransitAccessibilityForZone(zone) + "," + jobDataManager.getJobDensityInZone(zone) + "," + hh.getAutos());
-//        }
-//        pwa.close();
-//
-//        PrintWriter pw = SiloUtil.openFileForSequentialWriting("autoOwnershipB.csv", false);
-//        pw.println("County,0autos,1auto,2autos,3+autos");
-//        for (int county = 0; county < 60000; county++) {
-//            int sm = 0;
-//            for (int a = 0; a < 4; a++) sm += autos[a][county];
-//            if (sm > 0)
-//                pw.println(county + "," + autos[0][county] + "," + autos[1][county] + "," + autos[2][county] + "," + autos[3][county]);
-//        }
-//        pw.close();
-//        logger.info("Summarized auto ownership and quit.");
-//        System.exit(0);
-//    }
 
-
-    public static void summarizeCarOwnershipByMunicipality(TableDataSet zonalData, DataContainer dataContainer) {
-        // This calibration function summarizes household auto-ownership by municipality and quits
-
-        SiloUtil.createDirectoryIfNotExistingYet("microData/interimFiles/");
-        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carOwnershipByHh.csv", false);
-        pwa.println("license,workers,income,logDistanceToTransit,areaType,autos");
-        int[][] autos = new int[4][10000000];
-        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int autoOwnership = hh.getAutos();
-            int zone = -1;
-            Dwelling dwelling = realEstate.getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            }
-            int municipality = (int) zonalData.getIndexedValueAt(zone, "ID_city");
-            int distance = (int) Math.log(zonalData.getIndexedValueAt(zone, "distanceToTransit"));
-            int area = (int) zonalData.getIndexedValueAt(zone, "BBSR");
-            autos[autoOwnership][municipality]++;
-            pwa.println(HouseholdUtil.getHHLicenseHolders(hh) + "," + HouseholdUtil.getNumberOfWorkers(hh) + "," + HouseholdUtil.getHhIncome(hh) + "," +
-                    distance + "," + area + "," + hh.getAutos());
-        }
-        pwa.close();
-
-        PrintWriter pw = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carOwnershipByMunicipality.csv", false);
-        pw.println("Municipality,0autos,1auto,2autos,3+autos");
-        for (int municipality = 0; municipality < 10000000; municipality++) {
-            int sm = 0;
-            for (int a = 0; a < 4; a++) sm += autos[a][municipality];
-            if (sm > 0)
-                pw.println(municipality + "," + autos[0][municipality] + "," + autos[1][municipality] + "," + autos[2][municipality] + "," + autos[3][municipality]);
-        }
-        pw.close();
-
-        logger.info("Summarized initial auto ownership");
-    }
 
     public static void writeOutDevelopmentFile(DataContainer dataContainer) {
         // write out development capacity file to allow model run to be continued from this point later

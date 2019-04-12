@@ -5,6 +5,8 @@ import de.tum.bgu.msm.ModelBuilder;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -70,7 +72,8 @@ public class SiloMatsimTestMuc {
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
 
-        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);
+        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
+        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         siloModel.runModel();
 
 //        checkDwellings();

@@ -3,6 +3,8 @@ package run;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.run.ModelBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -35,7 +37,9 @@ public class SiloAtx {
         DataBuilder.readInput(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+
+        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }

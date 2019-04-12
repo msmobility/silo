@@ -69,8 +69,8 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
             }
         }
         double hh = dataContainer.getHouseholdDataManager().getHouseholds().size();
+        //todo reconsider to print out model results and how to pass them to the ResultsMonitor
         logger.info(" Simulated household switched to AV" + counter + " (" +
                 SiloUtil.rounder((100. * counter / hh), 0) + "% of hh)");
-        SummarizeData.resultFile("SwitchedToAV," + counter);
     }
 }

@@ -408,29 +408,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         }
         }
 
-    public void summarizeJobs(Map<Integer, Region> regions) {
-        // summarize jobs for summary file
 
-        String txt = "jobByRegion";
-        for (String empType : JobType.getJobTypes()) txt += "," + empType;
-        SummarizeData.resultFile(txt + ",total");
-
-        final int highestId = regions.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-        int[][] jobsByTypeAndRegion = new int[JobType.getNumberOfJobTypes()][highestId + 1];
-        for (Job job : jobData.getJobs()) {
-            jobsByTypeAndRegion[JobType.getOrdinal(job.getType())][geoData.getZones().get(job.getZoneId()).getRegion().getId()]++;
-        }
-
-        for (int region : regions.keySet()) {
-            StringBuilder line = new StringBuilder(String.valueOf(region));
-            int regionSum = 0;
-            for (String empType : JobType.getJobTypes()) {
-                line.append(",").append(jobsByTypeAndRegion[JobType.getOrdinal(empType)][region]);
-                regionSum += jobsByTypeAndRegion[JobType.getOrdinal(empType)][region];
-            }
-            SummarizeData.resultFile(line + "," + regionSum);
-        }
-    }
 
 
     private void calculateJobDensityByZone() {
