@@ -78,6 +78,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
         this.skimsByMode.clear();
+        this.travelTimeToRegion.assign(-1);
     }
 
 
@@ -222,6 +223,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         matsimTravelTimes.network = this.network;
         matsimTravelTimes.zones = this.zones;
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
+        matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.update(travelTime, travelDisutility);
         return matsimTravelTimes;
     }
