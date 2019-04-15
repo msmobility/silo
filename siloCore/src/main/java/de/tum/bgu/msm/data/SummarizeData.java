@@ -92,7 +92,7 @@ public class SummarizeData {
             hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
         }
         for (DwellingType dwellingType : dwellingTypes){
-            hd = hd.concat("dd_" + dwellingType.toString());
+            hd = hd.concat(",dd_" + dwellingType.toString());
         }
 
         hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
