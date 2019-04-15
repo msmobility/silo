@@ -56,7 +56,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 
-    private final Table<Integer, Region, Double> travelTimeToRegion = HashBasedTable.create();
+    private final Map<Integer, Map<Integer, Double>> travelTimeToRegion = new HashMap<>();
 
     public void initialize(Map<Integer, Zone> zones, Network network) {
         this.network = network;
@@ -64,7 +64,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         buildZoneCalculationNodesMap();
     }
 
-    void update(TravelTime travelTime, TravelDisutility disutility) {
+    public void update(TravelTime travelTime, TravelDisutility disutility) {
         LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
         TripRouter.Builder bd = new TripRouter.Builder(ConfigUtils.createConfig());
         RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), network, pathCalculator);
@@ -117,23 +117,26 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-        if (origin instanceof Zone) {
-            int originZone = origin.getZoneId();
-            if (travelTimeToRegion.contains(originZone, destination)) {
-                return travelTimeToRegion.get(originZone, destination);
+        int originZone = origin.getZoneId();
+        int region = destination.getId();
+        if (travelTimeToRegion.containsKey(originZone)) {
+            final Double travelTime = travelTimeToRegion.get(originZone).get(region);
+            if(travelTime != null) {
+                return travelTime;
             }
-            double min = Double.MAX_VALUE;
-            for (Zone zoneInRegion : destination.getZones()) {
-                double travelTime = getPeakSkim(mode).getIndexed(originZone, zoneInRegion.getZoneId());
-                if (travelTime < min) {
-                    min = travelTime;
-                }
-            }
-            travelTimeToRegion.put(originZone, destination, min);
-            return min;
         } else {
-            throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
+            travelTimeToRegion.put(originZone, new HashMap<>());
         }
+
+        double min = Double.MAX_VALUE;
+        for (Zone zoneInRegion : destination.getZones()) {
+            double travelTime = getTravelTime(origin, zoneInRegion, timeOfDay_s, mode);
+            if (travelTime < min) {
+                min = travelTime;
+            }
+        }
+        travelTimeToRegion.get(originZone).put(region, min);
+        return min;
     }
 
     @Override

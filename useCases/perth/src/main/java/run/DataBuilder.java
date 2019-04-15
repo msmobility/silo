@@ -4,6 +4,7 @@ import com.google.common.collect.EnumMultiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
@@ -42,14 +43,23 @@ public final class DataBuilder {
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
 
-        TravelTimes travelTimes;
-        if (properties.transportModel.transportModelIdentifier == MATSIM) {
-            travelTimes = new MatsimTravelTimes();
-        } else {
-            travelTimes = new SkimTravelTimes();
+        TravelTimes travelTimes = null;
+        Accessibility accessibility = null;
+
+        switch (properties.transportModel.travelTimeImplIdentifier) {
+            case SKIM:
+                travelTimes = new SkimTravelTimes();
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            case MATSIM:
+                travelTimes = new MatsimTravelTimes();
+//                accessibility = new MatsimAccessibility(geoData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            default:
+                break;
         }
 
-        Accessibility accessibility = new AccessibilityPerth(geoData, travelTimes, properties, dwellingData, householdData);
         CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!

@@ -117,7 +117,7 @@ public class ModelBuilder {
                 		(MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:
-            case MITO:
+            case MITO_MATSIM:
                 logger.warn("Mito not implemented for mstm. setting transport model to \"NONE\"");
             default:
                 transportModel = null;

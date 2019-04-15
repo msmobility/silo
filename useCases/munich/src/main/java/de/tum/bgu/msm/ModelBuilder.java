@@ -115,8 +115,8 @@ public class ModelBuilder {
 
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
-            case MITO:
-                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties);
+            case MITO_MATSIM:
+                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties, config);
                 break;
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,

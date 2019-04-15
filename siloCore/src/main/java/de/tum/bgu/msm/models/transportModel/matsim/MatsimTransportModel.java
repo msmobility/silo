@@ -153,9 +153,6 @@ public final class MatsimTransportModel implements TransportModel {
     		MatsimWriter populationWriter = new PopulationWriter(population);
     		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
     	}
-		
-		// Get travel Times from MATSim
-		logger.warn("Using MATSim to compute travel times from zone to zone.");
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);

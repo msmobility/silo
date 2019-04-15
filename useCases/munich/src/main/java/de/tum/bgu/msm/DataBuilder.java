@@ -40,17 +40,23 @@ public class DataBuilder {
         GeoData geoData = new DefaultGeoData();
 
 
-        TravelTimes travelTimes;
-        Accessibility accessibility;
-        if (properties.transportModel.transportModelIdentifier == MATSIM) {
-            travelTimes = new MatsimTravelTimes();
-//            accessibility = new MatsimAccessibility(geoData);
-            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        TravelTimes travelTimes = null;
+        Accessibility accessibility = null;
 
-        } else {
-            travelTimes = new SkimTravelTimes();
-            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        switch (properties.transportModel.travelTimeImplIdentifier) {
+            case SKIM:
+                travelTimes = new SkimTravelTimes();
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            case MATSIM:
+                travelTimes = new MatsimTravelTimes();
+//                accessibility = new MatsimAccessibility(geoData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            default:
+                break;
         }
+
         CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
