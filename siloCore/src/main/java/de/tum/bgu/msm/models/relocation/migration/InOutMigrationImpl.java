@@ -92,7 +92,8 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+    }
 
     private void createInmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
@@ -239,8 +240,9 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
 
     @Override
     public void endYear(int year) {
-        SummarizeData.resultFile("InmigrantsPP," + inMigrationPPCounter);
-        SummarizeData.resultFile("OutmigrantsPP," + outMigrationPPCounter);
+        //todo reconsider to print out model results and how to pass them to the ResultsMonitor
+        logger.info("Total Inmigrants: " + inMigrationPPCounter);
+        logger.info("Total OutmigrantsPP: " + outMigrationPPCounter);
     }
 
     @Override

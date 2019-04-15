@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -29,6 +30,9 @@ public final class Simulator {
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
 
+    private ResultsMonitor resultsMonitor;
+
+
     public Simulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
     }
@@ -43,6 +47,12 @@ public final class Simulator {
         logger.info("Registered annual model " + model.getClass().getSimpleName());
     }
 
+    public void registerResultsMonitor(ResultsMonitor resultsMonitor) {
+        this.resultsMonitor = resultsMonitor;
+        logger.info("Registered results monitor " + resultsMonitor.getClass().getSimpleName());
+    }
+
+
     public void setup() {
         logger.info("  Setting up annual models");
         timeTracker.reset();
@@ -55,6 +65,8 @@ public final class Simulator {
             model.setup();
             timeTracker.recordAndReset("SetupOf" + model.getClass().getSimpleName());
         }
+
+        resultsMonitor.setup();
     }
 
     public void simulate(int year) {
@@ -106,13 +118,8 @@ public final class Simulator {
         for(EventModel model: models.values()) {
             model.endYear(year);
         }
-        SummarizeData.resultFile("Count of simulated events");
-        logger.info("Simulated " + eventCounter.size() + " successful events in total.");
-        for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
-            final int count = eventCounter.count(event);
-            SummarizeData.resultFile(event.getSimpleName() + "," + count);
-            logger.info("Simulated " + event.getSimpleName() + ": " + count);
-        }
+
+        resultsMonitor.endYear(year, eventCounter);
         events.clear();
     }
 
@@ -123,5 +130,7 @@ public final class Simulator {
         for(EventModel model: models.values()) {
             model.endSimulation();
         }
+
+        resultsMonitor.endSimulation();
     }
 }

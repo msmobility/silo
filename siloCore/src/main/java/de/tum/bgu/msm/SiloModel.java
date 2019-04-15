@@ -22,6 +22,7 @@ import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -50,17 +51,19 @@ public final class SiloModel {
 
     private Simulator simulator;
     private final TimeTracker timeTracker = new TimeTracker();
+	private ResultsMonitor resultsMonitor;
 
-    /**
+	/**
      * @param properties
      * @param dataContainer
      * @param modelContainer
      */
   	public SiloModel(Properties properties,
-                     DataContainer dataContainer, ModelContainer modelContainer) {
+                     DataContainer dataContainer, ModelContainer modelContainer, ResultsMonitor resultsMonitor) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;
 		this.properties = properties;
+		this.resultsMonitor = resultsMonitor;
 		SiloUtil.modelStopper("initialize");
 	}
 
@@ -94,6 +97,8 @@ public final class SiloModel {
 				simulator.registerAnnualModel(modelUpdateListener);
 			}
 		}
+
+		simulator.registerResultsMonitor(resultsMonitor);
 
 		IssueCounter.setUpCounter();
 		IssueCounter.logIssues();

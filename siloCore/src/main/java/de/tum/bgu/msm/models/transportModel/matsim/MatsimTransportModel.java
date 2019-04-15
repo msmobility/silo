@@ -95,7 +95,7 @@ public final class MatsimTransportModel implements TransportModel {
 	public void setup() {
         network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
-        travelTimes.initialize(dataContainer.getGeoData().getZones(), network);
+        travelTimes.initialize(dataContainer.getGeoData(), network);
 
         logger.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();

@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
@@ -56,11 +57,13 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 
-    private final Map<Integer, Map<Integer, Double>> travelTimeToRegion = new HashMap<>();
+    private IndexedDoubleMatrix2D travelTimeToRegion;
 
-    public void initialize(Map<Integer, Zone> zones, Network network) {
+    public void initialize(GeoData geoData, Network network) {
         this.network = network;
-        this.zones = zones;
+        this.zones = geoData.getZones();
+        this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
+        this.travelTimeToRegion.assign(-1);
         buildZoneCalculationNodesMap();
     }
 
@@ -117,26 +120,23 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-        int originZone = origin.getZoneId();
-        int region = destination.getId();
-        if (travelTimeToRegion.containsKey(originZone)) {
-            final Double travelTime = travelTimeToRegion.get(originZone).get(region);
-            if(travelTime != null) {
-                return travelTime;
+        if (origin instanceof Zone) {
+            int originZone = origin.getZoneId();
+            if (travelTimeToRegion.getIndexed(originZone, destination.getId()) > 0) {
+                return travelTimeToRegion.getIndexed(originZone, destination.getId());
             }
+            double min = Double.MAX_VALUE;
+            for (Zone zoneInRegion : destination.getZones()) {
+                double travelTime = getPeakSkim(mode).getIndexed(originZone, zoneInRegion.getZoneId());
+                if (travelTime < min) {
+                    min = travelTime;
+                }
+            }
+            travelTimeToRegion.setIndexed(originZone, destination.getId(), min);
+            return min;
         } else {
-            travelTimeToRegion.put(originZone, new HashMap<>());
+            throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
         }
-
-        double min = Double.MAX_VALUE;
-        for (Zone zoneInRegion : destination.getZones()) {
-            double travelTime = getTravelTime(origin, zoneInRegion, timeOfDay_s, mode);
-            if (travelTime < min) {
-                min = travelTime;
-            }
-        }
-        travelTimeToRegion.get(originZone).put(region, min);
-        return min;
     }
 
     @Override
