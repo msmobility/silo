@@ -35,9 +35,6 @@ import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
-//import com.pb.common.calculator.UtilityExpressionCalculator;
-//import de.tum.bgu.msm.models.relocation.MovesDMU;
-
 public class MovesModelMstm extends AbstractMovesModelImpl {
 
     private final DwellingUtilityStrategyMstm dwellingUtilityStrategy;
@@ -169,10 +166,10 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
 
         calculateRacialCompositionByZoneAndRegion();
         Map<Integer, Double> averagePriceByRegion = calculateRegionalPrices();
-        Map<Integer, Integer> priceByRegion = new HashMap<>();
-        Map<Integer, Float> accessibilityByRegion = new  HashMap<>();
-        Map<Integer, Float> schoolQualityByRegion = new  HashMap<>();
-        Map<Integer, Float> crimeRateByRegion = new  HashMap<>();
+        Map<Integer, Integer> priceByRegion = new LinkedHashMap<>();
+        Map<Integer, Float> accessibilityByRegion = new LinkedHashMap<>();
+        Map<Integer, Float> schoolQualityByRegion = new LinkedHashMap<>();
+        Map<Integer, Float> crimeRateByRegion = new LinkedHashMap<>();
 
         for (Region region: geoData.getRegions().values()) {
             final int id = region.getId();
@@ -190,9 +187,9 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
 
         for (IncomeCategory incomeCategory: IncomeCategory.values()) {
             EnumMap<Race, Map<Integer, Double>> utilitiesByRaceRegionForThisIncome = new EnumMap<>(Race.class);
-            Map<Integer, Float> priceUtilitiesByRegion = new HashMap<>();
+            Map<Integer, Float> priceUtilitiesByRegion = new LinkedHashMap<>();
             for (Race race: Race.values()) {
-                Map<Integer, Double> utilitiesByRegionForThisRaceIncome = new HashMap<>();
+                Map<Integer, Double> utilitiesByRegionForThisRaceIncome = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()){
                     priceUtilitiesByRegion.put(region.getId(), (float) convertPriceToUtility(priceByRegion.get(region.getId()), incomeCategory));
                     utilitiesByRegionForThisRaceIncome.put(region.getId(),
@@ -210,7 +207,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     }
 
     private Map<Integer, Double> getUtilitiesByRegionForThisHouesehold(HouseholdType ht, Race race, Collection<Zone> workZones){
-        Map<Integer, Double> utilitiesForThisHousheold = new HashMap<>();
+        Map<Integer, Double> utilitiesForThisHousheold = new LinkedHashMap<>();
         utilitiesForThisHousheold.putAll(utilityByIncomeRaceRegion.get(ht.getIncomeCategory()).get(race));
 
         for(Region region : geoData.getRegions().values()){
@@ -235,7 +232,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         // data preparation -- > count workers, store working zones, define income, define race
         int householdIncome = 0;
         Race householdRace = null;
-        Map<Person, Zone> workerZonesForThisHousehold = new HashMap<>();
+        Map<Person, Zone> workerZonesForThisHousehold = new LinkedHashMap<>();
         JobDataManager jobData = dataContainer.getJobDataManager();
         RealEstateDataManager realEstateData = dataContainer.getRealEstateDataManager();
         for (Person pp: household.getPersons().values()) {
@@ -256,7 +253,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
-        Map<Integer, Double> regionUtilitiesForThisHousehold  = new HashMap<>();
+        Map<Integer, Double> regionUtilitiesForThisHousehold  = new LinkedHashMap<>();
         regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHouesehold(ht, householdRace, workerZonesForThisHousehold.values()));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
@@ -362,7 +359,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
             ddPriceUtility = convertPriceToUtility(price, ht);
         }
 
-        Map<Person, Zone> jobsForThisHousehold = new HashMap<>();
+        Map<Person, Zone> jobsForThisHousehold = new LinkedHashMap<>();
         JobDataManager jobData = dataContainer.getJobDataManager();
         for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {

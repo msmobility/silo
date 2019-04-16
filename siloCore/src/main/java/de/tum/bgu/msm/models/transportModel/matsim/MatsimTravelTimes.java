@@ -12,6 +12,7 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
@@ -217,6 +218,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         }
     }
 
+    @Override
     public TravelTimes duplicate() {
         logger.warn("Creating another TravelTimes object.");
         MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
@@ -234,7 +236,7 @@ public final class MatsimTravelTimes implements TravelTimes {
             // Several points in a given origin zone
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                 // TODO Check if random coordinate is the best representative
-                Coordinate coordinate = zone.getRandomCoordinate();
+                Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
                 Coord originCoord = new Coord(coordinate.x, coordinate.y);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 

@@ -16,7 +16,7 @@ public class DwellingUtilityStrategyMstm extends JavaScriptCalculator<Double> {
         super(reader);
     }
 
-    public double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,
+    public synchronized double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,
                                                  double ddQualityUtility, double ddAutoAccessibilityUtility,
                                                  double transitAccessibilityUtility, double ddSchoolQuality,
                                                  double ddCrimeIndex, double ddWorkDistanceUtility) {

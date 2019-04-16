@@ -44,7 +44,7 @@ public class GenerateDwellingMicrolocation {
             int zoneID = dd.getZoneId();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneBuildingMap.get(zoneID) == null){
-                dd.setCoordinate(zone.getRandomCoordinate());
+                dd.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
                 errorBuilding++;
                 continue;
             }

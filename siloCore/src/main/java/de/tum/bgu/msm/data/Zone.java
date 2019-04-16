@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.development.Development;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.util.Random;
+
 public interface Zone extends Location, Id {
 
     Region getRegion();
@@ -17,7 +19,7 @@ public interface Zone extends Location, Id {
 
 	SimpleFeature getZoneFeature();
 
-	Coordinate getRandomCoordinate();
+	Coordinate getRandomCoordinate(Random random);
 
 	Development getDevelopment();
 
