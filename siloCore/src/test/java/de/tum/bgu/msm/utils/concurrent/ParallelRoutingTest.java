@@ -1,21 +1,13 @@
 package de.tum.bgu.msm.utils.concurrent;
 
-import com.google.common.math.LongMath;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.contrib.locationchoice.router.BackwardFastMultiNodeDijkstraFactory;
-import org.matsim.contrib.locationchoice.router.BackwardMultiNodePathCalculator;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.*;
@@ -26,14 +18,13 @@ import org.matsim.vehicles.Vehicle;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 public class ParallelRoutingTest {
 
     private static Logger logger = Logger.getLogger(ParallelRoutingTest.class);
 
     @Test
+    @Ignore
     public void testParallelRouting() {
 
         Network network = NetworkUtils.createNetwork();
