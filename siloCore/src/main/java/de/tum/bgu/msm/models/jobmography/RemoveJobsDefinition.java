@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.jobmography;
 
 import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
@@ -14,7 +14,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
     private final List<Integer> occupiedJobs;
 
     public RemoveJobsDefinition(Zone zone, int change, String jobType, List<Integer> vacantJobs,
-                                List<Integer> occupiedJobs, SiloDataContainer dataContainer) {
+                                List<Integer> occupiedJobs, DataContainer dataContainer) {
         super(zone, change, jobType, dataContainer);
         this.vacantJobs = vacantJobs;
         this.occupiedJobs = occupiedJobs;

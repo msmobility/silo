@@ -1,11 +1,14 @@
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.data.household.HouseholdType.*;
@@ -18,10 +21,6 @@ public class HouseholdUtil {
     private final static HouseholdFactory factory = new HouseholdFactoryImpl();
 
     private HouseholdUtil() {
-    }
-
-    public static HouseholdFactory getFactory() {
-        return factory;
     }
 
     public static int getNumberOfWorkers(Household household) {
@@ -60,7 +59,7 @@ public class HouseholdUtil {
         // define household type based on size and income
 
         int hhSize = household.getHhSize();
-        IncomeCategory incomeCategory = HouseholdDataManager.getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
+        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
 
         HouseholdType ht = null;
         if (hhSize == 1) {
@@ -87,16 +86,20 @@ public class HouseholdUtil {
         return ht;
     }
 
-    public static Race defineHouseholdRace(Household household) {
-        Race householdRace = null;
-        for (Person pp : household.getPersons().values()) {
-            if (householdRace == null) {
-                householdRace = pp.getRace();
-            } else if (pp.getRace() != householdRace) {
-                return Race.other;
+    /**
+     * return income category defined exogenously
+     * @param hhInc
+     * @return
+     */
+    public static IncomeCategory getIncomeCategoryForIncome(int hhInc) {
+        int[] incomeBrackets = Properties.get().main.incomeBrackets;
+        for (int i = 0; i < incomeBrackets.length; i++) {
+            if (hhInc < incomeBrackets[i]) {
+                return IncomeCategory.values()[i];
             }
         }
-        return householdRace;
+        // if income is larger than highest category
+        return IncomeCategory.values()[IncomeCategory.values().length - 1];
     }
 
     public static Person findMostLikelyUnmarriedPartner (Person per, Household hh) {
@@ -201,16 +204,17 @@ public class HouseholdUtil {
             }
         }
     }
+    
+    public static Map<Integer, Integer> getPopulationByZoneAsMap(DataContainer dataContainer) {
+    	Map<Integer, Integer> zonePopulationMap = new HashMap<>();
+    	for (int zone : dataContainer.getGeoData().getZones().keySet()) {
+    		zonePopulationMap.put(zone, 0);
+    	}
 
-    public static Nationality defineHouseholdNationality(Household household) {
-        Nationality householdNationaliy = null;
-        for (Person pp : household.getPersons().values()) {
-            if (householdNationaliy == null) {
-                householdNationaliy = pp.getNationality();
-            } else if (pp.getNationality() != householdNationaliy) {
-                return Nationality.OTHER;
-            }
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
+            final int zone = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();
+            zonePopulationMap.put(zone, zonePopulationMap.get(zone) + hh.getHhSize());
         }
-        return householdNationaliy;
+        return zonePopulationMap;
     }
 }

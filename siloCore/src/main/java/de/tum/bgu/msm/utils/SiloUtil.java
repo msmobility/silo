@@ -4,9 +4,8 @@ import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.container.SiloModelContainer;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
@@ -41,18 +40,12 @@ public class SiloUtil {
     public static PrintWriter trackWriter;
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
-    public static Properties siloInitialization(Implementation implementation, String propertiesPath) {
-
+    public static Properties siloInitialization(String propertiesPath) {
         loadHdf5Lib();
-
-        Properties properties = Properties.initializeProperties(propertiesPath, implementation);
-
+        Properties properties = Properties.initializeProperties(propertiesPath);
         createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-        SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
-
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
-
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
         return properties;
@@ -147,6 +140,9 @@ public class SiloUtil {
 
 
     public static Random getRandomObject() {
+        if(rand == null) {
+            rand = new Random(42);
+        }
         return rand;
     }
 
@@ -159,10 +155,12 @@ public class SiloUtil {
     }
 
 
-    public static int[] convertIntegerArrayListToArray (ArrayList<Integer> al) {
+    public static int[] convertIntegerArrayListToArray (List<Integer> al) {
         Integer[] temp = al.toArray(new Integer[0]);
         int[] list = new int[temp.length];
-        for (int i = 0; i < temp.length; i++) list[i] = temp[i];
+        for (int i = 0; i < temp.length; i++) {
+            list[i] = temp[i];
+        }
         return list;
     }
 
@@ -274,7 +272,7 @@ public class SiloUtil {
                 String fileName = Properties.get().track.trackFile;
                 String baseDirectory = Properties.get().main.baseDirectory;
                 int startYear = Properties.get().main.startYear;
-                trackWriter = openFileForSequentialWriting(baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + fileName + ".txt", startYear != Properties.get().main.implementation.BASE_YEAR);
+                trackWriter = openFileForSequentialWriting(baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/" + fileName + ".txt", startYear != Properties.get().main.baseYear);
                 if (trackHh != -1) trackWriter.println("Tracking household " + trackHh);
                 if (trackPp != -1) trackWriter.println("Tracking person " + trackPp);
                 if (trackDd != -1) trackWriter.println("Tracking dwelling " + trackDd);
@@ -582,18 +580,22 @@ public class SiloUtil {
     }
 
 
-    public static void finish (SiloModelContainer modelContainer) {
-        SummarizeData.resultFile("close");
+    public static void finish (ModelContainer modelContainer) {
         trackingFile("close");
-        if (modelContainer.getDdOverwrite().traceOverwriteDwellings()) modelContainer.getDdOverwrite().finishOverwriteTracer();
-        if (IssueCounter.didFindIssues()) logger.warn("Found issues, please check warnings in logging statements.");
+        if (IssueCounter.didFindIssues()) {
+            logger.warn("Found issues, please check warnings in logging statements.");
+        }
     }
 
 
     public static float rounder(float value, int digits) {
         // rounds value to digits behind the decimal point
-
         return Math.round(value * Math.pow(10, digits) + 0.5)/(float) Math.pow(10, digits);
+    }
+
+    public static double rounder(double value, int digits) {
+        // rounds value to digits behind the decimal point
+        return Math.round(value * Math.pow(10, digits) + 0.5)/ Math.pow(10, digits);
     }
 
     /**
@@ -1031,7 +1033,6 @@ public class SiloUtil {
     public static void closeAllFiles (long startTime, TimeTracker timeTracker) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
-        SummarizeData.resultFile("close");
         SummarizeData.resultFileSpatial("close");
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
@@ -1059,25 +1060,18 @@ public class SiloUtil {
     }
 
 
-    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer) {
+    public static void summarizeMicroData (int year, ModelContainer modelContainer, DataContainer dataContainer) {
         // aggregate micro data
 
         if (trackHh != -1 || trackPp != -1 || trackDd != -1)
             trackWriter.println("Started simulation for year " + year);
         logger.info("  Summarizing micro data for year " + year);
 
-        SummarizeData.resultFile("Year " + year, false);
-        dataContainer.getHouseholdData().summarizePopulation(dataContainer);
-        dataContainer.getRealEstateData().summarizeDwellings();
-        dataContainer.getJobData().summarizeJobs(dataContainer.getGeoData().getRegions());
 
         SummarizeData.resultFileSpatial("Year " + year, false);
-        SummarizeData.summarizeSpatially(year, modelContainer, dataContainer);
+        SummarizeData.summarizeSpatially(year, dataContainer);
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
-        }
-        if (Properties.get().main.createPrestoSummary) {
-            SummarizeData.summarizePrestoRegion(year, dataContainer);
         }
     }
 
@@ -1087,7 +1081,7 @@ public class SiloUtil {
 
         int startYear = Properties.get().main.startYear;
         PrintWriter pw = openFileForSequentialWriting(Properties.get().main.baseDirectory + "scenOutput/" +
-                Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.implementation.BASE_YEAR);
+                Properties.get().main.scenarioName + "/" + TIME_TRACKER_FILE, startYear != Properties.get().main.baseYear);
         pw.write(timeTracker.toString());
         pw.close();
     }

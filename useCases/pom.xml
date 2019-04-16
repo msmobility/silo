@@ -173,10 +173,10 @@
     <modules>
         <module>munich</module>
         <module>maryland</module>
-        <module>msp</module>
         <module>perth</module>
         <module>kagawa</module>
         <module>austin</module>
+        <module>capeTown</module>
     </modules>
 
     <repositories>

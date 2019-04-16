@@ -1,18 +1,15 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.JobDataManager;
-import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
-import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -23,10 +20,10 @@ import java.util.HashMap;
 public class ReadPopulation {
 
     private static final Logger logger = Logger.getLogger(ReadPopulation.class);
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    ReadPopulation(SiloDataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
+    ReadPopulation(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.educationalLevel = educationalLevel;
     }
@@ -43,8 +40,8 @@ public class ReadPopulation {
     private void readHouseholdData(int year) {
         logger.info("Reading household micro data from ascii file");
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
-        HouseholdFactory householdFactory = HouseholdUtil.getFactory();
+        HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
+        HouseholdFactory householdFactory = householdData.getHouseholdFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
         fileName += "_" + year + ".csv";
 
@@ -87,7 +84,7 @@ public class ReadPopulation {
     private void readPersonData(int year) {
         logger.info("Reading person micro data from ascii file");
 
-        HouseholdDataManager householdData = dataContainer.getHouseholdData();
+        HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
         fileName += "_" + year + ".csv";
 
@@ -104,13 +101,11 @@ public class ReadPopulation {
             int posAge = SiloUtil.findPositionInArray("age",header);
             int posGender = SiloUtil.findPositionInArray("gender",header);
             int posRelShp = SiloUtil.findPositionInArray("relationShip",header);
-            int posRace = SiloUtil.findPositionInArray("race",header);
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posNationality = SiloUtil.findPositionInArray("nationality",header);
             int posEducation = SiloUtil.findPositionInArray("education",header);
-            int posHomeZone = SiloUtil.findPositionInArray("homeZone",header);
             int posWorkZone = SiloUtil.findPositionInArray("workZone",header);
             int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
             int posSchoolDE = SiloUtil.findPositionInArray("schoolDE",header);
@@ -127,12 +122,10 @@ public class ReadPopulation {
                 Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String relShp  = lineElements[posRelShp].replace("\"", "");
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
-                String strRace = lineElements[posRace].replace("\"", "");
-                Race race = Race.valueOf(strRace);
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                Person pp = factory.createPerson(id, age, gender, race, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
+                PersonMuc pp = (PersonMuc) factory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
@@ -150,7 +143,6 @@ public class ReadPopulation {
                 int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
                 educationalLevel.put(pp, education);
-                pp.setJobTAZ(workZone);
                 pp.setSchoolPlace(schoolTAZ);
                 pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
@@ -170,7 +162,7 @@ public class ReadPopulation {
         // read dwelling micro data from ascii file
 
         logger.info("Reading dwelling micro data from ascii file");
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
         fileName += "_" + year + ".csv";
 
@@ -189,11 +181,9 @@ public class ReadPopulation {
             int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
-            int posRestr   = SiloUtil.findPositionInArray("restriction",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
             int posFloor   = SiloUtil.findPositionInArray("floor",header);
-            int posBuilding= SiloUtil.findPositionInArray("building",header);
-            //int posUse     = SiloUtil.findPositionInArray("usage",header);
+            int posUse     = SiloUtil.findPositionInArray("usage",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -207,19 +197,15 @@ public class ReadPopulation {
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
-                float restrict  = Float.parseFloat(lineElements[posRestr]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, restrict, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 realEstate.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }
                 int floor = Integer.parseInt(lineElements[posFloor]);
-                int building = Integer.parseInt(lineElements[posBuilding]);
-                //int use = Integer.parseInt(lineElements[posUse]);
-                int use = 1;
+                int use = Integer.parseInt(lineElements[posUse]);
                 dd.setFloorSpace(floor);
-                dd.setBuildingSize(building);
                 dd.setUsage(DwellingUsage.valueOf(use));
             }
         } catch (IOException e) {
@@ -233,7 +219,7 @@ public class ReadPopulation {
     private void readJobData(int year) {
         logger.info("Reading job micro data from ascii file");
 
-        JobDataManager jobDataManager = dataContainer.getJobData();
+        JobDataManager jobData = dataContainer.getJobDataManager();
         String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
@@ -258,7 +244,7 @@ public class ReadPopulation {
                 int zoneId    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                jobDataManager.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
+                jobData.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }

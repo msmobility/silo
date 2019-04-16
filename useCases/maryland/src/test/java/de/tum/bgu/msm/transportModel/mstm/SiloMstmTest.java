@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.testcases.MatsimTestUtils;
-import run.SiloMstm;
+import de.tum.bgu.msm.run.SiloMstm;
 
 import java.io.File;
 

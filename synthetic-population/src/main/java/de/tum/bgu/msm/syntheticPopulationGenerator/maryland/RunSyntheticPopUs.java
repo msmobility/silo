@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
-import de.tum.bgu.msm.Implementation;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -15,13 +15,14 @@ public class RunSyntheticPopUs {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.MARYLAND, args[0]);
+        final Properties properties = SiloUtil.siloInitialization(args[0]);
         try {
             PropertyResourceBundle bundle = new PropertyResourceBundle(new FileReader(args[0]));
+
 //            PropertiesSynPop.initializePropertiesSynPop(bundle, Implementation.MARYLAND);
 //            PropertiesUtil.writePropertiesForThisRun(args[0]);
             SyntheticPopI syntheticPop;
-            syntheticPop = new SyntheticPopUs(bundle);
+            syntheticPop = new SyntheticPopUs(bundle, properties);
             syntheticPop.runSP();
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);

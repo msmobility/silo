@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data.geo;
 
-import de.tum.bgu.msm.data.Development;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;
@@ -18,24 +18,19 @@ import java.util.Random;
 public class ZoneImpl implements Zone {
 
     private final int id;
-    private final int msa;
     private final float area_sqmi;
 
-    private final Random random;
 
     private final Region region;
     
     private SimpleFeature zoneFeature;
 
     private Development development;
-    
 
-    public ZoneImpl(int id, int msa, float area_sqmi, Region region) {
+    public ZoneImpl(int id, float area_sqmi, Region region) {
         this.id = id;
-        this.msa = msa;
         this.area_sqmi = area_sqmi;
         this.region = region;
-        this.random = new Random(SiloUtil.getRandomObject().nextLong());
     }
 
 
@@ -47,11 +42,6 @@ public class ZoneImpl implements Zone {
     @Override
     public Region getRegion() {
         return this.region;
-    }
-
-    @Override
-    public int getMsa() {
-        return this.msa;
     }
 
     @Override
@@ -70,7 +60,7 @@ public class ZoneImpl implements Zone {
     }
     
     @Override
-	public Coordinate getRandomCoordinate() {
+	public Coordinate getRandomCoordinate(Random random) {
         //TODO:this can be optimized by using the same (static) points builder multiple times instead of recreating it
         RandomPointsBuilder randomPointsBuilder = new SeededRandomPointsBuilder(new GeometryFactory(), random);
         randomPointsBuilder.setNumPoints(1);
@@ -95,5 +85,8 @@ public class ZoneImpl implements Zone {
         return getZoneId();
     }
 
-
+    @Override
+    public String toString() {
+        return "Zone " + id + ", region=" + region.getId();
+    }
 }

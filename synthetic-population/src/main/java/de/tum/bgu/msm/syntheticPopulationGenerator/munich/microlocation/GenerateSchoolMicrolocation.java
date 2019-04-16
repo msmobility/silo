@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.SchoolDataManager;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.data.school.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -21,12 +21,12 @@ public class GenerateSchoolMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateSchoolMicrolocation.class);
 
-    private final SiloDataContainer dataContainer;
+    private final DataContainerMuc dataContainer;
     private final DataSetSynPop dataSetSynPop;
     Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
 
 
-    public GenerateSchoolMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateSchoolMicrolocation(DataContainerMuc dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -38,7 +38,8 @@ public class GenerateSchoolMicrolocation {
         logger.info("   Start Selecting the school to allocate the student");
         //Select the school to allocate the student
         int errorSchool = 0;
-        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
+        for (Person p : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonMuc pp = (PersonMuc) p;
             if (pp.getOccupation() == Occupation.STUDENT) {
                 int zoneID = pp.getSchoolPlace();
                 int schoolType = pp.getSchoolType();
@@ -80,7 +81,7 @@ public class GenerateSchoolMicrolocation {
             zoneSchoolTypeSchoolLocationCapacity.put(zone,schoolLocationListForThisSchoolType);
         }
 
-        SchoolDataManager schoolDataManager = dataContainer.getSchoolData();
+        SchoolData schoolData = dataContainer.getSchoolData();
 
         for (int row = 1; row <= PropertiesSynPop.get().main.schoolLocationlist.getRowCount(); row++) {
 
@@ -92,7 +93,7 @@ public class GenerateSchoolMicrolocation {
             int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"schoolType");
 
             Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
-            schoolDataManager.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
+            schoolData.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
 
             if (zoneSchoolTypeSchoolLocationCapacity.get(zone) != null){
                 zoneSchoolTypeSchoolLocationCapacity.get(zone).get(schoolType).put(id,schoolCapacity);

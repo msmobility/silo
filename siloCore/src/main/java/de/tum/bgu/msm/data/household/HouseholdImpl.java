@@ -16,9 +16,7 @@
  */
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.Race;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -36,11 +34,8 @@ public class HouseholdImpl implements Household {
     private final int hhId;
     private int dwellingId;
 
-    private Race race;
-    private Nationality nationality;
     private int autos;
     private HouseholdType type;
-    private int autonomous = 0;
 
     private final Map<Integer, Person> persons;
 
@@ -87,14 +82,6 @@ public class HouseholdImpl implements Household {
     }
 
     @Override
-    public Race getRace() {return race; }
-
-    @Override
-    public Nationality getNationality() {
-        return nationality;
-    }
-
-    @Override
     public void setDwelling(int id) {
         this.dwellingId = id;
     }
@@ -103,13 +90,14 @@ public class HouseholdImpl implements Household {
     public void addPerson(Person person) {
         if(person != null) {
             this.persons.put(person.getId(), person);
-            update();
+            updateHouseholdType();
         }
     }
 
     @Override
-    public void removePerson(Integer personId) {
+    public void removePerson(int personId) {
         this.persons.remove(personId);
+        updateHouseholdType();
     }
 
     @Override
@@ -122,21 +110,5 @@ public class HouseholdImpl implements Household {
         return  "Attributes of household " + hhId
             +"\nDwelling ID             " + dwellingId
             +"\nHousehold size          " + persons.size();
-    }
-
-    @Override
-    public void setAutonomous(int autonomous){
-        this.autonomous = autonomous;
-    }
-
-    @Override
-    public int getAutonomous(){
-        return autonomous;
-    }
-
-    private void update() {
-        this.race = HouseholdUtil.defineHouseholdRace(this);
-        this.nationality = HouseholdUtil.defineHouseholdNationality(this);
-        updateHouseholdType();
     }
 }

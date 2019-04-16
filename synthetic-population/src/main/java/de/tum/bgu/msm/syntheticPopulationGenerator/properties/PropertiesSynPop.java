@@ -1,9 +1,5 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
-import de.tum.bgu.msm.Implementation;
-
-import java.util.ResourceBundle;
-
 public final class PropertiesSynPop {
 
     private static PropertiesSynPop instance;
@@ -14,16 +10,14 @@ public final class PropertiesSynPop {
         return instance;
     }
 
-    public static void initializePropertiesSynPop(ResourceBundle bundle, Implementation implementation){
-        instance = new PropertiesSynPop(bundle, implementation);
+    public static void initializePropertiesSynPop(AbstractPropertiesSynPop propertiesSynPop){
+        instance = new PropertiesSynPop(propertiesSynPop);
     }
 
-    public final MainPropertiesSynPop main;
+    public final AbstractPropertiesSynPop main;
 
-    private PropertiesSynPop(ResourceBundle bundle, Implementation implementation){
-        main = new MainPropertiesSynPop(bundle);
-
-
+    private PropertiesSynPop(AbstractPropertiesSynPop propertiesSynPop){
+        main = propertiesSynPop;
     }
 
 }
