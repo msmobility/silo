@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -14,10 +14,10 @@ import java.util.HashMap;
 public class Allocation extends ModuleSynPop{
 
     private static final Logger logger = Logger.getLogger(Allocation.class);
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    public Allocation(DataSetSynPop dataSetSynPop, SiloDataContainer dataContainer){
+    public Allocation(DataSetSynPop dataSetSynPop, DataContainer dataContainer){
         super(dataSetSynPop);
         this.dataContainer = dataContainer;
     }

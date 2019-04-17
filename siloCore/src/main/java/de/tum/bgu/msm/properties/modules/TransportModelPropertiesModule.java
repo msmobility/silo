@@ -20,9 +20,14 @@ public class TransportModelPropertiesModule {
     public final Set<Integer> transportModelYears;
 
     /**
-     * Identifier for the transport model {@link TransportModelIdentifier}: MITO, MATSIM, NONE.
+     * Identifier for the transport model {@link TransportModelIdentifier}: MITO_MATSIM, MATSIM, NONE.
      */
     public final TransportModelIdentifier transportModelIdentifier;
+
+    /**
+     * Identifier for the transport model {@link TransportModelIdentifier}: MITO_MATSIM, MATSIM, NONE.
+     */
+    public final TravelTimeImplIdentifier travelTimeImplIdentifier;
 
     /**
      * Path to mito properties file.
@@ -39,13 +44,15 @@ public class TransportModelPropertiesModule {
      */
     public final double matsimScaleFactor;
 
-    /**
-     * Share of people working at peak times (only peak traffic is simulated) by car
-     */
-    public final double matsimWorkersShare;
-
     public enum TransportModelIdentifier {
-        MITO, MATSIM, NONE;
+        MITO_MATSIM, MATSIM, NONE;
+    }
+
+    /**
+     * Identifier for which data structure to use for travel times.
+     */
+    public enum TravelTimeImplIdentifier {
+        MATSIM, SKIM;
     }
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
@@ -54,8 +61,15 @@ public class TransportModelPropertiesModule {
                 .boxed().collect(Collectors.toSet());
         peakHour_s = PropertiesUtil.getDoubleProperty(bundle, "peak.hour", 8*60*60);
 
-        PropertiesUtil.newPropertySubmodule("Transport model identifier (MITO, MATSIM, NONE, or empty)");
+        PropertiesUtil.newPropertySubmodule("Transport model identifier (MITO_MATSIM, MATSIM, NONE, or empty)");
         transportModelIdentifier = TransportModelIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "transport.model", "NONE").toUpperCase());
+
+        PropertiesUtil.newPropertySubmodule("Travel time data structure identifier (MATSIM or SKIM)");
+        travelTimeImplIdentifier = TravelTimeImplIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "travel.time", "SKIM").toUpperCase());
+
+        if(transportModelIdentifier == TransportModelIdentifier.NONE && travelTimeImplIdentifier == TravelTimeImplIdentifier.MATSIM) {
+            throw new RuntimeException("Trying to use matsim travel times without a mito/matsim transport model is inconsistent!");
+        }
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-mito-matsim");
         mitoPropertiesPath = PropertiesUtil.getStringProperty(bundle, "mito.properties.file","mito.properties");
@@ -63,7 +77,6 @@ public class TransportModelPropertiesModule {
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
         matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
-        matsimWorkersShare = PropertiesUtil.getDoubleProperty(bundle, "matsim.workers.share", .66);
     }
 
 }

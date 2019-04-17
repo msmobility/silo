@@ -18,7 +18,6 @@ package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.household.Household;
-import org.locationtech.jts.geom.Coordinate;
 
 /**
  * @author Greg Erhardt 
@@ -47,8 +46,6 @@ public interface Person extends Id {
 
     Gender getGender();
 
-    Race getRace();
-
     Occupation getOccupation();
 
     int getIncome();
@@ -59,32 +56,7 @@ public interface Person extends Id {
 
     int getJobId();
 
-    void setNationality(Nationality nationality);
-
-    Nationality getNationality();
-
-    void setTravelTime(float travelTime);
-
-    float getTravelTime();
-
-    void setJobTAZ(int jobTAZ);
-
-    int getJobTAZ();
-
     void setDriverLicense(boolean driverLicense);
 
     boolean hasDriverLicense();
-
-    void setSchoolType(int schoolType);
-
-    int getSchoolType();
-
-    void setSchoolPlace(int schoolPlace);
-
-    int getSchoolPlace();
-
-    int getSchoolId();
-
-    void setSchoolId(int schoolId);
-
 }

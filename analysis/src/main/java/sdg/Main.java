@@ -1,19 +1,20 @@
 package sdg;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.DataBuilder;
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(Implementation.MUNICH, args[0]);
+        Properties properties = SiloUtil.siloInitialization(args[0]);
 
-        SiloDataContainer siloDataContainer = SiloDataContainer.loadSiloDataContainer(properties);
+        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
+        DataBuilder.read(properties, dataContainer);
 
-        SDGCalculator.calculateSdgIndicators(siloDataContainer, Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName,
+        SDGCalculator.calculateSdgIndicators(dataContainer, Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName,
                 Properties.get().main.startYear);
 
     }

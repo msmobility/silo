@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import de.tum.bgu.msm.Implementation;
-import de.tum.bgu.msm.SiloMatsim;
+import de.tum.bgu.msm.run.SiloMatsim;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
@@ -60,7 +59,7 @@ public class SiloMatsimTest {
 		config.qsim().setNumberOfThreads(1);
 
 		try {
-			SiloMatsim siloMatsim = new SiloMatsim(arg, config, Implementation.MARYLAND);
+			SiloMatsim siloMatsim = new SiloMatsim(arg, config);
 			siloMatsim.run();
 		} catch (Exception e) {
 			e.printStackTrace();

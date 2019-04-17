@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -17,7 +17,7 @@ public class GenerateDwellingMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateDwellingMicrolocation.class);
     private static final double PENALTY = 0.5;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
     private HashMap<Integer, Float> buildingX = new HashMap<>();
     private HashMap<Integer, Float> buildingY = new HashMap<>();
@@ -27,7 +27,7 @@ public class GenerateDwellingMicrolocation {
     Map<Integer, Float> zoneDensity = new HashMap<>();
     Map<Integer, Integer> dwellingsInTAZ = new HashMap<Integer, Integer>();
 
-    public GenerateDwellingMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -40,11 +40,11 @@ public class GenerateDwellingMicrolocation {
         logger.info("   Start Selecting the building to allocate the dwelling");
         //Select the building to allocate the dwelling
         int errorBuilding = 0;
-        for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
+        for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
             int zoneID = dd.getZoneId();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneBuildingMap.get(zoneID) == null){
-                dd.setCoordinate(zone.getRandomCoordinate());
+                dd.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
                 errorBuilding++;
                 continue;
             }
@@ -86,12 +86,10 @@ public class GenerateDwellingMicrolocation {
     }
 
     private void calculateDensity() {
-        for (Dwelling dd: dataContainer.getRealEstateData().getDwellings()) {
+        for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
             int zoneID = dd.getZoneId();
 
-            if (dwellingsInTAZ.get(zoneID) == null) {
-                dwellingsInTAZ.put(zoneID, 0);
-            }
+            dwellingsInTAZ.putIfAbsent(zoneID, 0);
 
             int numberOfDwellings = dwellingsInTAZ.get(zoneID);
             dwellingsInTAZ.put(zoneID,numberOfDwellings+1);

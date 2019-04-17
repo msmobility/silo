@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.container.SiloDataContainer;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobImpl;
@@ -18,7 +18,7 @@ public class GenerateJobMicrolocation {
 
     private static final Logger logger = Logger.getLogger(GenerateJobMicrolocation.class);
     
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobX = new HashMap<>();
     private Map<Integer, Float> jobY = new HashMap<>();
@@ -27,7 +27,7 @@ public class GenerateJobMicrolocation {
     Map<Integer, Map<String,Float>> zoneJobTypeDensity = new HashMap<>();
     Map<Integer, Map<String,Integer>> jobsByJobTypeInTAZ = new HashMap<>();
     
-    public GenerateJobMicrolocation(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateJobMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -40,12 +40,12 @@ public class GenerateJobMicrolocation {
         logger.info("   Start Selecting the job to allocate the job");
         //Select the job to allocate the job
         int errorjob = 0;
-        for (Job jj: dataContainer.getJobData().getJobs()) {
+        for (Job jj: dataContainer.getJobDataManager().getJobs()) {
             int zoneID = jj.getZoneId();
             String jobType = jj.getType();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate());
+                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
                 errorjob++;
                 continue;
             }
@@ -120,13 +120,11 @@ public class GenerateJobMicrolocation {
             zoneJobTypeDensity.put(zone,densityByJobType);
         }
 
-        for (Job jj: dataContainer.getJobData().getJobs()) {
+        for (Job jj: dataContainer.getJobDataManager().getJobs()) {
             int zoneID = jj.getZoneId();
             String jobType = jj.getType();
 
-            if (jobsByJobTypeInTAZ.get(zoneID).get(jobType) ==null){
-                jobsByJobTypeInTAZ.get(zoneID).put(jobType,0);
-            }
+            jobsByJobTypeInTAZ.get(zoneID).putIfAbsent(jobType, 0);
 
             int numberOfJobs = jobsByJobTypeInTAZ.get(zoneID).get(jobType);
             jobsByJobTypeInTAZ.get(zoneID).put(jobType,numberOfJobs+1);

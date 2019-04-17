@@ -1,10 +1,10 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.Location;
+import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
-public interface Dwelling extends Location, Id {
+public interface Dwelling extends MicroLocation, Id {
 
     int getQuality();
 
@@ -18,15 +18,11 @@ public interface Dwelling extends Location, Id {
 
     int getYearBuilt();
 
-    float getRestriction();
-
     void setResidentID(int residentID);
 
     void setQuality(int quality);
 
     void setPrice(int price);
-
-    void setRestriction(float restriction);
 
     void setFloorSpace(int floorSpace);
 
@@ -34,20 +30,7 @@ public interface Dwelling extends Location, Id {
 
     void setCoordinate(Coordinate coordinate);
 
-    //TODO: magic numbers
-    void setBuildingSize(int buildingSize);
-
-    int getBuildingSize();
-
     void setUsage(DwellingUsage usage);
 
     DwellingUsage getUsage();
-
-    //TODO: magic numbers
-    //TODO: use case specific
-    void setYearConstructionDE(int yearConstructionDE);
-
-    //TODO: use case specific
-    int getYearConstructionDE();
-
 }

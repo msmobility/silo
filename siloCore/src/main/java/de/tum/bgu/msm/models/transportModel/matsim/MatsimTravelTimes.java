@@ -1,180 +1,251 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.TravelTimeUtil;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.router.TripRouter;
+import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.router.*;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.facilities.ActivityFacilitiesFactory;
+import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
+import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
-import org.matsim.utils.leastcostpathtree.LeastCostPathTree;
+import org.matsim.pt.PtConstants;
 
 import java.util.*;
 
+/**
+ * @author dziemke
+ */
 public final class MatsimTravelTimes implements TravelTimes {
-	private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
+    private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
 
-	private SkimTravelTimes delegate = new SkimTravelTimes() ;
-	private LeastCostPathTree leastCoastPathTree;
-	private Network network;
-	private TripRouter tripRouter;
-	private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
-	private final static int NUMBER_OF_CALC_POINTS = 1;
-	private final Map<Id<Node>, Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>>> treesForNodesByTimes = new HashMap<>();
+    private final static int NUMBER_OF_CALC_POINTS = 1;
+    private Network network;
 
-	private final Table<Zone, Region, Double> travelTimeToRegion = HashBasedTable.create();
+    private final Map<String, IndexedDoubleMatrix2D> skimsByMode = new HashMap<>();
+    private Map<Integer, Zone> zones;
 
-	public MatsimTravelTimes() {
-	}
+    private TravelTime travelTime;
+    private TravelDisutility travelDisutility;
 
-	void update(TripRouter tripRouter, LeastCostPathTree leastCoastPathTree) {
-		this.tripRouter = tripRouter;
-		this.leastCoastPathTree = leastCoastPathTree;
-		this.treesForNodesByTimes.clear();
-		TravelTimeUtil.updateTransitSkim(delegate,
-				Properties.get().main.startYear, Properties.get());
-	}
+    private TripRouter tripRouter;
 
-	public void initialize(Collection<Zone> zones, Network network) {
-		this.network = network;
-		for (Zone zone : zones) {
-            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) { // Several points in a given origin zone
-            	Coordinate coordinate = zone.getRandomCoordinate();
-				Coord originCoord = new Coord(coordinate.x, coordinate.y);
-                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
+    private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 
-				if (!zoneCalculationNodesMap.containsKey(zone)) {
-					zoneCalculationNodesMap.put(zone, new LinkedList<>());
-				}
-				zoneCalculationNodesMap.get(zone).add(originNode);
-			}
-		}
-        logger.trace("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
+    private IndexedDoubleMatrix2D travelTimeToRegion;
+
+    public void initialize(GeoData geoData, Network network) {
+        this.network = network;
+        this.zones = geoData.getZones();
+        this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
+        this.travelTimeToRegion.assign(-1);
+        buildZoneCalculationNodesMap();
     }
 
-	private double getZoneToZoneTravelTime(Zone origin, Zone destination, double timeOfDay_s, String mode) {
-		if(TransportMode.car.equals(mode)) {
-			double sumTravelTime_min = 0.;
-			for (Node originNode : zoneCalculationNodesMap.get(origin)) { // Several points in a given origin zone
-				Map<Id<Node>, LeastCostPathTree.NodeData> tree;
-				if (treesForNodesByTimes.containsKey(originNode.getId())) {
-					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = treesForNodesByTimes.get(originNode.getId());
-					if (treesForOneNodeByTimes.containsKey(timeOfDay_s)) {
-						tree = treesForOneNodeByTimes.get(timeOfDay_s);
-					} else {
-						leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
-						tree = leastCoastPathTree.getTree();
-						treesForOneNodeByTimes.put(timeOfDay_s, tree);
-					}
-				} else {
-					Map<Double, Map<Id<Node>, LeastCostPathTree.NodeData>> treesForOneNodeByTimes = new HashMap<>();
-					leastCoastPathTree.calculate(network, originNode, timeOfDay_s);
-					tree = leastCoastPathTree.getTree();
-					treesForOneNodeByTimes.put(timeOfDay_s, tree);
-					treesForNodesByTimes.put(originNode.getId(), treesForOneNodeByTimes);
-				}
+    public void update(TravelTime travelTime, TravelDisutility disutility) {
+        LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
+        TripRouter.Builder bd = new TripRouter.Builder(ConfigUtils.createConfig());
+        RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), network, pathCalculator);
+        bd.setRoutingModule(TransportMode.car, carRoutingModule);
+        TeleportationRoutingModule teleportationRoutingModule = new TeleportationRoutingModule(TransportMode.pt, PopulationUtils.getFactory(), 10, 1.3);
+        bd.setRoutingModule(TransportMode.pt, teleportationRoutingModule);
+        tripRouter = bd.build();
+        this.travelTime = travelTime;
+        this.travelDisutility = disutility;
+        this.skimsByMode.clear();
+        this.travelTimeToRegion.assign(-1);
+    }
 
-				for (Node destinationNode : zoneCalculationNodesMap.get(destination)) { // Several points in a given destination zone
-					double arrivalTime_s = tree.get(destinationNode.getId()).getTime();
-					sumTravelTime_min += ((arrivalTime_s - timeOfDay_s) / 60.);
-				}
-			}
-			return sumTravelTime_min / NUMBER_OF_CALC_POINTS;
-		} else {			
-			//TODO: reconsider matsim pt travel times. nk apr'18
-            return delegate.getTravelTime(origin, destination, timeOfDay_s, mode);
-		}
-	}
 
-	@Override
-	public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-		if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
-			Coordinate originCoord = ((MicroLocation) origin).getCoordinate();
-			Coordinate destinationCoord = ((MicroLocation) destination).getCoordinate();
-			Facility fromFacility = new DummyFacility(new Coord(originCoord.x, originCoord.y));
-			Facility toFacility = new DummyFacility(new Coord(destinationCoord.x, destinationCoord.y));
-			org.matsim.api.core.v01.population.Person person = null;
-			List<? extends PlanElement> trip = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, person);
-			double ttime = 0. ;
-			for ( PlanElement pe : trip ) {
-				if ( pe instanceof Leg) {
-					ttime += ((Leg) pe).getTravelTime() ;
-				}
-			}
-			// TODO take care of relevant interaction activities
-			return ttime;
-		}
-		else if (origin instanceof Zone) { // Non-microlocations case
-			Zone originZone = (Zone) origin;
-			if (destination instanceof Zone) {
-				return getZoneToZoneTravelTime(originZone, (Zone) destination, timeOfDay_s, mode);
-			} else if (destination instanceof Region) {
-				Region destinationRegion = (Region) destination;
-				if (travelTimeToRegion.contains(originZone, destinationRegion)) {
-					return travelTimeToRegion.get(originZone, destinationRegion);
-				}
-				double min = Double.MAX_VALUE;
-        		for (Zone zoneInRegion : destinationRegion.getZones()) {
-        			double travelTime = getZoneToZoneTravelTime(originZone, zoneInRegion, timeOfDay_s, mode);
-        			if (travelTime < min) {
-        				min = travelTime;
-        			}
-        		}
-        		travelTimeToRegion.put(originZone, destinationRegion, min);
-			}
-		}
-		throw new IllegalArgumentException("The combination with origin of type " + origin.getClass().getName() 
-					+ " and destination of type " + destination.getClass().getName() + " is not valid.");
-	}
+    // TODO Use travel costs?
+    @Override
+    public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+        // Microlocations case
+        Coord originCoord;
+        Coord destinationCoord;
+        if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
+            originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
+            destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
+        } else if (origin instanceof Zone && destination instanceof Zone) {
+            // Non-microlocations case
+            originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord();
+            destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord();
+        } else {
+            throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
+        }
 
-	@Override
-	public double getTravelTime(int origin, int destination, double timeOfDay_s, String mode) {
-		throw new IllegalArgumentException("Not implemented in MATSim case.");
-	}
+        ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
+        Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
+        Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
+        List<? extends PlanElement> planElements = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
+        double time = 0;
+        for (PlanElement e : planElements) {
+            if (e instanceof Leg) {
+                time += ((Leg) e).getTravelTime();
+            } else if (e instanceof Activity) {
+                if (((Activity) e).getType().equalsIgnoreCase(PtConstants.TRANSIT_ACTIVITY_TYPE)) {
+                    time += ((Activity) e).getEndTime() - ((Activity) e).getStartTime();
+                }
+            }
+        }
 
-	@Override
-	public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+        //convert to minutes
+        time /= 60.;
+        return time;
+    }
 
-	private static class DummyFacility implements Facility {
+    @Override
+    public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
+        if (origin instanceof Zone) {
+            int originZone = origin.getZoneId();
+            if (travelTimeToRegion.getIndexed(originZone, destination.getId()) > 0) {
+                return travelTimeToRegion.getIndexed(originZone, destination.getId());
+            }
+            double min = Double.MAX_VALUE;
+            for (Zone zoneInRegion : destination.getZones()) {
+                double travelTime = getPeakSkim(mode).getIndexed(originZone, zoneInRegion.getZoneId());
+                if (travelTime < min) {
+                    min = travelTime;
+                }
+            }
+            travelTimeToRegion.setIndexed(originZone, destination.getId(), min);
+            return min;
+        } else {
+            throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
+        }
+    }
 
-		private final Coord coord;
+    @Override
+    public IndexedDoubleMatrix2D getPeakSkim(String mode) {
+        if (skimsByMode.containsKey(mode)) {
+            return skimsByMode.get(mode);
+        } else {
+            IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones.values(), zones.values());
+            logger.info("Calculating skim matrix for mode " + mode);
+            final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
+            logger.info("Intended size of all of partititons = " + partitionSize);
+            Iterable<List<Zone>> partitions = Iterables.partition(zones.values(), partitionSize);
+            ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
 
-		private DummyFacility(Coord coord) {
-			this.coord = coord;
-		}
+            for (final List<Zone> partition : partitions) {
+                logger.info("Size of partititon = " + partition.size());
+                if (mode.equalsIgnoreCase(TransportMode.car)) {
+                    executor.addTaskToQueue(() -> {
+                        try {
+                            MultiNodePathCalculator calculator
+                                    = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(network, travelDisutility, travelTime);
 
-		@Override
-		public Id<Link> getLinkId() {
-			return null;
-		}
+                            Set<InitialNode> toNodes = new HashSet<>();
+                            for (Zone zone : zones.values()) {
+                                // Several points in a given origin zone
+                                for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
+                                    Node originNode = zoneCalculationNodesMap.get(zone).get(0);
+                                    toNodes.add(new InitialNode(originNode, 0., 0.));
+                                }
+                            }
 
-		@Override
-		public Coord getCoord() {
-			return this.coord;
-		}
+                            ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
-		@Override
-		public Map<String, Object> getCustomAttributes() {
-			return null;
-		}
-	}
+                            for (Zone origin : partition) {
+                                Node node = zoneCalculationNodesMap.get(origin).get(0);
+                                calculator.calcLeastCostPath(node, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
+                                for (Zone destination : zones.values()) {
+                                    double travelTime = calculator.constructPath(node, zoneCalculationNodesMap.get(destination).get(0), Properties.get().transportModel.peakHour_s).travelTime;
+
+                                    //convert to minutes
+                                    travelTime /= 60.;
+
+                                    skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                                }
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        logger.warn("Finished thread.");
+                        return null;
+                    });
+                } else {
+                    executor.addTaskToQueue(() -> {
+                        try {
+                            TravelTimes copy = duplicate();
+                            for (Zone origin : partition) {
+                                for (Zone destination : zones.values()) {
+                                    double travelTime = copy.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, mode);
+
+                                    //convert to minutes
+                                    travelTime /= 60.;
+
+                                    skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                                }
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        logger.warn("Finished thread.");
+                        return null;
+                    });
+                }
+            }
+            executor.execute();
+            skimsByMode.put(mode, skim);
+            return skim;
+        }
+    }
+
+    @Override
+    public TravelTimes duplicate() {
+        logger.warn("Creating another TravelTimes object.");
+        MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
+        matsimTravelTimes.network = this.network;
+        matsimTravelTimes.zones = this.zones;
+        matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
+        matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
+        matsimTravelTimes.update(travelTime, travelDisutility);
+        return matsimTravelTimes;
+    }
+
+
+    private void buildZoneCalculationNodesMap() {
+        for (Zone zone : zones.values()) {
+            // Several points in a given origin zone
+            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
+                // TODO Check if random coordinate is the best representative
+                Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
+                Coord originCoord = new Coord(coordinate.x, coordinate.y);
+                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
+
+                if (!zoneCalculationNodesMap.containsKey(zone)) {
+                    zoneCalculationNodesMap.put(zone, new LinkedList<>());
+                }
+                zoneCalculationNodesMap.get(zone).add(originNode);
+            }
+        }
+        logger.warn("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
+    }
 }

@@ -1,12 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 
 
-import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.SyntheticPopDe;
-import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -23,7 +20,7 @@ public class SyntheticPopulationGeneratorPerth {
 
     public static void main(String[] args) {
 
-        SiloUtil.siloInitialization(Implementation.PERTH, args[0]);
+        SiloUtil.siloInitialization(args[0]);
         try {
 //            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.PERTH);
         rb = new PropertyResourceBundle(new FileReader(args[0]));

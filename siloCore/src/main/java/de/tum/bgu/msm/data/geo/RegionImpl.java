@@ -32,5 +32,8 @@ public class RegionImpl implements Region {
         return zones.add(zone);
     }
 
-
+    @Override
+    public String toString() {
+        return "Region " + id +": #zones= " + zones.size();
+    }
 }

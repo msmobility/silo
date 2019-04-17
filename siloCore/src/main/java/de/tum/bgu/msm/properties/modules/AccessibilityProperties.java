@@ -63,8 +63,8 @@ public class AccessibilityProperties {
         skimYearsForInput.add(startYear);
         for (int year : skimYearsForInput){
             if (year != -1){
-                PropertiesUtil.getStringProperty(bundle, AUTO_PEAK_SKIM + year);
-                PropertiesUtil.getStringProperty(bundle, TRANSIT_PEAK_SKIM + year);
+                PropertiesUtil.getStringProperty(bundle, AUTO_PEAK_SKIM + year, "skim_car_" + year);
+                PropertiesUtil.getStringProperty(bundle, TRANSIT_PEAK_SKIM + year, "skim_pt_" + year);
             }
         }
         autoPeakSkim = PropertiesUtil.getStringProperty(bundle, "auto.peak.sov.skim.matrix.name", "travelTimeAuto");

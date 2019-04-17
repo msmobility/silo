@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.JobDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -17,10 +17,10 @@ public class GenerateJobs {
 
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobsByTaz;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
 
 
-    public GenerateJobs(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public GenerateJobs(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -40,17 +40,17 @@ public class GenerateJobs {
 
 
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
-        JobDataManager jobDataManager = dataContainer.getJobData();
+        JobDataManager jobData = dataContainer.getJobDataManager();
             int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
             for (int job = 0; job < totalJobs; job++){
-                int id = jobDataManager.getNextJobId();
+                int id = jobData.getNextJobId();
                 int tazSelected = SiloUtil.select(jobsByTaz);
                 if (jobsByTaz.get(tazSelected) > 1){
                     jobsByTaz.put(tazSelected, jobsByTaz.get(tazSelected) - 1);
                 } else {
                     jobsByTaz.remove(tazSelected);
                 }
-                jobDataManager.addJob(JobUtils.getFactory().createJob(id, tazSelected, null, -1, jobType));
+                jobData.addJob(JobUtils.getFactory().createJob(id, tazSelected, null, -1, jobType));
             }
 
     }

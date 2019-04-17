@@ -2,14 +2,15 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.collect.Table;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.RealEstateDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public class AssignSchools {
     private static final Logger logger = Logger.getLogger(AssignSchools.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
 
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
@@ -29,7 +30,7 @@ public class AssignSchools {
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
-    public AssignSchools(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public AssignSchools(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -40,15 +41,16 @@ public class AssignSchools {
         initializeSchoolCapacity();
         shuffleStudents();
 
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             pp.setDriverLicense(obtainLicense(pp.getGender(),pp.getAge()));
         }
 
 
         double logging = 2;
         int it = 12;
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        for (Person pp : studentArrayList){
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        for (Person p : studentArrayList){
+            PersonMuc pp = ((PersonMuc)p);
             int schooltaz;
             Household household = pp.getHousehold();
             int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
@@ -59,9 +61,6 @@ public class AssignSchools {
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
-                pp.setJobTAZ(schooltaz);
-            } else {
-                pp.setJobTAZ(-2);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");
@@ -146,11 +145,11 @@ public class AssignSchools {
     private void shuffleStudents(){
 
         studentArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person p : dataContainer.getHouseholdDataManager().getPersons()){
+            PersonMuc pp = (PersonMuc) p;
             if (pp.getOccupation() == Occupation.STUDENT){
                 studentArrayList.add(pp);
                 pp.setSchoolPlace(-1);
-                pp.setJobTAZ(-1);
             }
         }
         Collections.shuffle(studentArrayList);

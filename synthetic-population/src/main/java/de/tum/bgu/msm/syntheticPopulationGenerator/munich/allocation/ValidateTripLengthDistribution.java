@@ -1,15 +1,16 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.utils.SiloUtil;
-import de.tum.bgu.msm.container.SiloDataContainer;
-import de.tum.bgu.msm.data.HouseholdDataManager;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.RealEstateDataManager;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 
@@ -23,12 +24,12 @@ public class ValidateTripLengthDistribution {
     private static final Logger logger = Logger.getLogger(ValidateTripLengthDistribution.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final SiloDataContainer dataContainer;
+    private final DataContainer dataContainer;
     private TableDataSet cellsMatrix;
     private TableDataSet municipalityODMatrix;
     private TableDataSet countyODMatrix;
 
-    public ValidateTripLengthDistribution(SiloDataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public ValidateTripLengthDistribution(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -61,7 +62,7 @@ public class ValidateTripLengthDistribution {
 
     private ArrayList<Person> obtainWorkers(){
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()){
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
             }
@@ -72,13 +73,15 @@ public class ValidateTripLengthDistribution {
 
     private Frequency obtainFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
-        RealEstateDataManager realEstate = dataContainer.getRealEstateData();
-        HouseholdDataManager households = dataContainer.getHouseholdData();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        JobDataManager jobDataManager = dataContainer.getJobDataManager();
         for (Person pp : personArrayList){
-            if (pp.getJobTAZ() > 0){
+            //TODO not part of the public person api anymore
+            if (pp.getJobId() > 0){
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, pp.getJobTAZ());
+                int destination = jobDataManager.getJobFromId(pp.getJobId()).getZoneId();
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
                 commuteDistance.addValue(value);
             }
         }
@@ -116,8 +119,8 @@ public class ValidateTripLengthDistribution {
 
     private ArrayList<Person> obtainStudents (int school){
         ArrayList<Person> workerArrayList = new ArrayList<>();
-        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
-            if (pp.getOccupation() == Occupation.STUDENT & pp.getSchoolType() == school) {
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
+            if (pp.getOccupation() == Occupation.STUDENT & ((PersonMuc)pp).getSchoolType() == school) {
                 workerArrayList.add(pp);
             }
         }
