@@ -183,19 +183,19 @@ public class SyntheticPopCT implements SyntheticPopI {
         //TODO: change to cape town implementation
         dataContainer = SiloDataContainer.createEmptySiloDataContainer(Implementation.MUNICH);
         long startTime = System.nanoTime();
-        //readAttributes();
-        //readControlTotals();
-        //int persons = readMicroDataCT();
-        //createMicroHouseholdsAndMicroPersons(persons);
-        //checkHouseholdRelationship();
+        readAttributes();
+        readControlTotals();
+        int persons = readMicroDataCT();
+        createMicroHouseholdsAndMicroPersons(persons);
+        checkHouseholdRelationship();
         //runIPUbyCityAndCounty(); //IPU fitting with one geographical constraint. Each municipality is independent of others
-        //readIPU();
-        //generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
-        //generateJobs(); //Generate the jobs by type. Allocated to TAZ level
-        //assignJobs(); //Workplace allocation
+        readIPU();
+        generateHouseholdsPersonsDwellings(); //Monte Carlo selection process to generate the synthetic population. The synthetic dwellings will be obtained from the same microdata
+        generateJobs(); //Generate the jobs by type. Allocated to TAZ level
+        assignJobs(); //Workplace allocation
         /*assignSchools(); //School allocation
         addCars(false);*/
-        readSyntheticPopulation();
+        //readSyntheticPopulation();
         //readAndSummarize();
         SummarizeData.writeOutSyntheticPopulation(Properties.get().main.implementation.BASE_YEAR, dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
@@ -289,15 +289,15 @@ public class SyntheticPopCT implements SyntheticPopI {
         microPersonAttributes = new String[attributeCodeToMicroPerson.size()];
 
         attributesMunicipality = new String[atCount + 2];
-        attributesCounty = new String[atCount + 2];
+        attributesCounty = new String[2];
         int k = 0;
         for (int j = 1; j <= atCount; j++){
             String label = attributeOrder.get(j);
-            attributesCounty[atCount - j] = label;
+            //attributesCounty[atCount - j] = label;
             attributesMunicipality[atCount - j] = label;
         }
-        attributesCounty[atCount] = "population";
-        attributesCounty[atCount + 1] = "hhTotal";
+        attributesCounty[0] = "population";
+        attributesCounty[1] = "hhTotal";
         attributesMunicipality[atCount] = "population";
         attributesMunicipality[atCount + 1] = "hhTotal";
 
@@ -714,6 +714,8 @@ public class SyntheticPopCT implements SyntheticPopI {
                 frequencyMatrix.setIndexedValueAt(hhId, labelFrequency, 1);
             }
         }
+        int value = (int) dataHousehold.getIndexedValueAt(hhId, "personCount");
+        microDataHousehold.setIndexedValueAt(hhId, "personCount", value);
     }
 
 
@@ -767,6 +769,8 @@ public class SyntheticPopCT implements SyntheticPopI {
         frequencyMatrix.buildIndex(frequencyMatrix.getColumnPosition("ID"));
         microDataHousehold.appendColumn(ids, "ID");
         microDataHousehold.buildIndex(microDataHousehold.getColumnPosition("ID"));
+        int[] dummy1 = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), 0);
+        microDataHousehold.appendColumn(dummy1,"personCount");
         microDataPerson.appendColumn(ppIds, "ID");
         microDataPerson.buildIndex(microDataPerson.getColumnPosition("ID"));
 
@@ -799,24 +803,24 @@ public class SyntheticPopCT implements SyntheticPopI {
     private void checkHouseholdRelationship(){
         //method to check how household members are related
 
-        int[] dummy = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), 0);
-        int[] dummy1 = SiloUtil.createArrayWithValue(microDataHousehold.getRowCount(), 0);
-        microDataHousehold.appendColumn(dummy,"nonClassifiedMales");
-        microDataHousehold.appendColumn(dummy1,"nonClassifiedFemales");
-        int[] dummy2 = SiloUtil.createArrayWithValue(microDataPerson.getRowCount(), -1);
-        int[] dummy3 = SiloUtil.createArrayWithValue(microDataPerson.getRowCount(), 0);
-        microDataPerson.appendColumn(dummy2, "personRole");
-        microDataPerson.appendColumn(dummy3, "rearrangedRole");
+        int[] dummy = SiloUtil.createArrayWithValue(dataHousehold.getRowCount(), 0);
+        int[] dummy1 = SiloUtil.createArrayWithValue(dataHousehold.getRowCount(), 0);
+        dataHousehold.appendColumn(dummy,"nonClassifiedMales");
+        dataHousehold.appendColumn(dummy1,"nonClassifiedFemales");
+        int[] dummy2 = SiloUtil.createArrayWithValue(dataPerson.getRowCount(), -1);
+        int[] dummy3 = SiloUtil.createArrayWithValue(dataPerson.getRowCount(), 0);
+        dataPerson.appendColumn(dummy2, "personRole");
+        dataPerson.appendColumn(dummy3, "rearrangedRole");
 
 
         for (int k = 1; k <= microDataHousehold.getRowCount(); k++){
 
-            int hhSize = (int) microDataHousehold.getValueAt(k,"hhSize");
-            int firstMember = (int) microDataHousehold.getValueAt(k, "personCount");
+            int hhSize = (int) dataHousehold.getValueAt(k,"DERH_HSIZE");
+            int firstMember = (int) dataHousehold.getValueAt(k, "personCount");
 
             //single person household -> all set as single directly
             if (hhSize == 1){
-                microDataPerson.setValueAt(firstMember,"personRole",1); //set as single directly
+                dataPerson.setValueAt(firstMember,"personRole",1); //set as single directly
 
                 //multiperson household
             } else {
@@ -830,27 +834,15 @@ public class SyntheticPopCT implements SyntheticPopI {
                 //direct classification of the members of the household
                 for (int j = 0; j < hhSize; j++) {
                     int row = firstMember + j;
-                    int spouseInHousehold = (int) microDataPerson.getValueAt(row, "spouseInHousehold");
-                    int relationToHead = (int) microDataPerson.getValueAt(row, "personStatus");
-                    int maritalStatus = (int) microDataPerson.getValueAt(row, "marriage");
-                    int age = (int) microDataPerson.getValueAt(row, "age");
-                    int gender = (int) microDataPerson.getValueAt(row, "gender");
+                    String relationToHead = microDataManager.translateRelation(dataPerson.getStringValueAt(row, "p02_relation"));
+                    int age = (int) dataPerson.getValueAt(row, "f02_age");
+                    int gender = microDataManager.translateGenderToInt(dataPerson.getStringValueAt(row, "f03_sex"));
 
-                    if (relationToHead == 3) {
+                    if (relationToHead.equals("child")) {
                         childrenInHousehold.put(row, age); //children -> children
-                    } else if (maritalStatus == 2) {
-                        if (spouseInHousehold == 1) {
-                            married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
-                        } else if (spouseInHousehold == -5) {
-                            singles = updateInnerMap(singles, gender, age, row); //married and spouse not in household -> single
-                        } else {
-                            noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
-                        }
-                    } else if (maritalStatus > 4) {
-                        singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
-                    } else if (maritalStatus == 3 & spouseInHousehold == -5) {
-                        singles = updateInnerMap(singles, gender, age, row); //widow and spouse not in household -> single
-                    } else {
+                    } else if (age < 15) {
+                        childrenInHousehold.put(row, age); //children -> children
+                    } else{
                         noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
                     }
                 }
@@ -868,20 +860,70 @@ public class SyntheticPopCT implements SyntheticPopI {
                 }
                 if (checkForCohabitation == 1) {
                     //look for cohabitation
-                    if (countNotClassified[0] == 1 & countNotClassified[1] == 1) { //one male and one female were not classified
-                        //check age difference for possible marriage
-                        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
-                        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
-                        int ageMale = notClassifiedMales.get(rowMale);
-                        int ageFemale = notClassifiedFemales.get(rowFemale);
-                        int diffAge = Math.abs(ageFemale - ageMale);
-                        double threshold = (20 - diffAge) / 10;
-                        if (SiloUtil.getRandomNumberAsDouble() < threshold) {
-                            married = updateInnerMap(married, 1, ageMale, rowMale);
-                            married = updateInnerMap(married, 2, ageFemale, rowFemale);
-                        } else {
-                            singles = updateInnerMap(singles, 1, ageMale, rowMale);
-                            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                    if (countNotClassified[0] == countNotClassified[1]) { //one male and one female were not classified
+                        for (int possibleMales = 1; possibleMales <= countNotClassified[0]; possibleMales++) {
+                            //check for a possible single male to get married (408 households with)
+                            int rowFemale = (int) notClassifiedFemales.keySet().toArray()[possibleMales - 1];
+                            int ageFemale = notClassifiedFemales.get(rowFemale);
+                            HashMap<Integer, Integer> singleMale = singles.get("male");
+                            if (singleMale == null & notClassifiedMales == null) { //no possible single male to marry -> set as single
+                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                            } else if (singleMale != null) { //check for marriage with the male with the lowest age difference
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                int[] rowSingles = new int[singleMale.size()];
+                                for (Map.Entry<Integer, Integer> pair : singleMale.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageFemale - age) < minDiff) {
+                                        minDiff = Math.abs(ageFemale - age);
+                                        rowMarried = pair.getKey();
+                                    }
+                                }
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                        married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                    } else {
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    }
+                                } else {
+                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                }
+
+                            } else {
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageFemale - age) < minDiff) {
+                                        minDiff = Math.abs(ageFemale - age);
+                                        rowMarried = pair.getKey();
+                                    }
+                                }
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                        married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                    } else {
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                        singles = updateInnerMap(singles, 1, minDiff, rowMarried);
+                                    }
+                                } else {
+                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    for (int i = 0; i < notClassifiedMales.keySet().toArray().length; i++) {
+                                        int rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 1, ageFemale, rowMale);
+                                    }
+                                }
+                                if (notClassifiedFemales.keySet().toArray().length > 1) {
+                                    for (int i = 1; i < notClassifiedFemales.keySet().toArray().length; i++) {
+                                        rowFemale = (int) notClassifiedFemales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    }
+                                }
+                            }
                         }
                     } else if (countNotClassified[0] == 0 & countNotClassified[1] > 1) { //only females were not classified
                         //set all of them as single
@@ -897,125 +939,130 @@ public class SyntheticPopCT implements SyntheticPopI {
                             int newAge = pair.getValue();
                             singles = updateInnerMap(singles, 1, newAge, newRow);
                         }
-                    } else if (countNotClassified[1] - countNotClassified[0] == 1) {  //one female was not classified
-                        //check for a possible single male to get married (408 households with)
-                        int rowFemale = (int) notClassifiedFemales.keySet().toArray()[0];
-                        int ageFemale = notClassifiedFemales.get(rowFemale);
-                        HashMap<Integer, Integer> singleMale = singles.get("male");
-                        if (singleMale == null & notClassifiedMales == null) { //no possible single male to marry -> set as single
-                            singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
-                        } else if (singleMale != null) { //check for marriage with the male with the lowest age difference
-                            int minDiff = 20;
-                            int rowMarried = 0;
-                            int[] rowSingles = new int[singleMale.size()];
-                            for (Map.Entry<Integer, Integer> pair : singleMale.entrySet()) {
-                                int age = pair.getValue();
-                                if (Math.abs(ageFemale - age) < minDiff) {
-                                    minDiff = Math.abs(ageFemale - age);
-                                    rowMarried = pair.getKey();
+                    } else if (countNotClassified[1] > countNotClassified[0]) {  //more females are not classified
+                        for (int possibleMales = 1; possibleMales <= countNotClassified[0]; possibleMales++) {
+                            //check for a possible single male to get married (408 households with)
+                            int rowFemale = (int) notClassifiedFemales.keySet().toArray()[possibleMales - 1];
+                            int ageFemale = notClassifiedFemales.get(rowFemale);
+                            HashMap<Integer, Integer> singleMale = singles.get("male");
+                            if (singleMale == null & notClassifiedMales == null) { //no possible single male to marry -> set as single
+                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                            } else if (singleMale != null) { //check for marriage with the male with the lowest age difference
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                int[] rowSingles = new int[singleMale.size()];
+                                for (Map.Entry<Integer, Integer> pair : singleMale.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageFemale - age) < minDiff) {
+                                        minDiff = Math.abs(ageFemale - age);
+                                        rowMarried = pair.getKey();
+                                    }
                                 }
-                            }
-                            if (rowMarried > 0) {
-                                double threshold = (20 - minDiff) / 10;
-                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
-                                    married = updateInnerMap(married, 1, minDiff, rowMarried);
-                                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                        married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                    } else {
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    }
                                 } else {
                                     singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
                                 }
+
                             } else {
-                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
-                            }
-                        } else {
-                            int minDiff = 20;
-                            int rowMarried = 0;
-                            for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
-                                int age = pair.getValue();
-                                if (Math.abs(ageFemale - age) < minDiff) {
-                                    minDiff = Math.abs(ageFemale - age);
-                                    rowMarried = pair.getKey();
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageFemale - age) < minDiff) {
+                                        minDiff = Math.abs(ageFemale - age);
+                                        rowMarried = pair.getKey();
+                                    }
                                 }
-                            }
-                            if (rowMarried > 0) {
-                                double threshold = (20 - minDiff) / 10;
-                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
-                                    married = updateInnerMap(married, 1, minDiff, rowMarried);
-                                    married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, minDiff, rowMarried);
+                                        married = updateInnerMap(married, 2, ageFemale, rowFemale);
+                                    } else {
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                        singles = updateInnerMap(singles, 1, minDiff, rowMarried);
+                                    }
                                 } else {
                                     singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
-                                    singles = updateInnerMap(singles, 1, minDiff, rowMarried);
+                                    for (int i = 0; i < notClassifiedMales.keySet().toArray().length; i++) {
+                                        int rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 1, ageFemale, rowMale);
+                                    }
                                 }
-                            } else {
-                                singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
-                                for (int i = 0; i < notClassifiedMales.keySet().toArray().length; i++){
-                                    int rowMale = (int) notClassifiedMales.keySet().toArray()[i];
-                                    singles = updateInnerMap(singles, 1, ageFemale, rowMale);
-                                }
-                            }
-                            if (notClassifiedFemales.keySet().toArray().length > 1){
-                                for (int i = 1; i < notClassifiedFemales.keySet().toArray().length; i++){
-                                    rowFemale = (int) notClassifiedFemales.keySet().toArray()[i];
-                                    singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                if (notClassifiedFemales.keySet().toArray().length > 1) {
+                                    for (int i = 1; i < notClassifiedFemales.keySet().toArray().length; i++) {
+                                        rowFemale = (int) notClassifiedFemales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 2, ageFemale, rowFemale);
+                                    }
                                 }
                             }
                         }
-                    } else if (countNotClassified[0] - countNotClassified[1] == 1) { //check for a possible single female to get married (94 households)
-                        int rowMale = (int) notClassifiedMales.keySet().toArray()[0];
-                        int ageMale = notClassifiedMales.get(rowMale);
-                        HashMap<Integer, Integer> singleFemale = singles.get("female");
-                        if (singleFemale == null & notClassifiedFemales == null) { //no possible single female to marry -> set as single
-                            singles = updateInnerMap(singles, 1, ageMale, rowMale);
-                        } else if (singleFemale != null){ //check for marriage with the female with the lowest age difference
-                            int minDiff = 20;
-                            int rowMarried = 0;
-                            for (Map.Entry<Integer, Integer> pair : singleFemale.entrySet()) {
-                                int age = pair.getValue();
-                                if (Math.abs(ageMale - age) < minDiff) {
-                                    minDiff = Math.abs(ageMale - age);
-                                    rowMarried = pair.getKey();
+                    } else if (countNotClassified[0] > countNotClassified[1]) { //check for a possible single female to get married (94 households)
+                        for (int possibleFemales = 1; possibleFemales <= countNotClassified[1]; possibleFemales++) {
+                            int rowMale = (int) notClassifiedMales.keySet().toArray()[possibleFemales -1];
+                            int ageMale = notClassifiedMales.get(rowMale);
+                            HashMap<Integer, Integer> singleFemale = singles.get("female");
+                            if (singleFemale == null & notClassifiedFemales == null) { //no possible single female to marry -> set as single
+                                singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                            } else if (singleFemale != null) { //check for marriage with the female with the lowest age difference
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                for (Map.Entry<Integer, Integer> pair : singleFemale.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageMale - age) < minDiff) {
+                                        minDiff = Math.abs(ageMale - age);
+                                        rowMarried = pair.getKey();
+                                    }
                                 }
-                            }
-                            if (rowMarried > 0) {
-                                double threshold = (20 - minDiff) / 10;
-                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
-                                    married = updateInnerMap(married, 1, ageMale, rowMale);
-                                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, ageMale, rowMale);
+                                        married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                    } else {
+                                        singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                    }
                                 } else {
                                     singles = updateInnerMap(singles, 1, ageMale, rowMale);
                                 }
                             } else {
-                                singles = updateInnerMap(singles, 1, ageMale, rowMale);
-                            }
-                        } else {
-                            int minDiff = 20;
-                            int rowMarried = 0;
-                            for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
-                                int age = pair.getValue();
-                                if (Math.abs(ageMale - age) < minDiff) {
-                                    minDiff = Math.abs(ageMale - age);
-                                    rowMarried = pair.getKey();
+                                int minDiff = 20;
+                                int rowMarried = 0;
+                                for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
+                                    int age = pair.getValue();
+                                    if (Math.abs(ageMale - age) < minDiff) {
+                                        minDiff = Math.abs(ageMale - age);
+                                        rowMarried = pair.getKey();
+                                    }
                                 }
-                            }
-                            if (rowMarried > 0) {
-                                double threshold = (20 - minDiff) / 10;
-                                if (SiloUtil.getRandomNumberAsDouble() < threshold) {
-                                    married = updateInnerMap(married, 1, ageMale, rowMale);
-                                    married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                if (rowMarried > 0) {
+                                    double threshold = (20 - minDiff) / 10;
+                                    if (SiloUtil.getRandomNumberAsDouble() < threshold) {
+                                        married = updateInnerMap(married, 1, ageMale, rowMale);
+                                        married = updateInnerMap(married, 2, minDiff, rowMarried);
+                                    } else {
+                                        singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                        singles = updateInnerMap(singles, 2, minDiff, rowMarried);
+                                    }
                                 } else {
                                     singles = updateInnerMap(singles, 1, ageMale, rowMale);
-                                    singles = updateInnerMap(singles, 2, minDiff, rowMarried);
+                                    for (int i = 0; i < notClassifiedFemales.keySet().toArray().length; i++) {
+                                        rowMale = (int) notClassifiedFemales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 2, ageMale, rowMale);
+                                    }
                                 }
-                            } else {
-                                singles = updateInnerMap(singles, 1, ageMale, rowMale);
-                                for (int i = 0; i < notClassifiedFemales.keySet().toArray().length; i++){
-                                    rowMale = (int) notClassifiedFemales.keySet().toArray()[i];
-                                    singles = updateInnerMap(singles, 2, ageMale, rowMale);
-                                }
-                            }
-                            if (notClassifiedMales.keySet().toArray().length > 1){
-                                for (int i = 1; i < notClassifiedMales.keySet().toArray().length; i++){
-                                    rowMale = (int) notClassifiedMales.keySet().toArray()[i];
-                                    singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                if (notClassifiedMales.keySet().toArray().length > 1) {
+                                    for (int i = 1; i < notClassifiedMales.keySet().toArray().length; i++) {
+                                        rowMale = (int) notClassifiedMales.keySet().toArray()[i];
+                                        singles = updateInnerMap(singles, 1, ageMale, rowMale);
+                                    }
                                 }
                             }
                         }
@@ -1027,17 +1074,17 @@ public class SyntheticPopCT implements SyntheticPopI {
             }
         }
         //double checking for persons that are not classified
-        for (int i = 1; i <= microDataPerson.getRowCount(); i++){
-            if (microDataPerson.getValueAt(i,"personRole") == -1){
-                microDataPerson.setValueAt(i, "personRole", 1);
+        for (int i = 1; i <= dataPerson.getRowCount(); i++){
+            if (dataPerson.getValueAt(i,"personRole") == -1){
+                dataPerson.setValueAt(i, "personRole", 1);
             }
         }
 
         String hhFileName = ("microData/interimFiles/microHouseholds2.csv");
-        SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
+        SiloUtil.writeTableDataSet(dataHousehold, hhFileName);
 
         String ppFileName = ("microData/interimFiles/microPerson2.csv");
-        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
+        SiloUtil.writeTableDataSet(dataPerson, ppFileName);
     }
 
     private void runIPUbyCityAndCounty(){
@@ -1722,7 +1769,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                                                                                 dataPerson.getStringValueAt(personCounter, "p17_schoolattend"));
                     int income = microDataManager.translateIncome(dataPerson.getStringValueAt(personCounter, "p16_income"));
                     Race raceStr = microDataManager.translateRace(dataPerson.getStringValueAt(personCounter,"p05_pop_group"));
-                    PersonRole ppRole = microDataManager.translateRole(dataPerson.getStringValueAt(personCounter, "p03_marital_st"), age);
+                    PersonRole ppRole = microDataManager.translateRole((int) dataPerson.getValueAt(personCounter, "personRole"), age);
                     Person pers = factory.createPerson(idPerson, age, gender, raceStr, occupation, ppRole,0, income);
                     householdDataManager.addPerson(pers);
                     householdDataManager.addPersonToHousehold(pers, household);
@@ -2360,7 +2407,7 @@ public class SyntheticPopCT implements SyntheticPopI {
         if (childrenInHousehold != null){
             for (Map.Entry<Integer, Integer> pair : childrenInHousehold.entrySet()){
                 int row = pair.getKey();
-                microDataPerson.setValueAt(row, "personRole", 3);
+                dataPerson.setValueAt(row, "personRole", 3);
             }
         }
         //set singles and married in the household
@@ -2371,21 +2418,21 @@ public class SyntheticPopCT implements SyntheticPopI {
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "personRole", 1);
+                    dataPerson.setValueAt(row, "personRole", 1);
                 }
             }
             inner = married.get(key);
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "personRole", 2);
+                    dataPerson.setValueAt(row, "personRole", 2);
                 }
             }
             inner = noClass.get(key);
             if (inner != null) {
                 for (Map.Entry<Integer, Integer> pair : inner.entrySet()) {
                     int row = pair.getKey();
-                    microDataPerson.setValueAt(row, "rearrangedRole", 1);
+                    dataPerson.setValueAt(row, "rearrangedRole", 1);
                 }
             }
         }

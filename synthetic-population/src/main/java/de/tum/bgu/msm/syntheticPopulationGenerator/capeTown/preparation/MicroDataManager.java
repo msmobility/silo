@@ -91,15 +91,13 @@ public class MicroDataManager {
     }
 
 
-    public PersonRole translateRole(String roleStr, int age){
+    public PersonRole translateRole(int roleStr, int age){
         PersonRole role = PersonRole.SINGLE; //default value
                                              //used for categories: "Never married","Separated", "Widower/widow", "Divorced"
         if (age < 15){
             return PersonRole.CHILD;
         } else {
-            if (roleStr.equals("Married")) {
-                role = PersonRole.MARRIED;
-            } else if (roleStr.equals("Living together like married partners")) {
+            if (roleStr == 2) {
                 role = PersonRole.MARRIED;
             }
         }
@@ -119,36 +117,42 @@ public class MicroDataManager {
 
 
     public DefaultDwellingTypeImpl translateDwellingType(String ddTypeStr){
-        DefaultDwellingTypeImpl dwellingType = DefaultDwellingTypeImpl.SFD; //default value
+        DefaultDwellingTypeImpl dwellingType = null; //default value
                                                                             //used for categories: House or brick/concrete block structure on a separate stand or yard,
                                                                                 //Semi-detached house, Town house (semi-detached house in complex)
-        if (ddTypeStr.equals("House/flat/room in back yard")){
-            dwellingType = DefaultDwellingTypeImpl.SFA;
-        } else if (ddTypeStr.equals("Room/flatlet on a property or a larger dwelling/servants'quarters/granny flat")){
-            dwellingType = DefaultDwellingTypeImpl.SFA;
+        if (ddTypeStr.equals("House or brick/concrete block structure on a separate stand or yard or on a farm")) {
+            dwellingType = DefaultDwellingTypeImpl.SFD;
+        } else if (ddTypeStr.equals("Traditional dwelling/hut/structure made of traditional materials")){
+            dwellingType = DefaultDwellingTypeImpl.MH;
         } else if (ddTypeStr.equals("Flat or apartment in a block of flats")){
             dwellingType = DefaultDwellingTypeImpl.MF234;
         } else if (ddTypeStr.equals("Cluster house in complex")){
             dwellingType = DefaultDwellingTypeImpl.MF234;
+        } else if (ddTypeStr.equals("Townhouse (semi-detached house in a complex)")){
+            dwellingType = DefaultDwellingTypeImpl.SFA;
+        } else if (ddTypeStr.equals("Semi-detached house")){
+            dwellingType = DefaultDwellingTypeImpl.SFA;
+        } else if (ddTypeStr.equals("House/flat/room in back yard")){
+            dwellingType = DefaultDwellingTypeImpl.SFD;
         } else if (ddTypeStr.equals("Informal dwelling/shack in back yard")){
             dwellingType = DefaultDwellingTypeImpl.MF5plus;
-        } else if (ddTypeStr.equals("Informal dwelling/shack NOT in back yard e.g. in an informal/squatter settlement or on farmm")){
-            dwellingType = DefaultDwellingTypeImpl.MF5plus;
-        } else if (ddTypeStr.equals("Caravan or tent")){
+        } else if (ddTypeStr.equals("Room/flatlet on a property or a larger dwelling/servants'quarters/granny flat")){
+            dwellingType = DefaultDwellingTypeImpl.SFD;
+        } else if (ddTypeStr.equals("Informal dwelling/shack NOT in back yard e.g. in an informal/squatter settlement or on farm")){
             dwellingType = DefaultDwellingTypeImpl.MH;
-        } else if (ddTypeStr.equals("Traditional dwelling/hut/structure made of traditional materials")){
+        } else if (ddTypeStr.equals("Caravan/tent")){
             dwellingType = DefaultDwellingTypeImpl.MH;
         } else if (ddTypeStr.equals("Other")){
-            dwellingType = DefaultDwellingTypeImpl.MH;
+            dwellingType = DefaultDwellingTypeImpl.SFA;
         } else if (ddTypeStr.equals("Unspecified")){
-            dwellingType = DefaultDwellingTypeImpl.MH;
+            dwellingType = DefaultDwellingTypeImpl.SFA;
         }
         return dwellingType;
     }
 
 
     public int guessQuality(String waterPiped, String toilet, int numberofQualityLevels){
-        int quality = numberofQualityLevels;
+        int quality = 4;
         if (!waterPiped.equals("Piped (tap) water inside the dwelling")){// if there is no piped water inside dwelling and/or yard
             if (!waterPiped.equals("Piped (tap) water inside the yard")) {
                 quality--;
@@ -188,5 +192,32 @@ public class MicroDataManager {
             cars = 1;
         }
         return cars;
+    }
+
+    public String translateRelation(String strRelation){
+        String relation = "noChild";
+
+        if(strRelation.equals("Son/daughter")){
+            relation = "child";
+        } else if (strRelation.equals("Adopted son/daughter")){
+            relation = "child";
+        } else if (strRelation.equals("Stepchild")){
+            relation = "child";
+        } else if (strRelation.equals("Grand/greatgrand child")){
+            relation = "child";
+        } else if (strRelation.equals("Son/Daughter-in-law")){
+            relation = "child";
+        }
+        return relation;
+    }
+
+
+    public int translateGenderToInt(String strRelation){
+        int genderInt = 1;
+
+        if(strRelation.equals("Female")){
+            genderInt = 2;
+        }
+        return genderInt;
     }
 }
