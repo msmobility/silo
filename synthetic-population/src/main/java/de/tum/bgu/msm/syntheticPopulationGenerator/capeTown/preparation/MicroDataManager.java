@@ -120,7 +120,7 @@ public class MicroDataManager {
         DefaultDwellingTypeImpl dwellingType = null; //default value
                                                                             //used for categories: House or brick/concrete block structure on a separate stand or yard,
                                                                                 //Semi-detached house, Town house (semi-detached house in complex)
-        if (ddTypeStr.equals("House or brick/concrete block structure on a separate stand or yard or on a farm")) {
+        if (ddTypeStr.equals("House or brick/concrete block structure on a separate stand or yard")) {
             dwellingType = DefaultDwellingTypeImpl.SFD;
         } else if (ddTypeStr.equals("Traditional dwelling/hut/structure made of traditional materials")){
             dwellingType = DefaultDwellingTypeImpl.MH;
@@ -128,7 +128,7 @@ public class MicroDataManager {
             dwellingType = DefaultDwellingTypeImpl.MF234;
         } else if (ddTypeStr.equals("Cluster house in complex")){
             dwellingType = DefaultDwellingTypeImpl.MF234;
-        } else if (ddTypeStr.equals("Townhouse (semi-detached house in a complex)")){
+        } else if (ddTypeStr.equals("Town house (semi-detached house in complex)")){
             dwellingType = DefaultDwellingTypeImpl.SFA;
         } else if (ddTypeStr.equals("Semi-detached house")){
             dwellingType = DefaultDwellingTypeImpl.SFA;
@@ -170,7 +170,7 @@ public class MicroDataManager {
             quality--;
         }
         // ensure that quality never excess the number of quality levels
-        return quality = Math.min(quality, 1);
+        return quality = Math.max(quality, 1);
     }
 
     public DwellingUsage translateDwellingUsage(String tenure){
@@ -219,5 +219,20 @@ public class MicroDataManager {
             genderInt = 2;
         }
         return genderInt;
+    }
+
+    public int guessDwellingPrice(int hhIncome){
+        int price = 0;
+
+        if (hhIncome > 25000){
+            price = Math.round(hhIncome / 10);
+        } else if (hhIncome > 10000) {
+            float housingCosts = 25 - hhIncome * 15 / 20000;
+            price = Math.round(hhIncome * housingCosts / 100);
+        } else {
+            float housingCosts = 50 - hhIncome * 25 / 10000;
+            price = Math.round(hhIncome * housingCosts / 100);
+        }
+        return Math.max(price, 100);
     }
 }

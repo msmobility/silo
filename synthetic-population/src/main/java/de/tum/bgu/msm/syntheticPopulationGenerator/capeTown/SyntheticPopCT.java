@@ -1759,6 +1759,7 @@ public class SyntheticPopCT implements SyntheticPopI {
 
 
                 //copy the household members characteristics
+                int hhIncome = 0;
                 PersonFactory factory = PersonUtils.getFactory();
                 for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                     int idPerson = householdDataManager.getNextPersonId();
@@ -1768,6 +1769,7 @@ public class SyntheticPopCT implements SyntheticPopI {
                     Occupation occupation = microDataManager.translateOccupation(dataPerson.getStringValueAt(personCounter, "derp_employ_status"),
                                                                                 dataPerson.getStringValueAt(personCounter, "p17_schoolattend"));
                     int income = microDataManager.translateIncome(dataPerson.getStringValueAt(personCounter, "p16_income"));
+                    hhIncome = hhIncome + income;
                     Race raceStr = microDataManager.translateRace(dataPerson.getStringValueAt(personCounter,"p05_pop_group"));
                     PersonRole ppRole = microDataManager.translateRole((int) dataPerson.getValueAt(personCounter, "personRole"), age);
                     Person pers = factory.createPerson(idPerson, age, gender, raceStr, occupation, ppRole,0, income);
@@ -1787,7 +1789,8 @@ public class SyntheticPopCT implements SyntheticPopI {
                 int quality = microDataManager.guessQuality(dataHousehold.getIndexedStringValueAt(hhIdMD,"H07_WATERPIPED"),
                         dataHousehold.getIndexedStringValueAt(hhIdMD,"H10_TOILET"), numberofQualityLevels);
                 DefaultDwellingTypeImpl type = microDataManager.translateDwellingType(dataHousehold.getIndexedStringValueAt(hhIdMD,"H02_MAINDWELLING"));
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, taz, null, id, type , bedRooms, quality, 0, 0, 0); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                int price = microDataManager.guessDwellingPrice(hhIncome);
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, taz, null, id, type , bedRooms, quality, price, 0, 0); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstate.addDwelling(dwell);
                 dwell.setUsage(microDataManager.translateDwellingUsage(dataHousehold.getIndexedStringValueAt(hhIdMD,"H04_TENURE")));
                 if (occupiedDwellingsByZone.containsKey(taz)) {
