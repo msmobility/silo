@@ -4,7 +4,8 @@ package de.tum.bgu.msm.models.relocation;
  * Implementation of the MovesModel Interface for the Munich implementation
  * @author Rolf Moeckel
  * Date: 20 May 2017, near Greenland in an altitude of 35,000 feet
-*/
+ */
+
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -33,7 +34,7 @@ import java.util.*;
 
 public class MovesModelMuc extends AbstractMovesModelImpl {
     private final static Logger logger = Logger.getLogger(MovesModelMuc.class);
-    
+
     int requestsDwellingSearch = 0;
 
     private FileWriter writer;
@@ -43,7 +44,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
     private final SelectRegionStrategy selectRegionStrategy;
-    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class) ;
+    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Integer, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
 
     private IndexedDoubleMatrix1D regionalShareForeigners;
     private IndexedDoubleMatrix1D hhByRegion;
@@ -52,7 +53,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                          DwellingUtilityStrategy dwellingUtilityStrategy,
                          DwellingProbabilityStrategy dwellingProbabilityStrategy,
                          SelectRegionStrategy selectRegionStrategy) {
-        super(dataContainer, properties, movesStrategy );
+        super(dataContainer, properties, movesStrategy);
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.selectRegionStrategy = selectRegionStrategy;
@@ -63,12 +64,6 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         regionalShareForeigners = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         hhByRegion = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         super.setup();
-        try {
-            writer = new FileWriter("C:/Users/nico/Desktop/tt_skims.csv");
-            writer.write("year,ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -95,7 +90,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         final IndexedDoubleMatrix1D hhByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
         regionalShareForeigners.assign(0);
         hhByRegion.assign(0);
-        for (Household hh: dataContainer.getHouseholdDataManager().getHouseholds()) {
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
             if (dwelling != null) {
@@ -105,8 +100,8 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
             hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
             hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
 
-            if (((HouseholdMuc)hh).getNationality() != Nationality.GERMAN) {
-                regionalShareForeigners.setIndexed(region, regionalShareForeigners.getIndexed(region)+1);
+            if (((HouseholdMuc) hh).getNationality() != Nationality.GERMAN) {
+                regionalShareForeigners.setIndexed(region, regionalShareForeigners.getIndexed(region) + 1);
             }
         }
 
@@ -160,11 +155,11 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         logger.info("Calculating regional utilities");
         calculateShareOfForeignersByZoneAndRegion();
         final Map<Integer, Double> rentsByRegion = calculateRegionalPrices();
-        for (IncomeCategory incomeCategory: IncomeCategory.values()) {
+        for (IncomeCategory incomeCategory : IncomeCategory.values()) {
             EnumMap<Nationality, Map<Integer, Double>> utilityByNationalityByRegion = new EnumMap<>(Nationality.class);
-            for (Nationality nationality: Nationality.values()) {
+            for (Nationality nationality : Nationality.values()) {
                 Map<Integer, Double> utilityByRegion = new LinkedHashMap<>();
-                for (Region region : geoData.getRegions().values()){
+                for (Region region : geoData.getRegions().values()) {
                     final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
@@ -185,41 +180,41 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         return true;
     }
 
-    private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones){
+    private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, Nationality nationality, Collection<Zone> workZones) {
         Map<Integer, Double> utilitiesForThisHousheold
                 = new LinkedHashMap<>(utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality));
 
-        for(Region region : geoData.getRegions().values()){
+        for (Region region : geoData.getRegions().values()) {
             double thisRegionFactor = 1;
             if (workZones != null) {
                 for (Zone workZone : workZones) {
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                    		workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
+                            workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
                     thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion);
                 }
             }
-            utilitiesForThisHousheold.put(region.getId(),utilitiesForThisHousheold.get(region.getId())*thisRegionFactor);
+            utilitiesForThisHousheold.put(region.getId(), utilitiesForThisHousheold.get(region.getId()) * thisRegionFactor);
         }
         return utilitiesForThisHousheold;
     }
 
     @Override
     public int searchForNewDwelling(Household household) {
-    	requestsDwellingSearch++;
-		if (requestsDwellingSearch % 5000 == 0) {
-		    logger.info("Number of searches for dwelling so far: " + requestsDwellingSearch);
+        requestsDwellingSearch++;
+        if (requestsDwellingSearch % 5000 == 0) {
+            logger.info("Number of searches for dwelling so far: " + requestsDwellingSearch);
         }
         // search alternative dwellings
 
         // data preparation
         int householdIncome = 0;
-        Nationality nationality = ((HouseholdMuc)household).getNationality();
+        Nationality nationality = ((HouseholdMuc) household).getNationality();
         Set<Zone> workerZonesForThisHousehold = new LinkedHashSet<>();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
-        for (Person pp: household.getPersons().values()) {
+        for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-            	Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
+                Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
                 workerZonesForThisHousehold.add(workZone);
                 householdIncome += pp.getIncome();
             }
@@ -228,16 +223,16 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         HouseholdType ht = HouseholdUtil.defineHouseholdType(household);
 
         // Step 1: select region
-        Map<Integer, Double> regionUtilitiesForThisHousehold  = new LinkedHashMap<>();
-        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHousehold(ht,nationality,workerZonesForThisHousehold));
+        Map<Integer, Double> regionUtilitiesForThisHousehold = new LinkedHashMap<>();
+        regionUtilitiesForThisHousehold.putAll(getUtilitiesByRegionForThisHousehold(ht, nationality, workerZonesForThisHousehold));
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         String normalizer = "powerOfPopulation";
         int totalVacantDd = 0;
-        for (int region: geoData.getRegions().keySet()) {
+        for (int region : geoData.getRegions().keySet()) {
             totalVacantDd += realEstateDataManager.getNumberOfVacantDDinRegion(region);
         }
-        for (int region : regionUtilitiesForThisHousehold.keySet()){
+        for (int region : regionUtilitiesForThisHousehold.keySet()) {
             switch (normalizer) {
                 case ("vacDd"): {
                     // Multiply utility of every region by number of vacant dwellings to steer households towards available dwellings
@@ -265,7 +260,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
                     // do nothing
                 }
                 case ("powerOfPopulation"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
+                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region), 0.5));
                 }
             }
         }
@@ -289,7 +284,6 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 //        }
 
 
-
         // Step 2: select vacant dwelling in selected region
         int[] vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
         double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
@@ -303,7 +297,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
             double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes()); // interesting part!
             //
             expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
-            sumProbs =+ expProbs[i];
+            sumProbs = +expProbs[i];
         }
         if (sumProbs == 0) {
             // could not find dwelling that fits restrictions
@@ -330,25 +324,16 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
         Map<Person, JobMuc> jobsForThisHousehold = new LinkedHashMap<>();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
-        for (Person pp: hh.getPersons().values()) {
+        for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
                 jobsForThisHousehold.put(pp, workLocation);
             }
         }
         double workDistanceUtility = 1;
-        for (JobMuc workLocation : jobsForThisHousehold.values()){
-        	// TODO Think about how to apply this for other modes as well
+        for (JobMuc workLocation : jobsForThisHousehold.values()) {
+            // TODO Think about how to apply this for other modes as well
             int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
-            try {
-                writer.write(year+","+workLocation.getWorkerId()+","+hh.getId()+","+dd.getId()+","
-                        +workLocation.getId()+","+workLocation.getCoordinate().getX()+","
-                        +workLocation.getCoordinate().getY()+","+dd.getCoordinate().getX()+","
-                        +dd.getCoordinate().getY()+","+ workLocation.getZoneId()+","+dd.getZoneId()+ ","+
-                        expectedCommuteTime+"\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
             double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
             workDistanceUtility *= factorForThisZone;
