@@ -46,10 +46,10 @@ public class SummarizeData {
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
     private static final String RESULT_FILE = "resultFile";
 
-    public static void openResultFile(Properties properties, int combinationId) {
+    public static void openResultFile(Properties properties) {
         // open summary file
 
-        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + combinationId;
+        String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         SiloUtil.createDirectoryIfNotExistingYet(directory);
         resultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE +
                 ".csv", properties.main.startYear != properties.main.implementation.BASE_YEAR);

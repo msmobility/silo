@@ -120,7 +120,7 @@ public final class SiloModel {
 
 	private void setupModel() {
 		//logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
-		SummarizeData.openResultFile(properties, combinationId);
+
 		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
 		setupContainer();
         setupYears();
@@ -128,7 +128,6 @@ public final class SiloModel {
         //setupAccessibility();
         setupMicroSim();
         IssueCounter.logIssues(data.getGeoData());
-
 
 
 		if (properties.main.createPrestoSummary) {
@@ -341,12 +340,12 @@ public final class SiloModel {
 			SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 			data.getGeoData().writeOutDevelopmentCapacityFile(data);
 		}*/
-		SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
-		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId);
+		//SiloUtil.summarizeHouseholdSizeDistribution(householdSizeDistribution, combinationId);
+		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, data, combinationId, householdSizeDistribution);
 		//SummarizeData.writeOutSyntheticPopulation(properties.main.endYear, data);
 		SiloUtil.finish(modelContainer);
 		SiloUtil.modelStopper("removeFile");
         //SiloUtil.writeOutTimeTracker(timeTracker, combinationId);
-		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + combinationId + ".");
+		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + ".");
 	}
 }

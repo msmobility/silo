@@ -33,8 +33,8 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
     public DeathModel(SiloDataContainer dataContainer,  Map<String, Double> parametersMap) {
         super(dataContainer);
         this.parametersMap = parametersMap;
-        //setupDeathModel();
-        setupDeathModelDistribution();
+        setupDeathModel();
+        //setupDeathModelDistribution();
 
     }
 
@@ -77,8 +77,8 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         final Person person = householdData.getPersonFromId(event.getPersonId());
         if (person != null) {
             final int age = Math.min(person.getAge(), 100);
-            //if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
-            if (SiloUtil.getRandomNumberAsDouble() < deathProbabilities.get(person.getGender())[age]) {
+            if (SiloUtil.getRandomNumberAsDouble() < calculator.calculateDeathProbability(age, person.getGender())) {
+            //if (SiloUtil.getRandomNumberAsDouble() < deathProbabilities.get(person.getGender())[age]) {
                 return die(person);
             }
         }
@@ -192,6 +192,7 @@ public class DeathModel extends AbstractModel implements MicroEventModel<DeathEv
         deathProbability[53] = 0.00285827;
         deathProbability[54] = 0.00307015;
         deathProbability[55] = 0.00336385;
+
         return deathProbability;
     }
 

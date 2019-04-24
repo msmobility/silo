@@ -35,6 +35,9 @@ public class SiloMuc {
         householdMap = new PopulationReader().readHouseholdFile(args[2]);
         personMap = new PopulationReader().readPersonFile(args[3],householdMap);
 
+        SummarizeData.openResultFile(properties);
+        SummarizeData.resultFile("combinationId" + "," + "year" + "," + "variable" + "," + "count");
+
         for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
@@ -43,6 +46,7 @@ public class SiloMuc {
             model.runModel();
             logger.info("Finished SILO. Combination of parameters: " + i);
         }
+        SummarizeData.resultFile("close", false);
     }
 
 }

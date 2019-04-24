@@ -1057,14 +1057,23 @@ public class SiloUtil {
     }
 
 
-    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId) {
+    public static void summarizeMicroData (int year, SiloModelContainer modelContainer, SiloDataContainer dataContainer, int combinationId, Map<Integer, int[]> distributionByYear) {
         // aggregate micro data
 
 /*        if (trackHh != -1 || trackPp != -1 || trackDd != -1)
             trackWriter.println("Started simulation for year " + year);
         logger.info("  Summarizing micro data for year " + year);*/
-
-        SummarizeData.resultFile("close", false);
+        int yearPrev = year - 1;
+        int[] sizes = distributionByYear.get(yearPrev);
+        for(int i = 1; i <= 4; i++){
+            SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize" + i + "," + sizes[i - 1]);
+        }
+        int hhSize5 = sizes[4];
+        for (int i = 6; i <= 10; i++){
+            hhSize5 = hhSize5 + sizes[i - 1];
+        }
+        SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize5+" + "," + hhSize5);
+        //SummarizeData.resultFile("close", false);
         //dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
         //removed for machine learning exercise
         /*dataContainer.getRealEstateData().summarizeDwellings();
