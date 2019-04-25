@@ -3,6 +3,7 @@ package de.tum.bgu.msm.properties.modules;
 
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.properties.PropertiesUtil;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -10,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MainProperties {
+
+    private final static Logger logger = Logger.getLogger(MainProperties.class);
 
     /**
      * Name of the scenario and of the output folder.
@@ -93,6 +96,7 @@ public class MainProperties {
 
         PropertiesUtil.newPropertySubmodule("Main properties");
         scenarioName = PropertiesUtil.getStringProperty(bundle, "scenario.name");
+        logger.info("Scenario name: " + scenarioName);
         //by omitting base directory one has to set up a working folder in intellij etc. which represents "." in the next line
         //add working directory as default value?
         baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", propertiesBasePath + "/");

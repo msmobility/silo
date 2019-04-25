@@ -41,8 +41,8 @@ public class SiloUtil {
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
     public static Properties siloInitialization(String propertiesPath) {
-        loadHdf5Lib();
         Properties properties = Properties.initializeProperties(propertiesPath);
+        loadHdf5Lib();
         createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
         SummarizeData.resultFileSpatial("open");
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
