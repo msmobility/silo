@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 
-
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -23,8 +22,8 @@ public class SyntheticPopulationGeneratorPerth {
         SiloUtil.siloInitialization(args[0]);
         try {
 //            PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.PERTH);
-        rb = new PropertyResourceBundle(new FileReader(args[0]));
-        PropertiesUtil.writePropertiesForThisRun(args[0]);
+            rb = new PropertyResourceBundle(new FileReader(args[0]));
+            PropertiesUtil.writePropertiesForThisRun(args[0]);
         } catch (IOException e) {
             logger.error("File not found: " + args[0]);
         }
