@@ -220,7 +220,11 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
                 } case ("noNormalization"): {
                     // do nothing
                 }case ("powerOfPopulation"): {
-                    regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
+                    Double regval = new Double(regionUtilitiesForThisHousehold.get(region));
+                    if(regval.isNaN()) regval = new Double(0);
+                    double value = regval.doubleValue() * Math.pow(hhByRegion.getIndexed(region),0.5);
+                    regionUtilitiesForThisHousehold.put(region, value);
+                    //regionUtilitiesForThisHousehold.put(region, regionUtilitiesForThisHousehold.get(region) * Math.pow(hhByRegion.getIndexed(region),0.5));
                 }
             }
         }

@@ -211,7 +211,13 @@ public class DefaultResultsMonitor implements ResultsMonitor {
     private void summarizeCarOwnership() {
         int[] carOwnership = new int[4];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            carOwnership[hh.getAutos()]++;
+            int autos = hh.getAutos();
+            if(autos >= 3) {
+                carOwnership[3]++;
+            }
+            else {
+                carOwnership[autos]++;
+            }
         }
         resultWriter.println("carOwnershipLevel,households");
         resultWriter.println("0cars," + carOwnership[0]);

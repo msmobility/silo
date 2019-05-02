@@ -114,8 +114,7 @@ public class ModelBuilder {
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                		(MatsimAccessibility) dataContainer.getAccessibility());
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, null);
                 break;
             case NONE:
             case MITO_MATSIM:
