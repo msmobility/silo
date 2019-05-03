@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.data.person.PersonFactoryCapeTown;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.DwellingReaderCapeTown;
 import de.tum.bgu.msm.io.GeoDataReaderCapeTown;
 import de.tum.bgu.msm.io.PersonReaderCapeTown;
 import de.tum.bgu.msm.io.input.*;
@@ -62,7 +63,7 @@ public class DataBuilderCapeTown {
         JobFactory jobFactory = new JobFactoryImpl();
 
         List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
+        Collections.addAll(dwellingTypeList, DwellingTypeCapeTown.values());
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
@@ -103,7 +104,7 @@ public class DataBuilderCapeTown {
         PersonReader personReader = new PersonReaderCapeTown(dataContainer.getHouseholdDataManager(), new PersonFactoryCapeTown());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DefaultDwellingReader(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderCapeTown(dataContainer.getRealEstateDataManager());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
