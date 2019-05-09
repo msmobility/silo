@@ -52,7 +52,7 @@ public class JobReaderPerth implements JobReader {
                 int worker = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
 
-                Job jj = factory.createJob(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(), worker, type);
+                Job jj = factory.createJob(id, zoneId, geoData.getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject()), worker, type);
 
 
                 jobDataManager.addJob(jj);

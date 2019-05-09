@@ -7,6 +7,8 @@ import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
 import de.tum.bgu.msm.models.MitoTransportModelMuc;
@@ -115,8 +117,8 @@ public class ModelBuilder {
 
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
-            case MITO:
-                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties);
+            case MITO_MATSIM:
+                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties, config);
                 break;
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
@@ -128,6 +130,7 @@ public class ModelBuilder {
                 transportModel = null;
 
         }
+
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
                 deathModel, marriageModel,

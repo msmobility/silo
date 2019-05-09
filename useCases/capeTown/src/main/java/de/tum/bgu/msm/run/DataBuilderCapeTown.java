@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.data.person.PersonFactoryCapeTown;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.DwellingReaderCapeTown;
 import de.tum.bgu.msm.io.GeoDataReaderCapeTown;
 import de.tum.bgu.msm.io.PersonReaderCapeTown;
 import de.tum.bgu.msm.io.input.*;
@@ -38,16 +39,22 @@ public class DataBuilderCapeTown {
 
         GeoData geoData = new DefaultGeoData();
 
-        TravelTimes travelTimes;
-        Accessibility accessibility;
-        if (properties.transportModel.transportModelIdentifier == MATSIM) {
-            travelTimes = new MatsimTravelTimes();
-//            accessibility = new MatsimAccessibility(geoData);
-        } else {
-            travelTimes = new SkimTravelTimes();
-        }
-        accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+        TravelTimes travelTimes = null;
+        Accessibility accessibility = null;
 
+        switch (properties.transportModel.travelTimeImplIdentifier) {
+            case SKIM:
+                travelTimes = new SkimTravelTimes();
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            case MATSIM:
+                travelTimes = new MatsimTravelTimes();
+//                accessibility = new MatsimAccessibility(geoData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                break;
+            default:
+                break;
+        }
         CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
 
         //TODO: revise this!
@@ -56,7 +63,7 @@ public class DataBuilderCapeTown {
         JobFactory jobFactory = new JobFactoryImpl();
 
         List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
+        Collections.addAll(dwellingTypeList, DwellingTypeCapeTown.values());
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
@@ -97,7 +104,7 @@ public class DataBuilderCapeTown {
         PersonReader personReader = new PersonReaderCapeTown(dataContainer.getHouseholdDataManager(), new PersonFactoryCapeTown());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DefaultDwellingReader(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderCapeTown(dataContainer.getRealEstateDataManager());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 

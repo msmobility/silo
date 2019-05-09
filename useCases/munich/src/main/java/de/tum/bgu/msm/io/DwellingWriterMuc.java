@@ -55,9 +55,9 @@ public class DwellingWriterMuc implements DwellingWriter {
             pwd.print(",");
             pwd.print(dd.getUsage());
             pwd.print(",");
-            pwd.print(((DwellingImpl) dd).getCoordinate().x);
+            pwd.print(dd.getCoordinate().x);
             pwd.print(",");
-            pwd.print(((DwellingImpl) dd).getCoordinate().y);
+            pwd.print(dd.getCoordinate().y);
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");

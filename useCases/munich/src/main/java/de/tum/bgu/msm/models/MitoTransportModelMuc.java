@@ -14,12 +14,21 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
 import de.tum.bgu.msm.data.school.SchoolImpl;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.core.config.Config;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 
 import java.util.Map;
 import java.util.Objects;
@@ -36,17 +45,33 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
     private TravelTimes travelTimes;
     private final String propertiesPath;
     private final String baseDirectory;
+    private final Config config;
 
+    private TravelTimes mitoInputTravelTimes;
 
-    public MitoTransportModelMuc(String baseDirectory, DataContainer dataContainer, Properties properties) {
+    public MitoTransportModelMuc(String baseDirectory, DataContainer dataContainer, Properties properties, Config config) {
         super(dataContainer, properties);
         this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
         this.propertiesPath = Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath);
         this.baseDirectory = Objects.requireNonNull(baseDirectory);
+        this.config = config;
     }
 
     @Override
-    public void setup() {}
+    public void setup() {
+        if(travelTimes instanceof MatsimTravelTimes) {
+            logger.warn("Using mito with matsim travel times.");
+            mitoInputTravelTimes = new SkimTravelTimes();
+            TravelTimeUtil.updateCarSkim((SkimTravelTimes) mitoInputTravelTimes, properties.main.startYear, properties);
+            Network network = NetworkUtils.createNetwork();
+            new MatsimNetworkReader(network).readFile(config.network().getInputFileURL(config.getContext()).getFile());
+            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network);
+            runTransportModel(properties.main.startYear);
+        } else {
+            logger.warn("Using mito with skim travel times.");
+            mitoInputTravelTimes = travelTimes;
+        }
+    }
 
     @Override
     public void prepareYear(int year) {}
@@ -71,6 +96,11 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.setBaseDirectory(baseDirectory);
         mito.runModel();
+        if(travelTimes instanceof MatsimTravelTimes) {
+            final TravelTime matsimTravelTime = mito.getData().getMatsimTravelTime();
+            final TravelDisutility matsimTravelDisutility = mito.getData().getMatsimTravelDisutility();
+            ((MatsimTravelTimes) travelTimes).update(matsimTravelTime, matsimTravelDisutility);
+        }
     }
 
     private DataSet convertData(int year) {
@@ -79,7 +109,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
         fillMitoZoneEmployees(dataSet);
         convertSchools(dataSet);
         convertHhs(dataSet);
-        dataSet.setTravelTimes(((TravelTimesWrapper) travelTimes).getDelegate());
+        dataSet.setTravelTimes(mitoInputTravelTimes);
         dataSet.setYear(year);
         return dataSet;
     }
@@ -128,8 +158,8 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
                     siloHousehold.getAutos(), zone);
 
             Coordinate coordinate;
-            if (dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
-                coordinate = ((MicroLocation) dwelling).getCoordinate();
+            if (dwelling.getCoordinate() != null) {
+                coordinate = dwelling.getCoordinate();
             } else {
                 randomCoordCounter++;
                 coordinate = zone.getRandomCoord();
@@ -168,7 +198,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
-                        coordinate = ((MicroLocation) job).getCoordinate();
+                        coordinate = job.getCoordinate();
                     } else {
                         coordinate = zone.getRandomCoord();
                     }
@@ -201,8 +231,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             final MitoZone zone = zones.get(jj.getZoneId());
             final String type = jj.getType().toUpperCase();
             try {
-                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = null;
-                mitoJobType = MunichJobType.valueOf(type);
+                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = MunichJobType.valueOf(type);
                 zone.addEmployeeForType(mitoJobType);
             } catch (IllegalArgumentException e) {
                 logger.warn("Job type " + type + " not defined for MITO implementation: Munich");

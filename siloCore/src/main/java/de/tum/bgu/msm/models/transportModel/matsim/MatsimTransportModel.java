@@ -95,7 +95,7 @@ public final class MatsimTransportModel implements TransportModel {
 	public void setup() {
         network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
-        travelTimes.initialize(dataContainer.getGeoData().getZones(), network);
+        travelTimes.initialize(dataContainer.getGeoData(), network);
 
         logger.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -153,9 +153,6 @@ public final class MatsimTransportModel implements TransportModel {
     		MatsimWriter populationWriter = new PopulationWriter(population);
     		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
     	}
-		
-		// Get travel Times from MATSim
-		logger.warn("Using MATSim to compute travel times from zone to zone.");
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);

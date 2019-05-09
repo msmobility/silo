@@ -7,10 +7,12 @@ import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
@@ -57,20 +59,22 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
 
-    private final Table<Integer, Region, Double> travelTimeToRegion = HashBasedTable.create();
+    private IndexedDoubleMatrix2D travelTimeToRegion;
     
     // Counters
  	int requests = 0;
  	int requestsRegion = 0;
  	int requestsSkim = 0;
 
-    public void initialize(Map<Integer, Zone> zones, Network network) {
+    public void initialize(GeoData geoData, Network network) {
         this.network = network;
-        this.zones = zones;
+        this.zones = geoData.getZones();
+        this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
+        this.travelTimeToRegion.assign(-1);
         buildZoneCalculationNodesMap();
     }
 
-    void update(TravelTime travelTime, TravelDisutility disutility) {
+    public void update(TravelTime travelTime, TravelDisutility disutility) {
         LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory().createPathCalculator(network, disutility, travelTime);
         TripRouter.Builder bd = new TripRouter.Builder(ConfigUtils.createConfig());
         RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), network, pathCalculator);
@@ -82,6 +86,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
         this.skimsByMode.clear();
+        this.travelTimeToRegion.assign(-1);
     }
 
 
@@ -90,12 +95,14 @@ public final class MatsimTravelTimes implements TravelTimes {
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
 		if (requests % 50000 == 0) logger.info("New individual travel time request. Number of occurrences so far: " + requests);
 		requests++;
+		// Microlocations case
         Coord originCoord;
         Coord destinationCoord;
-        if (origin instanceof MicroLocation && destination instanceof MicroLocation) { // Microlocations case
+        if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
             originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
-        } else if (origin instanceof Zone && destination instanceof Zone) { // Non-microlocations case
+        } else if (origin instanceof Zone && destination instanceof Zone) {
+            // Non-microlocations case
             originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord();
             destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord();
         } else {
@@ -129,8 +136,8 @@ public final class MatsimTravelTimes implements TravelTimes {
     	requestsRegion++;
         if (origin instanceof Zone) {
             int originZone = origin.getZoneId();
-            if (travelTimeToRegion.contains(originZone, destination)) {
-                return travelTimeToRegion.get(originZone, destination);
+            if (travelTimeToRegion.getIndexed(originZone, destination.getId()) > 0) {
+                return travelTimeToRegion.getIndexed(originZone, destination.getId());
             }
             double min = Double.MAX_VALUE;
             for (Zone zoneInRegion : destination.getZones()) {
@@ -139,7 +146,7 @@ public final class MatsimTravelTimes implements TravelTimes {
                     min = travelTime;
                 }
             }
-            travelTimeToRegion.put(originZone, destination, min);
+            travelTimeToRegion.setIndexed(originZone, destination.getId(), min);
             return min;
         } else {
             throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
@@ -229,12 +236,14 @@ public final class MatsimTravelTimes implements TravelTimes {
         }
     }
 
+    @Override
     public TravelTimes duplicate() {
         logger.warn("Creating another TravelTimes object.");
         MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
         matsimTravelTimes.network = this.network;
         matsimTravelTimes.zones = this.zones;
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
+        matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.update(travelTime, travelDisutility);
         return matsimTravelTimes;
     }
@@ -245,7 +254,7 @@ public final class MatsimTravelTimes implements TravelTimes {
             // Several points in a given origin zone
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                 // TODO Check if random coordinate is the best representative
-                Coordinate coordinate = zone.getRandomCoordinate();
+                Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
                 Coord originCoord = new Coord(coordinate.x, coordinate.y);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 

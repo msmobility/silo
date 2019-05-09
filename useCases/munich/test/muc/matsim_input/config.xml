@@ -9,7 +9,7 @@
 	</module>
 
 	<module name="network" >
-		<param name="inputNetworkFile" value="network/05/network.xml.gz" />
+		<param name="inputNetworkFile" value="network/05/studyNetworkLight.xml" />
 	</module>
 
 	<module name="qsim" >
@@ -19,8 +19,5 @@
 	<module name="strategy" >
 		<param name="maxAgentPlanMemorySize" value="5" />
 	</module>
-	
-	<module name="accessibility" >
-		<param name="timeOfDay" value="28800.0" />
-	</module>
+
 </config>

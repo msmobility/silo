@@ -124,27 +124,33 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                             probSum += prob[zone];
                         }
                     }
-                    if (probSum == 0) continue;
+                    if (probSum == 0) {
+                        continue;
+                    }
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
                     int zone = SiloUtil.select(prob);
                     int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    int quality = properties.main.qualityLevels;  // set all new dwellings to highest quality level
+                    // set all new dwellings to highest quality level
+                    int quality = properties.main.qualityLevels;
 
 
                     int price;
 
                     // dwelling is unrestricted, generate free-market price
                     float avePrice = avePriceByTypeAndZone[dto][zone];
-                    if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                    if (avePrice == 0)
+                    if (avePrice == 0) {
+                        avePrice = avePriceByTypeAndRegion[dto][region];
+                    }
+                    if (avePrice == 0) {
                         logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+                    }
                     price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
 
 
                     int ddId = realEstate.getNextDwellingId();
-                    Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate();
+                    Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate(SiloUtil.getRandomObject());
                     Dwelling plannedDwelling = factory.createDwelling(ddId, zone, coordinate, -1,
                             dt, size, quality, price, year);
                     // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet

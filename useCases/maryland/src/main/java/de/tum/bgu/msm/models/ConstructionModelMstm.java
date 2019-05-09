@@ -138,7 +138,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                             probSum += prob[zone];
                         }
                     }
-                    if (probSum == 0) continue;
+                    if (probSum == 0) {
+                        continue;
+                    }
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
@@ -159,9 +161,12 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     if (restriction == 0) {
                         // dwelling is unrestricted, generate free-market price
                         float avePrice = avePriceByTypeAndZone[dto][zone];
-                        if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                        if (avePrice == 0)
+                        if (avePrice == 0) {
+                            avePrice = avePriceByTypeAndRegion[dto][region];
+                        }
+                        if (avePrice == 0) {
                             logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+                        }
                         price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
                     } else {
                         // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
@@ -192,7 +197,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
 
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate();
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
         dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);

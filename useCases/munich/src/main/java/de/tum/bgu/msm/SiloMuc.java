@@ -2,6 +2,8 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -30,7 +32,8 @@ public class SiloMuc {
         DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
         DataBuilder.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }

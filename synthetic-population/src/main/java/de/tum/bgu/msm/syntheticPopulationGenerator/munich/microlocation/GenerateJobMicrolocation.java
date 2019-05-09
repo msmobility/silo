@@ -45,7 +45,7 @@ public class GenerateJobMicrolocation {
             String jobType = jj.getType();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate());
+                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
                 errorjob++;
                 continue;
             }

@@ -141,19 +141,19 @@ public class SiloMatsimUtils {
 
     		Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
     		Coordinate dwellingCoordinate;
-    		if (dwelling instanceof MicroLocation && ((MicroLocation) dwelling).getCoordinate() != null) {
-	    		dwellingCoordinate = ((MicroLocation) dwelling).getCoordinate();
+    		if (dwelling != null && dwelling.getCoordinate() != null) {
+	    		dwellingCoordinate = dwelling.getCoordinate();
     		} else {
-    			dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate();
+    			dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
     		}
     		Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
 
     		Job job = jobDataManager.getJobFromId(siloWorkplaceId);
     		Coordinate jobCoordinate;
-    		if (job instanceof MicroLocation && ((MicroLocation) job).getCoordinate() != null) {
-    			jobCoordinate = ((MicroLocation) job).getCoordinate();
+    		if (job != null && job.getCoordinate() != null) {
+    			jobCoordinate = job.getCoordinate();
     		} else {
-    			jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate();
+    			jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
     		}
     		Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
     		

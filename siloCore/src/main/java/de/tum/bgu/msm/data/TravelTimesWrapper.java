@@ -40,6 +40,11 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     }
 
     @Override
+    public TravelTimes duplicate() {
+        throw new RuntimeException("Not implemented for wrapper");
+    }
+
+    @Override
     public void setup() {
         if (delegate instanceof SkimTravelTimes){
             updateSkims(properties.main.startYear);

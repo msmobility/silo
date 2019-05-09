@@ -10,6 +10,7 @@ import de.tum.bgu.msm.io.input.DefaultDwellingReader;
 import de.tum.bgu.msm.io.input.DefaultJobReader;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DefaultJobWriter;
+import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.Collections;
 
@@ -27,7 +28,7 @@ public class CoordAssingment {
 
         for(Dwelling dwelling: dataManager.getDwellings()) {
             Zone zone = geoData.getZones().get(dwelling.getZoneId());
-            dwelling.setCoordinate(zone.getRandomCoordinate());
+            dwelling.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
         }
 
         new DefaultDwellingWriter(dataManager).writeDwellings("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\microData\\dd_2011_micro.csv");
@@ -38,7 +39,7 @@ public class CoordAssingment {
         JobDataManager jobDataManagerCopy = new JobDataManagerImpl(null, new JobFactoryImpl(), new JobDataImpl(), geoData, null, null);
         for(Job job: jobDataManager.getJobs()) {
             Zone zone = geoData.getZones().get(job.getZoneId());
-            jobDataManagerCopy.addJob(jobDataManagerCopy.getFactory().createJob(job.getId(), job.getZoneId(), zone.getRandomCoordinate(), job.getWorkerId(), job.getType()));
+            jobDataManagerCopy.addJob(jobDataManagerCopy.getFactory().createJob(job.getId(), job.getZoneId(), zone.getRandomCoordinate(SiloUtil.getRandomObject()), job.getWorkerId(), job.getType()));
         }
 
         new DefaultJobWriter(jobDataManagerCopy).writeJobs("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\microData\\jj_2011_micro.csv");

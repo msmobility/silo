@@ -138,7 +138,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject());
             dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +

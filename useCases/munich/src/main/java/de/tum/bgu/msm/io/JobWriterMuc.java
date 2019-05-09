@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobMuc;
@@ -45,7 +44,7 @@ public class JobWriterMuc implements JobWriter {
             pwj.print(jj.getType());
             pwj.print("\"");
 
-            Coordinate coordinate = ((MicroLocation) jj).getCoordinate();
+            Coordinate coordinate = jj.getCoordinate();
             pwj.print(",");
             pwj.print(coordinate.x);
             pwj.print(",");

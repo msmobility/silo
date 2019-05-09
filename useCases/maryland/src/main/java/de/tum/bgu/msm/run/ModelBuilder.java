@@ -114,10 +114,11 @@ public class ModelBuilder {
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                		(MatsimAccessibility) dataContainer.getAccessibility());
+                		//(MatsimAccessibility) dataContainer.getAccessibility()
+                        null);
                 break;
             case NONE:
-            case MITO:
+            case MITO_MATSIM:
                 logger.warn("Mito not implemented for mstm. setting transport model to \"NONE\"");
             default:
                 transportModel = null;

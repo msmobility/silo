@@ -41,17 +41,11 @@ public class SiloUtil {
     private static Logger logger = Logger.getLogger(SiloUtil.class);
 
     public static Properties siloInitialization(String propertiesPath) {
-
-        loadHdf5Lib();
-
         Properties properties = Properties.initializeProperties(propertiesPath);
-
+        loadHdf5Lib();
         createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
-        SummarizeData.openResultFile(properties);
         SummarizeData.resultFileSpatial("open");
-
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
-
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
         return properties;
@@ -587,7 +581,6 @@ public class SiloUtil {
 
 
     public static void finish (ModelContainer modelContainer) {
-        SummarizeData.resultFile("close");
         trackingFile("close");
         if (IssueCounter.didFindIssues()) {
             logger.warn("Found issues, please check warnings in logging statements.");
@@ -1040,7 +1033,6 @@ public class SiloUtil {
     public static void closeAllFiles (long startTime, TimeTracker timeTracker) {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
-        SummarizeData.resultFile("close");
         SummarizeData.resultFileSpatial("close");
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
@@ -1075,7 +1067,7 @@ public class SiloUtil {
             trackWriter.println("Started simulation for year " + year);
         logger.info("  Summarizing micro data for year " + year);
 
-        SummarizeData.resultFile("Year " + year, false);
+
         SummarizeData.resultFileSpatial("Year " + year, false);
         SummarizeData.summarizeSpatially(year, dataContainer);
         if (Properties.get().main.createHousingEnvironmentImpactFile) {

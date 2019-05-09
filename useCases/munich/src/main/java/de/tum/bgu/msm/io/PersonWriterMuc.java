@@ -67,7 +67,5 @@ public class PersonWriterMuc implements PersonWriter {
             }
         }
         pwp.close();
-
-
     }
 }

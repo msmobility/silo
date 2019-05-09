@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -99,7 +100,7 @@ public class JobMarketUpdateImpl extends AbstractModel implements JobMarketUpdat
                 int jobsExogenousForecast = (int) jobDataManager.getJobForecast(year, zoneId, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
-                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory));
+                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory, new Random(SiloUtil.getRandomObject().nextLong())));
                 } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsByZone[JobType.getOrdinal(jt)][zoneId] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);

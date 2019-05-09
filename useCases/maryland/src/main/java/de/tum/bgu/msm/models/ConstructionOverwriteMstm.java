@@ -37,7 +37,9 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
         super(dataContainer, properties);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;
-        if (!useOverwrite) return;
+        if (!useOverwrite) {
+            return;
+        }
         traceOverwriteDwellings = properties.realEstate.traceOverwriteDwellings;
         if (traceOverwriteDwellings) {
             String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
@@ -115,8 +117,12 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
     private void addDwellings (int year) {
         // add overwrite dwellings for this year
 
-        if (!useOverwrite) return;
-        if (!plannedDwellings.containsKey(year)) return;
+        if (!useOverwrite) {
+            return;
+        }
+        if (!plannedDwellings.containsKey(year)) {
+            return;
+        }
         logger.info("  Adding dwellings that are given exogenously as an overwrite for the year " + year);
 
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
@@ -141,7 +147,7 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
             dd.setRestriction(restriction);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate();
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject());
             dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +

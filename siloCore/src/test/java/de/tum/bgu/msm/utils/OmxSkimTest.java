@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.utils;
 
+import com.google.common.collect.Lists;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
@@ -17,6 +18,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Random;
 
 public class OmxSkimTest {
 
@@ -48,7 +50,7 @@ public class OmxSkimTest {
             }
 
             @Override
-            public Coordinate getRandomCoordinate() {
+            public Coordinate getRandomCoordinate(Random random) {
                 return null;
             }
 
@@ -90,6 +92,13 @@ public class OmxSkimTest {
 
             @Override
             public IndexedDoubleMatrix2D getPeakSkim(String s) {
+                final IndexedDoubleMatrix2D matrix = new IndexedDoubleMatrix2D(Lists.newArrayList(mockZone), Lists.newArrayList(mockZone));
+                matrix.setIndexed(mockZone.getId(), mockZone.getZoneId(), getTravelTime(mockZone, mockZone,0, TransportMode.car));
+                return matrix;
+            }
+
+            @Override
+            public TravelTimes duplicate() {
                 return null;
             }
         }, Collections.singletonList(mockZone)).writeTravelTimes("test/testskim.omx", "test", TransportMode.car);

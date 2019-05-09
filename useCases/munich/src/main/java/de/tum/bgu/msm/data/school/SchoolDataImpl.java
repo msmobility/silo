@@ -22,6 +22,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
@@ -109,10 +110,10 @@ public class SchoolDataImpl implements SchoolData {
         Dwelling dwelling = dwellingData.getDwelling(person.getHousehold().getDwellingId());
 
         Coordinate coordinate;
-        if (dwelling instanceof MicroLocation) {
-            coordinate = ((MicroLocation) dwelling).getCoordinate();
+        if (dwelling != null) {
+            coordinate = dwelling.getCoordinate();
         } else{
-            coordinate = geoData.getZones().get(dwelling.getZoneId()).getRandomCoordinate();
+            coordinate = geoData.getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
         }
         switch (schoolType){
             case 1:

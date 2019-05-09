@@ -20,7 +20,7 @@
 		<param name="maxAgentPlanMemorySize" value="5" />
 	</module>
 	
-	<module name="accessibility" >
-		<param name="timeOfDay" value="28800.0" />
-	</module>
+	<!--<module name="accessibility" >-->
+		<!--<param name="timeOfDay" value="28800.0" />-->
+	<!--</module>-->
 </config>

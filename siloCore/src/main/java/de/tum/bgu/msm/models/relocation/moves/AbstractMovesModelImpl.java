@@ -22,6 +22,7 @@ import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -39,7 +40,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
     protected final CommutingTimeProbability commutingTimeProbability;
     private final MovesStrategy strategy;
 
-    private final EnumMap<HouseholdType, Double> averageHousingSatisfaction = new EnumMap<>(HouseholdType.class);
+    private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
 
 
@@ -102,6 +103,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
 
         // Step 2: Choose new dwelling
         int idNewDD = searchForNewDwelling(household);
+
         if (idNewDD > 0) {
 
             // Step 3: Move household
@@ -113,9 +115,10 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
             }
             return true;
         } else {
-            if (hhId == SiloUtil.trackHh)
+            if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
                         "could not find an adequate dwelling.");
+            }
             return false;
         }
     }
@@ -178,6 +181,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         }
         final double currentUtil = satisfactionByHousehold.get(household.getId());
         final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
+
         final double prop = strategy.getMovingProbability(avgSatisfaction, currentUtil);
         return SiloUtil.getRandomNumberAsDouble() <= prop;
     }
@@ -202,14 +206,8 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
             logger.info("Size of partititon = " + partition.size());
             executor.addTaskToQueue(() -> {
                 try {
-                    TravelTimes travelTimes = null;
-                    if (dataContainer.getTravelTimes() instanceof SkimTravelTimes) {
-                        travelTimes = dataContainer.getTravelTimes();
-                    } else if (dataContainer.getTravelTimes() instanceof MatsimTravelTimes) {
-                        travelTimes = ((MatsimTravelTimes) dataContainer.getTravelTimes()).duplicate();
-                    }
+                    TravelTimes travelTimes = dataContainer.getTravelTimes().duplicate();
                     for (Household hh : partition) {
-    //                for (Household hh : householdData.getHouseholds()) {
                         final HouseholdType householdType = hh.getHouseholdType();
                         hhByType.add(householdType);
                         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
@@ -227,7 +225,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
         executor.execute();
 
         averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
-                satisfaction / (1. * hhByType.count(householdType)));
+                Precision.round(satisfaction / (1. * hhByType.count(householdType)), 5));
     }
 
     public void moveHousehold(Household hh, int idOldDD, int idNewDD) {
