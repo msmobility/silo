@@ -275,7 +275,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         for (int i = 0; i < vacantDwellings.length; i++) {
             if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
             Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            //
+            // multiple requests from different dwellings to same workplace
             double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes()); // interesting part!
             //
             expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);

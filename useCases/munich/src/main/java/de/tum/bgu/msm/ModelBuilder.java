@@ -120,8 +120,8 @@ public class ModelBuilder {
                 break;
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                		//(MatsimAccessibility) dataContainer.getAccessibility());
-                        null);
+                		(MatsimAccessibility) dataContainer.getAccessibility());
+                        //null);
                 break;
             case NONE:
             default:

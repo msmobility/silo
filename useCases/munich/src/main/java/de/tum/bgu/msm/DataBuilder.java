@@ -44,9 +44,8 @@ public class DataBuilder {
         Accessibility accessibility;
         if (properties.transportModel.transportModelIdentifier == MATSIM) {
             travelTimes = new MatsimTravelTimes();
-//            accessibility = new MatsimAccessibility(geoData);
-            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
-
+            accessibility = new MatsimAccessibility(geoData);
+//            accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
         } else {
             travelTimes = new SkimTravelTimes();
             accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
