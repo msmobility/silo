@@ -21,6 +21,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.contrib.dvrp.router.DijkstraTree;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
@@ -124,7 +125,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-    	if (requestsRegion % 50000 == 0) logger.info("New individual travel time request. Number of occurrences so far: " + requestsRegion);
+    	if (requestsRegion % 100000 == 0) logger.info("New individual travel time request to region. Number of occurrences so far: " + requestsRegion);
     	requestsRegion++;
         if (origin instanceof Zone) {
             int originZone = origin.getZoneId();
@@ -147,9 +148,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     @Override
     public IndexedDoubleMatrix2D getPeakSkim(String mode) {
-		logger.info("Getting peak skim for mode " + mode);
         if (skimsByMode.containsKey(mode)) {
-    		if (requestsSkim % 1000 == 0) logger.info("Looking up existing peak skim. Number of occurrences: " + requestsSkim);
+    		if (requestsSkim % 100000 == 0) logger.info("Looking up existing peak skim. Number of occurrences: " + requestsSkim);
     		requestsSkim++;
             return skimsByMode.get(mode);
         } else {
@@ -165,6 +165,7 @@ public final class MatsimTravelTimes implements TravelTimes {
                 if (mode.equalsIgnoreCase(TransportMode.car)) {
                     executor.addTaskToQueue(() -> {
                         try {
+//                        	DijkstraTree dijkstraTree = new DijkstraTree(network, travelDisutility, travelTime);
                             MultiNodePathCalculator calculator
                                     = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(network, travelDisutility, travelTime);
 
@@ -182,8 +183,11 @@ public final class MatsimTravelTimes implements TravelTimes {
                             for (Zone origin : partition) {
                                 Node node = zoneCalculationNodesMap.get(origin).get(0);
                                 calculator.calcLeastCostPath(node, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
+//                              dijkstraTree.calcLeastCostPathTree(node, Properties.get().transportModel.peakHour_s);
+                                
                                 for (Zone destination : zones.values()) {
-                                    double travelTime = calculator.constructPath(node, zoneCalculationNodesMap.get(destination).get(0), Properties.get().transportModel.peakHour_s).travelTime;
+                                  double travelTime = calculator.constructPath(node, zoneCalculationNodesMap.get(destination).get(0), Properties.get().transportModel.peakHour_s).travelTime;
+//                                double travelTime = dijkstraTree.getLeastCostPath(zoneCalculationNodesMap.get(destination).get(0)).travelTime;
 
                                     //convert to minutes
                                     travelTime /= 60.;
