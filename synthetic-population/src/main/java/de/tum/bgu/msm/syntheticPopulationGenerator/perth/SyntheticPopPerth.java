@@ -2,42 +2,39 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.util.*;
-/*import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import run.DataBuilder;*/
 
 /**
  * Generates a simple synthetic population for the perth Study Area
  * @author Rolf Moeckel (TUM) & Sonja Stemler (UWA) & Martin Porebski (UWA)
  * Created on Oct. 31st, 2018 in Munich
  */
-public class SyntheticPopPerth implements SyntheticPopI
-{
+public class SyntheticPopPerth implements SyntheticPopI {
     // constants
-    private int CODE_MALE = 1;
-    private int CODE_FEMALE = 2;
+    private int ABS_CODE_MALE = 1;
+    private int ABS_CODE_FEMALE = 2;
+    private int ABS_CODE_SINGLE = 6;
+    private int ABS_CODE_MARRIED = 1;
+    private int ABS_CODE_EMPLOYED = 1;
+    private int ABS_CODE_UNEMPLOYED = 2;
+    private int ABS_CODE_NONPRIVATE_DWELLING = 6;
+    private int ABS_AGE_GROUPS = 18;
+    private int ABS_INCOME_GROUPS = 15;
+    private int POPULATION_WEIGHT = 100;
 
-    protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
-    protected static final String PROPERTIES_PUMS_PERSONS            = "pums.persons";
-    protected static final String PROPERTIES_PUMS_DWELLINGS          = "pums.dwellings";
+    protected static final String PROPERTIES_RUN_SP = "run.synth.pop.generator";
+    protected static final String PROPERTIES_PUMS_PERSONS = "pums.persons";
+    protected static final String PROPERTIES_PUMS_DWELLINGS = "pums.dwellings";
 
     protected transient Logger logger = Logger.getLogger(SyntheticPopPerth.class);
-
     private ResourceBundle rb;
     private String baseDirectory;
-
-    // data managers
-    /*protected HouseholdDataManager householdData;
-    protected RealEstateDataManager realEstateData;
-    protected JobDataManager jobData;*/
 
     // writers to save data in files
     private PrintWriter pwhh;
@@ -46,98 +43,92 @@ public class SyntheticPopPerth implements SyntheticPopI
     private PrintWriter pwjj;
 
     // temporary data holders
-    private TableDataSet dwellUnoccPerArea = null;
-    private ArrayList<Dwelling> dwellingList = new ArrayList();
+    private ArrayList<Family> samplePopulation = new ArrayList<>(); // store information about 1% of the population
+    private ArrayList<Family> fullPopulation = new ArrayList<>(); // store information about 100% population
     private HashMap<Integer, ZoneSA1[]> zoneMap = new HashMap<>(); // used for the distribution of the population
-    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>();
-    //private ArrayList<Dwelling> nonPrivDwells = new ArrayList<>();
-    private ArrayList<Family> samplePeople = new ArrayList<>(); // store information about 1% of the population
-    private ArrayList<Family> populationPeople = new ArrayList<>(); // store information about 100% population
     private HashMap<Integer, ZoneSA1Jobs> JobDistributionSA1 = new HashMap<>();
     private JobCollection jobCollection = new JobCollection();
+    private ArrayList<Dwelling> dwellingList = new ArrayList();
+    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>();
 
-    // statistical count
+    // statistical counts
     private long unassignedWorker = 0;
     private long unemployedCount = 0;
     private long employedCount = 0;
     private int nonprivdwellPeopleCount = 0;
     private int nonprivdwellCount = 0;
-    private int mergedFams = 0;
     private int clearedDwellings = 0;
 
     // iterate through IDs instead of data managers
-    private long nextID_JJ = 1; // jobData.getNextJobId()
-    private long nextID_PP = 1; // householdData.getNextPersonId()
-    private long nextID_HH = 1; // householdData.getNextHouseholdId()
-    private long nextID_DD = 1; // realEstateData.getNextDwellingId()
+    private long nextID_JJ = 1;
+    private long nextID_PP = 1;
+    private long nextID_HH = 1;
+    private long nextID_DD = 1;
 
     // -----------------------------------------------------------------------------------------------------------------
     // constructor
-    public SyntheticPopPerth(ResourceBundle rb) { this.rb = rb; }
+    public SyntheticPopPerth(ResourceBundle rb)
+    {
+        this.rb = rb;
+    }
 
     // -----------------------------------------------------------------------------------------------------------------
     // run the synthetic population generator
     public void runSP()
     {
         int year = 2011;
-        int jobsToAdd = 21834-3745; // there has to be 21834 unoccupied jobs and there were 3745 already
+        int jobsToAdd = 21834 - 3745; // there has to be 21834 unoccupied jobs and there were 3745 already
 
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SP)) return;
 
-        // setup data managers
-        /*DataContainer dataContainer = DataBuilder.buildDataContainer(Properties.get());
-        realEstateData = dataContainer.getRealEstateDataManager();
-        householdData = dataContainer.getHouseholdDataManager();
-        jobData = dataContainer.getJobDataManager();*/
-
-        logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
+        logger.info("Generating synthetic populations of households, persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
-
-        // open & preprocess the gender file used for the population distribution into SA1 zones
-        openPopulationDistribution(year);
-
-        // open the list of vacant dwellings in Perth
-        dwellUnoccPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/dwellingUnoccupiedBySA1_" + year + ".csv");
 
         // open the files to save the data
         openFilesToWriteSyntheticPopulation(year);
 
+        // open & pre-process the gender file used for the population distribution into SA1 zones
+        logger.info("\t ---------- Preparing the population distribution data.");
+        openPopulationDistribution(year);
+
         logger.info("\t ---------- Generating jobs.");
         createJobs(year);
 
-        logger.info("\t ---------- Reading Australian PUMS (ABS) 1% data.");
+        logger.info("\t ---------- Reading Australian ABS 1% data.");
         readMicroData();
         logger.info("Married people shall live together.");
         connectMarriedPeople(); // silo needs to have married people living together, done on 1% data
-        sortPopulationByFamilySize(samplePeople); // sort by family size, this will aid with population distribution
+        sortPopulationByFamilySize(samplePopulation); // sort by family size, this will aid with population distribution
 
         logger.info("\t ---------- Generating population.");
         generatePopulation();
         logger.info("Sorting Perth's population by family size.");
-        sortPopulationByFamilySize(populationPeople); // again, due to changes (e.g. family mering of non private dwells)
+        sortPopulationByFamilySize(fullPopulation); // again, due to changes (e.g. family mering of non private dwells)
 
         logger.info("\t ---------- Distributing people and dwellings into SA1 zones.");
         distributeToSA1();
 
-        logger.info("\t ---------- Assigning quality to dwellings.");
-        determineDwellingQuality();
+        logger.info("\t ---------- Converting ABS to SILO standard");
+        convertToSilo();
+
+        //logger.info("\t ---------- Assigning quality to dwellings.");
+        //determineDwellingQuality();
 
         logger.info("\t ---------- Adding vacant/unoccupied dwellings.");
-        addVacantDwellings();
+        addVacantDwellings(year);
 
         logger.info("\t  ---------- Adding vacant jobs");
         addEmptyJobs(jobsToAdd, (int)nextID_JJ);
 
-        logger.info("\t ---------- Saving the dd and jj files.");
-        savePumsRecords();
+        logger.info("\t ---------- Saving to file (pp dd hh jj).");
+        savePopulation();
         saveDwellings();
         saveJobs();
 
         logger.info("\t ---------- Final stats:");
-        logger.info("\t" + nextID_PP + " people " + nextID_HH + " households " + nextID_DD + " dwellings " + nextID_JJ + " jobs.");
+        logger.info("\t" + (nextID_PP-1) + " people " + (nextID_HH-1) + " households " + (nextID_DD-1) + " dwellings " + (nextID_JJ-1) + " jobs.");
         logger.info("\t" + employedCount + " employed and " + unemployedCount + " unemployed.");
         logger.info("\t" + unassignedWorker + " unassigned workers.");
-        logger.info("\t" + mergedFams + "00 families/households merged into one because they share a dwelling");
         logger.info("\t" + clearedDwellings + " cleared dwellings");
 
         logger.info("\t" + nonprivdwellPeopleCount + " people in " + nonprivdwellCount + " non-private dwellings.");
@@ -218,14 +209,8 @@ public class SyntheticPopPerth implements SyntheticPopI
         // open the files
         TableDataSet genderPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderBySA1_" + year + ".csv");
         TableDataSet agePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/ageGroupsBySA1_" + year + ".csv");
-        TableDataSet genderAgePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderAgeGroupBySA1_" + year + ".csv");
+        //TableDataSet genderAgePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderAgeGroupBySA1_" + year + ".csv");
         TableDataSet incomePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/weeklyIncomeBySA1_" + year + ".csv");
-
-        // age group intervals e.g. 5 because of 0-4, 5-9, 10-14, 15-19
-        int ageInterval = 5;
-
-        // income intervals: nil, then 10
-        int incomeGroups = 11;
 
         // SA4 area codes in the file
         int[] areaCodes = new int[] {49, 50, 51, 52};
@@ -246,13 +231,13 @@ public class SyntheticPopPerth implements SyntheticPopI
                 if(areaCodes[area] == SA4)
                 {
                     // create a new zone
-                    ZoneSA1 zone = new ZoneSA1(ageInterval, incomeGroups);
+                    ZoneSA1 zone = new ZoneSA1();
                     zone.SA4 = SA4;
                     zone.SA1 = (int)(genderPerArea.getValueAt(row, "SA1"));
 
                     // add gender counts for that zone
-                    zone.setMaleCounts((int)(genderPerArea.getValueAt(row, "Male")));
-                    zone.setFemaleCounts((int)(genderPerArea.getValueAt(row, "Female")));
+                    zone.setMales((int)(genderPerArea.getValueAt(row, "Male")));
+                    zone.setFemales((int)(genderPerArea.getValueAt(row, "Female")));
 
                     // save the zone
                     SA1zones.put(zone.SA1, zone);
@@ -276,48 +261,13 @@ public class SyntheticPopPerth implements SyntheticPopI
                     {
                         // columns 1 and 2 are SA1 and SA4
                         int otherCols = 3;
+                        int ageGroup = 0;
 
                         // traverse all age groups and add them to the zone stats
                         for(int col = otherCols; col <= agePerArea.getColumnCount(); col++)
                         {
-                            zone.setAgeGroup((col-otherCols), (int)agePerArea.getValueAt(row, col));
-                        }
-
-                        // replace (not needed)
-                        SA1zones.put(SA1, zone);
-                    }
-                    else
-                    {
-                        logger.error("Zone mismatch at SA1 " + SA1);
-                    }
-                }
-            }
-
-            // find age group counts
-            for(int row = 1; row <= genderAgePerArea.getRowCount(); row++)
-            {
-                int SA4 = (int) genderAgePerArea.getValueAt(row, "SA4");
-
-                // if zone belongs to the same SA4 area code
-                if(areaCodes[area] == SA4)
-                {
-                    int SA1 = (int)(genderAgePerArea.getValueAt(row, "SA1"));
-
-                    // get the previously created zone
-                    ZoneSA1 zone = SA1zones.get(SA1);
-
-                    if(zone != null)
-                    {
-                        // columns 1 and 2 are SA1 and SA4
-                        int otherCols = 3;
-                        // 2+(44-2)/2
-                        int intervals = (otherCols-1) + ((genderAgePerArea.getColumnCount() - (otherCols-1)) /2);
-
-                        // traverse all age groups for both genders
-                        for(int col = otherCols; col <= intervals; col++)
-                        {
-                            zone.setMaleAgeGroup((col-otherCols), (int)genderAgePerArea.getValueAt(row, col));
-                            zone.setFemaleAgeGroup((col-otherCols), (int)genderAgePerArea.getValueAt(row, (col+intervals-(otherCols-1))));
+                            ageGroup++;
+                            zone.setAgeGroupByBin(ageGroup, (int)agePerArea.getValueAt(row, col));
                         }
 
                         // replace (not needed)
@@ -347,23 +297,13 @@ public class SyntheticPopPerth implements SyntheticPopI
                     {
                         // columns 1 and 2 are SA1 and SA4
                         int otherCols = 3;
-                        // columns not applicable to silo, considered to be nil
-                        int nilCols = 5;
+                        int incGroup = 0;
 
-                        // traverse all income groups and add them to the zone stats
+                        // traverse all age groups and add them to the zone stats
                         for(int col = otherCols; col <= incomePerArea.getColumnCount(); col++)
                         {
-                            if(col < (otherCols+nilCols))
-                            {
-                                int incIndex = 0;
-                                zone.appendToIncomeGroup(incIndex, (int)incomePerArea.getValueAt(row, col));
-                            }
-                            else
-                            {
-                                // index 0 (nil) + column index - (irrelevant columns)
-                                int incIndex = 1 + col - (otherCols + nilCols);
-                                zone.setIncomeGroup(incIndex, (int)incomePerArea.getValueAt(row, col));
-                            }
+                            incGroup++;
+                            zone.setIncomeGroupByBin(incGroup, (int)incomePerArea.getValueAt(row, col));
                         }
 
                         // replace (not needed)
@@ -379,50 +319,6 @@ public class SyntheticPopPerth implements SyntheticPopI
             // place the array of zones under appropriate code in the hashmap
             zoneMap.put(areaCodes[area], SA1zones.values().toArray(new ZoneSA1[0]));
         }
-    }
-    // -----------------------------------------------------------------------------------------------------------------  Output files
-    /*private void openNonPrivateDwellings(int year)
-    {
-        // open the file
-        TableDataSet npdTD = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/nonPrivateDwellingsBySA1_" + year + ".csv");
-
-        for(int row = 1; row < npdTD.getRowCount(); row++)
-        {
-            int totalNPDs = (int)npdTD.getValueAt(row, "total");
-            int zoneSA1 = (int)npdTD.getValueAt(row, "NPRD Number of Persons Usually Resident in Dwelling");
-            for(int d = 1; d < totalNPDs; d++)
-            {
-                Dwelling npd = new Dwelling();
-                npd.zoneSA1 = zoneSA1;
-                npd.zoneSA4 = Integer.parseInt(Integer.toString(zoneSA1).substring(0, 2));
-                nonPrivDwells.add(npd);
-            }
-        }
-    }*/
-
-    // -----------------------------------------------------------------------------------------------------------------  Output files
-    private void openFilesToWriteSyntheticPopulation(int year)
-    {
-        String filehh = baseDirectory + "/microData/hh_" + year + ".csv";
-        String filepp = baseDirectory + "/microData/pp_" + year + ".csv";
-        String filedd = baseDirectory + "/microData/dd_" + year + ".csv";
-        String filejj = baseDirectory + "/microData/jj_" + year + ".csv";
-        pwhh = SiloUtil.openFileForSequentialWriting(filehh, false);
-        pwhh.println("id,dwelling,zone,hhSize,autos");
-        pwpp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
-        pwdd = SiloUtil.openFileForSequentialWriting(filedd, false);
-        pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
-        pwjj = SiloUtil.openFileForSequentialWriting(filejj, false);
-        pwjj.println("id,zone,personId,type");
-    }
-
-    private void closeFilesForSyntheticPopulation()
-    {
-        pwhh.close();
-        pwpp.close();
-        pwdd.close();
-        pwjj.close();
     }
 
     /* *-----------------------------------------------------------------------------------------------------------------  Process ABS data
@@ -440,159 +336,130 @@ public class SyntheticPopPerth implements SyntheticPopI
         // for each row in the dwellings file
         for (int rowDd = 1; rowDd <= pumsDwellings.getRowCount(); rowDd++)
         {
-            HashMap<Integer, Family> familyMap = new HashMap<>();
+            HashMap<String, Family> familyMap = new HashMap<>();
 
             // get ABS dwelling id from the DWELLING file
             String dwellingId = pumsDwellings.getStringValueAt(rowDd, "ABSHID Dwelling Record Identifier");
 
-            // get the attributes of the dwelling from ABS
-            int bedRoomCode = (int) pumsDwellings.getValueAt(rowDd, "BEDRD");
-            int mortgageCode = (int) pumsDwellings.getValueAt(rowDd, "MRERD");
-            int rentCode = (int) pumsDwellings.getValueAt(rowDd, "RNTRD");
-            int typeCode = (int) pumsDwellings.getValueAt(rowDd, "STRD");
-            int autoCode = (int) pumsDwellings.getValueAt(rowDd, "VEHRD");
-            int geographicAreaCode = (int) pumsDwellings.getValueAt(rowDd, "AREAENUM");
-
-            // create a new dwelling to store the record
+            // get the attributes of the dwelling from ABS and store them for later processing
             Dwelling dwelling = new Dwelling();
-
-            // convert the dwelling attributes to a SILO format
-            dwelling.bedrooms = convertBedrooms(bedRoomCode);
-            dwelling.type = typeCode;
-            dwelling.quality = 0;
-            dwelling.mortgage = convertMortgage(mortgageCode);
-            dwelling.rent = convertRent(rentCode);
-            dwelling.price = getDwellingPrice(dwelling.rent, dwelling.mortgage);
-            dwelling.cars = convertAutos(autoCode);
-            dwelling.zoneSA4 = geographicAreaCode;
+            dwelling.codeBedrooms = (int) pumsDwellings.getValueAt(rowDd, "BEDRD");
+            dwelling.codeMortgage = (int) pumsDwellings.getValueAt(rowDd, "MRERD");
+            dwelling.codeRent = (int) pumsDwellings.getValueAt(rowDd, "RNTRD");
+            dwelling.codeType = (int) pumsDwellings.getValueAt(rowDd, "STRD");
+            dwelling.codeVehicles = (int) pumsDwellings.getValueAt(rowDd, "VEHRD");
+            dwelling.SA4 = (int) pumsDwellings.getValueAt(rowDd, "AREAENUM");
 
             // ---------------------------------------------------------------------------------------------------------
             // for each row in the PERSON file
             for(int rowPp = 1; rowPp <= pumsPersons.getRowCount(); rowPp++)
             {
-                // get ABS ids from the PERSON file
+                // for each person get a dwelling ID
                 String p_dwellingId = pumsPersons.getStringValueAt(rowPp, "ABSHID Dwelling Record Identifier");
-                int familyId = (int) pumsPersons.getValueAt(rowPp, "ABSFID Family Record Identifier");
 
                 // find the people that live in this dwelling
                 if(p_dwellingId.equals(dwellingId))
                 {
                     // check if previously added family
-                    Family family = familyMap.get(familyId);
+                    Family family = familyMap.get(p_dwellingId);
                     if(family == null)
                     {
                         // add a new family to the map
                         family = new Family();
                         family.dwelling = dwelling;
-                        familyMap.put(familyId, family);
+                        familyMap.put(p_dwellingId, family);
                     }
 
-                    // get the attributes of the family from ABS
-                    int ageGroup = (int) pumsPersons.getValueAt(rowPp, "AGEP Age");
-                    int sexCode = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
-                    int incomeCode = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
-                    int occupationCode = (int) pumsPersons.getValueAt(rowPp, "LFSP Labour Force Status");
-                    int relationshipCode = (int) pumsPersons.getValueAt(rowPp, "RLHP Relationship in Household");
-                    int industryCode = (int) pumsPersons.getValueAt(rowPp, "INDP Industry of Employment");
-
-                    // create a new person
+                    // get the attributes of the person from ABS & create a new person
                     Person person = new Person();
-
-                    // convert the person attributes to a SILO format
-                    person.Age = convertAge(ageGroup);
-                    person.Sex = sexCode;
-                    person.Race = 0;
-                    person.Income = convertIncome(incomeCode);
-                    person.WeeklyIncCode = incomeCode2WeeklySILO(incomeCode);
-                    person.Occupation = translateOccupation(occupationCode, person.Age);
-                    person.Relationship = translateRelationship(relationshipCode);
-                    person.Industry = translateIndustry(industryCode, person.Occupation);
+                    person.codeAge = (int) pumsPersons.getValueAt(rowPp, "AGEP Age");
+                    person.codeSex = (int) pumsPersons.getValueAt(rowPp, "SEXP Sex");
+                    person.codeIncome = (int) pumsPersons.getValueAt(rowPp, "INCP Individual Income (weekly)");
+                    person.codeOccupation = (int) pumsPersons.getValueAt(rowPp, "LFSP Labour Force Status");
+                    person.codeRelationship = (int) pumsPersons.getValueAt(rowPp, "RLHP Relationship in Household");
+                    person.codeIndustry = (int) pumsPersons.getValueAt(rowPp, "INDP Industry of Employment");
 
                     // add the person to the family
                     family.addPerson(person);
+
+                    // (unnecessary) update the family in the map
+                    familyMap.put(p_dwellingId, family);
                 }
             }
 
-            if(familyMap.size() == 0)
+            // get the newly formed family
+            Family family = familyMap.get(dwellingId);
+
+            // if no members, somethings is wrong
+            if(family == null || family.size == 0)
             {
                 // vacant dwelling?
                 logger.error("Dwelling " + dwellingId + " was not found in the PERSON file.");
             }
             else
             {
-                // for each family
-                Family household = new Family();
-
-                for(Map.Entry<Integer, Family> entry : familyMap.entrySet())
-                {
-                    mergedFams++;
-                    // get a family of the dwelling
-                    Family family = entry.getValue();
-                    // merge the families into one household
-                    household.append(family);
-                }
-
                 // fill in the other details about this household
-                household.dwelling = dwelling;
-                household.autoFillCount();
+                family.dwelling = dwelling;
+                family.calculateStats();
 
-                samplePeople.add(household);
+                samplePopulation.add(family);
             }
         }
     }
+
     // -----------------------------------------------------------------------------------------------------------------  Process ABS data
     private void connectMarriedPeople()
     {
         int h1, h2;
-        for(h1=0; h1<samplePeople.size(); h1++)
+        for(h1=0; h1<samplePopulation.size(); h1++)
         {
-            Family household1 = samplePeople.get(h1);
+            Family household1 = samplePopulation.get(h1);
 
             // if there is a single yet married person
-            if(household1.Size == 1 && household1.marriedPeople == 1)
+            if(household1.size == 1 && household1.countMarried == 1)
             {
                 int hh1Interest = household1.SingleAndLookingFor();
 
-                // find that person a family :)
+                // find that person a family
 
                 // add to existing family
-                for(h2=0; h2<samplePeople.size(); h2++)
+                for(h2=0; h2<samplePopulation.size(); h2++)
                 {
-                    Family household2 = samplePeople.get(h2);
+                    Family household2 = samplePopulation.get(h2);
 
                     // if there is an uneven number of married people living the dwelling/household
-                    if(household2.Size > 1 && h2 != h1
-                            && household2.marriedPeople%2 != 0
-                            && household1.dwelling.zoneSA4 == household2.dwelling.zoneSA4)
+                    if(household2.size > 1 && h2 != h1
+                            && household2.countMarried%2 != 0
+                            && household1.dwelling.SA4 == household2.dwelling.SA4)
                     {
                         int hh2Interest = household2.SingleAndLookingFor();
                         if(hh1Interest != 0 && hh2Interest != 0 && hh1Interest != hh2Interest)
                         {
                             household2.append(household1);
                             household1.emptyTheDwelling();
-                            samplePeople.set(h1, household1);
-                            samplePeople.set(h2, household2);
-                            h2 = samplePeople.size()+50;
+                            samplePopulation.set(h1, household1);
+                            samplePopulation.set(h2, household2);
+                            h2 = samplePopulation.size()+50;
                         }
                     }
                 }
 
                 // if didn't find a family, match singles
-                if(h2 == samplePeople.size())
+                if(h2 == samplePopulation.size())
                 {
-                    for(h2=0; h2<samplePeople.size(); h2++)
+                    for(h2=0; h2<samplePopulation.size(); h2++)
                     {
-                        Family household2 = samplePeople.get(h2);
-                        if(household2.Size == 1 && household2.marriedPeople == 1)
+                        Family household2 = samplePopulation.get(h2);
+                        if(household2.size == 1 && household2.countMarried == 1)
                         {
                             int hh2Interest = household2.SingleAndLookingFor();
                             if(hh1Interest != 0 && hh2Interest != 0 && hh1Interest != hh2Interest)
                             {
                                 household2.append(household1);
                                 household1.emptyTheDwelling();
-                                samplePeople.set(h1, household1);
-                                samplePeople.set(h2, household2);
-                                h2 = samplePeople.size()+50;
+                                samplePopulation.set(h1, household1);
+                                samplePopulation.set(h2, household2);
+                                h2 = samplePopulation.size()+50;
                             }
                         }
                     }
@@ -600,24 +467,26 @@ public class SyntheticPopPerth implements SyntheticPopI
             }
         }
 
-        for(h1=0; h1<samplePeople.size(); h1++)
+        for(h1=0; h1<samplePopulation.size(); h1++)
         {
-            Family household = samplePeople.get(h1);
+            Family household = samplePopulation.get(h1);
 
             // if there is a single yet married person
-            if(household.marriedPeople%2 != 0)
+            if(household.countMarried%2 != 0)
             {
                 int lookingFor = household.SingleAndLookingFor();
-                for(int i=0; i<household.Size; i++)
+                for(int i=0; i<household.size; i++)
                 {
-                    Person person = household.People.get(i);
-                    if(person.Relationship.compareTo("married") == 0)
+                    Person person = household.getPerson(i);
+
+                    // if person is married
+                    if(person.isMarried())
                     {
-                        if(person.Sex != lookingFor)
+                        if(person.codeSex != lookingFor)
                         {
-                            samplePeople.get(h1).People.get(i).Relationship = "single";
-                            samplePeople.get(h1).autoFillCount();
-                            i = household.Size;
+                            samplePopulation.get(h1).people.get(i).codeRelationship = ABS_CODE_SINGLE;
+                            samplePopulation.get(h1).calculateStats();
+                            i = household.size;
                         }
                     }
                 }
@@ -636,25 +505,24 @@ public class SyntheticPopPerth implements SyntheticPopI
         int people = 0;
         for(int i=0; i<populationToCount.size(); i++)
         {
-            people +=populationToCount.get(i).Size;
+            people +=populationToCount.get(i).size;
         }
         return people;
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Process ABS data
+    // -----------------------------------------------------------------------------------------------------------------  Create synthetic population
     private void generatePopulation()
     {
         // create 100% population
-        for(int i=0; i<samplePeople.size(); i++)
+        for(int i=0; i<samplePopulation.size(); i++)
         {
-            generateFromFamily(samplePeople.get(i));
+            generateFromFamily(samplePopulation.get(i));
         }
     }
 
-    /* * -----------------------------------------------------------------------------------------------------------------  Process ABS data
-    *   For each family (which represents 1%), replicate to create
-    *   100% population.
-    * */
+    /*   For each family (which represents 1%), replicate to create
+     *   100% population.
+     * */
     private void generateFromFamily(Family family)
     {
         try
@@ -663,13 +531,13 @@ public class SyntheticPopPerth implements SyntheticPopI
             Family syntheticFamily = null;
 
             // replicate the same family & dwelling x times to reconstruct from the 1% data
-            for (int count = 0; count < family.weight; count++)
+            for (int count = 0; count < POPULATION_WEIGHT; count++)
             {
                 // create a dwelling with the same properties
                 Dwelling dwelling = family.dwelling.clone();
 
                 // if empty dwelling (it was cleared out because of the gender rewire)
-                if(family.Size == 0)
+                if(family.size == 0)
                 {
                     clearedDwellings++;
                 }
@@ -678,7 +546,7 @@ public class SyntheticPopPerth implements SyntheticPopI
                     boolean addNewDwelling = true;
 
                     // if a non-private dwelling
-                    if(dwelling.type == 6)
+                    if(dwelling.codeType == ABS_CODE_NONPRIVATE_DWELLING)
                     {
                         nonprivdwellPeopleCount++;
 
@@ -700,47 +568,38 @@ public class SyntheticPopPerth implements SyntheticPopI
                         dwelling.ddID = nextID_DD++;
                         dwelling.hhID = nextID_HH++;
 
-                        // create the household
-                        Household household = new Household();
-                        household.ddID = dwelling.ddID;
-                        household.hhID = dwelling.hhID;
-                        household.FamilySize = family.Size;
-                        household.Cars = dwelling.cars;
-                        //household.ZoneSA1 = dwelling.zoneSA1;
-
                         // create the new family
                         syntheticFamily = new Family();
                         syntheticFamily.dwelling = dwelling;
-                        syntheticFamily.household = household;
                     }
 
                     int peopleMarried = 0;
 
                     // save the people that live in this dwelling
-                    for (int s = 0; s < family.Size; s++)
+                    for (int s = 0; s < family.size; s++)
                     {
                         // fetch the person record
-                        Person person = family.People.get(s).clone();
+                        Person person = family.getPerson(s).clone();
 
                         // assign new person id, household, dwelling and a job
                         person.ppID = nextID_PP++;
                         person.ddID = syntheticFamily.dwelling.ddID;
                         person.hhID = syntheticFamily.dwelling.hhID;
-                        person.jjID = jobCollection.assignWorker(person.ppID, person.Industry);
+                        person.jjID = -1;
 
                         // update family details
                         syntheticFamily.addPerson(person);
 
                         // stats
-                        if(person.Relationship.compareTo("married") == 0) peopleMarried++;
-                        if(person.Occupation == 1) employedCount++;
-                        if(person.Occupation == 2) unemployedCount++;
+                        if(person.isMarried()) peopleMarried++;
+                        if(person.codeOccupation == ABS_CODE_EMPLOYED) employedCount++;
+                        if(person.codeOccupation == ABS_CODE_UNEMPLOYED) unemployedCount++;
                     }
 
                     // store the family
                     if(addNewDwelling)
                     {
-                        populationPeople.add(syntheticFamily);
+                        fullPopulation.add(syntheticFamily);
                     }
 
                     // if there is an uneven number of married people there is an issue
@@ -754,268 +613,205 @@ public class SyntheticPopPerth implements SyntheticPopI
         }
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Quality
+    // ----------------------------------------------------------------------------------------------------------------- Distribute people to SA1s
     private void distributeToSA1()
     {
-        for(int i = 0; i < populationPeople.size(); i++)
+        // try perfect matches first
+        distributeAttempt(0, true);
+        // now try with a margin
+        distributeAttempt(10, true);
+        // now bigger margin
+        distributeAttempt(50, false);
+        distributeAttempt(1000, false);
+    }
+
+    private void distributeAttempt(int margin, boolean perfectFit)
+    {
+        int unallocated = 0, allocated = 0;
+
+        for(int i = 0; i < fullPopulation.size(); i++)
         {
             // fetch each family
-            Family family = populationPeople.get(i);
-            family.autoFillCount();
-            int SA4 = family.dwelling.zoneSA4;
+            Family family = fullPopulation.get(i);
 
-            // get the list of SA1 zones to the corresponding SA4 of this family
-            ZoneSA1[] zones = zoneMap.get(SA4);
-
-            ArrayList<ZoneSA1> arrayList = new ArrayList<ZoneSA1>(Arrays.asList(zones));
-            Collections.sort(arrayList, Collections.reverseOrder());
-            zones = arrayList.toArray(new ZoneSA1[0]);
-
-            int[] ageGroups = new int[zones[0].GroupSize];
-            for(int j = 0; j < family.Size; j++)
+            // if not yet allocated family
+            if(family.dwelling.SA1 == -1)
             {
-                int ageGroup = zones[0].determineAgeGroup(family.People.get(j).Age);
-                ageGroups[ageGroup] += 1;
-            }
+                // make sure that family stats are up to date
+                family.calculateStats();
+                // get the SA4
+                int SA4 = family.dwelling.SA4;
 
-            int[] incGroups = new int[zones[0].IncGroupSize];
-            for(int j = 0; j < family.Size; j++)
-            {
-                incGroups[family.People.get(j).WeeklyIncCode] += 1;
-            }
+                // get the list of SA1 zones to the corresponding SA4 of this family
+                ZoneSA1[] zones = zoneMap.get(SA4);
 
-            // find the zone that best matches
-            int highestScore = -1;
-            int bestZone = 1;
-            for(int z = 0; z < zones.length; z++)
-            {
-                ZoneSA1 zone = zones[z];
+                // convert to array list and sort
+                ArrayList<ZoneSA1> arrayList = new ArrayList<ZoneSA1>(Arrays.asList(zones));
+                Collections.sort(arrayList, Collections.reverseOrder());
+                zones = arrayList.toArray(new ZoneSA1[0]);
 
-                if(zone.getTotalCount() > 0)
+                int bestZone = -1;
+                int minMisMatchPoints = Integer.MAX_VALUE;
+
+                for(int z = 0; z < zones.length; z++)
                 {
-                    int matchPoints = 0, tmpPoints;
+                    ZoneSA1 zone = zones[z];
 
-                    // age groups only
-                    tmpPoints = 0;
-                    for(int k = 0; k < ageGroups.length; k++)
+                    // if enough people left in the zone (considering the margin)
+                    if((zone.getTotalPopulation()+margin) > 0)
                     {
-                        if(ageGroups[k] > 0 && ageGroups[k] <= zone.getAgeGroup(k))
+                        // if enough of each gender in the zone
+                        if((zone.getMales()+margin) >= family.countMale && (zone.getFemales()+margin) >= family.countFemale)
                         {
-                            tmpPoints += ageGroups[k];
+                            boolean fullMatchAge = true;
+                            boolean fullMatchInc = true;
+                            int points = 0;
+
+                            for(int a = 0; a < family.countAge.length ; a++)
+                            {
+                                if(family.countAge[a] > 0)
+                                {
+                                    if((zone.getAgeGroupByBin(a)+margin) < family.countAge[a])
+                                    {
+                                        fullMatchAge = false;
+                                    }
+                                    else
+                                    {
+                                        points += Math.abs(zone.getAgeGroupByBin(a) - family.countAge[a]);
+                                    }
+                                }
+                            }
+                            for(int a = 0; a < family.countIncome.length ; a++)
+                            {
+                                if(family.countIncome[a] > 0)
+                                {
+                                    if((zone.getIncomeGroupByBin(a)+margin) < family.countIncome[a])
+                                    {
+                                        fullMatchInc = false;
+                                    }
+                                    else
+                                    {
+                                        points += Math.abs(zone.getIncomeGroupByBin(a) - family.countIncome[a]);
+                                    }
+                                }
+                            }
+
+                            if(fullMatchAge && fullMatchInc)
+                            {
+                                bestZone = z;
+                                z = zones.length; // break out of the loop
+                            }
+                            else if(!perfectFit)
+                            {
+                                if(points < minMisMatchPoints)
+                                {
+                                    minMisMatchPoints = points;
+                                    bestZone = z;
+                                }
+                            }
                         }
-                    }
-                    if(tmpPoints == family.Size)
-                    {
-                        matchPoints += 50;
-                    }
-
-                    // income groups only
-                    tmpPoints = 0;
-                    for(int k = 0; k < incGroups.length; k++)
-                    {
-                        if(incGroups[k] > 0 && incGroups[k] <= zone.getIncomeGroup(k))
-                        {
-                            tmpPoints += incGroups[k];
-                        }
-                    }
-                    if(tmpPoints == family.Size)
-                    {
-                        matchPoints += 100;
-                    }
-                    else
-                    {
-                        matchPoints += tmpPoints;
-                    }
-
-                    // genders only
-                    if(family.maleCount <= zone.getMaleCounts())
-                    {
-                        matchPoints += 10;
-                    }
-                    if(family.femaleCount <= zone.getFemaleCounts())
-                    {
-                        matchPoints += 10;
-                    }
-
-                    if(matchPoints > highestScore)
-                    {
-                        highestScore = matchPoints;
-                        bestZone = z;
                     }
                 }
+
+                if(bestZone == -1)
+                {
+                    unallocated++;
+                }
+                else
+                {
+                    allocated++;
+
+                    // get the best zone
+                    ZoneSA1 selectedZone =  zones[bestZone];
+
+                    // assign the zone to the family
+                    family.dwelling.SA1 = selectedZone.SA1;
+
+                    // update the zone counts
+                    selectedZone.update(family);
+
+                    // update the map
+                    zones[bestZone] = selectedZone;
+                    zoneMap.put(SA4, zones);
+                }
+            }
+        }
+        logger.info("allocated " + allocated + " more zones and " + unallocated + " unallocated still remaining");
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Process ABS data
+    private void convertToSilo()
+    {
+        for(int i = 0; i < fullPopulation.size(); i++)
+        {
+            Family family = fullPopulation.get(i);
+            Dwelling dwelling = family.dwelling;
+
+            // convert dwelling properties
+            dwelling.ddBedrooms = convertBedrooms(dwelling.codeBedrooms);
+            dwelling.ddType = dwelling.codeType;
+            dwelling.ddQuality = 0;
+            dwelling.ddMortgage = convertMortgage(dwelling.codeMortgage);
+            dwelling.ddRent = convertRent(dwelling.codeRent);
+            dwelling.ddPrice = getDwellingPrice(dwelling.ddRent, dwelling.ddMortgage);
+            dwelling.ddVehicles = convertAutos(dwelling.codeVehicles);
+
+            // save the dwelling (just in case)
+            family.dwelling = dwelling;
+
+            // for each person in the family
+            for(int p = 0; p < family.size; p++)
+            {
+                // get the person
+                Person person = family.getPerson(p);
+
+                // convert attributes
+                person.ppAge = convertAge(person.codeAge);
+                person.ppSex = person.codeSex;
+                person.ppRace = 0;
+                person.ppIncome = convertIncome(person.codeIncome);
+                person.ppOccupation = translateOccupation(person.codeOccupation, person.codeAge);
+                person.ppRelationship = translateRelationship(person.codeRelationship);
+                person.ppIndustry = translateIndustry(person.codeIndustry, person.ppOccupation);
+
+                // assign a job
+                jobCollection.assignWorker(person.ppID, person.ppIndustry);
+
+                // save the person (just in case)
+                family.setPerson(p, person);
             }
 
-            if(highestScore == -1)
-                logger.warn("oh no");
-
-            // get the best zone
-            ZoneSA1 selectedZone = zones[bestZone];
-
-            // assign the zone to the family
-            family.dwelling.zoneSA1 = selectedZone.SA1;
-            family.household.ZoneSA1 = selectedZone.SA1;
-
-            // store the dwelling for the quality & vacant dwellings
-            storeDwelling(family.dwelling);
-
-            // update the zone counts
-            //logger.info(selectedZone.toString());
-            selectedZone.update(family.maleCount, family.femaleCount, ageGroups, incGroups);
-            //logger.info(selectedZone.toString());
-
-            // update the map
-            zones[bestZone] = selectedZone;
-            zoneMap.put(SA4, zones);
+            // add the dwelling for later use in vacant & quality processing
+            tmpStoreDwelling(dwelling);
         }
     }
 
-    /*  Translate families from general area codes to more fine-grained
-        statistical SA1 zones. Based on the statistical relationship
-        between gender population in each zone and a family info in each
-        dwelling in each area.
-    */
-    /*
-    private int translateSaZone(int pumaZone, int hhCountM, int hhCountF)
-    {
-        // store probabilities of assignment
-        RandomCollection<Integer> rc = new RandomCollection<>();
-
-        // calculate totals to use for probability of assignment
-        ZoneSA1[] zones = zoneMap.get(pumaZone);
-        int totalM = 0;
-        int totalF = 0;
-        for(int z = 0; z < zones.length; z++)
-        {
-            totalM += zones[z].CountMale;
-            totalF += zones[z].CountFemale;
-        }
-        double totalA = totalM + totalF + 1;
-
-        // calculate the probabilities
-        for(int z = 0; z < zones.length; z++)
-        {
-            double weightM = zones[z].CountMale + hhCountM*100;
-            double weightF = zones[z].CountFemale + hhCountF*100;
-
-            double probabilityM = (weightM/totalA)*100 + 0.0001;
-            double probabilityF = (weightF/totalA)*100 + 0.0001;
-
-            zones[z].Probability = Math.max(probabilityM, probabilityF);
-            rc.add(zones[z].Probability, z);
-        }
-
-        // assign the household to the zone using weighted probabilities
-        int z = rc.next();
-        zones[z].CountMale -= hhCountM;
-        zones[z].CountFemale -= hhCountF;
-        if(zones[z].CountMale < 0 ) zones[z].CountMale = 0;
-        if(zones[z].CountFemale < 0 ) zones[z].CountFemale = 0;
-
-        return zones[z].Zone;
-    }
-    */
-
-    // -----------------------------------------------------------------------------------------------------------------  Quality
-    private void storeDwelling(Dwelling dwelling)
+    // -----------------------------------------------------------------------------------------------------------------  Vacant Dwellings
+    private void tmpStoreDwelling(Dwelling dwelling)
     {
         // store the to be saved later
         dwellingList.add(dwelling);
 
         // store it under the zone to be used for vacant dwellings
-        ArrayList<Dwelling> dwls = dwellingsPerZoneMap.get(dwelling.zoneSA1);
+        ArrayList<Dwelling> dwls = dwellingsPerZoneMap.get(dwelling.SA1);
         if(dwls == null)
             dwls = new ArrayList<>();
         dwls.add(dwelling);
-        dwellingsPerZoneMap.put(dwelling.zoneSA1, dwls);
+        dwellingsPerZoneMap.put(dwelling.SA1, dwls);
 
         // add dwelling price to calculate quality later
-        addToQuality(dwelling.zoneSA1, dwelling.type, dwelling.price, dwelling.bedrooms);
+        // addToQuality(dwelling.zoneSA1, dwelling.type, dwelling.price, dwelling.bedrooms);
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Quality
-    // Store all the data to the appropiate files
-    private void savePumsRecords()
-    {
-        // save people
-        for(int i = 0; i < populationPeople.size(); i++)
-        {
-            // fetch each family
-            Family family = populationPeople.get(i);
-
-            // for each member in that family
-            for(int j = 0; j < family.Size; j++)
-            {
-                // get the person
-                Person person = family.People.get(j);
-
-                // save the record
-                pwpp.println(person.ppID + "," + person.hhID + "," + person.Age + "," + person.Sex + ","
-                        + person.Relationship + "," + person.Race + "," +  person.Occupation + ","
-                        + person.jjID + "," + person.Income);
-            }
-
-            // get the household for this family
-            Household household = family.household;
-
-            // save the record
-            pwhh.println(household.hhID + "," + household.ddID + "," + household.ZoneSA1 + "," + household.FamilySize + "," + household.Cars);
-        }
-    }
-
-    //  -----------------------------------------------------------------------------------------------------------------  Quality
-    /*  Keep a hashmap that maps each zone to the number of dwellings
-        and sums their relative price. This will be used to later
-        calculate average for each zone and determine the quality.
-     */
-    HashMap<Integer, DwellingQuality> qualityMap = new HashMap<Integer, DwellingQuality>();
-    private void addToQuality(int zone, int ddType, int price, int rooms)
-    {
-        DwellingQuality quality = qualityMap.get(zone);
-        if (quality == null)
-        {
-            quality = new DwellingQuality();
-        }
-
-        quality.addToZoneQuality(price);
-        quality.addToDTypeQuality(ddType, price, rooms);
-        qualityMap.put(zone, quality);
-    }
-
-    /*  Determine the quality of each dwelling in each zone.
-        Based on the properties of the dwelling as well as average quality of the dwelling type
-        and the average quality of the zone.
-     */
-    private void determineDwellingQuality()
-    {
-        for(int i = 0; i < dwellingList.size(); i++)
-        {
-            DwellingQuality quality = qualityMap.get(dwellingList.get(i).zoneSA1);
-            if(quality != null)
-            {
-                Dwelling dwelling = dwellingList.get(i);
-
-                double zoneQuality = quality.getQuality();
-                double zoneTypeQuality = quality.getZoneDTypeQuality(dwelling.type);
-
-                //double dwellingQuality = (dwelling.price/zoneQuality)*(quality.determineTypeQuality(dwelling.price, dwelling.bedrooms)/zoneTypeQuality);
-                dwellingList.get(i).quality = 1;//(int)(dwellingQuality);
-            }
-            else
-            {
-                dwellingList.get(i).quality = 0;
-                logger.warn("Quality not determined for hhid: " + dwellingList.get(i).hhID);
-            }
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------  Vacant Dwellings
     /*  Add vacant dwellings based on the given list. The list contains
         the number of empty dwellings of each of type in each SA1 zone.
         Hence copy properties of the same type of a dwelling as the
         empty one to create a vacant dwelling.
      */
-    private void addVacantDwellings()
+    private void addVacantDwellings(int year)
     {
+        TableDataSet dwellUnoccPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/dwellingUnoccupiedBySA1_" + year + ".csv");
+
         Random rand = new Random();
 
         // for each zone
@@ -1073,12 +869,12 @@ public class SyntheticPopPerth implements SyntheticPopI
                             // create a new vacant dwelling using existing dwelling's properties
                             Dwelling vaccDwelling = new Dwelling();
                             vaccDwelling.ddID = nextID_DD++;
-                            vaccDwelling.zoneSA1 = zone;
-                            vaccDwelling.type = ddType;
+                            vaccDwelling.SA1 = zone;
+                            vaccDwelling.ddType = ddType;
                             vaccDwelling.hhID = -1;
-                            vaccDwelling.bedrooms = oocDwelling.bedrooms;
-                            vaccDwelling.price = oocDwelling.price;
-                            vaccDwelling.quality = oocDwelling.quality;
+                            vaccDwelling.ddBedrooms = oocDwelling.ddBedrooms;
+                            vaccDwelling.ddPrice = oocDwelling.ddPrice;
+                            vaccDwelling.ddQuality = oocDwelling.ddQuality;
 
                             // add the dwelling to be later saved to the file
                             dwellingList.add(vaccDwelling);
@@ -1101,7 +897,7 @@ public class SyntheticPopPerth implements SyntheticPopI
             for(int j = 0; j < dwellings.size(); j++)
             {
                 Dwelling dwelling = dwellings.get(j);
-                if(dwelling.type == ddType)
+                if(dwelling.ddType == ddType)
                 {
                     dwellingsSameType.add(dwelling);
                 }
@@ -1110,26 +906,7 @@ public class SyntheticPopPerth implements SyntheticPopI
         return dwellingsSameType;
     }
 
-
-    // -----------------------------------------------------------------------------------------------------------------  Save Output
-    /*  Write all of the dwellings to the file.
-        This is done later (than writing of people & households) because there is post-processing required
-        such as adding quality and vacant dwellings. Hence global array is stored and then saved.
-    */
-    private void saveDwellings()
-    {
-        for(int i = 0; i < dwellingList.size(); i++)
-        {
-            Dwelling dwelling = dwellingList.get(i);
-            pwdd.println(dwelling.ddID + "," + dwelling.zoneSA1 + "," + dwelling.type + "," +
-                    dwelling.hhID + "," + dwelling.bedrooms + "," + dwelling.quality + "," + dwelling.price);
-            // pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
-        }
-    }
-
-    /*  Similarly to dwellings, jobs are stored in memory first for further processing.
-        Jobs are assigned to workers and then saved later.
-    */
+    // -----------------------------------------------------------------------------------------------------------------  Save to file
     private void saveJobs()
     {
         int vacantJobs = 0;
@@ -1158,22 +935,70 @@ public class SyntheticPopPerth implements SyntheticPopI
                 + " vacant jobs. The job vacancy rate is " + ((double)vacantJobs/(double)takenJobs)*100 + "%.");
     }
 
+    private void savePopulation()
+    {
+        for(int i = 0; i < fullPopulation.size(); i++)
+        {
+            Family family = fullPopulation.get(i);
+            Dwelling dwelling = family.dwelling;
+
+            // for each person in the family
+            for(int p = 0; p < family.size; p++)
+            {
+                // get the person
+                Person person = family.getPerson(p);
+
+                // save the record
+                pwpp.println(person.ppID + "," + person.hhID + "," + person.ppAge + "," + person.ppSex + ","
+                        + person.ppRelationship + "," + person.ppRace + "," +  person.ppOccupation + ","
+                        + person.jjID + "," + person.ppIncome);
+            }
+
+            // save the household
+            pwhh.println(dwelling.hhID + "," + dwelling.ddID + "," + dwelling.SA1 + "," + family.size + "," + dwelling.ddVehicles);
+        }
+    }
+
+    public void saveDwellings()
+    {
+        for(int i = 0; i < dwellingList.size(); i++)
+        {
+            Dwelling dwelling = dwellingList.get(i);
+
+            // save the dwelling
+            pwdd.println(dwelling.ddID + "," + dwelling.SA1 + "," + dwelling.ddType + "," +
+                    dwelling.hhID + "," + dwelling.ddBedrooms + "," + dwelling.ddQuality + "," + dwelling.ddPrice);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    public int ageCodeABS2BinTB(int ageCode)
+    {
+        //ageCode = ageCode - 1;
+        if(ageCode >= 0 && ageCode <= 4) return 1;
+        else if(ageCode >= 5 && ageCode <= 9) return 2;
+        else if(ageCode >= 10 && ageCode <= 14) return 3;
+        else if(ageCode >= 15 && ageCode <= 19) return 4;
+        else if(ageCode >= 20 && ageCode <= 24) return 5;
+        else return ageCode - 19;
+    }
+
     // -----------------------------------------------------------------------------------------------------------------  ABS to SILO translate
     /*  Select actual age from bins provided in the microdata
-        Ages: 0-24: 0-24 years singly
-                25: 25-29 years
-                26: 30–34 years
-                27: 35–39 years
-                28: 40–44 years
-                29: 45–49 years
-                30: 50–54 years
-                31: 55–59 years
-                32: 60–64 years
-                33: 65–69 years
-                34: 70–74 years
-                35: 75–79 years
-                36: 80–84 years
-                37: 85 years and over
+        Ages: 1-25: 0-24 years singly		1..5
+                26: 25-29 years				6
+                27: 30–34 years				7
+                28: 35–39 years				8
+                29: 40–44 years				9
+                30: 45–49 years				10
+                31: 50–54 years				11
+                32: 55–59 years				12
+                33: 60–64 years				13
+                34: 65–69 years				14
+                35: 70–74 years				15
+                36: 75–79 years				16
+                37: 80–84 years				17
+                38: 85 years and over		18
     */
     private int convertAge(int ageGroup)
     {
@@ -1218,7 +1043,6 @@ public class SyntheticPopPerth implements SyntheticPopI
         return selectedAge;
     }
 
-
     private int convertAutos(int autoCode)
     {
         // select actual number of autos from indicators provided in ABS microdata
@@ -1235,7 +1059,6 @@ public class SyntheticPopPerth implements SyntheticPopI
             return 0;
         }
     }
-
 
     private int convertBedrooms(int bedroomCode)
     {
@@ -1297,14 +1120,6 @@ public class SyntheticPopPerth implements SyntheticPopI
             default: logger.error("Unknown income code " + incomeCode);
                 return 0;
         }
-    }
-
-    private int incomeCode2WeeklySILO(int incomeCode) {
-        if(incomeCode == 1 || incomeCode == 2 || incomeCode >= 13)
-        {
-            return 0;
-        }
-        return incomeCode - 2;
     }
 
     private int convertMortgage(int mortgageCode)
@@ -1568,6 +1383,31 @@ public class SyntheticPopPerth implements SyntheticPopI
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------  Output files
+    private void openFilesToWriteSyntheticPopulation(int year)
+    {
+        String filehh = baseDirectory + "/microData/hh_" + year + ".csv";
+        String filepp = baseDirectory + "/microData/pp_" + year + ".csv";
+        String filedd = baseDirectory + "/microData/dd_" + year + ".csv";
+        String filejj = baseDirectory + "/microData/jj_" + year + ".csv";
+        pwhh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwhh.println("id,dwelling,zone,hhSize,autos");
+        pwpp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwdd = SiloUtil.openFileForSequentialWriting(filedd, false);
+        pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        pwjj = SiloUtil.openFileForSequentialWriting(filejj, false);
+        pwjj.println("id,zone,personId,type");
+    }
+
+    private void closeFilesForSyntheticPopulation()
+    {
+        pwhh.close();
+        pwpp.close();
+        pwdd.close();
+        pwjj.close();
+    }
+
     // -----------------------------------------------------------------------------------------------------------------  Help Methods
     //  Weighted Random
     public class RandomCollection<E>
@@ -1598,7 +1438,335 @@ public class SyntheticPopPerth implements SyntheticPopI
         }
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Objects
+    // -----------------------------------------------------------------------------------------------------------------  Dwelling
+    private class Dwelling implements Cloneable
+    {
+        public long ddID;
+        public long hhID;
+
+        // zones
+        public int SA1 = -1;
+        public int SA4;
+
+        // abs
+        public int codeBedrooms;
+        public int codeMortgage;
+        public int codeRent;
+        public int codeType;
+        public int codeVehicles;
+
+        // silo
+        public int ddBedrooms;
+        public int ddMortgage;
+        public int ddRent;
+        public int ddType;
+        public int ddVehicles;
+        public int ddQuality;
+        public int ddPrice;
+
+
+        public Dwelling() { }
+
+        public void addABSCars(int vehiclesABS)
+        {
+            // 1: 1 motor vehicle
+            // 2: 2 motor vehicles
+            // 3: 3 motor vehicles
+            // 4: 4 or more motor vehicles; set 4 cars as maximum
+            // 5: Not stated
+            // 6: Not applicable
+
+            // if currently 5 or 6, then it doesnt matter, overwrite
+            if(codeVehicles > 4)
+            {
+                codeVehicles = vehiclesABS;
+            }
+            else
+            {
+                // if the new vehicles are 5 or 6, it doesnt matter, keep it the same
+                if(vehiclesABS < 5)
+                {
+                    // otherwise add more vehicles to the household
+                    codeVehicles += vehiclesABS;
+
+                    // if exceeds 4, then keep it at 4
+                    if(codeVehicles > 4)
+                    {
+                        codeVehicles = 4;
+                    }
+                }
+            }
+        }
+
+        // -----------------------------------------------------------------    Clone interface
+        public Dwelling clone()throws CloneNotSupportedException{ return (Dwelling) super.clone(); }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Family / Household
+    private class Person implements Cloneable
+    {
+        public long ppID;
+        public long ddID;
+        public long hhID;
+        public long jjID;
+
+        // abs
+        public int codeAge;
+        public int codeSex;
+        public int codeIncome;
+        public int codeOccupation;
+        public int codeRelationship;
+        public int codeIndustry;
+
+        // silo
+        public int ppAge;
+        public int ppSex;
+        public int ppIncome;
+        public int ppOccupation;
+        public int ppIndustry;
+        public int ppRace;
+        public String ppRelationship;
+
+        public Person() { }
+        // -----------------------------------------------------------------    Person methods
+        public boolean isMarried()
+        {
+            return (codeRelationship == ABS_CODE_MARRIED);
+        }
+
+        // -----------------------------------------------------------------    Clone interface
+        public Person clone()throws CloneNotSupportedException{ return (Person) super.clone(); }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Family / Household
+    private class Family implements Cloneable, Comparable<Family>
+    {
+        public int size;
+        public ArrayList<Person> people;
+        public Dwelling dwelling;
+
+        // stats
+        public int countMale;
+        public int countFemale;
+        public int countMarried;
+        public int countMarriedM;
+        public int countMarriedF;
+        public int[] countAge;
+        public int[] countIncome;
+
+        public Family()
+        {
+            size = 0;
+            people = new ArrayList<>();
+        }
+        // -----------------------------------------------------------------    Stats for population distribution
+        public void calculateStats()
+        {
+            countMale = 0;
+            countFemale = 0;
+            countMarried = 0;
+            countAge = new int[ABS_AGE_GROUPS + 1];
+            countIncome = new int[ABS_INCOME_GROUPS + 1];
+
+            for(int i = 0; i < size; i++)
+            {
+                Person person = getPerson(i);
+
+                // gender
+                if(person.codeSex == ABS_CODE_MALE)
+                {
+                    countMale++;
+                }
+                else
+                {
+                    countFemale++;
+                }
+
+                // married
+                if(person.isMarried())
+                {
+                    countMarried++;
+                }
+
+                // age groups
+                countAge[ageCodeABS2BinTB(person.codeAge)] += 1;
+
+                // income groups
+                countIncome[person.codeIncome] += 1;
+            }
+        }
+
+        // -----------------------------------------------------------------    Person methods
+        public void addPerson(Person person)
+        {
+            people.add(person);
+            size++;
+        }
+
+        public Person getPerson(int index) { return people.get(index); }
+
+        public void setPerson(int index, Person person) { people.set(index, person); }
+
+        // -----------------------------------------------------------------    Family methods
+        public void append(Family family)
+        {
+            for (int i = 0; i < family.size; i++)
+            {
+                addPerson(family.getPerson(i));
+            }
+
+            // transfer the cars
+            if(dwelling != null && family.dwelling != null)
+            {
+                dwelling.addABSCars(family.dwelling.codeVehicles);
+            }
+
+            calculateStats();
+        }
+
+        public void emptyTheDwelling()
+        {
+            people = null;
+            size = 0;
+            countMale = 0;
+            countFemale = 0;
+            countMarried = 0;
+            countMarriedM = 0;
+            countMarriedF = 0;
+        }
+
+        // -----------------------------------------------------------------    Fixing marriage
+        public int SingleAndLookingFor()
+        {
+            countMarriedM = 0;
+            countMarriedF = 0;
+
+            for(int i = 0; i < size; i++)
+            {
+                Person person = getPerson(i);
+
+                // if the person is married
+                if(person.isMarried())
+                {
+                    if(person.codeSex == ABS_CODE_MALE)
+                    {
+                        countMarriedM++;
+                    }
+                    else
+                    {
+                        countMarriedF++;
+                    }
+                }
+            }
+
+            // if more males than females, then looking for a female
+            if(countMarriedM > countMarriedF)
+            {
+                return ABS_CODE_FEMALE;
+            }
+            // if more females than males, then looking for a male
+            else if(countMarriedF > countMarriedM)
+            {
+                return  ABS_CODE_MALE;
+            }
+
+            return 0;
+        }
+
+        // -----------------------------------------------------------------    Clone interface
+        @Override
+        public Family clone()throws CloneNotSupportedException{ return (Family) super.clone(); }
+
+        // -----------------------------------------------------------------    Comparable interface
+        @Override
+        public int compareTo(Family o)
+        {
+            Integer s1 = size;
+            Integer s2 = o.size;
+            return s1.compareTo(s2);
+        }
+    }
+
+
+    // -----------------------------------------------------------------------------------------------------------------  Population Distribution
+    private class ZoneSA1 implements Comparable<ZoneSA1>
+    {
+        public int SA1;
+        public int SA4;
+
+        public int[] genderTotals;
+        public int[] ageTotals;
+        public int[] incomeTotals;
+
+        // object constants
+        private int posM = 0; // male index in the gender arrays
+        private int posF = 1; // female index in the gender arrays
+
+        public ZoneSA1()
+        {
+            genderTotals = new int[2];
+            ageTotals = new int[ABS_AGE_GROUPS + 1];
+            incomeTotals = new int[ABS_INCOME_GROUPS + 1];
+        }
+
+        public void update(Family family)
+        {
+            // genders
+            addMales(-family.countMale);
+            addFemales(family.countFemale);
+
+            // age
+            for(int i = 0; i<family.countAge.length; i++)
+                addAgeGroupByBin(i, -family.countAge[i]);
+
+            // income
+            for(int i = 0; i<family.countIncome.length; i++)
+                addIncomeGroupByBin(i, -family.countIncome[i]);
+        }
+
+        public int getTotalPopulation() { return genderTotals[posM] + genderTotals[posF]; }
+
+        // -----------------------------------------------------------------    Gender methods
+        public void addMales(int count) { genderTotals[posM] += count; }
+        public void setMales(int count) { genderTotals[posM] = count; }
+        public int getMales() { return genderTotals[posM]; }
+
+        public void addFemales(int count) { genderTotals[posF] += count; }
+        public void setFemales(int count) { genderTotals[posF] = count; }
+        public int getFemales() { return genderTotals[posF]; }
+
+        // -----------------------------------------------------------------    Age methods
+        // ABS code
+        public void addAgeGroupByCode(int code, int count) { ageTotals[ageCodeABS2BinTB(code)] += count; }
+        public void setAgeGroupByCode(int code, int count) { ageTotals[ageCodeABS2BinTB(code)] = count; }
+        public int getAgeGroupByCode(int code) { return ageTotals[ageCodeABS2BinTB(code)]; }
+
+        // TB = this object bin / index
+        public void addAgeGroupByBin(int bin, int count) { ageTotals[bin] += count; }
+        public void setAgeGroupByBin(int bin, int count) { ageTotals[bin] = count; }
+        public int getAgeGroupByBin(int bin) { return ageTotals[bin]; }
+
+        // -----------------------------------------------------------------    Income methods
+        // TB = this objects bin / index
+        public void addIncomeGroupByBin(int bin, int count) { incomeTotals[bin] += count; }
+        public void setIncomeGroupByBin(int bin, int count) { incomeTotals[bin] = count; }
+        public int getIncomeGroupByBin(int bin) { return incomeTotals[bin]; }
+
+        // -----------------------------------------------------------------    Clone interface
+        @Override
+        public ZoneSA1 clone()throws CloneNotSupportedException{ return (ZoneSA1) super.clone(); }
+
+        // -----------------------------------------------------------------    Comparable interface
+        @Override
+        public int compareTo(ZoneSA1 o)
+        {
+            Integer s1 = getTotalPopulation();
+            Integer s2 = o.getTotalPopulation();
+            return s1.compareTo(s2);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Jobs
     private class JobSlot
     {
         public long ID = -1;
@@ -1681,422 +1849,6 @@ public class SyntheticPopPerth implements SyntheticPopI
             return -1;
         }
     }
-    // -----------------------------------------------------------------------------------------------------------------  Objects
-    private class Person implements Cloneable
-    {
-        public int Age;
-        public int Sex;
-        public int Race;
-        public int Income; // monthly income
-        public int WeeklyIncCode;
-        public int Occupation;
-        public int Industry;
-        public int ZoneSA1;
-        public long ppID;
-        public long hhID;
-        public long ddID;
-        public long jjID;
-        public String Relationship;
-
-        public Person() { }
-
-        public Person clone()throws CloneNotSupportedException{ return (Person) super.clone(); }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------  Objects
-    public class Household implements Cloneable
-    {
-        public long hhID;
-        public long ddID;
-        public int ZoneSA1;
-        public int FamilySize;
-        public int Cars;
-
-        public Household() { }
-
-        public Household clone()throws CloneNotSupportedException{  return (Household) super.clone(); }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------  Objects
-    private class Family implements Cloneable, Comparable<Family>
-    {
-        public ArrayList<Person> People;
-
-        public Dwelling dwelling = null;
-        public Household household = null;
-
-        public int weight;
-        public int Size;
-        public int maleCount;
-        public int femaleCount;
-        public int marriedPeople;
-        public int marriedMales;
-        public int marriedFemales;
-
-        public Family()
-        {
-            weight = 100;
-            Size = 0;
-            People = new ArrayList<>();
-        }
-
-        // -----------------------------------------------------------------    Clone interface
-        public Family clone()throws CloneNotSupportedException{ return (Family) super.clone(); }
-
-        // -----------------------------------------------------------------
-        public void append(Family family)
-        {
-            for (int j = 0; j < family.Size; j++)
-            {
-                addPerson(family.People.get(j));
-            }
-
-            // transfer the cars
-            if(dwelling != null && family.dwelling != null)
-            {
-                dwelling.cars += family.dwelling.cars;
-            }
-
-            autoFillCount();
-        }
-
-        public void addPerson(Person person)
-        {
-            People.add(person);
-            Size++;
-        }
-
-        public void autoFillCount()
-        {
-            maleCount = 0;
-            femaleCount = 0;
-            marriedPeople = 0;
-
-            for(int i=0; i<Size; i++)
-            {
-                // gender
-                if(People.get(i).Sex == CODE_MALE)
-                {
-                    maleCount++;
-                }
-                else
-                {
-                    femaleCount++;
-                }
-
-                // marriage status
-                if(People.get(i).Relationship.compareTo("married") == 0)
-                {
-                    marriedPeople++;
-                }
-            }
-        }
-
-        public int SingleAndLookingFor()
-        {
-            marriedMales = 0;
-            marriedFemales = 0;
-            for(int i=0; i<Size; i++)
-            {
-                if(People.get(i).Relationship.compareTo("married") == 0)
-                {
-                    if(People.get(i).Sex == CODE_MALE)
-                    {
-                        marriedMales++;
-                    }
-                    else if(People.get(i).Sex == CODE_FEMALE)
-                    {
-                        marriedFemales++;
-                    }
-                }
-            }
-
-            // if more males than females, then looking for a female
-            if(marriedMales > marriedFemales)
-            {
-                return CODE_FEMALE;
-            }
-            // if more females than males, then looking for a male
-            else if(marriedFemales > marriedMales)
-            {
-                return  CODE_MALE;
-            }
-            return 0;
-        }
-
-        public void emptyTheDwelling()
-        {
-            People = null;
-            Size = 0;
-            marriedPeople = 0;
-            maleCount = 0;
-            femaleCount = 0;
-        }
-
-        // -----------------------------------------------------------------    Comparable used for sorting
-        @Override
-        public int compareTo(Family o)
-        {
-            Integer s1 = Size;
-            Integer s2 = o.Size;
-            return s1.compareTo(s2);
-        }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------  Objects
-    private class Dwelling implements Cloneable
-    {
-        public long ddID;
-        public long hhID;
-        public int zoneSA1;
-        public int zoneSA4;
-        public int type;
-        public int bedrooms;
-        public int quality;
-        public int price;
-        public int mortgage;
-        public int rent;
-        public int cars;
-
-        public Dwelling() { }
-
-        public Dwelling clone()throws CloneNotSupportedException{ return (Dwelling) super.clone(); }
-    }
-
-    private class DwellingQuality
-    {
-        // store overall quality for the zone
-        public double Sum = 0;
-        public int N = 0;
-
-        public int Zone = -1;
-
-        HashMap<Integer, DwellingQuality> TypeQuality = new HashMap<>();
-
-        public DwellingQuality() { }
-
-        public double getQuality()
-        {
-            return Sum / N;
-        }
-
-        public double getZoneDTypeQuality(int type)
-        {
-            return TypeQuality.get(type).getQuality();
-        }
-
-        public void addToZoneQuality(int price)
-        {
-            Sum += price;
-            N++;
-        }
-
-        public void addToDTypeQuality(int ddType, int price, int rooms)
-        {
-            DwellingQuality typeQ = TypeQuality.get(ddType);
-            if(typeQ == null)
-            {
-                typeQ = new DwellingQuality();
-            }
-            typeQ.addTypeQuality(price, rooms);
-            TypeQuality.put(ddType, typeQ);
-        }
-
-        public void addTypeQuality(int price, int rooms)
-        {
-            Sum += determineTypeQuality(price, rooms);
-            N++;
-        }
-
-        public double determineTypeQuality(int price, int rooms)
-        {
-            if(rooms == 0) rooms = 10;
-            return price/rooms;
-        }
-    }
-
-    private class ZoneSA1 implements Comparable<ZoneSA1>
-    {
-        // Zone info
-        public int SA1;
-        public int SA4;
-        public double Probability = 0;
-
-        // Gender only
-        public int[] GenderTotals;
-
-        // Age groups only
-        public int[] AgeGroups;
-
-        // Gender & age combined
-        public int[][] GenderAgeGroup;
-
-        // Income groups only
-        public int[] IncomeGroups;
-
-        // constants
-        private int posM = 0; // male index in the gender arrays
-        private int posF = 1; // female index in the gender arrays
-        private int ageIntervals; // age group intervals (e.g. by 5);
-
-        public int GroupSize;
-        public int IncGroupSize;
-
-        public ZoneSA1(int ageInterval, int incomeGroups)
-        {
-            // save age group interval
-            ageIntervals = ageInterval;
-            IncGroupSize = incomeGroups;
-
-            // e.g. 100 (max age interval) / 5 (interval) + 1 (100 and over) = 21
-            GroupSize = (100 / ageInterval) + 1;
-
-            AgeGroups = new int[GroupSize];
-            GenderAgeGroup = new int[2][GroupSize]; // male age groups, female age groups
-            GenderTotals = new int[2]; // male, female
-            IncomeGroups = new int[incomeGroups];
-        }
-
-        // -----------------------------------------------------------------
-        public int getMaleCounts()
-        {
-            return GenderTotals[posM];
-        }
-
-        public int getFemaleCounts()
-        {
-            return GenderTotals[posF];
-        }
-
-        public int getTotalCount()
-        {
-            return (getMaleCounts() + getFemaleCounts());
-        }
-
-        public void setMaleCounts(int totalMC)
-        {
-            GenderTotals[posM] = totalMC;
-        }
-
-        public void setFemaleCounts(int totalFC)
-        {
-            GenderTotals[posF] = totalFC;
-        }
-
-        // -----------------------------------------------------------------
-        public int getAgeGroup(int index)
-        {
-            return AgeGroups[index];
-        }
-
-        public void setAgeGroup(int index, int totalAC)
-        {
-            AgeGroups[index] = totalAC;
-        }
-
-        public int determineAgeGroup(int age)
-        {
-            // round down, since index starts at 0 no need to +1
-            return (int)((double)age / (double)ageIntervals);
-        }
-
-        // -----------------------------------------------------------------
-        public int getMaleAgeGroup(int index)
-        {
-            return GenderAgeGroup[posM][index];
-        }
-
-        public int getFemaleAgeGroup(int index)
-        {
-            return GenderAgeGroup[posF][index];
-        }
-
-        public void setMaleAgeGroup(int index, int totalMC)
-        {
-            GenderAgeGroup[posM][index] = totalMC;
-        }
-
-        public void setFemaleAgeGroup(int index, int totalFC)
-        {
-            GenderAgeGroup[posF][index] = totalFC;
-        }
-
-        // -----------------------------------------------------------------
-        public int getIncomeGroup(int index)
-        {
-            return IncomeGroups[index];
-        }
-
-        public void setIncomeGroup(int index, int totalAC)
-        {
-            IncomeGroups[index] = totalAC;
-        }
-
-        public void appendToIncomeGroup(int index, int additional)
-        {
-            IncomeGroups[index] += additional;
-        }
-        public int determineIncomeGroup(int income)
-        {
-            // round down, since index starts at 0 no need to +1
-            return 0;
-        }
-
-        // -----------------------------------------------------------------
-        public void update(int totalCountMale, int totalCountFemale, int[] ageGroups, int[] incGroups)
-        {
-            // set gender totals
-            setMaleCounts(getMaleCounts() - totalCountMale);
-            setFemaleCounts(getFemaleCounts() - totalCountFemale);
-
-            // set age groups
-            for(int i = 0; i < GroupSize; i++)
-            {
-                setAgeGroup(i, (getAgeGroup(i) - ageGroups[i]));
-            }
-
-            // set inc groups
-            for(int i = 0; i < IncGroupSize; i++)
-            {
-                setIncomeGroup(i, (getIncomeGroup(i) - incGroups[i]));
-            }
-        }
-
-        // -----------------------------------------------------------------    Comparable used for sorting
-        @Override
-        public int compareTo(ZoneSA1 o)
-        {
-            Integer s1 = getTotalCount();
-            Integer s2 = o.getTotalCount();
-            return s1.compareTo(s2);
-        }
-
-        // -----------------------------------------------------------------
-        @Override
-        public String toString()
-        {
-            StringBuilder sb = new StringBuilder();
-            StringBuilder sbAgeGroups = new StringBuilder("Age groups: ");
-            StringBuilder sbAgeGroupsM= new StringBuilder("Male Age groups: ");
-            StringBuilder sbAgeGroupsF = new StringBuilder("Female Age groups: ");
-
-            for(int i = 0; i < GroupSize; i++)
-            {
-                sbAgeGroups.append(getAgeGroup(i) + ", ");
-                sbAgeGroupsM.append(getMaleAgeGroup(i) + ", ");
-                sbAgeGroupsF.append(getFemaleAgeGroup(i) + ", ");
-            }
-            sb.append("Total: " + (getMaleCounts()+getFemaleCounts()) + ", Males: " + getMaleCounts() + ", Females: " + getFemaleCounts());
-            sb.append("\n");
-            sb.append(sbAgeGroups);
-            sb.append("\n");
-            sb.append(sbAgeGroupsM);
-            sb.append("\n");
-            sb.append(sbAgeGroupsF);
-
-            return sb.toString();
-        }
-    }
 
     private class ZoneSA1Jobs
     {
@@ -2141,4 +1893,7 @@ public class SyntheticPopPerth implements SyntheticPopI
             public ZoneJobProbability() { }
         }
     }
+
+
+
 }
