@@ -1,14 +1,14 @@
-2019-05-01 21:38:01,715  INFO Gbl:63 JVM: 1.8.0_211; Oracle Corporation; mixed mode; 64-bit
-2019-05-01 21:38:01,715  INFO Gbl:67 OS: Windows Server 2016; 10.0; amd64
-2019-05-01 21:38:01,716  INFO Gbl:70 CPU cores: 8
-2019-05-01 21:38:01,716  INFO Gbl:71 max. Memory: 7282.0MB (7635730432B)
-2019-05-01 21:38:01,716  INFO Gbl:109 MATSim-Build: r1ce39959a4bd59ed5c70e0fdcf6496a216585696 (2019-04-05 11:03:02)
-2019-05-01 21:38:01,716  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.counts.CountsControlerListener
-2019-05-01 21:38:01,717  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.analysis.ModeStatsControlerListener
-2019-05-01 21:38:01,717  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.analysis.ScoreStatsControlerListener
-2019-05-01 21:38:01,717  INFO ControlerListenerManagerImpl:110 all ControlerStartupListeners called.
-2019-05-01 21:38:01,717  INFO ControlerUtils:58 config dump before iterations start
-2019-05-01 21:38:01,719  INFO ControlerUtils:62 
+2019-05-06 13:26:06,205  INFO Gbl:63 JVM: 1.8.0_211; Oracle Corporation; mixed mode; 64-bit
+2019-05-06 13:26:06,205  INFO Gbl:67 OS: Windows Server 2016; 10.0; amd64
+2019-05-06 13:26:06,205  INFO Gbl:70 CPU cores: 8
+2019-05-06 13:26:06,205  INFO Gbl:71 max. Memory: 7282.0MB (7635730432B)
+2019-05-06 13:26:06,206  INFO Gbl:109 MATSim-Build: r1ce39959a4bd59ed5c70e0fdcf6496a216585696 (2019-04-05 11:03:02)
+2019-05-06 13:26:06,206  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.counts.CountsControlerListener
+2019-05-06 13:26:06,206  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.analysis.ModeStatsControlerListener
+2019-05-06 13:26:06,207  INFO ControlerListenerManagerImpl:107 calling notifyStartup on org.matsim.analysis.ScoreStatsControlerListener
+2019-05-06 13:26:06,207  INFO ControlerListenerManagerImpl:110 all ControlerStartupListeners called.
+2019-05-06 13:26:06,207  INFO ControlerUtils:58 config dump before iterations start
+2019-05-06 13:26:06,209  INFO ControlerUtils:62 
 
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
@@ -583,9 +583,9 @@
 
 </config>
 
-2019-05-01 21:38:01,720  INFO ControlerUtils:63 Complete config dump done.
-2019-05-01 21:38:01,720  INFO ControlerUtils:64 Checking consistency of config...
-2019-05-01 21:38:01,720  INFO PlanCalcScoreConfigGroup$ScoringParameterSet:1492 NO OPENING OR CLOSING TIMES DEFINED!
+2019-05-06 13:26:06,210  INFO ControlerUtils:63 Complete config dump done.
+2019-05-06 13:26:06,210  INFO ControlerUtils:64 Checking consistency of config...
+2019-05-06 13:26:06,210  INFO PlanCalcScoreConfigGroup$ScoringParameterSet:1492 NO OPENING OR CLOSING TIMES DEFINED!
 
 There is no activity type that has an opening *and* closing time (or opening time and late penalty) defined.
 This usually means that the activity chains can be shifted by an arbitrary
@@ -594,252 +594,252 @@ resulting in wrong results / traffic patterns.
 If you are using MATSim without time adaptation, you can ignore this warning.
 
 
-2019-05-01 21:38:01,720  INFO VspConfigConsistencyCheckerImpl:72 running checkConsistency ...
-2019-05-01 21:38:01,720  WARN VspConfigConsistencyCheckerImpl:83 you are insisting on config v1.  vsp default is using v2.
-2019-05-01 21:38:01,720  WARN VspConfigConsistencyCheckerImpl:99 you are not using FastAStarLandmarks as routing algorithm.  vsp default is to use FastAStarLandmarks.
-2019-05-01 21:38:01,720  WARN VspConfigConsistencyCheckerImpl:201 You are not setting fractionOfIterationsToStartScoreMSA; vsp default is to set this to something like 0.8.  This means you have to add the following lines to your config file: 
-2019-05-01 21:38:01,720  WARN VspConfigConsistencyCheckerImpl:203 <module name="planCalcScore">
-2019-05-01 21:38:01,721  WARN VspConfigConsistencyCheckerImpl:204 	<param name="fractionOfIterationsToStartScoreMSA" value="0.8" />
-2019-05-01 21:38:01,721  WARN VspConfigConsistencyCheckerImpl:205 </module>
-2019-05-01 21:38:01,721  WARN VspConfigConsistencyCheckerImpl:247 found `plansCalcRoute.insertingAccessEgressWalk==false'; vsp should use `true' or talk to Kai. 
-2019-05-01 21:38:01,721  WARN VspConfigConsistencyCheckerImpl:254 found qsim.usePersonIdForMissingVehicleId==true; this is only for backwards compatibility and should rather be set to false
-2019-05-01 21:38:01,721  WARN VspConfigConsistencyCheckerImpl:259 found `qsim.usingTravelTimeCheckInTeleporation==false'; vsp should try out `true' and report.
-2019-05-01 21:38:01,721  INFO ControlerUtils:66 Checking consistency of config done.
-2019-05-01 21:38:01,802  INFO NetworkImpl:426 building QuadTree for nodes: xrange(1.824097030244586E7,1.846162398717518E7); yrange(2730228.3278190386,3018082.7940123747)
-2019-05-01 21:38:01,853  INFO NetworkImpl:435 Building QuadTree took 0.056 seconds.
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 1
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 2
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 4
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 8
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 16
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 32
-2019-05-01 21:38:01,853  INFO Counter:70 [PersonPrepareForSim] handled person # 64
-2019-05-01 21:38:01,854  INFO Counter:70 [PersonPrepareForSim] handled person # 128
-2019-05-01 21:38:01,854  INFO Counter:70 [PersonPrepareForSim] handled person # 256
-2019-05-01 21:38:01,855  INFO Counter:70 [PersonPrepareForSim] handled person # 512
-2019-05-01 21:38:01,857  INFO Counter:70 [PersonPrepareForSim] handled person # 1024
-2019-05-01 21:38:01,860  INFO Counter:70 [PersonPrepareForSim] handled person # 2048
-2019-05-01 21:38:01,867  INFO Counter:70 [PersonPrepareForSim] handled person # 4096
-2019-05-01 21:38:01,882  INFO Counter:70 [PersonPrepareForSim] handled person # 8192
-2019-05-01 21:38:01,909  INFO Counter:70 [PersonPrepareForSim] handled person # 16384
-2019-05-01 21:38:01,965  INFO Counter:70 [PersonPrepareForSim] handled person # 32768
-2019-05-01 21:38:02,062  INFO Counter:76 [PersonPrepareForSim] handled person # 61076
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 1
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 2
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 4
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 8
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 16
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 32
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 64
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 128
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 256
-2019-05-01 21:38:02,063  INFO Counter:70 [VehiclesImpl] added vehicle # 512
-2019-05-01 21:38:02,064  INFO Counter:70 [VehiclesImpl] added vehicle # 1024
-2019-05-01 21:38:02,064  INFO Counter:70 [VehiclesImpl] added vehicle # 2048
-2019-05-01 21:38:02,066  INFO Counter:70 [VehiclesImpl] added vehicle # 4096
-2019-05-01 21:38:02,069  INFO Counter:70 [VehiclesImpl] added vehicle # 8192
-2019-05-01 21:38:02,075  INFO Counter:70 [VehiclesImpl] added vehicle # 16384
-2019-05-01 21:38:02,086  INFO Counter:70 [VehiclesImpl] added vehicle # 32768
-2019-05-01 21:38:02,149  INFO AbstractController:123 ###################################################
-2019-05-01 21:38:02,150  INFO AbstractController:124 ### ITERATION 0 BEGINS
-2019-05-01 21:38:02,150  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.analysis.LegHistogramListener
-2019-05-01 21:38:02,150  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.analysis.LinkStatsControlerListener
-2019-05-01 21:38:02,150  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.replanning.ReplanningContextImpl
-2019-05-01 21:38:02,150  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.scoring.ExperiencedPlansServiceImpl$1
-2019-05-01 21:38:02,169  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.scoring.ScoringFunctionsForPopulation$1
-2019-05-01 21:38:02,258  INFO ControlerListenerManagerImpl:148 [it.0] all ControlerIterationStartsListeners called.
-2019-05-01 21:38:02,258  INFO ControlerListenerManagerImpl:224 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.EventsHandlingImpl
-2019-05-01 21:38:02,258  INFO EventsManagerImpl:170 resetting Event-Handlers
-2019-05-01 21:38:02,258  INFO EventsManagerImpl:177   org.matsim.core.trafficmonitoring.TravelTimeCalculator
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.core.scoring.EventsToLegsAndActivities
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.analysis.VolumesAnalyzer
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.core.events.algorithms.Vehicle2DriverEventHandler
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.core.scoring.ScoringFunctionsForPopulation
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.analysis.LegHistogram
-2019-05-01 21:38:02,259  INFO EventsManagerImpl:177   org.matsim.analysis.CalcLegTimes
-2019-05-01 21:38:02,259  INFO ControlerListenerManagerImpl:224 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.PlansDumpingImpl
-2019-05-01 21:38:02,259  INFO ControlerListenerManagerImpl:229 calling notifyBeforeMobsim on org.matsim.core.population.VspPlansCleaner
-2019-05-01 21:38:02,306  INFO ControlerListenerManagerImpl:232 [it.0] all ControlerBeforeMobsimListeners called.
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 1
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 2
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 4
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 8
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 16
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 32
-2019-05-01 21:38:02,382  INFO Counter:70 [PersonPrepareForSim] handled person # 64
-2019-05-01 21:38:02,383  INFO Counter:70 [PersonPrepareForSim] handled person # 128
-2019-05-01 21:38:02,383  INFO Counter:70 [PersonPrepareForSim] handled person # 256
-2019-05-01 21:38:02,383  INFO Counter:70 [PersonPrepareForSim] handled person # 512
-2019-05-01 21:38:02,383  INFO Counter:70 [PersonPrepareForSim] handled person # 1024
-2019-05-01 21:38:02,384  INFO Counter:70 [PersonPrepareForSim] handled person # 2048
-2019-05-01 21:38:02,386  INFO Counter:70 [PersonPrepareForSim] handled person # 4096
-2019-05-01 21:38:02,388  INFO Counter:70 [PersonPrepareForSim] handled person # 8192
-2019-05-01 21:38:02,394  INFO Counter:70 [PersonPrepareForSim] handled person # 16384
-2019-05-01 21:38:02,406  INFO Counter:70 [PersonPrepareForSim] handled person # 32768
-2019-05-01 21:38:02,425  INFO Counter:76 [PersonPrepareForSim] handled person # 61076
-2019-05-01 21:38:02,437  INFO MobsimListenerManager:49 calling addQueueSimulationListener
-2019-05-01 21:38:02,437  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
-2019-05-01 21:38:02,437  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener
-2019-05-01 21:38:02,437  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener
-2019-05-01 21:38:02,438  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.vis.snapshotwriters.SnapshotWriterManager
-2019-05-01 21:38:02,438  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener
-2019-05-01 21:38:02,714  WARN QueueWithBuffer:414 storage capacity not sufficient for holes; increasing from 3.268390681562625 to 3.404573626627735
-2019-05-01 21:38:02,828  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.ActivityEngine
-2019-05-01 21:38:02,828  INFO QSimProvider:117 Added Activityhandler class org.matsim.core.mobsim.qsim.ActivityEngine
-2019-05-01 21:38:02,828  INFO QSimProvider:123 Added DepartureHandler class org.matsim.core.mobsim.qsim.qnetsimengine.VehicularDepartureHandler
-2019-05-01 21:38:02,829  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine
-2019-05-01 21:38:02,829  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
-2019-05-01 21:38:02,829  INFO QSimProvider:123 Added DepartureHandler class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
-2019-05-01 21:38:02,829  INFO QSimProvider:129 Added AgentSource class org.matsim.core.mobsim.qsim.agents.PopulationAgentSource
-2019-05-01 21:38:02,829  INFO MobsimListenerManager:49 calling addQueueSimulationListener
-2019-05-01 21:38:02,829  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener
-2019-05-01 21:38:02,829  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
-2019-05-01 21:38:02,829  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
-2019-05-01 21:38:02,829  INFO QSimProvider:135 Added MobsimListener class org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
-2019-05-01 21:38:03,612  INFO QNetsimEngine:506 Assigned 122237 nodes and 261336 links to QSimEngineRunner #0
-2019-05-01 21:38:03,649  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 06:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:03,649  INFO QSim:505 SIMULATION (NEW QSim) AT 06:00:00 : #Veh=61076 lost=0 simT=0.0s realT=1s; (s/r): 0.0
-2019-05-01 21:38:03,649  INFO Gbl:58 used RAM: 2797694680B = 2732123kB = 2668MB  free: 1672384808B = 1594MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:03,649  INFO EventsManagerImpl:134  event # 1
-2019-05-01 21:38:03,650  INFO EventsManagerImpl:134  event # 4
-2019-05-01 21:38:03,650  INFO EventsManagerImpl:134  event # 16
-2019-05-01 21:38:03,650  INFO EventsManagerImpl:134  event # 64
-2019-05-01 21:38:03,651  INFO EventsManagerImpl:134  event # 256
-2019-05-01 21:38:03,653  INFO EventsManagerImpl:134  event # 1024
-2019-05-01 21:38:03,662  INFO EventsManagerImpl:134  event # 4096
-2019-05-01 21:38:03,693  INFO EventsManagerImpl:134  event # 16384
-2019-05-01 21:38:03,812  INFO EventsManagerImpl:134  event # 65536
-2019-05-01 21:38:04,037  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 07:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:04,038  INFO QSim:505 SIMULATION (NEW QSim) AT 07:00:00 : #Veh=61076 lost=0 simT=3600.0s realT=1s; (s/r): 3600.0
-2019-05-01 21:38:04,038  INFO Gbl:58 used RAM: 2852116064B = 2785269kB = 2719MB  free: 1617963424B = 1543MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:04,272  INFO EventsManagerImpl:134  event # 262144
-2019-05-01 21:38:04,412  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 08:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:04,412  INFO QSim:505 SIMULATION (NEW QSim) AT 08:00:00 : #Veh=61076 lost=0 simT=7200.0s realT=1s; (s/r): 7200.0
-2019-05-01 21:38:04,412  INFO Gbl:58 used RAM: 2938131240B = 2869268kB = 2802MB  free: 1531948248B = 1460MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:04,802  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 09:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:04,803  INFO QSim:505 SIMULATION (NEW QSim) AT 09:00:00 : #Veh=61076 lost=0 simT=10800.0s realT=2s; (s/r): 5400.0
-2019-05-01 21:38:04,803  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:04,954  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 10:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:04,954  INFO QSim:505 SIMULATION (NEW QSim) AT 10:00:00 : #Veh=61076 lost=0 simT=14400.0s realT=2s; (s/r): 7200.0
-2019-05-01 21:38:04,954  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:05,108  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 11:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:05,109  INFO QSim:505 SIMULATION (NEW QSim) AT 11:00:00 : #Veh=61076 lost=0 simT=18000.0s realT=2s; (s/r): 9000.0
-2019-05-01 21:38:05,109  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:05,257  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 12:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:05,257  INFO QSim:505 SIMULATION (NEW QSim) AT 12:00:00 : #Veh=61076 lost=0 simT=21600.0s realT=2s; (s/r): 10800.0
-2019-05-01 21:38:05,257  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:05,404  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 13:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:05,405  INFO QSim:505 SIMULATION (NEW QSim) AT 13:00:00 : #Veh=61076 lost=0 simT=25200.0s realT=2s; (s/r): 12600.0
-2019-05-01 21:38:05,405  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:05,553  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 14:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:05,554  INFO QSim:505 SIMULATION (NEW QSim) AT 14:00:00 : #Veh=61076 lost=0 simT=28800.0s realT=3s; (s/r): 9600.0
-2019-05-01 21:38:05,554  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:05,704  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 15:00:00 : #links=0 #nodes=0
-2019-05-01 21:38:05,704  INFO QSim:505 SIMULATION (NEW QSim) AT 15:00:00 : #Veh=61076 lost=0 simT=32400.0s realT=3s; (s/r): 10800.0
-2019-05-01 21:38:05,704  INFO Gbl:58 used RAM: 2999355280B = 2929057kB = 2860MB  free: 1470724208B = 1402MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:06,024  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 16:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:06,024  INFO QSim:505 SIMULATION (NEW QSim) AT 16:00:00 : #Veh=40633 lost=0 simT=36000.0s realT=3s; (s/r): 12000.0
-2019-05-01 21:38:06,024  INFO Gbl:58 used RAM: 3028833520B = 2957845kB = 2888MB  free: 1441245968B = 1374MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:06,327  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 17:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:06,327  INFO QSim:505 SIMULATION (NEW QSim) AT 17:00:00 : #Veh=20376 lost=0 simT=39600.0s realT=3s; (s/r): 13200.0
-2019-05-01 21:38:06,327  INFO Gbl:58 used RAM: 3087638080B = 3015271kB = 2944MB  free: 1382441408B = 1318MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:06,633  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 18:00:00 : #links=1 #nodes=0
-2019-05-01 21:38:06,633  INFO QSim:505 SIMULATION (NEW QSim) AT 18:00:00 : #Veh=0 lost=0 simT=43200.0s realT=4s; (s/r): 10800.0
-2019-05-01 21:38:06,633  INFO Gbl:58 used RAM: 3132989168B = 3059559kB = 2987MB  free: 1337090320B = 1275MB  total: 4470079488B = 4263MB
-2019-05-01 21:38:06,634  INFO Gbl:191 Thread performance: Thread=QNetsimEngineRunner_0  cpu-time=0.859375sec
-2019-05-01 21:38:06,755  INFO AbstractController$9:220 ### ITERATION 0 fires after mobsim event
-2019-05-01 21:38:06,755  INFO Gbl:191 Thread performance: Thread=class org.matsim.core.events.SimStepParallelEventsManagerImpl$ProcessEventsRunnable0  cpu-time=1.625sec
-2019-05-01 21:38:06,756  INFO ControlerListenerManagerImpl:248 calling notifyAfterMobsim on org.matsim.analysis.LegTimesControlerListener
-2019-05-01 21:38:06,764  INFO LegTimesControlerListener:50 [0] average trip (probably: leg) duration is: 0 seconds = 00:00:00
-2019-05-01 21:38:06,764  INFO ControlerListenerManagerImpl:248 calling notifyAfterMobsim on org.matsim.core.scoring.EventsToActivities$1
-2019-05-01 21:38:06,890  INFO ControlerListenerManagerImpl:251 [it.0] all ControlerAfterMobsimListeners called.
-2019-05-01 21:38:06,891  INFO AbstractController$4:149 ### ITERATION 0 fires scoring event
-2019-05-01 21:38:06,891  INFO ControlerListenerManagerImpl:183 calling notifyScoring on org.matsim.core.scoring.PlansScoringImpl
-2019-05-01 21:38:06,942  INFO NewScoreAssignerImpl:36 it: 0 msaStart: null
-2019-05-01 21:38:06,984  INFO ControlerListenerManagerImpl:194 [it.0] all ControlerScoringListeners called.
-2019-05-01 21:38:06,984  INFO AbstractController$5:157 ### ITERATION 0 fires iteration end event
-2019-05-01 21:38:06,985  INFO ControlerListenerManagerImpl:160 calling notifyIterationEnds on org.matsim.core.controler.corelisteners.EventsHandlingImpl
-2019-05-01 21:38:06,985  INFO ControlerListenerManagerImpl:160 calling notifyIterationEnds on org.matsim.core.scoring.PlansScoringImpl
-2019-05-01 21:38:07,004  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.counts.CountsControlerListener
-2019-05-01 21:38:07,004  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.ModeStatsControlerListener
-2019-05-01 21:38:07,065  INFO ModeStatsControlerListener:155 -- mode share of mode bike = 0.0
-2019-05-01 21:38:07,066  INFO ModeStatsControlerListener:155 -- mode share of mode car = 1.0
-2019-05-01 21:38:07,066  INFO ModeStatsControlerListener:155 -- mode share of mode other = 0.0
-2019-05-01 21:38:07,066  INFO ModeStatsControlerListener:155 -- mode share of mode pt = 0.0
-2019-05-01 21:38:07,066  INFO ModeStatsControlerListener:155 -- mode share of mode ride = 0.0
-2019-05-01 21:38:07,066  INFO ModeStatsControlerListener:155 -- mode share of mode walk = 0.0
-2019-05-01 21:38:07,066  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.ScoreStatsControlerListener
-2019-05-01 21:38:07,075  INFO ScoreStatsControlerListener:191 -- avg. score of the executed plan of each agent: 141.02292430012628
-2019-05-01 21:38:07,075  INFO ScoreStatsControlerListener:192 -- avg. score of the worst plan of each agent: 141.02292430012628
-2019-05-01 21:38:07,075  INFO ScoreStatsControlerListener:193 -- avg. of the avg. plan score per agent: 141.02292430012628
-2019-05-01 21:38:07,075  INFO ScoreStatsControlerListener:194 -- avg. score of the best plan of each agent: 141.02292430012628
-2019-05-01 21:38:07,076  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.TravelDistanceStatsControlerListener
-2019-05-01 21:38:07,079  INFO TravelDistanceStats:128 [TravelDistanceStats] using 1 thread(s).
-2019-05-01 21:38:07,137  INFO TravelDistanceStats:141 [TravelDistanceStats] all threads finished.
-2019-05-01 21:38:07,137  INFO TravelDistanceStats:161 -- average of the average leg distance per plan (executed plans only): 0.0
-2019-05-01 21:38:07,137  INFO TravelDistanceStats:162 (TravelDistanceStats takes an average over all legs where the simulation reports travelled distances. These are car legs, pt legs,
-2019-05-01 21:38:07,137  INFO TravelDistanceStats:163 (and teleported legs whose route contains a distance.)
-2019-05-01 21:38:07,138  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.LegHistogramListener
-2019-05-01 21:38:07,144  INFO LegHistogramListener:72 number of legs:	122152	100%
-2019-05-01 21:38:07,144  INFO LegHistogramListener:79 number of car legs:	122152	100.0%
-2019-05-01 21:38:07,496  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.LinkStatsControlerListener
-2019-05-01 21:38:07,496  INFO ControlerListenerManagerImpl:171 [it.0] all ControlerIterationEndsListeners called.
-2019-05-01 21:38:07,682  INFO AbstractController:167 ### ITERATION 0 ENDS
-2019-05-01 21:38:07,682  INFO AbstractController:168 ###################################################
-2019-05-01 21:38:07,683  INFO MatsimRuntimeModifications:58 S H U T D O W N   ---   start shutdown.
-2019-05-01 21:38:07,683  INFO ControlerListenerManagerImpl:121 calling notifyShutdown on org.matsim.core.controler.corelisteners.EventsHandlingImpl
-2019-05-01 21:38:07,683  INFO ControlerListenerManagerImpl:121 calling notifyShutdown on org.matsim.core.controler.corelisteners.DumpDataAtEndImpl
-2019-05-01 21:38:07,711  INFO Counter:70 [PopulationWriter] dumped person # 1
-2019-05-01 21:38:07,711  INFO Counter:70 [PopulationWriter] dumped person # 2
-2019-05-01 21:38:07,711  INFO Counter:70 [PopulationWriter] dumped person # 4
-2019-05-01 21:38:07,711  INFO Counter:70 [PopulationWriter] dumped person # 8
-2019-05-01 21:38:07,711  INFO Counter:70 [PopulationWriter] dumped person # 16
-2019-05-01 21:38:07,712  INFO Counter:70 [PopulationWriter] dumped person # 32
-2019-05-01 21:38:07,713  INFO Counter:70 [PopulationWriter] dumped person # 64
-2019-05-01 21:38:07,714  INFO Counter:70 [PopulationWriter] dumped person # 128
-2019-05-01 21:38:07,717  INFO Counter:70 [PopulationWriter] dumped person # 256
-2019-05-01 21:38:07,723  INFO Counter:70 [PopulationWriter] dumped person # 512
-2019-05-01 21:38:07,735  INFO Counter:70 [PopulationWriter] dumped person # 1024
-2019-05-01 21:38:07,758  INFO Counter:70 [PopulationWriter] dumped person # 2048
-2019-05-01 21:38:07,804  INFO Counter:70 [PopulationWriter] dumped person # 4096
-2019-05-01 21:38:07,895  INFO Counter:70 [PopulationWriter] dumped person # 8192
-2019-05-01 21:38:08,077  INFO Counter:70 [PopulationWriter] dumped person # 16384
-2019-05-01 21:38:08,444  INFO Counter:70 [PopulationWriter] dumped person # 32768
-2019-05-01 21:38:09,083  INFO PopulationWriter:139 Population written to: ./output/perth_base_2014/perth_base_2014.output_plans.xml.gz
-2019-05-01 21:38:09,088  INFO Counter:76 [PopulationWriter] dumped person # 61076
-2019-05-01 21:38:09,090  INFO NetworkWriter:69 Writing network to file: ./output/perth_base_2014/perth_base_2014.output_network.xml.gz...
-2019-05-01 21:38:12,280  INFO NetworkWriter:72 done.
-2019-05-01 21:38:12,288  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,290  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,292  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,293  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,295  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,298  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,300  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,301  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,302  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,303  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,305  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,307  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,310  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,313  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,314  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,316  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,318  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,319  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,321  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,322  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,324  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,326  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,329  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,330  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
-2019-05-01 21:38:12,335  INFO VehicleWriterV1:52 about to write vehicles to: ./output/perth_base_2014/perth_base_2014.output_vehicles.xml.gz
-2019-05-01 21:38:12,425  INFO HouseholdsWriterV10:66 about to write  households to: ./output/perth_base_2014/perth_base_2014.output_households.xml.gz
-2019-05-01 21:38:12,426  INFO Counter:76 [HouseholdsWriter] wrote household # 0
-2019-05-01 21:38:12,427  INFO LanesWriter:72 about to write lanes to: ./output/perth_base_2014/perth_base_2014.output_lanes.xml.gz
-2019-05-01 21:38:12,443  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.ModeStatsControlerListener
-2019-05-01 21:38:12,444  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.ScoreStatsControlerListener
-2019-05-01 21:38:12,447  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.TravelDistanceStatsControlerListener
-2019-05-01 21:38:12,448  INFO ControlerListenerManagerImpl:129 all ControlerShutdownListeners called.
-2019-05-01 21:38:12,448  INFO MatsimRuntimeModifications:81 S H U T D O W N   ---   shutdown completed.
-2019-05-01 21:38:12,448  INFO OutputDirectoryLogging:146 closing the logfile, i.e. messages sent to the logger after this message are not written to the logfile.
+2019-05-06 13:26:06,210  INFO VspConfigConsistencyCheckerImpl:72 running checkConsistency ...
+2019-05-06 13:26:06,210  WARN VspConfigConsistencyCheckerImpl:83 you are insisting on config v1.  vsp default is using v2.
+2019-05-06 13:26:06,210  WARN VspConfigConsistencyCheckerImpl:99 you are not using FastAStarLandmarks as routing algorithm.  vsp default is to use FastAStarLandmarks.
+2019-05-06 13:26:06,210  WARN VspConfigConsistencyCheckerImpl:201 You are not setting fractionOfIterationsToStartScoreMSA; vsp default is to set this to something like 0.8.  This means you have to add the following lines to your config file: 
+2019-05-06 13:26:06,210  WARN VspConfigConsistencyCheckerImpl:203 <module name="planCalcScore">
+2019-05-06 13:26:06,211  WARN VspConfigConsistencyCheckerImpl:204 	<param name="fractionOfIterationsToStartScoreMSA" value="0.8" />
+2019-05-06 13:26:06,211  WARN VspConfigConsistencyCheckerImpl:205 </module>
+2019-05-06 13:26:06,211  WARN VspConfigConsistencyCheckerImpl:247 found `plansCalcRoute.insertingAccessEgressWalk==false'; vsp should use `true' or talk to Kai. 
+2019-05-06 13:26:06,211  WARN VspConfigConsistencyCheckerImpl:254 found qsim.usePersonIdForMissingVehicleId==true; this is only for backwards compatibility and should rather be set to false
+2019-05-06 13:26:06,211  WARN VspConfigConsistencyCheckerImpl:259 found `qsim.usingTravelTimeCheckInTeleporation==false'; vsp should try out `true' and report.
+2019-05-06 13:26:06,211  INFO ControlerUtils:66 Checking consistency of config done.
+2019-05-06 13:26:06,292  INFO NetworkImpl:426 building QuadTree for nodes: xrange(1.824097030244586E7,1.846162398717518E7); yrange(2730228.3278190386,3018082.7940123747)
+2019-05-06 13:26:06,346  INFO NetworkImpl:435 Building QuadTree took 0.059 seconds.
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 1
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 2
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 4
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 8
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 16
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 32
+2019-05-06 13:26:06,346  INFO Counter:70 [PersonPrepareForSim] handled person # 64
+2019-05-06 13:26:06,347  INFO Counter:70 [PersonPrepareForSim] handled person # 128
+2019-05-06 13:26:06,347  INFO Counter:70 [PersonPrepareForSim] handled person # 256
+2019-05-06 13:26:06,348  INFO Counter:70 [PersonPrepareForSim] handled person # 512
+2019-05-06 13:26:06,350  INFO Counter:70 [PersonPrepareForSim] handled person # 1024
+2019-05-06 13:26:06,353  INFO Counter:70 [PersonPrepareForSim] handled person # 2048
+2019-05-06 13:26:06,361  INFO Counter:70 [PersonPrepareForSim] handled person # 4096
+2019-05-06 13:26:06,375  INFO Counter:70 [PersonPrepareForSim] handled person # 8192
+2019-05-06 13:26:06,403  INFO Counter:70 [PersonPrepareForSim] handled person # 16384
+2019-05-06 13:26:06,459  INFO Counter:70 [PersonPrepareForSim] handled person # 32768
+2019-05-06 13:26:06,558  INFO Counter:76 [PersonPrepareForSim] handled person # 61400
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 1
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 2
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 4
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 8
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 16
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 32
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 64
+2019-05-06 13:26:06,558  INFO Counter:70 [VehiclesImpl] added vehicle # 128
+2019-05-06 13:26:06,559  INFO Counter:70 [VehiclesImpl] added vehicle # 256
+2019-05-06 13:26:06,559  INFO Counter:70 [VehiclesImpl] added vehicle # 512
+2019-05-06 13:26:06,559  INFO Counter:70 [VehiclesImpl] added vehicle # 1024
+2019-05-06 13:26:06,560  INFO Counter:70 [VehiclesImpl] added vehicle # 2048
+2019-05-06 13:26:06,561  INFO Counter:70 [VehiclesImpl] added vehicle # 4096
+2019-05-06 13:26:06,565  INFO Counter:70 [VehiclesImpl] added vehicle # 8192
+2019-05-06 13:26:06,571  INFO Counter:70 [VehiclesImpl] added vehicle # 16384
+2019-05-06 13:26:06,583  INFO Counter:70 [VehiclesImpl] added vehicle # 32768
+2019-05-06 13:26:06,638  INFO AbstractController:123 ###################################################
+2019-05-06 13:26:06,638  INFO AbstractController:124 ### ITERATION 0 BEGINS
+2019-05-06 13:26:06,639  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.analysis.LegHistogramListener
+2019-05-06 13:26:06,639  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.analysis.LinkStatsControlerListener
+2019-05-06 13:26:06,639  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.replanning.ReplanningContextImpl
+2019-05-06 13:26:06,639  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.scoring.ExperiencedPlansServiceImpl$1
+2019-05-06 13:26:06,660  INFO ControlerListenerManagerImpl:145 calling notifyIterationStarts on org.matsim.core.scoring.ScoringFunctionsForPopulation$1
+2019-05-06 13:26:06,750  INFO ControlerListenerManagerImpl:148 [it.0] all ControlerIterationStartsListeners called.
+2019-05-06 13:26:06,751  INFO ControlerListenerManagerImpl:224 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.EventsHandlingImpl
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:170 resetting Event-Handlers
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.core.trafficmonitoring.TravelTimeCalculator
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.core.scoring.EventsToLegsAndActivities
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.analysis.VolumesAnalyzer
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.core.events.algorithms.Vehicle2DriverEventHandler
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.core.scoring.ScoringFunctionsForPopulation
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.analysis.LegHistogram
+2019-05-06 13:26:06,751  INFO EventsManagerImpl:177   org.matsim.analysis.CalcLegTimes
+2019-05-06 13:26:06,751  INFO ControlerListenerManagerImpl:224 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.PlansDumpingImpl
+2019-05-06 13:26:06,751  INFO ControlerListenerManagerImpl:229 calling notifyBeforeMobsim on org.matsim.core.population.VspPlansCleaner
+2019-05-06 13:26:06,794  INFO ControlerListenerManagerImpl:232 [it.0] all ControlerBeforeMobsimListeners called.
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 1
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 2
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 4
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 8
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 16
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 32
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 64
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 128
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 256
+2019-05-06 13:26:06,873  INFO Counter:70 [PersonPrepareForSim] handled person # 512
+2019-05-06 13:26:06,874  INFO Counter:70 [PersonPrepareForSim] handled person # 1024
+2019-05-06 13:26:06,875  INFO Counter:70 [PersonPrepareForSim] handled person # 2048
+2019-05-06 13:26:06,876  INFO Counter:70 [PersonPrepareForSim] handled person # 4096
+2019-05-06 13:26:06,879  INFO Counter:70 [PersonPrepareForSim] handled person # 8192
+2019-05-06 13:26:06,885  INFO Counter:70 [PersonPrepareForSim] handled person # 16384
+2019-05-06 13:26:06,896  INFO Counter:70 [PersonPrepareForSim] handled person # 32768
+2019-05-06 13:26:06,917  INFO Counter:76 [PersonPrepareForSim] handled person # 61400
+2019-05-06 13:26:06,928  INFO MobsimListenerManager:49 calling addQueueSimulationListener
+2019-05-06 13:26:06,929  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener
+2019-05-06 13:26:06,929  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener
+2019-05-06 13:26:06,929  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.vis.snapshotwriters.SnapshotWriterManager
+2019-05-06 13:26:06,929  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
+2019-05-06 13:26:06,929  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener
+2019-05-06 13:26:07,211  WARN QueueWithBuffer:414 storage capacity not sufficient for holes; increasing from 3.268390681562625 to 3.404573626627735
+2019-05-06 13:26:07,322  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.ActivityEngine
+2019-05-06 13:26:07,323  INFO QSimProvider:117 Added Activityhandler class org.matsim.core.mobsim.qsim.ActivityEngine
+2019-05-06 13:26:07,323  INFO QSimProvider:123 Added DepartureHandler class org.matsim.core.mobsim.qsim.qnetsimengine.VehicularDepartureHandler
+2019-05-06 13:26:07,323  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine
+2019-05-06 13:26:07,323  INFO QSimProvider:111 Added MobsimEngine class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
+2019-05-06 13:26:07,323  INFO QSimProvider:123 Added DepartureHandler class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
+2019-05-06 13:26:07,323  INFO QSimProvider:129 Added AgentSource class org.matsim.core.mobsim.qsim.agents.PopulationAgentSource
+2019-05-06 13:26:07,323  INFO MobsimListenerManager:49 calling addQueueSimulationListener
+2019-05-06 13:26:07,323  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
+2019-05-06 13:26:07,323  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener
+2019-05-06 13:26:07,323  INFO MobsimListenerManager:53   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
+2019-05-06 13:26:07,323  INFO QSimProvider:135 Added MobsimListener class org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
+2019-05-06 13:26:07,701  INFO QNetsimEngine:506 Assigned 122237 nodes and 261336 links to QSimEngineRunner #0
+2019-05-06 13:26:07,736  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 06:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:07,737  INFO QSim:505 SIMULATION (NEW QSim) AT 06:00:00 : #Veh=61400 lost=0 simT=0.0s realT=0s; (s/r): 0.0
+2019-05-06 13:26:07,737  INFO Gbl:58 used RAM: 3527221056B = 3444551kB = 3363MB  free: 1142087872B = 1089MB  total: 4669308928B = 4453MB
+2019-05-06 13:26:07,737  INFO EventsManagerImpl:134  event # 1
+2019-05-06 13:26:07,737  INFO EventsManagerImpl:134  event # 4
+2019-05-06 13:26:07,738  INFO EventsManagerImpl:134  event # 16
+2019-05-06 13:26:07,738  INFO EventsManagerImpl:134  event # 64
+2019-05-06 13:26:07,738  INFO EventsManagerImpl:134  event # 256
+2019-05-06 13:26:07,741  INFO EventsManagerImpl:134  event # 1024
+2019-05-06 13:26:07,750  INFO EventsManagerImpl:134  event # 4096
+2019-05-06 13:26:08,216  INFO EventsManagerImpl:134  event # 16384
+2019-05-06 13:26:08,329  INFO EventsManagerImpl:134  event # 65536
+2019-05-06 13:26:08,549  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 07:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:08,550  INFO QSim:505 SIMULATION (NEW QSim) AT 07:00:00 : #Veh=61400 lost=0 simT=3600.0s realT=1s; (s/r): 3600.0
+2019-05-06 13:26:08,550  INFO Gbl:58 used RAM: 2839572840B = 2773020kB = 2708MB  free: 1542950552B = 1471MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:08,794  INFO EventsManagerImpl:134  event # 262144
+2019-05-06 13:26:08,945  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 08:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:08,945  INFO QSim:505 SIMULATION (NEW QSim) AT 08:00:00 : #Veh=61400 lost=0 simT=7200.0s realT=2s; (s/r): 3600.0
+2019-05-06 13:26:08,945  INFO Gbl:58 used RAM: 2906638416B = 2838514kB = 2771MB  free: 1475884976B = 1407MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:09,366  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 09:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:09,366  INFO QSim:505 SIMULATION (NEW QSim) AT 09:00:00 : #Veh=61400 lost=0 simT=10800.0s realT=2s; (s/r): 5400.0
+2019-05-06 13:26:09,366  INFO Gbl:58 used RAM: 2962036544B = 2892613kB = 2824MB  free: 1420486848B = 1354MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:09,522  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 10:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:09,522  INFO QSim:505 SIMULATION (NEW QSim) AT 10:00:00 : #Veh=61400 lost=0 simT=14400.0s realT=2s; (s/r): 7200.0
+2019-05-06 13:26:09,522  INFO Gbl:58 used RAM: 2962036544B = 2892613kB = 2824MB  free: 1420486848B = 1354MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:09,673  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 11:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:09,673  INFO QSim:505 SIMULATION (NEW QSim) AT 11:00:00 : #Veh=61400 lost=0 simT=18000.0s realT=2s; (s/r): 9000.0
+2019-05-06 13:26:09,673  INFO Gbl:58 used RAM: 2962036544B = 2892613kB = 2824MB  free: 1420486848B = 1354MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:09,821  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 12:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:09,821  INFO QSim:505 SIMULATION (NEW QSim) AT 12:00:00 : #Veh=61400 lost=0 simT=21600.0s realT=2s; (s/r): 10800.0
+2019-05-06 13:26:09,821  INFO Gbl:58 used RAM: 2962036544B = 2892613kB = 2824MB  free: 1420486848B = 1354MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:09,972  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 13:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:09,972  INFO QSim:505 SIMULATION (NEW QSim) AT 13:00:00 : #Veh=61400 lost=0 simT=25200.0s realT=3s; (s/r): 8400.0
+2019-05-06 13:26:09,972  INFO Gbl:58 used RAM: 2968143792B = 2898577kB = 2830MB  free: 1414379600B = 1348MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:10,111  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 14:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:10,111  INFO QSim:505 SIMULATION (NEW QSim) AT 14:00:00 : #Veh=61400 lost=0 simT=28800.0s realT=3s; (s/r): 9600.0
+2019-05-06 13:26:10,111  INFO Gbl:58 used RAM: 2968143792B = 2898577kB = 2830MB  free: 1414379600B = 1348MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:10,261  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 15:00:00 : #links=0 #nodes=0
+2019-05-06 13:26:10,262  INFO QSim:505 SIMULATION (NEW QSim) AT 15:00:00 : #Veh=61400 lost=0 simT=32400.0s realT=3s; (s/r): 10800.0
+2019-05-06 13:26:10,262  INFO Gbl:58 used RAM: 2968143792B = 2898577kB = 2830MB  free: 1414379600B = 1348MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:10,562  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 16:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:10,562  INFO QSim:505 SIMULATION (NEW QSim) AT 16:00:00 : #Veh=40912 lost=0 simT=36000.0s realT=3s; (s/r): 12000.0
+2019-05-06 13:26:10,562  INFO Gbl:58 used RAM: 3018905512B = 2948149kB = 2879MB  free: 1363617880B = 1300MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:10,873  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 17:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:10,873  INFO QSim:505 SIMULATION (NEW QSim) AT 17:00:00 : #Veh=20373 lost=0 simT=39600.0s realT=3s; (s/r): 13200.0
+2019-05-06 13:26:10,873  INFO Gbl:58 used RAM: 3055457568B = 2983845kB = 2913MB  free: 1327065824B = 1265MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:11,169  INFO QNetsimEngine:346 SIMULATION (QNetsimEngine) AT 18:00:00 : #links=1 #nodes=0
+2019-05-06 13:26:11,169  INFO QSim:505 SIMULATION (NEW QSim) AT 18:00:00 : #Veh=0 lost=0 simT=43200.0s realT=4s; (s/r): 10800.0
+2019-05-06 13:26:11,169  INFO Gbl:58 used RAM: 3092009648B = 3019540kB = 2948MB  free: 1290513744B = 1230MB  total: 4382523392B = 4179MB
+2019-05-06 13:26:11,169  INFO Gbl:191 Thread performance: Thread=QNetsimEngineRunner_0  cpu-time=1.171875sec
+2019-05-06 13:26:11,294  INFO AbstractController$9:220 ### ITERATION 0 fires after mobsim event
+2019-05-06 13:26:11,294  INFO Gbl:191 Thread performance: Thread=class org.matsim.core.events.SimStepParallelEventsManagerImpl$ProcessEventsRunnable0  cpu-time=1.59375sec
+2019-05-06 13:26:11,294  INFO ControlerListenerManagerImpl:248 calling notifyAfterMobsim on org.matsim.analysis.LegTimesControlerListener
+2019-05-06 13:26:11,303  INFO LegTimesControlerListener:50 [0] average trip (probably: leg) duration is: 0 seconds = 00:00:00
+2019-05-06 13:26:11,303  INFO ControlerListenerManagerImpl:248 calling notifyAfterMobsim on org.matsim.core.scoring.EventsToActivities$1
+2019-05-06 13:26:11,429  INFO ControlerListenerManagerImpl:251 [it.0] all ControlerAfterMobsimListeners called.
+2019-05-06 13:26:11,429  INFO AbstractController$4:149 ### ITERATION 0 fires scoring event
+2019-05-06 13:26:11,429  INFO ControlerListenerManagerImpl:183 calling notifyScoring on org.matsim.core.scoring.PlansScoringImpl
+2019-05-06 13:26:11,481  INFO NewScoreAssignerImpl:36 it: 0 msaStart: null
+2019-05-06 13:26:11,528  INFO ControlerListenerManagerImpl:194 [it.0] all ControlerScoringListeners called.
+2019-05-06 13:26:11,529  INFO AbstractController$5:157 ### ITERATION 0 fires iteration end event
+2019-05-06 13:26:11,529  INFO ControlerListenerManagerImpl:160 calling notifyIterationEnds on org.matsim.core.controler.corelisteners.EventsHandlingImpl
+2019-05-06 13:26:11,529  INFO ControlerListenerManagerImpl:160 calling notifyIterationEnds on org.matsim.core.scoring.PlansScoringImpl
+2019-05-06 13:26:11,556  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.counts.CountsControlerListener
+2019-05-06 13:26:11,556  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.ModeStatsControlerListener
+2019-05-06 13:26:11,630  INFO ModeStatsControlerListener:155 -- mode share of mode bike = 0.0
+2019-05-06 13:26:11,630  INFO ModeStatsControlerListener:155 -- mode share of mode car = 1.0
+2019-05-06 13:26:11,630  INFO ModeStatsControlerListener:155 -- mode share of mode other = 0.0
+2019-05-06 13:26:11,630  INFO ModeStatsControlerListener:155 -- mode share of mode pt = 0.0
+2019-05-06 13:26:11,631  INFO ModeStatsControlerListener:155 -- mode share of mode ride = 0.0
+2019-05-06 13:26:11,631  INFO ModeStatsControlerListener:155 -- mode share of mode walk = 0.0
+2019-05-06 13:26:11,631  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.ScoreStatsControlerListener
+2019-05-06 13:26:11,643  INFO ScoreStatsControlerListener:191 -- avg. score of the executed plan of each agent: 141.01749074670596
+2019-05-06 13:26:11,643  INFO ScoreStatsControlerListener:192 -- avg. score of the worst plan of each agent: 141.01749074670596
+2019-05-06 13:26:11,643  INFO ScoreStatsControlerListener:193 -- avg. of the avg. plan score per agent: 141.01749074670596
+2019-05-06 13:26:11,643  INFO ScoreStatsControlerListener:194 -- avg. score of the best plan of each agent: 141.01749074670596
+2019-05-06 13:26:11,644  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.TravelDistanceStatsControlerListener
+2019-05-06 13:26:11,647  INFO TravelDistanceStats:128 [TravelDistanceStats] using 1 thread(s).
+2019-05-06 13:26:11,710  INFO TravelDistanceStats:141 [TravelDistanceStats] all threads finished.
+2019-05-06 13:26:11,710  INFO TravelDistanceStats:161 -- average of the average leg distance per plan (executed plans only): 0.0
+2019-05-06 13:26:11,711  INFO TravelDistanceStats:162 (TravelDistanceStats takes an average over all legs where the simulation reports travelled distances. These are car legs, pt legs,
+2019-05-06 13:26:11,711  INFO TravelDistanceStats:163 (and teleported legs whose route contains a distance.)
+2019-05-06 13:26:11,711  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.LegHistogramListener
+2019-05-06 13:26:11,718  INFO LegHistogramListener:72 number of legs:	122800	100%
+2019-05-06 13:26:11,718  INFO LegHistogramListener:79 number of car legs:	122800	100.0%
+2019-05-06 13:26:12,080  INFO ControlerListenerManagerImpl:167 calling notifyIterationEnds on org.matsim.analysis.LinkStatsControlerListener
+2019-05-06 13:26:12,081  INFO ControlerListenerManagerImpl:171 [it.0] all ControlerIterationEndsListeners called.
+2019-05-06 13:26:12,263  INFO AbstractController:167 ### ITERATION 0 ENDS
+2019-05-06 13:26:12,263  INFO AbstractController:168 ###################################################
+2019-05-06 13:26:12,263  INFO MatsimRuntimeModifications:58 S H U T D O W N   ---   start shutdown.
+2019-05-06 13:26:12,263  INFO ControlerListenerManagerImpl:121 calling notifyShutdown on org.matsim.core.controler.corelisteners.EventsHandlingImpl
+2019-05-06 13:26:12,263  INFO ControlerListenerManagerImpl:121 calling notifyShutdown on org.matsim.core.controler.corelisteners.DumpDataAtEndImpl
+2019-05-06 13:26:12,291  INFO Counter:70 [PopulationWriter] dumped person # 1
+2019-05-06 13:26:12,292  INFO Counter:70 [PopulationWriter] dumped person # 2
+2019-05-06 13:26:12,292  INFO Counter:70 [PopulationWriter] dumped person # 4
+2019-05-06 13:26:12,292  INFO Counter:70 [PopulationWriter] dumped person # 8
+2019-05-06 13:26:12,292  INFO Counter:70 [PopulationWriter] dumped person # 16
+2019-05-06 13:26:12,292  INFO Counter:70 [PopulationWriter] dumped person # 32
+2019-05-06 13:26:12,293  INFO Counter:70 [PopulationWriter] dumped person # 64
+2019-05-06 13:26:12,295  INFO Counter:70 [PopulationWriter] dumped person # 128
+2019-05-06 13:26:12,297  INFO Counter:70 [PopulationWriter] dumped person # 256
+2019-05-06 13:26:12,304  INFO Counter:70 [PopulationWriter] dumped person # 512
+2019-05-06 13:26:12,316  INFO Counter:70 [PopulationWriter] dumped person # 1024
+2019-05-06 13:26:12,339  INFO Counter:70 [PopulationWriter] dumped person # 2048
+2019-05-06 13:26:12,385  INFO Counter:70 [PopulationWriter] dumped person # 4096
+2019-05-06 13:26:12,476  INFO Counter:70 [PopulationWriter] dumped person # 8192
+2019-05-06 13:26:12,667  INFO Counter:70 [PopulationWriter] dumped person # 16384
+2019-05-06 13:26:13,027  INFO Counter:70 [PopulationWriter] dumped person # 32768
+2019-05-06 13:26:13,657  INFO PopulationWriter:139 Population written to: ./output/perth_base_2014/perth_base_2014.output_plans.xml.gz
+2019-05-06 13:26:13,661  INFO Counter:76 [PopulationWriter] dumped person # 61400
+2019-05-06 13:26:13,663  INFO NetworkWriter:69 Writing network to file: ./output/perth_base_2014/perth_base_2014.output_network.xml.gz...
+2019-05-06 13:26:16,725  INFO NetworkWriter:72 done.
+2019-05-06 13:26:16,733  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,736  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,737  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,738  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,740  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,743  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,745  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,746  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,748  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,749  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,751  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,752  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,756  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,759  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,760  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,762  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,764  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,765  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,767  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,768  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,770  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,773  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,775  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,776  INFO Config:572 setting context to [file:/C:/projects/imove/silomatsim/silo/]
+2019-05-06 13:26:16,784  INFO VehicleWriterV1:52 about to write vehicles to: ./output/perth_base_2014/perth_base_2014.output_vehicles.xml.gz
+2019-05-06 13:26:16,868  INFO HouseholdsWriterV10:66 about to write  households to: ./output/perth_base_2014/perth_base_2014.output_households.xml.gz
+2019-05-06 13:26:16,869  INFO Counter:76 [HouseholdsWriter] wrote household # 0
+2019-05-06 13:26:16,870  INFO LanesWriter:72 about to write lanes to: ./output/perth_base_2014/perth_base_2014.output_lanes.xml.gz
+2019-05-06 13:26:16,887  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.ModeStatsControlerListener
+2019-05-06 13:26:16,887  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.ScoreStatsControlerListener
+2019-05-06 13:26:16,891  INFO ControlerListenerManagerImpl:126 calling notifyShutdown on org.matsim.analysis.TravelDistanceStatsControlerListener
+2019-05-06 13:26:16,892  INFO ControlerListenerManagerImpl:129 all ControlerShutdownListeners called.
+2019-05-06 13:26:16,892  INFO MatsimRuntimeModifications:81 S H U T D O W N   ---   shutdown completed.
+2019-05-06 13:26:16,892  INFO OutputDirectoryLogging:146 closing the logfile, i.e. messages sent to the logger after this message are not written to the logfile.

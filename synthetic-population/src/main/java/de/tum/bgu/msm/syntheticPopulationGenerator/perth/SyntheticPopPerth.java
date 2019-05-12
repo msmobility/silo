@@ -219,9 +219,13 @@ public class SyntheticPopPerth implements SyntheticPopI
         TableDataSet genderPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderBySA1_" + year + ".csv");
         TableDataSet agePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/ageGroupsBySA1_" + year + ".csv");
         TableDataSet genderAgePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderAgeGroupBySA1_" + year + ".csv");
+        TableDataSet incomePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/weeklyIncomeBySA1_" + year + ".csv");
 
         // age group intervals e.g. 5 because of 0-4, 5-9, 10-14, 15-19
         int ageInterval = 5;
+
+        // income intervals: nil, then 10
+        int incomeGroups = 11;
 
         // SA4 area codes in the file
         int[] areaCodes = new int[] {49, 50, 51, 52};
@@ -242,7 +246,7 @@ public class SyntheticPopPerth implements SyntheticPopI
                 if(areaCodes[area] == SA4)
                 {
                     // create a new zone
-                    ZoneSA1 zone = new ZoneSA1(ageInterval);
+                    ZoneSA1 zone = new ZoneSA1(ageInterval, incomeGroups);
                     zone.SA4 = SA4;
                     zone.SA1 = (int)(genderPerArea.getValueAt(row, "SA1"));
 
@@ -314,6 +318,52 @@ public class SyntheticPopPerth implements SyntheticPopI
                         {
                             zone.setMaleAgeGroup((col-otherCols), (int)genderAgePerArea.getValueAt(row, col));
                             zone.setFemaleAgeGroup((col-otherCols), (int)genderAgePerArea.getValueAt(row, (col+intervals-(otherCols-1))));
+                        }
+
+                        // replace (not needed)
+                        SA1zones.put(SA1, zone);
+                    }
+                    else
+                    {
+                        logger.error("Zone mismatch at SA1 " + SA1);
+                    }
+                }
+            }
+
+            // find income group counts
+            for(int row = 1; row <= incomePerArea.getRowCount(); row++)
+            {
+                int SA4 = (int) incomePerArea.getValueAt(row, "SA4");
+
+                // if zone belongs to the same SA4 area code
+                if(areaCodes[area] == SA4)
+                {
+                    int SA1 = (int)(incomePerArea.getValueAt(row, "SA1"));
+
+                    // get the previously created zone
+                    ZoneSA1 zone = SA1zones.get(SA1);
+
+                    if(zone != null)
+                    {
+                        // columns 1 and 2 are SA1 and SA4
+                        int otherCols = 3;
+                        // columns not applicable to silo, considered to be nil
+                        int nilCols = 5;
+
+                        // traverse all income groups and add them to the zone stats
+                        for(int col = otherCols; col <= incomePerArea.getColumnCount(); col++)
+                        {
+                            if(col < (otherCols+nilCols))
+                            {
+                                int incIndex = 0;
+                                zone.appendToIncomeGroup(incIndex, (int)incomePerArea.getValueAt(row, col));
+                            }
+                            else
+                            {
+                                // index 0 (nil) + column index - (irrelevant columns)
+                                int incIndex = 1 + col - (otherCols + nilCols);
+                                zone.setIncomeGroup(incIndex, (int)incomePerArea.getValueAt(row, col));
+                            }
                         }
 
                         // replace (not needed)
@@ -453,6 +503,7 @@ public class SyntheticPopPerth implements SyntheticPopI
                     person.Sex = sexCode;
                     person.Race = 0;
                     person.Income = convertIncome(incomeCode);
+                    person.WeeklyIncCode = incomeCode2WeeklySILO(incomeCode);
                     person.Occupation = translateOccupation(occupationCode, person.Age);
                     person.Relationship = translateRelationship(relationshipCode);
                     person.Industry = translateIndustry(industryCode, person.Occupation);
@@ -617,8 +668,6 @@ public class SyntheticPopPerth implements SyntheticPopI
                 // create a dwelling with the same properties
                 Dwelling dwelling = family.dwelling.clone();
 
-                // dwelling.zoneSA1 = translateSaZone(dwelling.zoneSA4, family.maleCount, family.femaleCount);
-
                 // if empty dwelling (it was cleared out because of the gender rewire)
                 if(family.Size == 0)
                 {
@@ -708,80 +757,115 @@ public class SyntheticPopPerth implements SyntheticPopI
     // -----------------------------------------------------------------------------------------------------------------  Quality
     private void distributeToSA1()
     {
-        int total = 0;
         for(int i = 0; i < populationPeople.size(); i++)
         {
             // fetch each family
             Family family = populationPeople.get(i);
+            family.autoFillCount();
+            int SA4 = family.dwelling.zoneSA4;
 
             // get the list of SA1 zones to the corresponding SA4 of this family
-            ZoneSA1[] zones = zoneMap.get(family.dwelling.zoneSA4);
+            ZoneSA1[] zones = zoneMap.get(SA4);
+
+            ArrayList<ZoneSA1> arrayList = new ArrayList<ZoneSA1>(Arrays.asList(zones));
+            Collections.sort(arrayList, Collections.reverseOrder());
+            zones = arrayList.toArray(new ZoneSA1[0]);
 
             int[] ageGroups = new int[zones[0].GroupSize];
             for(int j = 0; j < family.Size; j++)
             {
-                total++;
                 int ageGroup = zones[0].determineAgeGroup(family.People.get(j).Age);
                 ageGroups[ageGroup] += 1;
             }
 
+            int[] incGroups = new int[zones[0].IncGroupSize];
+            for(int j = 0; j < family.Size; j++)
+            {
+                incGroups[family.People.get(j).WeeklyIncCode] += 1;
+            }
+
             // find the zone that best matches
             int highestScore = -1;
-            int bestZone = -1;
+            int bestZone = 1;
             for(int z = 0; z < zones.length; z++)
             {
                 ZoneSA1 zone = zones[z];
-                /*
-                zone.getMaleCounts();
-                zone.getFemaleCounts();
-                zone.getAgeGroup();
-                zone.getMaleAgeGroup();
-                zone.getFemaleAgeGroup();
-                zone.determineAgeGroup();*/
-                int matchPoints = 0;
-                for(int k = 0; k < ageGroups.length; k++)
-                {
-                    if(ageGroups[k] > 0 && ageGroups[k] <= zone.getAgeGroup(k))
-                    {
-                        matchPoints++;
-                    }
-                }
-                if(matchPoints == family.Size)
-                {
-                    matchPoints += 50;
-                }
-                if(family.maleCount <= zone.getMaleCounts())
-                {
-                    matchPoints += 10;
-                }
-                if(family.femaleCount <= zone.getMaleCounts())
-                {
-                    matchPoints += 10;
-                }
 
-                if(matchPoints > highestScore)
+                if(zone.getTotalCount() > 0)
                 {
-                    highestScore = matchPoints;
-                    bestZone = z;
+                    int matchPoints = 0, tmpPoints;
+
+                    // age groups only
+                    tmpPoints = 0;
+                    for(int k = 0; k < ageGroups.length; k++)
+                    {
+                        if(ageGroups[k] > 0 && ageGroups[k] <= zone.getAgeGroup(k))
+                        {
+                            tmpPoints += ageGroups[k];
+                        }
+                    }
+                    if(tmpPoints == family.Size)
+                    {
+                        matchPoints += 50;
+                    }
+
+                    // income groups only
+                    tmpPoints = 0;
+                    for(int k = 0; k < incGroups.length; k++)
+                    {
+                        if(incGroups[k] > 0 && incGroups[k] <= zone.getIncomeGroup(k))
+                        {
+                            tmpPoints += incGroups[k];
+                        }
+                    }
+                    if(tmpPoints == family.Size)
+                    {
+                        matchPoints += 100;
+                    }
+                    else
+                    {
+                        matchPoints += tmpPoints;
+                    }
+
+                    // genders only
+                    if(family.maleCount <= zone.getMaleCounts())
+                    {
+                        matchPoints += 10;
+                    }
+                    if(family.femaleCount <= zone.getFemaleCounts())
+                    {
+                        matchPoints += 10;
+                    }
+
+                    if(matchPoints > highestScore)
+                    {
+                        highestScore = matchPoints;
+                        bestZone = z;
+                    }
                 }
             }
 
-            if(highestScore == 0) logger.warn("oh no");
+            if(highestScore == -1)
+                logger.warn("oh no");
+
+            // get the best zone
+            ZoneSA1 selectedZone = zones[bestZone];
 
             // assign the zone to the family
-            family.dwelling.zoneSA1 = zones[bestZone].SA1;
-            family.household.ZoneSA1 = zones[bestZone].SA1;
+            family.dwelling.zoneSA1 = selectedZone.SA1;
+            family.household.ZoneSA1 = selectedZone.SA1;
 
             // store the dwelling for the quality & vacant dwellings
             storeDwelling(family.dwelling);
 
             // update the zone counts
-            zones[bestZone].setMaleCounts(zones[bestZone].getMaleCounts() - family.maleCount);
-            zones[bestZone].setFemaleCounts(zones[bestZone].getFemaleCounts() - family.femaleCount);
-            for(int k = 0; k < ageGroups.length; k++)
-            {
-                zones[bestZone].setAgeGroup(k, zones[bestZone].getAgeGroup(k) - ageGroups[k]);
-            }
+            //logger.info(selectedZone.toString());
+            selectedZone.update(family.maleCount, family.femaleCount, ageGroups, incGroups);
+            //logger.info(selectedZone.toString());
+
+            // update the map
+            zones[bestZone] = selectedZone;
+            zoneMap.put(SA4, zones);
         }
     }
 
@@ -1198,8 +1282,7 @@ public class SyntheticPopPerth implements SyntheticPopI
         // 15: Overseas visitor
         float rnd = SiloUtil.getRandomNumberAsFloat();
         switch (incomeCode) {
-            case 1: return 0;
-            case 2: return 0;
+            case 1: case 2: return 0;
             case 3: return (int) ((1 + rnd * 199)*52/12);
             case 4: return (int) ((200 + rnd * 100)*52/12);
             case 5: return (int) ((300 + rnd * 100)*52/12);
@@ -1210,12 +1293,18 @@ public class SyntheticPopPerth implements SyntheticPopI
             case 10: return (int) ((1250 + rnd * 250)*52/12);
             case 11: return (int) ((1500 + rnd * 500)*52/12);
             case 12: return (int) ((2000 + rnd * 20000)*52/12);
-            case 13: return 0;
-            case 14: return 0;
-            case 15: return 0;
+            case 13: case 14: case 15: return 0;
             default: logger.error("Unknown income code " + incomeCode);
                 return 0;
         }
+    }
+
+    private int incomeCode2WeeklySILO(int incomeCode) {
+        if(incomeCode == 1 || incomeCode == 2 || incomeCode >= 13)
+        {
+            return 0;
+        }
+        return incomeCode - 2;
     }
 
     private int convertMortgage(int mortgageCode)
@@ -1580,13 +1669,14 @@ public class SyntheticPopPerth implements SyntheticPopI
                     }
                     else
                     {
-                        // could be worker from outside of the area (id = -2)
+                        // could be worker from outside of study area (id = -2)
                         // a lot of people do fly-in fly-out, so assign
                         return -2;
                     }
                 }
                 unassignedWorker++;
-                // logger.info("Did not find a job for industry: " + jjType);
+
+                logger.warn("Did not find a job for industry: " + jjType);
             }
             return -1;
         }
@@ -1597,7 +1687,8 @@ public class SyntheticPopPerth implements SyntheticPopI
         public int Age;
         public int Sex;
         public int Race;
-        public int Income;
+        public int Income; // monthly income
+        public int WeeklyIncCode;
         public int Occupation;
         public int Industry;
         public int ZoneSA1;
@@ -1688,7 +1779,7 @@ public class SyntheticPopPerth implements SyntheticPopI
                 {
                     maleCount++;
                 }
-                else if(People.get(i).Sex == CODE_FEMALE)
+                else
                 {
                     femaleCount++;
                 }
@@ -1824,7 +1915,7 @@ public class SyntheticPopPerth implements SyntheticPopI
         }
     }
 
-    private class ZoneSA1
+    private class ZoneSA1 implements Comparable<ZoneSA1>
     {
         // Zone info
         public int SA1;
@@ -1840,17 +1931,22 @@ public class SyntheticPopPerth implements SyntheticPopI
         // Gender & age combined
         public int[][] GenderAgeGroup;
 
+        // Income groups only
+        public int[] IncomeGroups;
+
         // constants
         private int posM = 0; // male index in the gender arrays
         private int posF = 1; // female index in the gender arrays
         private int ageIntervals; // age group intervals (e.g. by 5);
 
         public int GroupSize;
+        public int IncGroupSize;
 
-        public ZoneSA1(int ageInterval)
+        public ZoneSA1(int ageInterval, int incomeGroups)
         {
             // save age group interval
             ageIntervals = ageInterval;
+            IncGroupSize = incomeGroups;
 
             // e.g. 100 (max age interval) / 5 (interval) + 1 (100 and over) = 21
             GroupSize = (100 / ageInterval) + 1;
@@ -1858,6 +1954,7 @@ public class SyntheticPopPerth implements SyntheticPopI
             AgeGroups = new int[GroupSize];
             GenderAgeGroup = new int[2][GroupSize]; // male age groups, female age groups
             GenderTotals = new int[2]; // male, female
+            IncomeGroups = new int[incomeGroups];
         }
 
         // -----------------------------------------------------------------
@@ -1869,6 +1966,11 @@ public class SyntheticPopPerth implements SyntheticPopI
         public int getFemaleCounts()
         {
             return GenderTotals[posF];
+        }
+
+        public int getTotalCount()
+        {
+            return (getMaleCounts() + getFemaleCounts());
         }
 
         public void setMaleCounts(int totalMC)
@@ -1892,10 +1994,10 @@ public class SyntheticPopPerth implements SyntheticPopI
             AgeGroups[index] = totalAC;
         }
 
-        public int determineAgeGroup(int Age)
+        public int determineAgeGroup(int age)
         {
             // round down, since index starts at 0 no need to +1
-            return (int)((double)Age / (double)ageIntervals);
+            return (int)((double)age / (double)ageIntervals);
         }
 
         // -----------------------------------------------------------------
@@ -1917,6 +2019,82 @@ public class SyntheticPopPerth implements SyntheticPopI
         public void setFemaleAgeGroup(int index, int totalFC)
         {
             GenderAgeGroup[posF][index] = totalFC;
+        }
+
+        // -----------------------------------------------------------------
+        public int getIncomeGroup(int index)
+        {
+            return IncomeGroups[index];
+        }
+
+        public void setIncomeGroup(int index, int totalAC)
+        {
+            IncomeGroups[index] = totalAC;
+        }
+
+        public void appendToIncomeGroup(int index, int additional)
+        {
+            IncomeGroups[index] += additional;
+        }
+        public int determineIncomeGroup(int income)
+        {
+            // round down, since index starts at 0 no need to +1
+            return 0;
+        }
+
+        // -----------------------------------------------------------------
+        public void update(int totalCountMale, int totalCountFemale, int[] ageGroups, int[] incGroups)
+        {
+            // set gender totals
+            setMaleCounts(getMaleCounts() - totalCountMale);
+            setFemaleCounts(getFemaleCounts() - totalCountFemale);
+
+            // set age groups
+            for(int i = 0; i < GroupSize; i++)
+            {
+                setAgeGroup(i, (getAgeGroup(i) - ageGroups[i]));
+            }
+
+            // set inc groups
+            for(int i = 0; i < IncGroupSize; i++)
+            {
+                setIncomeGroup(i, (getIncomeGroup(i) - incGroups[i]));
+            }
+        }
+
+        // -----------------------------------------------------------------    Comparable used for sorting
+        @Override
+        public int compareTo(ZoneSA1 o)
+        {
+            Integer s1 = getTotalCount();
+            Integer s2 = o.getTotalCount();
+            return s1.compareTo(s2);
+        }
+
+        // -----------------------------------------------------------------
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            StringBuilder sbAgeGroups = new StringBuilder("Age groups: ");
+            StringBuilder sbAgeGroupsM= new StringBuilder("Male Age groups: ");
+            StringBuilder sbAgeGroupsF = new StringBuilder("Female Age groups: ");
+
+            for(int i = 0; i < GroupSize; i++)
+            {
+                sbAgeGroups.append(getAgeGroup(i) + ", ");
+                sbAgeGroupsM.append(getMaleAgeGroup(i) + ", ");
+                sbAgeGroupsF.append(getFemaleAgeGroup(i) + ", ");
+            }
+            sb.append("Total: " + (getMaleCounts()+getFemaleCounts()) + ", Males: " + getMaleCounts() + ", Females: " + getFemaleCounts());
+            sb.append("\n");
+            sb.append(sbAgeGroups);
+            sb.append("\n");
+            sb.append(sbAgeGroupsM);
+            sb.append("\n");
+            sb.append(sbAgeGroupsF);
+
+            return sb.toString();
         }
     }
 
