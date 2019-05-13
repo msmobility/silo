@@ -41,10 +41,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private PrintWriter pwpp;
     private PrintWriter pwdd;
     private PrintWriter pwjj;
+    private PrintWriter pwppabs;
+    private PrintWriter pwddabs;
 
     // temporary data holders
     private ArrayList<Family> samplePopulation = new ArrayList<>(); // store information about 1% of the population
     private ArrayList<Family> fullPopulation = new ArrayList<>(); // store information about 100% population
+    private ArrayList<Family> tmpNPDPopulation = new ArrayList<>();
     private HashMap<Integer, ZoneSA1[]> zoneMap = new HashMap<>(); // used for the distribution of the population
     private HashMap<Integer, ZoneSA1Jobs> JobDistributionSA1 = new HashMap<>();
     private JobCollection jobCollection = new JobCollection();
@@ -55,8 +58,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private long unassignedWorker = 0;
     private long unemployedCount = 0;
     private long employedCount = 0;
-    private int nonprivdwellPeopleCount = 0;
-    private int nonprivdwellCount = 0;
+    private int npdPeopleCount = 0;
+    private int npdCount = 0;
     private int clearedDwellings = 0;
 
     // iterate through IDs instead of data managers
@@ -96,14 +99,23 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         logger.info("\t ---------- Reading Australian ABS 1% data.");
         readMicroData();
+
         logger.info("Married people shall live together.");
         connectMarriedPeople(); // silo needs to have married people living together, done on 1% data
+
         sortPopulationByFamilySize(samplePopulation); // sort by family size, this will aid with population distribution
 
         logger.info("\t ---------- Generating population.");
         generatePopulation();
+
         logger.info("Sorting Perth's population by family size.");
-        sortPopulationByFamilySize(fullPopulation); // again, due to changes (e.g. family mering of non private dwells)
+        sortPopulationByFamilySize(fullPopulation);
+
+        logger.info("Clearing non-private dwellings");
+        cleanNonPrivDwellings(year);
+
+        logger.info("Sorting Perth's population by family size.");
+        sortPopulationByFamilySize(fullPopulation);
 
         logger.info("\t ---------- Distributing people and dwellings into SA1 zones.");
         distributeToSA1();
@@ -125,13 +137,15 @@ public class SyntheticPopPerth implements SyntheticPopI {
         saveDwellings();
         saveJobs();
 
+        long hhCount = nextID_HH - 1 - (npdCount - tmpNPDPopulation.size());
+
         logger.info("\t ---------- Final stats:");
-        logger.info("\t" + (nextID_PP-1) + " people " + (nextID_HH-1) + " households " + (nextID_DD-1) + " dwellings " + (nextID_JJ-1) + " jobs.");
+        logger.info("\t" + (nextID_PP-1) + " people " + hhCount + " households " + (nextID_DD-1) + " dwellings " + (nextID_JJ-1) + " jobs.");
         logger.info("\t" + employedCount + " employed and " + unemployedCount + " unemployed.");
         logger.info("\t" + unassignedWorker + " unassigned workers.");
         logger.info("\t" + clearedDwellings + " cleared dwellings");
 
-        logger.info("\t" + nonprivdwellPeopleCount + " people in " + nonprivdwellCount + " non-private dwellings.");
+        logger.info("\t" + npdPeopleCount + " people in " + npdCount + " non-private dwellings reduced to " + tmpNPDPopulation.size());
         closeFilesForSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
     }
@@ -543,35 +557,22 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 }
                 else
                 {
-                    boolean addNewDwelling = true;
+                    boolean isNPD = false;
 
                     // if a non-private dwelling
                     if(dwelling.codeType == ABS_CODE_NONPRIVATE_DWELLING)
                     {
-                        nonprivdwellPeopleCount++;
-
-                        //  reduce by factor of 2.6
-                        if((nonprivdwellPeopleCount%60) == 0 || count == 0)
-                        {
-                            nonprivdwellCount++;
-                            addNewDwelling = true;
-                        }
-                        else
-                        {
-                            addNewDwelling = false;
-                        }
+                        npdCount++;
+                        isNPD = true;
                     }
 
-                    if(addNewDwelling)
-                    {
-                        // add a new dwelling
-                        dwelling.ddID = nextID_DD++;
-                        dwelling.hhID = nextID_HH++;
+                    // add a new dwelling
+                    dwelling.ddID = nextID_DD++;
+                    dwelling.hhID = nextID_HH++;
 
-                        // create the new family
-                        syntheticFamily = new Family();
-                        syntheticFamily.dwelling = dwelling;
-                    }
+                    // create the new family
+                    syntheticFamily = new Family();
+                    syntheticFamily.dwelling = dwelling;
 
                     int peopleMarried = 0;
 
@@ -583,9 +584,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
                         // assign new person id, household, dwelling and a job
                         person.ppID = nextID_PP++;
-                        person.ddID = syntheticFamily.dwelling.ddID;
-                        person.hhID = syntheticFamily.dwelling.hhID;
                         person.jjID = -1;
+                        // person.ddID = syntheticFamily.dwelling.ddID;
+                        // person.hhID = syntheticFamily.dwelling.hhID;
 
                         // update family details
                         syntheticFamily.addPerson(person);
@@ -597,9 +598,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     }
 
                     // store the family
-                    if(addNewDwelling)
+                    if(!isNPD)
                     {
                         fullPopulation.add(syntheticFamily);
+                    }
+                    else
+                    {
+                        npdPeopleCount += syntheticFamily.size;
+                        tmpNPDPopulation.add(syntheticFamily);
                     }
 
                     // if there is an uneven number of married people there is an issue
@@ -612,6 +618,81 @@ public class SyntheticPopPerth implements SyntheticPopI {
             logger.error(ex.getMessage());
         }
     }
+    // ----------------------------------------------------------------------------------------------------------------- Non-private dwellings
+    private void cleanNonPrivDwellings(int year)
+    {
+        try
+        {
+            TableDataSet npdTable = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/npdBySA1_" + year + ".csv");
+            int npdRow = 1;
+
+            int NPDs = 512;
+            int maxPerDwell = npdPeopleCount/NPDs+10;
+            Random rand = new Random();
+
+            while (tmpNPDPopulation.size() != NPDs)
+            {
+                int rI1 = rand.nextInt(tmpNPDPopulation.size());
+                int rI2 = rand.nextInt(tmpNPDPopulation.size());
+
+                Family fam1 = tmpNPDPopulation.get(rI1);
+                Family fam2 = tmpNPDPopulation.get(rI2);
+
+                if(rI1 != rI2 && fam1.size < maxPerDwell && fam2.size < maxPerDwell)
+                {
+                    Family family1 = fam1.clone();
+                    Family family2 = fam2.clone();
+
+                    tmpNPDPopulation.remove(fam1);
+                    tmpNPDPopulation.remove(fam2);
+
+                    family1.append(family2);
+                    tmpNPDPopulation.add(family1);
+                }
+            }
+            for(int i = 0; i < tmpNPDPopulation.size(); i++)
+            {
+                Family family = tmpNPDPopulation.get(i).clone();
+
+                // search the file for an SA1 for the non-priv dwelling
+                while(true)
+                {
+                    // get the npd count at a current SA1 row
+                    int npdsInSA1 = (int) npdTable.getValueAt(npdRow, 2);
+
+                    // if there are any NPDs in this SA1
+                    if(npdsInSA1 > 0)
+                    {
+                        // set the SA1
+                        family.dwelling.SA1 = (int) npdTable.getValueAt(npdRow, 1);
+                        // update the table
+                        npdTable.setValueAt(npdRow, 2, (npdsInSA1-1));
+                        // found an SA1, end the search
+                        break;
+                    }
+                    else
+                    {
+                        // iterate to the next row
+                        npdRow++;
+                    }
+
+                    // if run out of rows
+                    if(npdRow > npdTable.getRowCount())
+                    {
+                        break;
+                    }
+                }
+
+                fullPopulation.add(family);
+            }
+        }
+        catch(Exception ex)
+        {
+            logger.error(ex.getMessage());
+        }
+
+
+    }
 
     // ----------------------------------------------------------------------------------------------------------------- Distribute people to SA1s
     private void distributeToSA1()
@@ -619,10 +700,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // try perfect matches first
         distributeAttempt(0, true);
         // now try with a margin
-        distributeAttempt(10, true);
+        distributeAttempt(2, true);
         // now bigger margin
-        distributeAttempt(50, false);
-        distributeAttempt(1000, false);
+        distributeAttempt(4, true);
+        distributeAttempt(20, false);
     }
 
     private void distributeAttempt(int margin, boolean perfectFit)
@@ -949,9 +1030,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 Person person = family.getPerson(p);
 
                 // save the record
-                pwpp.println(person.ppID + "," + person.hhID + "," + person.ppAge + "," + person.ppSex + ","
+                pwpp.println(person.ppID + "," + dwelling.hhID + "," + person.ppAge + "," + person.ppSex + ","
                         + person.ppRelationship + "," + person.ppRace + "," +  person.ppOccupation + ","
                         + person.jjID + "," + person.ppIncome);
+
+                // abs version
+                pwppabs.println(person.ppID + "," + dwelling.hhID + "," + person.codeAge + "," + person.codeSex + ","
+                        + person.codeRelationship + "," + person.ppRace + "," +  person.codeOccupation + ","
+                        + person.jjID + "," + person.codeIncome);
             }
 
             // save the household
@@ -968,6 +1054,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // save the dwelling
             pwdd.println(dwelling.ddID + "," + dwelling.SA1 + "," + dwelling.ddType + "," +
                     dwelling.hhID + "," + dwelling.ddBedrooms + "," + dwelling.ddQuality + "," + dwelling.ddPrice);
+
+            pwddabs.println(dwelling.ddID + "," + dwelling.SA1 + "," + dwelling.codeType + "," +
+                    dwelling.hhID + "," + dwelling.codeBedrooms + "," + dwelling.ddQuality + ","
+                    + dwelling.codeRent + ", " + dwelling.codeMortgage);
         }
     }
 
@@ -1386,6 +1476,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
     // -----------------------------------------------------------------------------------------------------------------  Output files
     private void openFilesToWriteSyntheticPopulation(int year)
     {
+        // SILO
         String filehh = baseDirectory + "/microData/hh_" + year + ".csv";
         String filepp = baseDirectory + "/microData/pp_" + year + ".csv";
         String filedd = baseDirectory + "/microData/dd_" + year + ".csv";
@@ -1398,6 +1489,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
         pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
         pwjj = SiloUtil.openFileForSequentialWriting(filejj, false);
         pwjj.println("id,zone,personId,type");
+
+        // ABS
+        String fileppABS = baseDirectory + "/microData/abs_pp_" + year + ".csv";
+        String fileddABS = baseDirectory + "/microData/abs_dd_" + year + ".csv";
+        pwppabs = SiloUtil.openFileForSequentialWriting(fileppABS, false);
+        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwddabs = SiloUtil.openFileForSequentialWriting(fileddABS, false);
+        pwddabs.println("id,zone,type,hhID,bedrooms,quality,rent,mortgage");
     }
 
     private void closeFilesForSyntheticPopulation()
@@ -1406,6 +1505,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
         pwpp.close();
         pwdd.close();
         pwjj.close();
+
+        pwppabs.close();
+        pwddabs.close();
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Help Methods
@@ -1506,8 +1608,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private class Person implements Cloneable
     {
         public long ppID;
-        public long ddID;
-        public long hhID;
         public long jjID;
 
         // abs
@@ -1686,7 +1786,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
             return s1.compareTo(s2);
         }
     }
-
 
     // -----------------------------------------------------------------------------------------------------------------  Population Distribution
     private class ZoneSA1 implements Comparable<ZoneSA1>
