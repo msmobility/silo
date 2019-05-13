@@ -31,6 +31,8 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
@@ -232,12 +234,14 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 
     private void buildZoneCalculationNodesMap() {
+        CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, TransformationFactory.CH1903_LV03);
         for (Zone zone : zones.values()) {
             // Several points in a given origin zone
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                 // TODO Check if random coordinate is the best representative
                 Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
                 Coord originCoord = new Coord(coordinate.x, coordinate.y);
+                originCoord = ct.transform(originCoord);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
                 if (!zoneCalculationNodesMap.containsKey(zone)) {

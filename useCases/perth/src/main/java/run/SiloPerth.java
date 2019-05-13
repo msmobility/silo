@@ -10,6 +10,16 @@ import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
+import org.matsim.api.core.v01.TransportMode;
+import de.tum.bgu.msm.data.Zone;
+import java.util.ArrayList;
+import java.util.Collection;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.OmxTravelTimesWriter;
+import de.tum.bgu.msm.data.geo.GeoData;
+import java.util.Map;
+
+
 /**
  * Implements SILO for for the Maryland Statewide Transportation Model
  *
@@ -34,6 +44,12 @@ public class SiloPerth {
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, new DefaultResultsMonitor(dataContainer, properties));
         model.runModel();
+        TravelTimes tt = dataContainer.getTravelTimes();
+        GeoData geo = dataContainer.getGeoData();
+        Map<Integer, Zone> zoneMap = geo.getZones();
+        Collection<Zone> zoneCollection = new ArrayList<Zone>(zoneMap.values());
+        OmxTravelTimesWriter oxmTTWriter = new OmxTravelTimesWriter(tt , zoneCollection);
+        oxmTTWriter.writeTravelTimes("./testskim3.omx", "test", TransportMode.car);
         logger.info("Finished SILO.");
     }
 }

@@ -55,6 +55,7 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.geometry.CoordinateTransformation;
 import org.matsim.facilities.*;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -64,24 +65,26 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 
+import org.matsim.core.utils.geometry.transformations.TransformationFactory;
+
 /**
  * @author dziemke
  */
 public final class MatsimTransportModel implements TransportModel {
 	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
-	
+
 	private final Config initialMatsimConfig;
 	private final MatsimTravelTimes travelTimes;
 	private Properties properties;
 	private final DataContainer dataContainer;
 	private Network network;
-	
+
 	private ActivityFacilities zoneRepresentativeCoords;
 	private MatsimAccessibility accessibility;
 
 
 	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
-			Properties properties, MatsimAccessibility accessibility) {
+								Properties properties, MatsimAccessibility accessibility) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
 				"No initial matsim config provided to SiloModel class!" );
@@ -93,31 +96,33 @@ public final class MatsimTransportModel implements TransportModel {
 
 	@Override
 	public void setup() {
-        network = NetworkUtils.createNetwork();
-        new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
-        travelTimes.initialize(dataContainer.getGeoData(), network);
+		network = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
+		travelTimes.initialize(dataContainer.getGeoData(), network);
 
-        logger.warn("Finding coordinates that represent a given zone.");
+		logger.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
 		ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
-	    Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
-	    for (int zoneId : zoneMap.keySet()) {
-		Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
+		Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
+		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, TransformationFactory.CH1903_LV03);
+		for (int zoneId : zoneMap.keySet()) {
+			Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
 			Coord centroid = CoordUtils.createCoord(geometry.getCentroid().getX(), geometry.getCentroid().getY());
+			centroid = ct.transform(centroid);
 			Node nearestNode = NetworkUtils.getNearestNode(network, centroid); // TODO choose road of certain category
 			Coord coord = CoordUtils.createCoord(nearestNode.getCoord().getX(), nearestNode.getCoord().getY());
 			ActivityFacility activityFacility = aff.createActivityFacility(Id.create(zoneId, ActivityFacility.class), coord);
 			zoneRepresentativeCoords.addActivityFacility(activityFacility);
-	    }
+		}
 
-        if(properties.transportModel.matsimInitialEventsFile == null) {
-            runTransportModel(properties.main.startYear);
-        } else {
-            String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
-            replayFromEvents(eventsFile);
-        }
+		if(properties.transportModel.matsimInitialEventsFile == null) {
+			runTransportModel(properties.main.startYear);
+		} else {
+			String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+			replayFromEvents(eventsFile);
+		}
 
-    }
+	}
 
 	@Override
 	public void prepareYear(int year) {
@@ -125,18 +130,18 @@ public final class MatsimTransportModel implements TransportModel {
 
 	@Override
 	public void endYear(int year) {
-	    if(properties.transportModel.transportModelYears.contains(year+1)) {
-            runTransportModel(year+1);
-        }
+		if(properties.transportModel.transportModelYears.contains(year+1)) {
+			runTransportModel(year+1);
+		}
 
-    }
+	}
 
-    @Override
-    public void endSimulation() {
+	@Override
+	public void endSimulation() {
 
-    }
+	}
 
-    public void runTransportModel(int year) {
+	public void runTransportModel(int year) {
 		logger.warn("Running MATSim transport model for year " + year + ".");
 
 		String scenarioName = properties.main.scenarioName;
@@ -144,15 +149,15 @@ public final class MatsimTransportModel implements TransportModel {
 		boolean writePopulation = false;
 		double populationScalingFactor = properties.transportModel.matsimScaleFactor;
 		String matsimRunId = scenarioName + "_" + year;
-		
+
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
 		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
-		
+
 		if (writePopulation) {
-    		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
-    		MatsimWriter populationWriter = new PopulationWriter(population);
-    		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
-    	}
+			new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
+			MatsimWriter populationWriter = new PopulationWriter(population);
+			populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
+		}
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
@@ -230,18 +235,18 @@ public final class MatsimTransportModel implements TransportModel {
 	}
 
 	/**
-     *
-     * @param eventsFile
-     */
+	 *
+	 * @param eventsFile
+	 */
 	private void replayFromEvents(String eventsFile) {
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
-	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
-        EventsManager events = EventsUtils.createEventsManager();
-        events.addHandler(ttCalculator);
-        (new MatsimEventsReader(events)).readFile(eventsFile);
-        TravelTime travelTime = ttCalculator.getLinkTravelTimes();
-        TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
+		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
+		TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
+		EventsManager events = EventsUtils.createEventsManager();
+		events.addHandler(ttCalculator);
+		(new MatsimEventsReader(events)).readFile(eventsFile);
+		TravelTime travelTime = ttCalculator.getLinkTravelTimes();
+		TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
+		updateTravelTimes(travelTime, travelDisutility);
 	}
 
 	private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
