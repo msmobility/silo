@@ -12,8 +12,9 @@ import java.util.*;
 
 /**
  * Generates a simple synthetic population for the perth Study Area
+ * from 1% ABS data in 2011.
  * @author Rolf Moeckel (TUM) & Sonja Stemler (UWA) & Martin Porebski (UWA)
- * Created on Oct. 31st, 2018 in Munich
+ * 13/05/2019 Perth
  */
 public class SyntheticPopPerth implements SyntheticPopI {
     // constants
@@ -831,7 +832,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // convert dwelling properties
             dwelling.ddBedrooms = convertBedrooms(dwelling.codeBedrooms);
             dwelling.ddType = dwelling.codeType;
-            dwelling.ddQuality = 0;
+            dwelling.ddQuality = 1;
             dwelling.ddMortgage = convertMortgage(dwelling.codeMortgage);
             dwelling.ddRent = convertRent(dwelling.codeRent);
             dwelling.ddPrice = getDwellingPrice(dwelling.ddRent, dwelling.ddMortgage);
@@ -856,7 +857,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 person.ppIndustry = translateIndustry(person.codeIndustry, person.ppOccupation);
 
                 // assign a job
-                jobCollection.assignWorker(person.ppID, person.ppIndustry);
+                person.jjID = jobCollection.assignWorker(person.ppID, person.ppIndustry);
 
                 // save the person (just in case)
                 family.setPerson(p, person);
