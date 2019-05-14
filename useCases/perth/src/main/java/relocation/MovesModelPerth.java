@@ -250,21 +250,27 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
 
         // Step 2: select vacant dwelling in selected region
-        int[] vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
-        double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
+        List<Dwelling> vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
+        Map<Dwelling, Double> dwellingProbs = new LinkedHashMap<>();
         double sumProbs = 0.;
-        int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
-        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
-        for (int i = 0; i < vacantDwellings.length; i++) {
-            if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
-            expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
-            sumProbs =+ expProbs[i];
+        // No household will evaluate more than 20 dwellings
+        int maxNumberOfDwellings = Math.min(20, vacantDwellings.size());
+        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.size());
+        for (Dwelling dwelling: vacantDwellings) {
+            if (SiloUtil.getRandomNumberAsFloat() > factor) {
+                continue;
+            }
+            double util = calculateHousingUtility(household, dwelling, dataContainer.getTravelTimes());
+            double probability = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
+            sumProbs =+ probability;
+            dwellingProbs.put(dwelling, probability);
         }
-        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs, sumProbs);
-        return vacantDwellings[selected];
+        if (sumProbs == 0) {
+            // could not find dwelling that fits restrictions
+            return -1;
+        }
+        Dwelling selected = SiloUtil.select(dwellingProbs, sumProbs);
+        return selected.getId();
     }
 
     @Override

@@ -134,7 +134,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
             util += shares.get(i);
         }
         // invert utility, as lower price has higher utility
-        return (1f - util);
+        return Math.max(0., 1f - util);
     }
 
     protected double convertPriceToUtility(int price, IncomeCategory incCategory) {
@@ -148,7 +148,7 @@ public abstract class AbstractMovesModelImpl extends AbstractModel implements Mo
             util += shares.get(i);
         }
         // invert utility, as lower price has higher utility
-        return (1f - util);
+        return Math.max(0, 1.f - util);
     }
 
     protected double convertQualityToUtility(int quality) {

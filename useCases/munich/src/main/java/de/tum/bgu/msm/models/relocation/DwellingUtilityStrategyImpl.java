@@ -16,7 +16,7 @@ public class DwellingUtilityStrategyImpl extends JavaScriptCalculator<Double> im
         super(reader);
     }
 
-    public double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,
+    public synchronized double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,
                                                  double ddQualityUtility, double ddAutoAccessibilityUtility,
                                                  double transitAccessibilityUtility, double ddWorkDistanceUtility) {
        return super.calculate("calculateSelectDwellingUtility", ht, ddSizeUtility, ddPriceUtility,

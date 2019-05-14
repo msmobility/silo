@@ -87,7 +87,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
 
 
     @Override
-    public int[] getListOfVacantDwellingsInRegion(int region) {
+    public List<Dwelling> getListOfVacantDwellingsInRegion(int region) {
         return delegate.getListOfVacantDwellingsInRegion(region);
     }
 

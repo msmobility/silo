@@ -59,7 +59,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     private int highestJobIdInUse;
 
-    private final Map<Integer, Set<Job>> vacantJobsByRegion = new LinkedHashMap<>();
+    private final Map<Integer, List<Job>> vacantJobsByRegion = new LinkedHashMap<>();
     private final Map<Integer, Double> zonalJobDensity;
 
     private final Map<Integer, Map<Integer,Map<String,Float>>> jobsByYearByZoneByIndustry = new ConcurrentHashMap<>();
@@ -296,7 +296,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
             if (jj.getWorkerId() == -1) {
                 int region = geoData.getZones().get(jj.getZoneId()).getRegion().getId();
 
-                vacantJobsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+                vacantJobsByRegion.putIfAbsent(region, new ArrayList<>());
                 vacantJobsByRegion.get(region).add(jj);
 
                 if (jj.getId() == SiloUtil.trackJj) {
@@ -330,7 +330,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     }
     
     private int getNumberOfVacantJobsByRegion(int region) {
-        return vacantJobsByRegion.getOrDefault(region, Collections.EMPTY_SET).size();
+        return vacantJobsByRegion.getOrDefault(region, Collections.EMPTY_LIST).size();
     }
     
     @Override
@@ -338,6 +338,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         // select vacant job for person living in homeZone
 
         Map<Region, Double> regionProb = new HashMap<>();
+        double sum = 0;
 
         if (homeZone != null) {
             // person has home location (i.e., is not inmigrating right now)
@@ -345,17 +346,21 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 int numberOfVacantJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfVacantJobs > 0) {
                     int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
-                    		properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
-                    regionProb.put(reg, commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min)) * (double) numberOfVacantJobs);
+                            properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
+                    final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min)) * (double) numberOfVacantJobs;
+                    regionProb.put(reg, prob);
+                    sum += prob;
                 }
             }
-            if (SiloUtil.getSum(regionProb.values()) == 0) {
+            if (sum == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (getNumberOfVacantJobsByRegion(reg.getId()) > 0) {
-                    	int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
+                        int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
                                 properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
-                    	regionProb.put(reg, 1. / Math.max(1, travelTime_min));
+                        final double prob = 1. / Math.max(1, travelTime_min);
+                        regionProb.put(reg, prob);
+                        sum += prob;
                     }
                 }
             }
@@ -364,34 +369,39 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
             for (Region reg : regions) {
                 int numberOfJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfJobs > 0) {
-                	regionProb.put(reg, (double) numberOfJobs);
+                    regionProb.put(reg, (double) numberOfJobs);
+                    sum += numberOfJobs;
                 }
             }
         }
 
-        if (SiloUtil.getSum(regionProb.values()) == 0) {
+        if (sum == 0) {
             logger.warn("No jobs remaining. Could not find new job.");
             return null;
         }
-        int selectedRegion = SiloUtil.select(regionProb).getId();
+        int selectedRegion = SiloUtil.select(regionProb, sum).getId();
         if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
             logger.warn("Selected region " + selectedRegion + " but could not find any jobs there.");
             return null;
         }
 
-        Map<Job, Double> jobProbability = new HashMap<>();
+        List<Job> eligibleJobs = vacantJobsByRegion.get(selectedRegion);
+        float[] jobProbability = new float[eligibleJobs.size()];
+        SiloUtil.setArrayToValue(jobProbability, 1.f);
 
-        Set<Job> eligibleJobs = vacantJobsByRegion.get(selectedRegion);
-        for(Job job: eligibleJobs) {
-            jobProbability.put(job, 1.);
+        for(int i = 0; i<eligibleJobs.size(); i++) {
+            jobProbability[i] =  1.f;
+            i++;
         }
-        Job selectedJob = SiloUtil.select(jobProbability);
-        eligibleJobs.remove(selectedJob);
+        final int select = SiloUtil.select(jobProbability, jobProbability.length);
+        Job selectedJob = eligibleJobs.remove(select);
 
-        if (selectedJob.getId() == SiloUtil.trackJj)
+        if (selectedJob.getId() == SiloUtil.trackJj) {
             SiloUtil.trackWriter.println("Removed job " + selectedJob.getId() + " from list of vacant jobs.");
+        }
         return selectedJob;
     }
+
 
     /**
      * add job jobId to vacancy list
@@ -400,7 +410,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     private void addJobToVacancyList(Job job) {
 
         int region = geoData.getZones().get(job.getZoneId()).getRegion().getId();
-        vacantJobsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+        vacantJobsByRegion.putIfAbsent(region, new ArrayList<>());
         vacantJobsByRegion.get(region).add(job);
 
         if (job.getId() == SiloUtil.trackJj) {

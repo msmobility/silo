@@ -248,22 +248,25 @@ public class MovesModelCapeTown extends AbstractMovesModelImpl {
 
 
         // Step 2: select vacant dwelling in selected region
-        int[] vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
-        double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
-        double sumProbs = 0.;
-        int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
-        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
-        for (int i = 0; i < vacantDwellings.length; i++) {
-            if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
-            expProbs[i] = ddProbabilityStrategy.calculateSelectDwellingProbability(util);
-            sumProbs = +expProbs[i];
-        }
-        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs, sumProbs);
-        return vacantDwellings[selected];
+        List<Dwelling> vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
+        double[] dwellingProbs = new double[vacantDwellings.size()];
 
+        // No household will evaluate more than 20 dwellings
+        int maxNumberOfDwellings = Math.min(20, vacantDwellings.size());
+        double sum = 0;
+        for(int i = 0; i < maxNumberOfDwellings; i++) {
+            Dwelling dwelling = vacantDwellings.get(SiloUtil.getRandomObject().nextInt(vacantDwellings.size()));
+            double util = calculateHousingUtility(household, dwelling, dataContainer.getTravelTimes());
+            double prob = ddProbabilityStrategy.calculateSelectDwellingProbability(util);
+            dwellingProbs[i] = prob;
+            sum += prob;
+        }
+        if (sum == 0) {
+            // could not find dwelling that fits restrictions
+            return -1;
+        }
+        final Dwelling select = vacantDwellings.get(SiloUtil.select(dwellingProbs, sum));
+        return select.getId();
     }
 
     private Map<Integer, Double> getUtilitiesByRegionForThisHousehold(HouseholdType ht, RaceCapeTown race, Collection<Zone> workZones) {

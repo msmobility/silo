@@ -349,14 +349,18 @@ public class SiloUtil {
         return probabilities.length - 1;
     }
 
-    @Deprecated
     public static int select (float[] probabilities) {
         // select item based on probabilities (for zero-based float array)
-        float selPos = getSum(probabilities) * getRandomNumberAsFloat();
-        float sum = 0;
+        return select(probabilities, getSum(probabilities));
+    }
+
+    public static int select (float[] probabilities, float sum) {
+        // select item based on probabilities (for zero-based float array)
+        float selPos = sum * getRandomNumberAsFloat();
+        float temp = 0;
         for (int i = 0; i < probabilities.length; i++) {
-            sum += probabilities[i];
-            if (sum > selPos) {
+            temp += probabilities[i];
+            if (temp > selPos) {
                 return i;
             }
         }
@@ -632,8 +636,9 @@ public class SiloUtil {
 
     public static int[] setArrayToValue (int[] anArray, int value) {
         // fill one-dimensional integer array with value
-
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
+        for (int i = 0; i < anArray.length; i++) {
+            anArray[i] = value;
+        }
         return anArray;
     }
 
