@@ -15,6 +15,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runAllocation;
     public boolean runJobAllocation;
     public boolean twoGeographicalAreasIPU;
+    public boolean runDisability;
     public String[] attributesMunicipality;
     public TableDataSet marginalsMunicipality;
     public String[] attributesCounty;

@@ -13,6 +13,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.Allocation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.munich.disability.DisabilityBase;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microlocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
@@ -67,6 +68,9 @@ public class SyntheticPopDe implements SyntheticPopI {
 
         logger.info("Running Module: Car ownership");
         new CreateCarOwnershipModelMuc(dataContainer).run();
+
+        logger.info("Running Module: Disability");
+        new DisabilityBase(dataSetSynPop, dataContainer).run();
 
         logger.info("Summary of the synthetic population");
         summarizeData(dataContainer);

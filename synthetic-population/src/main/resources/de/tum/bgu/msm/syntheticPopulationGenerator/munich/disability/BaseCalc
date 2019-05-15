@@ -1,0 +1,158 @@
+var calculateBaseYearDisabilityProbability = function(person, personSex) {
+alpha = 0.;
+var personAge = person.getAge();
+
+
+    if (personSex == 1) {
+    // sex = male
+        if (personAge < 4){
+            alpha = 0.00552;
+        } else if (personAge < 6){
+            alpha = 0.0117;
+        } else if (personAge < 15){
+            alpha = 0.0181;
+        } else if (personAge < 18){
+            alpha = 0.0197;
+        } else if (personAge < 25){
+            alpha = 0.0217;
+        } else if (personAge < 35){
+            alpha = 0.0259;
+        } else if (personAge < 45){
+            alpha = 0.0369;
+        } else if (personAge < 55){
+            alpha = 0.0694;
+        } else if (personAge < 60){
+            alpha = 0.1297;
+        } else if (personAge < 62){
+            alpha = 0.1811;
+        } else if (personAge < 65){
+            alpha = 0.2221;
+        } else if (personAge < 70){
+            alpha = 0.2423;
+        } else if (personAge < 75){
+            alpha = 0.2440;
+        } else {
+            alpha = 0.3197;
+        }
+    } else if (personSex == 2) {
+    // sex = female
+        if (personAge < 4){
+            alpha = 0.0047;
+        } else if (personAge < 6){
+            alpha = 0.0087;
+        } else if (personAge < 15){
+            alpha = 0.0123;
+        } else if (personAge < 18){
+            alpha = 0.0141;
+        } else if (personAge < 25){
+            alpha = 0.0166;
+        } else if (personAge < 35){
+            alpha = 0.0211;
+        } else if (personAge < 45){
+            alpha = 0.0346;
+        } else if (personAge < 55){
+            alpha = 0.0677;
+        } else if (personAge < 60){
+            alpha = 0.1269;
+        } else if (personAge < 62){
+            alpha = 0.1539;
+        } else if (personAge < 65){
+            alpha = 0.1709;
+        } else if (personAge < 70){
+            alpha = 0.1743;
+        } else if (personAge < 75){
+            alpha = 0.1673;
+        } else {
+            alpha = 0.2587;
+        }
+    }
+
+    if (personAge < 0){
+        throw new Error("Undefined negative person age!"+personAge)
+    }
+    if (personSex != 1 && personSex != 2) {
+        throw new Error("Undefined personSex: ")
+    }
+
+    return alpha;
+}
+
+
+var calculateDisabilityTypeProbability = function(person, personSex) {
+
+ alpha = 0.;
+ var personAge = person.getAge();
+
+    if (personSex == 1) {
+    // sex = male
+        if (personAge < 4){
+            alpha = 0.5449;
+        } else if (personAge < 6){
+            alpha = 0.4700;
+        } else if (personAge < 15){
+            alpha = 0.4040;
+        } else if (personAge < 18){
+            alpha = 0.4001;
+        } else if (personAge < 25){
+            alpha = 0.3744;
+        } else if (personAge < 35){
+            alpha = 0.3890;
+        } else if (personAge < 45){
+            alpha = 0.4773;
+        } else if (personAge < 55){
+            alpha = 0.5817;
+        } else if (personAge < 60){
+            alpha = 0.6790;
+        } else if (personAge < 62){
+            alpha = 0.7196;
+        } else if (personAge < 65){
+            alpha = 0.7456;
+        } else if (personAge < 70){
+            alpha = 0.7766;
+        } else if (personAge < 75){
+            alpha = 0.7965;
+        } else {
+            alpha = 0.8039;
+        }
+    } else if (personSex == 2) {
+    // sex = female
+        if (personAge < 4){
+            alpha = 0.5370;
+        } else if (personAge < 6){
+            alpha = 0.5091;
+        } else if (personAge < 15){
+            alpha = 0.4644;
+        } else if (personAge < 18){
+            alpha = 0.4571;
+        } else if (personAge < 25){
+            alpha = 0.4091;
+        } else if (personAge < 35){
+            alpha = 0.4402;
+        } else if (personAge < 45){
+            alpha = 0.5325;
+        } else if (personAge < 55){
+            alpha = 0.6059;
+        } else if (personAge < 60){
+            alpha = 0.6655;
+        } else if (personAge < 62){
+            alpha = 0.6942;
+        } else if (personAge < 65){
+            alpha = 0.7161;
+        } else if (personAge < 70){
+            alpha = 0.7526;
+        } else if (personAge < 75){
+            alpha = 0.7847;
+        } else {
+            alpha = 0.7997;
+        }
+    }
+
+    if (personAge < 0){
+        throw new Error("Undefined negative person age!"+personAge);
+    }
+    if (personSex != 1 && personSex != 2) {
+        throw new Error("Undefined personSex: ");
+    }
+
+    return alpha;
+}
