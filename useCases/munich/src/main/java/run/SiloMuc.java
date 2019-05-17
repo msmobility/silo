@@ -15,6 +15,8 @@ import org.matsim.core.config.Config;
 import java.io.File;
 import java.util.Map;
 
+import static de.tum.bgu.msm.utils.SiloUtil.initializeRandomNumber;
+
 /**
  * Implements SILO for the Munich Metropolitan Area
  *
@@ -41,6 +43,7 @@ public class SiloMuc {
         for (int i = 1; i <= completeParametersMap.keySet().size(); i++) {
             Config config = null;
             Map<String, Double> parametersMap = completeParametersMap.get(i);
+            initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
             logger.info("Starting SILO. Combination of parameters: " + i);
             SiloModel model = new SiloModel(config, properties, parametersMap, i, householdMap, personMap);
             model.runModel();

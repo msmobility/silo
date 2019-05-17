@@ -53,7 +53,7 @@ public class SiloUtil {
 
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);*/
 
-        initializeRandomNumber(properties.main.randomSeed);
+        //initializeRandomNumber(properties.main.randomSeed);
         //trackingFile("open");
         return properties;
     }

@@ -121,7 +121,7 @@ public final class SiloModel {
 	private void setupModel() {
 		//logger.info("Setting up SILO Model (Implementation " + properties.main.implementation + ")");
 
-		initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
+		//initializeRandomNumber(parametersMap.get("RandomSeed").intValue());
 		setupContainer();
         setupYears();
         //setupTravelTimes();

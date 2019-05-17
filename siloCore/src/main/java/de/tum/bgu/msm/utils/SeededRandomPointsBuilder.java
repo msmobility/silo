@@ -18,8 +18,8 @@ public class SeededRandomPointsBuilder extends RandomPointsBuilder {
 
     @Override
     protected Coordinate createRandomCoord(Envelope env) {
-        double x = env.getMinX() + env.getWidth() * random.nextDouble();
-        double y = env.getMinY() + env.getHeight() * random.nextDouble();
+        double x = env.getMinX() + env.getWidth() * SiloUtil.getRandomNumberAsDouble();
+        double y = env.getMinY() + env.getHeight() * SiloUtil.getRandomNumberAsDouble();
         return createCoord(x, y);
     }
 }
