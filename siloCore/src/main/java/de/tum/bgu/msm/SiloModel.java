@@ -107,6 +107,7 @@ public final class SiloModel {
 		householdSizeDistribution = new HashMap<>();
 		try{
 			setupModel();
+			//SummarizeData.writeOutSyntheticPopulation(9,data);
 			runYearByYear();
 			endSimulation(combinationId);
 		} catch (Exception e){
