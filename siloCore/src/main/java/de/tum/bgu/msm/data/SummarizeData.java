@@ -383,9 +383,11 @@ public class SummarizeData {
 
         String filehh = Properties.get().main.baseDirectory + relativePathToHhFile + "_" + year + ".csv";
         writeHouseholds(filehh, dataContainer);
+        //HashMap<Household, Integer> hhSet = writeHouseholdsMap(filehh, dataContainer, year);
 
         String filepp = Properties.get().main.baseDirectory + relativePathToPpFile + "_" + year + ".csv";
         writePersons(filepp, dataContainer);
+        //writePersonsMap(filepp, dataContainer, hhSet);
 
         String filedd = Properties.get().main.baseDirectory + relativePathToDdFile + "_" + year + ".csv";
         writeDwellings(filedd, dataContainer);
@@ -423,6 +425,51 @@ public class SummarizeData {
 
 
     }
+
+
+    private static HashMap<Household, Integer> writeHouseholdsMap(String filehh, SiloDataContainer dataContainer, int scaling) {
+
+        logger.info("  Writing household file to " + filehh);
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehh, false);
+        pwh.println("id,dwelling,zone,hhSize,autos");
+        HashMap<Household, Integer> hhSet = new HashMap();
+        int i = 0;
+        int persons = 0;
+        int totalHouseholds = dataContainer.getHouseholdData().getHouseholds().size();
+        int totalPersons = dataContainer.getHouseholdData().getPersons().size();
+        for (Household hh : dataContainer.getHouseholdData().getHouseholds()) {
+            if (i < scaling){
+                i++;
+            } else {
+                if (hh.getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
+                    SiloUtil.trackWriter.println(hh.toString());
+                }
+                pwh.print(hh.getId());
+                pwh.print(",");
+                pwh.print(hh.getDwellingId());
+                pwh.print(",");
+                int zone = -1;
+                Dwelling dwelling = dataContainer.getRealEstateData().getDwelling(hh.getDwellingId());
+                if (dwelling != null) {
+                    zone = dwelling.getZoneId();
+                }
+                pwh.print(zone);
+                pwh.print(",");
+                pwh.print(hh.getHhSize());
+                pwh.print(",");
+                pwh.println(hh.getAutos());
+                i = 0;
+                hhSet.put(hh, 1);
+                persons = persons + hh.getHhSize();
+            }
+        }
+
+        pwh.close();
+        return hhSet;
+
+    }
+
 
     private static void writePersons(String filepp, SiloDataContainer dataContainer) {
 
@@ -513,6 +560,103 @@ public class SummarizeData {
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(pp.toString());
+            }
+        }
+        pwp.close();
+
+    }
+
+
+    private static void writePersonsMap(String filepp, SiloDataContainer dataContainer, HashMap<Household, Integer> hhSet) {
+
+        logger.info("  Writing person file to " + filepp);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
+        pwp.print("id,hhid,age,gender,relationShip,race,occupation,driversLicense,workplace,income");
+        if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+            pwp.print(",");
+            pwp.print("nationality");
+            pwp.print(",");
+            pwp.print("education");
+            pwp.print(",");
+            pwp.print("homeZone");
+            pwp.print(",");
+            pwp.print("workZone");
+            pwp.print(",");
+            pwp.print("schoolDE");
+            pwp.print(",");
+            pwp.print("schoolTAZ");
+            pwp.print(",");
+            pwp.print("disability");
+            pwp.print(",");
+            pwp.print("schoolCoordX");
+            pwp.print(",");
+            pwp.print("schoolCoordY");
+        }
+        pwp.println();
+        for (Person pp : dataContainer.getHouseholdData().getPersons()) {
+            if (hhSet.containsKey(pp.getHousehold())) {
+                pwp.print(pp.getId());
+                pwp.print(",");
+                pwp.print(pp.getHousehold().getId());
+                pwp.print(",");
+                pwp.print(pp.getAge());
+                pwp.print(",");
+                pwp.print(pp.getGender().getCode());
+                pwp.print(",\"");
+                String role = pp.getRole().toString();
+                pwp.print(role);
+                pwp.print("\",\"");
+                pwp.print(pp.getRace());
+                pwp.print("\",");
+                pwp.print(pp.getOccupation().getCode());
+                pwp.print(",");
+                if (Properties.get().main.implementation.equals(Implementation.MUNICH)) {
+                    pwp.print(pp.hasDriverLicense());
+                } else {
+                    pwp.print(0);
+                }
+                pwp.print(",");
+                pwp.print(pp.getWorkplace());
+                pwp.print(",");
+                pwp.print(pp.getIncome());
+                pwp.print(",");
+                pwp.print(pp.getNationality().toString());
+                pwp.print(",");
+                pwp.print(pp.getEducationLevel());
+                pwp.print(",");
+                Dwelling dd = dataContainer.getRealEstateData().getDwelling(pp.getHousehold().getDwellingId());
+                pwp.print(0);
+                pwp.print(",");
+                pwp.print(0);
+                pwp.print(",");
+                Coordinate schoolCoord = pp.getSchoolLocation();
+                pwp.print(0);
+                pwp.print(",");
+                try {
+                    pwp.print(pp.getSchoolZoneId());
+                } catch (NullPointerException e) {
+                    pwp.print(0);
+                }
+                pwp.print(",");
+                pwp.print(0);
+                pwp.print(",");
+                try {
+                    pwp.print(schoolCoord.x);
+                    pwp.print(",");
+                    pwp.print(schoolCoord.y);
+                } catch (NullPointerException e) {
+                    pwp.print(0);
+                    pwp.print(",");
+                    pwp.print(0);
+
+                }
+                pwp.println();
+
+
+                if (pp.getId() == SiloUtil.trackPp) {
+                    SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
+                    SiloUtil.trackWriter.println(pp.toString());
+                }
             }
         }
         pwp.close();
