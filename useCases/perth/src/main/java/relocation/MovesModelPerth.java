@@ -25,6 +25,8 @@ import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -251,26 +253,27 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
         // Step 2: select vacant dwelling in selected region
         List<Dwelling> vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
-        Map<Dwelling, Double> dwellingProbs = new LinkedHashMap<>();
-        double sumProbs = 0.;
+
         // No household will evaluate more than 20 dwellings
         int maxNumberOfDwellings = Math.min(20, vacantDwellings.size());
-        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.size());
-        for (Dwelling dwelling: vacantDwellings) {
-            if (SiloUtil.getRandomNumberAsFloat() > factor) {
-                continue;
-            }
+
+        Sampler<Dwelling> sampler = new Sampler<>(maxNumberOfDwellings, Dwelling.class, SiloUtil.getRandomObject());
+        for (int i = 0; i < maxNumberOfDwellings; i++) {
+            Dwelling dwelling = vacantDwellings.get(SiloUtil.getRandomObject().nextInt(vacantDwellings.size()));
+
             double util = calculateHousingUtility(household, dwelling, dataContainer.getTravelTimes());
             double probability = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
-            sumProbs =+ probability;
-            dwellingProbs.put(dwelling, probability);
+            sampler.incrementalAdd(dwelling, probability);
         }
-        if (sumProbs == 0) {
+        if (sampler.getCumulatedProbability() == 0) {
             // could not find dwelling that fits restrictions
             return -1;
         }
-        Dwelling selected = SiloUtil.select(dwellingProbs, sumProbs);
-        return selected.getId();
+        try {
+            return sampler.sampleObject().getId();
+        } catch (SampleException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -33,6 +33,8 @@ import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -190,19 +192,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
         if (preference == null || possiblePartners.isEmpty()) {
             return null;
         }
-
-        final Map<Person, Float> probabilities = new HashMap<>();
-
-        float sum = 0;
-        for (Person pp : possiblePartners) {
-            float prob=1.f;
-            sum += prob;
-            probabilities.put(pp, prob);
-        }
-
-        final Person selectedPartner = SiloUtil.select(probabilities, sum);
-        possiblePartners.remove(selectedPartner);
-        return selectedPartner;
+        return possiblePartners.remove(SiloUtil.getRandomObject().nextInt(possiblePartners.size()));
     }
 
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
@@ -210,15 +200,14 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
         final Gender partnerGender = person.getGender().opposite();
         final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
 
-        final Map<Integer, Double> probabilityByAge = new HashMap<>();
-
+        Sampler<Integer> sampler = new Sampler<>(AGE_DIFF_RANGE.size(), Integer.class, SiloUtil.getRandomObject());
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
             double probability = ageDiffProbabilityByGender.get(ageDiff, person.getGender());
             probability *= market.getFittingPartners(resultingAge, partnerGender).size();
             sum += probability;
-            probabilityByAge.put(resultingAge, probability);
+            sampler.incrementalAdd(resultingAge, probability);
         }
 
         if (sum == 0) {
@@ -226,9 +215,13 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
             return null;
         }
 
-        final int selectedAge = SiloUtil.select(probabilityByAge, sum);
-        return new MarriagePreference(sameRace, selectedAge, partnerGender);
-
+        final int selectedAge;
+        try {
+            selectedAge = sampler.sampleObject();
+            return new MarriagePreference(sameRace, selectedAge, partnerGender);
+        } catch (SampleException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

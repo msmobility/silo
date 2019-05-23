@@ -404,9 +404,9 @@ public class SiloUtil {
         return select(mappedProbabilities, getSum(mappedProbabilities.values()));
     }
 
-    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum) {
+    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum, Random random) {
         // select item based on probabilities (for mapped double probabilities)
-        double selectedWeight = rand.nextDouble() * sum;
+        double selectedWeight = random.nextDouble() * sum;
         double select = 0;
         for (Map.Entry<T, ? extends Number> entry : mappedProbabilities.entrySet()) {
             select += entry.getValue().doubleValue();
@@ -416,6 +416,10 @@ public class SiloUtil {
         }
         logger.info("Error selecting item from weighted probabilities");
         return null;
+    }
+
+    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum) {
+       return select(mappedProbabilities, sum, rand);
     }
 
 

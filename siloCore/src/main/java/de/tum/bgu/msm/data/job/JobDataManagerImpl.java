@@ -21,7 +21,6 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -31,6 +30,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.output.DefaultJobWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.UpdateListener;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
@@ -337,8 +338,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     public Job findVacantJob(Zone homeZone, Collection<Region> regions) {
         // select vacant job for person living in homeZone
 
-        Map<Region, Double> regionProb = new HashMap<>();
-        double sum = 0;
+        Sampler<Region> regionSampler = new Sampler<>(regions.size(), Region.class, SiloUtil.getRandomObject());
 
         if (homeZone != null) {
             // person has home location (i.e., is not inmigrating right now)
@@ -348,19 +348,17 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                     int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
                             properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
                     final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min)) * (double) numberOfVacantJobs;
-                    regionProb.put(reg, prob);
-                    sum += prob;
+                    regionSampler.incrementalAdd(reg, prob);
                 }
             }
-            if (sum == 0) {
+            if (regionSampler.getCumulatedProbability() == 0) {
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (getNumberOfVacantJobsByRegion(reg.getId()) > 0) {
                         int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
                                 properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
                         final double prob = 1. / Math.max(1, travelTime_min);
-                        regionProb.put(reg, prob);
-                        sum += prob;
+                        regionSampler.incrementalAdd(reg, prob);
                     }
                 }
             }
@@ -369,32 +367,24 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
             for (Region reg : regions) {
                 int numberOfJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfJobs > 0) {
-                    regionProb.put(reg, (double) numberOfJobs);
-                    sum += numberOfJobs;
+                    regionSampler.incrementalAdd(reg, (double) numberOfJobs);
                 }
             }
         }
 
-        if (sum == 0) {
+        if (regionSampler.getCumulatedProbability() == 0) {
             logger.warn("No jobs remaining. Could not find new job.");
             return null;
         }
-        int selectedRegion = SiloUtil.select(regionProb, sum).getId();
-        if (getNumberOfVacantJobsByRegion(selectedRegion) == 0) {
-            logger.warn("Selected region " + selectedRegion + " but could not find any jobs there.");
-            return null;
+        int selectedRegion = -1;
+        try {
+            selectedRegion = regionSampler.sampleObject().getId();
+        } catch (SampleException e) {
+            e.printStackTrace();
         }
 
         List<Job> eligibleJobs = vacantJobsByRegion.get(selectedRegion);
-        float[] jobProbability = new float[eligibleJobs.size()];
-        SiloUtil.setArrayToValue(jobProbability, 1.f);
-
-        for(int i = 0; i<eligibleJobs.size(); i++) {
-            jobProbability[i] =  1.f;
-            i++;
-        }
-        final int select = SiloUtil.select(jobProbability, jobProbability.length);
-        Job selectedJob = eligibleJobs.remove(select);
+        Job selectedJob = eligibleJobs.remove(SiloUtil.getRandomObject().nextInt(eligibleJobs.size()));
 
         if (selectedJob.getId() == SiloUtil.trackJj) {
             SiloUtil.trackWriter.println("Removed job " + selectedJob.getId() + " from list of vacant jobs.");
