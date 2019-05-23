@@ -23,7 +23,6 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 1 March 2013 in Santa Fe
  **/
-
 public class EmploymentModelImpl extends AbstractModel implements EmploymentModel {
 
     private final static Logger logger = Logger.getLogger(EmploymentModelImpl.class);
@@ -47,7 +46,10 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         final float[][] currentlyUnemployed = new float[2][100];
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
             int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
+            if (age > 99) {
+                // people older than 99 will always be unemployed/retired
+                continue;
+            }
             Gender gender = pp.getGender();
             boolean employed = pp.getJobId() > 0;
             if (employed) {
@@ -131,11 +133,14 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         for (Person pp: dataContainer.getHouseholdDataManager().getPersons()) {
             int age = pp.getAge();
             if (age > 99) {
-                continue;  // people older than 99 will always be unemployed/retired
+                // people older than 99 will always be unemployed/retired
+                continue;
             }
             int gender = pp.getGender().ordinal();
             boolean employed = pp.getJobId() > 0;
-            if (employed) laborParticipationShares[gender][age]++;
+            if (employed) {
+                laborParticipationShares[gender][age]++;
+            }
             count[gender][age]++;
         }
         // calculate shares
