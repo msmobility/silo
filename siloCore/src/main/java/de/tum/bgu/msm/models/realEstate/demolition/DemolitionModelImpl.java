@@ -3,13 +3,13 @@ package de.tum.bgu.msm.models.realEstate.demolition;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,11 +23,14 @@ import java.util.List;
 
 public class DemolitionModelImpl extends AbstractModel implements DemolitionModel {
 
+    private final static Logger logger = Logger.getLogger(DemolitionModelImpl.class);
+
     private final AbstractMovesModelImpl moves;
     private final InOutMigrationImpl inOutMigration;
     private final DemolitionStrategy strategy;
 
     private int currentYear = -1;
+    private int forcedOutmigrationByDemolition;
 
     public DemolitionModelImpl(DataContainer dataContainer, AbstractMovesModelImpl moves,
                                InOutMigrationImpl inOutMigration, Properties properties,
@@ -60,7 +63,9 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        forcedOutmigrationByDemolition = 0;
+    }
 
     @Override
     public Collection<DemolitionEvent> getEventsForCurrentYear(int year) {
@@ -85,6 +90,11 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
 
     @Override
     public void endYear(int year) {
+        if (forcedOutmigrationByDemolition > 0) {
+            logger.warn("  Encountered " + forcedOutmigrationByDemolition + " cases " +
+                    "where a household had to outmigrate because its dwelling was demolished and no other vacant dwelling could be found.");
+        }
+
     }
 
     @Override
@@ -116,7 +126,7 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
         } else {
             inOutMigration.outMigrateHh(hh.getId(), true);
             dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(dwellingId);
-            IssueCounter.countLackOfDwellingForcedOutmigration();
+            forcedOutmigrationByDemolition++;
         }
     }
 }
