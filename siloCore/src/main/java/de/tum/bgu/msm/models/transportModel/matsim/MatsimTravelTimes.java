@@ -227,6 +227,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
         matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.update(travelTime, travelDisutility);
+        matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
         return matsimTravelTimes;
     }
 

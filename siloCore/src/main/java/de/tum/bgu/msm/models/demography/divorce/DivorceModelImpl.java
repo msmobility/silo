@@ -7,13 +7,13 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,10 +21,14 @@ import java.util.List;
 
 public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
+    Class clazz;
+    private final static Logger logger = Logger.getLogger(DivorceModelImpl.class);
+
     private final AbstractMovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final DivorceStrategy strategy;
     private final HouseholdFactory hhFactory;
+    private int lackOfDwellingFailedDivorce;
 
     public DivorceModelImpl(DataContainer dataContainer, AbstractMovesModelImpl movesModel,
                             CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
@@ -57,7 +61,9 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        lackOfDwellingFailedDivorce = 0;
+    }
 
     @Override
     public Collection<DivorceEvent> getEventsForCurrentYear(int year) {
@@ -77,7 +83,10 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
     @Override
     public void endYear(int year) {
-
+        if (lackOfDwellingFailedDivorce > 0) {
+            logger.warn("  Encountered " + lackOfDwellingFailedDivorce + " cases where " +
+                    "couple wanted to get divorced but could not find vacant dwelling.");
+        }
     }
 
     @Override
@@ -104,7 +113,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
                                 "Person " + perId + " wanted to but could not divorce from household "
                                         + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
                     }
-                    IssueCounter.countLackOfDwellingFailedDivorce();
+                    lackOfDwellingFailedDivorce++;
                     return false;
                 }
 
@@ -124,9 +133,11 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
                 // move divorced person into new dwelling
                 movesModel.moveHousehold(newHh, -1, newDwellingId);
                 if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
-                        oldHh.getId() == SiloUtil.trackHh) SiloUtil.trackWriter.println("Person " + perId +
-                        " has divorced from household " + oldHh + " and established the new household " +
-                        newHhId + ".");
+                        oldHh.getId() == SiloUtil.trackHh) {
+                    SiloUtil.trackWriter.println("Person " + perId +
+                            " has divorced from household " + oldHh + " and established the new household " +
+                            newHhId + ".");
+                }
                 if (carOwnership != null) {
                     carOwnership.simulateCarOwnership(newHh); // set initial car ownership of new household
                 }

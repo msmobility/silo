@@ -22,13 +22,13 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,11 +41,14 @@ import java.util.List;
  **/
 public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParentHhModel {
 
+    private final static Logger logger = Logger.getLogger(LeaveParentHhModelImpl.class);
+
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final HouseholdFactory hhFactory;
     private final AbstractMovesModelImpl movesModel;
     private HouseholdDataManager householdDataManager;
     private final LeaveParentalHouseholdStrategy strategy;
+    private int lackOfDwellingFailedLeavingChild;
 
 
     public LeaveParentHhModelImpl(DataContainer dataContainer, AbstractMovesModelImpl move,
@@ -75,7 +78,9 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        lackOfDwellingFailedLeavingChild = 0;
+    }
 
     @Override
     public Collection<LeaveParentsEvent> getEventsForCurrentYear(int year) {
@@ -102,6 +107,10 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
 
     @Override
     public void endYear(int year) {
+        if (lackOfDwellingFailedLeavingChild > 0) {
+            logger.warn("  Encountered " + lackOfDwellingFailedLeavingChild + " cases " +
+                    "where child wanted to leave parental household but could not find vacant dwelling.");
+        }
 
     }
 
@@ -121,7 +130,7 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
                         "Person " + per.getId() + " wanted to but could not leave parental Household "
                                 + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
             }
-            IssueCounter.countLackOfDwellingFailedLeavingChild();
+            lackOfDwellingFailedLeavingChild++;
             return false;
         }
 

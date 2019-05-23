@@ -8,7 +8,6 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
@@ -43,6 +42,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
      * localMarriageAdjuster serves to adjust from national marriage rates to local conditions
      */
     private double scale = properties.demographics.localMarriageAdjuster;
+    private int lackOfDwellingFailedMarriage;
 
     // ageOffset is the range of ages above and below a persons age that are considered for marriage
     // needs to cover -9 to +9 to reach one person type above and one person type below
@@ -85,7 +85,9 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        lackOfDwellingFailedMarriage = 0;
+    }
 
     @Override
     public Collection<MarriageEvent> getEventsForCurrentYear(int year) {
@@ -105,6 +107,10 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
 
     @Override
     public void endYear(int year) {
+        if (lackOfDwellingFailedMarriage > 0) {
+            logger.warn("  Encountered " + lackOfDwellingFailedMarriage + " cases " +
+                    "where a couple wanted to marry (cohabitate) but could not find vacant dwelling.");
+        }
     }
 
     @Override
@@ -276,7 +282,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
                         + " got married but could not find an appropriate vacant dwelling. "
                         + "Household outmigrated.");
             }
-            IssueCounter.countLackOfDwellingFailedMarriage();
+            lackOfDwellingFailedMarriage++;
             return false;
         }
     }

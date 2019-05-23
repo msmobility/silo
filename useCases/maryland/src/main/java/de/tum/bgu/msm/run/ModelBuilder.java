@@ -110,7 +110,7 @@ public class ModelBuilder {
                 null, hhFactory, properties, new DefaultMarriageStrategy());
 
 
-        TransportModel transportModel;
+        TransportModel transportModel = null;
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
@@ -118,11 +118,10 @@ public class ModelBuilder {
                         null);
                 break;
             case NONE:
+                break;
             case MITO_MATSIM:
                 logger.warn("Mito not implemented for mstm. setting transport model to \"NONE\"");
-            default:
-                transportModel = null;
-
+                break;
         }
         return new ModelContainer(
                 birthModel, birthdayModel,

@@ -40,7 +40,7 @@ public class DefaultDataContainer implements DataContainer {
         this.realEstateDataManager = realEstateDataManager;
         this.jobDataManager = jobDataManager;
         this.householdDataManager = householdDataManager;
-        this.travelTimes = new TravelTimesWrapper(travelTimes, properties);
+        this.travelTimes = new TravelTimesWrapper(travelTimes, properties, geoData);
         this.accessibility = accessibility;
         this.commutingTimeProbability = commutingTimeProbability;
         this.properties = properties;

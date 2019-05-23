@@ -6,11 +6,14 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.job.JobFactoryMuc;
+import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -64,7 +67,6 @@ public class ReadPopulation {
                 String[] lineElements = recString.split(",");
                 int id         = Integer.parseInt(lineElements[posId]);
                 int dwellingID = Integer.parseInt(lineElements[posDwell]);
-                int taz        = Integer.parseInt(lineElements[posTaz]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
 
                 Household household = householdFactory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
@@ -105,14 +107,11 @@ public class ReadPopulation {
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posNationality = SiloUtil.findPositionInArray("nationality",header);
-            int posEducation = SiloUtil.findPositionInArray("education",header);
-            int posWorkZone = SiloUtil.findPositionInArray("workZone",header);
             int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
-            int posSchoolDE = SiloUtil.findPositionInArray("schoolDE",header);
-            int posSchoolTAZ = SiloUtil.findPositionInArray("schoolTAZ",header);
+
 
             // read line
-            PersonFactory factory = PersonUtils.getFactory();
+            PersonFactoryMuc ppFactory = new PersonFactoryMuc();;
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
@@ -125,7 +124,7 @@ public class ReadPopulation {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                PersonMuc pp = (PersonMuc) factory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
+                PersonMuc pp = (PersonMuc) ppFactory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
@@ -133,18 +132,12 @@ public class ReadPopulation {
                 if (nationality.equals("other")){
                     nat = Nationality.OTHER;
                 }
-                int education = Integer.parseInt(lineElements[posEducation]);int workZone = Integer.parseInt(lineElements[posWorkZone]);
                 String licenseStr = lineElements[posLicense];
                 boolean license = false;
                 if (licenseStr.equals("true")){
                     license = true;
                 }
-                int schoolDE = Integer.parseInt(lineElements[posSchoolDE]);
-                int schoolTAZ = Integer.parseInt(lineElements[posSchoolTAZ]);
                 pp.setNationality(nat);
-                educationalLevel.put(pp, education);
-                pp.setSchoolPlace(schoolTAZ);
-                pp.setSchoolType(schoolDE);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
@@ -182,8 +175,15 @@ public class ReadPopulation {
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
-            int posFloor   = SiloUtil.findPositionInArray("floor",header);
             int posUse     = SiloUtil.findPositionInArray("usage",header);
+            int posCoordX = -1;
+            int posCoordY = -1;
+            try {
+                posCoordX = SiloUtil.findPositionInArray("coordX", header);
+                posCoordY = SiloUtil.findPositionInArray("coordY", header);
+            } catch (Exception e) {
+                logger.warn("No coords given in dwelling input file. Models using microlocations will not work.");
+            }
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -198,15 +198,18 @@ public class ReadPopulation {
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, null, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
+                Coordinate coordinate = null;
+                if (posCoordX >= 0 && posCoordY >= 0) {
+                    try {
+                        coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+                    } catch (Exception e) {
+                    }
+                }
+                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 realEstate.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
                 }
-                int floor = Integer.parseInt(lineElements[posFloor]);
-                int use = Integer.parseInt(lineElements[posUse]);
-                dd.setFloorSpace(floor);
-                dd.setUsage(DwellingUsage.valueOf(use));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop dwelling file: " + fileName);
@@ -219,7 +222,8 @@ public class ReadPopulation {
     private void readJobData(int year) {
         logger.info("Reading job micro data from ascii file");
 
-        JobDataManager jobData = dataContainer.getJobDataManager();
+        JobDataManager jobDataManager = dataContainer.getJobDataManager();
+        JobFactoryMuc jobFactory = (JobFactoryMuc) dataContainer.getJobDataManager().getFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
         fileName += "_" + year + ".csv";
 
@@ -235,6 +239,11 @@ public class ReadPopulation {
             int posZone = SiloUtil.findPositionInArray("zone",header);
             int posWorker = SiloUtil.findPositionInArray("personId",header);
             int posType = SiloUtil.findPositionInArray("type",header);
+            int posCoordX = SiloUtil.findPositionInArray("CoordX", header);
+            int posCoordY = SiloUtil.findPositionInArray("CoordY", header);
+            int posStartTime = SiloUtil.findPositionInArray("startTime", header);
+            int posDuration = SiloUtil.findPositionInArray("duration", header);
+
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -244,7 +253,18 @@ public class ReadPopulation {
                 int zoneId    = Integer.parseInt(lineElements[posZone]);
                 int worker  = Integer.parseInt(lineElements[posWorker]);
                 String type = lineElements[posType].replace("\"", "");
-                jobData.addJob(JobUtils.getFactory().createJob(id, zoneId, null, worker, type));
+                Coordinate coordinate = null;
+                if (posCoordX >= 0 && posCoordY >= 0) {
+                    try {
+                        coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+                    } catch (Exception e) {
+                    }
+                }
+                JobMuc jj = jobFactory.createJob(id, zoneId, coordinate, worker, type);
+                int startTime = Integer.parseInt(lineElements[posStartTime]);
+                int duration = Integer.parseInt(lineElements[posDuration]);
+                jj.setJobWorkingTime(startTime, duration);
+                jobDataManager.addJob(jj);
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }

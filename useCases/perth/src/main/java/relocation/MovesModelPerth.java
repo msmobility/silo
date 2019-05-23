@@ -25,6 +25,8 @@ import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -250,21 +252,28 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
 
 
         // Step 2: select vacant dwelling in selected region
-        int[] vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
-        double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
-        double sumProbs = 0.;
-        int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
-        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
-        for (int i = 0; i < vacantDwellings.length; i++) {
-            if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            Dwelling dd = realEstateDataManager.getDwelling(vacantDwellings[i]);
-            double util = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
-            expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
-            sumProbs =+ expProbs[i];
+        List<Dwelling> vacantDwellings = realEstateDataManager.getListOfVacantDwellingsInRegion(selectedRegionId);
+
+        // No household will evaluate more than 20 dwellings
+        int maxNumberOfDwellings = Math.min(20, vacantDwellings.size());
+
+        Sampler<Dwelling> sampler = new Sampler<>(maxNumberOfDwellings, Dwelling.class, SiloUtil.getRandomObject());
+        for (int i = 0; i < maxNumberOfDwellings; i++) {
+            Dwelling dwelling = vacantDwellings.get(SiloUtil.getRandomObject().nextInt(vacantDwellings.size()));
+
+            double util = calculateHousingUtility(household, dwelling, dataContainer.getTravelTimes());
+            double probability = dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
+            sampler.incrementalAdd(dwelling, probability);
         }
-        if (sumProbs == 0) return -1;    // could not find dwelling that fits restrictions
-        int selected = SiloUtil.select(expProbs, sumProbs);
-        return vacantDwellings[selected];
+        if (sampler.getCumulatedProbability() == 0) {
+            // could not find dwelling that fits restrictions
+            return -1;
+        }
+        try {
+            return sampler.sampleObject().getId();
+        } catch (SampleException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

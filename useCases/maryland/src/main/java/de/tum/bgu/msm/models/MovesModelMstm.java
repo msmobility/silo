@@ -229,6 +229,7 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     public int searchForNewDwelling(Household household) {
         // search alternative dwellings for the list of persons in the household
 
+
         // data preparation -- > count workers, store working zones, define income, define race
         int householdIncome = 0;
         Race householdRace = null;
@@ -289,42 +290,49 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
         }
         int selectedRegionId;
         if (regionUtilitiesForThisHousehold.values().stream().mapToDouble(i -> i).sum() == 0) {
-            return -1; //cannot find a region with some utility //todo why not to look for for another region??
+            //cannot find a region with some utility //todo why not to look for for another region??
+            return -1;
         } else {
             selectedRegionId = SiloUtil.select(regionUtilitiesForThisHousehold);
         }
 
+
         // Step 2: select vacant dwelling in selected region
-        int[] vacantDwellings = realEstateData.getListOfVacantDwellingsInRegion(selectedRegionId);
-        double[] expProbs = SiloUtil.createArrayWithValue(vacantDwellings.length, 0d);
-        int maxNumberOfDwellings = Math.min(20, vacantDwellings.length);  // No household will evaluate more than 20 dwellings
-        float factor = ((float) maxNumberOfDwellings / (float) vacantDwellings.length);
-        for (int i = 0; i < vacantDwellings.length; i++) {
-            if (SiloUtil.getRandomNumberAsFloat() > factor) continue;
-            DwellingMstm dd = (DwellingMstm) dataContainer.getRealEstateDataManager().getDwelling(vacantDwellings[i]);
-            int msa = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
-            if (dd.getRestriction() > 0 &&    // dwelling is restricted to households with certain income
-                    householdIncome > (((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * dd.getRestriction())) continue;
+        List<Dwelling> vacantDwellings = realEstateData.getListOfVacantDwellingsInRegion(selectedRegionId);
+        double[] dwellingProbs = new double[vacantDwellings.size()];
+
+        // No household will evaluate more than 20 dwellings
+        int maxNumberOfDwellings = Math.min(20, vacantDwellings.size());
+        double sum = 0;
+
+        for(int i = 0; i < maxNumberOfDwellings; i++) {
+
+            Dwelling dwelling = vacantDwellings.get(SiloUtil.getRandomObject().nextInt(vacantDwellings.size()));
+            int msa = ((MstmZone) geoData.getZones().get(dwelling.getZoneId())).getMsa();
+            if (((DwellingMstm)dwelling).getRestriction() > 0 &&    // dwelling is restricted to households with certain income
+                    householdIncome > (((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * ((DwellingMstm)dwelling).getRestriction())){
+                continue;
+            }
             double racialShare = 1;
             if (householdRace != Race.other) {
-                racialShare = getZonalRacialShare(geoData.getZones().get(dd.getZoneId()).getZoneId(), householdRace);
+                racialShare = getZonalRacialShare(geoData.getZones().get(dwelling.getZoneId()).getZoneId(), householdRace);
             }
             // multiply by racial share to make zones with higher own racial share more attractive
 
-            double utility = calculateHousingUtility(household, dd, dataContainer.getTravelTimes());
-
+            double utility = calculateHousingUtility(household, dwelling, dataContainer.getTravelTimes());
             double adjustedUtility = Math.pow(utility, (1 - selectDwellingRaceRelevance)) *
                     Math.pow(racialShare, selectDwellingRaceRelevance);
-
             //adjProbability is the adjusted dwelling utility
-            expProbs[i] = dwellingProbabilityStrategy.calculateSelectDwellingProbability(adjustedUtility);
+            double prob =  dwellingProbabilityStrategy.calculateSelectDwellingProbability(adjustedUtility);
 
+            dwellingProbs[i] = prob;
+            sum += prob;
         }
-        if (SiloUtil.getSum(expProbs) == 0) {
-            return -1;    // could not find dwelling that fits restrictions
+        if (sum == 0) {
+            return -1;
         }
-        int selected = SiloUtil.select(expProbs);
-        return vacantDwellings[selected];
+        final Dwelling select = vacantDwellings.get(SiloUtil.select(dwellingProbs, sum));
+        return select.getId();
     }
 
 
@@ -382,7 +390,8 @@ public class MovesModelMstm extends AbstractMovesModelImpl {
     }
 
     private boolean householdQualifiesForSubsidy(int income, int zone, int price) {
-        int assumedIncome = Math.max(income, 15000);  // households with less than that must receive some welfare
+        // households with less than that must receive some welfare
+        int assumedIncome = Math.max(income, 15000);
         return provideRentSubsidyToLowIncomeHh &&
                 income <= (0.5f * ((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(((MstmZone) geoData.getZones().get(zone)).getMsa())) &&
                 price <= (0.4f * assumedIncome);
