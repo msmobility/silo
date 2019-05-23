@@ -37,7 +37,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     int requestsDwellingSearch = 0;
 
-    private FileWriter writer;
+    //private FileWriter writer;
     private int year;
 
 
@@ -78,11 +78,11 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
 
     @Override
     public void endSimulation() {
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 
