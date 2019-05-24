@@ -193,7 +193,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         Nationality nationality = ((HouseholdMuc) household).getNationality();
 
         Sampler<Region> sampler
-                = utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality);
+                = utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality).copy();
 
         sampler.updateProbabilities((region, oldValue) -> {
             double thisRegionFactor = 1;
@@ -269,7 +269,7 @@ public class MovesModelMuc extends AbstractMovesModelImpl {
         try {
             selectedRegion = regionSampler.sampleObject();
         } catch (SampleException e) {
-            return -1;
+            throw new RuntimeException(e);
         }
 
         // Step 2: select vacant dwelling in selected region

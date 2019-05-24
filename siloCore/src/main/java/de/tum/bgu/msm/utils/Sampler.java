@@ -63,6 +63,13 @@ public final class Sampler<T> {
         }
     }
 
+    private Sampler(T[] objects, double[] probabilities, Random random, double probabilitySum) {
+        this.objects = objects;
+        this.probabilities = probabilities;
+        this.random = random;
+        this.sum = probabilitySum;
+    }
+
     public synchronized void incrementalAdd(T object, double probability) {
         objects[index] = object;
         probabilities[index] = probability;
@@ -108,5 +115,17 @@ public final class Sampler<T> {
 
     public double getCumulatedProbability() {
         return sum;
+    }
+
+    /**
+     * Copies the sampler. Note that a new random number generator will be generated
+     * which is seeded on a random number drawn from the original random generator.
+     * Probabilities will be deep copied such that modifications on the probabilities
+     * on the copy will NOT be reflected on the original sampler.
+     * The objects to sample are not copied.
+     * @return
+     */
+    public Sampler<T> copy() {
+        return new Sampler<>(objects, java.util.Arrays.copyOf(probabilities, probabilities.length), new Random(random.nextInt()), sum);
     }
 }
