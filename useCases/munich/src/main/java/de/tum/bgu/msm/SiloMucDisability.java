@@ -2,9 +2,11 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.DisabilityEvent;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
-import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.io.*;
+import de.tum.bgu.msm.io.output.*;
+import de.tum.bgu.msm.io.output.HouseholdWriterMucDisability;
 import de.tum.bgu.msm.models.demography.death.DefaultDeathStrategy;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.models.disability.DisabilityImpl;
@@ -35,11 +37,57 @@ public class SiloMucDisability {
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");
         DataContainerMuc dataContainer = DataBuilderDisability.getModelDataForMuc(properties);
         DataBuilderDisability.read(properties, dataContainer);
+        //summarizeData(dataContainer, properties);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
         modelContainer.registerEventModel(DisabilityEvent.class, new DisabilityImpl(dataContainer, properties,new DefaultDisabilityStrategy()));
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
+    }
+
+    private static void summarizeData(DataContainerMuc dataContainer, Properties properties){
+
+        String filehh = properties.main.baseDirectory
+                + properties.householdData.householdFileName
+                + "_"
+                + properties.main.baseYear
+                + "d.csv";
+        HouseholdWriter hhwriter = new HouseholdWriterMucDisability(dataContainer.getHouseholdDataManager(),dataContainer.getRealEstateDataManager());
+        hhwriter.writeHouseholds(filehh);
+
+        String filepp = properties.main.baseDirectory
+                + properties.householdData.personFileName
+                + "_"
+                + properties.main.baseYear
+                + "d.csv";
+        PersonWriter ppwriter = new PersonWriterMucDisability(dataContainer.getHouseholdDataManager());
+        ppwriter.writePersons(filepp);
+
+        String filedd = properties.main.baseDirectory
+                + properties.realEstate.dwellingsFileName
+                + "_"
+                + properties.main.baseYear
+                + "d.csv";
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        ddwriter.writeDwellings(filedd);
+
+        String filejj = properties.main.baseDirectory
+                + properties.jobData.jobsFileName
+                + "_"
+                + properties.main.baseYear
+                + "d.csv";
+        JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
+        jjwriter.writeJobs(filejj);
+
+
+        String fileee = properties.main.baseDirectory
+                + "ee"
+                + "_"
+                + properties.main.baseYear
+                + "d.csv";
+        SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
+        eewriter.writeSchools(fileee);
+
     }
 }

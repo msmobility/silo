@@ -17,6 +17,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
+import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 
@@ -100,7 +101,7 @@ public class DataBuilderDisability {
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new PersonReaderMucDisability(dataContainer.getHouseholdDataManager());
+        PersonReader personReader = new PersonReaderMucDisability(dataContainer.getHouseholdDataManager(), new DefaultDisabilityStrategy());
         personReader.readData(personFile);
 
         DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());

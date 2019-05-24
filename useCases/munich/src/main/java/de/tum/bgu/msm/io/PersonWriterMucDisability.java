@@ -29,8 +29,6 @@ public class PersonWriterMucDisability implements PersonWriter {
         pwp.print(",");
         pwp.print("nationality");
         pwp.print(",");
-        pwp.print("education");
-        pwp.print(",");
         pwp.print("disability");
         pwp.print(",");
         pwp.print("schoolId");

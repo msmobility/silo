@@ -3,7 +3,9 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.input.PersonReader;
+import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -15,9 +17,11 @@ public class PersonReaderMucDisability implements PersonReader {
 
     private final static Logger logger = Logger.getLogger(PersonReaderMucDisability.class);
     private final HouseholdDataManager householdDataManager;
+    private final DefaultDisabilityStrategy strategy;
 
-    public PersonReaderMucDisability(HouseholdDataManager householdDataManager) {
+    public PersonReaderMucDisability(HouseholdDataManager householdDataManager, DefaultDisabilityStrategy strategy) {
         this.householdDataManager = householdDataManager;
+        this.strategy = strategy;
     }
 
     @Override
@@ -58,7 +62,7 @@ public class PersonReaderMucDisability implements PersonReader {
                 int workplace = Integer.parseInt(lineElements[posWorkplace]);
                 int income = Integer.parseInt(lineElements[posIncome]);
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
-                Disability disability = Disability.valueOf(lineElements[posDisability]);
+
                 //todo temporary assign driving license since this is not in the current SP version
                 //boolean license = MicroDataManager.obtainLicense(gender, age);
                 Household household = householdDataManager.getHouseholdFromId(hhid);
@@ -73,7 +77,13 @@ public class PersonReaderMucDisability implements PersonReader {
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);
-                pp.setDisability(disability);
+               if (Integer.parseInt(lineElements[posDisability]) != 0){
+                    Disability disability = checkDisability(pp);
+                    pp.setDisability(disability);
+                } else {
+                    Disability disability = Disability.valueOf(lineElements[posDisability]);
+                    pp.setDisability(disability);
+                }
 
                 int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
                 int schoolId = Integer.parseInt(lineElements[posSchoolId]);
@@ -94,5 +104,17 @@ public class PersonReaderMucDisability implements PersonReader {
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
         logger.info("Finished reading " + recCount + " persons.");
+    }
+
+    public Disability checkDisability(Person person) {
+        // check if the person will get a disability on the current year
+        if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateBaseYearDisabilityProbability(person)) {
+            if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDisabilityType(person)) {
+                return Disability.PHYSICAL;
+            } else {
+                return Disability.MENTAL;
+            }
+        }
+        return Disability.WITHOUT;
     }
 }
