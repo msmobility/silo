@@ -10,6 +10,10 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.shape.random.RandomPointsBuilder;
 
 /**
  * Interface to store zonal, county and regional data used by the SILO Model
@@ -42,8 +46,8 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
         for(int i = 0; i < zoneIds.length; i++) {
             Coord centroid = new Coord(centroidX[i], centroidY[i]);
             AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
-            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i]);
-            zones.put(zoneIds[i], zone);
+//            MunichZone zone = new MunichZone(zoneIds[i], zoneMsa[i], zoneAreas[i], centroid, type, ptDistances[i]);
+            zones.put(zoneIds[i], null);
         }
     }
 
@@ -55,7 +59,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
             int taz = (int) regDef.getValueAt(row, zoneIdColumnName);
             int regionId = (int) regDef.getValueAt(row, regionColumnName);
             Zone zone = zones.get(taz);
-            if (zone != null) {
+/*            if (zone != null) {
                 Region region;
                 if (regions.containsKey(regionId)) {
                     region = regions.get(regionId);
@@ -68,7 +72,7 @@ public class GeoDataMuc extends AbstractDefaultGeoData {
                 zone.setRegion(region);
             } else {
                 throw new RuntimeException("Zone " + taz + " of regions definition file does not exist.");
-            }
+            }*/
         }
     }
 

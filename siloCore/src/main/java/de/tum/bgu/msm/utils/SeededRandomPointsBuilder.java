@@ -1,9 +1,10 @@
 package de.tum.bgu.msm.utils;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.shape.random.RandomPointsBuilder;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.shape.random.RandomPointsBuilder;
+
 
 import java.util.Random;
 

@@ -42,8 +42,8 @@ public class MovesModelMuc extends AbstractDefaultMovesModel {
 
     public MovesModelMuc(SiloDataContainer dataContainer, Accessibility accessibility) {
         super(dataContainer, accessibility);
-        regionalShareForeigners = Matrices.doubleMatrix1D(geoData.getRegions().values());
-        hhByRegion = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        regionalShareForeigners = null;//Matrices.doubleMatrix1D(geoData.getRegions().values());
+        hhByRegion = null;//Matrices.doubleMatrix1D(geoData.getRegions().values());
     }
 
     private void calculateShareOfForeignersByZoneAndRegion() {

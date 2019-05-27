@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.utils;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;

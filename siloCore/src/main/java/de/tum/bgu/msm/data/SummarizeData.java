@@ -2,7 +2,6 @@ package de.tum.bgu.msm.data;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import com.pb.common.datafile.TableDataSet;
-import com.vividsolutions.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
@@ -18,6 +17,8 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
+
 
 import java.io.PrintWriter;
 import java.util.*;

@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.jobmography;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.JobFactory;

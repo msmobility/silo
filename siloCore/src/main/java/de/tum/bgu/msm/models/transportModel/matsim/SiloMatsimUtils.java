@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.pb.common.matrix.Matrix;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;

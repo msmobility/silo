@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.io;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.HouseholdDataManager;
@@ -132,6 +132,6 @@ public class DefaultPersonReader implements PersonReader{
                 pp.setSchoolCoordinate(schoolCoord, -1);
             }
         }
-        logger.info("Finished copying " + recCount + " persons.");
+        //logger.info("Finished copying " + recCount + " persons.");
     }
 }

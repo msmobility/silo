@@ -4,14 +4,15 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.shape.random.RandomPointsBuilder;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.shape.random.RandomPointsBuilder;
+import org.locationtech.jts.geom.Coordinate;
+
 
 public class ZoneImpl implements Zone {
 
@@ -73,8 +74,7 @@ public class ZoneImpl implements Zone {
         randomPointsBuilder.setNumPoints(1);
         randomPointsBuilder.setExtent((Geometry) zoneFeature.getDefaultGeometry());
         Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];
-        //Point p = MGC.coordinate2Point(coordinate);
-        Point p = null;
+        Point p = MGC.coordinate2Point(coordinate);
         return new Coordinate(p.getX(), p.getY());
     }
 

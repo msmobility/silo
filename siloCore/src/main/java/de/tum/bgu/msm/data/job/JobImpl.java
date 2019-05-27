@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.data.job;
 
-import com.vividsolutions.jts.geom.Coordinate;
+
 import de.tum.bgu.msm.data.MicroLocation;
+import org.locationtech.jts.geom.Coordinate;
 
 public class JobImpl implements Job, MicroLocation {
 

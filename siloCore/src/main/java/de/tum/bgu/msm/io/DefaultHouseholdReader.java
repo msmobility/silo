@@ -75,6 +75,6 @@ public class DefaultHouseholdReader implements HouseholdReader {
             Household hh = factory.createHousehold(id, -1, 0);  // this automatically puts it in id->household map in Household class
             householdData.addHousehold(hh);
         }
-        logger.info("Finished copying " + recCount + " households.");
+        //logger.info("Finished copying " + recCount + " households.");
     }
 }

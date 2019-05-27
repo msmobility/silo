@@ -45,9 +45,13 @@ public class Accessibility {
         this.geoData = dataContainer.getGeoData();
         this.dataContainer = dataContainer;
 
-        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
+/*        this.autoAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
         this.transitAccessibilities = Matrices.doubleMatrix1D(geoData.getZones().values());
-        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());
+        this.regionalAccessibilities = Matrices.doubleMatrix1D(geoData.getRegions().values());*/
+
+        this.autoAccessibilities = null;
+        this.transitAccessibilities = null;
+        this.regionalAccessibilities = null;
 
         this.autoOperatingCosts = Properties.get().accessibility.autoOperatingCosts;
         this.alphaAuto = Properties.get().accessibility.alphaAuto;

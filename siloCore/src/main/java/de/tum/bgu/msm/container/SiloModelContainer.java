@@ -18,7 +18,6 @@ import de.tum.bgu.msm.models.relocation.InOutMigration;
 import de.tum.bgu.msm.models.relocation.MovesModelI;
 import de.tum.bgu.msm.models.relocation.mstm.MovesModelMstm;
 import de.tum.bgu.msm.models.relocation.munich.MovesModelMuc;
-import de.tum.bgu.msm.models.transportModel.MitoTransportModel;
 import de.tum.bgu.msm.models.transportModel.TransportModelI;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -135,7 +134,7 @@ public class SiloModelContainer {
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO:
                 LOGGER.info("  MITO is used as the transport model");
-                transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer);
+                //transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer);
                 break;
             case MATSIM:
                 LOGGER.info("  MATSim is used as the transport model");

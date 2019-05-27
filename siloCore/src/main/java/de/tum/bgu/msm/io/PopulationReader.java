@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.io;
 
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
 import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -103,9 +103,9 @@ public class PopulationReader {
                     int posSchoolCoordX = SiloUtil.findPositionInArray("schoolCoordX", header);
                     int posSchoolCoordY = SiloUtil.findPositionInArray("schoolCoordY", header);
                     // TODO Currently only instance where we set a zone id to -1. nk/dz, jul'18
-                    Coordinate schoolCoord = new Coordinate(
-                            Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
-                    pp.setSchoolCoordinate(schoolCoord, -1);
+                    //Coordinate schoolCoord = new Coordinate(
+                            //Double.parseDouble(lineElements[posSchoolCoordX]),Double.parseDouble(lineElements[posSchoolCoordY]));
+                    pp.setSchoolCoordinate(null, -1);
                 }
 
                 persons.put(id, pp);

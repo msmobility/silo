@@ -38,7 +38,8 @@ public class IssueCounter {
 
 
     public static void regionSpecificCounters(GeoData geoData) {
-        final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
+        //final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
+        final int highestRegionId = 1;
         exceededVacantDwellingStorage = new int[highestRegionId + 1];
         exceededVacantJobStorage = new int[highestRegionId + 1];
         SiloUtil.setArrayToValue(exceededVacantDwellingStorage, 0);

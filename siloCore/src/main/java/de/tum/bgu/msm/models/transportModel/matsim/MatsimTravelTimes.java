@@ -2,7 +2,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.vividsolutions.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinate;
+
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
