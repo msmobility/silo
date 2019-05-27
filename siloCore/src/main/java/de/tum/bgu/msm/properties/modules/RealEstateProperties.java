@@ -8,8 +8,6 @@ public class RealEstateProperties {
 
     public final String dwellingsFileName;
     public final String dwellingsFinalFileName;
-    public final String dwellingTypeAcresFile;
-    public final double[] structuralVacancy;
     public final boolean constructionOverwriteDwelling;
     public final boolean traceOverwriteDwellings;
     public final String overWriteDwellingsTraceFile;
@@ -25,8 +23,6 @@ public class RealEstateProperties {
         PropertiesUtil.newPropertySubmodule("Real state - dwelling input data");
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
         dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
-        dwellingTypeAcresFile = PropertiesUtil.getStringProperty(bundle, "developer.acres.per.dwelling.by.type", "input/acresPerDwellingByType.csv");
-        structuralVacancy = PropertiesUtil.getDoublePropertyArray(bundle, "vacancy.rate.by.type", new double[]{0.01, 0.03, 0.05, 0.04, 0.03});
 
         PropertiesUtil.newPropertySubmodule("Real state - model parameters and input");
         constructionOverwriteDwelling = PropertiesUtil.getBooleanProperty(bundle, "construct.dwelling.use.overwrite", false);

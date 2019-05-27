@@ -8,12 +8,10 @@ public final class HouseholdDataProperties {
 
     public final float meanIncomeChange;
     public final String householdFileName;
-    public final String binaryPopulationFile;
     public final String personFileName;
     public final boolean summarizeMetro;
     public final String selectedMetroStopsFile;
     public final String householdsNearMetroFile;
-    public final boolean writeBinPopFile;
 
 
     public final String householdFinalFileName;
@@ -30,10 +28,6 @@ public final class HouseholdDataProperties {
         PropertiesUtil.newPropertySubmodule("Synthetic persons and households output of the final year");
         householdFinalFileName = PropertiesUtil.getStringProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
         personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
-
-        PropertiesUtil.newPropertySubmodule("Synthetic persons and households for the base year - binary files options");
-        writeBinPopFile = PropertiesUtil.getBooleanProperty(bundle, "write.binary.pop.files", false);
-        binaryPopulationFile = PropertiesUtil.getStringProperty(bundle, "population.file.bin", "microData/popData.bin");
 
         PropertiesUtil.newPropertySubmodule("Household data properties - additional models");
         meanIncomeChange = (float) PropertiesUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income", 2000);

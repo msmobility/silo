@@ -3,12 +3,10 @@ package de.tum.bgu.msm.models.relocation.migration;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
@@ -44,6 +42,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     private TableDataSet tblPopulationTarget;
     private int outMigrationPPCounter;
     private int inMigrationPPCounter;
+    private int lackOfDwellingFailedInmigration;
 
 
     public InOutMigrationImpl(DataContainer dataContainer, EmploymentModel employment,
@@ -93,6 +92,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
 
     @Override
     public void prepareYear(int year) {
+        lackOfDwellingFailedInmigration = 0;
     }
 
     private void createInmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
@@ -209,7 +209,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
             }
             return true;
         } else {
-            IssueCounter.countLackOfDwellingFailedInmigration();
+            lackOfDwellingFailedInmigration++;
             return false;
         }
     }
@@ -243,6 +243,10 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
         //todo reconsider to print out model results and how to pass them to the ResultsMonitor
         logger.info("Total Inmigrants: " + inMigrationPPCounter);
         logger.info("Total OutmigrantsPP: " + outMigrationPPCounter);
+        if (lackOfDwellingFailedInmigration > 0) {
+            logger.warn("  Encountered " + lackOfDwellingFailedInmigration + " cases " +
+                    "where household wanted to inmigrate but could not find vacant dwelling.");
+        }
     }
 
     @Override

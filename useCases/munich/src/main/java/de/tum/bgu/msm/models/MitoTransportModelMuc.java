@@ -100,6 +100,9 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             final TravelTime matsimTravelTime = mito.getData().getMatsimTravelTime();
             final TravelDisutility matsimTravelDisutility = mito.getData().getMatsimTravelDisutility();
             ((MatsimTravelTimes) travelTimes).update(matsimTravelTime, matsimTravelDisutility);
+        } else if (travelTimes instanceof SkimTravelTimes) {
+            ((SkimTravelTimes) travelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
+                    dataContainer.getGeoData().getRegions().values());
         }
     }
 

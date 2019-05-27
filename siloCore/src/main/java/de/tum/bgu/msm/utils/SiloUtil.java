@@ -7,7 +7,6 @@ import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
@@ -404,9 +403,9 @@ public class SiloUtil {
         return select(mappedProbabilities, getSum(mappedProbabilities.values()));
     }
 
-    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum) {
+    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum, Random random) {
         // select item based on probabilities (for mapped double probabilities)
-        double selectedWeight = rand.nextDouble() * sum;
+        double selectedWeight = random.nextDouble() * sum;
         double select = 0;
         for (Map.Entry<T, ? extends Number> entry : mappedProbabilities.entrySet()) {
             select += entry.getValue().doubleValue();
@@ -416,6 +415,10 @@ public class SiloUtil {
         }
         logger.info("Error selecting item from weighted probabilities");
         return null;
+    }
+
+    public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum) {
+       return select(mappedProbabilities, sum, rand);
     }
 
 
@@ -565,7 +568,9 @@ public class SiloUtil {
 
     public static int[] convertIntegerToInt (Integer[] values) {
         int[] intValues = new int[values.length];
-        for (int i = 0; i < values.length; i++) intValues[i] = values[i];
+        for (int i = 0; i < values.length; i++) {
+            intValues[i] = values[i];
+        }
         return intValues;
     }
 
@@ -573,22 +578,22 @@ public class SiloUtil {
     public static float getMedian (int[] array) {
         // return median value
 
-        if (array.length == 0) return 0;
+        if (array.length == 0) {
+            return 0;
+        }
         Arrays.sort(array);
         float median;
-        if (array.length % 2 == 0)
+        if (array.length % 2 == 0) {
             median = ((float) array[array.length / 2] + (float) array[array.length / 2 - 1]) / 2;
-        else
+        } else {
             median = (float) array[array.length / 2];
+        }
         return median;
     }
 
 
-    public static void finish (ModelContainer modelContainer) {
+    public static void finish () {
         trackingFile("close");
-        if (IssueCounter.didFindIssues()) {
-            logger.warn("Found issues, please check warnings in logging statements.");
-        }
     }
 
 
@@ -618,8 +623,12 @@ public class SiloUtil {
         // scale float array so that largest value equals maxVal
 
         float highestVal = Float.MIN_VALUE;
-        for (float val: array) highestVal = Math.max(val, highestVal);
-        for (int i = 0; i < array.length; i++) array[i] = (float) ((array[i] * maxVal * 1.) / (highestVal * 1.));
+        for (float val: array) {
+            highestVal = Math.max(val, highestVal);
+        }
+        for (int i = 0; i < array.length; i++) {
+            array[i] = (float) ((array[i] * maxVal * 1.) / (highestVal * 1.));
+        }
         return array;
     }
 
@@ -628,8 +637,12 @@ public class SiloUtil {
         // scale double array so that largest value equals maxVal
 
         double highestVal = Double.MIN_VALUE;
-        for (double val: array) highestVal = Math.max(val, highestVal);
-        for (int i = 0; i < array.length; i++) array[i] = (array[i] * maxVal / highestVal);
+        for (double val: array) {
+            highestVal = Math.max(val, highestVal);
+        }
+        for (int i = 0; i < array.length; i++) {
+            array[i] = (array[i] * maxVal / highestVal);
+        }
         return array;
     }
 

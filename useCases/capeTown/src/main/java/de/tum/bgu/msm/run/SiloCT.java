@@ -15,14 +15,16 @@ public class SiloCT {
 
     private final static Logger logger = Logger.getLogger(SiloCT.class);
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
-        }
+		  CapeTownConfig cptConfig = ConfigUtils.addOrGetModule( config, CapeTownConfig.class );;
+		  cptConfig.setRunType( CapeTownConfig.RunType.base );
+	  }
         logger.info("Starting SILO land use model for Cape Town");
         DataContainer dataContainer = DataBuilderCapeTown.getModelDataForCapeTown(properties);
         DataBuilderCapeTown.read(properties, dataContainer);

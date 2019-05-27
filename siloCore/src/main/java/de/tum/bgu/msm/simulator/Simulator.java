@@ -83,7 +83,7 @@ public final class Simulator {
             timeTracker.recordAndReset("PreparationFor" + modelUpdateListener.getClass().getSimpleName());
         }
         logger.info("  Preparing and creating events");
-        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
+        for(EventModel<MicroEvent> model: models.values()) {
             model.prepareYear(year);
             events.addAll(model.getEventsForCurrentYear(year));
             timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
@@ -102,7 +102,7 @@ public final class Simulator {
             //unchecked is justified here, as
             //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
             // checks for the right type of model handlers
-            @SuppressWarnings("unchecked")
+
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
                 eventCounter.add(klass);
