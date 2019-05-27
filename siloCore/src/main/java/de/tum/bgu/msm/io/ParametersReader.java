@@ -49,7 +49,7 @@ public class ParametersReader {
             int posBirthLocalScaler = SiloUtil.findPositionInArray("BirthLocalScaler", header);
             int posBirthSingleScaler = SiloUtil.findPositionInArray("BirthSingleScaler", header);
             int posBirthProportionMarried = SiloUtil.findPositionInArray("BirthProportionMarried", header);
-/*            int posDeathFemaleAlpha = SiloUtil.findPositionInArray("DeathFemaleAlpha", header);
+            int posDeathFemaleAlpha = SiloUtil.findPositionInArray("DeathFemaleAlpha", header);
             int posDeathFemaleScale = SiloUtil.findPositionInArray("DeathFemaleScale", header);
             int posDeathMaleAlpha = SiloUtil.findPositionInArray("DeathMaleAlpha", header);
             int posDeathMaleScale = SiloUtil.findPositionInArray("DeathMaleScale", header);
@@ -83,7 +83,7 @@ public class ParametersReader {
             int posMarriageMaleScale = SiloUtil.findPositionInArray("MarriageMaleScale", header);
             int posMarriageInterRacialShare = SiloUtil.findPositionInArray("MarriageInterRacialShare", header);
             int posMarriageSingleHhScale = SiloUtil.findPositionInArray("MarriageSingleHhScale", header);
-            int posMarriageCohabitationScale = SiloUtil.findPositionInArray("MarriageCohabitationScale", header);*/
+            int posMarriageCohabitationScale = SiloUtil.findPositionInArray("MarriageCohabitationScale", header);
 
 
             // read line
@@ -107,7 +107,7 @@ public class ParametersReader {
                 parametersCombination.put("BirthLocalScaler", Double.parseDouble(lineElements[posBirthLocalScaler]));
                 parametersCombination.put("BirthSingleScaler", Double.parseDouble(lineElements[posBirthSingleScaler]));
                 parametersCombination.put("BirthProportionMarried", Double.parseDouble(lineElements[posBirthProportionMarried]));
-                /*parametersCombination.put("DeathFemaleAlpha", Double.parseDouble(lineElements[posDeathFemaleAlpha]));
+                parametersCombination.put("DeathFemaleAlpha", Double.parseDouble(lineElements[posDeathFemaleAlpha]));
                 parametersCombination.put("DeathFemaleScale", Double.parseDouble(lineElements[posDeathFemaleScale]));
                 parametersCombination.put("DeathMaleAlpha", Double.parseDouble(lineElements[posDeathMaleAlpha]));
                 parametersCombination.put("DeathMaleScale", Double.parseDouble(lineElements[posDeathMaleScale]));
@@ -141,8 +141,8 @@ public class ParametersReader {
                 parametersCombination.put("MarriageMaleGammaShape", Double.parseDouble(lineElements[posMarriageMaleGammaShape]));
                 parametersCombination.put("MarriageInterRacialShare", Double.parseDouble(lineElements[posMarriageInterRacialShare]));
                 parametersCombination.put("MarriageSingleHhScale", Double.parseDouble(lineElements[posMarriageSingleHhScale]));
-                parametersCombination.put("MarriageCohabitationScale", Double.parseDouble(lineElements[posMarriageCohabitationScale]));*/
-                parametersCombination.put("DeathFemaleAlpha", 0.13000619);
+                parametersCombination.put("MarriageCohabitationScale", Double.parseDouble(lineElements[posMarriageCohabitationScale]));
+/*                parametersCombination.put("DeathFemaleAlpha", 0.13000619);
                 parametersCombination.put("DeathFemaleScale", 0.00000125);
                 parametersCombination.put("DeathMaleAlpha", 0.107127957);
                 parametersCombination.put("DeathMaleScale", 0.0000119);
@@ -176,7 +176,7 @@ public class ParametersReader {
                 parametersCombination.put("MarriageMaleGammaShape", 1.01027592);
                 parametersCombination.put("MarriageInterRacialShare", 0.02);
                 parametersCombination.put("MarriageSingleHhScale", 2.0);
-                parametersCombination.put("MarriageCohabitationScale", 1.1);
+                parametersCombination.put("MarriageCohabitationScale", 1.1);*/
                 parametersMap.put(recCount, parametersCombination);
 
             }
