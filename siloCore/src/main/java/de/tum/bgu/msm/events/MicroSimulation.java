@@ -104,9 +104,8 @@ public final class MicroSimulation {
         //LOGGER.info("Simulated " + eventCounter.size() + " successful events in total.");
         for(Class<? extends MicroEvent> event: eventCounter.elementSet()) {
             final int count = eventCounter.count(event);
-            if (event.getSimpleName().equals("BirthEvent")) {
-                SummarizeData.resultFile(combinationId + "," + year + "," + event.getSimpleName() + "," + count);
-            }
+            SummarizeData.resultFile( combinationId + "," + year  + "," + event.getSimpleName() + "," + count);
+            //LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
             //LOGGER.info("Simulated " + event.getSimpleName() + ": " + count);
         }
 
