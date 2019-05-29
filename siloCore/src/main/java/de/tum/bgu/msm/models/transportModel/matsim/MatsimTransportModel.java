@@ -104,11 +104,9 @@ public final class MatsimTransportModel implements TransportModel {
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
 		ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
 		Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
-		CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, TransformationFactory.CH1903_LV03);
 		for (int zoneId : zoneMap.keySet()) {
 			Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
 			Coord centroid = CoordUtils.createCoord(geometry.getCentroid().getX(), geometry.getCentroid().getY());
-			centroid = ct.transform(centroid);
 			Node nearestNode = NetworkUtils.getNearestNode(network, centroid); // TODO choose road of certain category
 			Coord coord = CoordUtils.createCoord(nearestNode.getCoord().getX(), nearestNode.getCoord().getY());
 			ActivityFacility activityFacility = aff.createActivityFacility(Id.create(zoneId, ActivityFacility.class), coord);
