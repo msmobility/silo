@@ -149,6 +149,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
         logger.info("\t" + npdPeopleCount + " people in " + npdCount + " non-private dwellings reduced to " + tmpNPDPopulation.size());
         closeFilesForSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
+
+        // bit of verification
+        someStats();
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Job Creation
@@ -1213,170 +1216,149 @@ public class SyntheticPopPerth implements SyntheticPopI {
         }
     }
 
+    /*  Convert mortgage code to a payment
+        MRERD Mortgage Repayments (monthly) ranges
+        1	Nil repayments
+        2	$1-$149
+        3	$150-$299
+        4	$300-$449
+        5	$450-$599
+        6	$600-$799
+        7	$800-$999
+        8	$1,000-$1,199
+        9	$1,200-$1,399
+        10	$1,400-$1,599
+        11	$1,600-$1,799
+        12	$1,800-$1,999
+        13	$2,000-$2,199
+        14	$2,200-$2,399
+        15	$2,400-$2,599
+        16	$2,600-$2,999
+        17	$3,000-$3,999
+        18	$4,000-$4,999
+        19	$5,000 and over
+        20	Not stated
+        21	Not applicable
+     */
     private int convertMortgage(int mortgageCode)
     {
-        // select actual mortgage from bins provided in microdata (from "MRERD")
-        //  1: Nil repayments
-        //  2: $1–$149
-        //  3: $150–$299
-        //  4: $300–$449
-        //  5: $450–$599
-        //  6: $600–$799
-        //  7: $800–$999
-        //  8: $1,000–$1,199
-        //  9: $1,200–$1,399
-        // 10: $1,400–$1,599
-        // 11: $1,600–$1,799
-        // 12: $1,800–$1,999
-        // 13: $2,000–$2,199
-        // 14: $2,200–$2,399
-        // 15: $2,400–$2,599
-        // 16: $2,600–$2,999
-        // 17: $3,000–$3,999
-        // 18: $4,000-$4,999
-        // 19: $5,000 and over
-        // 20: Not stated
-        // 21: Not applicable
-
-        int selectedMortgage = 0;
-        float rnd = SiloUtil.getRandomNumberAsFloat();
-        switch (mortgageCode) {
-            case 1: selectedMortgage = 0;
-                break;
-            case 2: selectedMortgage = (int) (1 + rnd * 149);
-                break;
-            case 3: selectedMortgage = (int) (150 + rnd * 149);
-                break;
-            case 4: selectedMortgage = (int) (300 + rnd * 149);
-                break;
-            case 5: selectedMortgage = (int) (450 + rnd * 150);
-                break;
-            case 6: selectedMortgage = (int) (600 + rnd * 100);
-                break;
-            case 7: selectedMortgage = (int) (800 + rnd * 100);
-                break;
-            case 8: selectedMortgage = (int) (1000 + rnd * 100);
-                break;
-            case 9: selectedMortgage = (int) (1200 + rnd * 100);
-                break;
-            case 10: selectedMortgage = (int) (1400 + rnd * 100);
-                break;
-            case 11: selectedMortgage = (int) (1600 + rnd * 150);
-                break;
-            case 12: selectedMortgage = (int) (1800 + rnd * 200);
-                break;
-            case 13: selectedMortgage = (int) (2000 + rnd * 200);
-                break;
-            case 14: selectedMortgage = (int) (2200 + rnd * 400);
-                break;
-            case 15: selectedMortgage = (int) (2400 + rnd * 400);
-                break;
-            case 16: selectedMortgage = (int) (2600 + rnd * 600);
-                break;
-            case 17: selectedMortgage = (int) (3000 + rnd * 1000);
-                break;
-            case 18: selectedMortgage = (int) (4000 + rnd * 1000);
-                break;
-            case 19: selectedMortgage = (int) (5000 + rnd * 10000);
-                break;
-            case 20: selectedMortgage = 0;
-                // todo: Check if case 20 ever appears - YES 161/5907 records
-                break;
-            case 21: selectedMortgage = 0;
-                // todo: Check if case 21 ever appears - YES 3779 of 5907 records
-                break;
+        int min, max;
+        switch (mortgageCode)
+        {
+            default: case 1: case 20: case 21: min = 0; max = 0; break;
+            case 2:  min = 1; max = 149; break;
+            case 3:  min = 150; max = 299; break;
+            case 4:  min = 300; max = 449; break;
+            case 5:  min = 450; max = 599; break;
+            case 6:  min = 600; max = 799; break;
+            case 7:  min = 800; max = 999; break;
+            case 8:  min = 1000; max = 1199; break;
+            case 9:  min = 1200; max = 1399; break;
+            case 10: min = 1400; max = 1599; break;
+            case 11: min = 1600; max = 1799; break;
+            case 12: min = 1800; max = 1999; break;
+            case 13: min = 2000; max = 2199; break;
+            case 14: min = 2200; max = 2399; break;
+            case 15: min = 2400; max = 2599; break;
+            case 16: min = 2600; max = 2999; break;
+            case 17: min = 3000; max = 3999; break;
+            case 18: min = 4000; max = 4999; break;
+            case 19: min = 5000; max = 15000; break;
         }
-        return selectedMortgage;
+        return randomInteger(min, max);
     }
 
+    /*  Convert rent code to monthly payment
+        RNTRD Rent (weekly) Ranges
+        1	Nil payments
+        2	$1-$74
+        3	$75-$99
+        4	$100-$124
+        5	$125-$149
+        6	$150-$174
+        7	$175-$199
+        8	$200-$224
+        9	$225-$249
+        10	$250-$274
+        11	$275-$299
+        12	$300-$324
+        13	$325-$349
+        14	$350-$374
+        15	$375-$399
+        16	$400-$424
+        17	$425-$449
+        18	$450-$549
+        19	$550-$649
+        20	$650 and over
+        21	Not stated
+        22	Not applicable
+    */
     private int convertRent (int rentCode)
     {
-        // select actual rent from bins provided in microdata (from "RNTRD")
-        //  1: Nil payments
-        //  2: $1–$74
-        //  3: $75–$99
-        //  4: $100–$124
-        //  5: $125–$149
-        //  6: $150–$174
-        //  7: $175–$199
-        //  8: $200–$224
-        //  9: $225–$249
-        // 10: $250–$274
-        // 11: $275–$299
-        // 12: $300–$324
-        // 13: $325–$349
-        // 14: $350–$374
-        // 15: $375–$399
-        // 16: $400–$424
-        // 17: $425-$449
-        // 18: $450-$549
-        // 19: $550-$649
-        // 20: 650 and over
-        // 21: Not stated
-        // 22: Not applicable
-        int selectedRent = 0;
-        float rnd = SiloUtil.getRandomNumberAsFloat();
-        switch (rentCode) {
-            case 1: selectedRent = 0;
-                break;
-            case 2: selectedRent = (int) (1 + rnd * 74);
-                break;
-            case 3: selectedRent = (int) (75 + rnd * 24);
-                break;
-            case 4: selectedRent = (int) (100 + rnd * 24);
-                break;
-            case 5: selectedRent = (int) (125 + rnd * 24);
-                break;
-            case 6: selectedRent = (int) (150 + rnd * 24);
-                break;
-            case 7: selectedRent = (int) (175 + rnd * 24);
-                break;
-            case 8: selectedRent = (int) (200 + rnd * 24);
-                break;
-            case 9: selectedRent = (int) (225 + rnd * 24);
-                break;
-            case 10: selectedRent = (int) (250 + rnd * 24);
-                break;
-            case 11: selectedRent = (int) (275 + rnd * 24);
-                break;
-            case 12: selectedRent = (int) (300 + rnd * 24);
-                break;
-            case 13: selectedRent = (int) (325 + rnd * 24);
-                break;
-            case 14: selectedRent = (int) (350 + rnd * 24);
-                break;
-            case 15: selectedRent = (int) (375 + rnd * 24);
-                break;
-            case 16: selectedRent = (int) (400 + rnd * 24);
-                break;
-            case 17: selectedRent = (int) (425 + rnd * 24);
-                break;
-            case 18: selectedRent = (int) (450 + rnd * 99);
-                break;
-            case 19: selectedRent = (int) (550 + rnd * 99);
-                break;
-            case 20: selectedRent = (int) (650 + rnd * 2350);
-                break;
-            case 21: selectedRent = 0;
-                // todo: Check if code 17 ever appears - YES 45 of 5907 records
-                break;
-            case 22: selectedRent = 0;
-                // todo: Check if code 18 ever appears - YES 4507 of 5907 records
-                break;
+        int min, max;
+        switch (rentCode)
+        {
+            //2820
+            //248112
+            default: case 1: case 21: case 22: min = 0; max = 0; break;
+            case 2:  min = 1; max = 74; break;
+            case 3:  min = 75; max = 99; break;
+            case 4:  min = 100; max = 124; break;
+            case 5:  min = 125; max = 149; break;
+            case 6:  min = 150; max = 174; break;
+            case 7:  min = 175; max = 199; break;
+            case 8:  min = 200; max = 224; break;
+            case 9:  min = 225; max = 249; break;
+            case 10: min = 250; max = 274; break;
+            case 11: min = 275; max = 299; break;
+            case 12: min = 300; max = 324; break;
+            case 13: min = 325; max = 349; break;
+            case 14: min = 350; max = 374; break;
+            case 15: min = 375; max = 399; break;
+            case 16: min = 400; max = 424; break;
+            case 17: min = 425; max = 449; break;
+            case 18: min = 450; max = 549; break;
+            case 19: min = 550; max = 649; break;
+            case 20: min = 650; max = 3000; break;
+
         }
-        return selectedRent*52/12;
+        // generate random within the bounds and convert to monthly figure
+        return randomInteger(min, max)*52/12;
     }
 
+    /*  Based on the rent and mortgage codes determine the monthly cost for the dwelling.
+        This is because sometimes rent = mortgage = monthly cost.
+        Or because sometimes one is paid but not the other.
+    */
     private int getDwellingPrice(int rent, int mortgage)
     {
-        // calculate price based on rent and mortgage
-        int price;
-        if (rent > 0 && mortgage > 0) price = (rent + mortgage) / 2;
-        else if (rent <= 0 && mortgage > 0) price = mortgage;
-        else if (rent > 0 && mortgage <= 0) price = rent;
-            // todo: create reasonable price for dwelling - careful with weekly rent and monthly mortgage payments, divide by 4 or times by 12 and divide by 52?!
-        else price = 500;
-        return price;
+        int monthlyPrice;
+
+        // if both rent and mortgage are indicated
+        if (rent > 0 && mortgage > 0)
+        {
+            // probably they are the same so take average of the two
+            monthlyPrice = (rent + mortgage) / 2;
+        }
+        // if no rent but only mortgage
+        else if (rent <= 0 && mortgage > 0)
+        {
+            // monthly cost is the monthly mortgage
+            monthlyPrice = mortgage;
+        }
+        // if rent but no mortgage
+        else if (rent > 0 && mortgage <= 0)
+        {
+            // monthly cost is the monthly rent
+            monthlyPrice = rent;
+        }
+        // if both of them are 0
+        else
+        {
+            // probably own the place and are not paying
+            monthlyPrice = 0;
+        }
+        return monthlyPrice;
     }
 
     private int translateIndustry(int industryCode, int occupation)
@@ -1464,13 +1446,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         switch (status)
         {
-            case 1:
-                return "married";
-            case 3:
-            case 4:
-                return "child";
-            default:
-                return "single";
+            case 1: return "married";
+            case 3: case 4: return "child";
+            default: return "single";
         }
     }
 
@@ -1511,8 +1489,55 @@ public class SyntheticPopPerth implements SyntheticPopI {
         pwddabs.close();
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Help Methods
-    //  Weighted Random
+    // -----------------------------------------------------------------------------------------------------------------  Stats
+    private void someStats()
+    {
+        int price0s = 0;
+        int priceAvg = 0;
+
+        for(int i = 0; i < fullPopulation.size(); i++)
+        {
+            Family family = fullPopulation.get(i);
+            Dwelling dwelling = family.dwelling;
+
+
+            if(dwelling.ddPrice == 0)
+            {
+                price0s++;
+            }
+            else
+            {
+                priceAvg += dwelling.ddPrice;
+            }
+
+            // for each person in the family
+            for(int p = 0; p < family.size; p++)
+            {
+                Person person = family.getPerson(p);
+            }
+        }
+
+        priceAvg = priceAvg/(fullPopulation.size() - price0s);
+
+        logger.info("Average monthly price: " + priceAvg);
+        logger.info("Dwellings with monthly cost zero: " + price0s + ", " + (double)((double)price0s*(double)100/(double)fullPopulation.size()) + "%.");
+
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Helper Methods
+    /*  Generate a random integer bound by the min and max
+        [min, max] e.g. (1,50) => [1, 50] so it can be 1, 2, .., 50
+    */
+    private int randomInteger(int min, int max)
+    {
+        if(min == max)
+        {
+            return min;
+        }
+        return (int) ((Math.random() * (double) max) + (double) min);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Weighted Random
     public class RandomCollection<E>
     {
         private final NavigableMap<Double, E> map = new TreeMap<Double, E>();
@@ -1544,28 +1569,28 @@ public class SyntheticPopPerth implements SyntheticPopI {
     // -----------------------------------------------------------------------------------------------------------------  Dwelling
     private class Dwelling implements Cloneable
     {
-        public long ddID;
-        public long hhID;
+        long ddID;
+        long hhID;
 
         // zones
-        public int SA1 = -1;
-        public int SA4;
+        int SA1 = -1;
+        int SA4;
 
         // abs
-        public int codeBedrooms;
-        public int codeMortgage;
-        public int codeRent;
-        public int codeType;
-        public int codeVehicles;
+        int codeBedrooms;
+        int codeMortgage;
+        int codeRent;
+        int codeType;
+        int codeVehicles;
 
         // silo
-        public int ddBedrooms;
-        public int ddMortgage;
-        public int ddRent;
-        public int ddType;
-        public int ddVehicles;
-        public int ddQuality;
-        public int ddPrice;
+        int ddBedrooms;
+        int ddMortgage;
+        int ddRent;
+        int ddType;
+        int ddVehicles;
+        int ddQuality;
+        int ddPrice;
 
 
         public Dwelling() { }
@@ -1824,7 +1849,24 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 addIncomeGroupByBin(i, -family.countIncome[i]);
         }
 
+        // -----------------------------------------------------------------    Total population counts
         public int getTotalPopulation() { return genderTotals[posM] + genderTotals[posF]; }
+
+        public int getTotalPopulationAge()
+        {
+            int sum = 0;
+            for(int i = 0; i<ageTotals.length; i++)
+                sum += ageTotals[i];
+            return sum;
+        }
+
+        public int getTotalPopulationInc()
+        {
+            int sum = 0;
+            for(int i = 0; i<incomeTotals.length; i++)
+                sum += incomeTotals[i];
+            return sum;
+        }
 
         // -----------------------------------------------------------------    Gender methods
         public void addMales(int count) { genderTotals[posM] += count; }
