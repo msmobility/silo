@@ -62,6 +62,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private IndexedDoubleMatrix2D travelTimeToRegion;
 
+
     public void initialize(GeoData geoData, Network network) {
         this.network = network;
         this.zones = geoData.getZones();
@@ -234,14 +235,13 @@ public final class MatsimTravelTimes implements TravelTimes {
 
 
     private void buildZoneCalculationNodesMap() {
-        CoordinateTransformation ct = TransformationFactory.getCoordinateTransformation(TransformationFactory.WGS84, TransformationFactory.CH1903_LV03);
+
         for (Zone zone : zones.values()) {
             // Several points in a given origin zone
             for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                 // TODO Check if random coordinate is the best representative
                 Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
                 Coord originCoord = new Coord(coordinate.x, coordinate.y);
-                originCoord = ct.transform(originCoord);
                 Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
                 if (!zoneCalculationNodesMap.containsKey(zone)) {

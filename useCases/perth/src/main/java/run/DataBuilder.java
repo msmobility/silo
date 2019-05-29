@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
+import run.job.JobFactoryPerth;
+import run.job.JobPerth;
+
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
 public final class DataBuilder {
@@ -70,9 +74,11 @@ public final class DataBuilder {
                 householdData, geoData,
                 new DwellingFactoryImpl(),
                 properties);
+        JobFactoryPerth jobFactory = new JobFactoryPerth();
+        jobFactory.readWorkingTimeDistributions(properties);
 
         JobDataManager jobManager = new JobDataManagerImpl(
-                properties, new JobFactoryImpl(),
+                properties, jobFactory,
                 jobData, geoData,
                 travelTimes, commutingTimeProbability);
 

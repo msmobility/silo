@@ -27,9 +27,8 @@ public class JobReaderPerth implements JobReader {
 
     @Override
     public void readData(String fileName) {
-
         logger.info("Reading job micro data from ascii file");
-        JobFactory factory = JobUtils.getFactory();
+        JobFactory factory = jobDataManager.getFactory();
         String recString = "";
         int recCount = 0;
         try {

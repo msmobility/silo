@@ -8,32 +8,32 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
  * Created on 21 March 2011 in Santa Fe (which is J.S. Bach's 326th birthday)
  **/
 
-public enum DwellingTypePerth implements DwellingType {
+    public enum DwellingTypePerth implements DwellingType {
 
-    /**
-     * seperate house detached
-     */
-    SH (0.25f,0.01f),
+        /**
+         * seperate house detached
+         */
+    SH (0.264f,0.01f),
     /**
      * semi detached or townhouse
      */
-    SD(0.22f,0.03f),
+    SD(0.253f,0.03f),
     /**
      * Flat
      */
-    FL(0.07f,0.05f),
+    FL(0.301f,0.05f),
     /**
      * Other
      */
-    OT(0.03f,0.04f),
+    OT(0.0f,0.04f),
     /**
      * Not Stated
      */
-    NS(0.015f,0.03f),
+    NS(0.0f,0.03f),
     /**
      * Not Applicable
      */
-    NA(0.015f,0.03f);
+    NA(0.0f,0.03f);
 
     private final float acresNeeded;
     private final float structuralVacancy;

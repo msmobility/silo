@@ -43,7 +43,6 @@ public class AccessibilityProperties {
     public final Set<Integer> skimYears;
 
     public AccessibilityProperties(ResourceBundle bundle, int startYear) {
-        PropertiesUtil.newPropertySubmodule("Accessibility properties");
         this.bundle = bundle;
         autoOperatingCosts = (float) PropertiesUtil.getDoubleProperty(bundle, "auto.operating.costs", 8.4);
         alphaAuto = (float) PropertiesUtil.getDoubleProperty(bundle, "auto.accessibility.alpha",1.2);
@@ -57,6 +56,7 @@ public class AccessibilityProperties {
         PropertiesUtil.newPropertySubmodule("Accessibility - skim matrices");
         skimYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "skim.years", new int[]{-1}))
                 .boxed().collect(Collectors.toSet());
+        PropertiesUtil.newPropertySubmodule("Accessibility properties");
 
         Set<Integer> skimYearsForInput = new HashSet<>();
         skimYearsForInput.addAll(skimYears);

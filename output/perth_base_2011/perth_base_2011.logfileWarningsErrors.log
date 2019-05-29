@@ -1,61 +1,9 @@
-2019-05-09 11:26:15,668  WARN VspConfigConsistencyCheckerImpl:83 you are insisting on config v1.  vsp default is using v2.
-2019-05-09 11:26:15,668  WARN VspConfigConsistencyCheckerImpl:99 you are not using FastAStarLandmarks as routing algorithm.  vsp default is to use FastAStarLandmarks.
-2019-05-09 11:26:15,668  WARN VspConfigConsistencyCheckerImpl:201 You are not setting fractionOfIterationsToStartScoreMSA; vsp default is to set this to something like 0.8.  This means you have to add the following lines to your config file: 
-2019-05-09 11:26:15,668  WARN VspConfigConsistencyCheckerImpl:203 <module name="planCalcScore">
-2019-05-09 11:26:15,669  WARN VspConfigConsistencyCheckerImpl:204 	<param name="fractionOfIterationsToStartScoreMSA" value="0.8" />
-2019-05-09 11:26:15,669  WARN VspConfigConsistencyCheckerImpl:205 </module>
-2019-05-09 11:26:15,669  WARN VspConfigConsistencyCheckerImpl:247 found `plansCalcRoute.insertingAccessEgressWalk==false'; vsp should use `true' or talk to Kai. 
-2019-05-09 11:26:15,669  WARN VspConfigConsistencyCheckerImpl:254 found qsim.usePersonIdForMissingVehicleId==true; this is only for backwards compatibility and should rather be set to false
-2019-05-09 11:26:15,669  WARN VspConfigConsistencyCheckerImpl:259 found `qsim.usingTravelTimeCheckInTeleporation==false'; vsp should try out `true' and report.
-2019-05-09 11:26:21,732  WARN Dijkstra:307 No route was found from node 264113639 to node 566252696. Some possible reasons:
-2019-05-09 11:26:21,732  WARN Dijkstra:308   * Network is not connected.  Run NetworkCleaner().
-2019-05-09 11:26:21,732  WARN Dijkstra:309   * Network for considered mode does not even exist.  Modes need to be entered for each link in network.xml.
-2019-05-09 11:26:21,732  WARN Dijkstra:310   * Network for considered mode is not connected to starting or ending point of route.  Setting insertingAccessEgressWalk to true may help.
-2019-05-09 11:26:21,732  WARN Dijkstra:311 This will now return null, but it may fail later with a null pointer exception.
-2019-05-09 11:26:21,734 ERROR ParallelPersonAlgorithmUtils$ExceptionHandler:164 Thread PersonPrepareForSim.0 died with exception while handling events.
-java.lang.RuntimeException: No route found from node 264113639 to node 566252696 by mode car.
-	at org.matsim.core.router.NetworkRoutingModule.calcRoute(NetworkRoutingModule.java:97)
-	at org.matsim.core.router.TripRouter.calcRoute(TripRouter.java:222)
-	at org.matsim.core.router.PlanRouter.run(PlanRouter.java:90)
-	at org.matsim.core.population.algorithms.PersonPrepareForSim.run(PersonPrepareForSim.java:157)
-	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils$PersonAlgoThread.run(ParallelPersonAlgorithmUtils.java:145)
-	at java.lang.Thread.run(Thread.java:748)
-2019-05-09 11:26:21,735 ERROR MatsimRuntimeModifications:54 Getting uncaught Exception in Thread main
-java.lang.RuntimeException: Exception while processing persons. Cannot guarantee that all persons have been fully processed.
-	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils.run(ParallelPersonAlgorithmUtils.java:120)
-	at org.matsim.core.controler.PrepareForSimImpl.run(PrepareForSimImpl.java:127)
-	at org.matsim.core.controler.NewControler.prepareForSim(NewControler.java:115)
-	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:79)
-	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:48)
-	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:31)
-	at org.matsim.core.controler.AbstractController.run(AbstractController.java:88)
-	at org.matsim.core.controler.NewControler.run(NewControler.java:84)
-	at org.matsim.core.controler.Controler.run(Controler.java:240)
-	at de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel.runTransportModel(MatsimTransportModel.java:167)
-	at de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel.setup(MatsimTransportModel.java:114)
-	at de.tum.bgu.msm.simulator.Simulator.setup(Simulator.java:60)
-	at de.tum.bgu.msm.SiloModel.setupModel(SiloModel.java:109)
-	at de.tum.bgu.msm.SiloModel.runModel(SiloModel.java:74)
-	at run.SiloPerth.main(SiloPerth.java:36)
-2019-05-09 11:26:21,736 ERROR MatsimRuntimeModifications:60 ERROR --- This is an unexpected shutdown!
-2019-05-09 11:26:21,736 ERROR MatsimRuntimeModifications:63 Shutdown possibly caused by the following Exception:
-java.lang.RuntimeException: Exception while processing persons. Cannot guarantee that all persons have been fully processed.
-	at org.matsim.core.population.algorithms.ParallelPersonAlgorithmUtils.run(ParallelPersonAlgorithmUtils.java:120)
-	at org.matsim.core.controler.PrepareForSimImpl.run(PrepareForSimImpl.java:127)
-	at org.matsim.core.controler.NewControler.prepareForSim(NewControler.java:115)
-	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:79)
-	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:48)
-	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:31)
-	at org.matsim.core.controler.AbstractController.run(AbstractController.java:88)
-	at org.matsim.core.controler.NewControler.run(NewControler.java:84)
-	at org.matsim.core.controler.Controler.run(Controler.java:240)
-	at de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel.runTransportModel(MatsimTransportModel.java:167)
-	at de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel.setup(MatsimTransportModel.java:114)
-	at de.tum.bgu.msm.simulator.Simulator.setup(Simulator.java:60)
-	at de.tum.bgu.msm.SiloModel.setupModel(SiloModel.java:109)
-	at de.tum.bgu.msm.SiloModel.runModel(SiloModel.java:74)
-	at run.SiloPerth.main(SiloPerth.java:36)
-2019-05-09 11:26:21,745 ERROR MatsimRuntimeModifications:78 ERROR --- MATSim unexpectedly terminated. Please check the output or the logfile with warnings and errors for hints.
-2019-05-09 11:26:21,746 ERROR MatsimRuntimeModifications:79 ERROR --- results should not be used for further analysis.
-2019-05-09 11:26:21,746 ERROR MatsimRuntimeModifications:83 ERROR --- This was an unexpected shutdown! See the log file for a possible reason.
-2019-05-09 11:26:21,746 ERROR SiloModel:78 Error running SILO.
+2019-05-28 13:57:26,605  WARN VspConfigConsistencyCheckerImpl:83 you are insisting on config v1.  vsp default is using v2.
+2019-05-28 13:57:26,605  WARN VspConfigConsistencyCheckerImpl:99 you are not using FastAStarLandmarks as routing algorithm.  vsp default is to use FastAStarLandmarks.
+2019-05-28 13:57:26,605  WARN VspConfigConsistencyCheckerImpl:201 You are not setting fractionOfIterationsToStartScoreMSA; vsp default is to set this to something like 0.8.  This means you have to add the following lines to your config file: 
+2019-05-28 13:57:26,605  WARN VspConfigConsistencyCheckerImpl:203 <module name="planCalcScore">
+2019-05-28 13:57:26,606  WARN VspConfigConsistencyCheckerImpl:204 	<param name="fractionOfIterationsToStartScoreMSA" value="0.8" />
+2019-05-28 13:57:26,606  WARN VspConfigConsistencyCheckerImpl:205 </module>
+2019-05-28 13:57:26,606  WARN VspConfigConsistencyCheckerImpl:247 found `plansCalcRoute.insertingAccessEgressWalk==false'; vsp should use `true' or talk to Kai. 
+2019-05-28 13:57:26,606  WARN VspConfigConsistencyCheckerImpl:254 found qsim.usePersonIdForMissingVehicleId==true; this is only for backwards compatibility and should rather be set to false
+2019-05-28 13:57:26,606  WARN VspConfigConsistencyCheckerImpl:259 found `qsim.usingTravelTimeCheckInTeleporation==false'; vsp should try out `true' and report.

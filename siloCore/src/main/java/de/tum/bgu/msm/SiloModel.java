@@ -31,9 +31,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Greg Erhardt
@@ -150,6 +148,9 @@ public final class SiloModel {
 			    break;
             }
             timeTracker.endYear();
+
+
+
 		}
 	}
 
