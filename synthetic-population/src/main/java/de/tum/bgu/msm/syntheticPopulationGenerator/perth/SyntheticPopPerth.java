@@ -744,10 +744,21 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // try perfect matches first
         distributeAttempt(0, true);
         // now try with a margin
+        distributeAttempt(1, true);
         distributeAttempt(2, true);
+        distributeAttempt(3, true);
         // now bigger margin
         distributeAttempt(4, true);
+        distributeAttempt(5, true);
+        distributeAttempt(6, true);
+        distributeAttempt(7, true);
+        //
+        distributeAttempt(10, false);
         distributeAttempt(20, false);
+
+
+        logger.info("Moving dwellings around.");
+        //distributionTrade();
     }
 
     private void distributeAttempt(int margin, boolean perfectFit)
@@ -771,7 +782,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 ZoneSA1[] zones = zoneMap.get(SA4);
 
                 // convert to array list and sort
-                ArrayList<ZoneSA1> arrayList = new ArrayList<ZoneSA1>(Arrays.asList(zones));
+                ArrayList<ZoneSA1> arrayList = new ArrayList<>(Arrays.asList(zones));
                 Collections.sort(arrayList, Collections.reverseOrder());
                 zones = arrayList.toArray(new ZoneSA1[0]);
 
@@ -790,7 +801,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         {
                             boolean fullMatchAge = true;
                             boolean fullMatchInc = true;
-                            int points = 0;
+                            boolean fullMatchDwe = false;
+                            int points = 0; //familyFitInZone(zone, family, margin);
 
                             for(int a = 0; a < family.countAge.length ; a++)
                             {
@@ -802,6 +814,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                                     }
                                     else
                                     {
+                                        // how many misplaced people
                                         points += Math.abs(zone.getAgeGroupByBin(a) - family.countAge[a]);
                                     }
                                 }
@@ -816,12 +829,29 @@ public class SyntheticPopPerth implements SyntheticPopI {
                                     }
                                     else
                                     {
+                                        // how many misplaced people
                                         points += Math.abs(zone.getIncomeGroupByBin(a) - family.countIncome[a]);
                                     }
                                 }
                             }
 
-                            if(fullMatchAge && fullMatchInc)
+                            // if dwelling counts are ok
+                            if((zone.getDwellingTotal()+4) > 0)
+                            {
+                                // if structure types are ok
+                                if((zone.getStructureTotals(family.dwelling.codeType)+1) > 0)
+                                {
+                                    // if bedroom codes are ok
+                                    if((zone.getBedroomTotals(family.dwelling.codeBedrooms)+1) > 0)
+                                    {
+                                        fullMatchDwe = true;
+                                    }
+                                }
+                            }
+                            points += 0-zone.getDwellingTotal()-zone.getStructureTotals(family.dwelling.codeType)-zone.getBedroomTotals(family.dwelling.codeBedrooms);
+
+
+                            if(fullMatchAge && fullMatchInc && fullMatchDwe)
                             {
                                 bestZone = z;
                                 z = zones.length; // break out of the loop
@@ -853,7 +883,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     family.dwelling.SA1 = selectedZone.SA1;
 
                     // update the zone counts
-                    selectedZone.update(family);
+                    selectedZone.update(family, -1);
 
                     // update the map
                     zones[bestZone] = selectedZone;
@@ -861,7 +891,128 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 }
             }
         }
-        logger.info("allocated " + allocated + " more zones and " + unallocated + " unallocated still remaining");
+        logger.info("allocated " + allocated + " more households and " + unallocated + " unallocated still remaining");
+    }
+
+    private void distributionTrade()
+    {
+        for (ZoneSA1[] zones : zoneMap.values())
+        {
+            for(int i = 0; i < zones.length; i++)
+            {
+                ZoneSA1 zone1 = zones[i];
+                // if overflow in zone 1
+
+                    while(zone1.getDwellingTotal() < -1)
+                    {
+                        if(!zoneDistributionMove(zones, zone1))
+                        {
+                            break;
+                        }
+                    }
+            }
+        }
+    }
+
+    // returns if successfully moved
+    private boolean zoneDistributionMove(ZoneSA1[] zones, ZoneSA1 zone1)
+    {
+        // find a family in this SA1
+        Family family = findFamilyByZone(zone1.SA1);
+
+        // if found
+        if(family != null)
+        {
+            for(int j = 0; j < zones.length; j++)
+            {
+                ZoneSA1 zone2 = zones[j];
+
+                // if the zone has space
+                if (zone1.SA1 != zone2.SA1 && zone2.getDwellingTotal() > 0)
+                {
+                    // if zone can accommodate this structure & bedroom codes
+                    if (zone2.getBedroomTotals(family.dwelling.codeBedrooms) > 0
+                            && zone2.getStructureTotals(family.dwelling.codeType) > 0)
+                    {
+                        // if family fits perfectly in the zone (gender, income, age)
+                        if(familyFitInZone(zone2, family, 0) == 0)
+                        {
+                            family.dwelling.SA1 = zone2.SA1;
+                            zone1.update(family, 1);
+                            zone2.update(family, -1);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private Family findFamilyByZone(int SA1)
+    {
+        // starting with lowest family sizes
+        for(int f = (fullPopulation.size()-1); f >= 0; f--)
+        {
+            // if matching SA1
+            if(fullPopulation.get(f).dwelling.SA1 == SA1)
+            {
+                // if not a npd
+                if(fullPopulation.get(f).dwelling.codeType != ABS_CODE_NONPRIVATE_DWELLING)
+                {
+                    return fullPopulation.get(f);
+                }
+            }
+        }
+        return null;
+    }
+
+    private int familyFitInZone(ZoneSA1 zone, Family family, int margin)
+    {
+        // boolean fullMatchAge = false;
+        // boolean fullMatchInc = false;
+        int points = 0;
+
+        // if enough people left in the zone (considering the margin)
+        if((zone.getTotalPopulation()+margin) > 0)
+        {
+            // if enough of each gender in the zone
+            if((zone.getMales()+margin) >= family.countMale && (zone.getFemales()+margin) >= family.countFemale)
+            {
+                for(int a = 0; a < family.countAge.length ; a++)
+                {
+                    if(family.countAge[a] > 0)
+                    {
+                        if((zone.getAgeGroupByBin(a)+margin) >= family.countAge[a])
+                        {
+                            // fullMatchAge = true;
+                        }
+                        else
+                        {
+                            // how many misplaced people
+                            points += Math.abs(zone.getAgeGroupByBin(a) - family.countAge[a]);
+                        }
+                    }
+                }
+
+                for(int a = 0; a < family.countIncome.length ; a++)
+                {
+                    if(family.countIncome[a] > 0)
+                    {
+                        if((zone.getIncomeGroupByBin(a)+margin) >= family.countIncome[a])
+                        {
+                            // fullMatchInc = true;
+                        }
+                        else
+                        {
+                            // how many misplaced people
+                            points += Math.abs(zone.getIncomeGroupByBin(a) - family.countIncome[a]);
+                        }
+                    }
+                }
+            }
+        }
+        return points;
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Process ABS data
@@ -1958,24 +2109,34 @@ public class SyntheticPopPerth implements SyntheticPopI {
             bedroomTotals = new int[ABS_BEDROOM_GROUPS];
         }
 
-        public void update(Family family)
+        public void update(Family family, int sing)
         {
+            if(sing > 0)
+                sing = 1;
+            else if(sing < 0)
+                sing = -1;
+            else
+            {
+                sing = 1;
+                logger.error("sign needs to be -1 (decrement) or 1 (increment) zone population");
+            }
+
             // genders
-            addMales(-family.countMale);
-            addFemales(family.countFemale);
+            addMales((sing*family.countMale));
+            addFemales((sing*family.countFemale));
 
             // age
             for(int i = 0; i<family.countAge.length; i++)
-                addAgeGroupByBin(i, -family.countAge[i]);
+                addAgeGroupByBin(i, (sing*family.countAge[i]));
 
             // income
             for(int i = 0; i<family.countIncome.length; i++)
-                addIncomeGroupByBin(i, -family.countIncome[i]);
+                addIncomeGroupByBin(i, (sing*family.countIncome[i]));
 
             // dwelling properties
-            addDwellingTotal(-1);
-            addStructureTotals(family.dwelling.codeType, -1);
-            addBedroomTotals(family.dwelling.codeBedrooms, -1);
+            addDwellingTotal(sing);
+            addStructureTotals(family.dwelling.codeType, sing);
+            addBedroomTotals(family.dwelling.codeBedrooms, sing);
         }
 
         // -----------------------------------------------------------------    Total population counts
