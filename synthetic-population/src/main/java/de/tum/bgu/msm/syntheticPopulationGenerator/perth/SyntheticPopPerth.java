@@ -27,7 +27,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private int ABS_CODE_NONPRIVATE_DWELLING = 6;
     private int ABS_AGE_GROUPS = 18;
     private int ABS_INCOME_GROUPS = 15;
-    private int SILO_DWELL_GROUPS = 6;
+    private int ABS_DWELL_GROUPS = 6; // structure, abs = silo
+    private int ABS_BEDROOM_GROUPS = 8;
     private int POPULATION_WEIGHT = 100;
 
     protected static final String PROPERTIES_RUN_SP = "run.synth.pop.generator";
@@ -229,8 +230,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // open the files
         TableDataSet genderPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderBySA1_" + year + ".csv");
         TableDataSet agePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/ageGroupsBySA1_" + year + ".csv");
-        //TableDataSet genderAgePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderAgeGroupBySA1_" + year + ".csv");
         TableDataSet incomePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/weeklyIncomeBySA1_" + year + ".csv");
+        TableDataSet dwellingPropertiesPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/opdBySA1_" + year + ".csv");
 
         // SA4 area codes in the file
         int[] areaCodes = new int[] {49, 50, 51, 52};
@@ -328,6 +329,43 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
                         // replace (not needed)
                         SA1zones.put(SA1, zone);
+                    }
+                    else
+                    {
+                        logger.error("Zone mismatch at SA1 " + SA1);
+                    }
+                }
+            }
+
+            // find dwelling properties
+            for(int row = 1; row <= dwellingPropertiesPerArea.getRowCount(); row++)
+            {
+                int SA4 = (int) dwellingPropertiesPerArea.getValueAt(row, "SA4");
+
+                // if zone belongs to the same SA4 area code
+                if(areaCodes[area] == SA4)
+                {
+                    int SA1 = (int)(dwellingPropertiesPerArea.getValueAt(row, "SA1"));
+
+                    // get the previously created zone
+                    ZoneSA1 zone = SA1zones.get(SA1);
+
+                    if(zone != null)
+                    {
+                        // add the total dwelling count in this zone
+                        zone.setDwellingTotal((int)(dwellingPropertiesPerArea.getValueAt(row, "Count")));
+
+                        // add totals for dwelling structures
+                        for(int strType = 1; strType <= ABS_DWELL_GROUPS; strType++)
+                        {
+                            zone.setStructureTotals(strType, (int)(dwellingPropertiesPerArea.getValueAt(row, "structure_"+strType)));
+                        }
+
+                        // add totals for dwelling bedrooms
+                        for(int bedType = 0; bedType < ABS_BEDROOM_GROUPS; bedType++)
+                        {
+                            zone.setBedroomTotals(bedType, (int)(dwellingPropertiesPerArea.getValueAt(row, "bedroom_"+bedType)));
+                        }
                     }
                     else
                     {
@@ -1895,6 +1933,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public int SA1;
         public int SA4;
 
+        // people info
         public int[] genderTotals;
         public int[] ageTotals;
         public int[] incomeTotals;
@@ -1903,11 +1942,20 @@ public class SyntheticPopPerth implements SyntheticPopI {
         private int posM = 0; // male index in the gender arrays
         private int posF = 1; // female index in the gender arrays
 
+        // dwelling info
+        public int dwellingTotal;
+        public int[] structureTotals;
+        public int[] bedroomTotals;
+
+        // constructor
         public ZoneSA1()
         {
             genderTotals = new int[2];
             ageTotals = new int[ABS_AGE_GROUPS + 1];
             incomeTotals = new int[ABS_INCOME_GROUPS + 1];
+
+            structureTotals = new int[ABS_DWELL_GROUPS];
+            bedroomTotals = new int[ABS_BEDROOM_GROUPS];
         }
 
         public void update(Family family)
@@ -1923,6 +1971,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // income
             for(int i = 0; i<family.countIncome.length; i++)
                 addIncomeGroupByBin(i, -family.countIncome[i]);
+
+            // dwelling properties
+            addDwellingTotal(-1);
+            addStructureTotals(family.dwelling.codeType, -1);
+            addBedroomTotals(family.dwelling.codeBedrooms, -1);
         }
 
         // -----------------------------------------------------------------    Total population counts
@@ -1969,6 +2022,19 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public void addIncomeGroupByBin(int bin, int count) { incomeTotals[bin] += count; }
         public void setIncomeGroupByBin(int bin, int count) { incomeTotals[bin] = count; }
         public int getIncomeGroupByBin(int bin) { return incomeTotals[bin]; }
+
+        // -----------------------------------------------------------------    Dwelling methods
+        public void addDwellingTotal(int count) { dwellingTotal += count; }
+        public void setDwellingTotal(int count) { dwellingTotal = count; }
+        public int getDwellingTotal() { return dwellingTotal; }
+
+        public void addStructureTotals(int code, int count) { structureTotals[code-1] += count; }
+        public void setStructureTotals(int code, int count) { structureTotals[code-1] = count; }
+        public int getStructureTotals(int code) { return structureTotals[code-1]; }
+
+        public void addBedroomTotals(int code, int count) { bedroomTotals[code] += count; }
+        public void setBedroomTotals(int code, int count) { bedroomTotals[code] = count; }
+        public int getBedroomTotals(int code) { return bedroomTotals[code]; }
 
         // -----------------------------------------------------------------    Clone interface
         @Override
@@ -2126,11 +2192,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
             zone = newZoneSA;
 
             // create arrays to store dwelling prices & average prices
-            averagePricesPerDwelling = new int[SILO_DWELL_GROUPS];
-            structurePrices = new ArrayList[SILO_DWELL_GROUPS];
+            averagePricesPerDwelling = new int[ABS_DWELL_GROUPS];
+            structurePrices = new ArrayList[ABS_DWELL_GROUPS];
 
             // initiate the array with ArrayLists
-            for(int i=0; i<SILO_DWELL_GROUPS; i++)
+            for(int i=0; i<ABS_DWELL_GROUPS; i++)
             {
                 structurePrices[i] = new ArrayList<Integer>();
             }
@@ -2152,7 +2218,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             int numberOfDwells = 0;
 
             // for each structure type
-            for(int i = 0; i < SILO_DWELL_GROUPS; i++)
+            for(int i = 0; i < ABS_DWELL_GROUPS; i++)
             {
                 int sum = 0;
 
