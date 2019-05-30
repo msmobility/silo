@@ -27,6 +27,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private int ABS_CODE_NONPRIVATE_DWELLING = 6;
     private int ABS_AGE_GROUPS = 18;
     private int ABS_INCOME_GROUPS = 15;
+    private int SILO_DWELL_GROUPS = 6;
     private int POPULATION_WEIGHT = 100;
 
     protected static final String PROPERTIES_RUN_SP = "run.synth.pop.generator";
@@ -52,8 +53,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private HashMap<Integer, ZoneSA1[]> zoneMap = new HashMap<>(); // used for the distribution of the population
     private HashMap<Integer, ZoneSA1Jobs> JobDistributionSA1 = new HashMap<>();
     private JobCollection jobCollection = new JobCollection();
-    private ArrayList<Dwelling> dwellingList = new ArrayList();
-    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>();
+    private ArrayList<Dwelling> dwellingList = new ArrayList(); // store all of the dwellings (to be saved to file later)
+    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>(); // used for unocc private dwellings
+    private HashMap<Integer, ZoneQuality> qualityMapSA1 = new HashMap<>(); // used to store average prices per structure
 
     // statistical counts
     private long unassignedWorker = 0;
@@ -124,8 +126,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
         logger.info("\t ---------- Converting ABS to SILO standard");
         convertToSilo();
 
-        //logger.info("\t ---------- Assigning quality to dwellings.");
-        //determineDwellingQuality();
+        logger.info("\t ---------- Assigning quality to dwellings.");
+        determineZoneQuality();
 
         logger.info("\t ---------- Adding vacant/unoccupied dwellings.");
         addVacantDwellings(year);
@@ -871,6 +873,41 @@ public class SyntheticPopPerth implements SyntheticPopI {
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------  Zone & Dwellings
+    private void determineZoneQuality()
+    {
+        // for each saved dwelling
+        for(int i = 0; i<dwellingList.size(); i++)
+        {
+            int SA1 = dwellingList.get(i).SA1;
+
+            // if allocated dwelling
+            if(SA1 > 0)
+            {
+                // fetch zone quality for SA1 in which this dwelling is
+                ZoneQuality zoneQuality = qualityMapSA1.get(dwellingList.get(i).SA1);
+
+                // if nothing yet, create new zone quality
+                if(zoneQuality == null)
+                {
+                    zoneQuality = new ZoneQuality(SA1);
+                }
+
+                // add the price (for later calculation)
+                zoneQuality.addStructurePrice(dwellingList.get(i).ddType, dwellingList.get(i).ddPrice);
+
+                // save the zone quality (overwrite)
+                qualityMapSA1.put(SA1, zoneQuality);
+            }
+        }
+
+        // calculate the average prices for each SA1
+        for (ZoneQuality zoneQuality : qualityMapSA1.values())
+        {
+            zoneQuality.calculateAveragePrices();
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------  Vacant Dwellings
     private void tmpStoreDwelling(Dwelling dwelling)
     {
@@ -880,12 +917,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // store it under the zone to be used for vacant dwellings
         ArrayList<Dwelling> dwls = dwellingsPerZoneMap.get(dwelling.SA1);
         if(dwls == null)
+        {
             dwls = new ArrayList<>();
+        }
         dwls.add(dwelling);
         dwellingsPerZoneMap.put(dwelling.SA1, dwls);
-
-        // add dwelling price to calculate quality later
-        // addToQuality(dwelling.zoneSA1, dwelling.type, dwelling.price, dwelling.bedrooms);
     }
 
     /*  Add vacant dwellings based on the given list. The list contains
@@ -909,7 +945,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             for(int c = 3; c <= dwellUnoccPerArea.getColumnCount(); c++)
             {
                 // get the type of the dwelling
-                int ddType = Integer.parseInt(dwellUnoccPerArea.getColumnLabel(c));
+                int ddCodeType = Integer.parseInt(dwellUnoccPerArea.getColumnLabel(c));
 
                 // get how many of dwellings of that type there are
                 int count = (int)dwellUnoccPerArea.getValueAt(r, c);
@@ -919,7 +955,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     ArrayList<Dwelling> dwellings = dwellingsPerZoneMap.get(zone);
 
                     // find dwellings of the same type
-                    ArrayList<Dwelling> dwellingsSameType = findDwellingsOfSameType(dwellings, ddType);
+                    ArrayList<Dwelling> dwellingsSameType = findDwellingsOfSameType(dwellings, ddCodeType);
 
                     // if no dwellings found, try the neighbourhood
                     if(dwellingsSameType.size() < 1)
@@ -929,16 +965,16 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         while(dwellingsSameType.size() < 1 && counter <= 99)
                         {
                             dwellings = dwellingsPerZoneMap.get(zone+counter);
-                            dwellingsSameType = findDwellingsOfSameType(dwellings, ddType);
+                            dwellingsSameType = findDwellingsOfSameType(dwellings, ddCodeType);
 
                             if(dwellingsSameType.size() < 1)
                             {
                                 dwellings = dwellingsPerZoneMap.get(zone-counter);
-                                dwellingsSameType = findDwellingsOfSameType(dwellings, ddType);
+                                dwellingsSameType = findDwellingsOfSameType(dwellings, ddCodeType);
                             }
                             counter++;
                         }
-                        if(dwellingsSameType.size() == 0) logger.warn("Failed to find a dwelling for " + ddType + " in zone " + zone);
+                        if(dwellingsSameType.size() == 0) logger.warn("Failed to find a dwelling for " + ddCodeType + " in zone " + zone);
                     }
 
                     // if any dwellings found
@@ -953,21 +989,20 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
                             // create a new vacant dwelling using existing dwelling's properties
                             Dwelling vaccDwelling = new Dwelling();
+                            vaccDwelling.copyFromDwelling(oocDwelling);
                             vaccDwelling.ddID = nextID_DD++;
-                            vaccDwelling.SA1 = zone;
-                            vaccDwelling.ddType = ddType;
                             vaccDwelling.hhID = -1;
-                            vaccDwelling.ddBedrooms = oocDwelling.ddBedrooms;
-                            vaccDwelling.ddPrice = oocDwelling.ddPrice;
-                            vaccDwelling.ddQuality = oocDwelling.ddQuality;
+                            vaccDwelling.SA1 = zone;
+                            vaccDwelling.ddType = ddCodeType; // just to make sure
+                            vaccDwelling.ddPrice = qualityMapSA1.get(zone).overallAveragePrice;
 
                             // add the dwelling to be later saved to the file
-                            dwellingList.add(vaccDwelling);
+                            tmpStoreDwelling(vaccDwelling); //dwellingList.add(vaccDwelling);
                         }
                     }
                     else
                     {
-                        logger.error("Failed to add dwelling type " + ddType + " in zone " + zone);
+                        logger.error("Failed to add dwelling type " + ddCodeType + " in zone " + zone);
                     }
                 }
             }
@@ -994,6 +1029,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
     // -----------------------------------------------------------------------------------------------------------------  Save to file
     private void saveJobs()
     {
+        // heading for jj SILO
+        pwjj.println("id,zone,personId,type");
+
         int vacantJobs = 0;
         int takenJobs = jobCollection.jobSlots.size();
 
@@ -1022,6 +1060,12 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
     private void savePopulation()
     {
+        // heading for pp & hh SILO
+        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwhh.println("id,dwelling,zone,hhSize,autos");
+        // heading for pp ABS
+        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+
         for(int i = 0; i < fullPopulation.size(); i++)
         {
             Family family = fullPopulation.get(i);
@@ -1051,6 +1095,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
     public void saveDwellings()
     {
+        // heading for dd SILO
+        pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
+        // heading for dd ABS
+        pwddabs.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,rent,mortgage");
+
         for(int i = 0; i < dwellingList.size(); i++)
         {
             Dwelling dwelling = dwellingList.get(i);
@@ -1060,8 +1109,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     dwelling.hhID + "," + dwelling.ddBedrooms + "," + dwelling.ddQuality + "," + dwelling.ddPrice);
 
             pwddabs.println(dwelling.ddID + "," + dwelling.SA1 + "," + dwelling.codeType + "," +
-                    dwelling.hhID + "," + dwelling.codeBedrooms + "," + dwelling.ddQuality + ","
-                    + dwelling.codeRent + ", " + dwelling.codeMortgage);
+                    dwelling.hhID + "," + dwelling.codeBedrooms + "," + dwelling.ddQuality + "," + dwelling.ddPrice
+                    + "," + dwelling.codeRent + ", " + dwelling.codeMortgage);
         }
     }
 
@@ -1137,46 +1186,60 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return selectedAge;
     }
 
+    /*  Select actual number of autos from indicators provided in ABS microdata
+            0: None                                                     0
+            1: 1 motor vehicle                                          1
+            2: 2 motor vehicles                                         2
+            3: 3 motor vehicles                                         3
+            4: 4 or more motor vehicles; set 4 cars as maximum          4 or more
+            5: Not stated                                               0
+            6: Not applicable                                           0
+    */
     private int convertAutos(int autoCode)
     {
-        // select actual number of autos from indicators provided in ABS microdata
-        // 0: None
-        // 1: 1 motor vehicle
-        // 2: 2 motor vehicles
-        // 3: 3 motor vehicles
-        // 4: 4 or more motor vehicles; set 4 cars as maximum
-        // 5: Not stated
-        // 6: Not applicable
-        if (autoCode <= 4){
+        // direct import
+        if (autoCode <= 4)
+        {
             return autoCode;
-        } else {
-            return 0;
         }
+        // if not stated, do a random integer [0, 4]
+        else if (autoCode == 5)
+        {
+            return 0;//randomInteger(0, 4);
+        }
+        // else not applicable = 0
+        return 0;
     }
 
+    /*  select actual number of from indicators provided in ABS microdata
+            0: None (includes bedsitters)       0
+            1: 1 bedroom                        1
+            2: 2 bedrooms                       2
+            3: 3 bedrooms                       3
+            4: 4 bedrooms                       4
+            5: 5 or more bedrooms               5
+            6: Not stated                       0
+            7: Not applicable                   0
+    */
     private int convertBedrooms(int bedroomCode)
     {
-        // select actual number of from indicators provided in ABS microdata
-        //  0: None (includes bedsitters)
-        //  1: 1 bedroom
-        //  2: 2 bedrooms
-        //  3: 3 bedrooms
-        //  4: 4 bedrooms
-        //  5: 5 or more bedrooms
-        //  6: Not stated = random 5 7
-        //  7: Not applicable
-        if (bedroomCode < 5)
+        // if [0, 4] direct import the value
+        if (bedroomCode <= 4)
         {
             return bedroomCode;
         }
-        else if (bedroomCode == 5 || bedroomCode == 6)
+        // if 5 or more then random [5, 7] 7 = max number of bedrooms in Perth
+        else if (bedroomCode == 5)
         {
-            float rnd = SiloUtil.getRandomNumberAsFloat();
-            return (int) (5 + rnd * 2);
+            return randomInteger(5, 7);
         }
-        else {
-            return 0;
+        // if not stated then random [0, 7]
+        else if(bedroomCode == 6)
+        {
+            return 0; // randomInteger(0, 7);
         }
+
+        return 0;
     }
 
 
@@ -1461,21 +1524,15 @@ public class SyntheticPopPerth implements SyntheticPopI {
         String filedd = baseDirectory + "/microData/dd_" + year + ".csv";
         String filejj = baseDirectory + "/microData/jj_" + year + ".csv";
         pwhh = SiloUtil.openFileForSequentialWriting(filehh, false);
-        pwhh.println("id,dwelling,zone,hhSize,autos");
         pwpp = SiloUtil.openFileForSequentialWriting(filepp, false);
-        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
         pwdd = SiloUtil.openFileForSequentialWriting(filedd, false);
-        pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
         pwjj = SiloUtil.openFileForSequentialWriting(filejj, false);
-        pwjj.println("id,zone,personId,type");
 
         // ABS
         String fileppABS = baseDirectory + "/microData/abs_pp_" + year + ".csv";
         String fileddABS = baseDirectory + "/microData/abs_dd_" + year + ".csv";
         pwppabs = SiloUtil.openFileForSequentialWriting(fileppABS, false);
-        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
         pwddabs = SiloUtil.openFileForSequentialWriting(fileddABS, false);
-        pwddabs.println("id,zone,type,hhID,bedrooms,quality,rent,mortgage");
     }
 
     private void closeFilesForSyntheticPopulation()
@@ -1624,6 +1681,25 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     }
                 }
             }
+        }
+
+        public void copyFromDwelling(Dwelling dwelling)
+        {
+            // abs
+            codeBedrooms = dwelling.codeBedrooms;
+            codeMortgage = dwelling.codeMortgage;
+            codeRent = dwelling.codeRent;
+            codeType = dwelling.codeType;
+            codeVehicles = dwelling.codeVehicles;
+
+            // silo
+            ddBedrooms = dwelling.ddBedrooms;
+            ddMortgage = dwelling.ddMortgage;
+            ddRent = dwelling.ddRent;
+            ddType = dwelling.ddType;
+            ddVehicles = dwelling.ddVehicles;
+            ddQuality = dwelling.ddQuality;
+            ddPrice = dwelling.ddPrice;
         }
 
         // -----------------------------------------------------------------    Clone interface
@@ -2033,6 +2109,76 @@ public class SyntheticPopPerth implements SyntheticPopI {
             public double Probability = 0;
 
             public ZoneJobProbability() { }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------  Zone Quality
+    private class ZoneQuality
+    {
+        public int zone; // can be SA1 or SA2
+        public ArrayList<Integer>[] structurePrices;
+        public int[] averagePricesPerDwelling;
+        public int overallAveragePrice;
+
+        public ZoneQuality(int newZoneSA)
+        {
+            // allocate SA1 or SA2 (should be unique)
+            zone = newZoneSA;
+
+            // create arrays to store dwelling prices & average prices
+            averagePricesPerDwelling = new int[SILO_DWELL_GROUPS];
+            structurePrices = new ArrayList[SILO_DWELL_GROUPS];
+
+            // initiate the array with ArrayLists
+            for(int i=0; i<SILO_DWELL_GROUPS; i++)
+            {
+                structurePrices[i] = new ArrayList<Integer>();
+            }
+        }
+
+        public void addStructurePrice(int type, int price)
+        {
+            structurePrices[type-1].add(price);
+        }
+
+        public int getAveragePriceForStructure(int type)
+        {
+            return averagePricesPerDwelling[type-1];
+        }
+
+        public void calculateAveragePrices()
+        {
+            int overallSum = 0;
+            int numberOfDwells = 0;
+
+            // for each structure type
+            for(int i = 0; i < SILO_DWELL_GROUPS; i++)
+            {
+                int sum = 0;
+
+                // get the prices for this structure type
+                ArrayList<Integer> prices = structurePrices[i];
+                numberOfDwells += prices.size();
+
+                // sum the prices for this structure type
+                for (Integer price : prices)
+                {
+                    sum += price;
+                    overallSum += price;
+                }
+
+                // calculate the average price for this structure type
+                if(prices.size() > 0)
+                {
+                    averagePricesPerDwelling[i] = (sum/prices.size());
+                }
+                else
+                {
+                    averagePricesPerDwelling[i] = 0;
+                }
+            }
+
+            overallAveragePrice = (overallSum/numberOfDwells);
         }
     }
 
