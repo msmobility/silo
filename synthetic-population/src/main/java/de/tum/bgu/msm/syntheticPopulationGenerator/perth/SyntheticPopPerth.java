@@ -405,11 +405,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             // get the attributes of the dwelling from ABS and store them for later processing
             Dwelling dwelling = new Dwelling();
-            dwelling.codeBedrooms = (int) pumsDwellings.getValueAt(rowDd, "BEDRD");
-            dwelling.codeMortgage = (int) pumsDwellings.getValueAt(rowDd, "MRERD");
-            dwelling.codeRent = (int) pumsDwellings.getValueAt(rowDd, "RNTRD");
-            dwelling.codeType = (int) pumsDwellings.getValueAt(rowDd, "STRD");
-            dwelling.codeVehicles = (int) pumsDwellings.getValueAt(rowDd, "VEHRD");
+            dwelling.codeBedrooms = (int) pumsDwellings.getValueAt(rowDd, "BEDRD"); // convertBedrooms()
+            dwelling.codeMortgage = (int) pumsDwellings.getValueAt(rowDd, "MRERD"); // convertMortgage()
+            dwelling.codeRent = (int) pumsDwellings.getValueAt(rowDd, "RNTRD"); // convertRent()
+            dwelling.codeType = (int) pumsDwellings.getValueAt(rowDd, "STRD"); // direct mapping
+            dwelling.codeVehicles = (int) pumsDwellings.getValueAt(rowDd, "VEHRD"); // convertAutos()
             dwelling.SA4 = (int) pumsDwellings.getValueAt(rowDd, "AREAENUM");
 
             // ---------------------------------------------------------------------------------------------------------
@@ -1019,7 +1019,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 person.ppSex = person.codeSex;
                 person.ppRace = 0;
                 person.ppIncome = convertIncome(person.codeIncome);
-                person.ppOccupation = translateOccupation(person.codeOccupation, person.codeAge);
+                person.ppOccupation = translateOccupation(person.codeOccupation, person.ppAge);
                 person.ppRelationship = translateRelationship(person.codeRelationship);
                 person.ppIndustry = translateIndustry(person.codeIndustry, person.ppOccupation);
 
@@ -1235,13 +1235,28 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 + " vacant jobs. The job vacancy rate is " + ((double)vacantJobs/(double)takenJobs)*100 + "%.");
     }
 
+    // -----------------------------------------------------------------------------------------------------------------    Save pp hh
+    /*
+        ABS FILE
+            id: unique person ID (same as SILO)
+            hhid: unique household ID (same as SILO)
+            age: AGEP Age [1 38]                                    see: convertAge
+            gender: SEXP Sex [1, 2] (same as SILO)
+            relationship: RLHP Relationship in Household [1, 11]
+            race: 0 (same as SILO)
+            occupation: LFSP Labour Force Status [1 6]
+            workplace: unique job ID (same as SILO)
+            income: INCP Individual Income (weekly) [1, 15]
+            code_industry: INDP Industry of Employment [1, 23]
+            pp_industry:
+    */
     private void savePopulation()
     {
         // heading for pp & hh SILO
-        pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwpp.println("id,hhid,age,gender,relationship,race,occupation,workplace,income");
         pwhh.println("id,dwelling,zone,hhSize,autos");
         // heading for pp ABS
-        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,industry");
+        pwppabs.println("id,hhid,age,gender,relationship,race,occupation,workplace,income,code_industry,pp_industry,SA1");
 
         for(int i = 0; i < fullPopulation.size(); i++)
         {
@@ -1262,7 +1277,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 // abs version
                 pwppabs.println(person.ppID + "," + dwelling.hhID + "," + person.codeAge + "," + person.codeSex + ","
                         + person.codeRelationship + "," + person.ppRace + "," +  person.codeOccupation + ","
-                        + person.jjID + "," + person.codeIncome + "," + person.codeIndustry);
+                        + person.jjID + "," + person.codeIncome + "," + person.codeIndustry + "," + person.ppIndustry
+                        + "," + dwelling.SA1);
             }
 
             // save the household
@@ -1270,6 +1286,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------------    dd
     public void saveDwellings()
     {
         // heading for dd SILO
@@ -1304,97 +1321,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
     }
 
     // -----------------------------------------------------------------------------------------------------------------  ABS to SILO translate
-    /*  Select actual age from bins provided in the microdata
-        Ages: 1-25: 0-24 years singly		1..5
-                26: 25-29 years				6
-                27: 30–34 years				7
-                28: 35–39 years				8
-                29: 40–44 years				9
-                30: 45–49 years				10
-                31: 50–54 years				11
-                32: 55–59 years				12
-                33: 60–64 years				13
-                34: 65–69 years				14
-                35: 70–74 years				15
-                36: 75–79 years				16
-                37: 80–84 years				17
-                38: 85 years and over		18
-    */
-    private int convertAge(int ageGroup)
-    {
-        int selectedAge = 0;
-        float rnd = SiloUtil.getRandomNumberAsFloat();
-        if (ageGroup <= 24)
-        {
-            selectedAge = ageGroup;
-        }
-        else
-        {
-            switch (ageGroup)
-            {
-                case 25: selectedAge = (int) (25 + rnd * 5);
-                    break;
-                case 26: selectedAge = (int) (30 + rnd * 5);
-                    break;
-                case 27: selectedAge = (int) (35 + rnd * 5);
-                    break;
-                case 28: selectedAge = (int) (40 + rnd * 5);
-                    break;
-                case 29: selectedAge = (int) (45 + rnd * 5);
-                    break;
-                case 30: selectedAge = (int) (50 + rnd * 5);
-                    break;
-                case 31: selectedAge = (int) (55 + rnd * 5);
-                    break;
-                case 32: selectedAge = (int) (60 + rnd * 5);
-                    break;
-                case 33: selectedAge = (int) (65 + rnd * 5);
-                    break;
-                case 34: selectedAge = (int) (70 + rnd * 5);
-                    break;
-                case 35: selectedAge = (int) (75 + rnd * 5);
-                    break;
-                case 36: selectedAge = (int) (80 + rnd * 5);
-                    break;
-                case 37: selectedAge = (int) (85 + rnd * 15);
-                    break;
-            }
-        }
-        return selectedAge;
-    }
-
-    /*  Select actual number of autos from indicators provided in ABS microdata
-            0: None                                                     0
-            1: 1 motor vehicle                                          1
-            2: 2 motor vehicles                                         2
-            3: 3 motor vehicles                                         3
-            4: 4 or more motor vehicles; set 4 cars as maximum          4 or more
-            5: Not stated                                               0
-            6: Not applicable                                           0
-    */
-    private int convertAutos(int autoCode)
-    {
-        // direct import
-        if (autoCode <= 4)
-        {
-            return autoCode;
-        }
-        // if not stated, do a random integer [0, 4]
-        else if (autoCode == 5)
-        {
-            return 0;//randomInteger(0, 4);
-        }
-        // else not applicable = 0
-        return 0;
-    }
-
-    /*  select actual number of from indicators provided in ABS microdata
+    /*  select actual number of from indicators provided in ABS "BEDD"
             0: None (includes bedsitters)       0
             1: 1 bedroom                        1
             2: 2 bedrooms                       2
             3: 3 bedrooms                       3
             4: 4 bedrooms                       4
-            5: 5 or more bedrooms               5
+            5: 5 or more bedrooms               [5 7]
             6: Not stated                       0
             7: Not applicable                   0
     */
@@ -1418,90 +1351,30 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         return 0;
     }
-    // -----------------------------------------------------------------------------------------------------------------  Dwelling Quality
-    private int translateDwellingQuality(Dwelling dwelling)
-    {
-        int dwellingBedrooms = dwelling.codeBedrooms > 5 ? 5 : dwelling.codeBedrooms;
 
-        // big four ISP. Graph, Syntax, Logic, Alloy - TRansition?
-        for(int row = 1; row <= qualityMatrix.getRowCount(); row++)
-        {
-            if(dwelling.codeType == (int)qualityMatrix.getValueAt(row, "Type"))
-            {
-                if(dwellingBedrooms == (int)qualityMatrix.getValueAt(row, "Bedrooms"))
-                {
-                    // up to including weekly rent bin OR up to including monthly mortgage bin
-                    if((dwelling.codeRent <= (int)qualityMatrix.getValueAt(row, "Rent Bin"))
-                        || (dwelling.codeMortgage <= (int)qualityMatrix.getValueAt(row, "Mortgage Bin")))
-                    {
-                        return (int) qualityMatrix.getValueAt(row, "Quality") + 1;
-                    }
-                }
-            }
-        }
-        return 1;
-    }
-
-    private int convertIncome(int incomeCode) {
-        // select actual income from bins provided in microdata
-        //  1: Negative income
-        //  2: Nil income
-        //  3: $1–$199
-        //  4: $200–$299
-        //  5: $300–$399
-        //  6: $400–$599
-        //  7: $600–$799
-        //  8: $800–$999
-        //  9: $1,000–$1,249
-        // 10: $1,250–$1,499
-        // 11: $1,500–$1,999
-        // 12: $2,000 or more
-        // 13: Not stated
-        // 14: Not applicable
-        // 15: Overseas visitor
-        float rnd = SiloUtil.getRandomNumberAsFloat();
-        switch (incomeCode) {
-            case 1: case 2: return 0;
-            case 3: return (int) ((1 + rnd * 199)*52/12);
-            case 4: return (int) ((200 + rnd * 100)*52/12);
-            case 5: return (int) ((300 + rnd * 100)*52/12);
-            case 6: return (int) ((400 + rnd * 200)*52/12);
-            case 7: return (int) ((600 + rnd * 200)*52/12);
-            case 8: return (int) ((800 + rnd * 200)*52/12);
-            case 9: return (int) ((1000 + rnd * 250)*52/12);
-            case 10: return (int) ((1250 + rnd * 250)*52/12);
-            case 11: return (int) ((1500 + rnd * 500)*52/12);
-            case 12: return (int) ((2000 + rnd * 20000)*52/12);
-            case 13: case 14: case 15: return 0;
-            default: logger.error("Unknown income code " + incomeCode);
-                return 0;
-        }
-    }
-
-    /*  Convert mortgage code to a payment
-        MRERD Mortgage Repayments (monthly) ranges
-        1	Nil repayments
-        2	$1-$149
-        3	$150-$299
-        4	$300-$449
-        5	$450-$599
-        6	$600-$799
-        7	$800-$999
-        8	$1,000-$1,199
-        9	$1,200-$1,399
-        10	$1,400-$1,599
-        11	$1,600-$1,799
-        12	$1,800-$1,999
-        13	$2,000-$2,199
-        14	$2,200-$2,399
-        15	$2,400-$2,599
-        16	$2,600-$2,999
-        17	$3,000-$3,999
-        18	$4,000-$4,999
-        19	$5,000 and over
-        20	Not stated
-        21	Not applicable
-     */
+    /*  Convert mortgage code to a payment. MRERD Mortgage Repayments (monthly) ranges
+             1	Nil repayments
+             2	$1-$149
+             3	$150-$299
+             4	$300-$449
+             5	$450-$599
+             6	$600-$799
+             7	$800-$999
+             8	$1,000-$1,199
+             9	$1,200-$1,399
+             10	$1,400-$1,599
+             11	$1,600-$1,799
+             12	$1,800-$1,999
+             13	$2,000-$2,199
+             14	$2,200-$2,399
+             15	$2,400-$2,599
+             16	$2,600-$2,999
+             17	$3,000-$3,999
+             18	$4,000-$4,999
+             19	$5,000 and over
+             20	Not stated
+             21	Not applicable
+    */
     private int convertMortgage(int mortgageCode)
     {
         int min, max;
@@ -1530,38 +1403,35 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return randomInteger(min, max);
     }
 
-    /*  Convert rent code to monthly payment
-        RNTRD Rent (weekly) Ranges
-        1	Nil payments
-        2	$1-$74
-        3	$75-$99
-        4	$100-$124
-        5	$125-$149
-        6	$150-$174
-        7	$175-$199
-        8	$200-$224
-        9	$225-$249
-        10	$250-$274
-        11	$275-$299
-        12	$300-$324
-        13	$325-$349
-        14	$350-$374
-        15	$375-$399
-        16	$400-$424
-        17	$425-$449
-        18	$450-$549
-        19	$550-$649
-        20	$650 and over
-        21	Not stated
-        22	Not applicable
+    /*  Convert rent code to monthly payment. RNTRD Rent (weekly) Ranges
+            1	Nil payments
+            2	$1-$74
+            3	$75-$99
+            4	$100-$124
+            5	$125-$149
+            6	$150-$174
+            7	$175-$199
+            8	$200-$224
+            9	$225-$249
+            10	$250-$274
+            11	$275-$299
+            12	$300-$324
+            13	$325-$349
+            14	$350-$374
+            15	$375-$399
+            16	$400-$424
+            17	$425-$449
+            18	$450-$549
+            19	$550-$649
+            20	$650 and over
+            21	Not stated
+            22	Not applicable
     */
     private int convertRent (int rentCode)
     {
         int min, max;
         switch (rentCode)
         {
-            //2820
-            //248112
             default: case 1: case 21: case 22: min = 0; max = 0; break;
             case 2:  min = 1; max = 74; break;
             case 3:  min = 75; max = 99; break;
@@ -1623,6 +1493,152 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return monthlyPrice;
     }
 
+    /*  Select actual number of autos from indicators provided in ABS microdata
+            0: None                                                     0
+            1: 1 motor vehicle                                          1
+            2: 2 motor vehicles                                         2
+            3: 3 motor vehicles                                         3
+            4: 4 or more motor vehicles; set 4 cars as maximum          4 or more
+            5: Not stated                                               0
+            6: Not applicable                                           0
+    */
+    private int convertAutos(int autoCode)
+    {
+        // direct import
+        if (autoCode <= 4)
+        {
+            return autoCode;
+        }
+        // if not stated, do a random integer [0, 4]
+        else if (autoCode == 5)
+        {
+            return 0;//randomInteger(0, 4);
+        }
+        // else not applicable = 0
+        return 0;
+    }
+
+
+    // -----------------------------------------------------------------------------------------------------------------  Dwelling Quality
+    private int translateDwellingQuality(Dwelling dwelling)
+    {
+        int dwellingBedrooms = dwelling.codeBedrooms > 5 ? 5 : dwelling.codeBedrooms;
+
+        // big four ISP. Graph, Syntax, Logic, Alloy - TRansition?
+        for(int row = 1; row <= qualityMatrix.getRowCount(); row++)
+        {
+            if(dwelling.codeType == (int)qualityMatrix.getValueAt(row, "Type"))
+            {
+                if(dwellingBedrooms == (int)qualityMatrix.getValueAt(row, "Bedrooms"))
+                {
+                    // up to including weekly rent bin OR up to including monthly mortgage bin
+                    if((dwelling.codeRent <= (int)qualityMatrix.getValueAt(row, "Rent Bin"))
+                        || (dwelling.codeMortgage <= (int)qualityMatrix.getValueAt(row, "Mortgage Bin")))
+                    {
+                        return (int) qualityMatrix.getValueAt(row, "Quality") + 1;
+                    }
+                }
+            }
+        }
+        return 1;
+    }
+
+
+    /*  Select actual age from bins provided in the microdata
+            Ages: 1-25: 0-24 years singly		1..5
+                    26: 25-29 years				6
+                    27: 30–34 years				7
+                    28: 35–39 years				8
+                    29: 40–44 years				9
+                    30: 45–49 years				10
+                    31: 50–54 years				11
+                    32: 55–59 years				12
+                    33: 60–64 years				13
+                    34: 65–69 years				14
+                    35: 70–74 years				15
+                    36: 75–79 years				16
+                    37: 80–84 years				17
+                    38: 85 years and over		18
+    */
+    private int convertAge(int ageGroup)
+    {
+        int selectedAge = 0;
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        if (ageGroup <= 24)
+        {
+            selectedAge = ageGroup;
+        }
+        else
+        {
+            switch (ageGroup)
+            {
+                case 25: selectedAge = (int) (25 + rnd * 5);
+                    break;
+                case 26: selectedAge = (int) (30 + rnd * 5);
+                    break;
+                case 27: selectedAge = (int) (35 + rnd * 5);
+                    break;
+                case 28: selectedAge = (int) (40 + rnd * 5);
+                    break;
+                case 29: selectedAge = (int) (45 + rnd * 5);
+                    break;
+                case 30: selectedAge = (int) (50 + rnd * 5);
+                    break;
+                case 31: selectedAge = (int) (55 + rnd * 5);
+                    break;
+                case 32: selectedAge = (int) (60 + rnd * 5);
+                    break;
+                case 33: selectedAge = (int) (65 + rnd * 5);
+                    break;
+                case 34: selectedAge = (int) (70 + rnd * 5);
+                    break;
+                case 35: selectedAge = (int) (75 + rnd * 5);
+                    break;
+                case 36: selectedAge = (int) (80 + rnd * 5);
+                    break;
+                case 37: selectedAge = (int) (85 + rnd * 15);
+                    break;
+            }
+        }
+        return selectedAge;
+    }
+
+    private int convertIncome(int incomeCode) {
+        // select actual income from bins provided in microdata
+        //  1: Negative income
+        //  2: Nil income
+        //  3: $1–$199
+        //  4: $200–$299
+        //  5: $300–$399
+        //  6: $400–$599
+        //  7: $600–$799
+        //  8: $800–$999
+        //  9: $1,000–$1,249
+        // 10: $1,250–$1,499
+        // 11: $1,500–$1,999
+        // 12: $2,000 or more
+        // 13: Not stated
+        // 14: Not applicable
+        // 15: Overseas visitor
+        float rnd = SiloUtil.getRandomNumberAsFloat();
+        switch (incomeCode) {
+            case 1: case 2: return 0;
+            case 3: return (int) ((1 + rnd * 199)*52/12);
+            case 4: return (int) ((200 + rnd * 100)*52/12);
+            case 5: return (int) ((300 + rnd * 100)*52/12);
+            case 6: return (int) ((400 + rnd * 200)*52/12);
+            case 7: return (int) ((600 + rnd * 200)*52/12);
+            case 8: return (int) ((800 + rnd * 200)*52/12);
+            case 9: return (int) ((1000 + rnd * 250)*52/12);
+            case 10: return (int) ((1250 + rnd * 250)*52/12);
+            case 11: return (int) ((1500 + rnd * 500)*52/12);
+            case 12: return (int) ((2000 + rnd * 20000)*52/12);
+            case 13: case 14: case 15: return 0;
+            default: logger.error("Unknown income code " + incomeCode);
+                return 0;
+        }
+    }
+
     private int translateIndustry(int industryCode, int occupation)
     {
         // if employed
@@ -1648,24 +1664,22 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return -1;
     }
 
+    /*  Using LFSP Labour Force Status [1 6] and CONVERTED age
+            1 - Employed                    1
+            2 - Unemployed                  2
+            3 - Not in labor force          age[0 5]= 0 age[6 21]= 3 age[22 64]= 2 age[65 n]= 4
+            4 - Not stated                  age[0 5]= 0 age[6 21]= 3 age[22 64]= 2 age[65 n]= 4
+            5 - Not applicable              age[0 5]= 0 age[6 21]= 3 age[22 64]= 2 age[65 n]= 4
+            6 - Overseas Visitor            2
+    */
     private int translateOccupation(int pumsOccupation, int personsAge)
     {
         // corresponding occupation integers
         int TODDLER = 0;
-        int EMPLOYED = 1;
+        int EMPLOYED = 1; // Employed, at work
         int UNEMPLOYED = 2;
         int STUDENT = 3;
-        int RETIRED = 4;
-
-        // perth: 1 - Employed
-        // perth: 2 - Unemployed
-        // perth: 3 - Not in labor force
-        // perth: 4 - Not stated
-        // perth: 5 - Not applicable
-        // perth: 6 - Overseas Visitor
-        // RETIREE = Not in labor force
-        // EMPLOYED = Employed, at work
-        // UNEMPLOYED = Unemployed
+        int RETIRED = 4; // Not in labor force
 
         switch (pumsOccupation)
         {
@@ -1681,14 +1695,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     return TODDLER;
                 else if(personsAge < 22)
                     return STUDENT;
-                else if(personsAge < 64)
+                else if(personsAge < 65)
                     return UNEMPLOYED;
                 else
                     return RETIRED;
             default:
                 return RETIRED;
         }
-
     }
 
     private String translateRelationship(int status)
