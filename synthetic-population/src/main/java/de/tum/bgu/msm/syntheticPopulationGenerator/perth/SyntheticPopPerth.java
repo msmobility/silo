@@ -57,6 +57,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private ArrayList<Dwelling> dwellingList = new ArrayList(); // store all of the dwellings (to be saved to file later)
     private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>(); // used for unocc private dwellings
     private HashMap<Integer, ZoneQuality> qualityMapSA1 = new HashMap<>(); // used to store average prices per structure
+    private TableDataSet qualityMatrix; // used to store dwelling properties x quality matrix
 
     // statistical counts
     private long unassignedWorker = 0;
@@ -90,6 +91,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         logger.info("Generating synthetic populations of households, persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
+
+        // read the quality matrix
+        qualityMatrix = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/dwellingQuality_" + year + ".csv");
 
         // open the files to save the data
         openFilesToWriteSyntheticPopulation(year);
@@ -127,7 +131,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         logger.info("\t ---------- Converting ABS to SILO standard");
         convertToSilo();
 
-        logger.info("\t ---------- Assigning quality to dwellings.");
+        logger.info("\t ---------- Assigning quality to zones.");
         determineZoneQuality();
 
         logger.info("\t ---------- Adding vacant/unoccupied dwellings.");
@@ -995,7 +999,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // convert dwelling properties
             dwelling.ddBedrooms = convertBedrooms(dwelling.codeBedrooms);
             dwelling.ddType = dwelling.codeType;
-            dwelling.ddQuality = 1;
+            dwelling.ddQuality = translateDwellingQuality(dwelling);
             dwelling.ddMortgage = convertMortgage(dwelling.codeMortgage);
             dwelling.ddRent = convertRent(dwelling.codeRent);
             dwelling.ddPrice = getDwellingPrice(dwelling.ddRent, dwelling.ddMortgage);
@@ -1031,7 +1035,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
         }
     }
 
-    // -----------------------------------------------------------------------------------------------------------------  Zone & Dwellings
+    // -----------------------------------------------------------------------------------------------------------------  Zone Quality
+    // needed for unocc priv dwellings!
     private void determineZoneQuality()
     {
         // for each saved dwelling
@@ -1054,6 +1059,12 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 // add the price (for later calculation)
                 zoneQuality.addStructurePrice(dwellingList.get(i).ddType, dwellingList.get(i).ddPrice);
 
+                // add quality if above 1
+                if(dwellingList.get(i).ddQuality > 1)
+                {
+                    zoneQuality.addStructureQuality(dwellingList.get(i).ddType, dwellingList.get(i).ddQuality);
+                }
+
                 // save the zone quality (overwrite)
                 qualityMapSA1.put(SA1, zoneQuality);
             }
@@ -1062,10 +1073,18 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // calculate the average prices for each SA1
         for (ZoneQuality zoneQuality : qualityMapSA1.values())
         {
-            zoneQuality.calculateAveragePrices();
+            zoneQuality.calculateAverages();
+        }
+
+        for(int i = 0; i<dwellingList.size(); i++)
+        {
+            Dwelling dwelling = dwellingList.get(i);
+            if(dwelling.ddQuality == 1)
+            {
+                dwelling.ddQuality = Math.max(1, (int) Math.round(qualityMapSA1.get(dwelling.SA1).getAverageQualityForStructure(dwelling.ddType)));
+            }
         }
     }
-
     // -----------------------------------------------------------------------------------------------------------------  Vacant Dwellings
     private void tmpStoreDwelling(Dwelling dwelling)
     {
@@ -1222,7 +1241,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         pwpp.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
         pwhh.println("id,dwelling,zone,hhSize,autos");
         // heading for pp ABS
-        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income");
+        pwppabs.println("id,hhid,age,gender,relationShip,race,occupation,workplace,income,industry");
 
         for(int i = 0; i < fullPopulation.size(); i++)
         {
@@ -1243,7 +1262,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 // abs version
                 pwppabs.println(person.ppID + "," + dwelling.hhID + "," + person.codeAge + "," + person.codeSex + ","
                         + person.codeRelationship + "," + person.ppRace + "," +  person.codeOccupation + ","
-                        + person.jjID + "," + person.codeIncome);
+                        + person.jjID + "," + person.codeIncome + "," + person.codeIndustry);
             }
 
             // save the household
@@ -1399,7 +1418,29 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         return 0;
     }
+    // -----------------------------------------------------------------------------------------------------------------  Dwelling Quality
+    private int translateDwellingQuality(Dwelling dwelling)
+    {
+        int dwellingBedrooms = dwelling.codeBedrooms > 5 ? 5 : dwelling.codeBedrooms;
 
+        // big four ISP. Graph, Syntax, Logic, Alloy - TRansition?
+        for(int row = 1; row <= qualityMatrix.getRowCount(); row++)
+        {
+            if(dwelling.codeType == (int)qualityMatrix.getValueAt(row, "Type"))
+            {
+                if(dwellingBedrooms == (int)qualityMatrix.getValueAt(row, "Bedrooms"))
+                {
+                    // up to including weekly rent bin OR up to including monthly mortgage bin
+                    if((dwelling.codeRent <= (int)qualityMatrix.getValueAt(row, "Rent Bin"))
+                        || (dwelling.codeMortgage <= (int)qualityMatrix.getValueAt(row, "Mortgage Bin")))
+                    {
+                        return (int) qualityMatrix.getValueAt(row, "Quality") + 1;
+                    }
+                }
+            }
+        }
+        return 1;
+    }
 
     private int convertIncome(int incomeCode) {
         // select actual income from bins provided in microdata
@@ -2321,8 +2362,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
     {
         public int zone; // can be SA1 or SA2
         public ArrayList<Integer>[] structurePrices;
+        public ArrayList<Integer>[] structureQualities;
         public int[] averagePricesPerDwelling;
+        public double[] averageQualityPerDwelling;
         public int overallAveragePrice;
+        public double overallVerageQuality;
 
         public ZoneQuality(int newZoneSA)
         {
@@ -2331,12 +2375,15 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             // create arrays to store dwelling prices & average prices
             averagePricesPerDwelling = new int[ABS_DWELL_GROUPS];
+            averageQualityPerDwelling = new double[ABS_DWELL_GROUPS];
             structurePrices = new ArrayList[ABS_DWELL_GROUPS];
+            structureQualities = new ArrayList[ABS_DWELL_GROUPS];
 
             // initiate the array with ArrayLists
             for(int i=0; i<ABS_DWELL_GROUPS; i++)
             {
                 structurePrices[i] = new ArrayList<Integer>();
+                structureQualities[i] = new ArrayList<Integer>();
             }
         }
 
@@ -2344,45 +2391,59 @@ public class SyntheticPopPerth implements SyntheticPopI {
         {
             structurePrices[type-1].add(price);
         }
+        public void addStructureQuality(int type, int quality)
+        {
+            structureQualities[type-1].add(quality);
+        }
 
         public int getAveragePriceForStructure(int type)
         {
             return averagePricesPerDwelling[type-1];
         }
-
-        public void calculateAveragePrices()
+        public double getAverageQualityForStructure(int type)
         {
-            int overallSum = 0;
-            int numberOfDwells = 0;
+            return averageQualityPerDwelling[type-1];
+        }
+
+        public void calculateAverages()
+        {
+            int overallSumP = 0, overallSumQ = 0;
+            int numberOfDwellsP = 0, numberOfDwellsQ= 0;
 
             // for each structure type
             for(int i = 0; i < ABS_DWELL_GROUPS; i++)
             {
-                int sum = 0;
+                int sumP = 0, sumQ = 0;
 
                 // get the prices for this structure type
                 ArrayList<Integer> prices = structurePrices[i];
-                numberOfDwells += prices.size();
+                numberOfDwellsP += prices.size();
 
                 // sum the prices for this structure type
                 for (Integer price : prices)
                 {
-                    sum += price;
-                    overallSum += price;
+                    sumP += price;
+                    overallSumP += price;
                 }
 
-                // calculate the average price for this structure type
-                if(prices.size() > 0)
+                // get the qualities for this structure type
+                ArrayList<Integer> qualities = structureQualities[i];
+                numberOfDwellsQ += qualities.size();
+
+                // sum the prices for this structure type
+                for (Integer quality : qualities)
                 {
-                    averagePricesPerDwelling[i] = (sum/prices.size());
+                    sumQ += quality;
+                    overallSumQ += quality;
                 }
-                else
-                {
-                    averagePricesPerDwelling[i] = 0;
-                }
+
+                // calculate the average price & quality for this structure type
+                averagePricesPerDwelling[i] = (prices.size() > 0 ? (sumP/prices.size()) : 0 );
+                averageQualityPerDwelling[i] = (qualities.size() > 0 ? (double)((double)sumQ/(double)qualities.size()) : 0);
             }
 
-            overallAveragePrice = (overallSum/numberOfDwells);
+            overallAveragePrice = (overallSumP/numberOfDwellsP);
+            overallVerageQuality = (double)((double)overallSumQ/(double)numberOfDwellsQ);
         }
     }
 
