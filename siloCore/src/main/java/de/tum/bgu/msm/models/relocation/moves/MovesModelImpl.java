@@ -70,7 +70,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             events.add(new MoveEvent(hh.getId()));
         }
         if(threaded) {
-            UtilityUtils.startThreads(housingStrategy, properties.main.numberOfThreads - 3);
+            UtilityUtils.startThreads(housingStrategy, properties.main.numberOfThreads - 1);
         }
 
         return events;
