@@ -7,7 +7,10 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import java.io.PrintWriter;
+
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -160,6 +163,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
         closeFilesForSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
 
+        // copy the output files over and save in timestamped dir
+        createDateCopy(year);
+
         // bit of verification
         someStats();
     }
@@ -235,9 +241,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private void openPopulationDistribution(int year)
     {
         // open the files
-        TableDataSet genderPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/genderBySA1_" + year + ".csv");
-        TableDataSet agePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/ageGroupsBySA1_" + year + ".csv");
-        TableDataSet incomePerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/weeklyIncomeBySA1_" + year + ".csv");
+        TableDataSet peoplePropertiesPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/peopleBySA1_" + year + ".csv");
         TableDataSet dwellingPropertiesPerArea = SiloUtil.readCSVfile(baseDirectory + "input/perth_specific/opdBySA1_" + year + ".csv");
 
         // SA4 area codes in the file
@@ -250,10 +254,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // hashmap of SA1 to SA1zone to later easily add more info
             HashMap<Integer, ZoneSA1> SA1zones = new HashMap<>();
 
-            // find gender counts
-            for(int row = 1; row <= genderPerArea.getRowCount(); row++)
+            // find people properties
+            for(int row = 1; row <= peoplePropertiesPerArea.getRowCount(); row++)
             {
-                int SA4 = (int) genderPerArea.getValueAt(row, "SA4");
+                int SA4 = (int) peoplePropertiesPerArea.getValueAt(row, "SA4");
+                int SA1 = (int) peoplePropertiesPerArea.getValueAt(row, "SA1");
 
                 // if zone belongs to the same SA4 area code
                 if(areaCodes[area] == SA4)
@@ -261,86 +266,26 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     // create a new zone
                     ZoneSA1 zone = new ZoneSA1();
                     zone.SA4 = SA4;
-                    zone.SA1 = (int)(genderPerArea.getValueAt(row, "SA1"));
+                    zone.SA1 = SA1;
 
                     // add gender counts for that zone
-                    zone.setMales((int)(genderPerArea.getValueAt(row, "Male")));
-                    zone.setFemales((int)(genderPerArea.getValueAt(row, "Female")));
+                    zone.setMales((int)(peoplePropertiesPerArea.getValueAt(row, "Male")));
+                    zone.setFemales((int)(peoplePropertiesPerArea.getValueAt(row, "Female")));
+
+                    // add totals for age groups
+                    for(int ageGroup = 1; ageGroup <= ABS_AGE_GROUPS; ageGroup++)
+                    {
+                        zone.setAgeGroupByTB(ageGroup, (int)(peoplePropertiesPerArea.getValueAt(row, "age_"+ageGroup)));
+                    }
+
+                    // add totals for income groups
+                    for(int incGroup = 1; incGroup <= ABS_INCOME_GROUPS; incGroup++)
+                    {
+                        zone.setIncomeGroupByABS(incGroup, (int)(peoplePropertiesPerArea.getValueAt(row, "income_"+incGroup)));
+                    }
 
                     // save the zone
                     SA1zones.put(zone.SA1, zone);
-                }
-            }
-
-            // find age group counts
-            for(int row = 1; row <= agePerArea.getRowCount(); row++)
-            {
-                int SA4 = (int) agePerArea.getValueAt(row, "SA4");
-
-                // if zone belongs to the same SA4 area code
-                if(areaCodes[area] == SA4)
-                {
-                    int SA1 = (int)(agePerArea.getValueAt(row, "SA1"));
-
-                    // get the previously created zone
-                    ZoneSA1 zone = SA1zones.get(SA1);
-
-                    if(zone != null)
-                    {
-                        // columns 1 and 2 are SA1 and SA4
-                        int otherCols = 3;
-                        int ageGroup = 0;
-
-                        // traverse all age groups and add them to the zone stats
-                        for(int col = otherCols; col <= agePerArea.getColumnCount(); col++)
-                        {
-                            ageGroup++;
-                            zone.setAgeGroupByBin(ageGroup, (int)agePerArea.getValueAt(row, col));
-                        }
-
-                        // replace (not needed)
-                        SA1zones.put(SA1, zone);
-                    }
-                    else
-                    {
-                        logger.error("Zone mismatch at SA1 " + SA1);
-                    }
-                }
-            }
-
-            // find income group counts
-            for(int row = 1; row <= incomePerArea.getRowCount(); row++)
-            {
-                int SA4 = (int) incomePerArea.getValueAt(row, "SA4");
-
-                // if zone belongs to the same SA4 area code
-                if(areaCodes[area] == SA4)
-                {
-                    int SA1 = (int)(incomePerArea.getValueAt(row, "SA1"));
-
-                    // get the previously created zone
-                    ZoneSA1 zone = SA1zones.get(SA1);
-
-                    if(zone != null)
-                    {
-                        // columns 1 and 2 are SA1 and SA4
-                        int otherCols = 3;
-                        int incGroup = 0;
-
-                        // traverse all age groups and add them to the zone stats
-                        for(int col = otherCols; col <= incomePerArea.getColumnCount(); col++)
-                        {
-                            incGroup++;
-                            zone.setIncomeGroupByBin(incGroup, (int)incomePerArea.getValueAt(row, col));
-                        }
-
-                        // replace (not needed)
-                        SA1zones.put(SA1, zone);
-                    }
-                    else
-                    {
-                        logger.error("Zone mismatch at SA1 " + SA1);
-                    }
                 }
             }
 
@@ -975,14 +920,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 {
                     if(family.countAge[a] > 0)
                     {
-                        if((zone.getAgeGroupByBin(a)+margin) >= family.countAge[a])
+                        if((zone.getAgeGroupByIndex(a)+margin) >= family.countAge[a])
                         {
                             // fullMatchAge = true;
                         }
                         else
                         {
                             // how many misplaced people
-                            points += Math.abs(zone.getAgeGroupByBin(a) - family.countAge[a]);
+                            points += Math.abs(zone.getAgeGroupByIndex(a) - family.countAge[a]);
                         }
                     }
                 }
@@ -991,14 +936,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 {
                     if(family.countIncome[a] > 0)
                     {
-                        if((zone.getIncomeGroupByBin(a)+margin) >= family.countIncome[a])
+                        if((zone.getIncomeGroupByIndex(a)+margin) >= family.countIncome[a])
                         {
                             // fullMatchInc = true;
                         }
                         else
                         {
                             // how many misplaced people
-                            points += Math.abs(zone.getIncomeGroupByBin(a) - family.countIncome[a]);
+                            points += Math.abs(zone.getIncomeGroupByIndex(a) - family.countIncome[a]);
                         }
                     }
                 }
@@ -1821,6 +1766,60 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
     }
 
+    // -----------------------------------------------------------------------------------------------------------------  Versioned Output
+    private void createDateCopy(int year)
+    {
+        // date format
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+
+        String sourceDir = baseDirectory + "/microData/";
+        String outputDir = baseDirectory + "/microData/microData_" + dateFormat.format(new Date()) + "/";
+
+        if(new File(outputDir).mkdirs())
+        {
+            try
+            {
+                copyFile(new File(sourceDir + "pp_" + year + ".csv"), new File(outputDir + "pp_" + year + ".csv"));
+                copyFile(new File(sourceDir + "dd_" + year + ".csv"), new File(outputDir + "dd_" + year + ".csv"));
+                copyFile(new File(sourceDir + "hh_" + year + ".csv"), new File(outputDir + "hh_" + year + ".csv"));
+                copyFile(new File(sourceDir + "jj_" + year + ".csv"), new File(outputDir + "jj_" + year + ".csv"));
+                copyFile(new File(sourceDir + "abs_pp_" + year + ".csv"), new File(outputDir + "abs_pp_" + year + ".csv"));
+                copyFile(new File(sourceDir + "abs_dd_" + year + ".csv"), new File(outputDir + "abs_dd_" + year + ".csv"));
+            }
+            catch (Exception ex)
+            {
+                logger.error("Failed to copy files. " + ex.getMessage());
+            }
+        }
+        else
+        {
+            logger.error("Failed to copy files. Could not create output directory");
+        }
+
+    }
+
+    private static void copyFile(File source, File dest) throws IOException
+    {
+        InputStream is = null;
+        OutputStream os = null;
+        try
+        {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0)
+            {
+                os.write(buffer, 0, length);
+            }
+        }
+        finally
+        {
+            is.close();
+            os.close();
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------  Helper Methods
     /*  Generate a random integer bound by the min and max
         [min, max] e.g. (1,50) => [1, 50] so it can be 1, 2, .., 50
@@ -2007,8 +2006,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
             countMale = 0;
             countFemale = 0;
             countMarried = 0;
-            countAge = new int[ABS_AGE_GROUPS + 1];
-            countIncome = new int[ABS_INCOME_GROUPS + 1];
+            countAge = new int[ABS_AGE_GROUPS];
+            countIncome = new int[ABS_INCOME_GROUPS];
 
             for(int i = 0; i < size; i++)
             {
@@ -2031,10 +2030,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 }
 
                 // age groups
-                countAge[ageCodeABS2BinTB(person.codeAge)] += 1;
+                countAge[ageCodeABS2BinTB(person.codeAge)-1] += 1;
 
                 // income groups
-                countIncome[person.codeIncome] += 1;
+                countIncome[person.codeIncome-1] += 1;
             }
         }
 
@@ -2156,8 +2155,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public ZoneSA1()
         {
             genderTotals = new int[2];
-            ageTotals = new int[ABS_AGE_GROUPS + 1];
-            incomeTotals = new int[ABS_INCOME_GROUPS + 1];
+            ageTotals = new int[ABS_AGE_GROUPS];
+            incomeTotals = new int[ABS_INCOME_GROUPS];
 
             structureTotals = new int[ABS_DWELL_GROUPS];
             bedroomTotals = new int[ABS_BEDROOM_GROUPS];
@@ -2184,11 +2183,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             // age
             for(int i = 0; i<family.countAge.length; i++)
-                addAgeGroupByBin(i, (sing*family.countAge[i]));
+                addAgeGroupByIndex(i, (sing*family.countAge[i]));
 
             // income
             for(int i = 0; i<family.countIncome.length; i++)
-                addIncomeGroupByBin(i, (sing*family.countIncome[i]));
+                addIncomeGroupByIndex(i, (sing*family.countIncome[i]));
 
             // dwelling properties
             addDwellingTotal(sing);
@@ -2237,20 +2236,28 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
         // -----------------------------------------------------------------    Age methods
         // ABS code
-        public void addAgeGroupByCode(int code, int count) { ageTotals[ageCodeABS2BinTB(code)] += count; }
-        public void setAgeGroupByCode(int code, int count) { ageTotals[ageCodeABS2BinTB(code)] = count; }
-        public int getAgeGroupByCode(int code) { return ageTotals[ageCodeABS2BinTB(code)]; }
+        public void addAgeGroupByABS(int code, int count) { ageTotals[ageCodeABS2BinTB(code)-1] += count; }
+        public void setAgeGroupByABS(int code, int count) { ageTotals[ageCodeABS2BinTB(code)-1] = count; }
+        public int getAgeGroupByABS(int code) { return ageTotals[ageCodeABS2BinTB(code)-1]; }
 
         // TB = this object bin / index
-        public void addAgeGroupByBin(int bin, int count) { ageTotals[bin] += count; }
-        public void setAgeGroupByBin(int bin, int count) { ageTotals[bin] = count; }
-        public int getAgeGroupByBin(int bin) { return ageTotals[bin]; }
+        public void addAgeGroupByTB(int bin, int count) { ageTotals[bin-1] += count; }
+        public void setAgeGroupByTB(int bin, int count) { ageTotals[bin-1] = count; }
+        public int getAgeGroupByTB(int bin) { return ageTotals[bin-1]; }
+
+        public void addAgeGroupByIndex(int i, int count) { ageTotals[i] += count; }
+        public void setAgeGroupByIndex(int i, int count) { ageTotals[i] = count; }
+        public int getAgeGroupByIndex(int i) { return ageTotals[i]; }
 
         // -----------------------------------------------------------------    Income methods
         // TB = this objects bin / index
-        public void addIncomeGroupByBin(int bin, int count) { incomeTotals[bin] += count; }
-        public void setIncomeGroupByBin(int bin, int count) { incomeTotals[bin] = count; }
-        public int getIncomeGroupByBin(int bin) { return incomeTotals[bin]; }
+        public void addIncomeGroupByABS(int code, int count) { incomeTotals[code-1] += count; }
+        public void setIncomeGroupByABS(int code, int count) { incomeTotals[code-1] = count; }
+        public int getIncomeGroupByABS(int code) { return incomeTotals[code-1]; }
+
+        public void addIncomeGroupByIndex(int i, int count) { incomeTotals[i] += count; }
+        public void setIncomeGroupByIndex(int i, int count) { incomeTotals[i] = count; }
+        public int getIncomeGroupByIndex(int i) { return incomeTotals[i]; }
 
         // -----------------------------------------------------------------    Dwelling methods
         public void addDwellingTotal(int count) { dwellingTotal += count; }
