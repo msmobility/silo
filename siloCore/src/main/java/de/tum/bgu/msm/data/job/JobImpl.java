@@ -19,14 +19,17 @@ public class JobImpl implements Job, MicroLocation {
         this.zoneId = zoneId;
     }
 
+    @Override
     public int getId () {
         return id;
     }
 
+    @Override
     public int getWorkerId() {
         return workerId;
     }
 
+    @Override
     public String getType() {
         return type;
     }
@@ -35,6 +38,7 @@ public class JobImpl implements Job, MicroLocation {
         this.coordinate = coordinate;
     }
 
+    @Override
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
@@ -56,5 +60,15 @@ public class JobImpl implements Job, MicroLocation {
     @Override
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Job && ((Job) o).getId() == this.id;
     }
 }

@@ -127,6 +127,11 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     }
 
     @Override
+    public Map<Integer, Double> calculateRegionalPrices() {
+        return delegate.calculateRegionalPrices();
+    }
+
+    @Override
     public void removeDwellingFromVacancyList(int ddId) {
         delegate.removeDwellingFromVacancyList(ddId);
     }

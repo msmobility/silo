@@ -3,12 +3,10 @@ package de.tum.bgu.msm.data.dwelling;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.development.DevelopmentImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
@@ -18,6 +16,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
@@ -127,8 +126,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
      */
     @Override
     public List<Dwelling> getListOfVacantDwellingsInRegion(int region) {
-        return vacDwellingsByRegion.getOrDefault(region,
-                new ArrayList<>());
+        return Collections.unmodifiableList(vacDwellingsByRegion.getOrDefault(region,
+                new ArrayList<>()));
     }
 
     @Override
@@ -199,6 +198,17 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             initialQualityShares[qual - 1] = (double) dwellingsByQuality[qual - 1] /
                     (double) SiloUtil.getSum(dwellingsByQuality);
         }
+    }
+
+    @Override
+    public Map<Integer, Double> calculateRegionalPrices() {
+        final Map<Integer, Zone> zones = geoData.getZones();
+        final Map<Integer, List<Dwelling>> dwellingsByRegion =
+                dwellingData.getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
+                        zones.get(d.getZoneId()).getRegion().getId()));
+        final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().mapToDouble(Dwelling::getPrice).average().getAsDouble()));
+        return rentsByRegion;
     }
 
 

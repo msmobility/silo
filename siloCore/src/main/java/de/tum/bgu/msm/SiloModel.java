@@ -118,6 +118,7 @@ public final class SiloModel {
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
+            long time = System.currentTimeMillis();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
             timeTracker.setCurrentYear(year);
 
@@ -136,7 +137,8 @@ public final class SiloModel {
 
 			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
 					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +
-					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings.");
+					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings in " +
+                    (System.currentTimeMillis() - time) / 1000 + " seconds.");
 
 			if (SiloUtil.modelStopper("check")) {
 			    break;

@@ -1,8 +1,6 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Table;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -79,7 +77,9 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
         this.skimsByMode.clear();
-        this.travelTimeToRegion.assign(-1);
+        if(this.travelTimeToRegion != null) {
+            this.travelTimeToRegion.assign(-1);
+        }
     }
 
 
@@ -147,14 +147,13 @@ public final class MatsimTravelTimes implements TravelTimes {
             return skimsByMode.get(mode);
         } else {
             IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones.values(), zones.values());
-            logger.info("Calculating skim matrix for mode " + mode);
+            logger.info("Calculating skim matrix for mode " + mode + " using " + Properties.get().main.numberOfThreads + " threads.");
             final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-            logger.info("Intended size of all of partititons = " + partitionSize);
+            logger.info("Intended size of all of partitions = " + partitionSize);
             Iterable<List<Zone>> partitions = Iterables.partition(zones.values(), partitionSize);
             ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
 
             for (final List<Zone> partition : partitions) {
-                logger.info("Size of partititon = " + partition.size());
                 if (mode.equalsIgnoreCase(TransportMode.car)) {
                     executor.addTaskToQueue(() -> {
                         try {
@@ -163,7 +162,6 @@ public final class MatsimTravelTimes implements TravelTimes {
 
                             Set<InitialNode> toNodes = new HashSet<>();
                             for (Zone zone : zones.values()) {
-                                // Several points in a given origin zone
                                 for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
                                     Node originNode = zoneCalculationNodesMap.get(zone).get(0);
                                     toNodes.add(new InitialNode(originNode, 0., 0.));
@@ -187,7 +185,6 @@ public final class MatsimTravelTimes implements TravelTimes {
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
-                        logger.warn("Finished thread.");
                         return null;
                     });
                 } else {
@@ -207,13 +204,13 @@ public final class MatsimTravelTimes implements TravelTimes {
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
-                        logger.warn("Finished thread.");
                         return null;
                     });
                 }
             }
             executor.execute();
             skimsByMode.put(mode, skim);
+            logger.info("Finished skim for mode " + mode);
             return skim;
         }
     }
@@ -225,8 +222,8 @@ public final class MatsimTravelTimes implements TravelTimes {
         matsimTravelTimes.network = this.network;
         matsimTravelTimes.zones = this.zones;
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
-        matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.update(travelTime, travelDisutility);
+        matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
         return matsimTravelTimes;
     }
@@ -248,5 +245,9 @@ public final class MatsimTravelTimes implements TravelTimes {
             }
         }
         logger.warn("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
+    }
+
+    public Network getNetwork() {
+        return network;
     }
 }

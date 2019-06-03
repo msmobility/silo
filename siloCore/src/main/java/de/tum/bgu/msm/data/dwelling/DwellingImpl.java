@@ -155,4 +155,14 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
                 + "\nMonthly price in US$    " + (price)
                 + "\nYear dwelling was built " + (yearBuilt);
     }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Dwelling && ((Dwelling) o).getId() == this.id;
+    }
 }

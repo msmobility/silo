@@ -42,12 +42,12 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyCapeTown;
-import de.tum.bgu.msm.models.relocation.MovesModelCapeTown;
+import de.tum.bgu.msm.models.relocation.HousingStrategyCapeTown;
 import de.tum.bgu.msm.models.relocation.SelectRegionStrategyCapeTown;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -68,10 +68,12 @@ public class ModelBuilderCapeTown {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-        AbstractMovesModelImpl movesModel = new MovesModelCapeTown(
+        MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
+                new HousingStrategyCapeTown(dataContainer,
+                properties, dataContainer.getTravelTimes(),
                 new DwellingUtilityStrategyCapeTown(), new SelectRegionStrategyCapeTown(),
-                new DefaultDwellingProbabilityStrategy());
+                new DefaultDwellingProbabilityStrategy()));
 
         //TODO reconsider this
         CreateCarOwnershipModel carOwnershipModel = null;

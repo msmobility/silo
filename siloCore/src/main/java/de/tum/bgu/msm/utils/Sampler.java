@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Random;
 import java.util.function.BiFunction;
+import java.util.stream.DoubleStream;
 
 /**
  * @author Nico
@@ -73,8 +74,8 @@ public final class Sampler<T> {
     public synchronized void incrementalAdd(T object, double probability) {
         objects[index] = object;
         probabilities[index] = probability;
-        index++;
         sum += probability;
+        index++;
     }
 
     public void updateProbabilities(BiFunction<T,Double,Double> function) {
@@ -83,7 +84,6 @@ public final class Sampler<T> {
             sum += probabilities[i] = function.apply(objects[i], probabilities[i]);
         }
     }
-
 
     public synchronized T sampleObject() throws SampleException {
         double selPos = sum * random.nextDouble();
@@ -94,9 +94,10 @@ public final class Sampler<T> {
                 return objects[i];
             }
         }
-        throw new SampleException("Could not sampleObject an object from \n"
+        throw new SampleException("Could not sample an object from \n"
                 + Arrays.toString(objects) + "\n with  probabilities \n"
-                + Arrays.toString(probabilities) + "\n sum of probs: " + sum);
+                + Arrays.toString(probabilities) + "\n sum of probs[internal | summed]: " + this.sum + " | " + DoubleStream.of(probabilities).sum()
+                + "Selected weight: " + selPos + " | Index at " + index + " | Expected size: " + probabilities.length);
     }
 
     public int sampleIndex() throws SampleException {
@@ -110,7 +111,8 @@ public final class Sampler<T> {
         }
         throw new SampleException("Could not sampleObject an object from \n"
                 + Arrays.toString(objects) + "\n with  probabilities \n"
-                + Arrays.toString(probabilities) + "\n sum of probs: " + sum);
+                + Arrays.toString(probabilities) + "\n sum of probs [internal | summed]: " + this.sum + " | " + DoubleStream.of(probabilities).sum()
+                + "Selected weight: " + selPos + " | Index at " + index + " | Expected size: " + probabilities.length);
     }
 
     public double getCumulatedProbability() {
@@ -127,5 +129,13 @@ public final class Sampler<T> {
      */
     public Sampler<T> copy() {
         return new Sampler<>(objects, java.util.Arrays.copyOf(probabilities, probabilities.length), new Random(random.nextInt()), sum);
+    }
+
+    /**
+     * Returns the number of objects that have already been added to the sampler.
+     * @return
+     */
+    public int getNumberOfObjects() {
+        return index;
     }
 }

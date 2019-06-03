@@ -2,7 +2,7 @@ package de.tum.bgu.msm.simulator;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import de.tum.bgu.msm.data.SummarizeData;
+import com.google.common.math.LongMath;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
@@ -96,7 +96,11 @@ public final class Simulator {
 
     private void processEvents() {
         logger.info("  Processing events...");
+        int counter = 0;
         for (MicroEvent e: events) {
+            if (LongMath.isPowerOfTwo(counter)) {
+                logger.info("Handled " + counter + " events.");
+            }
 //            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
@@ -107,6 +111,7 @@ public final class Simulator {
             if(success) {
                 eventCounter.add(klass);
             }
+            counter++;
 //            timeTracker.record(klass.getSimpleName());
         }
     }
