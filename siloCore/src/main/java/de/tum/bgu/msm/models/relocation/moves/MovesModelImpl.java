@@ -69,8 +69,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
         }
-        if(threaded) {
-            final int threads = properties.main.numberOfThreads - 1;
+        if (threaded) {
+            final int threads = Math.max(properties.main.numberOfThreads - 1, 1);
             UtilityUtils.startThreads(housingStrategy, threads);
             logger.info("Started " + threads + " background threads for dwelling utility evaluation");
         }
@@ -164,20 +164,20 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         for (int i = 0; i < maxNumberOfDwellings; i++) {
             Dwelling dwelling = vacantDwellings.get(i);
             if (housingStrategy.isHouseholdEligibleToLiveHere(household, dwelling)) {
-                if(threaded) {
+                if (threaded) {
                     UtilityUtils.queue.add(new UtilityTask(i, dwelling, household));
                 } else {
-                double util = housingStrategy.calculateHousingUtility(household, dwelling);
-                double prob = housingStrategy.calculateSelectDwellingProbability(util);
-                UtilityUtils.probabilities[i] = prob;
-                UtilityUtils.dwellings[i] = dwelling;
+                    double util = housingStrategy.calculateHousingUtility(household, dwelling);
+                    double prob = housingStrategy.calculateSelectDwellingProbability(util);
+                    UtilityUtils.probabilities[i] = prob;
+                    UtilityUtils.dwellings[i] = dwelling;
                 }
             } else {
                 maxNumberOfDwellings--;
             }
         }
 
-        if(threaded) {
+        if (threaded) {
             while (true) {
                 if (UtilityUtils.counter.get() == maxNumberOfDwellings) {
                     break;
@@ -215,7 +215,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
 
         final Collection<Household> households = householdDataManager.getHouseholds();
-        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads-1)) + 1;
+        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads - 1)) + 1;
         Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads - 1);
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
@@ -299,7 +299,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         private static void startThreads(HousingStrategy strategy, int threads) {
             run = true;
-            for (int i = 0; i < threads - 1; i++) {
+            for (int i = 0; i < threads; i++) {
                 new UtilityUtils(strategy.duplicate()).start();
             }
         }
