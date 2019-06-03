@@ -10,7 +10,7 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.DivorceEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -24,13 +24,13 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
     Class clazz;
     private final static Logger logger = Logger.getLogger(DivorceModelImpl.class);
 
-    private final AbstractMovesModelImpl movesModel;
+    private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final DivorceStrategy strategy;
     private final HouseholdFactory hhFactory;
     private int lackOfDwellingFailedDivorce;
 
-    public DivorceModelImpl(DataContainer dataContainer, AbstractMovesModelImpl movesModel,
+    public DivorceModelImpl(DataContainer dataContainer, MovesModelImpl movesModel,
                             CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
                             Properties properties, DivorceStrategy strategy) {
         super(dataContainer, properties);

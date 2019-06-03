@@ -3,6 +3,7 @@ package de.tum.bgu.msm.run;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataContainerMstm;
 import de.tum.bgu.msm.data.HouseholdDataManagerMstm;
+import de.tum.bgu.msm.data.RealEstateDataManagerMstm;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -69,10 +70,11 @@ public final class DataBuilder {
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
 
-        RealEstateDataManager realEstateManager = new RealEstateDataManagerImpl(
-                dwellingTypeList, dwellingData,
-                householdData, geoData,
+        RealEstateDataManager realEstateManager = new RealEstateDataManagerMstm(
                 new DwellingfactoryMstm(),
+                dwellingData,
+                dwellingTypeList,
+                householdData, geoData,
                 properties);
 
         JobDataManager jobManager = new JobDataManagerImpl(

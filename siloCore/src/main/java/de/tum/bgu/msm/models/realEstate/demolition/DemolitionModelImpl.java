@@ -6,7 +6,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -25,14 +25,14 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
 
     private final static Logger logger = Logger.getLogger(DemolitionModelImpl.class);
 
-    private final AbstractMovesModelImpl moves;
+    private final MovesModelImpl moves;
     private final InOutMigrationImpl inOutMigration;
     private final DemolitionStrategy strategy;
 
     private int currentYear = -1;
     private int forcedOutmigrationByDemolition;
 
-    public DemolitionModelImpl(DataContainer dataContainer, AbstractMovesModelImpl moves,
+    public DemolitionModelImpl(DataContainer dataContainer, MovesModelImpl moves,
                                InOutMigrationImpl inOutMigration, Properties properties,
                                DemolitionStrategy strategy) {
         super(dataContainer, properties);

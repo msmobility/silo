@@ -12,7 +12,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModel;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModel;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -33,7 +33,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     private final static Logger logger = Logger.getLogger(InOutMigrationImpl.class);
 
     private final EmploymentModel employment;
-    private final AbstractMovesModelImpl movesModel;
+    private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final DriversLicenseModel driversLicense;
 
@@ -46,7 +46,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
 
 
     public InOutMigrationImpl(DataContainer dataContainer, EmploymentModel employment,
-                              AbstractMovesModelImpl movesModel, CreateCarOwnershipModel carOwnership,
+                              MovesModelImpl movesModel, CreateCarOwnershipModel carOwnership,
                               DriversLicenseModel driversLicense, Properties properties) {
         super(dataContainer, properties);
         this.employment = employment;

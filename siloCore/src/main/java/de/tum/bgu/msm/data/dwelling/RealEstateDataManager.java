@@ -35,6 +35,8 @@ public interface RealEstateDataManager extends ModelUpdateListener {
 
     int[] getDwellingsByQuality();
 
+    Map<Integer, Double> calculateRegionalPrices();
+
     void removeDwellingFromVacancyList(int ddId);
 
     void addDwellingToVacancyList(Dwelling dd);

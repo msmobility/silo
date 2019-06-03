@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.models.*;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -41,16 +40,16 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import relocation.DwellingUtilityStrategyImpl;
-import relocation.MovesModelPerth;
+import relocation.HousingStrategyPerth;
 import relocation.SelectRegionStrategyImpl;
 
 public class ModelBuilder {
@@ -71,9 +70,9 @@ public class ModelBuilder {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-        AbstractMovesModelImpl movesModel = new MovesModelPerth(
-                dataContainer, properties, new DefaultMovesStrategy(), new DwellingUtilityStrategyImpl(),
-                new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyImpl());
+        MovesModelImpl movesModel = new MovesModelImpl(
+                dataContainer, properties, new DefaultMovesStrategy(), new HousingStrategyPerth(dataContainer, properties, dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
+                new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyImpl()));
 
 
         DivorceModel divorceModel = new DivorceModelImpl(

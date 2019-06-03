@@ -111,4 +111,14 @@ public class HouseholdImpl implements Household {
             +"\nDwelling ID             " + dwellingId
             +"\nHousehold size          " + persons.size();
     }
+
+    @Override
+    public int hashCode() {
+        return hhId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Household && ((Household) o).getId() == this.hhId;
+    }
 }

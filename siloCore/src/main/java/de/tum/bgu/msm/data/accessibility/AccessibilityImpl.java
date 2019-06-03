@@ -30,13 +30,10 @@ public class AccessibilityImpl implements Accessibility {
     private final DwellingData dwellingData;
     private final HouseholdData householdData;
 
-    private final Properties properties;
-
     private IndexedDoubleMatrix1D autoAccessibilities;
     private IndexedDoubleMatrix1D transitAccessibilities;
     private IndexedDoubleMatrix1D regionalAccessibilities;
 
-    private final float autoOperatingCosts;
     private final float alphaAuto;
     private final float betaAuto;
     private final float alphaTransit;
@@ -45,8 +42,6 @@ public class AccessibilityImpl implements Accessibility {
     public AccessibilityImpl(GeoData geoData, TravelTimes travelTimes, Properties properties, DwellingData dwellingData, HouseholdData householdData) {
         this.geoData = geoData;
         this.travelTimes = travelTimes;
-        this.properties = properties;
-        this.autoOperatingCosts = properties.accessibility.autoOperatingCosts;
         this.alphaAuto = properties.accessibility.alphaAuto;
         this.betaAuto = properties.accessibility.betaAuto;
         this.alphaTransit = properties.accessibility.alphaTransit;
@@ -77,7 +72,7 @@ public class AccessibilityImpl implements Accessibility {
 
     }
 
-
+    @Override
     public void calculateHansenAccessibilities(int year) {
         logger.info("  Calculating accessibilities for " + year);
         final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
@@ -181,11 +176,4 @@ public class AccessibilityImpl implements Accessibility {
     public double getRegionalAccessibility(Region region) {
         return regionalAccessibilities.getIndexed(region.getId());
     }
-
-
-//    public double getPeakTravelCosts(Location i, Location j) {
-//        return (autoOperatingCosts / 100) * travelTimes.getTravelTime(i, j, TIME_OF_DAY, "car");
-//        // Take costs provided by MATSim here? Should be possible
-//        // without much alterations as they are part of NodeData, which is contained in MATSimTravelTimes, nk/dz, jan'18
-//    }
 }

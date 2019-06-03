@@ -36,4 +36,14 @@ public class RegionImpl implements Region {
     public String toString() {
         return "Region " + id +": #zones= " + zones.size();
     }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Region && ((Region) o).getId() == this.id;
+    }
 }

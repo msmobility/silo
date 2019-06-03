@@ -130,4 +130,14 @@ public class PersonImpl implements Person {
                 +"\nIncome               " + income
                 +"\nPerson type          " + type.toString();
     }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Person && ((Person) o).getId() == this.id;
+    }
 }

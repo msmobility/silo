@@ -33,7 +33,7 @@ import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -51,7 +51,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
     private final static Logger logger = Logger.getLogger(MarriageModelMstm.class);
 
     private final InOutMigrationImpl iomig;
-    private final AbstractMovesModelImpl movesModel;
+    private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
     private final MarriageStrategy strategy;
@@ -75,7 +75,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public MarriageModelMstm(DataContainer dataContainer, AbstractMovesModelImpl movesModel,
+    public MarriageModelMstm(DataContainer dataContainer, MovesModelImpl movesModel,
                              InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
                              HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
         super(dataContainer, properties);

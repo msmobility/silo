@@ -89,4 +89,14 @@ public class ZoneImpl implements Zone {
     public String toString() {
         return "Zone " + id + ", region=" + region.getId();
     }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Zone && ((Zone) o).getId() == this.id;
+    }
 }
