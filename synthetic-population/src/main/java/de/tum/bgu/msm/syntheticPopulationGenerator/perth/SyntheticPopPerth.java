@@ -27,8 +27,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private int ABS_CODE_NONPRIVATE_DWELLING = 6;
     private int ABS_AGE_GROUPS = 18;
     private int ABS_INCOME_GROUPS = 15;
-    private int ABS_DWELL_GROUPS = 6; // structure, abs = silo
-    private int ABS_BEDROOM_GROUPS = 8;
+    private int ABS_DWELL_GROUPS = 6; // [1, 6] structure, abs = silo
+    private int ABS_BEDROOM_GROUPS = 8; // [0, 7]
+    private int ABS_RENT_GROUPS = 22; // [1, 22]
+    private int ABS_MORTGAGE_GROUPS = 21; // [1, 21]
+    private int ABS_VEHICLE_GROUPS = 7; // [0, 6]
     private int POPULATION_WEIGHT = 100;
 
     protected static final String PROPERTIES_RUN_SP = "run.synth.pop.generator";
@@ -368,7 +371,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         // add totals for dwelling bedrooms
                         for(int bedType = 0; bedType < ABS_BEDROOM_GROUPS; bedType++)
                         {
-                            zone.setBedroomTotals(bedType, (int)(dwellingPropertiesPerArea.getValueAt(row, "bedroom_"+bedType)));
+                            zone.setBedroomTotalsByABS(bedType, (int)(dwellingPropertiesPerArea.getValueAt(row, "bedroom_"+bedType)));
                         }
                     }
                     else
@@ -798,7 +801,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     // if dwelling counts are ok
                     if((zone.getDwellingTotal()+4) > 0
                         && ((zone.getStructureTotals(family.dwelling.codeType)+1) > 0) // if structure types are ok
-                        && ((zone.getBedroomTotals(family.dwelling.codeBedrooms)+1) > 0)) // if bedroom codes are ok
+                        && ((zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)+1) > 0)) // if bedroom codes are ok
                     {
                             // all good
                     }
@@ -806,7 +809,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     {
                         points2 = (zone.getDwellingTotal() >= 0 ? 0 : Math.abs(zone.getDwellingTotal()))
                                 + (zone.getStructureTotals(family.dwelling.codeType) >= 0 ? 0 : Math.abs(zone.getStructureTotals(family.dwelling.codeType)))
-                                + (zone.getBedroomTotals(family.dwelling.codeBedrooms) >= 0 ? 0 : Math.abs(zone.getBedroomTotals(family.dwelling.codeBedrooms)));
+                                + (zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms) >= 0 ? 0 : Math.abs(zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)));
                         points2 *= 20;
                     }
 
@@ -895,7 +898,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 if (zone1.SA1 != zone2.SA1 && zone2.getDwellingTotal() > 0)
                 {
                     // if zone can accommodate this structure & bedroom codes
-                    if (zone2.getBedroomTotals(family.dwelling.codeBedrooms) > 0
+                    if (zone2.getBedroomTotalsByABS(family.dwelling.codeBedrooms) > 0
                             && zone2.getStructureTotals(family.dwelling.codeType) > 0)
                     {
                         // if family fits perfectly in the zone (gender, income, age)
@@ -1292,7 +1295,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // heading for dd SILO
         pwdd.println("id,zone,type,hhID,bedrooms,quality,monthlyCost");
         // heading for dd ABS
-        pwddabs.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,rent,mortgage");
+        pwddabs.println("id,zone,type,hhID,bedrooms,quality,monthlyCost,rent,mortgage,autos");
 
         for(int i = 0; i < dwellingList.size(); i++)
         {
@@ -1304,7 +1307,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             pwddabs.println(dwelling.ddID + "," + dwelling.SA1 + "," + dwelling.codeType + "," +
                     dwelling.hhID + "," + dwelling.codeBedrooms + "," + dwelling.ddQuality + "," + dwelling.ddPrice
-                    + "," + dwelling.codeRent + ", " + dwelling.codeMortgage);
+                    + "," + dwelling.codeRent + ", " + dwelling.codeMortgage + "," + dwelling.codeVehicles);
         }
     }
 
@@ -2120,6 +2123,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public int dwellingTotal;
         public int[] structureTotals;
         public int[] bedroomTotals;
+        public int[] rentTotals;
+        public int[] mortgageTotals;
+        public int[] vehicleTotals;
 
         // constructor
         public ZoneSA1()
@@ -2130,6 +2136,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             structureTotals = new int[ABS_DWELL_GROUPS];
             bedroomTotals = new int[ABS_BEDROOM_GROUPS];
+
+            rentTotals = new int[ABS_RENT_GROUPS];
+            mortgageTotals = new int[ABS_MORTGAGE_GROUPS];
+            vehicleTotals = new int[ABS_VEHICLE_GROUPS];
         }
 
         public void update(Family family, int sing)
@@ -2159,7 +2169,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // dwelling properties
             addDwellingTotal(sing);
             addStructureTotals(family.dwelling.codeType, sing);
-            addBedroomTotals(family.dwelling.codeBedrooms, sing);
+            addBedroomTotalsByABS(family.dwelling.codeBedrooms, sing);
+            addRentTotalsByABS(family.dwelling.codeRent, sing);
+            addMortgageTotalsByABS(family.dwelling.codeMortgage, sing);
+            addVehicleTotalsByABS(family.dwelling.codeVehicles, sing);
         }
 
         // -----------------------------------------------------------------    Total population counts
@@ -2224,9 +2237,21 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public void setStructureTotals(int code, int count) { structureTotals[code-1] = count; }
         public int getStructureTotals(int code) { return structureTotals[code-1]; }
 
-        public void addBedroomTotals(int code, int count) { bedroomTotals[code] += count; }
-        public void setBedroomTotals(int code, int count) { bedroomTotals[code] = count; }
-        public int getBedroomTotals(int code) { return bedroomTotals[code]; }
+        public void addBedroomTotalsByABS(int code, int count) { bedroomTotals[code] += count; }
+        public void setBedroomTotalsByABS(int code, int count) { bedroomTotals[code] = count; }
+        public int getBedroomTotalsByABS(int code) { return bedroomTotals[code]; }
+
+        public void addRentTotalsByABS(int code, int count) { rentTotals[code-1] += count; }
+        public void setRentTotalsByABS(int code, int count) { rentTotals[code-1] = count; }
+        public int getRentTotalsByABS(int code) { return rentTotals[code-1]; }
+
+        public void addMortgageTotalsByABS(int code, int count) { mortgageTotals[code-1] += count; }
+        public void setMortgageTotalsByABS(int code, int count) { mortgageTotals[code-1] = count; }
+        public int getMortgageTotalsByABS(int code) { return mortgageTotals[code-1]; }
+
+        public void addVehicleTotalsByABS(int code, int count) { vehicleTotals[code] += count; }
+        public void setVehicleTotalsByABS(int code, int count) { vehicleTotals[code] = count; }
+        public int getVehicleTotalsByABS(int code) { return vehicleTotals[code]; }
 
         // -----------------------------------------------------------------    Clone interface
         @Override
