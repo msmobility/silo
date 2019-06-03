@@ -373,6 +373,24 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         {
                             zone.setBedroomTotalsByABS(bedType, (int)(dwellingPropertiesPerArea.getValueAt(row, "bedroom_"+bedType)));
                         }
+
+                        // add totals for dwelling rent
+                        for(int rentCode = 1; rentCode <= ABS_RENT_GROUPS; rentCode++)
+                        {
+                            zone.setRentTotalsByABS(rentCode, (int)(dwellingPropertiesPerArea.getValueAt(row, "rent_"+rentCode)));
+                        }
+
+                        // add totals for dwelling mortgage
+                        for(int mortgageCode = 1; mortgageCode <= ABS_MORTGAGE_GROUPS; mortgageCode++)
+                        {
+                            zone.setMortgageTotalsByABS(mortgageCode, (int)(dwellingPropertiesPerArea.getValueAt(row, "mortgage_"+mortgageCode)));
+                        }
+
+                        // add totals for dwelling vehicles
+                        for(int vehType = 0; vehType < ABS_VEHICLE_GROUPS; vehType++)
+                        {
+                            zone.setVehicleTotalsByABS(vehType, (int)(dwellingPropertiesPerArea.getValueAt(row, "vehicles_"+vehType)));
+                        }
                     }
                     else
                     {
@@ -760,7 +778,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         distributeAttempt(5, false);
 
         logger.info("Moving dwellings around.");
-        distributionTrade();
+        //distributionTrade();
     }
 
     private void distributeAttempt(int margin, boolean perfectFit)
@@ -801,7 +819,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     // if dwelling counts are ok
                     if((zone.getDwellingTotal()+4) > 0
                         && ((zone.getStructureTotals(family.dwelling.codeType)+1) > 0) // if structure types are ok
-                        && ((zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)+1) > 0)) // if bedroom codes are ok
+                        && ((zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)+1) > 0) // if bedroom codes are ok
+                        && ((zone.getRentTotalsByABS(family.dwelling.codeRent)+1) > 0) // if rent codes are ok
+                        && ((zone.getMortgageTotalsByABS(family.dwelling.codeMortgage)+1) > 0) // if mortgage code are ok
+                        && ((zone.getVehicleTotalsByABS(family.dwelling.codeVehicles)+1) > 0)) // if vehicles are ok
                     {
                             // all good
                     }
@@ -809,8 +830,12 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     {
                         points2 = (zone.getDwellingTotal() >= 0 ? 0 : Math.abs(zone.getDwellingTotal()))
                                 + (zone.getStructureTotals(family.dwelling.codeType) >= 0 ? 0 : Math.abs(zone.getStructureTotals(family.dwelling.codeType)))
-                                + (zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms) >= 0 ? 0 : Math.abs(zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)));
-                        points2 *= 20;
+                                + (zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms) >= 0 ? 0 : Math.abs(zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)))
+                                + (zone.getRentTotalsByABS(family.dwelling.codeRent) >= 0 ? 0 : Math.abs(zone.getRentTotalsByABS(family.dwelling.codeRent)))
+                                + (zone.getMortgageTotalsByABS(family.dwelling.codeMortgage) >= 0 ? 0 : Math.abs(zone.getMortgageTotalsByABS(family.dwelling.codeMortgage)))
+                                + (zone.getVehicleTotalsByABS(family.dwelling.codeVehicles) >= 0 ? 0 : Math.abs(zone.getVehicleTotalsByABS(family.dwelling.codeVehicles)));
+
+                        points2 *= 10;
                     }
 
                     if(points1 <= 0 && points2 <= 0)
@@ -2136,7 +2161,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
             structureTotals = new int[ABS_DWELL_GROUPS];
             bedroomTotals = new int[ABS_BEDROOM_GROUPS];
-
             rentTotals = new int[ABS_RENT_GROUPS];
             mortgageTotals = new int[ABS_MORTGAGE_GROUPS];
             vehicleTotals = new int[ABS_VEHICLE_GROUPS];
