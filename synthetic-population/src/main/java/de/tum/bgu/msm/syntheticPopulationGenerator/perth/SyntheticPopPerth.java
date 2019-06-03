@@ -28,8 +28,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private int ABS_CODE_EMPLOYED = 1;
     private int ABS_CODE_UNEMPLOYED = 2;
     private int ABS_CODE_NONPRIVATE_DWELLING = 6;
-    private int ABS_AGE_GROUPS = 18;
-    private int ABS_INCOME_GROUPS = 15;
+    private int ABS_AGE_GROUPS = 18; // [1, 18]
+    private int ABS_INCOME_GROUPS = 15; // [1, 15]
+    private int ABS_INDUSTRY_GROUPS = 23; // [1, 23]
     private int ABS_DWELL_GROUPS = 6; // [1, 6] structure, abs = silo
     private int ABS_BEDROOM_GROUPS = 8; // [0, 7]
     private int ABS_RENT_GROUPS = 22; // [1, 22]
@@ -282,6 +283,12 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     for(int incGroup = 1; incGroup <= ABS_INCOME_GROUPS; incGroup++)
                     {
                         zone.setIncomeGroupByABS(incGroup, (int)(peoplePropertiesPerArea.getValueAt(row, "income_"+incGroup)));
+                    }
+
+                    // add totals for income groups
+                    for(int indGroup = 1; indGroup <= ABS_INDUSTRY_GROUPS; indGroup++)
+                    {
+                        zone.setIndustryGroupByABS(indGroup, (int)(peoplePropertiesPerArea.getValueAt(row, "industry_"+indGroup)));
                     }
 
                     // save the zone
@@ -916,6 +923,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // if enough of each gender in the zone
             if((zone.getMales()+margin) >= family.countMale && (zone.getFemales()+margin) >= family.countFemale)
             {
+                // AGE fit
                 for(int a = 0; a < family.countAge.length ; a++)
                 {
                     if(family.countAge[a] > 0)
@@ -932,6 +940,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     }
                 }
 
+                // INCOME fit
                 for(int a = 0; a < family.countIncome.length ; a++)
                 {
                     if(family.countIncome[a] > 0)
@@ -944,6 +953,23 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         {
                             // how many misplaced people
                             points += Math.abs(zone.getIncomeGroupByIndex(a) - family.countIncome[a]);
+                        }
+                    }
+                }
+
+                // INDUSTRY fit
+                for(int a = 0; a < family.countIndustry.length ; a++)
+                {
+                    if(family.countIndustry[a] > 0)
+                    {
+                        if((zone.getIndustryGroupByIndex(a)+margin) >= family.countIndustry[a])
+                        {
+                            // fullMatchAge = true;
+                        }
+                        else
+                        {
+                            // how many misplaced people
+                            points += Math.abs(zone.getIndustryGroupByIndex(a) - family.countIndustry[a]);
                         }
                     }
                 }
@@ -1994,6 +2020,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public int countMarriedF;
         public int[] countAge;
         public int[] countIncome;
+        public int[] countIndustry;
 
         public Family()
         {
@@ -2008,6 +2035,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             countMarried = 0;
             countAge = new int[ABS_AGE_GROUPS];
             countIncome = new int[ABS_INCOME_GROUPS];
+            countIndustry = new int[ABS_INDUSTRY_GROUPS];
 
             for(int i = 0; i < size; i++)
             {
@@ -2034,6 +2062,9 @@ public class SyntheticPopPerth implements SyntheticPopI {
 
                 // income groups
                 countIncome[person.codeIncome-1] += 1;
+
+                // industry groups
+                countIndustry[person.codeIndustry-1] += 1;
             }
         }
 
@@ -2138,6 +2169,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public int[] genderTotals;
         public int[] ageTotals;
         public int[] incomeTotals;
+        public int[] industryTotals;
 
         // object constants
         private int posM = 0; // male index in the gender arrays
@@ -2157,6 +2189,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             genderTotals = new int[2];
             ageTotals = new int[ABS_AGE_GROUPS];
             incomeTotals = new int[ABS_INCOME_GROUPS];
+            industryTotals = new int[ABS_INDUSTRY_GROUPS];
 
             structureTotals = new int[ABS_DWELL_GROUPS];
             bedroomTotals = new int[ABS_BEDROOM_GROUPS];
@@ -2188,6 +2221,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
             // income
             for(int i = 0; i<family.countIncome.length; i++)
                 addIncomeGroupByIndex(i, (sing*family.countIncome[i]));
+
+            // industry
+            for(int i = 0; i<family.countIndustry.length; i++)
+                addIndustryGroupByIndex(i, (sing*family.countIndustry[i]));
 
             // dwelling properties
             addDwellingTotal(sing);
@@ -2258,6 +2295,16 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public void addIncomeGroupByIndex(int i, int count) { incomeTotals[i] += count; }
         public void setIncomeGroupByIndex(int i, int count) { incomeTotals[i] = count; }
         public int getIncomeGroupByIndex(int i) { return incomeTotals[i]; }
+
+        // -----------------------------------------------------------------    Industry methods
+        // TB = this objects bin / index
+        public void addIndustryGroupByABS(int code, int count) { industryTotals[code-1] += count; }
+        public void setIndustryGroupByABS(int code, int count) { industryTotals[code-1] = count; }
+        public int getIndustryGroupByABS(int code) { return industryTotals[code-1]; }
+
+        public void addIndustryGroupByIndex(int i, int count) { industryTotals[i] += count; }
+        public void setIndustryGroupByIndex(int i, int count) { industryTotals[i] = count; }
+        public int getIndustryGroupByIndex(int i) { return industryTotals[i]; }
 
         // -----------------------------------------------------------------    Dwelling methods
         public void addDwellingTotal(int count) { dwellingTotal += count; }
