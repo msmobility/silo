@@ -721,21 +721,16 @@ public class SyntheticPopPerth implements SyntheticPopI {
     // ----------------------------------------------------------------------------------------------------------------- Distribute people to SA1s
     private void distributeToSA1()
     {
-        /*for(int margin = 0; margin < 3; margin++)
-        {
-            distributeAttempt(margin, false, true);
-            //distributeAttempt(margin, true, true);
-        }*/
-
+        // perfect fit
         distributeAttempt(0, false, true);
+        // margin
         distributeAttempt(1, false, true);
+        // noise margin
         distributeAttempt(0, true, true);
-
-        // now minimise the error
+        // minimise the error
         distributeAttempt(0, false, false);
-        distributeAttempt(3, true, false);
 
-        logger.info("Moving dwellings around.");
+        //logger.info("Moving dwellings around.");
         //distributionTrade();
     }
 
@@ -798,6 +793,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 }
                 else
                 {
+                    if(!perfectFit) logger.info(minMisMatchPoints);
                     allocated++;
 
                     // get the best zone
@@ -821,13 +817,15 @@ public class SyntheticPopPerth implements SyntheticPopI {
     private void distributionTrade()
     {
         int moved = 0;
+
+        // for each SA4
         for (ZoneSA1[] zones : zoneMap.values())
         {
-            for(int i = 0; i < zones.length; i++)
+            // for each SA1
+            for(ZoneSA1 zone1 : zones)
             {
-                ZoneSA1 zone1 = zones[i];
                 // if overflow in zone 1
-                while(zone1.getDwellingCount() < -1)
+                while(zone1.getDwellingCount() < -2)
                 {
                     if(zoneDistributionMove(zones, zone1))
                     {
@@ -852,25 +850,20 @@ public class SyntheticPopPerth implements SyntheticPopI {
         // if found
         if(family != null)
         {
-            for(int j = 0; j < zones.length; j++)
+            for(ZoneSA1 zone2 : zones)
             {
-                ZoneSA1 zone2 = zones[j];
-
-                // if the zone has space
-                if (zone1.SA1 != zone2.SA1 && zone2.getDwellingCount() > 0)
+                // if not the same zone
+                if (zone1.SA1 != zone2.SA1)
                 {
-                    // if zone can accommodate this structure & bedroom codes
-                    if (zone2.getBedroomTotalsByABS(family.dwelling.codeBedrooms) > 0
-                            && zone2.getStructureTotals(family.dwelling.codeType) > 0)
+                    int points1 = familyFitInZone(zone2, family,0, false, false);
+                    int points2 = dwellingFitInZone(zone2, family.dwelling, false, false);
+
+                    if(points1+points2 < 111)
                     {
-                        // if family fits perfectly in the zone (gender, income, age)
-                        if(familyFitInZone(zone2, family, 0, false, true) < 100)
-                        {
-                            family.dwelling.SA1 = zone2.SA1;
-                            zone1.update(family, 1);
-                            zone2.update(family, -1);
-                            return true;
-                        }
+                        family.dwelling.SA1 = zone2.SA1;
+                        zone1.update(family, 1);
+                        zone2.update(family, -1);
+                        return true;
                     }
                 }
             }
@@ -896,73 +889,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return null;
     }
 
-    private int dwellingFitInZone(ZoneSA1 zone, Dwelling dwelling, boolean useNoise, boolean perfectFit)
-    {
-        int points = 0;
-        int marginCount = (useNoise ? zone.getTotalDwellingMargin() : 0); // if true ? false : true
-        int marginStr = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.structureTotals) : 0);
-        int marginBed = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.bedroomTotals) : 0);
-        int marginRnt = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.rentTotals) : 0);
-        int marginMrg = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.mortgageTotals) : 0);
-        int marginVeh = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.vehicleTotals) : 0);
-
-        // if the overall count is not ok
-        if((zone.getDwellingCount()+marginCount) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1 - zone.getDwellingCount();
-        }
-
-        // if structure types are not ok
-        if((zone.getStructureTotals(dwelling.codeType)+marginStr) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1-zone.getStructureTotals(dwelling.codeType);
-        }
-
-        // if bedroom codes are not ok
-        if((zone.getBedroomTotalsByABS(dwelling.codeBedrooms)+marginBed) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1 - zone.getBedroomTotalsByABS(dwelling.codeBedrooms);
-        }
-
-        // if rent codes are not ok
-        if((zone.getRentTotalsByABS(dwelling.codeRent)+marginRnt) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1 - zone.getRentTotalsByABS(dwelling.codeRent);
-        }
-
-        // if mortgage code are not ok
-        if((zone.getMortgageTotalsByABS(dwelling.codeMortgage)+marginMrg) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1 - zone.getMortgageTotalsByABS(dwelling.codeMortgage);
-        }
-
-        // if vehicles are not ok
-        if((zone.getVehicleTotalsByABS(dwelling.codeVehicles)+marginVeh) <= 0)
-        {
-            // if perfect fit: speed up by skipping the rest
-            if(perfectFit) return Integer.MAX_VALUE;
-
-            points += 1 - zone.getVehicleTotalsByABS(dwelling.codeVehicles);
-        }
-
-        return points*10;
-    }
-
     private int familyFitInZone(ZoneSA1 zone, Family family, int margin, boolean useNoise, boolean perfectFit)
     {
         int points = 0;
@@ -980,7 +906,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             if(perfectFit) return Integer.MAX_VALUE;
 
             // how many misplaced people
-            points += (family.size - zone.getTotalPopulation())*4;
+            points += (family.size - zone.getTotalPopulation())*3;
         }
 
         // SEX fit
@@ -991,7 +917,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             if(perfectFit) return Integer.MAX_VALUE;
 
             // how many misplaced people
-            points += (family.countMale - zone.getMales())*3;
+            points += (family.countMale - zone.getMales())*2.5;
         }
         if((zone.getFemales()+marginSex) < family.countFemale)
         {
@@ -999,7 +925,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             if(perfectFit) return Integer.MAX_VALUE;
 
             // how many misplaced people
-            points += (family.countFemale - zone.getFemales())*3;
+            points += (family.countFemale - zone.getFemales())*2.5;
         }
 
         // AGE fit
@@ -1057,6 +983,73 @@ public class SyntheticPopPerth implements SyntheticPopI {
         }
 
         return points;
+    }
+
+    private int dwellingFitInZone(ZoneSA1 zone, Dwelling dwelling, boolean useNoise, boolean perfectFit)
+    {
+        int points = 0;
+        int marginCount = (useNoise ? zone.getTotalDwellingMargin() : 0); // if true ? false : true
+        int marginStr = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.structureTotals) : 0);
+        int marginBed = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.bedroomTotals) : 0);
+        int marginRnt = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.rentTotals) : 0);
+        int marginMrg = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.mortgageTotals) : 0);
+        int marginVeh = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.vehicleTotals) : 0);
+
+        // if the overall count is not ok
+        if((zone.getDwellingCount()+marginCount) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += (1 - zone.getDwellingCount())*3;
+        }
+
+        // if structure types are not ok
+        if((zone.getStructureTotals(dwelling.codeType)+marginStr) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getStructureTotals(dwelling.codeType)*2;
+        }
+
+        // if bedroom codes are not ok
+        if((zone.getBedroomTotalsByABS(dwelling.codeBedrooms)+marginBed) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getBedroomTotalsByABS(dwelling.codeBedrooms);
+        }
+
+        // if rent codes are not ok
+        if((zone.getRentTotalsByABS(dwelling.codeRent)+marginRnt) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getRentTotalsByABS(dwelling.codeRent);
+        }
+
+        // if mortgage code are not ok
+        if((zone.getMortgageTotalsByABS(dwelling.codeMortgage)+marginMrg) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getMortgageTotalsByABS(dwelling.codeMortgage);
+        }
+
+        // if vehicles are not ok
+        if((zone.getVehicleTotalsByABS(dwelling.codeVehicles)+marginVeh) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getVehicleTotalsByABS(dwelling.codeVehicles);
+        }
+
+        return points*5;
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Process ABS data
