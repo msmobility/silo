@@ -11,7 +11,15 @@ import de.tum.bgu.msm.models.EventModel;
  */
 public interface MovesModel extends EventModel<MoveEvent> {
 
+    /**
+     * Searches for a new dwelling for the given household and returns its id.
+     * If no suitable dwelling is found, -1 is returned.
+     */
     int searchForNewDwelling(Household household);
 
+    /**
+     * This method moves the given household from the old dwelling to the new dwelling
+     * and makes sure that all necessary transactions in the datamanagers are processed.
+     */
     void moveHousehold(Household hh, int idOldDD, int idNewDD);
 }
