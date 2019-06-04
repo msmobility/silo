@@ -158,7 +158,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         logger.info("\t" + (nextID_PP-1) + " people " + hhCount + " households " + (nextID_DD-1) + " dwellings " + (nextID_JJ-1) + " jobs.");
         logger.info("\t" + employedCount + " employed and " + unemployedCount + " unemployed.");
         logger.info("\t" + unassignedWorker + " unassigned workers.");
-        logger.info("\t" + clearedDwellings + " cleared dwellings");
+        logger.info("\t" + clearedDwellings + " cleared dwellings and moved " + seperatedMovedPeople + " people.");
 
         logger.info("\t" + npdPeopleCount + " people in " + npdCount + " non-private dwellings reduced to " + tmpNPDPopulation.size());
         closeFilesForSyntheticPopulation();
@@ -446,8 +446,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Process ABS data
+    int seperatedMovedPeople = 0;
     private void connectMarriedPeople()
     {
+
         int h1, h2;
         for(h1=0; h1<samplePopulation.size(); h1++)
         {
@@ -473,10 +475,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
                         int hh2Interest = household2.SingleAndLookingFor();
                         if(hh1Interest != 0 && hh2Interest != 0 && hh1Interest != hh2Interest)
                         {
+                            seperatedMovedPeople += household1.size;
+
                             household2.append(household1);
                             household1.emptyTheDwelling();
                             samplePopulation.set(h1, household1);
                             samplePopulation.set(h2, household2);
+
                             h2 = samplePopulation.size()+50;
                         }
                     }
@@ -493,10 +498,13 @@ public class SyntheticPopPerth implements SyntheticPopI {
                             int hh2Interest = household2.SingleAndLookingFor();
                             if(hh1Interest != 0 && hh2Interest != 0 && hh1Interest != hh2Interest)
                             {
+                                seperatedMovedPeople += household1.size;
+
                                 household2.append(household1);
                                 household1.emptyTheDwelling();
                                 samplePopulation.set(h1, household1);
                                 samplePopulation.set(h2, household2);
+
                                 h2 = samplePopulation.size()+50;
                             }
                         }
