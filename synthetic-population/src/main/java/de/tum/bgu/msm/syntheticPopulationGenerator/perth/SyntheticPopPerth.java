@@ -164,11 +164,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
         closeFilesForSyntheticPopulation();
         logger.info("  Completed generation of synthetic population");
 
-        // copy the output files over and save in timestamped dir
-        createDateCopy(year);
-
         // bit of verification
         someStats();
+
+        // copy the output files over and save in timestamped dir
+        createDateCopy(year);
     }
 
     // -----------------------------------------------------------------------------------------------------------------  Job Creation
@@ -269,7 +269,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     zone.SA4 = SA4;
                     zone.SA1 = SA1;
 
-                    // add gender counts for that zone
+                    // add the total count for this zonze
+                    zone.setPeopleCount((int)(peoplePropertiesPerArea.getValueAt(row, "Count")));
+
+                    // add gender counts for this zone
                     zone.setMales((int)(peoplePropertiesPerArea.getValueAt(row, "Male")));
                     zone.setFemales((int)(peoplePropertiesPerArea.getValueAt(row, "Female")));
 
@@ -312,7 +315,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                     if(zone != null)
                     {
                         // add the total dwelling count in this zone
-                        zone.setDwellingTotal((int)(dwellingPropertiesPerArea.getValueAt(row, "Count")));
+                        zone.setDwellingCount((int)(dwellingPropertiesPerArea.getValueAt(row, "Count")));
 
                         // add totals for dwelling structures
                         for(int strType = 1; strType <= ABS_DWELL_GROUPS; strType++)
@@ -718,22 +721,25 @@ public class SyntheticPopPerth implements SyntheticPopI {
     // ----------------------------------------------------------------------------------------------------------------- Distribute people to SA1s
     private void distributeToSA1()
     {
-        // try perfect matches first
-        distributeAttempt(0, true);
-        // now try with a margin
-        distributeAttempt(1, true);
-        distributeAttempt(2, true);
-        // now bigger margin
-        distributeAttempt(3, true);
+        /*for(int margin = 0; margin < 3; margin++)
+        {
+            distributeAttempt(margin, false, true);
+            //distributeAttempt(margin, true, true);
+        }*/
+
+        distributeAttempt(0, false, true);
+        distributeAttempt(1, false, true);
+        distributeAttempt(0, true, true);
+
         // now minimise the error
-        distributeAttempt(3, false);
-        distributeAttempt(5, false);
+        distributeAttempt(0, false, false);
+        distributeAttempt(3, true, false);
 
         logger.info("Moving dwellings around.");
         //distributionTrade();
     }
 
-    private void distributeAttempt(int margin, boolean perfectFit)
+    private void distributeAttempt(int margin, boolean useNoise, boolean perfectFit)
     {
         int unallocated = 0, allocated = 0;
 
@@ -765,30 +771,11 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 {
                     ZoneSA1 zone = zones[z];
 
-                    int points1 = familyFitInZone(zone, family, margin);
-                    int points2 = 0;
+                    // by how many points the family (people) do not fit in the zone
+                    int points1 = familyFitInZone(zone, family, margin, useNoise, perfectFit);
 
-                    // if dwelling counts are ok
-                    if((zone.getDwellingTotal()+4) > 0
-                        && ((zone.getStructureTotals(family.dwelling.codeType)+1) > 0) // if structure types are ok
-                        && ((zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)+1) > 0) // if bedroom codes are ok
-                        && ((zone.getRentTotalsByABS(family.dwelling.codeRent)+1) > 0) // if rent codes are ok
-                        && ((zone.getMortgageTotalsByABS(family.dwelling.codeMortgage)+1) > 0) // if mortgage code are ok
-                        && ((zone.getVehicleTotalsByABS(family.dwelling.codeVehicles)+1) > 0)) // if vehicles are ok
-                    {
-                            // all good
-                    }
-                    else
-                    {
-                        points2 = (zone.getDwellingTotal() >= 0 ? 0 : Math.abs(zone.getDwellingTotal()))
-                                + (zone.getStructureTotals(family.dwelling.codeType) >= 0 ? 0 : Math.abs(zone.getStructureTotals(family.dwelling.codeType)))
-                                + (zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms) >= 0 ? 0 : Math.abs(zone.getBedroomTotalsByABS(family.dwelling.codeBedrooms)))
-                                + (zone.getRentTotalsByABS(family.dwelling.codeRent) >= 0 ? 0 : Math.abs(zone.getRentTotalsByABS(family.dwelling.codeRent)))
-                                + (zone.getMortgageTotalsByABS(family.dwelling.codeMortgage) >= 0 ? 0 : Math.abs(zone.getMortgageTotalsByABS(family.dwelling.codeMortgage)))
-                                + (zone.getVehicleTotalsByABS(family.dwelling.codeVehicles) >= 0 ? 0 : Math.abs(zone.getVehicleTotalsByABS(family.dwelling.codeVehicles)));
-
-                        points2 *= 10;
-                    }
+                    // by how many points the dwelling does not fit in the zone
+                    int points2 = dwellingFitInZone(zone, family.dwelling, useNoise, perfectFit);
 
                     if(points1 <= 0 && points2 <= 0)
                     {
@@ -802,8 +789,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
                             minMisMatchPoints = points1+points2;
                             bestZone = z;
                         }
-
-
                     }
                 }
 
@@ -842,7 +827,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
             {
                 ZoneSA1 zone1 = zones[i];
                 // if overflow in zone 1
-                while(zone1.getDwellingTotal() < -1)
+                while(zone1.getDwellingCount() < -1)
                 {
                     if(zoneDistributionMove(zones, zone1))
                     {
@@ -872,14 +857,14 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 ZoneSA1 zone2 = zones[j];
 
                 // if the zone has space
-                if (zone1.SA1 != zone2.SA1 && zone2.getDwellingTotal() > 0)
+                if (zone1.SA1 != zone2.SA1 && zone2.getDwellingCount() > 0)
                 {
                     // if zone can accommodate this structure & bedroom codes
                     if (zone2.getBedroomTotalsByABS(family.dwelling.codeBedrooms) > 0
                             && zone2.getStructureTotals(family.dwelling.codeType) > 0)
                     {
                         // if family fits perfectly in the zone (gender, income, age)
-                        if(familyFitInZone(zone2, family, 0) < 100)
+                        if(familyFitInZone(zone2, family, 0, false, true) < 100)
                         {
                             family.dwelling.SA1 = zone2.SA1;
                             zone1.update(family, 1);
@@ -911,79 +896,166 @@ public class SyntheticPopPerth implements SyntheticPopI {
         return null;
     }
 
-    private int familyFitInZone(ZoneSA1 zone, Family family, int margin)
+    private int dwellingFitInZone(ZoneSA1 zone, Dwelling dwelling, boolean useNoise, boolean perfectFit)
     {
-        // boolean fullMatchAge = false;
-        // boolean fullMatchInc = false;
+        int points = 0;
+        int marginCount = (useNoise ? zone.getTotalDwellingMargin() : 0); // if true ? false : true
+        int marginStr = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.structureTotals) : 0);
+        int marginBed = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.bedroomTotals) : 0);
+        int marginRnt = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.rentTotals) : 0);
+        int marginMrg = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.mortgageTotals) : 0);
+        int marginVeh = (useNoise ? zone.getTotalDwellingMarginForCategory(zone.vehicleTotals) : 0);
+
+        // if the overall count is not ok
+        if((zone.getDwellingCount()+marginCount) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getDwellingCount();
+        }
+
+        // if structure types are not ok
+        if((zone.getStructureTotals(dwelling.codeType)+marginStr) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1-zone.getStructureTotals(dwelling.codeType);
+        }
+
+        // if bedroom codes are not ok
+        if((zone.getBedroomTotalsByABS(dwelling.codeBedrooms)+marginBed) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getBedroomTotalsByABS(dwelling.codeBedrooms);
+        }
+
+        // if rent codes are not ok
+        if((zone.getRentTotalsByABS(dwelling.codeRent)+marginRnt) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getRentTotalsByABS(dwelling.codeRent);
+        }
+
+        // if mortgage code are not ok
+        if((zone.getMortgageTotalsByABS(dwelling.codeMortgage)+marginMrg) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getMortgageTotalsByABS(dwelling.codeMortgage);
+        }
+
+        // if vehicles are not ok
+        if((zone.getVehicleTotalsByABS(dwelling.codeVehicles)+marginVeh) <= 0)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            points += 1 - zone.getVehicleTotalsByABS(dwelling.codeVehicles);
+        }
+
+        return points*10;
+    }
+
+    private int familyFitInZone(ZoneSA1 zone, Family family, int margin, boolean useNoise, boolean perfectFit)
+    {
         int points = 0;
 
-        // if enough people left in the zone (considering the margin)
-        if((zone.getTotalPopulation()+margin) >= family.size)
+        int marginTotal = margin + (useNoise ? zone.getTotalPopulationMargin() : 0); // if true ? false : true
+        int marginSex = margin + (useNoise ? zone.getTotalMarginForCategory(zone.genderTotals) : 0);
+        int marginAge = margin + (useNoise ? zone.getTotalMarginForCategory(zone.ageTotals) : 0);
+        int marginInc = margin + (useNoise ? zone.getTotalMarginForCategory(zone.incomeTotals) : 0);
+        int marginInd = margin + (useNoise ? zone.getTotalMarginForCategory(zone.industryTotals) : 0);
+
+        // if not enough people left in the zone (considering the margin + data noise)
+        if((zone.getTotalPopulation()+marginTotal) < family.size)
         {
-            // if enough of each gender in the zone
-            if((zone.getMales()+margin) >= family.countMale && (zone.getFemales()+margin) >= family.countFemale)
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            // how many misplaced people
+            points += (family.size - zone.getTotalPopulation())*4;
+        }
+
+        // SEX fit
+        // if not enough of each gender in the zone
+        if((zone.getMales()+marginSex) < family.countMale)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            // how many misplaced people
+            points += (family.countMale - zone.getMales())*3;
+        }
+        if((zone.getFemales()+marginSex) < family.countFemale)
+        {
+            // if perfect fit: speed up by skipping the rest
+            if(perfectFit) return Integer.MAX_VALUE;
+
+            // how many misplaced people
+            points += (family.countFemale - zone.getFemales())*3;
+        }
+
+        // AGE fit
+        for(int a = 0; a < family.countAge.length ; a++)
+        {
+            // if there are people in this group
+            if(family.countAge[a] > 0)
             {
-                // AGE fit
-                for(int a = 0; a < family.countAge.length ; a++)
+                // if not enough people in this zone in this group (considering the margin + data noise)
+                if((zone.getAgeGroupByIndex(a)+marginAge) < family.countAge[a])
                 {
-                    if(family.countAge[a] > 0)
-                    {
-                        if((zone.getAgeGroupByIndex(a)+margin) >= family.countAge[a])
-                        {
-                            // fullMatchAge = true;
-                        }
-                        else
-                        {
-                            // how many misplaced people
-                            points += Math.abs(zone.getAgeGroupByIndex(a) - family.countAge[a]);
-                        }
-                    }
-                }
+                    // if perfect fit: speed up by skipping the rest
+                    if(perfectFit) return Integer.MAX_VALUE;
 
-                // INCOME fit
-                for(int a = 0; a < family.countIncome.length ; a++)
-                {
-                    if(family.countIncome[a] > 0)
-                    {
-                        if((zone.getIncomeGroupByIndex(a)+margin) >= family.countIncome[a])
-                        {
-                            // fullMatchInc = true;
-                        }
-                        else
-                        {
-                            // how many misplaced people
-                            points += Math.abs(zone.getIncomeGroupByIndex(a) - family.countIncome[a]);
-                        }
-                    }
-                }
-
-                // INDUSTRY fit
-                for(int a = 0; a < family.countIndustry.length ; a++)
-                {
-                    if(family.countIndustry[a] > 0)
-                    {
-                        if((zone.getIndustryGroupByIndex(a)+margin) >= family.countIndustry[a])
-                        {
-                            // fullMatchAge = true;
-                        }
-                        else
-                        {
-                            // how many misplaced people
-                            points += Math.abs(zone.getIndustryGroupByIndex(a) - family.countIndustry[a]);
-                        }
-                    }
+                    // how many misplaced people
+                    points += (family.countAge[a] - zone.getAgeGroupByIndex(a))*2;
                 }
             }
-            else
+        }
+
+        // INCOME fit
+        for(int a = 0; a < family.countIncome.length ; a++)
+        {
+            // if there are people in this group
+            if(family.countIncome[a] > 0)
             {
-                points += 1 + (Math.abs(zone.getMales() - family.countMale) +
-                        Math.abs(zone.getFemales() - family.countFemale))*5;
+                // if not enough people in this zone in this group (considering the margin + data noise)
+                if((zone.getIncomeGroupByIndex(a)+marginInc) < family.countIncome[a])
+                {
+                    // if perfect fit: speed up by skipping the rest
+                    if(perfectFit) return Integer.MAX_VALUE;
+
+                    // how many misplaced people
+                    points += (family.countIncome[a] - zone.getIncomeGroupByIndex(a))*2;
+                }
             }
         }
-        else
+
+        // INDUSTRY fit
+        for(int a = 0; a < family.countIndustry.length ; a++)
         {
-            points += 1 + Math.abs(zone.getTotalPopulation() - family.size)*10;
+            // if there are people in this group
+            if(family.countIndustry[a] > 0)
+            {
+                // if not enough people in this zone in this group (considering the margin + data noise)
+                if((zone.getIndustryGroupByIndex(a)+marginInd) < family.countIndustry[a])
+                {
+                    // if perfect fit: speed up by skipping the rest
+                    if(perfectFit) return Integer.MAX_VALUE;
+
+                    // how many misplaced people
+                    points += (family.countIndustry[a] - zone.getIndustryGroupByIndex(a));
+                }
+            }
         }
+
         return points;
     }
 
@@ -1797,9 +1869,10 @@ public class SyntheticPopPerth implements SyntheticPopI {
     {
         // date format
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+        String timestamp = dateFormat.format(new Date());
 
         String sourceDir = baseDirectory + "/microData/";
-        String outputDir = baseDirectory + "/microData/microData_" + dateFormat.format(new Date()) + "/";
+        String outputDir = baseDirectory + "/microData/microData_" + timestamp + "/";
 
         if(new File(outputDir).mkdirs())
         {
@@ -1811,6 +1884,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 copyFile(new File(sourceDir + "jj_" + year + ".csv"), new File(outputDir + "jj_" + year + ".csv"));
                 copyFile(new File(sourceDir + "abs_pp_" + year + ".csv"), new File(outputDir + "abs_pp_" + year + ".csv"));
                 copyFile(new File(sourceDir + "abs_dd_" + year + ".csv"), new File(outputDir + "abs_dd_" + year + ".csv"));
+
+                logger.info("Timestamp: " + timestamp);
             }
             catch (Exception ex)
             {
@@ -2166,6 +2241,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public int SA4;
 
         // people info
+        public int peopleCount;
         public int[] genderTotals;
         public int[] ageTotals;
         public int[] incomeTotals;
@@ -2176,7 +2252,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
         private int posF = 1; // female index in the gender arrays
 
         // dwelling info
-        public int dwellingTotal;
+        public int dwellingCount;
         public int[] structureTotals;
         public int[] bedroomTotals;
         public int[] rentTotals;
@@ -2210,9 +2286,12 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 logger.error("sign needs to be -1 (decrement) or 1 (increment) zone population");
             }
 
+            // count
+            addToPeopleCount(sing*family.size);
+
             // genders
-            addMales((sing*family.countMale));
-            addFemales((sing*family.countFemale));
+            addMales(sing*family.countMale);
+            addFemales(sing*family.countFemale);
 
             // age
             for(int i = 0; i<family.countAge.length; i++)
@@ -2227,7 +2306,7 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 addIndustryGroupByIndex(i, (sing*family.countIndustry[i]));
 
             // dwelling properties
-            addDwellingTotal(sing);
+            addDwellingCount(sing);
             addStructureTotals(family.dwelling.codeType, sing);
             addBedroomTotalsByABS(family.dwelling.codeBedrooms, sing);
             addRentTotalsByABS(family.dwelling.codeRent, sing);
@@ -2235,32 +2314,42 @@ public class SyntheticPopPerth implements SyntheticPopI {
             addVehicleTotalsByABS(family.dwelling.codeVehicles, sing);
         }
 
-        // -----------------------------------------------------------------    Total population counts
-        public int getTotalPopulation()
+        // -----------------------------------------------------------------
+        // sum for a specified category
+        public int getTotalCountFor(int[] category)
         {
-            return Math.max(Math.max(getTotalPopulationGender(), getTotalPopulationAge()), getTotalPopulationInc());
+            int sum = 0;
+            for(int i = 0; i<category.length; i++)
+                sum += category[i];
+            return sum;
         }
 
+        // -----------------------------------------------------------------    Total population between cateogries
+        // use maximum as the population of the zone
+        public int getTotalPopulation() { return getTotalPopulationMax(); }
+
+        // max between different totals (each category has a different total due to noise)
+        public int getTotalPopulationMax() { return Math.max(Math.max(Math.max(Math.max(getTotalPopulationGender(), getTotalPopulationAge()), getTotalPopulationInc()), getTotalPopulationInd()), getPeopleCount());  }
+        // min between different totals (each category has a different total due to noise)
+        public int getTotalPopulationMin() { return Math.min(Math.min(Math.max(Math.min(getTotalPopulationGender(), getTotalPopulationAge()), getTotalPopulationInc()), getTotalPopulationInd()), getPeopleCount());  }
+        // noise margin between max and min
+        public int getTotalPopulationMargin() { return getTotalPopulationMax() - getTotalPopulationMin(); }
+        // noise margin for a specific person category
+        public int getTotalMarginForCategory(int[] category) { return getTotalPopulationMax() - getTotalCountFor(category); }
+
+        // totals for each category
         public int getTotalPopulationGender()
         {
             return genderTotals[posM] + genderTotals[posF];
         }
+        public int getTotalPopulationAge() { return getTotalCountFor(ageTotals); }
+        public int getTotalPopulationInc() { return getTotalCountFor(incomeTotals); }
+        public int getTotalPopulationInd() { return getTotalCountFor(industryTotals); }
 
-        public int getTotalPopulationAge()
-        {
-            int sum = 0;
-            for(int i = 0; i<ageTotals.length; i++)
-                sum += ageTotals[i];
-            return sum;
-        }
-
-        public int getTotalPopulationInc()
-        {
-            int sum = 0;
-            for(int i = 0; i<incomeTotals.length; i++)
-                sum += incomeTotals[i];
-            return sum;
-        }
+        // -----------------------------------------------------------------    Zone population count methods
+        public void setPeopleCount(int count) { peopleCount = count; }
+        public void addToPeopleCount(int count) { peopleCount += count; }
+        public int getPeopleCount() { return peopleCount; }
 
         // -----------------------------------------------------------------    Gender methods
         public void addMales(int count) { genderTotals[posM] += count; }
@@ -2306,27 +2395,51 @@ public class SyntheticPopPerth implements SyntheticPopI {
         public void setIndustryGroupByIndex(int i, int count) { industryTotals[i] = count; }
         public int getIndustryGroupByIndex(int i) { return industryTotals[i]; }
 
-        // -----------------------------------------------------------------    Dwelling methods
-        public void addDwellingTotal(int count) { dwellingTotal += count; }
-        public void setDwellingTotal(int count) { dwellingTotal = count; }
-        public int getDwellingTotal() { return dwellingTotal; }
+        // -----------------------------------------------------------------    Dwelling total methods between categories
+        // use maximum as the population of the zone
+        public int getTotalDwelling() { return getTotalDwellingMax(); }
+        // max between different totals (each category has a different total due to noise)
+        public int getTotalDwellingMax() { return Math.max(Math.max(Math.max(Math.max(Math.max(getDwellingCount(), getTotalDwellingStructure()), getTotalDwellingBedroom()), getTotalDwellingRent()), getTotalDwellingMortgage()), getTotalDwellingVehicle()); }
+        // min between different totals (each category has a different total due to noise)
+        public int getTotalDwellingMin()  { return Math.min(Math.min(Math.min(Math.min(Math.min(getDwellingCount(), getTotalDwellingStructure()), getTotalDwellingBedroom()), getTotalDwellingRent()), getTotalDwellingMortgage()), getTotalDwellingVehicle()); }
+        // noise margin between max and min
+        public int getTotalDwellingMargin() { return getTotalDwellingMax() - getTotalDwellingMin(); }
+        // noise margin for a specific person category
+        public int getTotalDwellingMarginForCategory(int[] category) { return getTotalDwellingMax() - getTotalCountFor(category); }
 
+        // totals for each category
+        public int getTotalDwellingStructure() { return getTotalCountFor(structureTotals); }
+        public int getTotalDwellingBedroom() { return getTotalCountFor(bedroomTotals); }
+        public int getTotalDwellingRent() { return getTotalCountFor(rentTotals); }
+        public int getTotalDwellingMortgage() { return getTotalCountFor(mortgageTotals); }
+        public int getTotalDwellingVehicle() { return getTotalCountFor(vehicleTotals); }
+
+        // -----------------------------------------------------------------    Dwelling count methods
+        public void addDwellingCount(int count) { dwellingCount += count; }
+        public void setDwellingCount(int count) { dwellingCount = count; }
+        public int getDwellingCount() { return dwellingCount; }
+
+        // -----------------------------------------------------------------    Dwelling structure methods
         public void addStructureTotals(int code, int count) { structureTotals[code-1] += count; }
         public void setStructureTotals(int code, int count) { structureTotals[code-1] = count; }
         public int getStructureTotals(int code) { return structureTotals[code-1]; }
 
+        // -----------------------------------------------------------------    Dwelling bedroom methods
         public void addBedroomTotalsByABS(int code, int count) { bedroomTotals[code] += count; }
         public void setBedroomTotalsByABS(int code, int count) { bedroomTotals[code] = count; }
         public int getBedroomTotalsByABS(int code) { return bedroomTotals[code]; }
 
+        // -----------------------------------------------------------------    Dwelling rent methods
         public void addRentTotalsByABS(int code, int count) { rentTotals[code-1] += count; }
         public void setRentTotalsByABS(int code, int count) { rentTotals[code-1] = count; }
         public int getRentTotalsByABS(int code) { return rentTotals[code-1]; }
 
+        // -----------------------------------------------------------------    Dwelling mortgage methods
         public void addMortgageTotalsByABS(int code, int count) { mortgageTotals[code-1] += count; }
         public void setMortgageTotalsByABS(int code, int count) { mortgageTotals[code-1] = count; }
         public int getMortgageTotalsByABS(int code) { return mortgageTotals[code-1]; }
 
+        // -----------------------------------------------------------------    Dwelling vehicle methods
         public void addVehicleTotalsByABS(int code, int count) { vehicleTotals[code] += count; }
         public void setVehicleTotalsByABS(int code, int count) { vehicleTotals[code] = count; }
         public int getVehicleTotalsByABS(int code) { return vehicleTotals[code]; }
