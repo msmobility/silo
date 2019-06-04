@@ -101,7 +101,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             return false;
         }
 
-        // Step 1: Consider relocation if household is not very satisfied or if household income exceed restriction for low-income dwelling
+        // Step 1: Consider relocation if household is not very satisfied or if
+        // household income exceed restriction for low-income dwelling
         if (!moveOrNot(household)) {
             return false;
         }
@@ -277,26 +278,57 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private static class UtilityUtils extends Thread {
 
+        /**
+         * The queue that each thread listens to to poll for new dwelling evaluations.
+         * Tasks are put into the queue from the main thread inside the searchForNewDwelling method
+         */
         private static final Queue<UtilityTask> queue = new ConcurrentLinkedQueue<>();
+
+        /**
+         * boolean that is used to stop threads once they're running.
+         */
         private static boolean run = false;
 
+        /**
+         * counter that is used to dtermine when current dwelling evaluations have been finished
+         */
         private final static AtomicInteger counter = new AtomicInteger(0);
 
+        /**
+         * static array that is used to store probabilities of dwelling evaluations accessed
+         * from different threads
+         */
         private static double[] probabilities;
+
+        /**
+         * static array that is used to store dwellings of evaluations accessed
+         * from different threads
+         */
         private static Dwelling[] dwellings;
 
+        /**
+         * the strategy for each thread that is used for dwelling evaluation
+         */
         private HousingStrategy strategy;
 
         private UtilityUtils(HousingStrategy strategy) {
             this.strategy = strategy;
         }
 
+        /**
+         * reset static probability and dwelling arrays for the next dwelling search.
+         * reset the job counter.
+         */
         private static void reset() {
             probabilities = new double[MAX_NUMBER_DWELLINGS];
             dwellings = new Dwelling[MAX_NUMBER_DWELLINGS];
             counter.set(0);
         }
 
+        /**
+         * start the given number of background threads with the given housing strategy.
+         * The strategy will be duplicated for each thread to ensure thread-safety.
+         */
         private static void startThreads(HousingStrategy strategy, int threads) {
             run = true;
             for (int i = 0; i < threads; i++) {
@@ -304,11 +336,21 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
         }
 
+        /**
+         * stop the background threads from running
+         */
         private static void endYear() {
             run = false;
         }
 
+
         @Override
+        /**
+         * when running, a thread polls the queue for utility tasks. for each task
+         * a dwelling has to be evaluated. after the evaluation, the probabilities
+         * are stored in the static array that is shared among the threads and the
+         * jobcounter is incremented
+         */
         public void run() {
             while (run) {
                 final UtilityTask poll = queue.poll();
