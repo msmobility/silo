@@ -793,7 +793,6 @@ public class SyntheticPopPerth implements SyntheticPopI {
                 }
                 else
                 {
-                    if(!perfectFit) logger.info(minMisMatchPoints);
                     allocated++;
 
                     // get the best zone
