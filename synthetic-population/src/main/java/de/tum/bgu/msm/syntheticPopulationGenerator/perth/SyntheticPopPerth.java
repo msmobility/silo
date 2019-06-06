@@ -1253,6 +1253,8 @@ public class SyntheticPopPerth implements SyntheticPopI {
                             vaccDwelling.ddID = nextID_DD++;
                             vaccDwelling.hhID = -1;
                             vaccDwelling.SA1 = zone;
+                            vaccDwelling.ddVehicles = 0;
+                            vaccDwelling.codeVehicles = 0;
                             vaccDwelling.ddType = ddCodeType; // just to make sure
                             vaccDwelling.ddPrice = qualityMapSA1.get(zone).overallAveragePrice;
 
