@@ -18,7 +18,8 @@ status.csv
 test/output/*
 test/scenarios/annapolis/null_t.csv
 *.DS_Store
-
+/output/
+output/
 tripAttraction.csv
 
 tripProduction.csv
