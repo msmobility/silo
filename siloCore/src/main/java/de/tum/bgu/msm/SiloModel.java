@@ -19,9 +19,13 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -30,6 +34,7 @@ import de.tum.bgu.msm.simulator.Simulator;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
@@ -118,8 +123,15 @@ public final class SiloModel {
 
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
+			logger.info("calculating peak skim matrix " + year);
+        	TravelTimes tt = dataContainer.getTravelTimes();
+			GeoData geo = dataContainer.getGeoData();
+			Map<Integer, Zone> zoneMap = geo.getZones();
+			Collection<Zone> zoneCollection = new ArrayList<Zone>(zoneMap.values());
+			OmxTravelTimesWriter oxmTTWriter = new OmxTravelTimesWriter(tt , zoneCollection);
+			oxmTTWriter.writeTravelTimes("./output/skim"+year + ".omx", "skim", TransportMode.car);
 
-            logger.info("Simulating changes from year " + year + " to year " + (year + 1));
+			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             // setup issue counter for this simulation period
             IssueCounter.setUpCounter();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));

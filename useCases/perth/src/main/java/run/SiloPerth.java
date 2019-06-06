@@ -49,7 +49,7 @@ public class SiloPerth {
         Map<Integer, Zone> zoneMap = geo.getZones();
         Collection<Zone> zoneCollection = new ArrayList<Zone>(zoneMap.values());
         OmxTravelTimesWriter oxmTTWriter = new OmxTravelTimesWriter(tt , zoneCollection);
-        oxmTTWriter.writeTravelTimes("./output/skim"+".omx", "skim", TransportMode.car);
+        oxmTTWriter.writeTravelTimes("./output/skim_finalyear_"+".omx", "skim", TransportMode.car);
 
         logger.info("Finished SILO.");
     }
