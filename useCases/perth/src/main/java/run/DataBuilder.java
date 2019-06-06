@@ -108,7 +108,7 @@ public final class DataBuilder {
         int year = properties.main.startYear;
 
         readHouseholds(properties, dataContainer.getHouseholdDataManager(),
-                 dataContainer.getHouseholdDataManager().getHouseholdFactory(), year);
+                dataContainer.getHouseholdDataManager().getHouseholdFactory(), year);
         readPersons(properties, dataContainer.getHouseholdDataManager(), dataContainer.getHouseholdDataManager().getPersonFactory(), year);
         readDwellings(properties, dataContainer.getRealEstateDataManager(), dataContainer.getGeoData(), year);
 

@@ -202,7 +202,6 @@ public final class MatsimTravelTimes implements TravelTimes {
                                     double travelTime = copy.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, mode);
 
                                     //convert to minutes
-                                    travelTime /= 60.;
 
                                     skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
                                 }

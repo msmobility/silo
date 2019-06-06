@@ -118,8 +118,7 @@ public final class SiloModel {
 
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
-
-            logger.info("Simulating changes from year " + year + " to year " + (year + 1));
+			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             // setup issue counter for this simulation period
             IssueCounter.setUpCounter();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));

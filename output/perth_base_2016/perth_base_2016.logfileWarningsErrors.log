@@ -1,9 +1,0 @@
-2019-05-21 15:33:53,176  WARN VspConfigConsistencyCheckerImpl:83 you are insisting on config v1.  vsp default is using v2.
-2019-05-21 15:33:53,176  WARN VspConfigConsistencyCheckerImpl:99 you are not using FastAStarLandmarks as routing algorithm.  vsp default is to use FastAStarLandmarks.
-2019-05-21 15:33:53,176  WARN VspConfigConsistencyCheckerImpl:201 You are not setting fractionOfIterationsToStartScoreMSA; vsp default is to set this to something like 0.8.  This means you have to add the following lines to your config file: 
-2019-05-21 15:33:53,176  WARN VspConfigConsistencyCheckerImpl:203 <module name="planCalcScore">
-2019-05-21 15:33:53,177  WARN VspConfigConsistencyCheckerImpl:204 	<param name="fractionOfIterationsToStartScoreMSA" value="0.8" />
-2019-05-21 15:33:53,177  WARN VspConfigConsistencyCheckerImpl:205 </module>
-2019-05-21 15:33:53,177  WARN VspConfigConsistencyCheckerImpl:247 found `plansCalcRoute.insertingAccessEgressWalk==false'; vsp should use `true' or talk to Kai. 
-2019-05-21 15:33:53,177  WARN VspConfigConsistencyCheckerImpl:254 found qsim.usePersonIdForMissingVehicleId==true; this is only for backwards compatibility and should rather be set to false
-2019-05-21 15:33:53,177  WARN VspConfigConsistencyCheckerImpl:259 found `qsim.usingTravelTimeCheckInTeleporation==false'; vsp should try out `true' and report.

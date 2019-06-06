@@ -22,13 +22,17 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.OmxTravelTimesWriter;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Population;
@@ -60,10 +64,7 @@ import org.matsim.facilities.*;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.matsim.core.utils.geometry.transformations.TransformationFactory;
 
@@ -141,6 +142,14 @@ public final class MatsimTransportModel implements TransportModel {
 
 	public void runTransportModel(int year) {
 		logger.warn("Running MATSim transport model for year " + year + ".");
+
+		logger.info("calculating peak skim matrix " + year);
+		TravelTimes tt = dataContainer.getTravelTimes();
+		GeoData geo = dataContainer.getGeoData();
+		Map<Integer, Zone> zoneMap = geo.getZones();
+		Collection<Zone> zoneCollection = new ArrayList<Zone>(zoneMap.values());
+		OmxTravelTimesWriter oxmTTWriter = new OmxTravelTimesWriter(tt , zoneCollection);
+		oxmTTWriter.writeTravelTimes("./output/skim"+year + ".omx", "skim", TransportMode.car);
 
 		String scenarioName = properties.main.scenarioName;
 
