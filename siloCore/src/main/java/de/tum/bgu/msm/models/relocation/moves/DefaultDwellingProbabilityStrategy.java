@@ -8,11 +8,8 @@ import java.io.Reader;
 
 public class DefaultDwellingProbabilityStrategy extends JavaScriptCalculator<Double> implements DwellingProbabilityStrategy {
 
-    private final static Reader reader
-            = new InputStreamReader(ScriptInputProvider.getDwellingProbabilityScriptInput());
-
     public DefaultDwellingProbabilityStrategy() {
-        super(reader);
+        super(new InputStreamReader(ScriptInputProvider.getDwellingProbabilityScriptInput()));
     }
 
     public double calculateSelectDwellingProbability(double dwellingUtility) {

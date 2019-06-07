@@ -2,7 +2,7 @@ package de.tum.bgu.msm.simulator;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import de.tum.bgu.msm.data.SummarizeData;
+import com.google.common.math.LongMath;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
@@ -83,7 +83,7 @@ public final class Simulator {
             timeTracker.recordAndReset("PreparationFor" + modelUpdateListener.getClass().getSimpleName());
         }
         logger.info("  Preparing and creating events");
-        for(@SuppressWarnings("unchecked") EventModel<? extends MicroEvent> model: models.values()) {
+        for(EventModel<MicroEvent> model: models.values()) {
             model.prepareYear(year);
             events.addAll(model.getEventsForCurrentYear(year));
             timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
@@ -96,17 +96,22 @@ public final class Simulator {
 
     private void processEvents() {
         logger.info("  Processing events...");
+        int counter = 0;
         for (MicroEvent e: events) {
+            if (LongMath.isPowerOfTwo(counter)) {
+                logger.info("Handled " + counter + " events.");
+            }
 //            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
             //unchecked is justified here, as
             //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
             // checks for the right type of model handlers
-            @SuppressWarnings("unchecked")
+
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
                 eventCounter.add(klass);
             }
+            counter++;
 //            timeTracker.record(klass.getSimpleName());
         }
     }

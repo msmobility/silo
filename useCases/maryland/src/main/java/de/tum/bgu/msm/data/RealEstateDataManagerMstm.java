@@ -87,7 +87,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
 
 
     @Override
-    public int[] getListOfVacantDwellingsInRegion(int region) {
+    public List<Dwelling> getListOfVacantDwellingsInRegion(int region) {
         return delegate.getListOfVacantDwellingsInRegion(region);
     }
 
@@ -124,6 +124,11 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     @Override
     public int[] getDwellingsByQuality() {
         return delegate.getDwellingsByQuality();
+    }
+
+    @Override
+    public Map<Integer, Double> calculateRegionalPrices() {
+        return delegate.calculateRegionalPrices();
     }
 
     @Override

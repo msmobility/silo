@@ -8,7 +8,6 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.EmploymentEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -24,12 +23,12 @@ import java.util.List;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 1 March 2013 in Santa Fe
  **/
-
 public class EmploymentModelImpl extends AbstractModel implements EmploymentModel {
 
     private final static Logger logger = Logger.getLogger(EmploymentModelImpl.class);
 
     private float[][] laborParticipationShares;
+    private int missingJob;
 
     public EmploymentModelImpl(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
@@ -47,7 +46,10 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         final float[][] currentlyUnemployed = new float[2][100];
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
             int age = pp.getAge();
-            if (age > 99) continue;  // people older than 99 will always be unemployed/retired
+            if (age > 99) {
+                // people older than 99 will always be unemployed/retired
+                continue;
+            }
             Gender gender = pp.getGender();
             boolean employed = pp.getJobId() > 0;
             if (employed) {
@@ -111,7 +113,10 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
 
     @Override
     public void endYear(int year) {
-
+        if (missingJob > 0) {
+            logger.warn("  Encountered " + missingJob + " cases where a person should have started a " +
+                    "new job to keep constant labor participation rates but could not find a job.");
+        }
     }
 
     @Override
@@ -128,17 +133,22 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
         for (Person pp: dataContainer.getHouseholdDataManager().getPersons()) {
             int age = pp.getAge();
             if (age > 99) {
-                continue;  // people older than 99 will always be unemployed/retired
+                // people older than 99 will always be unemployed/retired
+                continue;
             }
             int gender = pp.getGender().ordinal();
             boolean employed = pp.getJobId() > 0;
-            if (employed) laborParticipationShares[gender][age]++;
+            if (employed) {
+                laborParticipationShares[gender][age]++;
+            }
             count[gender][age]++;
         }
         // calculate shares
         for (int gen = 0; gen <=1; gen++) {
             for (int age = 0; age < 100; age++) {
-                if (count[gen][age] > 0) laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
+                if (count[gen][age] > 0) {
+                    laborParticipationShares[gen][age] = laborParticipationShares[gen][age] / (1f * count[gen][age]);
+                }
             }
 
             // smooth out shares
@@ -151,7 +161,9 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        missingJob = 0;
+    }
 
     @Override
     public boolean lookForJob(int perId) {
@@ -161,7 +173,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
             if (jj != null) {
                 return takeNewJob(pp, jj);
             } else {
-                IssueCounter.countMissingJob();
+                missingJob++;
             }
         }
         return false;

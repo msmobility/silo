@@ -58,8 +58,8 @@ public class SiloMatsimUtils {
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setFirstIteration(0);
-		config.controler().setWritePlansInterval(config.controler().getLastIteration());
-		config.controler().setWriteEventsInterval(config.controler().getLastIteration());
+		config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
+		config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 	
 		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);

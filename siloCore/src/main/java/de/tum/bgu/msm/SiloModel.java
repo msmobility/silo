@@ -20,7 +20,6 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EventModel;
@@ -100,9 +99,6 @@ public final class SiloModel {
 
 		simulator.registerResultsMonitor(resultsMonitor);
 
-		IssueCounter.setUpCounter();
-		IssueCounter.logIssues();
-
         setupScalingYears();
 
         dataContainer.setup();
@@ -122,8 +118,7 @@ public final class SiloModel {
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
 
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
-            // setup issue counter for this simulation period
-            IssueCounter.setUpCounter();
+            long time = System.currentTimeMillis();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));
             timeTracker.setCurrentYear(year);
 
@@ -140,11 +135,10 @@ public final class SiloModel {
             simulator.simulate(year);
 			dataContainer.endYear(year);
 
-			IssueCounter.logIssues();           // log any issues that arose during this simulation period
-
 			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
 					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +
-					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings.");
+					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings in " +
+                    (System.currentTimeMillis() - time) / 1000 + " seconds.");
 
 			if (SiloUtil.modelStopper("check")) {
 			    break;
@@ -165,7 +159,7 @@ public final class SiloModel {
 			SummarizeData.writeOutDevelopmentFile(dataContainer);
 		}
 		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, dataContainer);
-		SiloUtil.finish(modelContainer);
+		SiloUtil.finish();
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);
 		logger.info("Scenario results can be found in the directory scenOutput/" + properties.main.scenarioName + ".");

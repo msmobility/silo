@@ -1,10 +1,12 @@
 package de.tum.bgu.msm.data;
 
 
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 
@@ -17,10 +19,12 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
 
     private final TravelTimes delegate;
     private final Properties properties;
+    private final GeoData geoData;
 
-    public TravelTimesWrapper(TravelTimes travelTimes, Properties properties){
+    public TravelTimesWrapper(TravelTimes travelTimes, Properties properties, GeoData geoData){
         delegate = travelTimes;
         this.properties = properties;
+        this.geoData = geoData;
     }
 
 
@@ -69,7 +73,10 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     }
 
     private void updateSkims(int year) {
-        TravelTimeUtil.updateCarSkim((SkimTravelTimes) delegate, year, properties);
-        TravelTimeUtil.updateTransitSkim((SkimTravelTimes) delegate, year, properties);
+        if(properties.transportModel.transportModelIdentifier != TransportModelPropertiesModule.TransportModelIdentifier.MATSIM) {
+            TravelTimeUtil.updateCarSkim((SkimTravelTimes) delegate, year, properties);
+            TravelTimeUtil.updateTransitSkim((SkimTravelTimes) delegate, year, properties);
+            ((SkimTravelTimes) delegate).updateZoneToRegionTravelTimes(geoData.getZones().values(), geoData.getRegions().values());
+        }
     }
 }

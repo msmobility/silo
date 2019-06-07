@@ -104,7 +104,7 @@ public class MainProperties {
         startYear = PropertiesUtil.getIntProperty(bundle, "start.year", baseYear);
         endYear = PropertiesUtil.getIntProperty(bundle, "end.year");
         randomSeed = PropertiesUtil.getIntProperty(bundle, "random.seed", -1);
-        printOutFinalSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "print.out.sp.final", true);
+        printOutFinalSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "print.out.sp.final", false);
 
         PropertiesUtil.newPropertySubmodule("Main - runtime tracking");
         trackTime = PropertiesUtil.getBooleanProperty(bundle, "track.time", true);

@@ -3,12 +3,10 @@ package de.tum.bgu.msm.data.dwelling;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.development.DevelopmentImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
@@ -18,6 +16,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
@@ -45,7 +44,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private int highestDwellingIdInUse;
     private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
 
-    private Map<Integer, Set<Dwelling>> vacDwellingsByRegion = new LinkedHashMap<>();
+    private Map<Integer, List<Dwelling>> vacDwellingsByRegion = new LinkedHashMap<>();
 
     private double[] avePrice;
     private double[] aveVac;
@@ -113,9 +112,10 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     @Override
     public double[] getCurrentQualShares() {
         double[] currentQualityShares = new double[Properties.get().main.qualityLevels];
-        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++)
+        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
             currentQualityShares[qual - 1] =
                     (double) dwellingsByQuality[qual - 1] / (double) SiloUtil.getSum(dwellingsByQuality);
+        }
         return currentQualityShares;
     }
 
@@ -125,14 +125,14 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
      * @return
      */
     @Override
-    public int[] getListOfVacantDwellingsInRegion(int region) {
-        return vacDwellingsByRegion.getOrDefault(region,
-                new HashSet<>()).stream().mapToInt(Id::getId).toArray();
+    public List<Dwelling> getListOfVacantDwellingsInRegion(int region) {
+        return Collections.unmodifiableList(vacDwellingsByRegion.getOrDefault(region,
+                new ArrayList<>()));
     }
 
     @Override
     public int getNumberOfVacantDDinRegion(int region) {
-        return vacDwellingsByRegion.getOrDefault(region, new HashSet<>()).size();
+        return vacDwellingsByRegion.getOrDefault(region, new ArrayList<>()).size();
     }
 
     @Override
@@ -175,10 +175,11 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             if (dd.getResidentId() == -1) {
                 int dwellingId = dd.getId();
                 int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
-                vacDwellingsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+                vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
                 vacDwellingsByRegion.get(region).add(dd);
-                if (dwellingId == SiloUtil.trackDd)
+                if (dwellingId == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
+                }
             }
         }
     }
@@ -197,6 +198,17 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             initialQualityShares[qual - 1] = (double) dwellingsByQuality[qual - 1] /
                     (double) SiloUtil.getSum(dwellingsByQuality);
         }
+    }
+
+    @Override
+    public Map<Integer, Double> calculateRegionalPrices() {
+        final Map<Integer, Zone> zones = geoData.getZones();
+        final Map<Integer, List<Dwelling>> dwellingsByRegion =
+                dwellingData.getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
+                        zones.get(d.getZoneId()).getRegion().getId()));
+        final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().mapToDouble(Dwelling::getPrice).average().getAsDouble()));
+        return rentsByRegion;
     }
 
 
@@ -254,7 +266,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
         Dwelling dwelling = dwellingData.getDwelling(ddId);
         int region = geoData.getZones().get(dwelling.getZoneId()).getRegion().getId();
-        Set<Dwelling> vacDwellings = vacDwellingsByRegion.get(region);
+        List<Dwelling> vacDwellings = vacDwellingsByRegion.get(region);
         if (vacDwellings != null) {
             found = vacDwellings.remove(dwelling);
             if (ddId == SiloUtil.trackDd) {
@@ -277,7 +289,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     public void addDwellingToVacancyList(Dwelling dd) {
 
         int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
-        vacDwellingsByRegion.putIfAbsent(region, new LinkedHashSet<>());
+        vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
         vacDwellingsByRegion.get(region).add(dd);
         if (dd.getId() == SiloUtil.trackDd) {
             SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +

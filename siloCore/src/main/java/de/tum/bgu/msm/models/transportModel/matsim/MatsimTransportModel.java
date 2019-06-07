@@ -23,12 +23,15 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Population;
@@ -85,8 +88,13 @@ public final class MatsimTransportModel implements TransportModel {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
 				"No initial matsim config provided to SiloModel class!" );
-		this.travelTimes = (MatsimTravelTimes)
-				Objects.requireNonNull((dataContainer.getTravelTimes()));
+
+		final TravelTimes travelTimes = dataContainer.getTravelTimes();
+		if(travelTimes instanceof MatsimTravelTimes) {
+			this.travelTimes = (MatsimTravelTimes) travelTimes;
+		} else {
+			this.travelTimes = new MatsimTravelTimes();
+		}
 		this.properties = properties;
 		this.accessibility = accessibility;
 	}
@@ -95,6 +103,7 @@ public final class MatsimTransportModel implements TransportModel {
 	public void setup() {
         network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
+
         travelTimes.initialize(dataContainer.getGeoData(), network);
 
         logger.warn("Finding coordinates that represent a given zone.");
@@ -246,5 +255,12 @@ public final class MatsimTransportModel implements TransportModel {
 
 	private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
 		travelTimes.update(travelTime, disutility);
+		final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
+		if(mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
+			((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
+			((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
+			((SkimTravelTimes) mainTravelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
+					dataContainer.getGeoData().getRegions().values());
+		}
 	}
 }

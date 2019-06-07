@@ -1,14 +1,10 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
-import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
 import de.tum.bgu.msm.models.MitoTransportModelMuc;
@@ -49,10 +45,10 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
-import de.tum.bgu.msm.models.relocation.MovesModelMuc;
+import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.SelectRegionStrategyImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
@@ -74,9 +70,13 @@ public class ModelBuilder {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-        AbstractMovesModelImpl movesModel = new MovesModelMuc(
-                dataContainer, properties, new DefaultMovesStrategy(), new DwellingUtilityStrategyImpl(),
-                new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyImpl());
+        MovesModelImpl movesModel = new MovesModelImpl(
+                dataContainer, properties,
+                new DefaultMovesStrategy(),
+                new HousingStrategyMuc(dataContainer,
+                        properties,
+                        dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
+                        new DwellingUtilityStrategyImpl(), new SelectRegionStrategyImpl()));
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 

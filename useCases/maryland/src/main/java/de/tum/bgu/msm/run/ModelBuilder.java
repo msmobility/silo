@@ -2,7 +2,6 @@ package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
@@ -43,7 +42,8 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
@@ -70,9 +70,15 @@ public class ModelBuilder {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-        AbstractMovesModelImpl movesModel = new MovesModelMstm(
-                dataContainer, properties, new DefaultMovesStrategy(), new DwellingUtilityStrategyMstm(),
-                new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyMstm());
+        final HousingStrategyMstm housingStrategy = new HousingStrategyMstm(
+                properties,
+                dataContainer,
+                dataContainer.getTravelTimes(),
+                new DefaultDwellingProbabilityStrategy(),
+                new DwellingUtilityStrategyMstm(),
+                new SelectRegionStrategyMstm());
+
+        MovesModelImpl movesModel = new MovesModelImpl(dataContainer, properties, new DefaultMovesStrategy(), housingStrategy);
 
 
         DivorceModel divorceModel = new DivorceModelImpl(
@@ -110,7 +116,7 @@ public class ModelBuilder {
                 null, hhFactory, properties, new DefaultMarriageStrategy());
 
 
-        TransportModel transportModel;
+        TransportModel transportModel = null;
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
@@ -118,11 +124,10 @@ public class ModelBuilder {
                         null);
                 break;
             case NONE:
+                break;
             case MITO_MATSIM:
                 logger.warn("Mito not implemented for mstm. setting transport model to \"NONE\"");
-            default:
-                transportModel = null;
-
+                break;
         }
         return new ModelContainer(
                 birthModel, birthdayModel,

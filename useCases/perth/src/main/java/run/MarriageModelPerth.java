@@ -24,15 +24,16 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.IssueCounter;
 import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.AbstractMovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -46,10 +47,10 @@ import java.util.*;
  **/
 public class MarriageModelPerth extends AbstractModel implements MarriageModel {
 
-    private final static Logger LOGGER = Logger.getLogger(MarriageModelPerth.class);
+    private final static Logger logger = Logger.getLogger(MarriageModelPerth.class);
 
     private final InOutMigrationImpl iomig;
-    private final AbstractMovesModelImpl movesModel;
+    private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
     private final MarriageStrategy strategy;
@@ -65,6 +66,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
      * localMarriageAdjuster serves to adjust from national marriage rates to local conditions
      */
     private double scale = properties.demographics.localMarriageAdjuster;
+    private int lackOfDwellingFailedMarriage;
 
     // ageOffset is the range of ages above and below a persons age that are considered for marriage
     // needs to cover -9 to +9 to reach one person type above and one person type below
@@ -72,7 +74,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public MarriageModelPerth(DataContainer dataContainer, AbstractMovesModelImpl movesModel,
+    public MarriageModelPerth(DataContainer dataContainer, MovesModelImpl movesModel,
                               InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
                               HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
         super(dataContainer, properties);
@@ -107,7 +109,9 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        lackOfDwellingFailedMarriage = 0;
+    }
 
     @Override
     public Collection<MarriageEvent> getEventsForCurrentYear(int year) {
@@ -127,6 +131,10 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
 
     @Override
     public void endYear(int year) {
+        if (lackOfDwellingFailedMarriage > 0) {
+            logger.warn("  Encountered " + lackOfDwellingFailedMarriage + " cases " +
+                    "where a couple wanted to marry (cohabitate) but could not find vacant dwelling.");
+        }
     }
 
     @Override
@@ -135,7 +143,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
     }
 
     private List<MarriageEvent> selectCouplesToGetMarriedThisYear(Collection<Person> persons) {
-        LOGGER.info("  Selecting couples to get married this year");
+        logger.info("  Selecting couples to get married this year");
 
         final List<MarriageEvent> couplesToMarryThisYear = new ArrayList<>();
         final MarriageMarket market = defineMarriageMarket(persons);
@@ -150,13 +158,13 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
                 }
             }
         }
-        LOGGER.info(couplesToMarryThisYear.size() + " couples created.");
+        logger.info(couplesToMarryThisYear.size() + " couples created.");
         return couplesToMarryThisYear;
     }
 
     private MarriageMarket defineMarriageMarket(Collection<Person> persons) {
 
-        LOGGER.info("Defining Marriage Market");
+        logger.info("Defining Marriage Market");
 
         final List<Person> activePartners = new ArrayList<>();
         final Table<Integer, Gender, List<Person>> partnersByAgeAndGender = ArrayTable.create(
@@ -178,7 +186,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
                 }
             }
         }
-        LOGGER.info(activePartners.size() + " persons actively looking for partner");
+        logger.info(activePartners.size() + " persons actively looking for partner");
         return new MarriageMarket(activePartners, partnersByAgeAndGender);
     }
 
@@ -190,19 +198,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
         if (preference == null || possiblePartners.isEmpty()) {
             return null;
         }
-
-        final Map<Person, Float> probabilities = new HashMap<>();
-
-        float sum = 0;
-        for (Person pp : possiblePartners) {
-            float prob=1.f;
-            sum += prob;
-            probabilities.put(pp, prob);
-        }
-
-        final Person selectedPartner = SiloUtil.select(probabilities, sum);
-        possiblePartners.remove(selectedPartner);
-        return selectedPartner;
+        return possiblePartners.remove(SiloUtil.getRandomObject().nextInt(possiblePartners.size()));
     }
 
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
@@ -210,25 +206,28 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
         final Gender partnerGender = person.getGender().opposite();
         final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
 
-        final Map<Integer, Double> probabilityByAge = new HashMap<>();
-
+        Sampler<Integer> sampler = new Sampler<>(AGE_DIFF_RANGE.size(), Integer.class, SiloUtil.getRandomObject());
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
             double probability = ageDiffProbabilityByGender.get(ageDiff, person.getGender());
             probability *= market.getFittingPartners(resultingAge, partnerGender).size();
             sum += probability;
-            probabilityByAge.put(resultingAge, probability);
+            sampler.incrementalAdd(resultingAge, probability);
         }
 
         if (sum == 0) {
-            LOGGER.warn("Marriage market ran empty, increase share of persons. Age: " + person.getAge());
+            logger.warn("Marriage market ran empty, increase share of persons. Age: " + person.getAge());
             return null;
         }
 
-        final int selectedAge = SiloUtil.select(probabilityByAge, sum);
-        return new MarriagePreference(sameRace, selectedAge, partnerGender);
-
+        final int selectedAge;
+        try {
+            selectedAge = sampler.sampleObject();
+            return new MarriagePreference(sameRace, selectedAge, partnerGender);
+        } catch (SampleException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -290,7 +289,7 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
                         + " got married but could not find an appropriate vacant dwelling. "
                         + "Household outmigrated.");
             }
-            IssueCounter.countLackOfDwellingFailedMarriage();
+            lackOfDwellingFailedMarriage++;
             return false;
         }
     }
