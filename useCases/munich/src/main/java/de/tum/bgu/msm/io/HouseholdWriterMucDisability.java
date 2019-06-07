@@ -1,8 +1,10 @@
-package de.tum.bgu.msm.io.output;
+package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
+import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.jboss.logging.Logger;
 
@@ -18,6 +20,7 @@ public class HouseholdWriterMucDisability implements HouseholdWriter {
         this.householdData = householdData;
         this.realEstateData = realEstateData;
     }
+   
     @Override
     public void writeHouseholds(String path) {
         logger.info("  Writing household file to " + path);

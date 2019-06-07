@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.output.*;
-import de.tum.bgu.msm.io.output.HouseholdWriterMucDisability;
 import de.tum.bgu.msm.models.demography.death.DefaultDeathStrategy;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.models.disability.DisabilityImpl;
