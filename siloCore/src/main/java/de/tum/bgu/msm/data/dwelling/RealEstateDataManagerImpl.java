@@ -86,10 +86,19 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     @Override
     public void endSimulation() {
+//        String filedd = Properties.get().main.baseDirectory
+//                + properties.realEstate.dwellingsFinalFileName
+//                + "_"
+//                + properties.main.endYear
+//                + ".csv";
+//        new DefaultDwellingWriter(this).writeDwellings(filedd);
+    }
+
+    public void writeSimulation(int year) {
         String filedd = Properties.get().main.baseDirectory
                 + properties.realEstate.dwellingsFinalFileName
                 + "_"
-                + properties.main.endYear
+                + year
                 + ".csv";
         new DefaultDwellingWriter(this).writeDwellings(filedd);
     }

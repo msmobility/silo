@@ -16,6 +16,12 @@
  */
 package de.tum.bgu.msm;
 
+import com.sun.org.apache.bcel.internal.generic.BREAKPOINT;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.household.HouseholdDataManagerImpl;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
+import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.job.JobDataManagerImpl;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -80,6 +86,15 @@ public final class SiloModel {
 		}
 	}
 
+	private void writeSyntheticPopulation(int year) {
+		HouseholdDataManagerImpl hh = (HouseholdDataManagerImpl)dataContainer.getHouseholdDataManager();
+		RealEstateDataManagerImpl re = (RealEstateDataManagerImpl)dataContainer.getRealEstateDataManager();
+		JobDataManagerImpl jj = (JobDataManagerImpl)dataContainer.getJobDataManager();
+		hh.writeSimulation(year);
+		re.writeSimulation(year);
+		jj.writeSimulation(year);
+	}
+
 	private void setupModel() {
 
 		logger.info("Setting up SILO Model");
@@ -118,6 +133,7 @@ public final class SiloModel {
 
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
+
 			logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             // setup issue counter for this simulation period
             IssueCounter.setUpCounter();
@@ -148,8 +164,9 @@ public final class SiloModel {
             }
             timeTracker.endYear();
 
-
-
+			logger.info("Write Synthetic Population for year " + year+1);
+			writeSyntheticPopulation(year+1);
+			logger.info("Finish writing Synthetic Population for year " + year+1);
 		}
 	}
 

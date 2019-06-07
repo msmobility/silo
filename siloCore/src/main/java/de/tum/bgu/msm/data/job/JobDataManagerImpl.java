@@ -93,10 +93,18 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     @Override
     public void endSimulation() {
+//        String filejj = properties.main.baseDirectory
+//                + properties.jobData.jobsFinalFileName
+//                + "_"
+//                + properties.main.endYear + ".csv";
+//        new DefaultJobWriter(this).writeJobs(filejj);
+    }
+
+    public void writeSimulation(int year) {
         String filejj = properties.main.baseDirectory
                 + properties.jobData.jobsFinalFileName
                 + "_"
-                + properties.main.endYear + ".csv";
+                + year + ".csv";
         new DefaultJobWriter(this).writeJobs(filejj);
     }
 

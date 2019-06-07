@@ -89,17 +89,34 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     @Override
     public void endSimulation() {
+//        String filehh = properties.main.baseDirectory
+//                + properties.householdData.householdFinalFileName
+//                + "_"
+//                + properties.main.endYear
+//                + ".csv";
+//        new DefaultHouseholdWriter(this).writeHouseholds(filehh);
+//
+//        String filepp = properties.main.baseDirectory
+//                + properties.householdData.personFinalFileName
+//                + "_"
+//                + properties.main.endYear
+//                + ".csv";
+//        new DefaultPersonWriter(householdData).writePersons(filepp);
+    }
+
+
+    public void writeSimulation(int year) {
         String filehh = properties.main.baseDirectory
                 + properties.householdData.householdFinalFileName
                 + "_"
-                + properties.main.endYear
+                + year
                 + ".csv";
         new DefaultHouseholdWriter(this).writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
                 + properties.householdData.personFinalFileName
                 + "_"
-                + properties.main.endYear
+                + year
                 + ".csv";
         new DefaultPersonWriter(householdData).writePersons(filepp);
     }
