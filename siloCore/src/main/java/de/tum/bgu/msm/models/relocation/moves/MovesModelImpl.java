@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
@@ -153,6 +154,22 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         List<Dwelling> vacantDwellings
                 = new ArrayList<>(dataContainer.getRealEstateDataManager().getListOfVacantDwellingsInRegion(selectedRegion.getId()));
         if (vacantDwellings.isEmpty()) {
+
+            if (false) {
+                for (Region region : geoData.getRegions().values())
+                    System.out.println(region + " in MovesModelImpl: " +
+                            dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) + " from Array: " +
+                            dataContainer.getRealEstateDataManager().getListOfVacantDwellingsInRegion(region.getId()).size());
+
+                System.out.println("List of vacant dwellings with " + vacantDwellings.size() + " entries: ");
+                for (int i = 0; i < vacantDwellings.size(); i++) {
+                    Dwelling dwelling = vacantDwellings.get(i);
+                    System.out.println("Vacant dwelling available: " + i + " " + dwelling.getId());
+                }
+
+                System.out.println("Could not find a vacant dwelling for household " + household.getId());
+            }
+
             return -1;
         }
 

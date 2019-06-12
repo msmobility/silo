@@ -17,6 +17,9 @@
 package de.tum.bgu.msm.models.demography.leaveParentalHousehold;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -131,6 +134,22 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
                                 + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
             }
             lackOfDwellingFailedLeavingChild++;
+
+            if (false) {
+                System.out.println("Person " + per.getId() + " could not leave parental household " + per.getHousehold().getId());
+                System.out.println("Age/Sex " + per.getAge() + "/" + per.getGender());
+                System.out.println("Employment " + per.getOccupation() + " at workplace " + per.getJobId());
+                System.out.println("Type " + per.getType() + " and role " + per.getRole());
+                System.out.println("Vacant dwellings:");
+                final GeoData geoData = dataContainer.getGeoData();
+                RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
+                for (Region region : geoData.getRegions().values())
+                    System.out.println(region + ": " +
+                            realEstateDataManager.getNumberOfVacantDDinRegion(region.getId()) + " from Array: " +
+                            realEstateDataManager.getListOfVacantDwellingsInRegion(region.getId()).size());
+                System.exit(0);
+            }
+
             return false;
         }
 
