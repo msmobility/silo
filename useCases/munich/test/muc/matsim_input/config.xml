@@ -14,6 +14,12 @@
 		<param name="inputNetworkFile" value="network/05/studyNetworkLight.xml" />
 	</module>
 
+	<module name="transit">
+		<param name="transitScheduleFile" value="schedule2018.xml" />
+		<param name="transitModes" value="pt" />
+		<param name="useTransit" value="false" />
+	</module>
+
 	<module name="qsim" >
 		<param name="trafficDynamics" value="withHoles" />
 		<!-- Note that this setting is independent from the "global" threads setting -->

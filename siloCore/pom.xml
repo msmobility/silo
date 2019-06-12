@@ -331,6 +331,11 @@
             <artifactId>mito</artifactId>
             <version>master-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.SchweizerischeBundesbahnen</groupId>
+            <artifactId>matsim-sbb-extensions</artifactId>
+            <version>11.2</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
         <dependency>

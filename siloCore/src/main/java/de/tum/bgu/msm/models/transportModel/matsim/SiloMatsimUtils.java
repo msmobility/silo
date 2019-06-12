@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import java.util.Collection;
 import java.util.Map;
 
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
@@ -54,7 +55,7 @@ public class SiloMatsimUtils {
 		config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-	
+
 		config.vspExperimental().setWritingOutputEvents(true);
 		
 		// TODO Add some switch here like "autoGenerateSimplePlans" or similar...
@@ -65,7 +66,7 @@ public class SiloMatsimUtils {
 		ActivityParams workActivity = new ActivityParams("work");
 		workActivity.setTypicalDuration(8*60*60);
 		config.planCalcScore().addActivityParams(workActivity);
-				
+
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
 	
 		LOG.info("Finished creating a MATSim config.");
@@ -81,7 +82,7 @@ public class SiloMatsimUtils {
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
     	JobDataManager jobDataManager = dataContainer.getJobDataManager();
-    	
+
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not

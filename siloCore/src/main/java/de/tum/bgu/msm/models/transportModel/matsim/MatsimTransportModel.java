@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
@@ -55,6 +56,7 @@ import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.FacilitiesUtils;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.opengis.feature.simple.SimpleFeature;
 
 import de.tum.bgu.msm.container.DataContainer;
@@ -76,8 +78,7 @@ public final class MatsimTransportModel implements TransportModel {
 	private final MatsimTravelTimes travelTimes;
 	private Properties properties;
 	private final DataContainer dataContainer;
-	private Network network;
-	
+
 	private ActivityFacilities zoneRepresentativeCoords;
 	private MatsimAccessibility accessibility;
 
@@ -98,10 +99,13 @@ public final class MatsimTransportModel implements TransportModel {
 
 	@Override
 	public void setup() {
-        network = NetworkUtils.createNetwork();
-        new MatsimNetworkReader(network).readFile(initialMatsimConfig.network().getInputFileURL(initialMatsimConfig.getContext()).getFile());
+		Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
+		Network network = scenario.getNetwork();
+		TransitSchedule schedule = scenario.getTransitSchedule();
+		Network transitNetwork = NetworkUtils.createNetwork();
+		new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/mergedNetworkIncludingTransit2018.xml.gz");
 
-        travelTimes.initialize(dataContainer.getGeoData(), network);
+        travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), transitNetwork,schedule);
 
         logger.warn("Finding coordinates that represent a given zone.");
 		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();

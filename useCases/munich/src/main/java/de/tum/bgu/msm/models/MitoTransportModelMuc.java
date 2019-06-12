@@ -65,7 +65,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) mitoInputTravelTimes, properties.main.startYear, properties);
             Network network = NetworkUtils.createNetwork();
             new MatsimNetworkReader(network).readFile(config.network().getInputFileURL(config.getContext()).getFile());
-            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network);
+            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network,null, null);
             runTransportModel(properties.main.startYear);
         } else {
             logger.warn("Using mito with skim travel times.");
