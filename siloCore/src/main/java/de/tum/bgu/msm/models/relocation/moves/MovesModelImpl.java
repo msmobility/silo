@@ -137,7 +137,15 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final GeoData geoData = dataContainer.getGeoData();
         Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, SiloUtil.getRandomObject());
         for (Region region : geoData.getRegions().values()) {
-            final double utility = housingStrategy.calculateRegionalUtility(household, region);
+            double utility;
+            if (dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) == 0) {
+                // if utility it normalized by regional attibutes other than number of vacant dwellings, it could happen
+                // that a region is chosen with 0 vacant dwellings. To avoid this case, set utility to 0 if no vacant
+                // dwellings are available in that region.
+                utility = 0;
+            } else {
+                utility = housingStrategy.calculateRegionalUtility(household, region);
+            }
             regionSampler.incrementalAdd(region, utility);
         }
         if (regionSampler.getCumulatedProbability() == 0.) {
@@ -154,22 +162,6 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         List<Dwelling> vacantDwellings
                 = new ArrayList<>(dataContainer.getRealEstateDataManager().getListOfVacantDwellingsInRegion(selectedRegion.getId()));
         if (vacantDwellings.isEmpty()) {
-
-            if (false) {
-                for (Region region : geoData.getRegions().values())
-                    System.out.println(region + " in MovesModelImpl: " +
-                            dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) + " from Array: " +
-                            dataContainer.getRealEstateDataManager().getListOfVacantDwellingsInRegion(region.getId()).size());
-
-                System.out.println("List of vacant dwellings with " + vacantDwellings.size() + " entries: ");
-                for (int i = 0; i < vacantDwellings.size(); i++) {
-                    Dwelling dwelling = vacantDwellings.get(i);
-                    System.out.println("Vacant dwelling available: " + i + " " + dwelling.getId());
-                }
-
-                System.out.println("Could not find a vacant dwelling for household " + household.getId());
-            }
-
             return -1;
         }
 
