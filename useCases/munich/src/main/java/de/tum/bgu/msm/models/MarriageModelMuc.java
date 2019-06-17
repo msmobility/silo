@@ -182,7 +182,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
             return null;
         }
 
-        final Map<Person, Float> probabilities = new HashMap<>();
+        final Map<Person, Float> probabilities = new LinkedHashMap<>();
 
         Nationality personRace = ((PersonMuc) person).getNationality();
         float sum = 0;
@@ -209,7 +209,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
         final Gender partnerGender = person.getGender().opposite();
         final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
 
-        final Map<Integer, Double> probabilityByAge = new HashMap<>();
+        final Map<Integer, Double> probabilityByAge = new LinkedHashMap<>();
 
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
