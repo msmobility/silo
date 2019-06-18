@@ -51,7 +51,7 @@ public class SiloMatsimTestMuc {
 		SiloTestUtils.cleanUpMicrodataFiles();
 		SiloTestUtils.cleanUpOtherFiles();
 
-        String path = "./test/muc/siloMucTest.properties";
+        String path = "./test/muc/siloMatsimMucTest.properties";
 		Config config = ConfigUtils.loadConfig("./test/muc/matsim_input/config.xml") ;
 
 		try {
@@ -60,7 +60,8 @@ public class SiloMatsimTestMuc {
 			e.printStackTrace();
 		}
 
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
+		File dir = new File("./test/muc/matsimOutput");
+		config.controler().setOutputDirectory(dir.getAbsolutePath());
 		config.global().setNumberOfThreads(1);
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
@@ -80,11 +81,10 @@ public class SiloMatsimTestMuc {
         checkHouseholds();
         checkJobs();
         checkPersons();
-//        checkPlans();
-//        checkEvents();
+        checkPlans();
+        checkEvents();
 
 		if (CLEANUP_AFTER_TEST) {
-			File dir = new File(utils.getOutputDirectory());
 			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
 			SiloTestUtils.cleanUpMicrodataFiles();
 			SiloTestUtils.cleanUpOtherFiles();
@@ -93,17 +93,16 @@ public class SiloMatsimTestMuc {
 
     private void checkEvents() {
         log.info("Checking MATSim events file ...");
-        final String eventsFilenameReference = utils.getInputDirectory() + "./test_matsim_2011.output_events.xml.gz";
-        final String eventsFilenameNew = utils.getOutputDirectory() + "./test_matsim_2011/test_matsim_2011.output_events.xml.gz";
+        final String eventsFilenameReference = "./test/muc/refOutput/matsim/test_2013/test_2013.output_events.xml.gz";
+        final String eventsFilenameNew = "./test/muc/matsimOutput/matsim/test_2013/test_2013.output_events.xml.gz";
         assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
     }
 
     private void checkPlans() {
         log.info("Checking MATSim plans file ...");
 
-        final String referenceFilename = utils.getInputDirectory() + "./test_matsim_2011.output_plans.xml.gz";
-        final String outputFilename = utils.getOutputDirectory() + "./test_matsim_2011/test_matsim_2011.output_plans.xml.gz";
-
+        final String referenceFilename = "./test/muc/refOutput/matsim/test_2013/test_2013.output_plans.xml.gz";
+        final String outputFilename = "./test/muc/matsimOutput/matsim/test_2013/test_2013.output_plans.xml.gz";
         Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
         Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 
@@ -115,7 +114,7 @@ public class SiloMatsimTestMuc {
 
     private void checkPersons() {
         log.info("checking SILO population file ...");
-        final File ref = new File("./test/muc/refOutput/pp_2013.csv");
+        final File ref = new File("./test/muc/refOutput/matsim/pp_2013.csv");
         final File actual = new File("./test/muc/microData/futureYears/pp_2013.csv");
         FileAssert.assertEquals("persons are different.", ref, actual);
 
@@ -126,7 +125,7 @@ public class SiloMatsimTestMuc {
 
     private void checkJobs() {
         log.info("Checking jobs file ...");
-        final File ref = new File("./test/muc/refOutput/jj_2013.csv");
+        final File ref = new File("./test/muc/refOutput/matsim/jj_2013.csv");
         final File actual = new File("./test/muc/microData/futureYears/jj_2013.csv");
         FileAssert.assertEquals("jobs are different.", ref, actual);
 
@@ -137,7 +136,7 @@ public class SiloMatsimTestMuc {
 
     private void checkHouseholds() {
         log.info("Checking households file ...");
-        final File ref = new File("./test/muc/refOutput/hh_2013.csv");
+        final File ref = new File("./test/muc/refOutput/matsim/hh_2013.csv");
         final File actual = new File("./test/muc/microData/futureYears/hh_2013.csv");
         FileAssert.assertEquals("households are different.", ref, actual);
 
@@ -148,8 +147,7 @@ public class SiloMatsimTestMuc {
 
     private void checkDwellings() {
         log.info("Checking dwellings file ...");
-        double val = SiloUtil.getRandomNumberAsDouble();
-        final File ref = new File("./test/muc/refOutput/dd_2013.csv");
+        final File ref = new File("./test/muc/refOutput/matsim/dd_2013.csv");
         final File actual = new File("./test/muc/microData/futureYears/dd_2013.csv");
         FileAssert.assertEquals("dwellings are different.", ref, actual);
 

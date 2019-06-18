@@ -83,8 +83,7 @@ public final class MatsimTransportModel implements TransportModel {
 	private MatsimAccessibility accessibility;
 
 
-	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
-			Properties properties, MatsimAccessibility accessibility) {
+	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig, Properties properties, MatsimAccessibility accessibility) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
 		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
 				"No initial matsim config provided to SiloModel class!" );
@@ -111,7 +110,7 @@ public final class MatsimTransportModel implements TransportModel {
 		ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
 	    Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
 	    for (int zoneId : zoneMap.keySet()) {
-		Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
+	    	Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
 			Coord centroid = CoordUtils.createCoord(geometry.getCentroid().getX(), geometry.getCentroid().getY());
 			Node nearestNode = NetworkUtils.getNearestNode(network, centroid); // TODO choose road of certain category
 			Coord coord = CoordUtils.createCoord(nearestNode.getCoord().getX(), nearestNode.getCoord().getY());
@@ -148,20 +147,11 @@ public final class MatsimTransportModel implements TransportModel {
     public void runTransportModel(int year) {
 		logger.warn("Running MATSim transport model for year " + year + ".");
 
-		String scenarioName = properties.main.scenarioName;
-
-		boolean writePopulation = false;
 		double populationScalingFactor = properties.transportModel.matsimScaleFactor;
-		String matsimRunId = scenarioName + "_" + year;
+		String matsimRunId = properties.main.scenarioName + "_" + year;
 		
 		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
 		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
-		
-		if (writePopulation) {
-    		new File("./test/scenarios/annapolis_reduced/matsim_output/").mkdirs();
-    		MatsimWriter populationWriter = new PopulationWriter(population);
-    		populationWriter.write("./test/scenarios/annapolis_reduced/matsim_output/population_" + year + ".xml");
-    	}
 
 		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
 		scenario.setPopulation(population);
@@ -169,7 +159,7 @@ public final class MatsimTransportModel implements TransportModel {
 		ConfigUtils.setVspDefaults(config);
 		final Controler controler = new Controler(scenario);
 
-		if(accessibility != null) {
+		if (accessibility != null) {
 			setupAccessibility(config, scenario, controler);
 		}
 
@@ -239,7 +229,6 @@ public final class MatsimTransportModel implements TransportModel {
 	}
 
 	/**
-     *
      * @param eventsFile
      */
 	private void replayFromEvents(String eventsFile) {

@@ -15,8 +15,6 @@ import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
-import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheckingLevel;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.population.PopulationUtils;
@@ -27,7 +25,6 @@ import org.matsim.facilities.ActivityFacility;
 import com.pb.common.matrix.Matrix;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -48,39 +45,19 @@ public class SiloMatsimUtils {
 		LOG.info("Stating creating a MATSim config.");
 		Config config = ConfigUtils.loadConfig(initialConfig.getContext());
 		config.qsim().setFlowCapFactor(populationScalingFactor);
-		
-		// According to "NicolaiNagel2013HighResolutionAccessibility (citing Rieser on p.9):
-		// Storage_Capacitiy_Factor = Sampling_Rate / ((Sampling_Rate) ^ (1/4))
-		config.qsim().setStorageCapFactor(Math.round((populationScalingFactor / (Math.pow(populationScalingFactor, 0.25)) * 100)) / 100.);
+		config.qsim().setStorageCapFactor(populationScalingFactor);
 		
 		String outputDirectoryRoot = initialConfig.controler().getOutputDirectory();
 		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
 		config.controler().setRunId(runId);
 		config.controler().setOutputDirectory(outputDirectory);
-		config.controler().setFirstIteration(0);
 		config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 	
-		config.qsim().setTrafficDynamics(TrafficDynamics.withHoles);
-		// writes final events into toplevel directory
 		config.vspExperimental().setWritingOutputEvents(true);
 		
-		{				
-			StrategySettings strategySettings = new StrategySettings();
-			strategySettings.setStrategyName("ChangeExpBeta");
-			strategySettings.setWeight(0.8);
-			config.strategy().addStrategySettings(strategySettings);
-		}{
-			StrategySettings strategySettings = new StrategySettings();
-			strategySettings.setStrategyName("ReRoute");
-			strategySettings.setWeight(0.2);
-			config.strategy().addStrategySettings(strategySettings);
-		}
-		
-		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
-		config.strategy().setMaxAgentPlanMemorySize(4);
-		
+		// TODO Add some switch here like "autoGenerateSimplePlans" or similar...
 		ActivityParams homeActivity = new ActivityParams("home");
 		homeActivity.setTypicalDuration(12*60*60);
 		config.planCalcScore().addActivityParams(homeActivity);
@@ -88,12 +65,7 @@ public class SiloMatsimUtils {
 		ActivityParams workActivity = new ActivityParams("work");
 		workActivity.setTypicalDuration(8*60*60);
 		config.planCalcScore().addActivityParams(workActivity);
-		
-		config.qsim().setNumberOfThreads(1);
-		config.global().setNumberOfThreads(1);
-		config.parallelEventHandling().setNumberOfThreads(1);
-		config.qsim().setUsingThreadpool(false);
-		
+				
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
 	
 		LOG.info("Finished creating a MATSim config.");
@@ -109,6 +81,7 @@ public class SiloMatsimUtils {
     	PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
     	JobDataManager jobDataManager = dataContainer.getJobDataManager();
+    	
     	for (Person siloPerson : siloPersons) {
     		if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
     			// e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
@@ -166,6 +139,7 @@ public class SiloMatsimUtils {
     		Plan matsimPlan = matsimPopulationFactory.createPlan();
     		matsimPerson.addPlan(matsimPlan);
 
+    		// TODO Add some switch here like "autoGenerateSimplePlans" or similar...
     		Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
     		activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
     		matsimPlan.addActivity(activity1);
