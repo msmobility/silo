@@ -19,14 +19,11 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.transportModel.TransportModel;
-import de.tum.bgu.msm.properties.Properties;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
@@ -35,12 +32,10 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.contrib.accessibility.AccessibilityModule;
 import org.matsim.core.api.experimental.events.EventsManager;
-import org.matsim.core.api.internal.MatsimWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
@@ -49,8 +44,6 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.router.TripRouter;
-import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
@@ -58,14 +51,21 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.facilities.*;
+import org.matsim.facilities.ActivityFacilities;
+import org.matsim.facilities.ActivityFacilitiesFactory;
+import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
+import org.matsim.facilities.ActivityFacility;
+import org.matsim.facilities.FacilitiesUtils;
 import org.opengis.feature.simple.SimpleFeature;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.properties.Properties;
 
 /**
  * @author dziemke

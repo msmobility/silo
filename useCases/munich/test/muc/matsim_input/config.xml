@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
 <config>
+	<module name="global" >
+		<param name="numberOfThreads" value="1" />
+	</module>
+	
 	<module name="controler" >
 		<param name="lastIteration" value="10" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
@@ -12,10 +16,16 @@
 
 	<module name="qsim" >
 		<param name="trafficDynamics" value="withHoles" />
+		<!-- Note that this setting is independent from the "global" threads setting -->
+		<param name="numberOfThreads" value="1" />
+		<param name="usingThreadpool" value="false" />
+	</module>
+
+	<module name="parallelEventHandling" >
+		<param name="numberOfThreads" value="1" />
 	</module>
 
 	<module name="strategy" >
-		<param name="maxAgentPlanMemorySize" value="5" />
 		<param name="fractionOfIterationsToDisableInnovation" value="0.8" />
 
 		<parameterset type="strategysettings" >
