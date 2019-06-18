@@ -9,6 +9,7 @@ import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,7 +20,6 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
-import org.matsim.core.utils.misc.CRCChecksum;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
@@ -76,10 +76,10 @@ public class SiloMatsimTestMuc {
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         siloModel.runModel();
 
-//        checkDwellings();
-//        checkHouseholds();
-//        checkJobs();
-//        checkPersons();
+        checkDwellings();
+        checkHouseholds();
+        checkJobs();
+        checkPersons();
 //        checkPlans();
 //        checkEvents();
 
@@ -115,45 +115,46 @@ public class SiloMatsimTestMuc {
 
     private void checkPersons() {
         log.info("checking SILO population file ...");
-        long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./pp_2011.csv");
-        final String filename = "./test/scenarios/munich_new/microData_reduced/pp_2011.csv";
-        long checksum_run = CRCChecksum.getCRCFromFile(filename);
-        assertEquals("Population files are different", checksum_ref, checksum_run);
+        final File ref = new File("./test/muc/refOutput/pp_2013.csv");
+        final File actual = new File("./test/muc/microData/futureYears/pp_2013.csv");
+        FileAssert.assertEquals("persons are different.", ref, actual);
+
         if (CLEANUP_AFTER_TEST) {
-            new File(filename).delete();
+            actual.delete();
         }
     }
 
     private void checkJobs() {
         log.info("Checking jobs file ...");
-        long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./jj_2011.csv");
-        final String filename = "./test/scenarios/munich_new/microData_reduced/jj_2011.csv";
-        long checksum_run = CRCChecksum.getCRCFromFile(filename);
-        assertEquals("Job files are different", checksum_ref, checksum_run);
+        final File ref = new File("./test/muc/refOutput/jj_2013.csv");
+        final File actual = new File("./test/muc/microData/futureYears/jj_2013.csv");
+        FileAssert.assertEquals("jobs are different.", ref, actual);
+
         if (CLEANUP_AFTER_TEST) {
-            new File(filename).delete();
+            actual.delete();
         }
     }
 
     private void checkHouseholds() {
         log.info("Checking households file ...");
-        long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./hh_2011.csv");
-        final String filename = "./test/scenarios/munich_new/microData_reduced/hh_2011.csv";
-        long checksum_run = CRCChecksum.getCRCFromFile(filename);
-        assertEquals("Household files are different", checksum_ref, checksum_run);
+        final File ref = new File("./test/muc/refOutput/hh_2013.csv");
+        final File actual = new File("./test/muc/microData/futureYears/hh_2013.csv");
+        FileAssert.assertEquals("households are different.", ref, actual);
+
         if (CLEANUP_AFTER_TEST) {
-            new File(filename).delete();
+            actual.delete();
         }
     }
 
     private void checkDwellings() {
         log.info("Checking dwellings file ...");
-        long checksum_ref = CRCChecksum.getCRCFromFile(utils.getInputDirectory() + "./dd_2011.csv");
-        final String filename = "./test/scenarios/munich_new/microData_reduced/dd_2011.csv";
-        long checksum_run = CRCChecksum.getCRCFromFile(filename);
-        assertEquals("Dwelling files are different", checksum_ref, checksum_run);
+        double val = SiloUtil.getRandomNumberAsDouble();
+        final File ref = new File("./test/muc/refOutput/dd_2013.csv");
+        final File actual = new File("./test/muc/microData/futureYears/dd_2013.csv");
+        FileAssert.assertEquals("dwellings are different.", ref, actual);
+
         if (CLEANUP_AFTER_TEST) {
-            new File(filename).delete();
+            actual.delete();
         }
     }
 }

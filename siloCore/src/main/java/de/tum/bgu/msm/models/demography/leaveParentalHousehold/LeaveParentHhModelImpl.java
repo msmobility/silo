@@ -17,6 +17,9 @@
 package de.tum.bgu.msm.models.demography.leaveParentalHousehold;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;

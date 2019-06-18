@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
@@ -136,7 +137,15 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final GeoData geoData = dataContainer.getGeoData();
         Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, SiloUtil.getRandomObject());
         for (Region region : geoData.getRegions().values()) {
-            final double utility = housingStrategy.calculateRegionalUtility(household, region);
+            double utility;
+            if (dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) == 0) {
+                // if utility it normalized by regional attibutes other than number of vacant dwellings, it could happen
+                // that a region is chosen with 0 vacant dwellings. To avoid this case, set utility to 0 if no vacant
+                // dwellings are available in that region.
+                utility = 0;
+            } else {
+                utility = housingStrategy.calculateRegionalUtility(household, region);
+            }
             regionSampler.incrementalAdd(region, utility);
         }
         if (regionSampler.getCumulatedProbability() == 0.) {
