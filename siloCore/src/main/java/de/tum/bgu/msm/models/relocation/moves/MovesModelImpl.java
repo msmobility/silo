@@ -2,7 +2,6 @@ package de.tum.bgu.msm.models.relocation.moves;
 
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Iterables;
-
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -22,6 +21,10 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -34,6 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * in the {@link HousingStrategy} argument.
  */
 public class MovesModelImpl extends AbstractModel implements MovesModel {
+
+    public static BufferedWriter fileWriter;
+
+    public static boolean track = false;
 
     protected final static Logger logger = Logger.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
@@ -48,6 +55,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy, HousingStrategy housingStrategy) {
         super(dataContainer, properties);
+        try {
+            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
+            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
+            fileWriter.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
         this.threaded = dataContainer.getTravelTimes() instanceof MatsimTravelTimes;
@@ -61,7 +75,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void prepareYear(int year) {
         housingStrategy.prepareYear();
+        track = false;
         calculateAverageHousingUtility();
+        track = true;
     }
 
     @Override
@@ -86,7 +102,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
-
+        try {
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.inject.Provider;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -27,7 +28,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.*;
-import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.geometry.CoordUtils;
@@ -48,15 +48,11 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final static int NUMBER_OF_CALC_POINTS = 1;
 
-    private Network carNetwork;
-    private Network transitNetwork;
+    private Network network;
     private TransitSchedule schedule;
 
     private final Map<String, IndexedDoubleMatrix2D> skimsByMode = new HashMap<>();
     private Map<Integer, Zone> zones;
-
-    private TravelTime travelTime;
-    private TravelDisutility travelDisutility;
 
     private TripRouter tripRouter;
 
@@ -65,9 +61,12 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private IndexedDoubleMatrix2D travelTimeToRegion;
 
-    public void initialize(GeoData geoData, Network carNetwork, Network transitNetwork, TransitSchedule schedule) {
-        this.carNetwork = carNetwork;
-        this.transitNetwork = transitNetwork;
+    private Provider<TripRouter> routerProvider;
+    private TravelTime travelTime;
+    private TravelDisutility travelDisutility;
+
+    public void initialize(GeoData geoData, Network carNetwork, TransitSchedule schedule) {
+        this.network = carNetwork;
         this.schedule = schedule;
         this.zones = geoData.getZones();
         this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
@@ -75,13 +74,14 @@ public final class MatsimTravelTimes implements TravelTimes {
         buildZoneCalculationNodesMap();
     }
 
-    public void update(TravelTime travelTime, TravelDisutility disutility) {
-        LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory().createPathCalculator(carNetwork, disutility, travelTime);
+    public void update(Provider<TripRouter> routerProvider, TravelTime travelTime, TravelDisutility disutility) {
+        this.travelTime = travelTime;
+        this.travelDisutility = disutility;
         final Config config = ConfigUtils.createConfig();
-        TripRouter.Builder bd = new TripRouter.Builder(config);
+        this.routerProvider = routerProvider;
 
-        RoutingModule carRoutingModule = new NetworkRoutingModule(TransportMode.car, PopulationUtils.getFactory(), carNetwork, pathCalculator);
-        bd.setRoutingModule(TransportMode.car, carRoutingModule);
+        TripRouter.Builder bd = new TripRouter.Builder(config);
+        bd.setRoutingModule(TransportMode.car, this.routerProvider.get().getRoutingModule(TransportMode.car));
 
         TeleportationRoutingModule teleportationRoutingModule =
                 new TeleportationRoutingModule(
@@ -90,20 +90,20 @@ public final class MatsimTravelTimes implements TravelTimes {
                         1.4,
                         1.3);
 
-        if(schedule != null && transitNetwork != null) {
+        if (schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
             raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-            SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, transitNetwork);
+            SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, network);
             SwissRailRaptor raptor = new SwissRailRaptor(
                     raptorData,
                     new DefaultRaptorParametersForPerson(config), null,
-                    new DefaultRaptorStopFinder(null, new DefaultRaptorIntermodalAccessEgress(),null)
+                    new DefaultRaptorStopFinder(null, new DefaultRaptorIntermodalAccessEgress(), null)
             );
             RoutingModule raptorRoutingModule =
                     new SwissRailRaptorRoutingModule(
                             raptor,
                             schedule,
-                            transitNetwork,
+                            network,
                             teleportationRoutingModule
                     );
             bd.setRoutingModule(TransportMode.pt, raptorRoutingModule);
@@ -112,10 +112,8 @@ public final class MatsimTravelTimes implements TravelTimes {
         }
 
         tripRouter = bd.build();
-        this.travelTime = travelTime;
-        this.travelDisutility = disutility;
         this.skimsByMode.clear();
-        if(this.travelTimeToRegion != null) {
+        if (this.travelTimeToRegion != null) {
             this.travelTimeToRegion.assign(-1);
         }
     }
@@ -144,8 +142,8 @@ public final class MatsimTravelTimes implements TravelTimes {
         List<? extends PlanElement> planElements = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
         double arrivalTime = timeOfDay_s;
 
-        if(!planElements.isEmpty()) {
-            final Leg lastLeg = (Leg) planElements.get(planElements.size()-1);
+        if (!planElements.isEmpty()) {
+            final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
             arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
         }
 
@@ -194,7 +192,7 @@ public final class MatsimTravelTimes implements TravelTimes {
                     executor.addTaskToQueue(() -> {
                         try {
                             MultiNodePathCalculator calculator
-                                    = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(carNetwork, travelDisutility, travelTime);
+                                    = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(network, travelDisutility, travelTime);
 
                             Set<InitialNode> toNodes = new HashSet<>();
                             for (Zone zone : zones.values()) {
@@ -223,28 +221,27 @@ public final class MatsimTravelTimes implements TravelTimes {
                         }
                         return null;
                     });
-                } else if(mode.equalsIgnoreCase(TransportMode.pt) && schedule != null && transitNetwork != null) {
+                } else if (mode.equalsIgnoreCase(TransportMode.pt) && schedule != null) {
                     Config config = ConfigUtils.createConfig();
                     RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
                     raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-                    SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, transitNetwork);
+                    SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, network);
                     final RaptorParameters parameters = RaptorUtils.createParameters(config);
 
                     executor.addTaskToQueue(() -> {
                         try {
-                            SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,  new DefaultRaptorStopFinder(
+                            SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null, new DefaultRaptorStopFinder(
                                     null,
                                     new DefaultRaptorIntermodalAccessEgress(),
                                     null));
-
                             for (Zone origin : partition) {
                                 List<TransitStopFacility> nearbyStops = stopsPerZone.get(origin);
                                 final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(nearbyStops, Properties.get().transportModel.peakHour_s, parameters);
                                 for (Zone destination : zones.values()) {
                                     double travelTime = Double.MAX_VALUE;
-                                    for(TransitStopFacility stop: stopsPerZone.get(destination)) {
+                                    for (TransitStopFacility stop : stopsPerZone.get(destination)) {
                                         final SwissRailRaptorCore.TravelInfo travelInfo = idTravelInfoMap.get(stop.getId());
-                                        if(travelInfo != null) {
+                                        if (travelInfo != null) {
                                             double time = travelInfo.accessTime + travelInfo.ptTravelTime + travelInfo.waitingTime;
                                             travelTime = Math.min(travelTime, time);
                                         }
@@ -281,7 +278,7 @@ public final class MatsimTravelTimes implements TravelTimes {
                 }
             }
             executor.execute();
-            assignIntrazonals(5,10,0.33f, skim);
+            assignIntrazonals(5, 10, 0.33f, skim);
             skimsByMode.put(mode, skim);
             logger.info("Finished skim for mode " + mode);
             return skim;
@@ -292,13 +289,12 @@ public final class MatsimTravelTimes implements TravelTimes {
     public TravelTimes duplicate() {
         logger.warn("Creating another TravelTimes object.");
         MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
-        matsimTravelTimes.carNetwork = this.carNetwork;
-        matsimTravelTimes.transitNetwork = this.transitNetwork;
+        matsimTravelTimes.network = this.network;
         matsimTravelTimes.zones = this.zones;
         matsimTravelTimes.schedule = this.schedule;
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
         matsimTravelTimes.stopsPerZone.putAll(this.stopsPerZone);
-        matsimTravelTimes.update(travelTime, travelDisutility);
+        matsimTravelTimes.update(routerProvider, travelTime, travelDisutility);
         matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
         return matsimTravelTimes;
@@ -307,24 +303,30 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private void buildZoneCalculationNodesMap() {
 
-        Config config = ConfigUtils.createConfig();
-        RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-        raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-        SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, transitNetwork);
-        SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,  new DefaultRaptorStopFinder(
-                null,
-                new DefaultRaptorIntermodalAccessEgress(),
-                null));
+        SwissRailRaptor raptor = null;
+        if (this.schedule != null) {
+            Config config = ConfigUtils.createConfig();
+            RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
+            raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
+            SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, network);
+            raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null, new DefaultRaptorStopFinder(
+                    null,
+                    new DefaultRaptorIntermodalAccessEgress(),
+                    null));
+        }
 
         for (Zone zone : zones.values()) {
 
             Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
-            final Collection<TransitStopFacility> nearbyStops = raptor.getUnderlyingData().findNearbyStops(coordinate.x, coordinate.y, 1000);
-            if(!nearbyStops.isEmpty()) {
-                stopsPerZone.put(zone, new ArrayList<>(nearbyStops));
-            } else {
-                final TransitStopFacility nearestStop = raptor.getUnderlyingData().findNearestStop(coordinate.getX(), coordinate.getY());
-                stopsPerZone.put(zone, Lists.newArrayList(nearestStop));
+
+            if (this.schedule != null) {
+                final Collection<TransitStopFacility> nearbyStops = raptor.getUnderlyingData().findNearbyStops(coordinate.x, coordinate.y, 1000);
+                if (!nearbyStops.isEmpty()) {
+                    stopsPerZone.put(zone, new ArrayList<>(nearbyStops));
+                } else {
+                    final TransitStopFacility nearestStop = raptor.getUnderlyingData().findNearestStop(coordinate.getX(), coordinate.getY());
+                    stopsPerZone.put(zone, Lists.newArrayList(nearestStop));
+                }
             }
 
             // Several points in a given origin zone
@@ -332,8 +334,7 @@ public final class MatsimTravelTimes implements TravelTimes {
                 // TODO Check if random coordinate is the best representative
                 coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
                 Coord originCoord = new Coord(coordinate.x, coordinate.y);
-                Node originNode = NetworkUtils.getNearestLink(carNetwork, originCoord).getToNode();
-
+                Node originNode = NetworkUtils.getNearestLink(network, originCoord).getToNode();
 
 
                 if (!zoneCalculationNodesMap.containsKey(zone)) {
@@ -350,19 +351,21 @@ public final class MatsimTravelTimes implements TravelTimes {
     private void assignIntrazonals(int numberOfNeighbours, float maximumMinutes, float proportionOfTime, IndexedDoubleMatrix2D skim) {
         int nonIntrazonalCounter = 0;
         for (int i = 1; i < skim.columns(); i++) {
+            int i_id = skim.getIdForInternalColumnIndex(i);
             double[] minTimeValues = new double[numberOfNeighbours];
             for (int k = 0; k < numberOfNeighbours; k++) {
                 minTimeValues[k] = maximumMinutes;
             }
             //find the  n closest neighbors - the lower travel time values in the matrix column
             for (int j = 1; j < skim.rows(); j++) {
+                int j_id = skim.getIdForInternalRowIndex(j);
                 int minimumPosition = 0;
                 while (minimumPosition < numberOfNeighbours) {
-                    if (minTimeValues[minimumPosition] > skim.getIndexed(i, j) && skim.getIndexed(i, j) != 0) {
+                    if (minTimeValues[minimumPosition] > skim.getIndexed(i_id, j_id) && skim.getIndexed(i_id, j_id) != 0) {
                         for (int k = numberOfNeighbours - 1; k > minimumPosition; k--) {
                             minTimeValues[k] = minTimeValues[k - 1];
                         }
-                        minTimeValues[minimumPosition] = skim.getIndexed(i, j);
+                        minTimeValues[minimumPosition] = skim.getIndexed(i_id, j_id);
                         break;
                     }
                     minimumPosition++;
@@ -376,8 +379,9 @@ public final class MatsimTravelTimes implements TravelTimes {
 
             //fill with the calculated value the cells with zero
             for (int j = 1; j < skim.rows(); j++) {
-                if (skim.getIndexed(i, j) == 0) {
-                    skim.setIndexed(i, j, globalMinTime);
+                int j_id = skim.getIdForInternalColumnIndex(j);
+                if (skim.getIndexed(i_id, j_id) == 0) {
+                    skim.setIndexed(i_id, j_id, globalMinTime);
                     if (i != j) {
                         nonIntrazonalCounter++;
                     }

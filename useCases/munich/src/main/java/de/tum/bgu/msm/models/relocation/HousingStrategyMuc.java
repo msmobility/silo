@@ -18,15 +18,18 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.LongAdder;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
+import static de.tum.bgu.msm.models.relocation.moves.MovesModelImpl.fileWriter;
 
 public class HousingStrategyMuc implements HousingStrategy {
 
@@ -115,25 +118,57 @@ public class HousingStrategyMuc implements HousingStrategy {
 
         double workDistanceUtility = 1;
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
+        Zone ddZone = geoData.getZones().get(dd.getZoneId());
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
                 int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
 
-                int transitTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
+               /* if(MovesModelImpl.track) {
+                    Zone workZone = geoData.getZones().get(workLocation.getZoneId());
+                    int transitTimeIndiv = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
+                    final double skimTime = travelTimes.getPeakSkim(TransportMode.car).getIndexed(dd.getZoneId(), workLocation.getZoneId());
+                    int expectedCommuteTime_FixedQueryTime = (int) travelTimes.getTravelTime(dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
+                    int expectedCommuteTime_FixedZone = (int) travelTimes.getTravelTime(ddZone, workZone, workLocation.getStartTimeInSeconds(), TransportMode.car);
+                    int transitTimeIndiv_fixedQueryTime = (int) travelTimes.getTravelTime(dd, workLocation, properties.transportModel.peakHour_s, TransportMode.pt);
+                    int transitTimeIndiv_fixedZone = (int) travelTimes.getTravelTime(ddZone, workZone, workLocation.getStartTimeInSeconds(), TransportMode.pt);
 
+                    int transitTimeSkim = (int) travelTimes.getPeakSkim(TransportMode.pt).getIndexed(dd.getZoneId(), workLocation.getZoneId());
+
+                    try {
+                        fileWriter.write(pp.getId()+","
+                                +hh.getId()+","
+                                +dd.getId()+","
+                                +workLocation.getId()+","
+                                +workLocation.getCoordinate().getX()+","
+                                +workLocation.getCoordinate().getY()+","
+                                +dd.getCoordinate().getX()+","
+                                +dd.getCoordinate().getY()+","
+                                +workLocation.getZoneId()+","
+                                +dd.getZoneId()+","
+                                +expectedCommuteTime+","
+                                +skimTime+","
+                                +workLocation.getStartTimeInSeconds()+","
+                                +workDistanceUtility +","
+                                +ddZone.getArea_sqmi() +","
+                                +workZone.getArea_sqmi() +","
+                                +expectedCommuteTime_FixedQueryTime +","
+                                +expectedCommuteTime_FixedZone + ","
+                                +transitTimeSkim+","
+                                +transitTimeIndiv+","
+                                +transitTimeIndiv_fixedQueryTime+","
+                                +transitTimeIndiv_fixedZone
+                                +"\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }*/
                 double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
                 workDistanceUtility *= factorForThisZone;
             }
         }
-//        double workdistanceUtilitySkim = 1;
 
-//        Zone origin = geoData.getZones().get(dd.getZoneId());
-//            Zone destination = geoData.getZones().get(workLocation.getZoneId());
-        // TODO Think about how to apply this for other modes as well
-//            int expectedCommuteTimePeak = (int) travelTimes.getTravelTime(dd, workLocation, Properties.get().transportModel.peakHour_s, TransportMode.car);
-//            int expectedCommuteTimeZone = (int) travelTimes.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
-//            int expectedCommuteTimeSkim = (int) travelTimes.getPeakSkim(TransportMode.car).getIndexed(dd.getZoneId(), workLocation.getZoneId());
+
 
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,

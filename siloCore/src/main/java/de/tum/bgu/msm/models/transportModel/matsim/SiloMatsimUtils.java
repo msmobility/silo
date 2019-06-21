@@ -68,6 +68,8 @@ public class SiloMatsimUtils {
 		config.planCalcScore().addActivityParams(workActivity);
 
 		config.vspExperimental().setVspDefaultsCheckingLevel(VspDefaultsCheckingLevel.warn);
+
+		config.transit().setUsingTransitInMobsim(false);
 	
 		LOG.info("Finished creating a MATSim config.");
 		return config;

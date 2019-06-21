@@ -23,12 +23,16 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
+import org.matsim.core.controler.Controler;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.util.Map;
 import java.util.Objects;
@@ -63,9 +67,16 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             logger.warn("Using mito with matsim travel times.");
             mitoInputTravelTimes = new SkimTravelTimes();
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) mitoInputTravelTimes, properties.main.startYear, properties);
-            Network network = NetworkUtils.createNetwork();
-            new MatsimNetworkReader(network).readFile(config.network().getInputFileURL(config.getContext()).getFile());
-            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network,null, null);
+            Scenario scenario = ScenarioUtils.loadScenario(config);
+            Network network = scenario.getNetwork();
+            TransitSchedule schedule = null;
+            if(config.transit().isUseTransit()) {
+                schedule = scenario.getTransitSchedule();
+            }
+//            Network transitNetwork = NetworkUtils.createNetwork();
+//            new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/transit_Only_network2018.xml");
+
+            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network, schedule);
             runTransportModel(properties.main.startYear);
         } else {
             logger.warn("Using mito with skim travel times.");
@@ -97,9 +108,10 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
         mito.setBaseDirectory(baseDirectory);
         mito.runModel();
         if(travelTimes instanceof MatsimTravelTimes) {
-            final TravelTime matsimTravelTime = mito.getData().getMatsimTravelTime();
-            final TravelDisutility matsimTravelDisutility = mito.getData().getMatsimTravelDisutility();
-            ((MatsimTravelTimes) travelTimes).update(matsimTravelTime, matsimTravelDisutility);
+            final Controler controler = mito.getData().getMatsimControler();
+            TravelTime matsimTravelTime = controler.getLinkTravelTimes();
+            final TravelDisutility matsimDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(matsimTravelTime);
+            ((MatsimTravelTimes) travelTimes).update(controler.getTripRouterProvider(), matsimTravelTime, matsimDisutility);
         } else if (travelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) travelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
                     dataContainer.getGeoData().getRegions().values());

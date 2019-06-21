@@ -18,11 +18,12 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.models.transportModel.matsim;
 
+
+import com.google.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
@@ -43,7 +44,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
@@ -72,70 +73,75 @@ import de.tum.bgu.msm.properties.Properties;
  * @author dziemke
  */
 public final class MatsimTransportModel implements TransportModel {
-	private static final Logger logger = Logger.getLogger( MatsimTransportModel.class );
-	
-	private final Config initialMatsimConfig;
-	private final MatsimTravelTimes travelTimes;
-	private Properties properties;
-	private final DataContainer dataContainer;
+    private static final Logger logger = Logger.getLogger(MatsimTransportModel.class);
 
-	private ActivityFacilities zoneRepresentativeCoords;
-	private MatsimAccessibility accessibility;
+    private final Config initialMatsimConfig;
+    private final MatsimTravelTimes travelTimes;
+    private Properties properties;
+    private final DataContainer dataContainer;
+
+    private ActivityFacilities zoneRepresentativeCoords;
+    private MatsimAccessibility accessibility;
 
 
-	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig, Properties properties, MatsimAccessibility accessibility) {
-		this.dataContainer = Objects.requireNonNull(dataContainer);
-		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig, "No initial matsim config provided to SiloModel class!");
+    public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
+                                Properties properties, MatsimAccessibility accessibility) {
+        this.dataContainer = Objects.requireNonNull(dataContainer);
+        this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
+                "No initial matsim config provided to SiloModel class!");
 
-		final TravelTimes travelTimes = dataContainer.getTravelTimes();
-		if (travelTimes instanceof MatsimTravelTimes) {
-			this.travelTimes = (MatsimTravelTimes) travelTimes;
-		} else {
-			this.travelTimes = new MatsimTravelTimes();
-		}
-		this.properties = properties;
-		this.accessibility = accessibility;
-	}
-
-	@Override
-	public void setup() {
-		Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
-		Network network = scenario.getNetwork();
-		TransitSchedule schedule = scenario.getTransitSchedule();
-		Network transitNetwork = NetworkUtils.createNetwork();
-		new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/mergedNetworkIncludingTransit2018.xml.gz");
-
-        travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), transitNetwork,schedule);
-
-        logger.warn("Finding coordinates that represent a given zone.");
-		zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
-		ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
-	    Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
-	    for (int zoneId : zoneMap.keySet()) {
-	    	Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
-			Coord centroid = CoordUtils.createCoord(geometry.getCentroid().getX(), geometry.getCentroid().getY());
-			Node nearestNode = NetworkUtils.getNearestNode(network, centroid); // TODO choose road of certain category
-			Coord coord = CoordUtils.createCoord(nearestNode.getCoord().getX(), nearestNode.getCoord().getY());
-			ActivityFacility activityFacility = aff.createActivityFacility(Id.create(zoneId, ActivityFacility.class), coord);
-			zoneRepresentativeCoords.addActivityFacility(activityFacility);
-	    }
-
-        if (properties.transportModel.matsimInitialEventsFile == null) {
-            runTransportModel(properties.main.startYear);
+        final TravelTimes travelTimes = dataContainer.getTravelTimes();
+        if (travelTimes instanceof MatsimTravelTimes) {
+            this.travelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
-            replayFromEvents(eventsFile);
+            this.travelTimes = new MatsimTravelTimes();
         }
+        this.properties = properties;
+        this.accessibility = accessibility;
     }
 
-	@Override
-	public void prepareYear(int year) {
-	}
+    @Override
+    public void setup() {
+        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
+        Network network = scenario.getNetwork();
+        TransitSchedule schedule = null;
+        if(scenario.getConfig().transit().isUseTransit()) {
+            schedule = scenario.getTransitSchedule();
+        }
+//		Network transitNetwork = NetworkUtils.createNetwork();
+//		new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/mergedNetworkIncludingTransit2018.xml.gz");
 
-	@Override
-	public void endYear(int year) {
-	    if (properties.transportModel.transportModelYears.contains(year+1)) {
-            runTransportModel(year+1);
+        travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), schedule);
+
+        logger.warn("Finding coordinates that represent a given zone.");
+        zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
+        ActivityFacilitiesFactory aff = new ActivityFacilitiesFactoryImpl();
+        Map<Integer, Zone> zoneMap = dataContainer.getGeoData().getZones();
+        for (int zoneId : zoneMap.keySet()) {
+            Geometry geometry = (Geometry) zoneMap.get(zoneId).getZoneFeature().getDefaultGeometry();
+            Coord centroid = CoordUtils.createCoord(geometry.getCentroid().getX(), geometry.getCentroid().getY());
+            Node nearestNode = NetworkUtils.getNearestNode(network, centroid); // TODO choose road of certain category
+            Coord coord = CoordUtils.createCoord(nearestNode.getCoord().getX(), nearestNode.getCoord().getY());
+            ActivityFacility activityFacility = aff.createActivityFacility(Id.create(zoneId, ActivityFacility.class), coord);
+            zoneRepresentativeCoords.addActivityFacility(activityFacility);
+        }
+
+        // if (properties.transportModel.matsimInitialEventsFile == null) {
+        runTransportModel(properties.main.startYear);
+        //} else {
+        //   String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+        // replayFromEvents(eventsFile);
+        //}
+    }
+
+    @Override
+    public void prepareYear(int year) {
+    }
+
+    @Override
+    public void endYear(int year) {
+        if (properties.transportModel.transportModelYears.contains(year + 1)) {
+            runTransportModel(year + 1);
         }
     }
 
@@ -144,111 +150,115 @@ public final class MatsimTransportModel implements TransportModel {
     }
 
     public void runTransportModel(int year) {
-		logger.warn("Running MATSim transport model for year " + year + ".");
+        logger.warn("Running MATSim transport model for year " + year + ".");
 
-		double populationScalingFactor = properties.transportModel.matsimScaleFactor;
-		String matsimRunId = properties.main.scenarioName + "_" + year;
-		
-		Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
-		Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
 
-		MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-		scenario.setPopulation(population);
+        double populationScalingFactor = properties.transportModel.matsimScaleFactor;
+        String matsimRunId = properties.main.scenarioName + "_" + year;
 
-		ConfigUtils.setVspDefaults(config);
-		final Controler controler = new Controler(scenario);
+        Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
+        Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
 
-		if (accessibility != null) {
-			setupAccessibility(config, scenario, controler);
-		}
 
-		controler.run();
-		logger.warn("Running MATSim transport model for year " + year + " finished.");
 
-		// Get travel Times from MATSim
-		logger.warn("Using MATSim to compute travel times from zone to zone.");
-		TravelTime travelTime = controler.getLinkTravelTimes();
-		TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-		updateTravelTimes(travelTime, travelDisutility);
-	}
+        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
+        scenario.setPopulation(population);
 
-	private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
-		// Opportunities
-		Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
-		Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
-		for (int zoneId : populationMap.keySet()) {
-			zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
-		}
-		final ActivityFacilities opportunities = scenario.getActivityFacilities();
-		int i = 0;
-		for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
-			activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
-			opportunities.addActivityFacility(activityFacility);
-			i++;
-		}
-		logger.warn(i + " facilities added as opportunities.");
+        ConfigUtils.setVspDefaults(config);
+        final Controler controler = new Controler(scenario);
 
-		SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
+        if (accessibility != null) {
+            setupAccessibility(config, scenario, controler);
+        }
 
-		scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
-		// End opportunities
+        controler.run();
+        logger.warn("Running MATSim transport model for year " + year + " finished.");
 
-		// Accessibility settings
-		AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
-		acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
-		//
-		Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
-		Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
-		for (Zone zone : dataContainer.getGeoData().getZones().values()) {
-			zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
-		}
+        // Get travel Times from MATSim
+        logger.warn("Using MATSim to compute travel times from zone to zone.");
+        TravelTime travelTime = controler.getLinkTravelTimes();
+        TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+        updateTravelTimes(travelTime, travelDisutility, controler.getTripRouterProvider());
+    }
 
-		for (Integer zoneId : zoneFeatureMap.keySet()) {
-			SimpleFeature feature = zoneFeatureMap.get(zoneId);
-			Geometry geometry = (Geometry) feature.getDefaultGeometry();
-			measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
-		}
-		acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
-		acg.setMeasurePointGeometryMap(measurePointGeometryMap);
+    private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
+        // Opportunities
+        Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
+        Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
+        for (int zoneId : populationMap.keySet()) {
+            zonePopulationMap.put(Id.create(zoneId, ActivityFacility.class), populationMap.get(zoneId));
+        }
+        final ActivityFacilities opportunities = scenario.getActivityFacilities();
+        int i = 0;
+        for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
+            activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
+            opportunities.addActivityFacility(activityFacility);
+            i++;
+        }
+        logger.warn(i + " facilities added as opportunities.");
 
-		acg.setTileSize_m(1000); // TODO This is only a dummy value here
-		//
-		acg.setAreaOfAccessibilityComputation(AccessibilityConfigGroup.AreaOfAccesssibilityComputation.fromFacilitiesObject);
-		acg.setUseOpportunityWeights(true);
-		acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
-		logger.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
-		acg.setAccessibilityMeasureType(AccessibilityConfigGroup.AccessibilityMeasureType.rawSum);
-		// End accessibility settings
-		// Accessibility module
+        SiloMatsimUtils.determineExtentOfFacilities(zoneRepresentativeCoords);
 
-		AccessibilityModule module = new AccessibilityModule();
-		module.addFacilityDataExchangeListener(accessibility);
-		controler.addOverridingModule(module);
-		// End accessibility module
-	}
+        scenario.getConfig().facilities().setFacilitiesSource(FacilitiesConfigGroup.FacilitiesSource.setInScenario);
+        // End opportunities
 
-	/**
-     * @param eventsFile
-     */
-	private void replayFromEvents(String eventsFile) {
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
-	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
-        EventsManager events = EventsUtils.createEventsManager();
-        events.addHandler(ttCalculator);
-        (new MatsimEventsReader(events)).readFile(eventsFile);
-        TravelTime travelTime = ttCalculator.getLinkTravelTimes();
-        TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
-	}
+        // Accessibility settings
+        AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
+        acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
+        //
+        Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
+        Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
+        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+            zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
+        }
 
-	private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
-		travelTimes.update(travelTime, disutility);
-		final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
-		if(mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
-			((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
-			((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
-			((SkimTravelTimes) mainTravelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
-					dataContainer.getGeoData().getRegions().values());
-		}
-	}
+        for (Integer zoneId : zoneFeatureMap.keySet()) {
+            SimpleFeature feature = zoneFeatureMap.get(zoneId);
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            measurePointGeometryMap.put(Id.create(zoneId, ActivityFacility.class), geometry);
+        }
+        acg.setMeasurePointGeometryProvision(AccessibilityConfigGroup.MeasurePointGeometryProvision.fromShapeFile);
+        acg.setMeasurePointGeometryMap(measurePointGeometryMap);
+
+        acg.setTileSize_m(1000); // TODO This is only a dummy value here
+        //
+        acg.setAreaOfAccessibilityComputation(AccessibilityConfigGroup.AreaOfAccesssibilityComputation.fromFacilitiesObject);
+        acg.setUseOpportunityWeights(true);
+        acg.setWeightExponent(Properties.get().accessibility.alphaAuto); // TODO Need differentiation for different modes
+        logger.warn("Properties.get().accessibility.alphaAuto = " + Properties.get().accessibility.alphaAuto);
+        acg.setAccessibilityMeasureType(AccessibilityConfigGroup.AccessibilityMeasureType.rawSum);
+        // End accessibility settings
+        // Accessibility module
+
+        AccessibilityModule module = new AccessibilityModule();
+        module.addFacilityDataExchangeListener(accessibility);
+        controler.addOverridingModule(module);
+        // End accessibility module
+    }
+
+//	/**
+//     *
+//     * @param eventsFile
+//     */
+//	private void replayFromEvents(String eventsFile) {
+//        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
+//	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
+//        EventsManager events = EventsUtils.createEventsManager();
+//        events.addHandler(ttCalculator);
+//        (new MatsimEventsReader(events)).readFile(eventsFile);
+//        TravelTime travelTime = ttCalculator.getLinkTravelTimes();
+//        TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
+//        updateTravelTimes(travelTime, travelDisutility, routerProvider);
+//	}
+
+    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
+        travelTimes.update(routerProvider, travelTime, disutility);
+        final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
+        if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
+            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
+            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
+            ((SkimTravelTimes) mainTravelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
+                    dataContainer.getGeoData().getRegions().values());
+        }
+    }
 }
