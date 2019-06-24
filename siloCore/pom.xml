@@ -376,10 +376,11 @@
         </dependency>
         <!--  		This is the "jitpack" deployment:
          -->
+
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
