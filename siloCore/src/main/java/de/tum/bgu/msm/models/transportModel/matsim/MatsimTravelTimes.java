@@ -77,7 +77,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.travelTime = travelTime;
         this.travelDisutility = disutility;
         this.skimsByMode.clear();
-        if(this.travelTimeToRegion != null) {
+        if (this.travelTimeToRegion != null) {
             this.travelTimeToRegion.assign(-1);
         }
     }
@@ -94,8 +94,8 @@ public final class MatsimTravelTimes implements TravelTimes {
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
         } else if (origin instanceof Zone && destination instanceof Zone) {
             // Non-microlocations case
-            originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord();
-            destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord();
+            originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord(); // TODO check if ok to only use the first node
+            destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord(); // TODO check if ok to only use the first node
         } else {
             throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
         }
@@ -115,8 +115,7 @@ public final class MatsimTravelTimes implements TravelTimes {
             }
         }
 
-        //convert to minutes
-        time /= 60.;
+        time /= 60.; // convert to minutes
         return time;
     }
 

@@ -18,7 +18,6 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.models.transportModel.matsim;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -85,11 +84,10 @@ public final class MatsimTransportModel implements TransportModel {
 
 	public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig, Properties properties, MatsimAccessibility accessibility) {
 		this.dataContainer = Objects.requireNonNull(dataContainer);
-		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
-				"No initial matsim config provided to SiloModel class!" );
+		this.initialMatsimConfig = Objects.requireNonNull(matsimConfig, "No initial matsim config provided to SiloModel class!");
 
 		final TravelTimes travelTimes = dataContainer.getTravelTimes();
-		if(travelTimes instanceof MatsimTravelTimes) {
+		if (travelTimes instanceof MatsimTravelTimes) {
 			this.travelTimes = (MatsimTravelTimes) travelTimes;
 		} else {
 			this.travelTimes = new MatsimTravelTimes();
@@ -118,13 +116,12 @@ public final class MatsimTransportModel implements TransportModel {
 			zoneRepresentativeCoords.addActivityFacility(activityFacility);
 	    }
 
-        if(properties.transportModel.matsimInitialEventsFile == null) {
+        if (properties.transportModel.matsimInitialEventsFile == null) {
             runTransportModel(properties.main.startYear);
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
             replayFromEvents(eventsFile);
         }
-
     }
 
 	@Override
@@ -133,15 +130,13 @@ public final class MatsimTransportModel implements TransportModel {
 
 	@Override
 	public void endYear(int year) {
-	    if(properties.transportModel.transportModelYears.contains(year+1)) {
+	    if (properties.transportModel.transportModelYears.contains(year+1)) {
             runTransportModel(year+1);
         }
-
     }
 
     @Override
     public void endSimulation() {
-
     }
 
     public void runTransportModel(int year) {
