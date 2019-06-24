@@ -6,7 +6,7 @@
 	</module>
 	
 	<module name="controler" >
-		<param name="lastIteration" value="10" />
+		<param name="lastIteration" value="2" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 	</module>
 

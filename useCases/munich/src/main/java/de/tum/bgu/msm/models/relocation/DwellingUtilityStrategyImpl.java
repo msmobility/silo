@@ -8,12 +8,8 @@ import java.io.Reader;
 
 public class DwellingUtilityStrategyImpl extends JavaScriptCalculator<Double> implements DwellingUtilityStrategy {
 
-    private final static Reader reader
-            = new InputStreamReader(DwellingUtilityStrategyImpl.class.getResourceAsStream("DwellingUtilityCalc"));
-
-
     public DwellingUtilityStrategyImpl() {
-        super(reader);
+        super(new InputStreamReader(DwellingUtilityStrategyImpl.class.getResourceAsStream("DwellingUtilityCalc")));
     }
 
     public synchronized double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,

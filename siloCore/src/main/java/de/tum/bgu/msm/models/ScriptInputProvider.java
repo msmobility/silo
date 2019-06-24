@@ -5,15 +5,9 @@ import java.io.InputStream;
 public final class ScriptInputProvider {
 
     public static InputStream getDwellingProbabilityScriptInput() {
-        return dwellingProbabilityScriptInput;
+        return ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
     }
 
-    public static void setDwellingProbabilityScriptInput(InputStream dwellingProbabilityScriptInput) {
-        ScriptInputProvider.dwellingProbabilityScriptInput = dwellingProbabilityScriptInput;
-    }
-
-    private static InputStream dwellingProbabilityScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
 
     private ScriptInputProvider() {
     }

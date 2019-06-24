@@ -2,6 +2,7 @@ package de.tum.bgu.msm.transportModel.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Lists;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 public class SBBTest {
 
+    @Ignore
     @Test
     public void test() {
         Config config = ConfigUtils.createConfig();
