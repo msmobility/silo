@@ -210,6 +210,33 @@
             <groupId>de.tum.bgu.msm</groupId>
             <artifactId>siloCore</artifactId>
             <version>0.1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <version>${matsimVersion}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -218,19 +245,12 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
-            <version>${matsimVersion}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <svnRevision>${buildNumber}</svnRevision>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>0.11.0-SNAPSHOT</matsimVersion>
         <jackson.version>2.9.5</jackson.version>
+        <matsimVersion>11.0</matsimVersion>
     </properties>
 </project>

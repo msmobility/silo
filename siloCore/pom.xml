@@ -281,6 +281,16 @@
             <version>${matsimVersion}</version>
             <type>jar</type>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.matsim</groupId>
@@ -288,24 +298,64 @@
             <version>${matsimVersion}</version>
             <type>test-jar</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>accessibility</artifactId>
             <version>${matsimVersion}</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>matsim4urbansim</artifactId>
-            <version>${matsimVersion}</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.matsim.contrib</groupId>-->
+            <!--<artifactId>matsim4urbansim</artifactId>-->
+            <!--<version>${matsimVersion}</version>-->
+            <!--<scope>compile</scope>-->
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>javax.media</groupId>-->
+                    <!--<artifactId>jai_core</artifactId>-->
+                <!--</exclusion>-->
+                <!--<exclusion>-->
+                    <!--<groupId>jgridshift</groupId>-->
+                    <!--<artifactId>jgridshift</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>matrixbasedptrouter</artifactId>
             <version>${matsimVersion}</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit-addons</groupId>
@@ -330,6 +380,16 @@
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
             <version>master-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.SchweizerischeBundesbahnen</groupId>
@@ -350,6 +410,6 @@
         <svnRevision>${buildNumber}</svnRevision>
         <!--<geotools.version>20.2</geotools.version>-->
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>0.11.0-SNAPSHOT</matsimVersion>
+        <matsimVersion>11.0</matsimVersion>
     </properties>
 </project>
