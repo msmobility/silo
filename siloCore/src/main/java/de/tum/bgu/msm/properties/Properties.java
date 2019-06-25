@@ -46,7 +46,12 @@ public final class Properties {
 
     private Properties(String path) {
         this.path = path;
-        File propFile = new File(this.path);
+        File propFile = null;
+        try {
+            propFile = new File(this.path).getCanonicalFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ResourceBundle bundle = null;
         try {
             bundle = new PropertyResourceBundle(new FileReader(propFile));

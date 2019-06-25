@@ -5,6 +5,8 @@ import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -99,7 +101,11 @@ public class MainProperties {
         logger.info("Scenario name: " + scenarioName);
         //by omitting base directory one has to set up a working folder in intellij etc. which represents "." in the next line
         //add working directory as default value?
-        baseDirectory = PropertiesUtil.getStringProperty(bundle, "base.directory", propertiesBasePath + "/");
+        try {
+            baseDirectory = new File(PropertiesUtil.getStringProperty(bundle, "base.directory", propertiesBasePath)).getCanonicalPath()+ "/";
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         baseYear = PropertiesUtil.getIntProperty(bundle, "base.year");
         startYear = PropertiesUtil.getIntProperty(bundle, "start.year", baseYear);
         endYear = PropertiesUtil.getIntProperty(bundle, "end.year");

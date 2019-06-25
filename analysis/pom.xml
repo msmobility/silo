@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>silo-parent</artifactId>
-        <groupId>de.tum.bgu.msm</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <groupId>com.github.msmobility</groupId>
+        <version>fabilutScenarios_v1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>analysis</artifactId>
 
     <name>SILO analysis module</name>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>fabilutScenarios_v1.0</version>
     <description>SILO analysis module</description>
     <url>silo.zone</url>
     <inceptionYear>2018</inceptionYear>
@@ -202,15 +202,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>siloCore</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>munich</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

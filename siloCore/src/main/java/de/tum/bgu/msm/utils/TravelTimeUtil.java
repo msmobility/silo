@@ -7,10 +7,6 @@ import org.matsim.api.core.v01.TransportMode;
 
 public class TravelTimeUtil {
 
-    private final static Logger logger = Logger.getLogger(TravelTimeUtil.class);
-
-    private static final double TIME_OF_DAY = 8 * 60. * 60.;
-
     public static void updateTransitSkim(SkimTravelTimes travelTimes, int year, Properties properties) {
         final String transitSkimFile = properties.accessibility.transitSkimFile(year);
         travelTimes.readSkim(TransportMode.pt, transitSkimFile,

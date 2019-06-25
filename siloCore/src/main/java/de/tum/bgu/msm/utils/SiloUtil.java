@@ -27,7 +27,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 8 December 2009 in Santa Fe
  **/
-
 public class SiloUtil {
 
     private static final String TIME_TRACKER_FILE = "timeTracker.csv";
@@ -50,7 +49,7 @@ public class SiloUtil {
         return properties;
     }
 
-    public static void loadHdf5Lib() {
+    static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;

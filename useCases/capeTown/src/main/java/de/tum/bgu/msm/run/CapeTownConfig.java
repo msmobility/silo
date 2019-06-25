@@ -2,7 +2,7 @@ package de.tum.bgu.msm.run;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
 
-class CapeTownConfig extends ReflectiveConfigGroup {
+public class CapeTownConfig extends ReflectiveConfigGroup {
 	public static final String NAME = "CapeTown" ;
 
 	public CapeTownConfig( ){

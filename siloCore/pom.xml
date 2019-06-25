@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.tum.bgu.msm</groupId>
+    <groupId>com.github.msmobility</groupId>
     <artifactId>siloCore</artifactId>
     <name>SILO</name>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>fabilutScenarios_v1.0</version>
     <description>Simple Integrated Land-Use Orchestrator</description>
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>

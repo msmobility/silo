@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.tum.bgu.msm</groupId>
+    <groupId>com.github.msmobility</groupId>
     <artifactId>synthetic-population</artifactId>
     <name>SILO Synthetic population generator</name>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>fabilutScenarios_v1.0</version>
     <description>SILO synthetic population generator</description>
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>
@@ -189,24 +189,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>siloCore</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>munich</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>maryland</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>com.github.msmobility</groupId>
             <artifactId>perth</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>fabilutScenarios_v1.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
