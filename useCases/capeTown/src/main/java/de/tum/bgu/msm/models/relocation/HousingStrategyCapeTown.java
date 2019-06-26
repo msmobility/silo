@@ -118,8 +118,8 @@ public class HousingStrategyCapeTown implements HousingStrategy {
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 Job workLocation = Objects.requireNonNull(jobDataManager.getJobFromId(pp.getJobId()));
-                double travelTime_s = travelTimes.getTravelTime(dwelling, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
-                double factorForThisZone = dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(Math.max(1, (int) (travelTime_s / 60.)));
+                double travelTime_min = travelTimes.getTravelTime(dwelling, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
+                double factorForThisZone = dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(Math.max(1, (int) travelTime_min));
                 workDistanceUtility *= factorForThisZone;
             }
         }
