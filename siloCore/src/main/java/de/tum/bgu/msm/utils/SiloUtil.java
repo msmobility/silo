@@ -1063,16 +1063,19 @@ public class SiloUtil {
 /*        if (trackHh != -1 || trackPp != -1 || trackDd != -1)
             trackWriter.println("Started simulation for year " + year);
         logger.info("  Summarizing micro data for year " + year);*/
-        int yearPrev = year - 1;
-        int[] sizes = distributionByYear.get(yearPrev);
-        for(int i = 1; i <= 4; i++){
-            SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize" + i + "," + sizes[i - 1]);
-        }
-        int hhSize5 = sizes[4];
-        for (int i = 6; i <= 10; i++){
-            hhSize5 = hhSize5 + sizes[i - 1];
-        }
-        SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize5+" + "," + hhSize5);
+
+if (year > 2011) {
+    int yearPrev = year - 1;
+    int[] sizes = distributionByYear.get(yearPrev);
+    for (int i = 1; i <= 4; i++) {
+        SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize" + i + "," + sizes[i - 1]);
+    }
+    int hhSize5 = sizes[4];
+    for (int i = 6; i <= 10; i++) {
+        hhSize5 = hhSize5 + sizes[i - 1];
+    }
+    SummarizeData.resultFile(combinationId + "," + yearPrev + ",hhSize5+" + "," + hhSize5);
+}
         //SummarizeData.resultFile("close", false);
         //dataContainer.getHouseholdData().summarizePopulation(dataContainer, modelContainer);
         //removed for machine learning exercise

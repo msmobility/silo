@@ -320,6 +320,7 @@ public final class SiloModel {
 			IssueCounter.logIssues(data.getGeoData());           // log any issues that arose during this simulation period
 
 			householdSizeDistribution.put(year, householdData.getHouseholdSizeDistribution());
+			SiloUtil.summarizeMicroData(year, modelContainer, data, combinationId, householdSizeDistribution);
 /*			logger.info("  Finished this simulation period with " + householdData.getPersonCount() +
 					" persons, " + householdData.getHouseholds().size() + " households and "  +
 					data.getRealEstateData().getDwellings().size() + " dwellings.");*/
