@@ -35,7 +35,8 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
         alpha = 0.03;
         beta = 0.01;
     } else {
-        throw new Error("Invalid dwelling type \"" + dwellingType + "\" in javaScript calculateConstructionDemand provided.);    }
+        throw new Error("Invalid dwelling type \"" + dwellingType + "\" in javaScript calculateConstructionDemand provided.");
+    }
     if (vacancyByRegion > 1){
         vacancyByRegion = 1;
         //this checks that very large vacancy rates (generally in tests with subsamples of sp) do not result in  infinity
