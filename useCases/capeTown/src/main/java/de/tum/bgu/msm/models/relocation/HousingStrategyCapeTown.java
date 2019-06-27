@@ -118,14 +118,26 @@ public class HousingStrategyCapeTown implements HousingStrategy {
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 Job workLocation = Objects.requireNonNull(jobDataManager.getJobFromId(pp.getJobId()));
-                double travelTime_s = travelTimes.getTravelTime(dwelling, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
-                double factorForThisZone = dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(Math.max(1, (int) (travelTime_s / 60.)));
+                double travelTime_min = travelTimes.getTravelTime(dwelling, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
+                double factorForThisZone = dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(Math.max(1, (int) travelTime_min));
                 workDistanceUtility *= factorForThisZone;
             }
         }
-        return ddUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+        double util = ddUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);
+
+        RaceCapeTown householdRace = ((HouseholdCapeTown) hh).getRace();
+
+        double racialShare = 1;
+
+        if (householdRace != RaceCapeTown.OTHER) {
+            racialShare = personShareByRaceByZone.get(dwelling.getZoneId()).get(householdRace);
+        }
+        // multiply by racial share to make zones with higher own racial share more attractive
+
+        return Math.pow(util, (1 - properties.moves.racialRelevanceInZone)) *
+                Math.pow(racialShare, properties.moves.racialRelevanceInZone);
     }
 
     @Override

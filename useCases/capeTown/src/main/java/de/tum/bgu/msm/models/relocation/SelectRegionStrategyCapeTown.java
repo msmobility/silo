@@ -10,7 +10,7 @@ import java.io.Reader;
 public class SelectRegionStrategyCapeTown extends JavaScriptCalculator<Double> {
 
     private final static Reader reader
-            = new InputStreamReader(SelectRegionStrategyCapeTown.class.getResourceAsStream("SelectRegionCalc"));
+            = new InputStreamReader(SelectRegionStrategyCapeTown.class.getResourceAsStream("SelectRegionCalcCapeTown"));
 
     public SelectRegionStrategyCapeTown() {
         super(reader);

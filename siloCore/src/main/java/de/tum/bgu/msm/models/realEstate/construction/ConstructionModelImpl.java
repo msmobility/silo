@@ -87,12 +87,12 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
-        int[][] existingDwellings = realEstate.getDwellingCountByTypeAndRegion();
+        int[][] existingDwellingsByTypeByRegion = realEstate.getDwellingCountByTypeAndRegion();
         DwellingType[] sortedDwellingTypes = findOrderOfDwellingTypes(dataContainer);
         for (DwellingType dt : sortedDwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
+                int demand = (int) (existingDwellingsByTypeByRegion[dto][region] * demandByRegion[dto][region] + 0.5);
                 if (demand == 0) {
                     continue;
                 }

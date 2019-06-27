@@ -169,7 +169,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
     private Person findPartner(MarriageMarket market, Person person) {
 
         final MarriagePreference preference = defineMarriagePreference(person, market);
-        final List<Person> possiblePartners = market.getFittingPartners(preference);
+        final List<Person> possiblePartners = market.getFittingPartnersWithSelectedAge(preference);
 
         if (preference == null || possiblePartners.isEmpty()) {
             return null;
@@ -182,8 +182,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
         for (Person pp : possiblePartners) {
             float prob;
             PersonCapeTown p = ((PersonCapeTown) pp);
-            if ((preference.sameRace && personRace == p.getRace())
-                    || (!preference.sameRace && personRace != p.getRace())) {
+            if (fitsRaceCompositionPreference(preference, personRace, p)) {
                 prob = 10000f;
             } else {
                 prob = 0.001f;
@@ -197,6 +196,11 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
         return selectedPartner;
     }
 
+    private boolean fitsRaceCompositionPreference(MarriagePreference preference, RaceCapeTown personRace, PersonCapeTown p) {
+        return (preference.sameRace && personRace == p.getRace())
+                || (!preference.sameRace && personRace != p.getRace());
+    }
+
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
         final Gender partnerGender = person.getGender().opposite();
@@ -208,7 +212,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
             double probability = ageDiffProbabilityByGender.get(ageDiff, person.getGender());
-            probability *= market.getFittingPartners(resultingAge, partnerGender).size();
+            probability *= market.getFittingPartnersWithSelectedAge(resultingAge, partnerGender).size();
             sum += probability;
             probabilityByAge.put(resultingAge, probability);
         }
@@ -436,15 +440,15 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
             this.partnersByAgeAndGender = passivePartnersByAgeAndGender;
         }
 
-        private List<Person> getFittingPartners(MarriagePreference preference) {
+        private List<Person> getFittingPartnersWithSelectedAge(MarriagePreference preference) {
             if (preference != null) {
-                return getFittingPartners(preference.age, preference.gender);
+                return getFittingPartnersWithSelectedAge(preference.age, preference.gender);
             } else {
                 return null;
             }
         }
 
-        private List<Person> getFittingPartners(int age, Gender gender) {
+        private List<Person> getFittingPartnersWithSelectedAge(int age, Gender gender) {
             final List<Person> entry = partnersByAgeAndGender.get(age, gender);
             if (entry == null) {
                 return Collections.emptyList();
