@@ -68,8 +68,8 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     private final SelectRegionStrategyCapeTown regionStrategy;
     private final DwellingProbabilityStrategy ddProbabilityStrategy;
 
-    private final Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByRegion = new HashMap<>();
-    private final Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByZone = new HashMap<>();
+    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByRegion = new HashMap<>();
+    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByZone = new HashMap<>();
 
     private IndexedDoubleMatrix1D ppByRegion;
     private IndexedDoubleMatrix1D ppByZone;
@@ -177,6 +177,9 @@ public class HousingStrategyCapeTown implements HousingStrategy {
         strategy.ppByRegion = ppByRegion;
         strategy.ppByZone = ppByZone;
         strategy.utilityByRegionByRaceByIncome = utilityByRegionByRaceByIncome;
+        strategy.personShareByRaceByRegion = personShareByRaceByRegion;
+        strategy.personShareByRaceByZone = personShareByRaceByZone;
+
         return strategy;
     }
 

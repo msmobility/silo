@@ -196,8 +196,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
                     zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
                 }
                 Zone destination = dataContainer.getGeoData().getZones().get(dataContainer.getJobDataManager().getJobFromId(per.getJobId()).getZoneId());
-                double ds = dataContainer.getTravelTimes().
-                        getTravelTime(zone, destination, Properties.get().transportModel.peakHour_s, TransportMode.car);
+                double ds = dataContainer.getTravelTimes().getPeakSkim(TransportMode.car).getIndexed(zone.getZoneId(), destination.getZoneId());
                 commDist[0][zone.getRegion().getId()] += ds;
                 commDist[1][zone.getRegion().getId()]++;
             }
