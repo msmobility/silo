@@ -7,7 +7,7 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
     // alpha = Structural Vacancy, to be expected to be available in a market at equilibrium to allow households to move
     // alpha = 0.03 means that we should expect 3% vacancy in a perfectly balanced housing market
     alpha = dwellingType.getStructuralVacancyRate();
-    print(alpha);
+
     // beta = Development that happens when vacancy rate is at structural vacancy alpha
     // beta = 0.01 means that when the vacancy rate is at the level alpha, 1% additional dwellings are added (if land use permits)
     beta = 0.01;
