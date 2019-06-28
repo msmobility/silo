@@ -45,22 +45,20 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
     @Override
     public void prepareYear(int year) {
-
     }
 
     @Override
     public void endYear(int year) {
-        updateRealEstatePrices();
+        updateRealEstatePrices(year);
     }
 
     @Override
     public void endSimulation() {
-
     }
 
-    private void updateRealEstatePrices() {
+    private void updateRealEstatePrices(int year) {
         // updated prices based on current demand
-        logger.info("  Updating real-estate prices");
+        logger.info("  Updating real-estate prices at the end of " + year);
 
         // get vacancy rate
         double[][] vacRate = dataContainer.getRealEstateDataManager().getVacancyRateByTypeAndRegion();
