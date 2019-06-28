@@ -10,7 +10,7 @@ public enum DefaultDwellingTypeImpl implements DwellingType {
     /**
      * single-family house detached
      */
-    SFD (0.25f,0.01f),
+    SFD (0.25f,0.03f),
     /**
      * single-family house attached or townhouse
      */
@@ -18,11 +18,11 @@ public enum DefaultDwellingTypeImpl implements DwellingType {
     /**
      * duplexes and buildings 2-4 units (not including those that fit Attached or Townhouse definition)
      */
-    MF234(0.07f,0.05f),
+    MF234(0.07f,0.04f),
     /**
      * Multi-family houses with 5+ units
      */
-    MF5plus(0.03f,0.04f),
+    MF5plus(0.03f,0.05f),
     /**
      * mobile home
      */
