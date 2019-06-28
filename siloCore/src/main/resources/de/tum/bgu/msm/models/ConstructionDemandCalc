@@ -10,7 +10,7 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
 
     // beta = Development that happens when vacancy rate is at structural vacancy alpha
     // beta = 0.01 means that when the vacancy rate is at the level alpha, 1% additional dwellings are added (if land use permits)
-    beta = 0.01;
+    beta = 0.02;
 
     // gamma = Expected development when vacancy drops down to 0% (i.e., max. possible development)
     gamma = alpha + beta;
