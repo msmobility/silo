@@ -6,8 +6,8 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
 
     // alpha = Structural Vacancy, to be expected to be available in a market at equilibrium to allow households to move
     // alpha = 0.03 means that we should expect 3% vacancy in a perfectly balanced housing market
-    alpha = 0.03;
-
+    alpha = dwellingType.getStructuralVacancyRate();
+    print(alpha);
     // beta = Development that happens when vacancy rate is at structural vacancy alpha
     // beta = 0.01 means that when the vacancy rate is at the level alpha, 1% additional dwellings are added (if land use permits)
     beta = 0.01;
@@ -20,19 +20,19 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
     slope = -18.33 * Math.log(alpha) - 16.79
 
     if (dwellingType=="SFD"){
-        alpha = 0.03;
+        //alpha = 0.03;
         beta = 0.01;
     } else if (dwellingType=="SFA"){
-        alpha = 0.03;
+        //alpha = 0.03;
         beta = 0.01;
     } else if (dwellingType=="MF234"){
-        alpha = 0.04;
+        //alpha = 0.04;
         beta = 0.01;
     } else if (dwellingType=="MF5plus"){
-        alpha = 0.05;
+       // alpha = 0.05;
         beta = 0.01;
     } else if (dwellingType=="MH"){
-        alpha = 0.03;
+       // alpha = 0.03;
         beta = 0.01;
     } else {
         throw new Error("Invalid dwelling type \"" + dwellingType + "\" in javaScript calculateConstructionDemand provided.");
