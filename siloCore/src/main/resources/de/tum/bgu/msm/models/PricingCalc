@@ -13,7 +13,7 @@ var getHighInflectionPoint = function() {
 
 var getLowerSlope = function() {
     // describes the steep slope that is used for vacancies below the lower inflection point
-    return -5.;
+    return -10.;
 }
 
 var getMainSlope = function() {
@@ -27,6 +27,6 @@ var getHighSlope = function() {
 }
 
 var getMaximumChange = function() {
-    // describes the maximum change in percent by which the housing stock may be extended within one year
-    return 0.02;
+    // describes the maximum change in percent by which the housing may change within one year
+    return 0.1;
 }
