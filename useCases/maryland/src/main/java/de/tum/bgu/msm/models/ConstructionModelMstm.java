@@ -18,10 +18,8 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -103,24 +101,33 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
         int[][] existingDwellings = realEstate.getDwellingCountByTypeAndRegion();
+
+
+        final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
+        double utilitiesByDwellingTypeByZone[][] = new double[dwellingTypes.size()][highestZoneId + 1];
+        for (DwellingType dt : dwellingTypes) {
+            int dto = dwellingTypes.indexOf(dt);
+            for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
+                float avePrice = avePriceByTypeAndZone[dto][zone.getValue().getId()];
+                if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][zone.getValue().getRegion().getId()];
+                if (avePrice == 0)
+                    logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
+                utilitiesByDwellingTypeByZone[dto][zone.getValue().getId()] =
+                        locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone.getValue().getId())));
+            }
+        }
+
         DwellingType[] sortedDwellingTypes = findOrderOfDwellingTypes(dataContainer);
         for (DwellingType dt : sortedDwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
+                int unrealizedDwellings = 0;
                 int demand = (int) (existingDwellings[dto][region] * demandByRegion[dto][region] + 0.5);
                 if (demand == 0) {
                     continue;
                 }
                 int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getZoneId).toArray();
-                double[] util = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
-                for (int zone : zonesInThisRegion) {
-                    float avePrice = avePriceByTypeAndZone[dto][zone];
-                    if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][region];
-                    if (avePrice == 0)
-                        logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
-                    // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                    util[zone] = locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone)));
-                }
                 double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
                 for (int i = 1; i <= demand; i++) {
@@ -134,60 +141,108 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                                 !development.isThisDwellingTypeAllowed(dt)) {                 // construction of this dwelling type allowed in this zone?
                             prob[zone] = 0.;
                         } else {
-                            prob[zone] = betaForZoneChoice * availableLand * util[zone];
+                            prob[zone] = betaForZoneChoice * availableLand * utilitiesByDwellingTypeByZone[dto][zone];
                             probSum += prob[zone];
                         }
                     }
                     if (probSum == 0) {
+                        unrealizedDwellings++;
                         continue;
                     }
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
                     int zone = SiloUtil.select(prob);
-                    int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
-                    int quality = properties.main.qualityLevels;  // set all new dwellings to highest quality level
-
-                    // set restriction for new dwellings to unrestricted by default
-                    int restriction = 0;
-
-                    int price;
-
-                    if (makeSomeNewDdAffordable) {
-                        if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
-                            restriction = (int) (restrictionForAffordableDd * 100);
-                        }
-                    }
-                    if (restriction == 0) {
-                        // dwelling is unrestricted, generate free-market price
-                        float avePrice = avePriceByTypeAndZone[dto][zone];
-                        if (avePrice == 0) {
-                            avePrice = avePriceByTypeAndRegion[dto][region];
-                        }
-                        if (avePrice == 0) {
-                            logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
-                        }
-                        price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
-                    } else {
-                        // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
-                        // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
-                        int msa = ((MstmZone) geoData.getZones().get(zone)).getMsa();
-                        price = (int) (Math.abs((restriction / 100f)) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
-                    }
-
-                    restriction /= 100f;
-
-                    int ddId = realEstate.getNextDwellingId();
-                    DwellingMstm plannedDwelling = (DwellingMstm) factory.createDwelling(ddId, zone, null, -1,
-                            dt, size, quality, price, currentYear);
-                    plannedDwelling.setRestriction(restriction);
-                    // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
-                    events.add(new ConstructionEvent(plannedDwelling));
-                    realEstate.convertLand(zone, dt.getAreaPerDwelling());
+                    events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
+                            avePriceByTypeAndRegion, dt, dto, region, zone));
+                }
+                for (int i = 1; i <= unrealizedDwellings; i++) {
+                    int zone = allocateUnrealizedDemandInDifferentRegion(realEstate, dt, dto,
+                            avePriceByTypeAndZone, avePriceByTypeAndRegion, utilitiesByDwellingTypeByZone);
+                    events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
+                            avePriceByTypeAndRegion, dt, dto, region, zone));
                 }
             }
         }
         return events;
+    }
+
+
+    private ConstructionEvent createNewDwelling (RealEstateDataManager realEstate, float[][] aveSizeByTypeAndRegion,
+                                                 float[][] avePriceByTypeAndZone, float[][] avePriceByTypeAndRegion,
+                                                 DwellingType dt, int dto, int region, int zone) {
+        // create construction event that is added to event list
+
+        int size = (int) (aveSizeByTypeAndRegion[dto][region] + 0.5);
+        int quality = properties.main.qualityLevels;  // set all new dwellings to highest quality level
+
+        // set restriction for new dwellings to unrestricted by default
+        int restriction = 0;
+
+        int price;
+
+        if (makeSomeNewDdAffordable) {
+            if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
+                restriction = (int) (restrictionForAffordableDd * 100);
+            }
+        }
+        if (restriction == 0) {
+            // dwelling is unrestricted, generate free-market price
+            float avePrice = avePriceByTypeAndZone[dto][zone];
+            if (avePrice == 0) {
+                avePrice = avePriceByTypeAndRegion[dto][region];
+            }
+            if (avePrice == 0) {
+                logger.error("Ave. price is 0. Replace with region-wide average price for this dwelling type.");
+            }
+            price = (int) (priceIncreaseForNewDwelling * avePrice + 0.5);
+        } else {
+            // rent-controlled, multiply restriction (usually 0.3, 0.5 or 0.8) with median income with 30% housing budget
+            // correction: in the PUMS data set, households with the about-median income of 58,000 pay 18% of their income in rent...
+            int msa = ((MstmZone) geoData.getZones().get(zone)).getMsa();
+            price = (int) (Math.abs((restriction / 100f)) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
+        }
+
+        restriction /= 100f;
+
+        int ddId = realEstate.getNextDwellingId();
+        DwellingMstm plannedDwelling = (DwellingMstm) factory.createDwelling(ddId, zone, null, -1,
+                dt, size, quality, price, currentYear);
+        plannedDwelling.setRestriction(restriction);
+        // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
+        realEstate.convertLand(zone, dt.getAreaPerDwelling());
+        return (new ConstructionEvent(plannedDwelling));
+    }
+
+
+    private int allocateUnrealizedDemandInDifferentRegion(RealEstateDataManager realEstate, DwellingType dt, int dto,
+                                                          float[][] avePriceByTypeAndZone, float[][] avePriceByTypeAndRegion, double[][] utilitiesByDwellingTypeByZone) {
+        // Due to limited available land or zoning, not all demand can be realized in all zones. Find an alternative
+        // region where demand can be built
+        int selectedZone = 1;
+        double probSum = 0;
+        double[] prob = new double[geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get()+1];
+        for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
+            double availableLand = realEstate.getAvailableCapacityForConstruction(zone.getValue().getId());
+            if (availableLand < dt.getAreaPerDwelling()) continue;
+            Development development = zone.getValue().getDevelopment();
+            boolean useDwellingsAsCapacity = development.isUseDwellingCapacity();
+            if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
+                    (!useDwellingsAsCapacity && availableLand < dt.getAreaPerDwelling()) ||  // not enough land available?
+                    !development.isThisDwellingTypeAllowed(dt)) {                 // construction of this dwelling type allowed in this zone?
+                prob[zone.getValue().getId()] = 0.;
+            } else {
+                prob[zone.getValue().getId()] = betaForZoneChoice * availableLand * utilitiesByDwellingTypeByZone[dto][zone.getValue().getId()];
+                probSum += prob[zone.getValue().getId()];
+            }
+        }
+        if (probSum == 0) {
+            return -1;
+        }
+        for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
+            prob[zone.getValue().getId()] = prob[zone.getValue().getId()] / probSum;
+        }
+        return SiloUtil.select(prob);
     }
 
     @Override
