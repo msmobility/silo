@@ -21,19 +21,19 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
 
     if (dwellingType=="SFD"){
         //alpha = 0.03;
-        beta = 0.01;
+        //beta = 0.01;
     } else if (dwellingType=="SFA"){
         //alpha = 0.03;
-        beta = 0.01;
+        //beta = 0.01;
     } else if (dwellingType=="MF234"){
         //alpha = 0.04;
-        beta = 0.01;
+        //beta = 0.01;
     } else if (dwellingType=="MF5plus"){
        // alpha = 0.05;
-        beta = 0.01;
+        //beta = 0.01;
     } else if (dwellingType=="MH"){
        // alpha = 0.03;
-        beta = 0.01;
+        //beta = 0.01;
     } else {
         throw new Error("Invalid dwelling type \"" + dwellingType + "\" in javaScript calculateConstructionDemand provided.");
     }
