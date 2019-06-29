@@ -18,9 +18,7 @@ public class ConstructionDemandTest {
 
     @Test
     public void testModelOne() throws ScriptException {
-        Assert.assertEquals(0.025, calculator.calculateConstructionDemand(0.015, DefaultDwellingTypeImpl.SFD), 0.00001);
-    }
-    public void testModelTwo() throws ScriptException {
-        Assert.assertEquals(0.003723333, calculator.calculateConstructionDemand(0.05, DefaultDwellingTypeImpl.SFD), 0.00001);
+        Assert.assertEquals(0.03, calculator.calculateConstructionDemand(0.015, DefaultDwellingTypeImpl.SFD), 0.00001);
+        Assert.assertEquals(0.00465, calculator.calculateConstructionDemand(0.05, DefaultDwellingTypeImpl.SFD), 0.00001);
     }
 }
