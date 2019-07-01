@@ -34,6 +34,9 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
     private MarryDivorceJSCalculator calculator;
     private HashMap<Gender, double[]> divorceProbabilities;
 
+    private double scaleLocalConditions;
+    private double scaleCohabitation;
+
     public DivorceModel(SiloDataContainer dataContainer, MovesModelI movesModel, CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory, Map<String, Double> parametersMap) {
         super(dataContainer);
         this.hhFactory = hhFactory;
@@ -71,13 +74,18 @@ public class DivorceModel extends AbstractModel implements MicroEventModel<Divor
                 parametersMap.get("DivorceMaleGammaMean"), parametersMap.get("DivorceMaleGammaShape"));
         double scaleMaleGamma = parametersMap.get("DivorceMaleGammaScale");
 
+        scaleLocalConditions = parametersMap.get("DivorceLocalScale");
+        scaleCohabitation = parametersMap.get("MarriageDivorceCohabitationScale");
+
         double[] probFemale = new double[101];
         double[] probMale = new double[101];
         for (int age = 15; age <= 100; age++){
             probFemale[age] = scaleFemaleNormal * femaleNormalDistribution.density((double) age) +
                     scaleFemaleGamma * femaleGammaDistribution.density((double) age);
+            probFemale[age] = probFemale[age] * scaleLocalConditions * scaleCohabitation;
             probMale[age] = scaleMaleNormal * maleNormalDistribution.density((double) age) +
                     scaleMaleGamma * maleGammaDistribution.density((double) age);
+            probMale[age] = probMale[age] * scaleLocalConditions * scaleCohabitation;
         }
         divorceProbabilities = new HashMap<>();
         divorceProbabilities.put(Gender.FEMALE,probFemale);

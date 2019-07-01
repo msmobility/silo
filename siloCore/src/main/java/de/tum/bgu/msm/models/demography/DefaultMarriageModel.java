@@ -21,7 +21,6 @@ import de.tum.bgu.msm.Implementation;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.container.SiloDataContainer;
 import de.tum.bgu.msm.data.HouseholdDataManager;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
@@ -78,6 +77,7 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
     private HashMap<Gender, HashMap<Integer, Double>> ageDifferenceProbabilities;
     private double interRacialMarriageShareDist;
     private double scaleSingleHousehold;
+    private double scaleLocalConditions;
     private double scaleCohabitation;
 
     public DefaultMarriageModel(SiloDataContainer dataContainer, MovesModelI movesModel,
@@ -111,7 +111,8 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
 
         interRacialMarriageShareDist = parametersMap.get("MarriageInterRacialShare");
         scaleSingleHousehold = parametersMap.get("MarriageSingleHhScale");
-        scaleCohabitation = parametersMap.get("MarriageCohabitationScale");
+        scaleLocalConditions = parametersMap.get("MarriageLocalScale");
+        scaleCohabitation = parametersMap.get("MarriageDivorceCohabitationScale");
 
         NormalDistribution femaleNormalDistribution = new NormalDistribution(
                 parametersMap.get("MarriageFemaleNormMean"), parametersMap.get("MarriageFemaleNormDev"));
@@ -130,9 +131,9 @@ public class DefaultMarriageModel extends AbstractModel implements MarriageModel
         double[] probFemaleMultipersonHh = new double[101];
         double[] probMaleMultipersonHh = new double[101];
         for (int age = 0; age <= 100; age++){
-            probFemaleMultipersonHh[age] = scaleFemale * scaleCohabitation *
+            probFemaleMultipersonHh[age] = scaleFemale * scaleLocalConditions * scaleCohabitation *
                     (femaleNormalDistribution.density((double) age) + femaleGammaDistribution.density((double) age)) / 2;
-            probMaleMultipersonHh[age] = scaleMale * scaleCohabitation *
+            probMaleMultipersonHh[age] = scaleMale * scaleLocalConditions * scaleCohabitation *
                     (maleNormalDistribution.density((double) age) + maleGammaDistribution.density((double) age)) / 2;
             probFemaleSingleHh[age] = probFemaleMultipersonHh[age] * scaleSingleHousehold;
             probMaleSingleHh[age] = probMaleMultipersonHh[age] * scaleSingleHousehold;

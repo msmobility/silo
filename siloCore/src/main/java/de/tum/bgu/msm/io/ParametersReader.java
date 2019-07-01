@@ -83,7 +83,9 @@ public class ParametersReader {
             int posMarriageMaleScale = SiloUtil.findPositionInArray("MarriageMaleScale", header);
             int posMarriageInterRacialShare = SiloUtil.findPositionInArray("MarriageInterRacialShare", header);
             int posMarriageSingleHhScale = SiloUtil.findPositionInArray("MarriageSingleHhScale", header);
-            int posMarriageCohabitationScale = SiloUtil.findPositionInArray("MarriageCohabitationScale", header);
+            int posMarriageLocalScale = SiloUtil.findPositionInArray("MarriageLocalScaler", header);
+            int posDivorceLocalScale = SiloUtil.findPositionInArray("DivorceLocalScaler", header);
+            int posCohabitationScale = SiloUtil.findPositionInArray("MarriageDivorceCohabitationScale", header);
 
 
             // read line
@@ -141,7 +143,9 @@ public class ParametersReader {
                 parametersCombination.put("MarriageMaleGammaShape", Double.parseDouble(lineElements[posMarriageMaleGammaShape]));
                 parametersCombination.put("MarriageInterRacialShare", Double.parseDouble(lineElements[posMarriageInterRacialShare]));
                 parametersCombination.put("MarriageSingleHhScale", Double.parseDouble(lineElements[posMarriageSingleHhScale]));
-                parametersCombination.put("MarriageCohabitationScale", Double.parseDouble(lineElements[posMarriageCohabitationScale]));
+                parametersCombination.put("MarriageLocalScale", Double.parseDouble(lineElements[posMarriageLocalScale]));
+                parametersCombination.put("DivorceLocalScale", Double.parseDouble(lineElements[posDivorceLocalScale]));
+                parametersCombination.put("MarriageDivorceCohabitationScale", Double.parseDouble(lineElements[posCohabitationScale]));
 /*                parametersCombination.put("DeathFemaleAlpha", 0.13000619);
                 parametersCombination.put("DeathFemaleScale", 0.00000125);
                 parametersCombination.put("DeathMaleAlpha", 0.107127957);
