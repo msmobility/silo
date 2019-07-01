@@ -11,12 +11,16 @@ public final class JobDataProperties {
     public final String[] jobTypes;
     public final String jobsFileName;
     public final String jobsFinalFileName;
-    public final String jobForecastMethod;
+    public final JobForecastMethod jobForecastMethod;
     public final String jobControlTotalsFileName;
     public final String employmentForeCastFile;
     public final Map<String,Double> growthRateInPercentByJobType = new HashMap<>();
     public final String jobStartTimeDistributionFile;
     public final String jobDurationDistributionFile;
+
+    public enum JobForecastMethod {
+        INTERPOLATION, RATE;
+    }
 
 
     public JobDataProperties(ResourceBundle bundle) {
@@ -24,11 +28,12 @@ public final class JobDataProperties {
         jobTypes = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
 
         PropertiesUtil.newPropertySubmodule("Job - forecasts");
-        jobForecastMethod = PropertiesUtil.getStringProperty(bundle, "job.forecast.method", "interpolate");
+        jobForecastMethod = JobForecastMethod.
+                valueOf(PropertiesUtil.getStringProperty(bundle, "job.forecast.method", "rate").toUpperCase());
         jobControlTotalsFileName = PropertiesUtil.getStringProperty(bundle, "job.control.total", "input/assumptions/employmentForecast.csv");
         employmentForeCastFile = PropertiesUtil.getStringProperty(bundle, "interpol.empl.forecast", "interpolatedEmploymentForecast");
         //todo prepared for separate growth rates by industry
-        if (jobForecastMethod.equalsIgnoreCase("rate")) {
+        if (jobForecastMethod.equals(JobForecastMethod.RATE)) {
             double overallJobGrowthRate = PropertiesUtil.getDoubleProperty(bundle, "job.growth.rate", 0.);
             for (String jobType : jobTypes) {
                 //currently assign a unique

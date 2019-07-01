@@ -14,6 +14,7 @@ import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModel;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModel;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.MovesProperties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -37,7 +38,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     private final CreateCarOwnershipModel carOwnership;
     private final DriversLicenseModel driversLicense;
 
-    private String populationControlMethod;
+    private MovesProperties.PopulationControlTotalMethod populationControlMethod;
     private TableDataSet tblInOutMigration;
     private TableDataSet tblPopulationTarget;
     private int outMigrationPPCounter;
@@ -59,15 +60,15 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     @Override
     public void setup() {
         populationControlMethod = properties.moves.populationControlTotal;
-        if (populationControlMethod.equalsIgnoreCase("population")) {
+        if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.POPULATION)) {
             String fileName = properties.main.baseDirectory + properties.moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
-        } else if (populationControlMethod.equalsIgnoreCase("migration")) {
+        } else if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.MIGRATION)) {
             String fileName = properties.main.baseDirectory + properties.moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
-        } else if (populationControlMethod.equalsIgnoreCase("populationGrowthRate")) {
+        } else if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.RATE)) {
             tblPopulationTarget = new TableDataSet();
             int periodLength = properties.main.endYear - properties.main.startYear + 1;
             int[] years = new int[periodLength];
@@ -98,7 +99,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     private void createInmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         int inmigrants = 0;
-        if (populationControlMethod.equalsIgnoreCase("migration")) {
+        if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.MIGRATION)) {
             inmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Inmigration");
         } else {
             int currentPopulation = householdDataManager.getPersons().size();
@@ -119,7 +120,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     private void createOutmigrants(int year, List<MigrationEvent> events, Household[] hhs) {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         int outmigrants = 0;
-        if (populationControlMethod.equalsIgnoreCase("migration")) {
+        if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.MIGRATION)) {
             outmigrants = (int) tblInOutMigration.getIndexedValueAt(year, "Outmigration");
         } else {
             int currentPopulation = householdDataManager.getPersons().size();

@@ -29,6 +29,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.output.DefaultJobWriter;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.JobDataProperties;
 import de.tum.bgu.msm.simulator.UpdateListener;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
@@ -140,10 +141,10 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     }
 
     private void calculateEmploymentForecast() {
-        if (properties.jobData.jobForecastMethod.equalsIgnoreCase("interpolate")) {
+        if (properties.jobData.jobForecastMethod.equals(JobDataProperties.JobForecastMethod.INTERPOLATION)) {
             interpolateEmploymentForecast();
             logger.info("Forecasted jobs from employment forecast file");
-        } else if (properties.jobData.jobForecastMethod.equalsIgnoreCase("rate")){
+        } else if (properties.jobData.jobForecastMethod.equals(JobDataProperties.JobForecastMethod.RATE)){
             calculateEmploymentForecastWithRate();
             logger.info("Forecasted jobs with growth rate");
         }
