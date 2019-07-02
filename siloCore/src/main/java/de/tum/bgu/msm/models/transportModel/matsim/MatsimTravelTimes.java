@@ -3,7 +3,6 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.inject.Provider;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -38,10 +37,11 @@ import org.matsim.facilities.Facility;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
+import javax.inject.Provider;
 import java.util.*;
 
 /**
- * @author dziemke
+ * @author dziemke, nkuehnel
  */
 public final class MatsimTravelTimes implements TravelTimes {
     private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
