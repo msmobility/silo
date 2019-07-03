@@ -33,13 +33,7 @@ public class SiloMatsimWarmStartTest {
 
     @Rule public MatsimTestUtils utils = new MatsimTestUtils();
 
-    /**
-     * This test does only test the downstream coupling: SILO data is given to MATSim and then iterated.
-     * Possible feedback from MATSim to SILO is NOT included in this test (as it was also not included
-     * in the ABMTRANS'16 paper).
-     */
     @Test
-    @Ignore
     public final void testMain() {
         SiloTestUtils.cleanUpMicrodataFiles();
         SiloTestUtils.cleanUpOtherFiles();

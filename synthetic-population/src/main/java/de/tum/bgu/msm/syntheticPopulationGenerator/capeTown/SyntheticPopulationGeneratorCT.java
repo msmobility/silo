@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown;
 
 
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -19,7 +20,7 @@ public class SyntheticPopulationGeneratorCT {
 
     public static void main (String[] args) {
 
-        SiloUtil.siloInitialization(args[0]);
+        Properties properties =SiloUtil.siloInitialization(args[0]);
         try {
             //PropertiesSynPop.initializePropertiesSynPop(new PropertyResourceBundle(new FileReader(args[0])), Implementation.CAPE_TOWN);
             rb = new PropertyResourceBundle(new FileReader(args[0]));
@@ -28,8 +29,8 @@ public class SyntheticPopulationGeneratorCT {
             logger.error("File not found: " + args[0]);
         }
         SyntheticPopI syntheticPop;
-        /*syntheticPop = new SyntheticPopCT(rb);
-        syntheticPop.runSP();*/
+        syntheticPop = new SyntheticPopCTrace(rb, properties);
+        syntheticPop.runSP();
     }
 
 }
