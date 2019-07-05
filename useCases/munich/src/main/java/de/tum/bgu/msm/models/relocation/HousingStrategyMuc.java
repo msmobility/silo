@@ -119,10 +119,16 @@ public class HousingStrategyMuc implements HousingStrategy {
         double workDistanceUtility = 1;
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         Zone ddZone = geoData.getZones().get(dd.getZoneId());
+
+        double carToWorkersRatio = Math.min(1, ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
+
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
-                int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
+                int expectedCarTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
+                int expectedTransitTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
+
+                int resultingTime = (int) (expectedCarTime * carToWorkersRatio + (1 - carToWorkersRatio) * expectedTransitTime);
 
                /* if(MovesModelImpl.track) {
                     Zone workZone = geoData.getZones().get(workLocation.getZoneId());
@@ -163,7 +169,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                         e.printStackTrace();
                     }
                 }*/
-                double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
+                double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, resultingTime));
                 workDistanceUtility *= factorForThisZone;
             }
         }

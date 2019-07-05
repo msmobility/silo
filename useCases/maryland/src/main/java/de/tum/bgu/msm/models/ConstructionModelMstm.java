@@ -109,9 +109,12 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
             int dto = dwellingTypes.indexOf(dt);
             for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
                 float avePrice = avePriceByTypeAndZone[dto][zone.getValue().getId()];
-                if (avePrice == 0) avePrice = avePriceByTypeAndRegion[dto][zone.getValue().getRegion().getId()];
-                if (avePrice == 0)
+                if (avePrice == 0) {
+                    avePrice = avePriceByTypeAndRegion[dto][zone.getValue().getRegion().getId()];
+                }
+                if (avePrice == 0) {
                     logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                }
                 // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
                 utilitiesByDwellingTypeByZone[dto][zone.getValue().getId()] =
                         locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone.getValue().getId())));
