@@ -45,27 +45,25 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
     @Override
     public void prepareYear(int year) {
-
     }
 
     @Override
     public void endYear(int year) {
-        updateRealEstatePrices();
+        updateRealEstatePrices(year);
     }
 
     @Override
     public void endSimulation() {
-
     }
 
-    private void updateRealEstatePrices() {
+    private void updateRealEstatePrices(int year) {
         // updated prices based on current demand
-        logger.info("  Updating real-estate prices");
+        logger.info("  Updating real-estate prices at the end of " + year);
 
         // get vacancy rate
         double[][] vacRate = dataContainer.getRealEstateDataManager().getVacancyRateByTypeAndRegion();
         List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
-        HashMap<String, Integer> priceChange = new HashMap<>();
+//        HashMap<String, Integer> priceChange = new HashMap<>();
 
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
@@ -92,7 +90,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
             } else {
                 // vacancy is very low, prices do not change much anymore
                 changeRate = 1 - structuralVacHigh * slopeHigh +
-                        (-structuralVacancyRate *slopeMain + structuralVacHigh * slopeMain) +
+                        (-structuralVacancyRate * slopeMain + structuralVacHigh * slopeMain) +
                         slopeHigh * vacRate[dto][region];
             }
             changeRate = Math.min(changeRate, 1f + maxDelta);
@@ -101,18 +99,19 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("The monthly costs of dwelling " +
-                        dd.getId() + " was changed from " + currentPrice + " to " + newPrice + " (in 2000$).");
+                        dd.getId() + " was changed from " + currentPrice + " to " + newPrice +
+                        " (in constant currency value without inflation).");
             }
             dd.setPrice((int) (newPrice + 0.5));
             cnt[dto]++;
             sumOfPrices[dto] += newPrice;
 
-            String token = dto+"_"+vacRate[dto][region]+"_"+currentPrice+"_"+newPrice;
-            if (priceChange.containsKey(token)) {
-                priceChange.put(token, (priceChange.get(token) + 1));
-            } else {
-                priceChange.put(token, 1);
-            }
+//            String token = dto+"_"+vacRate[dto][region]+"_"+currentPrice+"_"+newPrice;
+//            if (priceChange.containsKey(token)) {
+//                priceChange.put(token, (priceChange.get(token) + 1));
+//            } else {
+//                priceChange.put(token, 1);
+//            }
 
         }
         double[] averagePrice = new double[dwellingTypes.size()];

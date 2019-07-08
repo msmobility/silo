@@ -34,8 +34,13 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     }
 
     @Override
-    public double getTravelTimeToRegion(Location origin, Region destinationRegion, double timeOfDay_s, String mode) {
-        return delegate.getTravelTimeToRegion(origin, destinationRegion, timeOfDay_s, mode);
+    public double getTravelTimeFromRegion(Region region, Zone zone, double v, String s) {
+        return delegate.getTravelTimeFromRegion(region, zone, v, s);
+    }
+
+    @Override
+    public double getTravelTimeToRegion(Zone zone, Region region, double v, String s) {
+        return delegate.getTravelTimeToRegion(zone, region, v, s);
     }
 
     @Override
@@ -76,7 +81,7 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
         if(properties.transportModel.transportModelIdentifier != TransportModelPropertiesModule.TransportModelIdentifier.MATSIM) {
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) delegate, year, properties);
             TravelTimeUtil.updateTransitSkim((SkimTravelTimes) delegate, year, properties);
-            ((SkimTravelTimes) delegate).updateZoneToRegionTravelTimes(geoData.getZones().values(), geoData.getRegions().values());
+            ((SkimTravelTimes) delegate).updateRegionalTravelTimes(geoData.getRegions().values(), geoData.getZones().values());
         }
     }
 }

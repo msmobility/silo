@@ -10,14 +10,19 @@ public class MovesProperties {
     public final boolean provideLowIncomeSubsidy;
 
 
-    public final String populationControlTotal;
+    public final PopulationControlTotalMethod populationControlTotal;
     public final String populationCOntrolTotalFile;
     public final String migrationFile;
     public final double populationGrowthRateInPercentage;
 
+    public enum PopulationControlTotalMethod {
+        POPULATION, MIGRATION, RATE;
+    }
+
     public MovesProperties(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Relocation properties - control of population");
-        populationControlTotal = PropertiesUtil.getStringProperty(bundle, "population.control.total", "population");
+        populationControlTotal = PopulationControlTotalMethod.valueOf(
+                PropertiesUtil.getStringProperty(bundle, "population.control.total", "rate").toUpperCase());
         populationCOntrolTotalFile = PropertiesUtil.getStringProperty(bundle, "total.population.control.total.file", "input/assumptions/populationControlTotal.csv");
         migrationFile = PropertiesUtil.getStringProperty(bundle, "inmigration.outmigration.file", "input/assumptions/inOutMigration.csv");
         populationGrowthRateInPercentage = PropertiesUtil.getDoubleProperty(bundle, "population.growth.rate", 0. );

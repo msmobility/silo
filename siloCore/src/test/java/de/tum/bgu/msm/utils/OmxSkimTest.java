@@ -86,9 +86,15 @@ public class OmxSkimTest {
             }
 
             @Override
-            public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-                return 99;
+            public double getTravelTimeFromRegion(Region region, Zone zone, double v, String s) {
+                return 0;
             }
+
+            @Override
+            public double getTravelTimeToRegion(Zone zone, Region region, double v, String s) {
+                return 0;
+            }
+
 
             @Override
             public IndexedDoubleMatrix2D getPeakSkim(String s) {

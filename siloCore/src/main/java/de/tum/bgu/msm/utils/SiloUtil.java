@@ -203,12 +203,11 @@ public class SiloUtil {
         // read csv file and return as TableDataSet
         File dataFile = new File(fileName);
         // line 210 debugging:
-        System.out.println(new File(fileName).getAbsolutePath());
+        // System.out.println("File path and name: " + new File(fileName).getAbsolutePath());
         TableDataSet dataTable;
         boolean exists = dataFile.exists();
         if (!exists) {
             final String msg = "File not found: " + fileName;
-
 		    logger.error(msg);
         throw new RuntimeException(msg) ;
         }

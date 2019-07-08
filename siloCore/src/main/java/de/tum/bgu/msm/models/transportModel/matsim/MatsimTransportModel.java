@@ -19,11 +19,14 @@
 package de.tum.bgu.msm.models.transportModel.matsim;
 
 
-import com.google.inject.Provider;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
@@ -36,41 +39,32 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.contrib.accessibility.AccessibilityModule;
-import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.events.EventsUtils;
-import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripRouter;
-import org.matsim.core.router.costcalculators.OnlyTimeDependentTravelDisutilityFactory;
+import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.matsim.facilities.ActivityFacilities;
-import org.matsim.facilities.ActivityFacilitiesFactory;
-import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
-import org.matsim.facilities.ActivityFacility;
-import org.matsim.facilities.FacilitiesUtils;
+import org.matsim.facilities.*;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.opengis.feature.simple.SimpleFeature;
 
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.transportModel.TransportModel;
-import de.tum.bgu.msm.properties.Properties;
+import javax.inject.Provider;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 /**
- * @author dziemke
+ * @author dziemke, nkuehnel
  */
 public final class MatsimTransportModel implements TransportModel {
     private static final Logger logger = Logger.getLogger(MatsimTransportModel.class);
@@ -82,7 +76,6 @@ public final class MatsimTransportModel implements TransportModel {
 
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
-
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimAccessibility accessibility) {
@@ -105,11 +98,9 @@ public final class MatsimTransportModel implements TransportModel {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
         TransitSchedule schedule = null;
-        if(scenario.getConfig().transit().isUseTransit()) {
+        if (scenario.getConfig().transit().isUseTransit()) {
             schedule = scenario.getTransitSchedule();
         }
-//		Network transitNetwork = NetworkUtils.createNetwork();
-//		new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/mergedNetworkIncludingTransit2018.xml.gz");
 
         travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), schedule);
 
@@ -126,12 +117,12 @@ public final class MatsimTransportModel implements TransportModel {
             zoneRepresentativeCoords.addActivityFacility(activityFacility);
         }
 
-        // if (properties.transportModel.matsimInitialEventsFile == null) {
-        runTransportModel(properties.main.startYear);
-        //} else {
-        //   String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
-        // replayFromEvents(eventsFile);
-        //}
+        if (properties.transportModel.matsimInitialEventsFile == null) {
+            runTransportModel(properties.main.startYear);
+        } else {
+            String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+            replayFromEvents(eventsFile);
+        }
     }
 
     @Override
@@ -158,7 +149,6 @@ public final class MatsimTransportModel implements TransportModel {
 
         Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
         Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
-
 
 
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
@@ -236,20 +226,16 @@ public final class MatsimTransportModel implements TransportModel {
         // End accessibility module
     }
 
-//	/**
-//     *
-//     * @param eventsFile
-//     */
-//	private void replayFromEvents(String eventsFile) {
-//        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(initialMatsimConfig);
-//	    TravelTimeCalculator ttCalculator = TravelTimeCalculator.create(scenario.getNetwork(), scenario.getConfig().travelTimeCalculator());
-//        EventsManager events = EventsUtils.createEventsManager();
-//        events.addHandler(ttCalculator);
-//        (new MatsimEventsReader(events)).readFile(eventsFile);
-//        TravelTime travelTime = ttCalculator.getLinkTravelTimes();
-//        TravelDisutility travelDisutility = new OnlyTimeDependentTravelDisutilityFactory().createTravelDisutility(travelTime);
-//        updateTravelTimes(travelTime, travelDisutility, routerProvider);
-//	}
+    /**
+     * @param eventsFile
+     */
+    private void replayFromEvents(String eventsFile) {
+        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
+        final Provider<TripRouter> routerProvider = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario);
+        updateTravelTimes(travelTime, travelDisutility, routerProvider);
+    }
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
         travelTimes.update(routerProvider, travelTime, disutility);
@@ -257,8 +243,8 @@ public final class MatsimTransportModel implements TransportModel {
         if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
-            ((SkimTravelTimes) mainTravelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
-                    dataContainer.getGeoData().getRegions().values());
+            ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
+                    dataContainer.getGeoData().getZones().values());
         }
     }
 }
