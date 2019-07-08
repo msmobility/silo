@@ -301,11 +301,11 @@ public class MovesModelPerth extends AbstractMovesModelImpl {
         }
         double workDistanceUtility = 1;
 
-//        for (Job workLocation : jobsForThisHousehold.values()){
-//        	int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
-//            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
-//            workDistanceUtility *= factorForThisZone;
-//        }
+        for (Job workLocation : jobsForThisHousehold.values()){
+        	int expectedCommuteTime = (int) travelTimes.getTravelTime(dd, workLocation, properties.transportModel.peakHour_s, TransportMode.car);
+            double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
+            workDistanceUtility *= factorForThisZone;
+        }
 
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
