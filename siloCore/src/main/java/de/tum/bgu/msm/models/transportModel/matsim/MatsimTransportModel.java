@@ -243,8 +243,8 @@ public final class MatsimTransportModel implements TransportModel {
         if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
-            ((SkimTravelTimes) mainTravelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
-                    dataContainer.getGeoData().getRegions().values());
+            ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
+                    dataContainer.getGeoData().getZones().values());
         }
     }
 }

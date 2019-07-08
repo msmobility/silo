@@ -18,18 +18,18 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
-import static de.tum.bgu.msm.models.relocation.moves.MovesModelImpl.fileWriter;
 
 public class HousingStrategyMuc implements HousingStrategy {
 
@@ -237,9 +237,9 @@ public class HousingStrategyMuc implements HousingStrategy {
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
-                int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                        workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion);
+                int timeFromRegionToZone = (int) dataContainer.getTravelTimes().getTravelTimeFromRegion(
+                        region, workZone, properties.transportModel.peakHour_s, TransportMode.car);
+                thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromRegionToZone);
             }
         }
 

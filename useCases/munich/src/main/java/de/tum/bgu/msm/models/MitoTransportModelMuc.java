@@ -113,8 +113,8 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             final TravelDisutility matsimDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(matsimTravelTime);
             ((MatsimTravelTimes) travelTimes).update(controler.getTripRouterProvider(), matsimTravelTime, matsimDisutility);
         } else if (travelTimes instanceof SkimTravelTimes) {
-            ((SkimTravelTimes) travelTimes).updateZoneToRegionTravelTimes(dataContainer.getGeoData().getZones().values(),
-                    dataContainer.getGeoData().getRegions().values());
+            ((SkimTravelTimes) travelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
+                    dataContainer.getGeoData().getZones().values());
         }
     }
 

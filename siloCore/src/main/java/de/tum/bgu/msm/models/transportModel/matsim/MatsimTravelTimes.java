@@ -59,6 +59,7 @@ public final class MatsimTravelTimes implements TravelTimes {
     private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
     private final Map<Zone, List<TransitStopFacility>> stopsPerZone = new HashMap<>();
 
+    private IndexedDoubleMatrix2D travelTimeFromRegion;
     private IndexedDoubleMatrix2D travelTimeToRegion;
 
     private Provider<TripRouter> routerProvider;
@@ -69,6 +70,8 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.network = carNetwork;
         this.schedule = schedule;
         this.zones = geoData.getZones();
+        this.travelTimeFromRegion = new IndexedDoubleMatrix2D(geoData.getRegions().values(), geoData.getZones().values());
+        this.travelTimeFromRegion.assign(-1);
         this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
         this.travelTimeToRegion.assign(-1);
         buildZoneCalculationNodesMap();
@@ -113,6 +116,9 @@ public final class MatsimTravelTimes implements TravelTimes {
 
         tripRouter = bd.build();
         this.skimsByMode.clear();
+        if (this.travelTimeFromRegion != null) {
+            this.travelTimeFromRegion.assign(-1);
+        }
         if (this.travelTimeToRegion != null) {
             this.travelTimeToRegion.assign(-1);
         }
@@ -155,24 +161,39 @@ public final class MatsimTravelTimes implements TravelTimes {
     }
 
     @Override
-    public double getTravelTimeToRegion(Location origin, Region destination, double timeOfDay_s, String mode) {
-        if (origin instanceof Zone) {
-            int originZone = origin.getZoneId();
-            if (travelTimeToRegion.getIndexed(originZone, destination.getId()) > 0) {
-                return travelTimeToRegion.getIndexed(originZone, destination.getId());
+    public double getTravelTimeFromRegion(Region origin, Zone destination, double timeOfDay_s, String mode) {
+
+            int destinationZone = destination.getZoneId();
+            if (travelTimeFromRegion.getIndexed(origin.getId(), destinationZone) > 0) {
+                return travelTimeFromRegion.getIndexed(origin.getId(), destinationZone);
             }
             double min = Double.MAX_VALUE;
-            for (Zone zoneInRegion : destination.getZones()) {
-                double travelTime = getPeakSkim(mode).getIndexed(originZone, zoneInRegion.getZoneId());
+            for (Zone zoneInRegion : origin.getZones()) {
+                double travelTime = getPeakSkim(mode).getIndexed(zoneInRegion.getZoneId(), destinationZone);
                 if (travelTime < min) {
                     min = travelTime;
                 }
             }
-            travelTimeToRegion.setIndexed(originZone, destination.getId(), min);
+            travelTimeFromRegion.setIndexed(origin.getId(), destinationZone, min);
             return min;
-        } else {
-            throw new IllegalArgumentException("Not implemented for origins of types other than Zone. Type is of type " + origin.getClass());
-        }
+
+    }
+
+    @Override
+    public double getTravelTimeToRegion(Zone origin, Region destination,  double timeOfDay_s, String mode) {
+
+            if (travelTimeToRegion.getIndexed(origin.getId(), destination.getId()) > 0) {
+                return travelTimeFromRegion.getIndexed(origin.getId(), destination.getId());
+            }
+            double min = Double.MAX_VALUE;
+            for (Zone zoneInRegion : destination.getZones()) {
+                double travelTime = getPeakSkim(mode).getIndexed(origin.getZoneId(), zoneInRegion.getZoneId());
+                if (travelTime < min) {
+                    min = travelTime;
+                }
+            }
+            travelTimeFromRegion.setIndexed(origin.getId(), destination.getId(), min);
+            return min;
     }
 
     @Override
@@ -295,6 +316,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
         matsimTravelTimes.stopsPerZone.putAll(this.stopsPerZone);
         matsimTravelTimes.update(routerProvider, travelTime, travelDisutility);
+        matsimTravelTimes.travelTimeFromRegion = this.travelTimeFromRegion.copy();
         matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
         return matsimTravelTimes;
