@@ -34,6 +34,7 @@ public class SiloMatsimWarmStartTest {
     @Rule public MatsimTestUtils utils = new MatsimTestUtils();
 
     @Test
+    @Ignore
     public final void testMain() {
         SiloTestUtils.cleanUpMicrodataFiles();
         SiloTestUtils.cleanUpOtherFiles();
