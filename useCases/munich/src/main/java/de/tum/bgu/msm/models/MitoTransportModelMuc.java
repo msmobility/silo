@@ -25,15 +25,19 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.controler.ControlerDefaults;
+import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.TripRouter;
+import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
+import javax.inject.Provider;
 import java.util.Map;
 import java.util.Objects;
 
@@ -77,7 +81,13 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
 //            new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/transit_Only_network2018.xml");
 
             ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network, schedule);
-            runTransportModel(properties.main.startYear);
+            if (properties.transportModel.matsimInitialEventsFile == null) {
+                runTransportModel(properties.main.startYear);
+            } else {
+                logger.warn("Using initial events file to populate travel times for initial year!");
+                String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+                replayFromEvents(eventsFile);
+            }
         } else {
             logger.warn("Using mito with skim travel times.");
             mitoInputTravelTimes = travelTimes;
@@ -127,6 +137,21 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
         dataSet.setTravelTimes(mitoInputTravelTimes);
         dataSet.setYear(year);
         return dataSet;
+    }
+
+    /**
+     * @param eventsFile
+     */
+    private void replayFromEvents(String eventsFile) {
+        Scenario scenario = ScenarioUtils.loadScenario(config);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
+        TripRouterFactoryBuilderWithDefaults builder = new TripRouterFactoryBuilderWithDefaults();
+        builder.setLeastCostPathCalculatorFactory(new FastAStarLandmarksFactory(properties.main.numberOfThreads));
+        builder.setTravelTime(travelTime);
+        builder.setTravelDisutility(travelDisutility);
+        final Provider<TripRouter> routerProvider = builder.build(scenario);
+        ((MatsimTravelTimes)travelTimes).update(routerProvider, travelTime, travelDisutility);
     }
 
     private void convertZones(DataSet dataSet) {

@@ -46,6 +46,7 @@ import org.matsim.core.config.groups.FacilitiesConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.util.TravelDisutility;
@@ -233,8 +234,13 @@ public final class MatsimTransportModel implements TransportModel {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
-        final Provider<TripRouter> routerProvider = TripRouterFactoryBuilderWithDefaults.createDefaultTripRouterFactoryImpl(scenario);
-        updateTravelTimes(travelTime, travelDisutility, routerProvider);
+        TripRouterFactoryBuilderWithDefaults builder = new TripRouterFactoryBuilderWithDefaults();
+        builder.setLeastCostPathCalculatorFactory(new FastAStarLandmarksFactory(properties.main.numberOfThreads));
+        builder.setTravelTime(travelTime);
+        builder.setTravelDisutility(travelDisutility);
+        final Provider<TripRouter> routerProvider = builder.build(scenario);
+        travelTimes.update(routerProvider, travelTime, travelDisutility);
+
     }
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
