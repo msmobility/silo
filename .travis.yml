@@ -3,13 +3,19 @@ jdk:
   - oraclejdk8
 script: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
 #-Dmaven.test.redirectTestOutputToFile
-
+- stage: GitHub Release
+    script: skip
+    deploy:
+    provider: releases
+    api_key: "$GITHUB_OAUTH_TOKEN"
+    skip_cleanup: true
+    on:
+    tags: true
+    
 cache:
-  directories:
-  - $HOME/.m2
+    directories:
+      - $HOME/.m2
 
 env:
   global:
     - export MAVEN_OPTS="-Xmx2500m"
-
-
