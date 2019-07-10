@@ -1,21 +1,23 @@
 language: java
 jdk:
-  - oraclejdk8
-script: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
-#-Dmaven.test.redirectTestOutputToFile
-- stage: GitHub Release
-    script: skip
-    deploy:
-    provider: releases
-    api_key: "$GITHUB_OAUTH_TOKEN"
-    skip_cleanup: true
-    on:
-    tags: true
-    
+  - oraclejdk8  
+jobs:
+  include:
+    - stage: test
+      script: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
+    - stage: GitHub Release
+      script: skip
+      deploy:
+        provider: releases
+        api_key: "$GITHUB_OAUTH_TOKEN"
+        skip_cleanup: true
+        on:
+          tags: true     
 cache:
     directories:
       - $HOME/.m2
-
 env:
   global:
     - export MAVEN_OPTS="-Xmx2500m"
+    
+    
