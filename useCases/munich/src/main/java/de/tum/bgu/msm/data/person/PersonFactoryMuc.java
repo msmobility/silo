@@ -31,6 +31,7 @@ public class PersonFactoryMuc implements PersonFactory {
                 originalPerson.getIncome());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
         duplicate.setNationality(((PersonMuc)originalPerson).getNationality());
+        duplicate.setSchoolId(((PersonMuc) originalPerson).getSchoolId());
         return duplicate;
     }
 }
