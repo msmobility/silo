@@ -54,7 +54,7 @@ public class DataBuilder {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             default:
-                break;
+                throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
         CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);

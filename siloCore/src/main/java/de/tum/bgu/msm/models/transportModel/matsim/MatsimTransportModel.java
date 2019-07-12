@@ -239,8 +239,7 @@ public final class MatsimTransportModel implements TransportModel {
         builder.setTravelTime(travelTime);
         builder.setTravelDisutility(travelDisutility);
         final Provider<TripRouter> routerProvider = builder.build(scenario);
-        travelTimes.update(routerProvider, travelTime, travelDisutility);
-
+        updateTravelTimes(travelTime, travelDisutility, routerProvider);
     }
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
