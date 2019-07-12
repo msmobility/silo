@@ -33,7 +33,6 @@ public class SiloMatsimMultiYearTest {
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 
 	@Test
-	@Ignore
 	public final void testMainMultiYear() {
 		SiloTestUtils.cleanUpMicrodataFiles();
 		SiloTestUtils.cleanUpOtherFiles();
