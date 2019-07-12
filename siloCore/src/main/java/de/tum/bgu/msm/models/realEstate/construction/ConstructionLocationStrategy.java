@@ -11,5 +11,5 @@ public interface ConstructionLocationStrategy {
      * @param autoAccessibility
      * @return
      */
-    double calculateConstructionProbability(DwellingType dwellingType, float avgPrice, double autoAccessibility);
+    double calculateConstructionProbability(DwellingType dwellingType, double avgPrice, double autoAccessibility);
 }

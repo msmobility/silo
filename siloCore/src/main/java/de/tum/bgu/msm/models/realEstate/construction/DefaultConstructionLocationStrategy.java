@@ -15,7 +15,8 @@ public final class DefaultConstructionLocationStrategy extends JavaScriptCalcula
         super(reader);
     }
 
-    public double calculateConstructionProbability(DwellingType dwellingType, float price, double accessibility) {
+    @Override
+    public double calculateConstructionProbability(DwellingType dwellingType, double price, double accessibility) {
         return super.calculate("calculateConstructionUtility", dwellingType, price, accessibility);
     }
 }

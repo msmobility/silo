@@ -28,7 +28,6 @@ import java.util.Map;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 15 January 2010 in Albuquerque
  **/
-
 public class InOutMigrationImpl extends AbstractModel implements InOutMigration {
 
     private final static Logger logger = Logger.getLogger(InOutMigrationImpl.class);

@@ -18,7 +18,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -90,8 +89,8 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
         List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
         double[][] demandByRegion = new double[dwellingTypes.size()][geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get() + 1];
-        float[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
-        float[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
+        double[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
+        double[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
@@ -107,17 +106,17 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         double utilitiesByDwellingTypeByZone[][] = new double[dwellingTypes.size()][highestZoneId + 1];
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
-            for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
-                float avePrice = avePriceByTypeAndZone[dto][zone.getValue().getId()];
+            for (Zone zone : geoData.getZones().values()) {
+                double avePrice = avePriceByTypeAndZone[dto][zone.getId()];
                 if (avePrice == 0) {
-                    avePrice = avePriceByTypeAndRegion[dto][zone.getValue().getRegion().getId()];
-                }
-                if (avePrice == 0) {
-                    logger.error("Ave. price is 0. Replaced with region-wide average price for this dwelling type.");
+                    avePrice = avePriceByTypeAndRegion[dto][zone.getRegion().getId()];
+                    if(avePrice == 0) {
+                        avePrice = Arrays.stream(avePriceByTypeAndRegion[dto]).average().orElse(Double.NaN);
+                    }
                 }
                 // evaluate utility for building DwellingType dt where the average price of this dwelling type in this zone is avePrice
-                utilitiesByDwellingTypeByZone[dto][zone.getValue().getId()] =
-                        locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone.getValue().getId())));
+                utilitiesByDwellingTypeByZone[dto][zone.getId()] =
+                        locationStrategy.calculateConstructionProbability(dt, avePrice, accessibility.getAutoAccessibilityForZone(geoData.getZones().get(zone.getId())));
             }
         }
 
@@ -172,7 +171,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
 
     private ConstructionEvent createNewDwelling (RealEstateDataManager realEstate, float[][] aveSizeByTypeAndRegion,
-                                                 float[][] avePriceByTypeAndZone, float[][] avePriceByTypeAndRegion,
+                                                 double[][] avePriceByTypeAndZone, double[][] avePriceByTypeAndRegion,
                                                  DwellingType dt, int dto, int region, int zone) {
         // create construction event that is added to event list
 
@@ -191,7 +190,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         }
         if (restriction == 0) {
             // dwelling is unrestricted, generate free-market price
-            float avePrice = avePriceByTypeAndZone[dto][zone];
+            double avePrice = avePriceByTypeAndZone[dto][zone];
             if (avePrice == 0) {
                 avePrice = avePriceByTypeAndRegion[dto][region];
             }
@@ -219,7 +218,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
 
     private int allocateUnrealizedDemandInDifferentRegion(RealEstateDataManager realEstate, DwellingType dt, int dto,
-                                                          float[][] avePriceByTypeAndZone, float[][] avePriceByTypeAndRegion, double[][] utilitiesByDwellingTypeByZone) {
+                                                          double[][] avePriceByTypeAndZone, double[][] avePriceByTypeAndRegion, double[][] utilitiesByDwellingTypeByZone) {
         // Due to limited available land or zoning, not all demand can be realized in all zones. Find an alternative
         // region where demand can be built
         int selectedZone = 1;
@@ -227,7 +226,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         double[] prob = new double[geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get()+1];
         for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
             double availableLand = realEstate.getAvailableCapacityForConstruction(zone.getValue().getId());
-            if (availableLand < dt.getAreaPerDwelling()) continue;
+            if (availableLand < dt.getAreaPerDwelling()) {
+                continue;
+            }
             Development development = zone.getValue().getDevelopment();
             boolean useDwellingsAsCapacity = development.isUseDwellingCapacity();
             if ((useDwellingsAsCapacity && availableLand == 0) ||                              // capacity by dwellings is use
@@ -275,14 +276,14 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     }
 
-    private float[][] calculateScaledAveragePriceByZone(float scaler) {
+    private double[][] calculateScaledAveragePriceByZone(float scaler) {
         // calculate scaled average housing price by dwelling type and zone
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
 
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
-        float[][] avePrice = new float[dwellingTypes.size()][highestZoneId + 1];
+        double[][] avePrice = new double[dwellingTypes.size()][highestZoneId + 1];
         int[][] counter = new int[dwellingTypes.size()][highestZoneId + 1];
         for (Dwelling dd : realEstate.getDwellings()) {
             int dt = dwellingTypes.indexOf(dd.getType());
@@ -292,7 +293,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         }
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
-            float[] avePriceThisType = new float[highestZoneId + 1];
+            double[] avePriceThisType = new double[highestZoneId + 1];
             for (int zone : geoData.getZones().keySet()) {
                 if (counter[dto][zone] > 0) {
                     avePriceThisType[zone] = avePrice[dto][zone] / counter[dto][zone];
@@ -300,7 +301,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     avePriceThisType[zone] = 0;
                 }
             }
-            float[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
+            double[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
             for (int zones : geoData.getZones().keySet()) {
                 avePrice[dto][zones] = scaledAvePriceThisDwellingType[zones];
             }
@@ -309,12 +310,12 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     }
 
 
-    private float[][] calculateScaledAveragePriceByRegion(float scaler) {
+    private double[][] calculateScaledAveragePriceByRegion(float scaler) {
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
-        float[][] avePrice = new float[dwellingTypes.size()][highestRegionId + 1];
+        double[][] avePrice = new double[dwellingTypes.size()][highestRegionId + 1];
         int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
         for (Dwelling dd : realEstate.getDwellings()) {
             int dt = dwellingTypes.indexOf(dd.getType());
@@ -324,7 +325,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         }
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
-            float[] avePriceThisType = new float[highestRegionId + 1];
+            double[] avePriceThisType = new double[highestRegionId + 1];
             for (int region : geoData.getRegions().keySet()) {
                 if (counter[dto][region] > 0) {
                     avePriceThisType[region] = avePrice[dto][region] / counter[dto][region];
@@ -332,7 +333,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     avePriceThisType[region] = 0;
                 }
             }
-            float[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
+            double[] scaledAvePriceThisDwellingType = SiloUtil.scaleArray(avePriceThisType, scaler);
             for (int region : geoData.getRegions().keySet()) {
                 avePrice[dto][region] = scaledAvePriceThisDwellingType[region];
             }
