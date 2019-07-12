@@ -46,7 +46,9 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
 import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
+import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.SelectRegionStrategyImpl;
+import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
@@ -105,7 +107,7 @@ public class ModelBuilder {
 
         ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
 
-        InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
+        InOutMigration inOutMigration = new InOutMigrationMuc(dataContainer, employmentModel, movesModel,
                 carOwnershipModel, driversLicenseModel, properties);
 
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,

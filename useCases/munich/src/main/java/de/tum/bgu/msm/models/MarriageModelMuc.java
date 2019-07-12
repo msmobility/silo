@@ -32,6 +32,7 @@ import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
+import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
@@ -50,7 +51,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
 
     private final static Logger logger = Logger.getLogger(MarriageModelMuc.class);
 
-    private final InOutMigrationImpl iomig;
+    private final InOutMigration iomig;
     private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
@@ -76,7 +77,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
     // performance, the person type of this person in the marriage market is not updated.
 
     public MarriageModelMuc(DataContainer dataContainer, MovesModelImpl movesModel,
-                            InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
+                            InOutMigration iomig, CreateCarOwnershipModel carOwnership,
                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
         super(dataContainer, properties);
         this.movesModel = movesModel;
