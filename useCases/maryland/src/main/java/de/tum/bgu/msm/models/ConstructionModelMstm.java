@@ -161,8 +161,10 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                 for (int i = 1; i <= unrealizedDwellings; i++) {
                     int zone = allocateUnrealizedDemandInDifferentRegion(realEstate, dt, dto,
                             avePriceByTypeAndZone, avePriceByTypeAndRegion, utilitiesByDwellingTypeByZone);
-                    events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
-                            avePriceByTypeAndRegion, dt, dto, region, zone));
+                    if(zone > -1) {
+                        events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
+                                avePriceByTypeAndRegion, dt, dto, region, zone));
+                    }
                 }
             }
         }
