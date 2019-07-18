@@ -51,6 +51,7 @@ import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 
@@ -117,7 +118,8 @@ public class ModelBuilderCapeTown {
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
+                        MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION);
                 // (MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:

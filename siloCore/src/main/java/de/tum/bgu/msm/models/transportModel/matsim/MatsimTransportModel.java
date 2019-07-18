@@ -79,7 +79,8 @@ public final class MatsimTransportModel implements TransportModel {
     private MatsimAccessibility accessibility;
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
-                                Properties properties, MatsimAccessibility accessibility) {
+                                Properties properties, MatsimAccessibility accessibility,
+                                MatsimTravelTimes.ZoneConnectorMethod method) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
@@ -88,7 +89,7 @@ public final class MatsimTransportModel implements TransportModel {
         if (travelTimes instanceof MatsimTravelTimes) {
             this.travelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            this.travelTimes = new MatsimTravelTimes();
+            this.travelTimes = new MatsimTravelTimes(method);
         }
         this.properties = properties;
         this.accessibility = accessibility;
@@ -103,7 +104,7 @@ public final class MatsimTransportModel implements TransportModel {
             schedule = scenario.getTransitSchedule();
         }
 
-        travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), schedule);
+        travelTimes.initialize(dataContainer, scenario.getNetwork(), schedule);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();

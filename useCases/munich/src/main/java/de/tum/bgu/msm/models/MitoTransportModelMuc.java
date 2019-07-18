@@ -81,7 +81,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
 //            Network transitNetwork = NetworkUtils.createNetwork();
 //            new MatsimNetworkReader(transitNetwork).readFile("C:/Users/Nico/IdeaProjects/silo/useCases/munich/test/muc/matsim_input/network/05/transit_Only_network2018.xml");
 
-            ((MatsimTravelTimes)travelTimes).initialize(dataContainer.getGeoData(), network, schedule);
+            ((MatsimTravelTimes)travelTimes).initialize(dataContainer, network, schedule);
             if (properties.transportModel.matsimInitialEventsFile == null) {
                 runTransportModel(properties.main.startYear);
             } else {
