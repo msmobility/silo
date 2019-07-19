@@ -12,7 +12,11 @@ import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.matsim.core.controler.Controler;
 
 import java.io.*;
 import java.net.URL;
@@ -29,6 +33,8 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  **/
 public class SiloUtil {
 
+    private final static Logger logger = Logger.getLogger(SiloUtil.class);
+
     private static final String TIME_TRACKER_FILE = "timeTracker.csv";
     private static Random rand;
     public static int trackHh;
@@ -36,17 +42,42 @@ public class SiloUtil {
     public static int trackDd;
     public static int trackJj;
     public static PrintWriter trackWriter;
-    private static Logger logger = Logger.getLogger(SiloUtil.class);
+    public static final String LOG_FILE_NAME = "siloLog.log";
+    public static final String LOG_WARN_FILE_NAME = "siloWarnLog.log";
 
     public static Properties siloInitialization(String propertiesPath) {
         Properties properties = Properties.initializeProperties(propertiesPath);
-        loadHdf5Lib();
-        createDirectoryIfNotExistingYet(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName);
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        createDirectoryIfNotExistingYet(outputDirectory);
+        try {
+            initLogging(outputDirectory);
+        } catch (IOException e) {
+            logger.warn("Cannot create logfiles.");
+            e.printStackTrace();
+        }
+
         SummarizeData.resultFileSpatial("open");
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
+
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
+        loadHdf5Lib();
         return properties;
+    }
+
+    /**
+     * heavily "inspired" by MATSim's solution to this
+     * @throws IOException
+     */
+    private static void initLogging(String outputDirectory) throws IOException {
+        Logger root = Logger.getRootLogger();
+        FileAppender appender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_FILE_NAME, false);
+        appender.setName(LOG_FILE_NAME);
+        root.addAppender(appender);
+        FileAppender warnErrorAppender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_WARN_FILE_NAME, false);
+        warnErrorAppender.setName(LOG_WARN_FILE_NAME);
+        warnErrorAppender.setThreshold(Level.WARN);
+        root.addAppender(warnErrorAppender);
     }
 
     static void loadHdf5Lib() {
@@ -129,7 +160,7 @@ public class SiloUtil {
     }
 
 
-    public static void initializeRandomNumber(int seed) {
+    private static void initializeRandomNumber(int seed) {
         if (seed == -1)
             rand = new Random();
         else
@@ -246,14 +277,6 @@ public class SiloUtil {
         }
         return dataTable;
     }
-
-
-
-    public static boolean checkIfFileExists (String fileName) {
-        File dataFile = new File(fileName);
-        return dataFile.exists();
-    }
-
 
     public static void trackingFile(String action) {
         // open or close track writer to track persons, households or dwellings
@@ -1055,6 +1078,17 @@ public class SiloUtil {
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
         SiloUtil.writeOutTimeTracker(timeTracker);
+        Logger root = Logger.getRootLogger();
+        Appender app = root.getAppender(LOG_FILE_NAME);
+        if (app != null) {
+            root.removeAppender(app);
+            app.close();
+        }
+        app = root.getAppender(LOG_WARN_FILE_NAME);
+        if (app != null) {
+            root.removeAppender(app);
+            app.close();
+        }
     }
 
 
