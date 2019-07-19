@@ -9,6 +9,8 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.matsim.api.core.v01.Coord;
 
 import java.util.*;
@@ -55,6 +57,13 @@ public class ZoneConnectorManager {
 
         for (Zone zone : zones) {
             List<Dwelling> dwellings = dwellingsByZone.get(zone.getId());
+            if(dwellings == null) {
+                logger.warn("Zone [" + zone + "] has no dwellings. Will use geometric centroid as weighted centroid.");
+                final Point centroid = ((Geometry) (zone.getZoneFeature().getDefaultGeometry())).getCentroid();
+                Coord coord = new Coord(centroid.getX(), centroid.getY());
+                coordsByZone.put(zone, Lists.newArrayList(coord));
+                continue;
+            }
             double xSum = 0;
             double ySum = 0;
             int weightedCount = 0;
@@ -80,7 +89,7 @@ public class ZoneConnectorManager {
         return new ZoneConnectorManager(coordsByZone);
     }
 
-    public List<Coord> getCordsForZone(Zone zone) {
+    public List<Coord> getCoordsForZone(Zone zone) {
         return coordsByZone.get(zone);
     }
 }
