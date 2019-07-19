@@ -35,7 +35,7 @@ public class SiloTestMuc {
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
+        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, null);

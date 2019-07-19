@@ -71,7 +71,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
         baseDirectory = Properties.get().main.baseDirectory;
-        DataContainer dataContainer = DataBuilder.buildDataContainer(Properties.get());
+        DataContainer dataContainer = DataBuilder.buildDataContainer(Properties.get(), null);
         realEstateData = dataContainer.getRealEstateDataManager();
         householdData = dataContainer.getHouseholdDataManager();
         jobData = dataContainer.getJobDataManager();

@@ -29,7 +29,7 @@ public final class SiloMatsim {
 
     public final void run() {
         logger.info("Starting SILO program for MATSim");
-        DataContainer dataContainer = DataBuilder.buildDataContainer(properties);
+        DataContainer dataContainer = DataBuilder.buildDataContainer(properties, matsimConfig);
         DataBuilder.readInput(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, matsimConfig);
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);

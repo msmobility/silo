@@ -147,7 +147,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         if (!ResourceUtil.getBooleanProperty(rb, PROPERTIES_RUN_SYNTHETIC_POPULATION, false)) return;
         logger.info("   Starting to create the synthetic population.");
         //TODO: change to cape town implementation
-        dataContainer = DataBuilder.getModelDataForMuc(properties);
+        dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         ExtractMicroDataJP extractMicroData = new ExtractMicroDataJP(rb, dataSetSynPop);
         extractMicroData.run();
         frequencyMatrix = extractMicroData.getFrequencyMatrix();

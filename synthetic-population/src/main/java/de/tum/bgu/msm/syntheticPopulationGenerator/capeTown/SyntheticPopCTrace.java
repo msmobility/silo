@@ -186,7 +186,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         readZonalData();
         createDirectoryForOutput();
         //TODO: change to cape town implementation
-        dataContainer = DataBuilderCapeTown.getModelDataForCapeTown(properties);
+        dataContainer = DataBuilderCapeTown.getModelDataForCapeTown(properties, null);
         DataBuilderCapeTown.read(properties, dataContainer);
         long startTime = System.nanoTime();
         /*readAttributes();

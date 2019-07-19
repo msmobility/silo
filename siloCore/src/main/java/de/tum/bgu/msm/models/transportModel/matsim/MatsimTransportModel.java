@@ -75,8 +75,11 @@ public final class MatsimTransportModel implements TransportModel {
     private Properties properties;
     private final DataContainer dataContainer;
 
+    private final MatsimRoutingProvider routingProvider;
+
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
+    private Scenario scenario;
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimAccessibility accessibility,
@@ -87,9 +90,11 @@ public final class MatsimTransportModel implements TransportModel {
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
+            this.routingProvider = new MatsimRoutingProvider(matsimConfig, properties);
             this.travelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            this.travelTimes = new MatsimTravelTimes(method);
+            this.routingProvider = null;
+            this.travelTimes = new MatsimTravelTimes(method, matsimConfig);
         }
         this.properties = properties;
         this.accessibility = accessibility;
@@ -97,14 +102,10 @@ public final class MatsimTransportModel implements TransportModel {
 
     @Override
     public void setup() {
-        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
+        scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
-        TransitSchedule schedule = null;
-        if (scenario.getConfig().transit().isUseTransit()) {
-            schedule = scenario.getTransitSchedule();
-        }
 
-        travelTimes.initialize(dataContainer, scenario.getNetwork(), schedule);
+        travelTimes.initialize(dataContainer, routingProvider);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -244,7 +245,13 @@ public final class MatsimTransportModel implements TransportModel {
     }
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
-        travelTimes.update(routerProvider, travelTime, disutility);
+        Network network = scenario.getNetwork();
+        TransitSchedule schedule = null;
+        if (scenario.getConfig().transit().isUseTransit()) {
+            schedule = scenario.getTransitSchedule();
+        }
+        routingProvider.update(network, schedule, disutility, travelTime);
+        travelTimes.update();
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
         if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);

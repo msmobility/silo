@@ -19,6 +19,7 @@ import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.core.config.Config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class DataBuilder {
     private DataBuilder() {
     }
 
-    public static DataContainerMuc getModelDataForMuc(Properties properties) {
+    public static DataContainerMuc getModelDataForMuc(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -49,7 +50,7 @@ public class DataBuilder {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION);
+                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;

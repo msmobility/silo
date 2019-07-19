@@ -28,7 +28,7 @@ public class SiloPerth {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Starting SILO land use model for Perth");
-        DataContainer dataContainer = DataBuilder.buildDataContainer(properties);
+        DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
