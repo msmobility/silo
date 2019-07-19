@@ -48,7 +48,7 @@ public class DataBuilderDisability {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes();
+                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;

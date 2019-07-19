@@ -2,8 +2,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -13,9 +13,7 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -50,6 +48,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final static int NUMBER_OF_CALC_POINTS = 1;
 
+    public enum ZoneConnectorMethod {RANDOM, WEIGHTED_BY_POPULATION}
+
     private Network carNetwork;
     private Network ptNetwork;
 
@@ -60,8 +60,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private TripRouter tripRouter;
 
-    private final Map<Zone, List<Node>> zoneCalculationNodesMap = new HashMap<>();
-    private final Map<Zone, List<TransitStopFacility>> stopsPerZone = new HashMap<>();
+    private ZoneConnectorManager zoneConnectorManager;
+
 
     private IndexedDoubleMatrix2D travelTimeFromRegion;
     private IndexedDoubleMatrix2D travelTimeToRegion;
@@ -70,7 +70,13 @@ public final class MatsimTravelTimes implements TravelTimes {
     private TravelTime travelTime;
     private TravelDisutility travelDisutility;
 
-    public void initialize(GeoData geoData, Network network, TransitSchedule schedule) {
+    private final ZoneConnectorMethod zoneConnectorMethod;
+
+    public MatsimTravelTimes(ZoneConnectorMethod method) {
+        this.zoneConnectorMethod = method;
+    }
+
+    public void initialize(DataContainer dataContainer, Network network, TransitSchedule schedule) {
 
         TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
         Set<String> car = Sets.newHashSet(TransportMode.car);
@@ -86,12 +92,25 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.ptNetwork = ptNetwork;
 
         this.schedule = schedule;
+        final GeoData geoData = dataContainer.getGeoData();
         this.zones = geoData.getZones();
         this.travelTimeFromRegion = new IndexedDoubleMatrix2D(geoData.getRegions().values(), geoData.getZones().values());
         this.travelTimeFromRegion.assign(-1);
         this.travelTimeToRegion = new IndexedDoubleMatrix2D(geoData.getZones().values(), geoData.getRegions().values());
         this.travelTimeToRegion.assign(-1);
-        buildZoneCalculationNodesMap();
+
+        switch (zoneConnectorMethod) {
+            case RANDOM:
+                this.zoneConnectorManager = ZoneConnectorManager.createRandomZoneConnectors(zones.values(), NUMBER_OF_CALC_POINTS);
+                break;
+            case WEIGHTED_BY_POPULATION:
+                this.zoneConnectorManager = ZoneConnectorManager.createWeightedZoneConnectors(zones.values(),
+                        dataContainer.getRealEstateDataManager(),
+                        dataContainer.getHouseholdDataManager());
+                break;
+            default:
+                throw new RuntimeException("No valid zone connector method defined!");
+        }
     }
 
     public void update(Provider<TripRouter> routerProvider, TravelTime travelTime, TravelDisutility disutility) {
@@ -153,8 +172,8 @@ public final class MatsimTravelTimes implements TravelTimes {
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
         } else if (origin instanceof Zone && destination instanceof Zone) {
             // Non-microlocations case
-            originCoord = zoneCalculationNodesMap.get(origin).get(0).getCoord(); // TODO check if ok to only use the first node
-            destinationCoord = zoneCalculationNodesMap.get(destination).get(0).getCoord(); // TODO check if ok to only use the first node
+            originCoord = zoneConnectorManager.getCoordsForZone((Zone) origin).get(0);
+            destinationCoord = zoneConnectorManager.getCoordsForZone((Zone) destination).get(0);
         } else {
             throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
         }
@@ -180,37 +199,37 @@ public final class MatsimTravelTimes implements TravelTimes {
     @Override
     public double getTravelTimeFromRegion(Region origin, Zone destination, double timeOfDay_s, String mode) {
 
-            int destinationZone = destination.getZoneId();
-            if (travelTimeFromRegion.getIndexed(origin.getId(), destinationZone) > 0) {
-                return travelTimeFromRegion.getIndexed(origin.getId(), destinationZone);
+        int destinationZone = destination.getZoneId();
+        if (travelTimeFromRegion.getIndexed(origin.getId(), destinationZone) > 0) {
+            return travelTimeFromRegion.getIndexed(origin.getId(), destinationZone);
+        }
+        double min = Double.MAX_VALUE;
+        for (Zone zoneInRegion : origin.getZones()) {
+            double travelTime = getPeakSkim(mode).getIndexed(zoneInRegion.getZoneId(), destinationZone);
+            if (travelTime < min) {
+                min = travelTime;
             }
-            double min = Double.MAX_VALUE;
-            for (Zone zoneInRegion : origin.getZones()) {
-                double travelTime = getPeakSkim(mode).getIndexed(zoneInRegion.getZoneId(), destinationZone);
-                if (travelTime < min) {
-                    min = travelTime;
-                }
-            }
-            travelTimeFromRegion.setIndexed(origin.getId(), destinationZone, min);
-            return min;
+        }
+        travelTimeFromRegion.setIndexed(origin.getId(), destinationZone, min);
+        return min;
 
     }
 
     @Override
-    public double getTravelTimeToRegion(Zone origin, Region destination,  double timeOfDay_s, String mode) {
+    public double getTravelTimeToRegion(Zone origin, Region destination, double timeOfDay_s, String mode) {
 
-            if (travelTimeToRegion.getIndexed(origin.getId(), destination.getId()) > 0) {
-                return travelTimeFromRegion.getIndexed(origin.getId(), destination.getId());
+        if (travelTimeToRegion.getIndexed(origin.getId(), destination.getId()) > 0) {
+            return travelTimeFromRegion.getIndexed(origin.getId(), destination.getId());
+        }
+        double min = Double.MAX_VALUE;
+        for (Zone zoneInRegion : destination.getZones()) {
+            double travelTime = getPeakSkim(mode).getIndexed(origin.getZoneId(), zoneInRegion.getZoneId());
+            if (travelTime < min) {
+                min = travelTime;
             }
-            double min = Double.MAX_VALUE;
-            for (Zone zoneInRegion : destination.getZones()) {
-                double travelTime = getPeakSkim(mode).getIndexed(origin.getZoneId(), zoneInRegion.getZoneId());
-                if (travelTime < min) {
-                    min = travelTime;
-                }
-            }
-            travelTimeFromRegion.setIndexed(origin.getId(), destination.getId(), min);
-            return min;
+        }
+        travelTimeFromRegion.setIndexed(origin.getId(), destination.getId(), min);
+        return min;
     }
 
     @Override
@@ -218,172 +237,197 @@ public final class MatsimTravelTimes implements TravelTimes {
         if (skimsByMode.containsKey(mode)) {
             return skimsByMode.get(mode);
         } else {
-            IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones.values(), zones.values());
-            logger.info("Calculating skim matrix for mode " + mode + " using " + Properties.get().main.numberOfThreads + " threads.");
+            logger.info("Calculating skim matrix for mode " + mode +
+                    " using " + Properties.get().main.numberOfThreads + " threads.");
             final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-            logger.info("Intended size of all of partitions = " + partitionSize);
             Iterable<List<Zone>> partitions = Iterables.partition(zones.values(), partitionSize);
-            ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
 
-            for (final List<Zone> partition : partitions) {
-                if (mode.equalsIgnoreCase(TransportMode.car)) {
-                    executor.addTaskToQueue(() -> {
-                        try {
-                            MultiNodePathCalculator calculator
-                                    = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(carNetwork, travelDisutility, travelTime);
-
-                            Set<InitialNode> toNodes = new HashSet<>();
-                            for (Zone zone : zones.values()) {
-                                for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
-                                    Node originNode = zoneCalculationNodesMap.get(zone).get(0);
-                                    toNodes.add(new InitialNode(originNode, 0., 0.));
-                                }
-                            }
-
-                            ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
-
-                            for (Zone origin : partition) {
-                                Node node = zoneCalculationNodesMap.get(origin).get(0);
-                                calculator.calcLeastCostPath(node, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
-                                for (Zone destination : zones.values()) {
-                                    double travelTime = calculator.constructPath(node, zoneCalculationNodesMap.get(destination).get(0), Properties.get().transportModel.peakHour_s).travelTime;
-
-                                    //convert to minutes
-                                    travelTime /= 60.;
-
-                                    skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
-                                }
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    });
-                } else if (mode.equalsIgnoreCase(TransportMode.pt) && schedule != null) {
-                    Config config = ConfigUtils.createConfig();
-                    RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-                    raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-                    SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
-                    final RaptorParameters parameters = RaptorUtils.createParameters(config);
-
-                    executor.addTaskToQueue(() -> {
-                        try {
-                            SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null, new DefaultRaptorStopFinder(
-                                    null,
-                                    new DefaultRaptorIntermodalAccessEgress(),
-                                    null));
-                            for (Zone origin : partition) {
-                                List<TransitStopFacility> nearbyStops = stopsPerZone.get(origin);
-                                final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(nearbyStops, Properties.get().transportModel.peakHour_s, parameters);
-                                for (Zone destination : zones.values()) {
-                                    double travelTime = Double.MAX_VALUE;
-                                    for (TransitStopFacility stop : stopsPerZone.get(destination)) {
-                                        final SwissRailRaptorCore.TravelInfo travelInfo = idTravelInfoMap.get(stop.getId());
-                                        if (travelInfo != null) {
-                                            double time = travelInfo.accessTime + travelInfo.ptTravelTime + travelInfo.waitingTime;
-                                            travelTime = Math.min(travelTime, time);
-                                        }
-                                    }
-                                    //convert to minutes
-                                    travelTime /= 60.;
-                                    skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
-                                }
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    });
-                } else {
-                    executor.addTaskToQueue(() -> {
-                        try {
-                            TravelTimes copy = duplicate();
-                            for (Zone origin : partition) {
-                                for (Zone destination : zones.values()) {
-                                    double travelTime = copy.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, mode);
-
-                                    //convert to minutes
-                                    travelTime /= 60.;
-
-                                    skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
-                                }
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    });
-                }
+            IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones.values(), zones.values());
+            switch (mode) {
+                case TransportMode.car:
+                    createCarSkim(skim, partitions);
+                    break;
+                case TransportMode.pt:
+                    if (schedule != null && ptNetwork != null) {
+                        createPtSkim(skim, partitions);
+                        break;
+                    } else {
+                        logger.warn("No schedule/ network provided for pt.");
+                    }
+                default:
+                    logger.warn("Defaulting to teleportation.");
+                    createTeleportedSkim(skim, partitions, mode);
             }
-            executor.execute();
-            assignIntrazonals(5, 10, 0.33f, skim);
+            assignIntrazonals(5, 10, 0.66f, skim);
             skimsByMode.put(mode, skim);
             logger.info("Finished skim for mode " + mode);
             return skim;
         }
     }
 
+    private void createTeleportedSkim(IndexedDoubleMatrix2D skim, Iterable<List<Zone>> partitions, String mode) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        for (final List<Zone> partition : partitions) {
+            executor.addTaskToQueue(() -> {
+                try {
+                    TravelTimes copy = duplicate();
+                    for (Zone origin : partition) {
+                        for (Zone destination : zones.values()) {
+                            double travelTime = copy.getTravelTime(origin, destination, Properties.get().transportModel.peakHour_s, mode);
+
+                            //convert to minutes
+                            travelTime /= 60.;
+
+                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
+        }
+        executor.execute();
+    }
+
+    private void createPtSkim(IndexedDoubleMatrix2D skim, Iterable<List<Zone>> partitions) {
+        //prepare raptor data
+        Config config = ConfigUtils.createConfig();
+        RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
+        raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
+        final DefaultRaptorParametersForPerson parametersForPerson = new DefaultRaptorParametersForPerson(config);
+        final RaptorParameters parameters = RaptorUtils.createParameters(config);
+        final double walkSpeed = parameters.getBeelineWalkSpeed();
+        SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
+        final DefaultRaptorStopFinder stopFinder = new DefaultRaptorStopFinder(
+                null,
+                new DefaultRaptorIntermodalAccessEgress(),
+                null);
+
+        //compute closest egress stops per zone
+        Map<Zone, Collection<TransitStopFacility>> stopsPerZone = new LinkedHashMap<>();
+        ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
+        for (Zone zone : zones.values()) {
+            final Coord coord = zoneConnectorManager.getCoordsForZone(zone).get(0);
+            Collection<TransitStopFacility> stops = raptorData.findNearbyStops(coord.getX(), coord.getY(), parameters.getSearchRadius());
+            if (stops.isEmpty()) {
+                TransitStopFacility nearest = raptorData.findNearestStop(coord.getX(), coord.getY());
+                double nearestStopDistance = CoordUtils.calcEuclideanDistance(coord, nearest.getCoord());
+                stops = raptorData.findNearbyStops(coord.getX(), coord.getY(), nearestStopDistance + parameters.getExtensionRadius());
+            }
+            stopsPerZone.put(zone, stops);
+        }
+
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        for (final List<Zone> partition : partitions) {
+            executor.addTaskToQueue(() -> {
+                try {
+                    SwissRailRaptor raptor = new SwissRailRaptor(raptorData, parametersForPerson, null, stopFinder);
+                    for (Zone origin : partition) {
+                        final Coord fromCoord = zoneConnectorManager.getCoordsForZone(origin).get(0);
+                        Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), fromCoord);
+
+                        //calc tree from origin zone connector. note that it will search for multiple
+                        //start stops accessible from the connector
+                        final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap
+                                = raptor.calcTree(fromFacility, Properties.get().transportModel.peakHour_s, null);
+                        for (Zone destination : zones.values()) {
+                            if (origin.equals(destination)) {
+                                //Intrazonals will be assigned afterwards
+                                continue;
+                            }
+
+                            //compute direct walk time
+                            final Coord toCoord = zoneConnectorManager.getCoordsForZone(destination).get(0);
+                            double directDistance = CoordUtils.calcEuclideanDistance(fromCoord, toCoord);
+                            double directWalkTime = directDistance / walkSpeed;
+
+                            double travelTime = Double.MAX_VALUE;
+                            for (TransitStopFacility stop : stopsPerZone.get(destination)) {
+                                final SwissRailRaptorCore.TravelInfo travelInfo = idTravelInfoMap.get(stop.getId());
+                                if (travelInfo != null) {
+                                    //compute egress to actual zone connector for this stop
+                                    double distance = CoordUtils.calcEuclideanDistance(stop.getCoord(), toCoord);
+                                    double egressTime = distance / walkSpeed;
+                                    //total travel time includes access, egress and waiting times
+                                    double time = travelInfo.ptTravelTime + travelInfo.waitingTime + travelInfo.accessTime + egressTime;
+                                    //take the most optimistic time up until now
+                                    travelTime = Math.min(travelTime, time);
+                                }
+                            }
+
+                            //check whether direct walk time is faster
+                            travelTime = Math.min(travelTime, directWalkTime);
+
+                            //convert to minutes
+                            travelTime /= 60.;
+                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
+        }
+        executor.execute();
+    }
+
+
+    private void createCarSkim(IndexedDoubleMatrix2D skim, Iterable<List<Zone>> partitions) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        for (final List<Zone> partition : partitions) {
+            executor.addTaskToQueue(() -> {
+                try {
+                    MultiNodePathCalculator calculator
+                            = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(carNetwork, travelDisutility, travelTime);
+
+                    Set<InitialNode> toNodes = new HashSet<>();
+                    for (Zone zone : zones.values()) {
+                        for (Coord coord : zoneConnectorManager.getCoordsForZone(zone)) {
+                            Node originNode = NetworkUtils.getNearestNode(carNetwork, coord);
+                            toNodes.add(new InitialNode(originNode, 0., 0.));
+                        }
+                    }
+
+                    ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
+
+                    for (Zone origin : partition) {
+                        Node originNode = NetworkUtils.getNearestNode(carNetwork, zoneConnectorManager.getCoordsForZone(origin).get(0));
+                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
+                        for (Zone destination : zones.values()) {
+                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, zoneConnectorManager.getCoordsForZone(destination).get(0));
+                            double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
+
+                            //convert to minutes
+                            travelTime /= 60.;
+
+                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
+        }
+        executor.execute();
+    }
+
     @Override
     public TravelTimes duplicate() {
         logger.warn("Creating another TravelTimes object.");
-        MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes();
+        MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(zoneConnectorMethod);
         matsimTravelTimes.carNetwork = this.carNetwork;
         matsimTravelTimes.ptNetwork = this.ptNetwork;
         matsimTravelTimes.zones = this.zones;
         matsimTravelTimes.schedule = this.schedule;
-        matsimTravelTimes.zoneCalculationNodesMap.putAll(this.zoneCalculationNodesMap);
-        matsimTravelTimes.stopsPerZone.putAll(this.stopsPerZone);
+        matsimTravelTimes.zoneConnectorManager = this.zoneConnectorManager;
         matsimTravelTimes.update(routerProvider, travelTime, travelDisutility);
         matsimTravelTimes.travelTimeFromRegion = this.travelTimeFromRegion.copy();
         matsimTravelTimes.travelTimeToRegion = this.travelTimeToRegion.copy();
         matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
         return matsimTravelTimes;
-    }
-
-
-    private void buildZoneCalculationNodesMap() {
-
-        SwissRailRaptor raptor = null;
-        if (this.schedule != null) {
-            Config config = ConfigUtils.createConfig();
-            RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-            raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-            SwissRailRaptorData raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
-            raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null, new DefaultRaptorStopFinder(
-                    null,
-                    new DefaultRaptorIntermodalAccessEgress(),
-                    null));
-        }
-
-        for (Zone zone : zones.values()) {
-
-            Coordinate coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
-
-            if (this.schedule != null) {
-                final Collection<TransitStopFacility> nearbyStops = raptor.getUnderlyingData().findNearbyStops(coordinate.x, coordinate.y, 1000);
-                if (!nearbyStops.isEmpty()) {
-                    stopsPerZone.put(zone, new ArrayList<>(nearbyStops));
-                } else {
-                    final TransitStopFacility nearestStop = raptor.getUnderlyingData().findNearestStop(coordinate.getX(), coordinate.getY());
-                    stopsPerZone.put(zone, Lists.newArrayList(nearestStop));
-                }
-            }
-
-            // Several points in a given origin zone
-            for (int i = 0; i < NUMBER_OF_CALC_POINTS; i++) {
-                // TODO Check if random coordinate is the best representative
-                coordinate = zone.getRandomCoordinate(SiloUtil.getRandomObject());
-                Coord originCoord = new Coord(coordinate.x, coordinate.y);
-                Node originNode = NetworkUtils.getNearestLink(carNetwork, originCoord).getToNode();
-
-
-                if (!zoneCalculationNodesMap.containsKey(zone)) {
-                    zoneCalculationNodesMap.put(zone, new LinkedList<>());
-                }
-                zoneCalculationNodesMap.get(zone).add(originNode);
-            }
-        }
-        logger.warn("There are " + zoneCalculationNodesMap.keySet().size() + " origin zones.");
     }
 
 
