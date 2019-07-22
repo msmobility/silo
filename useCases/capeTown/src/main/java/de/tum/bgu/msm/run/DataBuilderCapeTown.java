@@ -48,7 +48,7 @@ public class DataBuilderCapeTown {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION);
+                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.RANDOM);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
