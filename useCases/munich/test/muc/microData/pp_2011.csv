@@ -1,4 +1,4 @@
-id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income,nationality,education,schoolId
+id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income,nationality,disability,schoolId
 2463861,1249897,63,1,"married",2,true,0,19872,GERMAN,0,-1
 2463863,1249898,22,1,"single",3,true,0,6828,GERMAN,0,1470
 2463862,1249897,54,2,"married",2,true,0,0,GERMAN,0,-1
