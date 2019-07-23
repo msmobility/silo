@@ -2,6 +2,8 @@ package de.tum.bgu.msm.models.transportModel.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Sets;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
@@ -16,9 +18,10 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
+import java.util.Collection;
 import java.util.Set;
 
-public class MatsimRoutingProvider {
+public class MatsimData {
 
     private LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
     private LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
@@ -26,24 +29,48 @@ public class MatsimRoutingProvider {
     private SwissRailRaptorData raptorData;
     private SwissRailRaptorData raptorDataOneToAll;
 
+    private final Properties properties;
     private Config config;
 
     private Network carNetwork;
     private Network ptNetwork;
+
     private TransitSchedule schedule;
-    private TravelDisutility travelDisutility;
-    private TravelTime travelTime;
     private RaptorParameters raptorParameters;
-    private final Properties properties;
     private DefaultRaptorParametersForPerson parametersForPerson;
     private LeastCostRaptorRouteSelector routeSelector;
     private DefaultRaptorStopFinder defaultRaptorStopFinder;
 
+    private TravelDisutility travelDisutility;
+    private TravelTime travelTime;
 
-    public MatsimRoutingProvider(Config config, Properties properties) {
+    private ZoneConnectorManager zoneConnectorManager;
+    private final static int NUMBER_OF_CALC_POINTS = 1;
+
+
+    public MatsimData(Config config, Properties properties,
+                      ZoneConnectorManager.ZoneConnectorMethod method,
+                      DataContainer dataContainer) {
         this.config = config;
         this.raptorParameters = RaptorUtils.createParameters(config);
         this.properties = properties;
+        final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
+        switch (method) {
+            case RANDOM:
+                this.zoneConnectorManager = ZoneConnectorManager.createRandomZoneConnectors(zones, NUMBER_OF_CALC_POINTS);
+                break;
+            case WEIGHTED_BY_POPULATION:
+                this.zoneConnectorManager = ZoneConnectorManager.createWeightedZoneConnectors(zones,
+                        dataContainer.getRealEstateDataManager(),
+                        dataContainer.getHouseholdDataManager());
+                break;
+            default:
+                throw new RuntimeException("No valid zone connector method defined!");
+        }
+    }
+
+    public ZoneConnectorManager getZoneConnectorManager() {
+        return zoneConnectorManager;
     }
 
     public Network getCarNetwork() {
@@ -104,9 +131,7 @@ public class MatsimRoutingProvider {
 
         if (schedule != null) {
             final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
-            final SwissRailRaptorRoutingModule raptorModule
-                    = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
-            ptRoutingModule = raptorModule;
+            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
         } else {
             ptRoutingModule = teleportationRoutingModule;
         }
@@ -146,4 +171,5 @@ public class MatsimRoutingProvider {
     public RaptorParameters getRaptorParameters() {
         return raptorParameters;
     }
+
 }

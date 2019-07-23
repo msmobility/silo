@@ -75,7 +75,7 @@ public final class MatsimTransportModel implements TransportModel {
     private Properties properties;
     private final DataContainer dataContainer;
 
-    private final MatsimRoutingProvider routingProvider;
+    private final MatsimData matsimData;
 
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
@@ -83,19 +83,19 @@ public final class MatsimTransportModel implements TransportModel {
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimAccessibility accessibility,
-                                MatsimTravelTimes.ZoneConnectorMethod method) {
+                                ZoneConnectorManager.ZoneConnectorMethod method) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
-            this.routingProvider = new MatsimRoutingProvider(matsimConfig, properties);
             this.travelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            this.routingProvider = null;
-            this.travelTimes = new MatsimTravelTimes(method, matsimConfig);
+            this.travelTimes = new MatsimTravelTimes(matsimConfig);
         }
+        this.matsimData = new MatsimData(matsimConfig, properties, method, dataContainer);
+
         this.properties = properties;
         this.accessibility = accessibility;
     }
@@ -104,8 +104,7 @@ public final class MatsimTransportModel implements TransportModel {
     public void setup() {
         scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
-
-        travelTimes.initialize(dataContainer, routingProvider);
+        travelTimes.initialize(dataContainer, matsimData);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -145,7 +144,6 @@ public final class MatsimTransportModel implements TransportModel {
 
     public void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
         String matsimRunId = properties.main.scenarioName + "_" + year;
@@ -250,8 +248,8 @@ public final class MatsimTransportModel implements TransportModel {
         if (scenario.getConfig().transit().isUseTransit()) {
             schedule = scenario.getTransitSchedule();
         }
-        routingProvider.update(network, schedule, disutility, travelTime);
-        travelTimes.update();
+        matsimData.update(network, schedule, disutility, travelTime);
+        travelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
         if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
