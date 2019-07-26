@@ -77,7 +77,7 @@ public class MatsimSkimCreator {
             });
         }
         executor.execute();
-        assignIntrazonals(5, 15, 0.66f, skim);
+        assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
         return skim;
     }
 
@@ -158,7 +158,7 @@ public class MatsimSkimCreator {
             });
         }
         executor.execute();
-        assignIntrazonals(5, 15, 0.66f, skim);
+        assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
         return skim;
     }
 
@@ -191,7 +191,7 @@ public class MatsimSkimCreator {
             });
         }
         executor.execute();
-        assignIntrazonals(5, 15, 0.66f, skim);
+        assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
         return skim;
     }
 
