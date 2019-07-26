@@ -142,7 +142,7 @@ public final class MatsimTransportModel implements TransportModel {
     public void endSimulation() {
     }
 
-    public void runTransportModel(int year) {
+    private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
@@ -169,7 +169,7 @@ public final class MatsimTransportModel implements TransportModel {
         logger.warn("Using MATSim to compute travel times from zone to zone.");
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility, controler.getTripRouterProvider());
+        updateTravelTimes(travelTime, travelDisutility);
     }
 
     private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
@@ -238,11 +238,10 @@ public final class MatsimTransportModel implements TransportModel {
         builder.setLeastCostPathCalculatorFactory(new FastAStarLandmarksFactory(properties.main.numberOfThreads));
         builder.setTravelTime(travelTime);
         builder.setTravelDisutility(travelDisutility);
-        final Provider<TripRouter> routerProvider = builder.build(scenario);
-        updateTravelTimes(travelTime, travelDisutility, routerProvider);
+        updateTravelTimes(travelTime, travelDisutility);
     }
 
-    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
+    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
         Network network = scenario.getNetwork();
         TransitSchedule schedule = null;
         if (scenario.getConfig().transit().isUseTransit()) {

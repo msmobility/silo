@@ -21,7 +21,7 @@ import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import java.util.Collection;
 import java.util.Set;
 
-public class MatsimData {
+public final class MatsimData {
 
     private LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
     private LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
@@ -69,15 +69,15 @@ public class MatsimData {
         }
     }
 
-    public ZoneConnectorManager getZoneConnectorManager() {
+    ZoneConnectorManager getZoneConnectorManager() {
         return zoneConnectorManager;
     }
 
-    public Network getCarNetwork() {
+    Network getCarNetwork() {
         return carNetwork;
     }
 
-    public Network getPtNetwork() {
+    Network getPtNetwork() {
         return ptNetwork;
     }
 
@@ -102,26 +102,30 @@ public class MatsimData {
         this.ptNetwork = ptNetwork;
 
         this.leastCostPathCalculatorFactory = new FastAStarLandmarksFactory(properties.main.numberOfThreads);
-        RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-        raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
 
-        RaptorStaticConfig raptorConfigOneToAll = RaptorUtils.createStaticConfig(config);
-        raptorConfigOneToAll.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-        raptorDataOneToAll = SwissRailRaptorData.create(schedule, raptorConfigOneToAll, ptNetwork);
+        if (config.transit().isUseTransit() && schedule != null) {
+            RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
+            raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
 
-        parametersForPerson = new DefaultRaptorParametersForPerson(config);
-        defaultRaptorStopFinder = new DefaultRaptorStopFinder(
-                null,
-                new DefaultRaptorIntermodalAccessEgress(),
-                null);
-        routeSelector = new LeastCostRaptorRouteSelector();
+            RaptorStaticConfig raptorConfigOneToAll = RaptorUtils.createStaticConfig(config);
+            raptorConfigOneToAll.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
+            raptorDataOneToAll = SwissRailRaptorData.create(schedule, raptorConfigOneToAll, ptNetwork);
+
+            parametersForPerson = new DefaultRaptorParametersForPerson(config);
+            defaultRaptorStopFinder = new DefaultRaptorStopFinder(
+                    null,
+                    new DefaultRaptorIntermodalAccessEgress(),
+                    null);
+            routeSelector = new LeastCostRaptorRouteSelector();
+        }
+
     }
 
-    public MultiNodePathCalculator createMultiNodePathCalculator() {
+    MultiNodePathCalculator createMultiNodePathCalculator() {
         return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
     }
 
-    public TripRouter createTripRouter() {
+    TripRouter createTripRouter() {
 
         final RoutingModule networkRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                 TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
@@ -142,7 +146,7 @@ public class MatsimData {
         return bd.build();
     }
 
-    public SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
+    SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
         switch (optimitzaion) {
             case OneToAllRouting:
                 return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder);
@@ -153,11 +157,11 @@ public class MatsimData {
         }
     }
 
-    public LeastCostPathCalculator createLeastCostPathCalculator() {
+    LeastCostPathCalculator createLeastCostPathCalculator() {
         return leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
     }
 
-    public SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimitzaion) {
+    SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimitzaion) {
         switch (optimitzaion) {
             case OneToAllRouting:
                 return raptorDataOneToAll;
@@ -168,7 +172,7 @@ public class MatsimData {
         }
     }
 
-    public RaptorParameters getRaptorParameters() {
+    RaptorParameters getRaptorParameters() {
         return raptorParameters;
     }
 

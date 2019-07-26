@@ -27,7 +27,6 @@ public class SiloMstmTest {
      * This test does NOT test MSTM, despite the name: transport.model.years is set to -1, effectively ignoring the transport model.
      */
     @Test
-    @Ignore
     public final void testMain() {
         // yyyy test writes in part to same directory as other tests (e.g. .../microData_reduced/...), which is not so great.  kai, aug'16
 
