@@ -23,7 +23,7 @@ public class RunSampleGenerator {
     public static void main(String[] args) {
 
         final Properties properties = SiloUtil.siloInitialization(args[0]);
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
+        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
         final Collection<Zone> zones = dataContainer.getGeoData().getRegions().get(174).getZones();

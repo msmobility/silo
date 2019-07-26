@@ -45,7 +45,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
+        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;

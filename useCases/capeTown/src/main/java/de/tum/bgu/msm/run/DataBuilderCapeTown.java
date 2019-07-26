@@ -20,6 +20,7 @@ import de.tum.bgu.msm.io.PersonReaderCapeTown;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.core.config.Config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class DataBuilderCapeTown {
 
     private DataBuilderCapeTown(){}
 
-    public static DataContainer getModelDataForCapeTown(Properties properties) {
+    public static DataContainer getModelDataForCapeTown(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -48,7 +49,7 @@ public class DataBuilderCapeTown {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(MatsimTravelTimes.ZoneConnectorMethod.RANDOM);
+                travelTimes = new MatsimTravelTimes(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;

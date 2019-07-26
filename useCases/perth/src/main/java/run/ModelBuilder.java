@@ -46,6 +46,7 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.models.transportModel.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -116,7 +117,7 @@ public class ModelBuilder {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
                 		(MatsimAccessibility) dataContainer.getAccessibility(),
-                        MatsimTravelTimes.ZoneConnectorMethod.WEIGHTED_BY_POPULATION);
+                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM);
                 break;
             case NONE:
             case MITO_MATSIM:

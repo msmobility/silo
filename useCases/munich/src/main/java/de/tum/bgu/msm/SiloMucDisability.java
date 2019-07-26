@@ -34,7 +34,7 @@ public class SiloMucDisability {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-        DataContainerMuc dataContainer = DataBuilderDisability.getModelDataForMuc(properties);
+        DataContainerMuc dataContainer = DataBuilderDisability.getModelDataForMuc(properties, config);
         DataBuilderDisability.read(properties, dataContainer);
         //summarizeData(dataContainer, properties);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);

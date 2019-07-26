@@ -11,13 +11,13 @@
 	</module>
 
 	<module name="network" >
-		<param name="inputNetworkFile" value="network/05/studyNetworkLight.xml" />
+		<param name="inputNetworkFile" value="network/05/mergedLight.xml" />
 	</module>
 
 	<module name="transit">
 		<param name="transitScheduleFile" value="schedule2018.xml" />
 		<param name="transitModes" value="pt" />
-		<param name="useTransit" value="false" />
+		<param name="useTransit" value="true" />
 	</module>
 
 	<module name="qsim" >

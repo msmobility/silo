@@ -20,6 +20,8 @@ public class ZoneConnectorManager {
 
     private final static Logger logger = Logger.getLogger(ZoneConnectorManager.class);
 
+    public enum ZoneConnectorMethod {RANDOM, WEIGHTED_BY_POPULATION}
+
     private final Map<Zone, List<Coord>> coordsByZone;
 
     private ZoneConnectorManager(Map<Zone, List<Coord>> coordsByZone) {
