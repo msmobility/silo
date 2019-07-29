@@ -23,7 +23,7 @@ public class CoordAssingment {
         geoDataReaderCapeTown.readZoneCsv("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\input\\zoneSystem.csv");
         geoDataReaderCapeTown.readZoneShapefile("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\input\\zonesShapefile\\zones.shp");
 
-        RealEstateDataManager dataManager = new RealEstateDataManagerImpl(Collections.EMPTY_LIST, new DwellingDataImpl(), null, null, new DwellingFactoryImpl(), null);
+        RealEstateDataManager dataManager = new RealEstateDataManagerImpl(null, new DwellingDataImpl(), null, null, new DwellingFactoryImpl(), null);
         new DefaultDwellingReader(dataManager).readData("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\microData\\dd_2011.csv");
 
         for(Dwelling dwelling: dataManager.getDwellings()) {
