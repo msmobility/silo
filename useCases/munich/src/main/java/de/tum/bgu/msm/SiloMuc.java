@@ -7,8 +7,10 @@ import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.scenario.ScenarioUtils;
 
 /**
  * Implements SILO for the Munich Metropolitan Area
@@ -24,14 +26,14 @@ public class SiloMuc {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
-        Config config = null;
+        Scenario scenario = null;
         if (args.length > 1 && args[1] != null) {
-            config = ConfigUtils.loadConfig(args[1]);
+            scenario = ScenarioUtils.createScenario(ConfigUtils.loadConfig(args[1]));
         }
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");
         DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
         DataBuilder.read(properties, dataContainer);
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, scenario);
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();

@@ -54,13 +54,21 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.models.transportModel.matsim.MatsimPopulationGenerator;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilder {
 
     public static ModelContainer getModelContainerForMuc(DataContainerMuc dataContainer, Properties properties, Config config) {
+        Scenario scenario = ScenarioUtils.loadScenario(config);
+        return getModelContainerForMuc(dataContainer, properties, scenario);
+    }
+
+    public static ModelContainer getModelContainerForMuc(DataContainerMuc dataContainer, Properties properties, Scenario scenario) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -120,12 +128,13 @@ public class ModelBuilder {
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties, config);
+                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties, scenario);
                 break;
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties,
+                MatsimPopulationGenerator matsimPopulationGenerator;
+                transportModel = new MatsimTransportModel(dataContainer, scenario, properties,
                 		//(MatsimAccessibility) dataContainer.getAccessibility());
-                        null);
+                        null, matsimPopulationGenerator);
                 break;
             case NONE:
             default:

@@ -70,19 +70,26 @@ import java.util.TreeMap;
 public final class MatsimTransportModel implements TransportModel {
     private static final Logger logger = Logger.getLogger(MatsimTransportModel.class);
 
-    private final Config initialMatsimConfig;
+    // private final Config initialMatsimConfig;
+    private final Scenario scenario;
     private final MatsimTravelTimes travelTimes;
-    private Properties properties;
+    private final Properties properties;
     private final DataContainer dataContainer;
+    private final MatsimPopulationGenerator matsimPopulationGenerator;
 
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
 
-    public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
-                                Properties properties, MatsimAccessibility accessibility) {
+    public MatsimTransportModel(DataContainer dataContainer, Scenario scenario, Properties properties,
+                                MatsimAccessibility accessibility) {
+        this(dataContainer, scenario, properties, accessibility, new DefaultMatsimPopulationGenerator());
+    }
+
+    public MatsimTransportModel(DataContainer dataContainer, Scenario scenario, Properties properties,
+                                MatsimAccessibility accessibility, MatsimPopulationGenerator matsimPopulationGenerator) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
-        this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
-                "No initial matsim config provided to SiloModel class!");
+        this.scenario = Objects.requireNonNull(scenario,
+                "No initial matsim scenario provided to SiloModel class!");
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
@@ -92,11 +99,11 @@ public final class MatsimTransportModel implements TransportModel {
         }
         this.properties = properties;
         this.accessibility = accessibility;
+        this.matsimPopulationGenerator = matsimPopulationGenerator;
     }
 
     @Override
     public void setup() {
-        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
         TransitSchedule schedule = null;
         if (scenario.getConfig().transit().isUseTransit()) {
@@ -146,11 +153,10 @@ public final class MatsimTransportModel implements TransportModel {
 
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
-        String matsimRunId = properties.main.scenarioName + "_" + year;
 
-        Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
-        Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
-
+        Config config = SiloMatsimUtils.createMatsimConfig(scenario.getConfig(), year, populationScalingFactor);
+        // Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
+        Population population = matsimPopulationGenerator.generatePopulation(config, dataContainer, populationScalingFactor);
 
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
         scenario.setPopulation(population);
@@ -231,7 +237,6 @@ public final class MatsimTransportModel implements TransportModel {
      * @param eventsFile
      */
     private void replayFromEvents(String eventsFile) {
-        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
         TripRouterFactoryBuilderWithDefaults builder = new TripRouterFactoryBuilderWithDefaults();

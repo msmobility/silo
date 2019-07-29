@@ -54,16 +54,16 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
     private TravelTimes travelTimes;
     private final String propertiesPath;
     private final String baseDirectory;
-    private final Config config;
+    private final Scenario scenario;
 
     private TravelTimes mitoInputTravelTimes;
 
-    public MitoTransportModelMuc(String baseDirectory, DataContainer dataContainer, Properties properties, Config config) {
+    public MitoTransportModelMuc(String baseDirectory, DataContainer dataContainer, Properties properties, Scenario scenario) {
         super(dataContainer, properties);
         this.travelTimes = Objects.requireNonNull(dataContainer.getTravelTimes());
         this.propertiesPath = Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath);
         this.baseDirectory = Objects.requireNonNull(baseDirectory);
-        this.config = config;
+        this.scenario = scenario;
     }
 
     @Override
@@ -72,10 +72,9 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             logger.warn("Using mito with matsim travel times.");
             mitoInputTravelTimes = new SkimTravelTimes();
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) mitoInputTravelTimes, properties.main.startYear, properties);
-            Scenario scenario = ScenarioUtils.loadScenario(config);
             Network network = scenario.getNetwork();
             TransitSchedule schedule = null;
-            if(config.transit().isUseTransit()) {
+            if(scenario.getConfig().transit().isUseTransit()) {
                 schedule = scenario.getTransitSchedule();
             }
 //            Network transitNetwork = NetworkUtils.createNetwork();
@@ -125,7 +124,7 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
             ((MatsimTravelTimes) travelTimes).update(controler.getTripRouterProvider(), matsimTravelTime, matsimDisutility);
         } else if (travelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) travelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
-            if(config.transit().isUseTransit()) {
+            if(scenario.getConfig().transit().isUseTransit()) {
                 ((SkimTravelTimes) travelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
             }
             ((SkimTravelTimes) travelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
@@ -148,7 +147,6 @@ public final class MitoTransportModelMuc extends AbstractModel implements Transp
      * @param eventsFile
      */
     private void replayFromEvents(String eventsFile) {
-        Scenario scenario = ScenarioUtils.loadScenario(config);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
         TripRouterFactoryBuilderWithDefaults builder = new TripRouterFactoryBuilderWithDefaults();
