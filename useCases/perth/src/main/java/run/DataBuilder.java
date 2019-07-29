@@ -37,9 +37,6 @@ public final class DataBuilder {
 
         DefaultGeoData geoData = new DefaultGeoData();
 
-        List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DwellingTypePerth.values());
-
         DwellingData dwellingData = new DwellingDataImpl();
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -67,7 +64,7 @@ public final class DataBuilder {
         new JobType(properties.jobData.jobTypes);
 
         RealEstateDataManager realEstateManager = new RealEstateDataManagerImpl(
-                dwellingTypeList, dwellingData,
+                DwellingTypePerth.values(), dwellingData,
                 householdData, geoData,
                 new DwellingFactoryImpl(),
                 properties);

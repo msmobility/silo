@@ -42,9 +42,6 @@ public final class DataBuilder {
 
         GeoDataMstm geoData = new GeoDataMstm();
 
-        List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
-
         DwellingData dwellingData = new DwellingDataImpl();
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -74,7 +71,7 @@ public final class DataBuilder {
         RealEstateDataManager realEstateManager = new RealEstateDataManagerMstm(
                 new DwellingfactoryMstm(),
                 dwellingData,
-                dwellingTypeList,
+                DefaultDwellingTypeImpl.values(),
                 householdData, geoData,
                 properties);
 

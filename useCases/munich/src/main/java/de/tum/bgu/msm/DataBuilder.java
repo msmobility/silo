@@ -64,11 +64,9 @@ public class DataBuilder {
         JobFactoryMuc jobFactory = new JobFactoryMuc();
         jobFactory.readWorkingTimeDistributions(properties);
 
-        List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DefaultDwellingTypeImpl.values());
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
