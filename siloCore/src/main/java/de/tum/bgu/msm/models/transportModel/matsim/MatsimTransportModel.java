@@ -75,11 +75,15 @@ public final class MatsimTransportModel implements TransportModel {
     private Properties properties;
     private final DataContainer dataContainer;
 
+    private final MatsimData matsimData;
+
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
+    private Scenario scenario;
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
-                                Properties properties, MatsimAccessibility accessibility) {
+                                Properties properties, MatsimAccessibility accessibility,
+                                ZoneConnectorManager.ZoneConnectorMethod method) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
@@ -88,22 +92,19 @@ public final class MatsimTransportModel implements TransportModel {
         if (travelTimes instanceof MatsimTravelTimes) {
             this.travelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            this.travelTimes = new MatsimTravelTimes();
+            this.travelTimes = new MatsimTravelTimes(matsimConfig);
         }
+        this.matsimData = new MatsimData(matsimConfig, properties, method, dataContainer);
+
         this.properties = properties;
         this.accessibility = accessibility;
     }
 
     @Override
     public void setup() {
-        Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
+        scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
-        TransitSchedule schedule = null;
-        if (scenario.getConfig().transit().isUseTransit()) {
-            schedule = scenario.getTransitSchedule();
-        }
-
-        travelTimes.initialize(dataContainer.getGeoData(), scenario.getNetwork(), schedule);
+        travelTimes.initialize(dataContainer, matsimData);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -141,9 +142,8 @@ public final class MatsimTransportModel implements TransportModel {
     public void endSimulation() {
     }
 
-    public void runTransportModel(int year) {
+    private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
         String matsimRunId = properties.main.scenarioName + "_" + year;
@@ -169,7 +169,7 @@ public final class MatsimTransportModel implements TransportModel {
         logger.warn("Using MATSim to compute travel times from zone to zone.");
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility, controler.getTripRouterProvider());
+        updateTravelTimes(travelTime, travelDisutility);
     }
 
     private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
@@ -238,12 +238,17 @@ public final class MatsimTransportModel implements TransportModel {
         builder.setLeastCostPathCalculatorFactory(new FastAStarLandmarksFactory(properties.main.numberOfThreads));
         builder.setTravelTime(travelTime);
         builder.setTravelDisutility(travelDisutility);
-        final Provider<TripRouter> routerProvider = builder.build(scenario);
-        updateTravelTimes(travelTime, travelDisutility, routerProvider);
+        updateTravelTimes(travelTime, travelDisutility);
     }
 
-    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, Provider<TripRouter> routerProvider) {
-        travelTimes.update(routerProvider, travelTime, disutility);
+    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
+        Network network = scenario.getNetwork();
+        TransitSchedule schedule = null;
+        if (scenario.getConfig().transit().isUseTransit()) {
+            schedule = scenario.getTransitSchedule();
+        }
+        matsimData.update(network, schedule, disutility, travelTime);
+        travelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
         if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);

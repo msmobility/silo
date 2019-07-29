@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.models.*;
-import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -21,6 +20,7 @@ import de.tum.bgu.msm.models.demography.driversLicense.DefaultDriversLicenseStra
 import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModel;
 import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModelImpl;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
+import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModel;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModelImpl;
 import de.tum.bgu.msm.models.demography.leaveParentalHousehold.DefaultLeaveParentalHouseholdStrategy;
@@ -42,12 +42,12 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.models.transportModel.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -121,7 +121,7 @@ public class ModelBuilder {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
                 		//(MatsimAccessibility) dataContainer.getAccessibility()
-                        null);
+                        null, ZoneConnectorManager.ZoneConnectorMethod.RANDOM);
                 break;
             case NONE:
                 break;

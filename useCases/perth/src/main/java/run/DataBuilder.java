@@ -20,6 +20,7 @@ import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.core.config.Config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,7 @@ public final class DataBuilder {
     private DataBuilder() {
     }
 
-    public static DataContainer buildDataContainer(Properties properties) {
+    public static DataContainer buildDataContainer(Properties properties, Config config) {
 
         DefaultGeoData geoData = new DefaultGeoData();
 
@@ -52,7 +53,7 @@ public final class DataBuilder {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes();
+                travelTimes = new MatsimTravelTimes(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
                 break;

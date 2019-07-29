@@ -21,6 +21,7 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -44,6 +45,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SchoolDataImpl implements SchoolData {
 
     private final static Logger logger = Logger.getLogger(SchoolDataImpl.class);
+    private static final int MIN_SECONDARY_AGE = 10;
+    private static final int MIN_TERTIARY_AGE = 18;
 
     private final GeoData geoData;
     private final DwellingData dwellingData;
@@ -60,6 +63,19 @@ public class SchoolDataImpl implements SchoolData {
         this.geoData = geoData;
         this.dwellingData = dwellingData;
         this.properties = properties;
+    }
+
+    public static int guessSchoolType(Person person) {
+        if (person.getAge() < MIN_SECONDARY_AGE) {
+            ((PersonMuc)person).setSchoolType(1);
+            return 1;
+        }else if (person.getAge() < MIN_TERTIARY_AGE) {
+            ((PersonMuc)person).setSchoolType(2);
+            return 2;
+        }else {
+            ((PersonMuc)person).setSchoolType(3);
+            return 3;
+        }
     }
 
     private void setSchoolSearchTree() {

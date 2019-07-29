@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.school.School;
+import de.tum.bgu.msm.data.school.SchoolDataImpl;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -67,19 +68,21 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                     }
                     break;
                 case STUDENT:
-                    School oldSchool;
+                    int oldSchoolType = -1;
                     if(((PersonMuc)person).getSchoolId()> 0){
-                        oldSchool = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
+                        oldSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId()).getType();
+                    }else if(((PersonMuc)person).getSchoolId()== -2){
+                        oldSchoolType = SchoolDataImpl.guessSchoolType(person);
                     }else{
                         logger.warn("person id " + person.getId()+" has no school." + " Age: " +person.getAge()+" Occupation: "+ person.getOccupation().name());
                         continue;
                     }
 
-                    if (person.getAge() > MIN_SECONDARY_AGE && oldSchool.getType() == 1) {
+                    if (person.getAge() > MIN_SECONDARY_AGE && oldSchoolType == 1) {
                         events.add(new EducationEvent(person.getId()));
-                    }else if (person.getAge() > MIN_TERTIARY_AGE && oldSchool.getType() == 2) {
+                    }else if (person.getAge() > MIN_TERTIARY_AGE && oldSchoolType == 2) {
                         events.add(new EducationEvent(person.getId()));
-                    }else if (person.getAge() > MAX_EDUCATION_AGE && oldSchool.getType() == 3){
+                    }else if (person.getAge() > MAX_EDUCATION_AGE && oldSchoolType == 3){
                         events.add(new EducationEvent(person.getId()));
                     }
                     break;
@@ -99,7 +102,13 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                     newSchool = findSchool(pp, 1);
                     break;
                 case STUDENT:
-                    int currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
+                    int currentSchoolType = -1;
+                    if(pp.getSchoolId()== -2) {
+                        currentSchoolType = pp.getSchoolType();
+                    }else{
+                        currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
+                    }
+
                     if (currentSchoolType == 3) {
                         return leaveSchoolToWork(pp);
                     } else {
@@ -141,9 +150,16 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     boolean leaveSchoolToWork(PersonMuc person) {
 
         person.setOccupation(Occupation.UNEMPLOYED);
-        School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
-        school.setOccupancy(school.getOccupancy() + 1);
-        person.setSchoolId(-1);
+
+        if(person.getSchoolId()== -2) {
+            person.setSchoolId(-1);
+            person.setSchoolType(-1);
+        }else{
+            School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
+            school.setOccupancy(school.getOccupancy() + 1);
+            person.setSchoolId(-1);
+        }
+
         if (person.getId() == SiloUtil.trackPp) {
             SiloUtil.trackWriter.println("Person " + person.getId() +
                     " leaved from school to job market. ");

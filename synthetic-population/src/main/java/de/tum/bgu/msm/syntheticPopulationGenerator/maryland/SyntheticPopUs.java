@@ -90,7 +90,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
 
         logger.info("Generating synthetic populations of household/persons, dwellings and jobs");
-        DataContainer dataContainer = DataBuilder.buildDataContainer(properties);
+        DataContainer dataContainer = DataBuilder.buildDataContainer(properties, null);
         geoData = (GeoDataMstm) dataContainer.getGeoData();
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;

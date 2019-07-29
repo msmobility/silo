@@ -17,7 +17,17 @@
 	</module>
 
 	<module name="strategy" >
-		<param name="maxAgentPlanMemorySize" value="5" />
+		<param name="fractionOfIterationsToDisableInnovation" value="0.8" />
+
+		<parameterset type="strategysettings" >
+			<param name="strategyName" value="ChangeExpBeta" />
+			<param name="weight" value="0.8" />
+		</parameterset>
+
+		<parameterset type="strategysettings" >
+			<param name="strategyName" value="ReRoute" />
+			<param name="weight" value="0.2" />
+		</parameterset>
 	</module>
 	
 	<!--<module name="accessibility" >-->

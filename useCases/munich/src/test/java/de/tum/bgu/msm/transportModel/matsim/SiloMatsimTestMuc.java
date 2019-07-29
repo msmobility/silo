@@ -68,7 +68,7 @@ public class SiloMatsimTestMuc {
 
         Properties properties = SiloUtil.siloInitialization(path);
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties);
+        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, config);
         DataBuilder.read(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
