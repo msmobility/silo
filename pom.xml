@@ -4,7 +4,7 @@
 	<groupId>com.github.msmobility</groupId>
 	<artifactId>silo-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>fabilutScenarios_v1.0</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>silo-parent</name>
 	<modules>
 		<module>useCases</module>

@@ -6,7 +6,7 @@
     <groupId>com.github.msmobility</groupId>
     <artifactId>siloCore</artifactId>
     <name>SILO</name>
-    <version>fabilutScenarios_v1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
     <description>Simple Integrated Land-Use Orchestrator</description>
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>
@@ -380,7 +380,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>master-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>

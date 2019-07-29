@@ -39,7 +39,6 @@ public class SiloMatsimTest {
 	 * in the ABMTRANS'16 paper).
 	 */
 	@Test
-	@Ignore
 	public final void testMain() {
 		SiloTestUtils.cleanUpMicrodataFiles();
 		SiloTestUtils.cleanUpOtherFiles();

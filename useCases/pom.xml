@@ -4,7 +4,7 @@
     <groupId>com.github.msmobility</groupId>
     <artifactId>useCases</artifactId>
     <packaging>pom</packaging>
-    <version>fabilutScenarios_v1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
     <name>SILO-use-cases</name>
 
     <scm>
@@ -228,7 +228,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>siloCore</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>

@@ -51,25 +51,27 @@ public class InOutMigrationMuc implements InOutMigration {
     @Override
     public boolean handleEvent(MigrationEvent event) {
         boolean success = delegate.handleEvent(event);
-        HouseholdMuc householdMuc = (HouseholdMuc) event.getHousehold();
-        for(Person person : householdMuc.getPersons().values()){
-            if (person.getOccupation().equals(Occupation.STUDENT)){
-                if (event.getType().equals(MigrationEvent.Type.IN)){
-                    //oldSchool is duplicated from original person
-                    School oldSchool = dataContainerMuc.getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
-                    School newSchool = dataContainerMuc.getSchoolData().getClosestSchool(person,oldSchool.getType());
-                    ((PersonMuc)person).setSchoolId(newSchool.getId());
-                    newSchool.setOccupancy(newSchool.getOccupancy()-1);
-                }else if (event.getType().equals(MigrationEvent.Type.OUT)){
-                    School school = dataContainerMuc.getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId());
-                    school.setOccupancy(school.getOccupancy()+1);
+        if(success) {
+            HouseholdMuc householdMuc = (HouseholdMuc) event.getHousehold();
+            for (Person person : householdMuc.getPersons().values()) {
+                if (person.getOccupation().equals(Occupation.STUDENT)) {
+                    if (event.getType().equals(MigrationEvent.Type.IN)) {
+                        //oldSchool is duplicated from original person
+                        School oldSchool = dataContainerMuc.getSchoolData().getSchoolFromId(((PersonMuc) person).getSchoolId());
+                        School newSchool = dataContainerMuc.getSchoolData().getClosestSchool(person, oldSchool.getType());
+                        ((PersonMuc) person).setSchoolId(newSchool.getId());
+                        newSchool.setOccupancy(newSchool.getOccupancy() - 1);
+                    } else if (event.getType().equals(MigrationEvent.Type.OUT)) {
+                        School school = dataContainerMuc.getSchoolData().getSchoolFromId(((PersonMuc) person).getSchoolId());
+                        school.setOccupancy(school.getOccupancy() + 1);
+                    }
                 }
             }
         }
-
         return success;
     }
 
+    @Override
     public boolean outMigrateHh(int hhId, boolean overwriteEventRules) {
         return delegate.outMigrateHh(hhId, overwriteEventRules);
     }

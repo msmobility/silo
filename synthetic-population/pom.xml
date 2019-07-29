@@ -5,7 +5,7 @@
     <groupId>com.github.msmobility</groupId>
     <artifactId>synthetic-population</artifactId>
     <name>SILO Synthetic population generator</name>
-    <version>fabilutScenarios_v1.0</version>
+    <version>0.1.0-SNAPSHOT</version>
     <description>SILO synthetic population generator</description>
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>
@@ -191,22 +191,22 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>siloCore</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>munich</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>maryland</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>perth</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -218,7 +218,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>capeTown</artifactId>
-            <version>fabilutScenarios_v1.0</version>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <properties>
