@@ -1,4 +1,4 @@
-package relocation;
+package de.tum.bgu.msm.models.relocation.moves;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
@@ -17,8 +17,6 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
@@ -30,9 +28,9 @@ import java.util.Map;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
-public class HousingStrategyPerth implements HousingStrategy {
+public class CarOnlyHousingStrategyImpl implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(HousingStrategyPerth.class);
+    private final static Logger logger = Logger.getLogger(CarOnlyHousingStrategyImpl.class);
 
     private enum Normalizer {
         /**
@@ -69,12 +67,12 @@ public class HousingStrategyPerth implements HousingStrategy {
 
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class);
 
-    public HousingStrategyPerth(DataContainer dataContainer,
-                                Properties properties,
-                                TravelTimes travelTimes,
-                                DwellingUtilityStrategy dwellingUtilityStrategy,
-                                DwellingProbabilityStrategy dwellingProbabilityStrategy,
-                                SelectRegionStrategy selectRegionStrategy) {
+    public CarOnlyHousingStrategyImpl(DataContainer dataContainer,
+                                      Properties properties,
+                                      TravelTimes travelTimes,
+                                      DwellingUtilityStrategy dwellingUtilityStrategy,
+                                      DwellingProbabilityStrategy dwellingProbabilityStrategy,
+                                      SelectRegionStrategy selectRegionStrategy) {
         this.dataContainer = dataContainer;
         geoData = dataContainer.getGeoData();
         this.properties = properties;
@@ -117,7 +115,6 @@ public class HousingStrategyPerth implements HousingStrategy {
 
         double travelCostUtility = 1; //do not have effect at the moment;
 
-        Map<Person, Job> jobsForThisHousehold = new HashMap<>();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         double workDistanceUtility = 1;
         for (Person pp: hh.getPersons().values()) {
@@ -169,7 +166,7 @@ public class HousingStrategyPerth implements HousingStrategy {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes ttCopy = travelTimes.duplicate();
-        HousingStrategyPerth strategy = new HousingStrategyPerth(dataContainer, properties, ttCopy,
+        CarOnlyHousingStrategyImpl strategy = new CarOnlyHousingStrategyImpl(dataContainer, properties, ttCopy,
                 dwellingUtilityStrategy, dwellingProbabilityStrategy, selectRegionStrategy);
         strategy.hhByRegion = hhByRegion;
         strategy.utilityByIncomeByRegion = utilityByIncomeByRegion;

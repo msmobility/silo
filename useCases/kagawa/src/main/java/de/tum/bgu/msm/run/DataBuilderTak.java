@@ -11,28 +11,19 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.data.person.PersonFactoryCapeTown;
+import de.tum.bgu.msm.data.person.PersonFactoryImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.DwellingReaderCapeTown;
-import de.tum.bgu.msm.io.GeoDataReaderCapeTown;
-import de.tum.bgu.msm.io.PersonReaderCapeTown;
+import de.tum.bgu.msm.io.GeoDataReaderTak;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+public class DataBuilderTak {
 
-import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
-public class DataBuilderCapeTown {
-
-    private DataBuilderCapeTown(){}
-
-    public static DataContainer getModelDataForCapeTown(Properties properties, Config config) {
+    public static DataContainer getTakModelData(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -64,13 +55,13 @@ public class DataBuilderCapeTown {
         JobFactory jobFactory = new JobFactoryImpl();
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                DwellingTypeCapeTown.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
 
-        HouseholdFactory hhFactory = new HouseholdFactoryCapeTown();
-        PersonFactory ppFactory = new PersonFactoryCapeTown();
+        HouseholdFactory hhFactory = new HouseholdFactoryImpl();
+        PersonFactory ppFactory = new PersonFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
                 householdData, dwellingData, ppFactory,
                 hhFactory, properties, realEstateDataManager);
@@ -80,11 +71,11 @@ public class DataBuilderCapeTown {
 
         return new DefaultDataContainer(geoData, realEstateDataManager, jobDataManager,
                 householdDataManager, travelTimes, accessibility, commutingTimeProbability, properties);
+
     }
 
-    static public void read(Properties properties, DataContainer dataContainer){
-
-        GeoDataReader reader = new GeoDataReaderCapeTown(dataContainer.getGeoData());
+    public static void read(Properties properties, DataContainer dataContainer) {
+        GeoDataReader reader = new GeoDataReaderTak(dataContainer.getGeoData());
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         reader.readZoneCsv(fileName);
@@ -99,10 +90,10 @@ public class DataBuilderCapeTown {
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new PersonReaderCapeTown(dataContainer.getHouseholdDataManager(), new PersonFactoryCapeTown());
+        PersonReader personReader = new DefaultPersonReader(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderCapeTown(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DefaultDwellingReader(dataContainer.getRealEstateDataManager());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
@@ -111,9 +102,5 @@ public class DataBuilderCapeTown {
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        //might be added later
-//        SchoolReader ssReader = new SchoolReaderMuc(dataContainer.getSchoolData());
-//        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
-//        ssReader.readData(schoolsFile);
     }
 }

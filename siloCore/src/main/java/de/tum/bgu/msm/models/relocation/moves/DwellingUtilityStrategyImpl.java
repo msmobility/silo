@@ -1,4 +1,4 @@
-package relocation;
+package de.tum.bgu.msm.models.relocation.moves;
 
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
@@ -16,6 +16,7 @@ public class DwellingUtilityStrategyImpl extends JavaScriptCalculator<Double> im
         super(reader);
     }
 
+    @Override
     public double calculateSelectDwellingUtility(HouseholdType ht, double ddSizeUtility, double ddPriceUtility,
                                                  double ddQualityUtility, double ddAutoAccessibilityUtility,
                                                  double transitAccessibilityUtility, double ddWorkDistanceUtility) {

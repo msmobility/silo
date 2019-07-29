@@ -1,4 +1,4 @@
-package relocation;
+package de.tum.bgu.msm.models.relocation.moves;
 
 import de.tum.bgu.msm.data.household.HouseholdType;
 
