@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Zone;
@@ -49,9 +50,9 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private double[] avePrice;
     private double[] aveVac;
 
-    private final List<DwellingType> dwellingTypes = new ArrayList<>();
+    private final List<DwellingType> dwellingTypes;
 
-    public RealEstateDataManagerImpl(List<DwellingType> dwellingTypes, DwellingData dwellingData,
+    public RealEstateDataManagerImpl(DwellingType[] dwellingTypes, DwellingData dwellingData,
                                      HouseholdData householdData, GeoData geoData,
                                      DwellingFactory dwellingFactory, Properties properties) {
         this.dwellingData = dwellingData;
@@ -59,7 +60,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         this.geoData = geoData;
         this.dwellingFactory = dwellingFactory;
         this.properties = properties;
-        this.dwellingTypes.addAll(dwellingTypes);
+
+        this.dwellingTypes = Lists.newArrayList(dwellingTypes);
     }
 
     @Override

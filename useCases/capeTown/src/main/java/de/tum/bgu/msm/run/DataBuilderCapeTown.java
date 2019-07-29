@@ -63,11 +63,8 @@ public class DataBuilderCapeTown {
 
         JobFactory jobFactory = new JobFactoryImpl();
 
-        List<DwellingType> dwellingTypeList = new ArrayList<>();
-        Collections.addAll(dwellingTypeList, DwellingTypeCapeTown.values());
-
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                dwellingTypeList, dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                DwellingTypeCapeTown.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);

@@ -27,6 +27,7 @@ import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhMode
 import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
+import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
 import de.tum.bgu.msm.models.realEstate.construction.*;
@@ -45,14 +46,13 @@ import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.models.transportModel.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
-import relocation.DwellingUtilityStrategyImpl;
-import relocation.HousingStrategyPerth;
-import relocation.SelectRegionStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.DwellingUtilityStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.CarOnlyHousingStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.SelectRegionStrategyImpl;
 
 public class ModelBuilder {
 
@@ -73,7 +73,7 @@ public class ModelBuilder {
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
         MovesModelImpl movesModel = new MovesModelImpl(
-                dataContainer, properties, new DefaultMovesStrategy(), new HousingStrategyPerth(dataContainer, properties, dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
+                dataContainer, properties, new DefaultMovesStrategy(), new CarOnlyHousingStrategyImpl(dataContainer, properties, dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
                 new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyImpl()));
 
 
@@ -108,7 +108,7 @@ public class ModelBuilder {
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
                 inOutMigration, properties, new DefaultDemolitionStrategy());
 
-        MarriageModel marriageModel = new MarriageModelPerth(dataContainer, movesModel, inOutMigration,
+        MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
                 null, hhFactory, properties, new DefaultMarriageStrategy());
 
 

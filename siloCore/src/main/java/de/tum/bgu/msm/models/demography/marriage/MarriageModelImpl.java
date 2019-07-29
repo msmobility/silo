@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package run;
+package de.tum.bgu.msm.models.demography.marriage;
 
 import com.google.common.collect.*;
 import de.tum.bgu.msm.container.DataContainer;
@@ -27,8 +27,6 @@ import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
-import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
@@ -45,9 +43,9 @@ import java.util.*;
  * Created on 31 December 2009 in Cologne
  * Revised on 5 March 2015 in Wheaton, MD
  **/
-public class MarriageModelPerth extends AbstractModel implements MarriageModel {
+public class MarriageModelImpl extends AbstractModel implements MarriageModel {
 
-    private final static Logger logger = Logger.getLogger(MarriageModelPerth.class);
+    private final static Logger logger = Logger.getLogger(MarriageModelImpl.class);
 
     private final InOutMigrationImpl iomig;
     private final MovesModelImpl movesModel;
@@ -74,9 +72,9 @@ public class MarriageModelPerth extends AbstractModel implements MarriageModel {
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public MarriageModelPerth(DataContainer dataContainer, MovesModelImpl movesModel,
-                              InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
-                              HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
+    public MarriageModelImpl(DataContainer dataContainer, MovesModelImpl movesModel,
+                             InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
+                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
         super(dataContainer, properties);
         this.movesModel = movesModel;
         this.iomig = iomig;

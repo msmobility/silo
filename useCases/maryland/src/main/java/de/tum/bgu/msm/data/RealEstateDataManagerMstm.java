@@ -20,7 +20,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
 
     public RealEstateDataManagerMstm (
             DwellingFactory dwellingFactory, DwellingData dwellingData,
-            List<DwellingType> dwellingTypes, HouseholdData householdData,
+            DwellingType[] dwellingTypes, HouseholdData householdData,
             GeoData geoData, Properties properties) {
         delegate = new RealEstateDataManagerImpl(
                 dwellingTypes, dwellingData,
