@@ -69,7 +69,7 @@ public class MainProperties {
     /**
      * Returns the number of logical threads available at runtime.
      */
-    public final int numberOfThreads = Runtime.getRuntime().availableProcessors();
+    public final int numberOfThreads;
 
     @Deprecated
     public final String prestoZoneFile;
@@ -135,5 +135,6 @@ public class MainProperties {
         bemModelYears = PropertiesUtil.getIntPropertyArray(bundle, "bem.model.years", new int[]{2000,2040});
         housingEnvironmentImpactFile = PropertiesUtil.getStringProperty(bundle, "housing.environment.impact.file.name", "bemHousing");
 
+        numberOfThreads = PropertiesUtil.getIntProperty(bundle, "number.of.threads", Runtime.getRuntime().availableProcessors());
     }
 }
