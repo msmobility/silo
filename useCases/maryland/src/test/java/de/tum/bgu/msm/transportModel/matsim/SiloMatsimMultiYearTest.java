@@ -62,23 +62,13 @@ public class SiloMatsimMultiYearTest {
 		}
 
 		{
-			final String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2000.csv";
-			FileAssert.assertEquals("dwellings are different.", new File(utils.getInputDirectory() + "./dd_2000.csv"), new File(filename_dd));
-			final String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2000.csv";
-			FileAssert.assertEquals("households are different.", new File(utils.getInputDirectory() + "./hh_2000.csv"), new File(filename_hh));
-			final String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2000.csv";
-			FileAssert.assertEquals("jobs are different.", new File(utils.getInputDirectory() + "./jj_2000.csv"), new File(filename_jj));
-			final String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2000.csv";
-			FileAssert.assertEquals("populations are different.", new File(utils.getInputDirectory() + "./pp_2000.csv"), new File(filename_pp));
-		}
-		{
-			final String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2002.csv";
+			final String filename_dd = "test/scenarios/annapolis/scenOutput/test_matsim/microData/dd_2002.csv";
 			FileAssert.assertEquals("dwellings are different.", new File(utils.getInputDirectory() + "./dd_2002.csv"), new File(filename_dd));
-			final String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2002.csv";
+			final String filename_hh = "test/scenarios/annapolis/scenOutput/test_matsim/microData/hh_2002.csv";
 			FileAssert.assertEquals("households are different.", new File(utils.getInputDirectory() + "./hh_2002.csv"), new File(filename_hh));
-			final String filename_jj = "./test/scenarios/annapolis/microData_reduced/jj_2002.csv";
+			final String filename_jj = "test/scenarios/annapolis/scenOutput/test_matsim/microData/jj_2002.csv";
 			FileAssert.assertEquals("jobs are different.", new File(utils.getInputDirectory() + "./jj_2002.csv"), new File(filename_jj));
-			final String filename_pp = "./test/scenarios/annapolis/microData_reduced/pp_2002.csv";
+			final String filename_pp = "test/scenarios/annapolis/scenOutput/test_matsim/microData/pp_2002.csv";
 			FileAssert.assertEquals("populations are different.", new File(utils.getInputDirectory() + "./pp_2002.csv"), new File(filename_pp));
 		}
 		{

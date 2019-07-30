@@ -53,7 +53,7 @@ public class SiloTestMuc {
     private void checkPersons() {
         log.info("checking SILO population file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
-        final File actual = new File("./test/muc/microData/futureYears/pp_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
         FileAssert.assertEquals("persons are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -64,7 +64,7 @@ public class SiloTestMuc {
     private void checkJobs() {
         log.info("Checking jobs file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
-        final File actual = new File("./test/muc/microData/futureYears/jj_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
         FileAssert.assertEquals("jobs are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -75,7 +75,7 @@ public class SiloTestMuc {
     private void checkHouseholds() {
         log.info("Checking households file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
-        final File actual = new File("./test/muc/microData/futureYears/hh_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
         FileAssert.assertEquals("households are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -86,7 +86,7 @@ public class SiloTestMuc {
     private void checkDwellings() {
         log.info("Checking dwellings file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
-        final File actual = new File("./test/muc/microData/futureYears/dd_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
         FileAssert.assertEquals("dwellings are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
