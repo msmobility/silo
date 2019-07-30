@@ -266,7 +266,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                         averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
                 return null;
             });
