@@ -26,7 +26,7 @@ public class SiloCT {
             ;
             cptConfig.setRunType(CapeTownConfig.RunType.base);
         }
-        logger.info("Starting SILO land use model for Cape Town");
+        logger.info("Started SILO land use model for Cape Town");
         DataContainer dataContainer = DataBuilderCapeTown.getModelDataForCapeTown(properties, config);
         DataBuilderCapeTown.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderCapeTown.getModelContainerForCapeTown(
