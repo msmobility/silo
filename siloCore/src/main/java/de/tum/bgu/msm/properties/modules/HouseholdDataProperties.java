@@ -26,8 +26,8 @@ public final class HouseholdDataProperties {
         householdFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/hh");
         personFileName =  PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/pp");
         PropertiesUtil.newPropertySubmodule("Synthetic persons and households output of the final year");
-        householdFinalFileName = PropertiesUtil.getStringProperty(bundle, "household.final.file.ascii", "microData/futureYears/hh");
-        personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "microData/futureYears/pp");
+        householdFinalFileName = PropertiesUtil.getStringProperty(bundle, "household.final.file.ascii", "hh");
+        personFinalFileName = PropertiesUtil.getStringProperty(bundle, "person.final.file.ascii", "pp");
 
         PropertiesUtil.newPropertySubmodule("Household data properties - additional models");
         meanIncomeChange = (float) PropertiesUtil.getDoubleProperty(bundle, "mean.change.of.yearly.income", 2000);

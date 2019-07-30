@@ -43,7 +43,7 @@ public final class JobDataProperties {
 
         PropertiesUtil.newPropertySubmodule("Job - synthetic jobs input");
         jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
-        jobsFinalFileName = PropertiesUtil.getStringProperty(bundle, "job.final.file.ascii", "microData/futureYears/jj");
+        jobsFinalFileName = PropertiesUtil.getStringProperty(bundle, "job.final.file.ascii", "jj");
 
         PropertiesUtil.newPropertySubmodule("Job - job time input");
         jobStartTimeDistributionFile = PropertiesUtil.getStringProperty(bundle, "job.start.distribution.file", "input/jobStartTimeDistributions.csv");

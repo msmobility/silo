@@ -87,7 +87,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     @Override
     public void endSimulation() {
-        String filedd = Properties.get().main.baseDirectory
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+        String filedd = outputDirectory
                 + properties.realEstate.dwellingsFinalFileName
                 + "_"
                 + properties.main.endYear

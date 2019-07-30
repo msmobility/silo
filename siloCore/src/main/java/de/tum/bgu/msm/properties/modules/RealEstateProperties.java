@@ -22,7 +22,7 @@ public class RealEstateProperties {
         PropertiesUtil.newPropertySubmodule("Real state properties");
         PropertiesUtil.newPropertySubmodule("Real state - dwelling input data");
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
-        dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "microData/futureYears/dd");
+        dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "dd");
 
         PropertiesUtil.newPropertySubmodule("Real state - model parameters and input");
         constructionOverwriteDwelling = PropertiesUtil.getBooleanProperty(bundle, "construct.dwelling.use.overwrite", false);
