@@ -245,12 +245,20 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
 
         final Collection<Household> households = householdDataManager.getHouseholds();
-        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads - 1)) + 1;
-        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads - 1);
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
 
-        logger.info("Using " + Properties.get().main.numberOfThreads + " threads" +
+        int numberOfTasks;
+
+        if (threaded) {
+            numberOfTasks = Properties.get().main.numberOfThreads;
+        } else {
+            numberOfTasks = 1;
+        }
+        final int partitionSize = (int) ((double) households.size() / (numberOfTasks)) + 1;
+        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+
+        logger.info("Using " + numberOfTasks + " thread(s)" +
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
