@@ -285,12 +285,11 @@ public class HousingStrategyCapeTown implements HousingStrategy {
         // 25 rent categories are defined as <rent/200>, see RealEstateDataManager
         int priceCategory = (int) (price / 200f);
         priceCategory = Math.min(priceCategory, RENT_CATEGORIES);
-        double util = 0;
-        for (int i = 0; i <= priceCategory; i++) {
-            util += shares.get(i);
+        double util = 1;
+        for (int i = 1; i <= priceCategory; i++) {
+            util -= shares.get(i-1);
         }
-        // invert utility, as lower price has higher utility
-        return Math.max(0, 1.f - util);
+        return util;
     }
 
     private double convertQualityToUtility(int quality) {
