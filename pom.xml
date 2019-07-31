@@ -11,5 +11,6 @@
 		<module>siloCore</module>
 		<module>synthetic-population</module>
         <module>analysis</module>
+        <module>extensions</module>
     </modules>
 </project>

@@ -23,15 +23,9 @@ import de.tum.bgu.msm.io.PersonReaderMstm;
 import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.input.DefaultJobReader;
 import de.tum.bgu.msm.io.input.JobReader;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
 public final class DataBuilder {
 

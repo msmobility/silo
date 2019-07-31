@@ -1,9 +1,8 @@
-package de.tum.bgu.msm.models.transportModel.matsim;
+package de.tum.bgu.msm.matsim;
 
 import java.util.Collection;
 import java.util.Map;
 
-import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;

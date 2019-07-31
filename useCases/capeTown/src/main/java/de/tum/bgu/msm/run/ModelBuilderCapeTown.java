@@ -5,6 +5,8 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.MarriageModelCapeTown;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -50,9 +52,6 @@ import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
-import de.tum.bgu.msm.models.transportModel.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 

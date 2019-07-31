@@ -18,15 +18,9 @@ import de.tum.bgu.msm.io.DwellingReaderCapeTown;
 import de.tum.bgu.msm.io.GeoDataReaderCapeTown;
 import de.tum.bgu.msm.io.PersonReaderCapeTown;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.TransportModelIdentifier.MATSIM;
 
 public class DataBuilderCapeTown {
 

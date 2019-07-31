@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package de.tum.bgu.msm.models.transportModel.matsim;
+package de.tum.bgu.msm.matsim;
 
 import java.util.HashMap;
 import java.util.Map;
