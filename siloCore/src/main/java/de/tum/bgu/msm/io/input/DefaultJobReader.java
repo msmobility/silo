@@ -75,7 +75,7 @@ public class DefaultJobReader implements JobReader {
                 }
             }
             if(noCoordCounter > 0) {
-                logger.warn("There were " + noCoordCounter + " dwellings without coordinates.");
+                logger.warn("There were " + noCoordCounter + " jobs without coordinates.");
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop job file: " + fileName, new RuntimeException());
