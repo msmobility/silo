@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.io;
+package de.tum.bgu.msm.schools;
 
 public interface SchoolReader {
 

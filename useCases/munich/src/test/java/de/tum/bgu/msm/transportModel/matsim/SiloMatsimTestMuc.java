@@ -4,7 +4,8 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilder;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
@@ -68,7 +69,7 @@ public class SiloMatsimTestMuc {
 
         Properties properties = SiloUtil.siloInitialization(path);
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, config);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, config);
         DataBuilder.read(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);

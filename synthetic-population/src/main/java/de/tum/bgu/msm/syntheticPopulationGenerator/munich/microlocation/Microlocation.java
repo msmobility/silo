@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation;
 
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
@@ -14,9 +15,9 @@ import java.util.Map;
 
 public class Microlocation extends ModuleSynPop {
     private static final Logger logger = Logger.getLogger(Microlocation.class);
-    private final DataContainerMuc dataContainer;
+    private final DataContainerWithSchools dataContainer;
 
-    public Microlocation(DataSetSynPop dataSetSynPop, DataContainerMuc dataContainer){
+    public Microlocation(DataSetSynPop dataSetSynPop, DataContainerWithSchools dataContainer){
         super(dataSetSynPop);
         this.dataContainer = dataContainer;
     }

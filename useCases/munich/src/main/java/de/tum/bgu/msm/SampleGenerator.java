@@ -1,23 +1,14 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
-import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.data.school.SchoolData;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
-import de.tum.bgu.msm.io.input.AbstractOmxReader;
-import de.tum.bgu.msm.io.input.readers.SkimsReader;
-import de.tum.bgu.msm.io.output.OmxMatrixWriter;
-import de.tum.bgu.msm.models.transportModel.TransportModel;
-import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.resources.Resources;
-import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import org.matsim.api.core.v01.TransportMode;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
+import de.tum.bgu.msm.schools.School;
+import de.tum.bgu.msm.schools.SchoolData;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +23,7 @@ public class SampleGenerator {
     public static DataContainer generateSampleForZones(DataContainer data, Set<Integer> zoneIdFilter) {
 
         Set<Integer> removedSchools = new HashSet<>();
-        final SchoolData schoolData = ((DataContainerMuc) data).getSchoolData();
+        final SchoolData schoolData = ((DataContainerWithSchoolsImpl) data).getSchoolData();
         schoolData.setup();
         for(School school: schoolData.getSchools()) {
             if(!zoneIdFilter.contains(school.getZoneId())) {

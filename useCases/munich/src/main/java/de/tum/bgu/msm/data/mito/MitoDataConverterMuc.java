@@ -11,9 +11,10 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
-import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.data.school.SchoolImpl;
 import de.tum.bgu.msm.mito.MitoDataConverter;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
+import de.tum.bgu.msm.schools.School;
+import de.tum.bgu.msm.schools.SchoolImpl;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -45,7 +46,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private void convertSchools(DataSet dataSet, DataContainer dataContainer) {
         Map<Integer, MitoZone> zones = dataSet.getZones();
-        for (School school : ((DataContainerMuc) dataContainer).getSchoolData().getSchools()) {
+        for (School school : ((DataContainerWithSchoolsImpl) dataContainer).getSchoolData().getSchools()) {
             MitoZone zone = zones.get(school.getZoneId());
             Coordinate coordinate;
             if (school instanceof SchoolImpl) {

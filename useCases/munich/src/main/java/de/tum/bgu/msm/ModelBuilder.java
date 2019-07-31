@@ -1,7 +1,8 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
@@ -61,7 +62,7 @@ import org.matsim.core.config.Config;
 
 public class ModelBuilder {
 
-    public static ModelContainer getModelContainerForMuc(DataContainerMuc dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();

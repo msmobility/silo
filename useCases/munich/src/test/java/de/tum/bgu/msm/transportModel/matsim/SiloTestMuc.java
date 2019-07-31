@@ -2,6 +2,7 @@ package de.tum.bgu.msm.transportModel.matsim;
 
 import java.io.File;
 
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -9,7 +10,7 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilder;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
@@ -35,7 +36,7 @@ public class SiloTestMuc {
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, null);

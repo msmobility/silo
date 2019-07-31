@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data.school;
+package de.tum.bgu.msm.schools;
 
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;

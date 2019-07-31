@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data.school;
+package de.tum.bgu.msm.schools;
 
 
 public class SchoolUtils {

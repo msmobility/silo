@@ -1,11 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich;
 
 import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.io.GeoDataReaderMuc;
 import de.tum.bgu.msm.io.JobWriterMuc;
 import de.tum.bgu.msm.io.PersonWriterMuc;
-import de.tum.bgu.msm.io.SchoolsWriter;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
@@ -45,7 +46,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         logger.info("   Starting to create the synthetic population.");
         createDirectoryForOutput();
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
@@ -84,7 +85,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         SiloUtil.createDirectoryIfNotExistingYet("microData/interimFiles");
     }
 
-    private void summarizeData(DataContainerMuc dataContainer){
+    private void summarizeData(DataContainerWithSchools dataContainer){
 
         String filehh = properties.main.baseDirectory
                 + properties.householdData.householdFileName
