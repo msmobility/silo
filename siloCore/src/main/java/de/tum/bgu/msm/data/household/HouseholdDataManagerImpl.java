@@ -89,16 +89,13 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     @Override
     public void endSimulation() {
-        String filehh = properties.main.baseDirectory
-                + properties.householdData.householdFinalFileName
-                + "_"
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String filehh = outputDirectory +"/"+ properties.householdData.householdFinalFileName + "_"
                 + properties.main.endYear
                 + ".csv";
         new DefaultHouseholdWriter(this).writeHouseholds(filehh);
 
-        String filepp = properties.main.baseDirectory
-                + properties.householdData.personFinalFileName
-                + "_"
+        String filepp = outputDirectory +"/"+ properties.householdData.personFinalFileName + "_"
                 + properties.main.endYear
                 + ".csv";
         new DefaultPersonWriter(householdData).writePersons(filepp);
@@ -257,7 +254,9 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         for (int i = 0; i < averageIncome.length; i++) {
             for (int j = 0; j < averageIncome[i].length; j++) {
                 for (int k = 0; k < averageIncome[i][j].length; k++) {
-                    if (count[i][j][k] > 0) averageIncome[i][j][k] = averageIncome[i][j][k] / count[i][j][k];
+                    if (count[i][j][k] > 0) {
+                        averageIncome[i][j][k] = averageIncome[i][j][k] / count[i][j][k];
+                    }
                 }
             }
         }

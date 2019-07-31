@@ -95,7 +95,8 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     @Override
     public void endSimulation() {
-        String filejj = properties.main.baseDirectory
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+        String filejj = outputDirectory
                 + properties.jobData.jobsFinalFileName
                 + "_"
                 + properties.main.endYear + ".csv";

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.models.ScriptInputProvider;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
 import java.io.InputStreamReader;
@@ -8,8 +9,7 @@ import java.io.Reader;
 
 public class DwellingUtilityStrategyImpl extends JavaScriptCalculator<Double> implements DwellingUtilityStrategy {
 
-    private final static Reader reader
-            = new InputStreamReader(DwellingUtilityStrategyImpl.class.getResourceAsStream("DwellingUtilityCalc"));
+    private final static Reader reader = new InputStreamReader(ScriptInputProvider.getDwellingUtilityScriptInput());
 
 
     public DwellingUtilityStrategyImpl() {

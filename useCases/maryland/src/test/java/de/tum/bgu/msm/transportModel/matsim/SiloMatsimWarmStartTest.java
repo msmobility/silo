@@ -62,13 +62,13 @@ public class SiloMatsimWarmStartTest {
             Assert.fail("Something did not work") ;
         }
 
-        final String filename_dd = "test/scenarios/annapolis/microData_reduced/dd_2001.csv";
+        final String filename_dd = "test/scenarios/annapolis/scenOutput/test_matsim/microData/dd_2001.csv";
         FileAssert.assertEquals("dwellings are different.", new File(utils.getInputDirectory() + "./dd_2001.csv"), new File(filename_dd));
-        final String filename_hh = "test/scenarios/annapolis/microData_reduced/hh_2001.csv";
+        final String filename_hh = "test/scenarios/annapolis/scenOutput/test_matsim/microData/hh_2001.csv";
         FileAssert.assertEquals("households are different.", new File(utils.getInputDirectory() + "./hh_2001.csv"), new File(filename_hh));
-        final String filename_jj = "test/scenarios/annapolis/microData_reduced/jj_2001.csv";
+        final String filename_jj = "test/scenarios/annapolis/scenOutput/test_matsim/microData/jj_2001.csv";
         FileAssert.assertEquals("jobs are different.", new File(utils.getInputDirectory() + "./jj_2001.csv"), new File(filename_jj));
-        final String filename_pp = "test/scenarios/annapolis/microData_reduced/pp_2001.csv";
+        final String filename_pp = "test/scenarios/annapolis/scenOutput/test_matsim/microData/pp_2001.csv";
         FileAssert.assertEquals("populations are different.", new File(utils.getInputDirectory() + "./pp_2001.csv"), new File(filename_pp));
 
         {

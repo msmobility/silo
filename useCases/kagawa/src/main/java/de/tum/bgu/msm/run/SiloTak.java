@@ -27,7 +27,7 @@ public class SiloTak {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Starting SILO land use model for Takamatsu (Kagawa)");
+        logger.info("Started SILO land use model for Takamatsu (Kagawa)");
         DataContainer dataContainer = DataBuilderTak.getTakModelData(properties, config);
         DataBuilderTak.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderTak.getTakModels(
