@@ -169,7 +169,8 @@
 
 
     <modules>
-        <module>matsimTransportModel</module>
+        <module>matsim2silo</module>
+        <module>mito2silo</module>
     </modules>
 
     <repositories>

@@ -4,12 +4,13 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
+import de.tum.bgu.msm.mito.MitoTransportModel;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
-import de.tum.bgu.msm.models.MitoTransportModelMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
@@ -120,7 +121,7 @@ public class ModelBuilder {
         TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                transportModel = new MitoTransportModelMuc(properties.main.baseDirectory, dataContainer, properties, config);
+                transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer, properties, config, new MitoDataConverterMuc());
                 break;
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
