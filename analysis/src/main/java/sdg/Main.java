@@ -1,8 +1,8 @@
 package sdg;
 
 import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 
 public class Main {
@@ -11,7 +11,7 @@ public class Main {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
         SDGCalculator.calculateSdgIndicators(dataContainer, Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName,

@@ -1,8 +1,6 @@
-package de.tum.bgu.msm.io;
+package de.tum.bgu.msm.schools;
 
 import de.tum.bgu.msm.data.MicroLocation;
-import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.locationtech.jts.geom.Coordinate;
 

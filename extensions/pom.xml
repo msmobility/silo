@@ -171,6 +171,7 @@
     <modules>
         <module>matsim2silo</module>
         <module>mito2silo</module>
+        <module>schools</module>
     </modules>
 
     <repositories>

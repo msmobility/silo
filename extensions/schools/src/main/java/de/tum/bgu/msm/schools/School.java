@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.data.school;
+package de.tum.bgu.msm.schools;
 
 import de.tum.bgu.msm.data.Location;
 
@@ -23,7 +23,4 @@ public interface School extends Location {
     double getStartTimeInSeconds();
 
     double getStudyTimeInSeconds();
-
-
-
 }

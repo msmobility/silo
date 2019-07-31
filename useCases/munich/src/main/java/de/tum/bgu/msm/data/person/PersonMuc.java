@@ -1,8 +1,9 @@
 package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.schools.PersonWithSchool;
 
-public class PersonMuc implements Person {
+public class PersonMuc implements PersonWithSchool {
 
     private final Person delegate;
 
@@ -19,20 +20,26 @@ public class PersonMuc implements Person {
         delegate = new PersonImpl(id, age, gender, occupation, role, jobId, income);
     }
 
+    @Override
     public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
 
+    @Override
     public int getSchoolType() {return schoolType;}
 
+    @Override
     public void setSchoolPlace(int schoolPlace) {
         this.schoolPlace = schoolPlace;
     }
 
+    @Override
     public int getSchoolPlace() {return schoolPlace;}
 
+    @Override
     public int getSchoolId() {
         return schoolId;
     }
 
+    @Override
     public void setSchoolId(int schoolId) {
         this.schoolId = schoolId;
     }

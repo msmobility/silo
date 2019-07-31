@@ -1,18 +1,14 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.io.*;
-import de.tum.bgu.msm.io.input.AbstractOmxReader;
 import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
-import de.tum.bgu.msm.io.output.OmxMatrixWriter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.resources.Resources;
-import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Collection;
 import java.util.Set;
@@ -23,7 +19,7 @@ public class RunSampleGenerator {
     public static void main(String[] args) {
 
         final Properties properties = SiloUtil.siloInitialization(args[0]);
-        DataContainerMuc dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
         final Collection<Zone> zones = dataContainer.getGeoData().getRegions().get(174).getZones();

@@ -1,15 +1,14 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
-import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.output.*;
-import de.tum.bgu.msm.models.demography.death.DefaultDeathStrategy;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.models.disability.DisabilityImpl;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -34,7 +33,7 @@ public class SiloMucDisability {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Starting SILO land use model for the Munich Metropolitan Area");
-        DataContainerMuc dataContainer = DataBuilderDisability.getModelDataForMuc(properties, config);
+        DataContainerWithSchoolsImpl dataContainer = DataBuilderDisability.getModelDataForMuc(properties, config);
         DataBuilderDisability.read(properties, dataContainer);
         //summarizeData(dataContainer, properties);
         ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
@@ -45,7 +44,7 @@ public class SiloMucDisability {
         logger.info("Finished SILO.");
     }
 
-    private static void summarizeData(DataContainerMuc dataContainer, Properties properties){
+    private static void summarizeData(DataContainerWithSchoolsImpl dataContainer, Properties properties){
 
         String filehh = properties.main.baseDirectory
                 + properties.householdData.householdFileName

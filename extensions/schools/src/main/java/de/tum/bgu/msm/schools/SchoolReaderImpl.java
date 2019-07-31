@@ -1,6 +1,5 @@
-package de.tum.bgu.msm.io;
+package de.tum.bgu.msm.schools;
 
-import de.tum.bgu.msm.data.school.*;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -9,12 +8,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class SchoolReaderMuc implements SchoolReader {
+public class SchoolReaderImpl implements SchoolReader {
 
-    private final static Logger logger = Logger.getLogger(SchoolReaderMuc.class);
+    private final static Logger logger = Logger.getLogger(SchoolReaderImpl.class);
     private final SchoolData schoolData;
 
-    public SchoolReaderMuc(SchoolData schoolData) {
+    public SchoolReaderImpl(SchoolData schoolData) {
         this.schoolData = schoolData;
     }
 

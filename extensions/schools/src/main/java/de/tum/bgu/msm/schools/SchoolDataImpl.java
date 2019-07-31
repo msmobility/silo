@@ -14,14 +14,13 @@
  *  limitations under the License.
  *
  */
-package de.tum.bgu.msm.data.school;
+package de.tum.bgu.msm.schools;
 
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -65,15 +64,15 @@ public class SchoolDataImpl implements SchoolData {
         this.properties = properties;
     }
 
-    public static int guessSchoolType(Person person) {
+    public static int guessSchoolType(PersonWithSchool person) {
         if (person.getAge() < MIN_SECONDARY_AGE) {
-            ((PersonMuc)person).setSchoolType(1);
+            person.setSchoolType(1);
             return 1;
         }else if (person.getAge() < MIN_TERTIARY_AGE) {
-            ((PersonMuc)person).setSchoolType(2);
+            person.setSchoolType(2);
             return 2;
         }else {
-            ((PersonMuc)person).setSchoolType(3);
+            person.setSchoolType(3);
             return 3;
         }
     }

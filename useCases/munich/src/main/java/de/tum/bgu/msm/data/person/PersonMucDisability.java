@@ -1,50 +1,51 @@
 package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.schools.PersonWithSchool;
 
-public class PersonMucDisability extends PersonMuc implements Person{
+public class PersonMucDisability implements PersonWithSchool {
 
-    private final Person delegate;
+    private final PersonMuc delegate;
 
-    private Nationality nationality;
     private Disability disability;
 
-    private int schoolType = 0;
-    private int schoolPlace = 0;
-    private int schoolId = -1;
-
-    public PersonMucDisability(int id, int age,
-                               Gender gender, Occupation occupation,
-                               PersonRole role, int jobId,
-                               int income)  {
-        super(id,  age, gender, occupation, role, jobId, income);
-        delegate = new PersonImpl(id, age, gender, occupation, role, jobId, income);
+    PersonMucDisability(int id, int age,
+                        Gender gender, Occupation occupation,
+                        PersonRole role, int jobId,
+                        int income)  {
+        delegate = new PersonMuc(id, age, gender, occupation, role, jobId, income);
     }
 
-    public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
+    @Override
+    public void setSchoolType(int schoolType) {delegate.setSchoolType(schoolType);}
 
-    public int getSchoolType() {return schoolType;}
+    @Override
+    public int getSchoolType() {return delegate.getSchoolType();}
 
+    @Override
     public void setSchoolPlace(int schoolPlace) {
-        this.schoolPlace = schoolPlace;
+        delegate.setSchoolPlace(schoolPlace);
     }
 
-    public int getSchoolPlace() {return schoolPlace;}
+    @Override
+    public int getSchoolPlace() {return delegate.getSchoolPlace();}
 
+    @Override
     public int getSchoolId() {
-        return schoolId;
+        return delegate.getSchoolId();
     }
 
+    @Override
     public void setSchoolId(int schoolId) {
-        this.schoolId = schoolId;
+        delegate.setSchoolId(schoolId);
     }
 
     public void setNationality(Nationality nationality) {
-        this.nationality = nationality;
+         delegate.setNationality(nationality);
     }
 
     public Nationality getNationality() {
-        return nationality;
+        return delegate.getNationality();
     }
 
 
