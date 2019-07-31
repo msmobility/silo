@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.models.transportModel.matsim;
+package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;

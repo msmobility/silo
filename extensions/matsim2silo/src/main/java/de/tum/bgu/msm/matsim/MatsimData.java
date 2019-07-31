@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.models.transportModel.matsim;
+package de.tum.bgu.msm.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Sets;

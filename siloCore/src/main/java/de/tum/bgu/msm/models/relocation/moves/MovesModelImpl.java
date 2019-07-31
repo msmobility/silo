@@ -9,11 +9,10 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
@@ -64,7 +63,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
-        this.threaded = dataContainer.getTravelTimes() instanceof MatsimTravelTimes;
+        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
     }
 
     @Override

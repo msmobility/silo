@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.models.transportModel.matsim;
+package de.tum.bgu.msm.matsim;
 
 import com.google.common.collect.Lists;
 import de.tum.bgu.msm.data.Zone;

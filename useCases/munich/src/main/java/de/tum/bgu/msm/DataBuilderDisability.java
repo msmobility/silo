@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactoryMuc;
 import de.tum.bgu.msm.data.person.PersonFactoryMucDisability;
 import de.tum.bgu.msm.data.school.SchoolData;
 import de.tum.bgu.msm.data.school.SchoolDataImpl;
@@ -17,14 +16,10 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
+import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class DataBuilderDisability {
 
