@@ -13,6 +13,10 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.io.JobWriterMuc;
+import de.tum.bgu.msm.io.PersonWriterMuc;
+import de.tum.bgu.msm.io.PersonWriterTak;
+import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -128,7 +132,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected TableDataSet odCountyFlow;
     private DataContainer dataContainer;
 
-    private HashMap<Person, Integer> jobTypeByWorker;
+    private HashMap<Person, Integer> jobTypeByWorker= new HashMap<>();
 
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
     private Properties properties;
@@ -178,6 +182,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
         //SummarizeData.writeOutSyntheticPopulation(2000,dataContainer);
+        summarizeData(dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -2370,6 +2375,51 @@ public class SyntheticPopJP implements SyntheticPopI {
         }
         int price = floorSpace * averagePricePerSQM;
         return price;
+
+    }
+
+    private void summarizeData(DataContainer dataContainer){
+
+        String filehh = properties.main.baseDirectory
+                + properties.householdData.householdFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        hhwriter.writeHouseholds(filehh);
+
+        String filepp = properties.main.baseDirectory
+                + properties.householdData.personFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        PersonWriter ppwriter = new PersonWriterTak(dataContainer.getHouseholdDataManager());
+        ppwriter.writePersons(filepp);
+
+        String filedd = properties.main.baseDirectory
+                + properties.realEstate.dwellingsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        ddwriter.writeDwellings(filedd);
+
+        String filejj = properties.main.baseDirectory
+                + properties.jobData.jobsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
+        jjwriter.writeJobs(filejj);
+
+
+/*        String fileee = properties.main.baseDirectory
+                + properties.schoolData.schoolsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
+        eewriter.writeSchools(fileee);*/
 
     }
 
