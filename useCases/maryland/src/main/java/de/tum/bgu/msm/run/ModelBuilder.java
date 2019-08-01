@@ -47,6 +47,7 @@ import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -76,7 +77,7 @@ public class ModelBuilder {
                 dataContainer.getTravelTimes(),
                 new DefaultDwellingProbabilityStrategy(),
                 new DwellingUtilityStrategyMstm(),
-                new SelectRegionStrategyMstm());
+                new RegionUilityStrategyMstm(), new RegionProbabilityStrategyImpl());
 
         MovesModelImpl movesModel = new MovesModelImpl(dataContainer, properties, new DefaultMovesStrategy(), housingStrategy);
 

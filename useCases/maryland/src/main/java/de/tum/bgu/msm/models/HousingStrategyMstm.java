@@ -16,13 +16,13 @@ import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.person.MarylandPerson;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.LongAdder;
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
 public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
+
+
 
     private enum Normalizer {
         /**
@@ -48,7 +50,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
         VAC_DD,
         DAMPENED_VAC_RATE,
         POPULATION,
-        POWER_OF_POPULATION
+        POWER_OF_POPULATION;
     }
 
     private static final Normalizer NORMALIZER = Normalizer.POWER_OF_POPULATION;
@@ -64,7 +66,8 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
 
     private final DwellingUtilityStrategyMstm dwellingUtilityStrategy;
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
-    private final SelectRegionStrategyMstm selectRegionStrategy;
+    private final RegionUilityStrategyMstm regionUtilityStrategy;
+    private final RegionProbabilityStrategy regionProbabilityStrategy;
 
     private final LongAdder totalVacantDd = new LongAdder();
 
@@ -81,7 +84,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
                                TravelTimes travelTimes,
                                DwellingProbabilityStrategy dwellingProbabilityStrategy,
                                DwellingUtilityStrategyMstm dwellingUtilityStrategy,
-                               SelectRegionStrategyMstm selectRegionStrategy) {
+                               RegionUilityStrategyMstm regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.properties = properties;
         this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.dataContainer = dataContainer;
@@ -92,7 +95,8 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
         realEstateDataManager = (RealEstateDataManagerMstm) dataContainer.getRealEstateDataManager();
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
-        this.selectRegionStrategy = selectRegionStrategy;
+        this.regionUtilityStrategy = regionUtilityStrategy;
+        this.regionProbabilityStrategy = regionProbabilityStrategy;
     }
 
     @Override
@@ -184,6 +188,11 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
     }
 
     @Override
+    public double calculateSelectRegionProbability(double util) {
+        return regionProbabilityStrategy.calculateSelectRegionProbability(util);
+    }
+
+    @Override
     public void prepareYear() {
         totalVacantDd.reset();
         if (NORMALIZER == Normalizer.SHARE_VAC_DD) {
@@ -217,7 +226,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes travelTimes = this.travelTimes.duplicate();
-        final HousingStrategyMstm housingStrategyMstm = new HousingStrategyMstm(properties, dataContainer, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, selectRegionStrategy);
+        final HousingStrategyMstm housingStrategyMstm = new HousingStrategyMstm(properties, dataContainer, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategy, regionProbabilityStrategy);
         housingStrategyMstm.hhByRegion = this.hhByRegion;
         housingStrategyMstm.regionalRacialComposition = this.regionalRacialComposition;
         housingStrategyMstm.zonalRacialComposition = this.zonalRacialComposition;
@@ -342,7 +351,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
                 Map<Integer, Double> utilitiesByRegionForThisRaceIncome = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()) {
                     priceUtilitiesByRegion.put(region.getId(), (float) convertPriceToUtility(priceByRegion.get(region.getId()), incomeCategory));
-                    double util = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
+                    double util = regionUtilityStrategy.calculateRegionUtility(incomeCategory,
                             race, priceUtilitiesByRegion.get(region.getId()), accessibilityByRegion.get(region.getId()),
                             (float) regionalRacialComposition.getIndexed(region.getId(), race.getId()), schoolQualityByRegion.get(region.getId()),
                             crimeRateByRegion.get(region.getId()));

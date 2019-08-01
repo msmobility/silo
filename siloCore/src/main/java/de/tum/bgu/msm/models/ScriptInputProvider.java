@@ -4,7 +4,8 @@ import java.io.InputStream;
 
 public final class ScriptInputProvider {
 
-    private static InputStream selectRegionScriptInput = ScriptInputProvider.class.getResourceAsStream("SelectRegionCalc");
+    private static InputStream regionUtilityScriptInput = ScriptInputProvider.class.getResourceAsStream("RegionUtilityCalc");
+    private static InputStream regionProbabilityScriptInput = ScriptInputProvider.class.getResourceAsStream("SelectRegionCalc");
 
     public static InputStream getDwellingProbabilityScriptInput() {
         return ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
@@ -174,7 +175,11 @@ public final class ScriptInputProvider {
         return movesScriptInput;
     }
 
-    public static InputStream getSelectRegionScriptInput() {
-        return selectRegionScriptInput;
+    public static InputStream getRegionUtilityScriptInput() {
+        return regionUtilityScriptInput;
+    }
+
+    public static InputStream getRegionProbabilityScriptInput() {
+        return regionProbabilityScriptInput;
     }
 }

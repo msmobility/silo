@@ -43,16 +43,11 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
-import de.tum.bgu.msm.models.relocation.moves.DwellingUtilityStrategyImpl;
-import de.tum.bgu.msm.models.relocation.moves.CarOnlyHousingStrategyImpl;
-import de.tum.bgu.msm.models.relocation.moves.SelectRegionStrategyImpl;
 
 public class ModelBuilder {
 
@@ -74,7 +69,7 @@ public class ModelBuilder {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(), new CarOnlyHousingStrategyImpl(dataContainer, properties, dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
-                new DefaultDwellingProbabilityStrategy(), new SelectRegionStrategyImpl()));
+                new DefaultDwellingProbabilityStrategy(), new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
 
 
         DivorceModel divorceModel = new DivorceModelImpl(
