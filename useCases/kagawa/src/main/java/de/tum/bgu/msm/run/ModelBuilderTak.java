@@ -69,7 +69,7 @@ public class ModelBuilderTak {
                                                 new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                             new SelectRegionStrategyImpl()));
 
-            //TODO reconsider this
+            //TODO reconsider CreateCarOwnershipModel in Kagawa
             CreateCarOwnershipModel carOwnershipModel = null;
 
             DivorceModel divorceModel = new DivorceModelImpl(
