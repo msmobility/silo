@@ -26,8 +26,6 @@ public class PersonWriterTak implements PersonWriter {
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
         pwp.print("id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income");
         pwp.print(",");
-        pwp.print("disability");
-        pwp.print(",");
         pwp.print("schoolId");
 
         pwp.println();
@@ -51,9 +49,7 @@ public class PersonWriterTak implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getIncome());
             pwp.print(",");
-            pwp.print(0);
-            pwp.print(",");
-            pwp.print(0);
+            pwp.print(((PersonTak) pp).getSchoolId());
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
