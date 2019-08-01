@@ -1,4 +1,4 @@
-var calculateSelectRegionProbability = function (incomeGroup, nationality, price, accessibility, foreignerShare) {
+var calculateRegionUtility = function (incomeGroup, nationality, price, accessibility, foreignerShare) {
 
       if(nationality.name().equals("GERMAN") || nationality.name().equals("OTHER")) {
         if(incomeGroup.name().equals("LOW")) {

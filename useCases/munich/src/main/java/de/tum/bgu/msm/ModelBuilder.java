@@ -1,8 +1,8 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
-import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
@@ -51,7 +51,7 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
 import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
-import de.tum.bgu.msm.models.relocation.SelectRegionStrategyImpl;
+import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
@@ -80,7 +80,7 @@ public class ModelBuilder {
                 new HousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(), new SelectRegionStrategyImpl()));
+                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()));
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 

@@ -21,6 +21,7 @@ import de.tum.bgu.msm.data.person.RaceCapeTown;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
@@ -65,8 +66,10 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     private final TravelTimes travelTimes;
 
     private final DwellingUtilityStrategyCapeTown ddUtilityStrategy;
-    private final SelectRegionStrategyCapeTown regionStrategy;
     private final DwellingProbabilityStrategy ddProbabilityStrategy;
+
+    private final RegionUtilityStrategy regionUtilityStrategy;
+    private final RegionProbabilityStrategy regionProbabilityStrategy;
 
     private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByRegion = new HashMap<>();
     private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByZone = new HashMap<>();
@@ -74,15 +77,16 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     private IndexedDoubleMatrix1D ppByRegion;
     private IndexedDoubleMatrix1D ppByZone;
 
-    public HousingStrategyCapeTown(DataContainer dataContainer, Properties properties, TravelTimes travelTimes, DwellingUtilityStrategyCapeTown ddUtilityStrategy, SelectRegionStrategyCapeTown regionStrategy, DwellingProbabilityStrategy ddProbabilityStrategy) {
+    public HousingStrategyCapeTown(DataContainer dataContainer, Properties properties, TravelTimes travelTimes, DwellingUtilityStrategyCapeTown ddUtilityStrategy, RegionUtilityStrategy regionUtilityStrategy, DwellingProbabilityStrategy ddProbabilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
         this.properties = properties;
         this.travelTimes = travelTimes;
         this.ddUtilityStrategy = ddUtilityStrategy;
-        this.regionStrategy = regionStrategy;
+        this.regionUtilityStrategy = regionUtilityStrategy;
         this.ddProbabilityStrategy = ddProbabilityStrategy;
+        this.regionProbabilityStrategy = regionProbabilityStrategy;
     }
 
 
@@ -146,6 +150,11 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     }
 
     @Override
+    public double calculateSelectRegionProbability(double util) {
+        return regionProbabilityStrategy.calculateSelectRegionProbability(util);
+    }
+
+    @Override
     public void prepareYear() {
         calculateRegionalUtilities();
     }
@@ -173,7 +182,7 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes ttCopy = travelTimes.duplicate();
-        HousingStrategyCapeTown strategy = new HousingStrategyCapeTown(dataContainer, properties, ttCopy, ddUtilityStrategy, regionStrategy, ddProbabilityStrategy);
+        HousingStrategyCapeTown strategy = new HousingStrategyCapeTown(dataContainer, properties, ttCopy, ddUtilityStrategy, regionUtilityStrategy, ddProbabilityStrategy, regionProbabilityStrategy);
         strategy.ppByRegion = ppByRegion;
         strategy.ppByZone = ppByZone;
         strategy.utilityByRegionByRaceByIncome = utilityByRegionByRaceByIncome;
@@ -200,7 +209,7 @@ public class HousingStrategyCapeTown implements HousingStrategy {
                     final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
 
-                    double util = regionStrategy.calculateSelectRegionProbability(incomeCategory,
+                    double util = regionUtilityStrategy.calculateRegionUtility(incomeCategory,
                             race, priceUtil, regAcc, personShareByRaceByRegion.get(region.getId()).get(race));
                     switch (NORMALIZER) {
                         case POPULATION:

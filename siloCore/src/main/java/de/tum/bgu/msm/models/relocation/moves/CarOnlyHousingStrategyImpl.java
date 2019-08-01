@@ -63,7 +63,9 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
 
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
-    private final SelectRegionStrategy selectRegionStrategy;
+
+    private final RegionUtilityStrategy regionUtilityStrategy;
+    private final RegionProbabilityStrategy regionProbabilityStrategy;
 
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class);
 
@@ -72,7 +74,7 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
                                       TravelTimes travelTimes,
                                       DwellingUtilityStrategy dwellingUtilityStrategy,
                                       DwellingProbabilityStrategy dwellingProbabilityStrategy,
-                                      SelectRegionStrategy selectRegionStrategy) {
+                                      RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         geoData = dataContainer.getGeoData();
         this.properties = properties;
@@ -81,8 +83,9 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
         commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
-        this.selectRegionStrategy = selectRegionStrategy;
+        this.regionUtilityStrategy = regionUtilityStrategy;
         this.realEstateDataManager = dataContainer.getRealEstateDataManager();
+        this.regionProbabilityStrategy = regionProbabilityStrategy;
     }
 
 
@@ -138,6 +141,11 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
     }
 
     @Override
+    public double calculateSelectRegionProbability(double util) {
+        return regionProbabilityStrategy.calculateSelectRegionProbability(util);
+    }
+
+    @Override
     public void prepareYear() {
         calculateShareOfForeignersByZoneAndRegion();
         calculateRegionalUtilities();
@@ -167,7 +175,7 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
     public HousingStrategy duplicate() {
         TravelTimes ttCopy = travelTimes.duplicate();
         CarOnlyHousingStrategyImpl strategy = new CarOnlyHousingStrategyImpl(dataContainer, properties, ttCopy,
-                dwellingUtilityStrategy, dwellingProbabilityStrategy, selectRegionStrategy);
+                dwellingUtilityStrategy, dwellingProbabilityStrategy, regionUtilityStrategy, regionProbabilityStrategy);
         strategy.hhByRegion = hhByRegion;
         strategy.utilityByIncomeByRegion = utilityByIncomeByRegion;
         return strategy;
@@ -202,7 +210,7 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
                 final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                 final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
                 float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-                double value = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
+                double value = regionUtilityStrategy.calculateSelectRegionProbability(incomeCategory,
                         priceUtil, regAcc, 0);
                 switch (NORMALIZER) {
                     case POPULATION:
