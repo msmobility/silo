@@ -13,6 +13,9 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.household.HouseholdFactoryTak;
+import de.tum.bgu.msm.io.*;
+import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -128,7 +131,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected TableDataSet odCountyFlow;
     private DataContainer dataContainer;
 
-    private HashMap<Person, Integer> jobTypeByWorker;
+    private HashMap<Person, Integer> jobTypeByWorker= new HashMap<>();
 
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
     private Properties properties;
@@ -178,6 +181,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         assignJobs(); //Workplace allocation
         assignSchools(); //School allocation
         //SummarizeData.writeOutSyntheticPopulation(2000,dataContainer);
+        summarizeData(dataContainer);
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
     }
@@ -795,9 +799,9 @@ public class SyntheticPopJP implements SyntheticPopI {
         ArrayList<Person> studentArrayList = new ArrayList<>();
         int[] studentsByType2 = new int[schoolTypes.length];
         for (Person person : persons) {
-            if (((PersonMuc) person).getSchoolType() > 0) { //They are studying
+            if (((PersonTak) person).getSchoolType() > 0) { //They are studying
                 studentArrayList.add(person);
-                studentsByType2[((PersonMuc) person).getSchoolType() - 1] = studentsByType2[((PersonMuc) person).getSchoolType() - 1] + 1;
+                studentsByType2[((PersonTak) person).getSchoolType() - 1] = studentsByType2[((PersonTak) person).getSchoolType() - 1] + 1;
             }
         }
         //Randomize the order of the students
@@ -813,7 +817,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (Person pp : studentArrayList) {
 
             //Select the zones with vacant schools for that person, given the school type
-            int schoolType = ((PersonMuc) pp).getSchoolType();
+            int schoolType = ((PersonTak) pp).getSchoolType();
             studentsByType[schoolType - 1] = studentsByType[schoolType - 1] + 1;
             int[] keys = idZonesVacantSchoolsByType.get(schoolType);
             int lengthKeys = numberZonesWithVacantSchoolsByType.get(schoolType);
@@ -838,7 +842,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
 
                 //Assign values to job and person
-                ((PersonMuc) pp).setSchoolPlace(schoolPlace[0] / 100);
+                ((PersonTak) pp).setSchoolPlace(schoolPlace[0] / 100);
                 //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
 
                /* //For validation OD TableDataSet
@@ -860,7 +864,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
                 assignedSchools++;
             } else {//No more school capacity in the study area. This person will study outside the area
-                ((PersonMuc) pp).setSchoolPlace(-2); //they attend one school out of the area
+                ((PersonTak) pp).setSchoolPlace(-2); //they attend one school out of the area
                 studentsOutside[schoolType - 1] = studentsOutside[schoolType - 1] + 1;
             }
         }
@@ -893,7 +897,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         //Generate the households, dwellings and persons
         logger.info("   Starting to generate households");
-        HouseholdFactoryMuc householdFactory = new HouseholdFactoryMuc();
+        HouseholdFactoryTak householdFactory = new HouseholdFactoryTak();
         int aux = 1;
         for (int i = 1; i <= households.getRowCount(); i++){
             Household hh = householdFactory.createHousehold((int) households.getValueAt(i, "id"), (int) households.getValueAt(i, "dwelling"),
@@ -901,9 +905,9 @@ public class SyntheticPopJP implements SyntheticPopI {
             householdData.addHousehold(hh);
 
             for (int j = 1; j <= hh.getHhSize(); j++) {
-                PersonFactoryMuc factory = new PersonFactoryMuc();
+                PersonFactoryTak factory = new PersonFactoryTak();
                 int hhID = (int) persons.getValueAt(aux, "hhid");
-                PersonMuc pp = factory.createPerson((int) persons.getValueAt(aux, "id"),
+                PersonTak pp = factory.createPerson((int) persons.getValueAt(aux, "id"),
                         (int) persons.getValueAt(aux, "age"), Gender.valueOf((int) persons.getValueAt(aux, "gender")),
                         Occupation.valueOf((int) persons.getValueAt(aux, "occupation")), null,  (int) persons.getValueAt(aux, "workplace"),
                         (int) persons.getValueAt(aux, "income"));
@@ -913,12 +917,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                 else if (persons.getStringValueAt(aux, "relationShip").equals("married")) pp.setRole(PersonRole.MARRIED);
                 else pp.setRole(PersonRole.CHILD);
                 if (persons.getValueAt(aux,"driversLicense") == 1) pp.setDriverLicense(true);
-                int nationality = (int) persons.getValueAt(aux,"nationality");
-                if (nationality == 1) {
-                    pp.setNationality(Nationality.GERMAN);
-                } else {
-                    pp.setNationality(Nationality.OTHER);
-                }
                 pp.setSchoolType((int) persons.getValueAt(aux,"school"));
                 pp.setWorkplace((int) persons.getValueAt(aux,"workplace"));
                 aux++;
@@ -1046,7 +1044,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
-        HouseholdFactoryMuc householdFactory = new HouseholdFactoryMuc();
+        HouseholdFactoryTak householdFactory = new HouseholdFactoryTak();
 
         regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
         regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
@@ -1170,7 +1168,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
                     //copy the household members characteristics
-                    PersonFactoryMuc factory = new PersonFactoryMuc();
+                    PersonFactoryTak factory = new PersonFactoryTak();
                     for (int rowPerson = 0; rowPerson < householdSize; rowPerson++) {
                         int idPerson = householdData.getNextPersonId();
                         int personCounter = (int) microHouseholds.getIndexedValueAt(selectedHh, "firstPerson") + rowPerson;
@@ -1199,7 +1197,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                                 e.printStackTrace();
                             }
                         }
-                        PersonMuc pers = factory.createPerson(idPerson, age, gender, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
+                        PersonTak pers = factory.createPerson(idPerson, age, gender, occupation, null, 0, income); //(int id, int hhid, int age, int gender, Race race, int occupation, int workplace, int income)
                         householdData.addPerson(pers);
                         householdData.addPersonToHousehold(pers, household);
                         jobTypeByWorker.put(pers, jobType);
@@ -1210,7 +1208,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                             role = PersonRole.MARRIED;
                         }
                         pers.setRole(role);
-                        pers.setNationality(Nationality.GERMAN);
                         boolean license = false;
                         if (microPersons.getValueAt(personCounter, "DrivLicense") == 1){
                             license = true;
@@ -2370,6 +2367,51 @@ public class SyntheticPopJP implements SyntheticPopI {
         }
         int price = floorSpace * averagePricePerSQM;
         return price;
+
+    }
+
+    private void summarizeData(DataContainer dataContainer){
+
+        String filehh = properties.main.baseDirectory
+                + properties.householdData.householdFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        hhwriter.writeHouseholds(filehh);
+
+        String filepp = properties.main.baseDirectory
+                + properties.householdData.personFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        PersonWriter ppwriter = new PersonWriterTak(dataContainer.getHouseholdDataManager());
+        ppwriter.writePersons(filepp);
+
+        String filedd = properties.main.baseDirectory
+                + properties.realEstate.dwellingsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        DwellingWriter ddwriter = new DwellingWriterTak(dataContainer.getRealEstateDataManager());
+        ddwriter.writeDwellings(filedd);
+
+        String filejj = properties.main.baseDirectory
+                + properties.jobData.jobsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager());
+        jjwriter.writeJobs(filejj);
+
+
+/*        String fileee = properties.main.baseDirectory
+                + properties.schoolData.schoolsFileName
+                + "_"
+                + properties.main.baseYear
+                + ".csv";
+        SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
+        eewriter.writeSchools(fileee);*/
 
     }
 
