@@ -1,4 +1,4 @@
-var calculateSelectRegionProbability = function (incomeGroup, race, price, accessibility, racialShare) {
+var calculateRegionUtility = function (incomeGroup, race, price, accessibility, racialShare) {
 
         beta = 0.;
         if(incomeGroup.name().equals("LOW")) {

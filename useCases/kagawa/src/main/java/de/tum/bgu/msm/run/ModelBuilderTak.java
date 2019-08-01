@@ -67,7 +67,7 @@ public class ModelBuilderTak {
                     new CarOnlyHousingStrategyImpl(dataContainer,
                                                 properties, dataContainer.getTravelTimes(),
                                                 new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                            new SelectRegionStrategyImpl()));
+                            new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
 
             //TODO reconsider this
             CreateCarOwnershipModel carOwnershipModel = null;

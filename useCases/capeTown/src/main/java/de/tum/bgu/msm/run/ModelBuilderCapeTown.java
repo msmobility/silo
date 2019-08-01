@@ -46,11 +46,12 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyCapeTown;
 import de.tum.bgu.msm.models.relocation.HousingStrategyCapeTown;
-import de.tum.bgu.msm.models.relocation.SelectRegionStrategyCapeTown;
+import de.tum.bgu.msm.models.relocation.RegionUtilityStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
@@ -74,8 +75,8 @@ public class ModelBuilderCapeTown {
                 dataContainer, properties, new DefaultMovesStrategy(),
                 new HousingStrategyCapeTown(dataContainer,
                 properties, dataContainer.getTravelTimes(),
-                new DwellingUtilityStrategyCapeTown(), new SelectRegionStrategyCapeTown(),
-                new DefaultDwellingProbabilityStrategy()));
+                new DwellingUtilityStrategyCapeTown(), new RegionUtilityStrategy(),
+                new DefaultDwellingProbabilityStrategy(), new RegionProbabilityStrategyImpl()));
 
         //TODO reconsider this
         CreateCarOwnershipModel carOwnershipModel = null;

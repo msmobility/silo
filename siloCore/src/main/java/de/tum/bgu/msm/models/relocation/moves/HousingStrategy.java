@@ -39,6 +39,8 @@ public interface HousingStrategy<T extends Dwelling> {
      */
     double calculateSelectDwellingProbability(double util);
 
+    double calculateSelectRegionProbability(double util);
+
     /**
      * Entry point for preparations before the next simulation year
      * (e.g. for cached utility calculations).

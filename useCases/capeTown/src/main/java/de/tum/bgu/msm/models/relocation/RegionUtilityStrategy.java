@@ -7,18 +7,18 @@ import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-public class SelectRegionStrategyCapeTown extends JavaScriptCalculator<Double> {
+public class RegionUtilityStrategy extends JavaScriptCalculator<Double> {
 
     private final static Reader reader
-            = new InputStreamReader(SelectRegionStrategyCapeTown.class.getResourceAsStream("SelectRegionCalcCapeTown"));
+            = new InputStreamReader(RegionUtilityStrategy.class.getResourceAsStream("RegionUtilityCalc"));
 
-    public SelectRegionStrategyCapeTown() {
+    public RegionUtilityStrategy() {
         super(reader);
     }
 
-    public double calculateSelectRegionProbability(
+    public double calculateRegionUtility(
             IncomeCategory incomeCategory, RaceCapeTown race,
             float priceUtil, float accessibilityUtil, double racialShare) {
-        return super.calculate("calculateSelectRegionProbability", incomeCategory, race, priceUtil, accessibilityUtil, racialShare);
+        return super.calculate("calculateRegionUtility", incomeCategory, race, priceUtil, accessibilityUtil, racialShare);
     }
 }

@@ -18,6 +18,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
@@ -64,7 +65,9 @@ public class HousingStrategyMuc implements HousingStrategy {
 
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
-    private final SelectRegionStrategy selectRegionStrategy;
+
+    private final RegionUtilityStrategyMuc regionUtilityStrategyMuc;
+    private final RegionProbabilityStrategy regionProbabilityStrategy;
 
     private final LongAdder totalVacantDd = new LongAdder();
 
@@ -78,7 +81,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                               TravelTimes travelTimes,
                               DwellingProbabilityStrategy dwellingProbabilityStrategy,
                               DwellingUtilityStrategy dwellingUtilityStrategy,
-                              SelectRegionStrategy selectRegionStrategy) {
+                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
@@ -88,7 +91,8 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.travelTimes = travelTimes;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
-        this.selectRegionStrategy = selectRegionStrategy;
+        this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
+        this.regionProbabilityStrategy = regionProbabilityStrategy;
     }
 
     @Override
@@ -196,6 +200,11 @@ public class HousingStrategyMuc implements HousingStrategy {
     }
 
     @Override
+    public double calculateSelectRegionProbability(double util) {
+        return regionProbabilityStrategy.calculateSelectRegionProbability(util);
+    }
+
+    @Override
     public void prepareYear() {
         logger.info("Calculating regional utilities");
         calculateShareOfForeignersByZoneAndRegion();
@@ -211,19 +220,19 @@ public class HousingStrategyMuc implements HousingStrategy {
                     float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
 
 
-                    double probability = selectRegionStrategy.calculateSelectRegionProbability(incomeCategory,
+                    double utility = regionUtilityStrategyMuc.calculateRegionUtility(incomeCategory,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
                     switch (NORMALIZER) {
                         case POPULATION:
-                            probability *= hhByRegion.getIndexed(region.getId());
+                            utility *= hhByRegion.getIndexed(region.getId());
                             break;
                         case POWER_OF_POPULATION:
-                            probability *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
+                            utility *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
                             break;
                         default:
                             //do nothing.
                     }
-                    regionUtils.put(region, probability);
+                    regionUtils.put(region, utility);
                 }
                 utilityByNationalityByRegion.put(nationality, regionUtils);
             }
@@ -299,7 +308,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes travelTimes = this.travelTimes.duplicate();
-        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, selectRegionStrategy);
+        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy);
         housingStrategyMuc.regionalShareForeigners = this.regionalShareForeigners;
         housingStrategyMuc.hhByRegion = this.hhByRegion;
         housingStrategyMuc.utilityByIncomeByNationalityByRegion = this.utilityByIncomeByNationalityByRegion;

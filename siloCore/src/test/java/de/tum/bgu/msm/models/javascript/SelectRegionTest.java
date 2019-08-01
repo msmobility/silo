@@ -19,7 +19,7 @@
 //
 //    @Before
 //    public void setup() {
-//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalc"));
+//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RegionUtilityCalc"));
 //        calculator = new SelectRegionJSCalculator(reader);
 //
 //        Reader readerMstm = new InputStreamReader(this.getClass().getResourceAsStream("SelectRegionCalcMstm"));
