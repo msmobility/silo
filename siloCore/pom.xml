@@ -380,7 +380,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>master</version>
+            <version>master-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
