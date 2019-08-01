@@ -62,6 +62,7 @@ public class HouseholdTak implements Household {
         delegate.removePerson(personId);
     }
 
+
     @Override
     public void setAutos(int autos) {
         delegate.setAutos(autos);
