@@ -154,8 +154,7 @@ public class AccessibilityImpl implements Accessibility {
      * @param beta        beta parameter used for the hansen calculation
      */
     static IndexedDoubleMatrix2D calculateZoneToZoneAccessibilities(IndexedDoubleMatrix1D population, IndexedDoubleMatrix2D travelTimes, double alpha, double beta) {
-        final int size = Math.toIntExact(population.size());
-        final IndexedDoubleMatrix2D travelTimesCopy = travelTimes.viewPart(0, 0, size, size).copy();
+        final IndexedDoubleMatrix2D travelTimesCopy = travelTimes.copy();
         return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
                 travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
     }
