@@ -11,7 +11,6 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
@@ -29,25 +28,17 @@ import java.util.Map;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 23 February 2012 in Albuquerque
  **/
-public class SummarizeData {
+public final class SummarizeData {
     private static final String DEVELOPMENT_FILE = "development"; ;
     private final static Logger logger = Logger.getLogger(SummarizeData.class);
 
 
-    private static PrintWriter resultWriter;
     private static PrintWriter spatialResultWriter;
-
-    private static PrintWriter resultWriterFinal;
-    private static PrintWriter spatialResultWriterFinal;
-
-    public static Boolean resultWriterReplicate = false;
 
     private static TableDataSet scalingControlTotals;
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
 
-
-
-
+    private SummarizeData(){}
 
     public static void readScalingYearControlTotals() {
         // read file with control totals to scale synthetic population to exogenous assumptions for selected output years
@@ -57,28 +48,19 @@ public class SummarizeData {
         scalingControlTotals.buildIndex(scalingControlTotals.getColumnPosition("Zone"));
     }
 
-
-
     public static void resultFileSpatial(String action) {
-        resultFileSpatial(action, true);
-    }
-
-    public static void resultFileSpatial(String action, Boolean writeFinal) {
         // handle summary file
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
                 spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
                         ".csv", Properties.get().main.startYear != Properties.get().main.baseYear);
-                spatialResultWriterFinal = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL + "_" + Properties.get().main.endYear + ".csv", false);
                 break;
             case "close":
                 spatialResultWriter.close();
-                spatialResultWriterFinal.close();
                 break;
             default:
                 spatialResultWriter.println(action);
-                if (resultWriterReplicate && writeFinal) spatialResultWriterFinal.println(action);
                 break;
         }
     }

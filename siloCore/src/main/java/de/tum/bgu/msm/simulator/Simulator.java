@@ -32,7 +32,6 @@ public final class Simulator {
 
     private ResultsMonitor resultsMonitor;
 
-
     public Simulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
     }
@@ -135,7 +134,6 @@ public final class Simulator {
         for(EventModel model: models.values()) {
             model.endSimulation();
         }
-
         resultsMonitor.endSimulation();
     }
 }

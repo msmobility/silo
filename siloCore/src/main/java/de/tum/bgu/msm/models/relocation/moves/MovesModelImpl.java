@@ -20,10 +20,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -37,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MovesModelImpl extends AbstractModel implements MovesModel {
 
-    public static BufferedWriter fileWriter;
+//    public static BufferedWriter fileWriter;
 
     public static boolean track = false;
 
@@ -54,13 +50,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy, HousingStrategy housingStrategy) {
         super(dataContainer, properties);
-        try {
-            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
-            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
-            fileWriter.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
+//            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
+//            fileWriter.newLine();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
         this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
@@ -101,11 +97,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
-        try {
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            fileWriter.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**
