@@ -58,7 +58,7 @@ public class JobWriterMuc implements JobWriter {
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {
                 SiloUtil.trackingFile("Writing jj " + jj.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(jj.toString());
+                SiloUtil.getTrackWriter().println(jj.toString());
             }
         }
         pwj.close();

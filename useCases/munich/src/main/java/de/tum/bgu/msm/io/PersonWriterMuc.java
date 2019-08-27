@@ -61,7 +61,7 @@ public class PersonWriterMuc implements PersonWriter {
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(pp.toString());
+                SiloUtil.getTrackWriter().println(pp.toString());
             }
         }
         pwp.close();

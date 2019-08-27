@@ -80,8 +80,8 @@ public class PersonReaderTak implements PersonReader {
 
 
                 if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + path);
-                    SiloUtil.trackWriter.println(pp.toString());
+                    SiloUtil.getTrackWriter().println("Read person with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(pp.toString());
                 }
             }
         } catch (IOException e) {

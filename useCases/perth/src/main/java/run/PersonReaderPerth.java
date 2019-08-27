@@ -69,8 +69,8 @@ public class PersonReaderPerth implements PersonReader{
                 pp.setDriverLicense(license);
 
                 if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + path);
-                    SiloUtil.trackWriter.println(pp.toString());
+                    SiloUtil.getTrackWriter().println("Read person with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(pp.toString());
                 }
             }
         } catch (IOException e) {

@@ -136,13 +136,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
             moveHousehold(household, household.getDwellingId(), idNewDD);
             if (hhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+                SiloUtil.getTrackWriter().println("Household " + hhId + " has moved to dwelling " +
                         household.getDwellingId());
             }
             return true;
         } else {
             if (hhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hhId + " intended to move but " +
+                SiloUtil.getTrackWriter().println("Household " + hhId + " intended to move but " +
                         "could not find an adequate dwelling.");
             }
             return false;
@@ -295,7 +295,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         dataContainer.getRealEstateDataManager().getDwelling(idNewDD).setResidentID(hh.getId());
         hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("Household " +
+            SiloUtil.getTrackWriter().println("Household " +
                     hh.getId() + " moved from dwelling " + idOldDD + " to dwelling " + idNewDD + ".");
         }
     }

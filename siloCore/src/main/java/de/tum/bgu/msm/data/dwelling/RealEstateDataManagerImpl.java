@@ -181,7 +181,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
                 vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
                 vacDwellingsByRegion.get(region).add(dd);
                 if (dwellingId == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
+                    SiloUtil.getTrackWriter().println("Added dwelling " + dwellingId + " to list of vacant dwelling.");
                 }
             }
         }
@@ -273,7 +273,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         if (vacDwellings != null) {
             found = vacDwellings.remove(dwelling);
             if (ddId == SiloUtil.trackDd) {
-                SiloUtil.trackWriter.println("Removed dwelling " + ddId +
+                SiloUtil.getTrackWriter().println("Removed dwelling " + ddId +
                         " from list of vacant dwellings.");
             }
         }
@@ -295,7 +295,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
         vacDwellingsByRegion.get(region).add(dd);
         if (dd.getId() == SiloUtil.trackDd) {
-            SiloUtil.trackWriter.println("Added dwelling " + dd.getId() +
+            SiloUtil.getTrackWriter().println("Added dwelling " + dd.getId() +
                     " to list of vacant dwellings.");
         }
     }

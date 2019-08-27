@@ -2,7 +2,6 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.PersonMucDisability;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -62,7 +61,7 @@ public class PersonWriterMucDisability implements PersonWriter {
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(pp.toString());
+                SiloUtil.getTrackWriter().println(pp.toString());
             }
         }
         pwp.close();

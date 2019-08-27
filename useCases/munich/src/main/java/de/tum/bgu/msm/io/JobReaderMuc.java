@@ -63,8 +63,8 @@ public class JobReaderMuc implements JobReader {
 
                 jobDataManager.addJob(jj);
                 if (id == SiloUtil.trackJj) {
-                    SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
-                    SiloUtil.trackWriter.println(jj.toString());
+                    SiloUtil.getTrackWriter().println("Read job with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println(jj.toString());
                 }
             }
         } catch (IOException e) {

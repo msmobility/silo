@@ -144,8 +144,8 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +
                     quality + "," + price  + "," + year);
             if (ddId == SiloUtil.trackDd) {
-                SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
-                SiloUtil.trackWriter.println(dd.toString());
+                SiloUtil.getTrackWriter().println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
+                SiloUtil.getTrackWriter().println(dd.toString());
             }
             dataContainer.getRealEstateDataManager().addDwellingToVacancyList(dd);
         }

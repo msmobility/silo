@@ -46,7 +46,7 @@ public class DwellingWriterMstm implements DwellingWriter {
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(dd.toString());
+                SiloUtil.getTrackWriter().println(dd.toString());
             }
         }
         pwd.close();

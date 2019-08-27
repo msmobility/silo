@@ -36,7 +36,7 @@ public class AddJobsDefinition extends EmploymentChangeDefinition implements Cal
             final Job job = factory.createJob(id, zone.getZoneId(), coordinate, -1, jobType);
             jobDataManager.addJob(job);
             if (id == SiloUtil.trackJj) {
-                SiloUtil.trackWriter.println("Job " + id + " of type " + jobType +
+                SiloUtil.getTrackWriter().println("Job " + id + " of type " + jobType +
                         " was newly created in zone " + zone + " based on exogenous forecast.");
             }
         }

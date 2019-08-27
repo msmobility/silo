@@ -42,7 +42,7 @@ public class SiloUtil {
     public static int trackDd;
     public static int trackJj;
 
-    public static PrintWriter trackWriter;
+    private static PrintWriter trackWriter;
 
     private static final String LOG_FILE_NAME = "siloLog.log";
     private static final String LOG_WARN_FILE_NAME = "siloWarnLog.log";
@@ -270,7 +270,7 @@ public class SiloUtil {
         return dataTable;
     }
 
-    public static void trackingFile(String action) {
+    public synchronized static void trackingFile(String action) {
         // open or close track writer to track persons, households or dwellings
 
         switch (action) {
@@ -876,4 +876,9 @@ public class SiloUtil {
         pw.write(timeTracker.toString());
         pw.close();
     }
+
+    public synchronized static PrintWriter getTrackWriter() {
+        return trackWriter;
+    }
+
 }

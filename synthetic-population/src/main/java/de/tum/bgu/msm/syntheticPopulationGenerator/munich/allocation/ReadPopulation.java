@@ -8,7 +8,6 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactoryMuc;
 import de.tum.bgu.msm.data.job.JobMuc;
-import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -72,7 +71,7 @@ public class ReadPopulation {
                 Household household = householdFactory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 householdData.addHousehold(household);
                 if (id == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println("Read household with following attributes from " + fileName);
                 }
             }
         } catch (IOException e) {
@@ -140,7 +139,7 @@ public class ReadPopulation {
                 pp.setNationality(nat);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println("Read person with following attributes from " + fileName);
                 }
             }
         } catch (IOException e) {
@@ -208,7 +207,7 @@ public class ReadPopulation {
                 Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
                 realEstate.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println("Read dwelling with following attributes from " + fileName);
                 }
             }
         } catch (IOException e) {
@@ -266,7 +265,7 @@ public class ReadPopulation {
                 jj.setJobWorkingTime(startTime, duration);
                 jobDataManager.addJob(jj);
                 if (id == SiloUtil.trackJj) {
-                    SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println("Read job with following attributes from " + fileName);
                 }
             }
         } catch (IOException e) {

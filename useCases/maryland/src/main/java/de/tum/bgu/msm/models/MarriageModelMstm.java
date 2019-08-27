@@ -154,7 +154,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
             if (partner != null) {
                 couplesToMarryThisYear.add(new MarriageEvent(person.getId(), partner.getId()));
                 if (person.getId() == SiloUtil.trackPp || partner.getId() == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Person " + person.getId() + " chose " +
+                    SiloUtil.getTrackWriter().println("Person " + person.getId() + " chose " +
                             "person " + partner + " to marry and they were scheduled as a couple to marry this year.");
                 }
             }
@@ -301,7 +301,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
             if (partner1.getId() == SiloUtil.trackPp
                     || partner2.getId() == SiloUtil.trackPp
                     || moveTo.getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Person " + partner1.getId()
+                SiloUtil.getTrackWriter().println("Person " + partner1.getId()
                         + " and person " + partner2.getId()
                         + " of household " + moveTo.getId()
                         + " got married but could not find an appropriate vacant dwelling. "
@@ -357,7 +357,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
                 || person2.getId() == SiloUtil.trackPp
                 || person1.getHousehold().getId() == SiloUtil.trackHh
                 || person2.getHousehold().getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("Person " + person1.getId() +
+            SiloUtil.getTrackWriter().println("Person " + person1.getId() +
                     " and person " + person2.getId() + " got married and moved into household "
                     + moveTo.getId() + ".");
         }
@@ -397,7 +397,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
             householdDataManager.addPersonToHousehold(person, newHh);
             if (person.getId() == SiloUtil.trackPp || oldHh.getId() == SiloUtil.trackHh ||
                     newHh.getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Person " +
+                SiloUtil.getTrackWriter().println("Person " +
                         person.getId() + " was moved from household " + oldHh.getId() + " to household " + newHh.getId() +
                         " as remaining child.");
             }

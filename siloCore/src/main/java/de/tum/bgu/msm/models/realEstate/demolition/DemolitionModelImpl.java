@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -114,7 +113,7 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
         }
         dataContainer.getRealEstateDataManager().removeDwelling(dwellingId);
         if (dwellingId == SiloUtil.trackDd) {
-            SiloUtil.trackWriter.println("Dwelling " +
+            SiloUtil.getTrackWriter().println("Dwelling " +
                     dwellingId + " was demolished.");
         }
         return true;

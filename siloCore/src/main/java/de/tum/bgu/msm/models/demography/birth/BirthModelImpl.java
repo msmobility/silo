@@ -135,7 +135,7 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
         if (id == SiloUtil.trackPp
                 || household.getId() == SiloUtil.trackHh
                 || person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("For unto us a child was born... " + person.getId() + " gave birth" +
+            SiloUtil.getTrackWriter().println("For unto us a child was born... " + person.getId() + " gave birth" +
                     "to a child named " + id + ". Added to household " + household.getId() + ".");
         }
     }

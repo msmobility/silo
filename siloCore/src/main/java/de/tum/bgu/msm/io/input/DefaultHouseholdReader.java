@@ -47,8 +47,8 @@ public class DefaultHouseholdReader implements HouseholdReader{
                 Household hh = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 householdData.addHousehold(hh);
                 if (id == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                    SiloUtil.trackWriter.println(hh.toString());
+                    SiloUtil.getTrackWriter().println("Read household with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println(hh.toString());
                 }
             }
         } catch (IOException e) {

@@ -68,8 +68,8 @@ public class DwellingReaderTak implements DwellingReader {
                 dwelling.setUsage(usage);
                 dwelling.setFloorSpace(floorSpace);
                 if (id == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
-                    SiloUtil.trackWriter.println(dwelling.toString());
+                    SiloUtil.getTrackWriter().println("Read dwelling with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(dwelling.toString());
                 }
             }
         } catch (IOException e) {

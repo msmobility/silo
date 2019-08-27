@@ -176,7 +176,7 @@ public class HouseholdUtil {
                 pp.setRole(PersonRole.SINGLE);
             }
             if (pp.getId() == SiloUtil.trackPp || pp.getHousehold().getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Defined role of person " + pp.getId() + " in household "
+                SiloUtil.getTrackWriter().println("Defined role of person " + pp.getId() + " in household "
                         + pp.getHousehold().getId() + " as " + pp.getRole());
             }
         }
@@ -191,12 +191,12 @@ public class HouseholdUtil {
                 partner.setRole(PersonRole.MARRIED);
                 person.setRole(PersonRole.MARRIED);
                 if (person.getId() == SiloUtil.trackPp || person.getHousehold().getId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Defined role of person  " + person.getId() + " in household "
+                    SiloUtil.getTrackWriter().println("Defined role of person  " + person.getId() + " in household "
                             + person.getHousehold().getId() +
                             " as " + person.getRole());
                 }
                 if (partner.getId() == SiloUtil.trackPp || partner.getHousehold().getId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Defined role of partner " + partner.getId() + " in household "
+                    SiloUtil.getTrackWriter().println("Defined role of partner " + partner.getId() + " in household "
                             + partner.getHousehold().getId() +
                             " as " + partner.getRole());
                 }

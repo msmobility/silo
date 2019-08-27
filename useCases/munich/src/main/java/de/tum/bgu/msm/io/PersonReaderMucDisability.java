@@ -3,7 +3,6 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -95,8 +94,8 @@ public class PersonReaderMucDisability implements PersonReader {
 
 
                 if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + path);
-                    SiloUtil.trackWriter.println(pp.toString());
+                    SiloUtil.getTrackWriter().println("Read person with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(pp.toString());
                 }
             }
         } catch (IOException e) {

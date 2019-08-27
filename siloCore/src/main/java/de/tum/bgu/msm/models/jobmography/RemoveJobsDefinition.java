@@ -36,7 +36,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
         for (Integer job : vacantJobs) {
             removeJob(job);
             if (job == SiloUtil.trackJj) {
-                SiloUtil.trackWriter.println("Vacant job " + job +
+                SiloUtil.getTrackWriter().println("Vacant job " + job +
                         " of type " + jobType + " was removed in zone " + zone + " based on exogenous forecast.");
             }
             this.changes--;
@@ -47,7 +47,7 @@ public class RemoveJobsDefinition extends EmploymentChangeDefinition {
         for (Integer occupiedJob : occupiedJobs) {
             firePerson(occupiedJob);
             removeJob(occupiedJob);
-            if (occupiedJob == SiloUtil.trackJj) SiloUtil.trackWriter.println("Previously occupied job " +
+            if (occupiedJob == SiloUtil.trackJj) SiloUtil.getTrackWriter().println("Previously occupied job " +
                     occupiedJob + " of type " + jobType + " was removed in zone " + zone + " based on exogenous forecast.");
             this.changes--;
         }

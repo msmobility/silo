@@ -78,7 +78,7 @@ public class DriversLicenseModelImpl extends AbstractModel implements DriversLic
     boolean createLicense(Person person) {
         person.setDriverLicense(true);
         if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() +
+            SiloUtil.getTrackWriter().println("Person " + person.getId() +
                     " obtained a drivers license.");
         }
         return true;

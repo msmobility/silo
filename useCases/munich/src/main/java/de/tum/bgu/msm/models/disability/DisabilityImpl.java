@@ -79,7 +79,7 @@ public class DisabilityImpl extends AbstractModel implements DisabilityModel {
     void giveDisability(Person per, Disability disabilityType) {
         ((PersonMucDisability)per).setDisability(disabilityType);
         if (per.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Disability added to person " +
+            SiloUtil.getTrackWriter().println("Disability added to person " +
                     per.getId() + ". New age is " + per.getAge() + ".");
         }
     }

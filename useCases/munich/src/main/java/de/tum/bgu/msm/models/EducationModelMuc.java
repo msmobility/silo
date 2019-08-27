@@ -139,7 +139,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
         school.setOccupancy(school.getOccupancy()-1);
 
         if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() +
+            SiloUtil.getTrackWriter().println("Person " + person.getId() +
                     " changed school. New school id " + school.getId());
         }
         return true;
@@ -159,7 +159,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
         }
 
         if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() +
+            SiloUtil.getTrackWriter().println("Person " + person.getId() +
                     " leaved from school to job market. ");
         }
         return true;

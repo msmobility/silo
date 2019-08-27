@@ -17,9 +17,6 @@
 package de.tum.bgu.msm.models.demography.leaveParentalHousehold;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -129,7 +126,7 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
         final int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
         if (newDwellingId < 0) {
             if (per.getId() == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println(
+                SiloUtil.getTrackWriter().println(
                         "Person " + per.getId() + " wanted to but could not leave parental Household "
                                 + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
             }
@@ -155,7 +152,7 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
 
         if (per.getId() == SiloUtil.trackPp || hhOfThisPerson.getId() == SiloUtil.trackHh ||
                 newHousehold.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("Person " + per.getId() +
+            SiloUtil.getTrackWriter().println("Person " + per.getId() +
                     " has left the parental newHousehold " + hhOfThisPerson.getId() +
                     " and established the new newHousehold " + newHhId + ".");
         }

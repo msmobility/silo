@@ -169,7 +169,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         realEstate.addDwellingToVacancyList(dd);
 
         if (dd.getId() == SiloUtil.trackDd) {
-            SiloUtil.trackWriter.println("Constructed dwelling: " + dd);
+            SiloUtil.getTrackWriter().println("Constructed dwelling: " + dd);
         }
         return true;
     }

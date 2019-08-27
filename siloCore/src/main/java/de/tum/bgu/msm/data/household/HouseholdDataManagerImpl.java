@@ -142,7 +142,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
                 removeHousehold(household.getId());
             }
             if (household.getId() == SiloUtil.trackHh || person.getId() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Person " +
+                SiloUtil.getTrackWriter().println("Person " +
                         person.getId() + " was removed from household " + household.getId() + ".");
             }
         }
@@ -157,7 +157,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         household.addPerson(person);
         person.setHousehold(household);
         if (person.getId() == SiloUtil.trackPp || household.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("A person " +
+            SiloUtil.getTrackWriter().println("A person " +
                     "(not a child) named " + person.getId() + " was added to household " + household.getId() + ".");
         }
     }
@@ -201,7 +201,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         householdData.removeHousehold(householdId);
         householdMementos.remove(household);
         if (householdId == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("Households " + householdId + " was removed");
+            SiloUtil.getTrackWriter().println("Households " + householdId + " was removed");
         }
     }
 

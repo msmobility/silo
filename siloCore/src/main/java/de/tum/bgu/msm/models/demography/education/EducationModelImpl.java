@@ -68,7 +68,7 @@ public class EducationModelImpl extends AbstractModel implements EducationModel 
         // also check occupation transition to worker? 'nk
         // rm: don't think so, student is added to the labor market but does not necessarily find a job right away.
         if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() +
+            SiloUtil.getTrackWriter().println("Person " + person.getId() +
                     " changed school.");
         }
         return true;

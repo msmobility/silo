@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -49,8 +48,8 @@ public class HouseholdReaderMuc implements HouseholdReader {
                 HouseholdMuc hh = factory.createHousehold(id, dwellingID, autos);
                 hhData.addHousehold(hh);
                 if (id == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                    SiloUtil.trackWriter.println(hh.toString());
+                    SiloUtil.getTrackWriter().println("Read household with following attributes from " + fileName);
+                    SiloUtil.getTrackWriter().println(hh.toString());
                 }
             }
         } catch (IOException e) {

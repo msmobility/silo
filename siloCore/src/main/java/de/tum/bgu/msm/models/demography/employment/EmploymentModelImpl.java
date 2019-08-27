@@ -217,7 +217,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
 
 
         if (person.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Person " + person.getId() + " started working for job " + job.getId());
+            SiloUtil.getTrackWriter().println("Person " + person.getId() + " started working for job " + job.getId());
         }
         return true;
     }
@@ -230,7 +230,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
             dataContainer.getJobDataManager().quitJob(true, person);
             if (perId == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println("Person " + perId + " quit her/his job.");
+                SiloUtil.getTrackWriter().println("Person " + perId + " quit her/his job.");
             }
             return true;
         }

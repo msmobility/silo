@@ -105,7 +105,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
         if (onlyChildrenLeft) {
             for (Person pp : hhOfPersonToDie.getPersons().values()) {
                 if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
+                    SiloUtil.getTrackWriter().println("Child " + pp.getId() + " was moved from household " + hhOfPersonToDie.getId() +
                             " to foster care as remaining child just before head of household (ID " +
                             person.getId() + ") passed away.");
                 }
@@ -114,7 +114,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
         }
 
         if (person.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
+            SiloUtil.getTrackWriter().println("We regret to inform that person " + person.getId() + " from household " + hhOfPersonToDie.getId() +
                     " has passed away.");
         }
 

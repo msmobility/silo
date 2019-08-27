@@ -2,7 +2,6 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -61,7 +60,7 @@ public class DwellingWriterMuc implements DwellingWriter {
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(dd.toString());
+                SiloUtil.getTrackWriter().println(dd.toString());
             }
         }
         pwd.close();

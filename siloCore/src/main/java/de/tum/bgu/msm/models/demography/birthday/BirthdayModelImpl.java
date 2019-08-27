@@ -63,7 +63,7 @@ public class BirthdayModelImpl extends AbstractModel implements BirthdayModel {
     void celebrateBirthday(Person per) {
         per.birthday();
         if (per.getId() == SiloUtil.trackPp) {
-            SiloUtil.trackWriter.println("Celebrated BIRTHDAY of person " +
+            SiloUtil.getTrackWriter().println("Celebrated BIRTHDAY of person " +
                     per.getId() + ". New age is " + per.getAge() + ".");
         }
     }

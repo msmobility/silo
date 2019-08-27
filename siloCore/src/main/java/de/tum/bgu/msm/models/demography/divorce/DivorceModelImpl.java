@@ -109,7 +109,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
                 int newDwellingId = movesModel.searchForNewDwelling(fakeHypotheticalHousehold);
                 if (newDwellingId < 0) {
                     if (perId == SiloUtil.trackPp || per.getHousehold().getId() == SiloUtil.trackHh) {
-                        SiloUtil.trackWriter.println(
+                        SiloUtil.getTrackWriter().println(
                                 "Person " + perId + " wanted to but could not divorce from household "
                                         + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
                     }
@@ -134,7 +134,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
                 movesModel.moveHousehold(newHh, -1, newDwellingId);
                 if (perId == SiloUtil.trackPp || newHh.getId() == SiloUtil.trackHh ||
                         oldHh.getId() == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Person " + perId +
+                    SiloUtil.getTrackWriter().println("Person " + perId +
                             " has divorced from household " + oldHh + " and established the new household " +
                             newHhId + ".");
                 }

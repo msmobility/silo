@@ -238,8 +238,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                         int id = jobData.getNextJobId();
                         jobData.addJob(JobUtils.getFactory().createJob (id, zone, null, -1, JobType.getJobType(jobTp)));
                         if (id == SiloUtil.trackJj) {
-                            SiloUtil.trackWriter.println("Generated job with following attributes:");
-                            SiloUtil.trackWriter.println(jobData.getJobFromId(id).toString());
+                            SiloUtil.getTrackWriter().println("Generated job with following attributes:");
+                            SiloUtil.getTrackWriter().println(jobData.getJobFromId(id).toString());
                         }
                     }
                 }
@@ -1002,8 +1002,8 @@ public class SyntheticPopUs implements SyntheticPopI {
                     ddCount[taz][dt.ordinal()][0]++;
                     vacDwellingsModel++;
                     if (newDdId == SiloUtil.trackDd) {
-                        SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
-                        SiloUtil.trackWriter.println(realEstateData.getDwelling(newDdId).toString());
+                        SiloUtil.getTrackWriter().println("Generated vacant dwelling with following attributes:");
+                        SiloUtil.getTrackWriter().println(realEstateData.getDwelling(newDdId).toString());
                     }
                 }
             }

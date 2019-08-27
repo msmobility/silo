@@ -72,8 +72,8 @@ public class DefaultDwellingReader implements DwellingReader {
                 Dwelling dwelling = realEstateDataManager.getDwellingFactory().createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 realEstateDataManager.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
-                    SiloUtil.trackWriter.println(dwelling.toString());
+                    SiloUtil.getTrackWriter().println("Read dwelling with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(dwelling.toString());
                 }
             }
             if(noCoordCounter > 0) {

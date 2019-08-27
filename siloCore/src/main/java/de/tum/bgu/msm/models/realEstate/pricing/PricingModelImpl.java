@@ -8,7 +8,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -98,7 +97,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
             double newPrice = currentPrice * changeRate;
 
             if (dd.getId() == SiloUtil.trackDd) {
-                SiloUtil.trackWriter.println("The monthly costs of dwelling " +
+                SiloUtil.getTrackWriter().println("The monthly costs of dwelling " +
                         dd.getId() + " was changed from " + currentPrice + " to " + newPrice +
                         " (in constant currency value without inflation).");
             }

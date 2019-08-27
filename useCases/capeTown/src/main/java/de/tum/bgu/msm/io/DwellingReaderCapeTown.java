@@ -62,8 +62,8 @@ public class DwellingReaderCapeTown implements DwellingReader {
                 Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 dwellingData.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
-                    SiloUtil.trackWriter.println(dwelling.toString());
+                    SiloUtil.getTrackWriter().println("Read dwelling with following attributes from " + path);
+                    SiloUtil.getTrackWriter().println(dwelling.toString());
                 }
             }
         } catch (IOException e) {

@@ -303,7 +303,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 vacantJobsByRegion.get(region).add(jj);
 
                 if (jj.getId() == SiloUtil.trackJj) {
-                    SiloUtil.trackWriter.println("Added job " + jj.getId() + " to list of vacant jobs.");
+                    SiloUtil.getTrackWriter().println("Added job " + jj.getId() + " to list of vacant jobs.");
                 }
             }
         }
@@ -389,7 +389,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         Job selectedJob = eligibleJobs.remove(SiloUtil.getRandomObject().nextInt(eligibleJobs.size()));
 
         if (selectedJob.getId() == SiloUtil.trackJj) {
-            SiloUtil.trackWriter.println("Removed job " + selectedJob.getId() + " from list of vacant jobs.");
+            SiloUtil.getTrackWriter().println("Removed job " + selectedJob.getId() + " from list of vacant jobs.");
         }
         return selectedJob;
     }
@@ -406,7 +406,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         vacantJobsByRegion.get(region).add(job);
 
         if (job.getId() == SiloUtil.trackJj) {
-            SiloUtil.trackWriter.println("Added job " + job.getId() + " to list of vacant jobs.");
+            SiloUtil.getTrackWriter().println("Added job " + job.getId() + " to list of vacant jobs.");
         }
         }
 

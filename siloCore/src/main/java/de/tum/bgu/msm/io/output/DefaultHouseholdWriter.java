@@ -23,7 +23,7 @@ public class DefaultHouseholdWriter implements HouseholdWriter {
         for (Household hh : householdData.getHouseholds()) {
             if (hh.getId() == SiloUtil.trackHh) {
                 SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
-                SiloUtil.trackWriter.println(hh.toString());
+                SiloUtil.getTrackWriter().println(hh.toString());
             }
             pwh.print(hh.getId());
             pwh.print(",");

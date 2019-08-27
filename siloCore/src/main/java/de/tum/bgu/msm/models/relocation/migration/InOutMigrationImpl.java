@@ -196,11 +196,11 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
             }
             inMigrationPPCounter += hh.getHhSize();
             if (hh.getId() == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hh.getId() + " inmigrated.");
+                SiloUtil.getTrackWriter().println("Household " + hh.getId() + " inmigrated.");
             }
             for (Integer ppId : hh.getPersons().keySet()) {
                 if (ppId == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println(" Person " + ppId + " inmigrated.");
+                    SiloUtil.getTrackWriter().println(" Person " + ppId + " inmigrated.");
                 }
             }
             householdDataManager.addHousehold(hh);
@@ -223,7 +223,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
         }
         outMigrationPPCounter += hh.getHhSize();
         if (hhId == SiloUtil.trackHh) {
-            SiloUtil.trackWriter.println("Household " + hhId + " outmigrated.");
+            SiloUtil.getTrackWriter().println("Household " + hhId + " outmigrated.");
         }
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         for (Map.Entry<Integer, ? extends Person> person : hh.getPersons().entrySet()) {
@@ -231,7 +231,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
                 jobDataManager.quitJob(true, person.getValue());
             }
             if (person.getKey() == SiloUtil.trackPp) {
-                SiloUtil.trackWriter.println(" Person " + person.getKey() + " outmigrated.");
+                SiloUtil.getTrackWriter().println(" Person " + person.getKey() + " outmigrated.");
             }
         }
         dataContainer.getHouseholdDataManager().removeHousehold(hhId);
