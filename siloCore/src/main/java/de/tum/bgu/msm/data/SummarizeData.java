@@ -11,15 +11,16 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +186,7 @@ public class SummarizeData {
             }
             if (hhByZone.containsKey(zone)) {
                 int[] oldList = hhByZone.get(zone);
-                int[] newList = SiloUtil.expandArrayByOneElement(oldList, hh.getId());
+                int[] newList = ArrayUtils.add(oldList, hh.getId());
                 hhByZone.put(zone, newList);
             } else {
                 hhByZone.put(zone, new int[]{hh.getId()});
@@ -216,7 +217,7 @@ public class SummarizeData {
                     }
                 } else if (changeOfHh[zone] < 0) {   // select households to delete (draw without replacement)
                     float[] prob = new float[hhInThisZone.length];
-                    SiloUtil.setArrayToValue(prob, 1);
+                    Arrays.fill(prob, 0.f);
                     for (int i = 0; i < Math.abs(changeOfHh[zone]); i++) {
                         int selected = SiloUtil.select(prob);
                         selectedHH[selected] = 1;
@@ -328,7 +329,7 @@ public class SummarizeData {
     public static void summarizeHousing(int year, DataContainer dataContainer) {
         // summarize housing data for housing environmental impact calculations
 
-        if (!SiloUtil.containsElement(Properties.get().main.bemModelYears, year)) return;
+        if (!ArrayUtils.contains(Properties.get().main.bemModelYears, year)) return;
         String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName + "/bem/";
         SiloUtil.createDirectoryIfNotExistingYet(directory);
 

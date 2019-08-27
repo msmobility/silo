@@ -8,7 +8,6 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -23,6 +22,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import omx.OmxFile;
 import omx.OmxLookup;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
@@ -209,7 +209,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 int city = (int) selectedMunicipalities.getValueAt(row,"V1");
                 municipalities.add(city);
                 int county = (int) selectedMunicipalities.getValueAt(row,"V2");
-                if (!SiloUtil.containsElement(counties, county)) {
+                if (!counties.contains(county)) {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
@@ -244,7 +244,7 @@ public class SyntheticPopJP implements SyntheticPopI {
             int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
-                previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
+                previousTaz = ArrayUtils.add(previousTaz, taz);
                 cityTAZ.put(city, previousTaz);
             } else {
                 int[] previousTaz = {taz};
@@ -732,7 +732,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                         }
                         jobIntTypes.remove(jobStringTypes[w]);
                         jobStringTypes[w] = jobStringTypes[jobStringTypes.length - 1];
-                        jobStringTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobStringTypes, jobStringTypes.length - 1);
+                        jobStringTypes = ArrayUtils.remove(jobStringTypes, jobStringTypes.length - 1);
 
                     }
                 }
@@ -958,7 +958,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         observedODFlow.buildIndex(observedODFlow.getColumnPosition("ID_city"));
         //OD matrix for the core cities, obtained from the commuters data
         TableDataSet observedCoreODFlow = new TableDataSet();
-        int [] selectedCounties = SiloUtil.idendifyUniqueValues(allCounties);
+        int [] selectedCounties = Arrays.stream(allCounties).distinct().toArray();
         observedCoreODFlow.appendColumn(selectedCounties,"smallCenter");
         for (int i = 0; i < selectedCounties.length; i++){
             int[] dummy = SiloUtil.createArrayWithValue(selectedCounties.length,0);
@@ -1684,7 +1684,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                     if (idZonesVacantSchoolsByType.containsKey(i)){
                         numberZonesWithVacantSchoolsByType.put(i,numberZonesWithVacantSchoolsByType.get(i) + 1);
                         int[] zones = idZonesVacantSchoolsByType.get(i);
-                        zones = SiloUtil.expandArrayByOneElement(zones, i + j * 100);
+                        zones = ArrayUtils.add(zones, i + j * 100);
                         idZonesVacantSchoolsByType.put(i, zones);
                         schoolCapacityByType.put(i, schoolCapacityByType.get(i) + count);
                     } else {

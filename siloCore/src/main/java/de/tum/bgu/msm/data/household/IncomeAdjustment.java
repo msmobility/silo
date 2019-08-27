@@ -65,7 +65,12 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction<Void> {
         }
         prob[smallestAbsValuePos] = prob[smallestAbsValuePos] * 10;   // make no change most likely
         int sel = SiloUtil.select(prob, random);
-        return Math.max((person.getIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+        int max = Math.max((person.getIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+        if (person.getId() == SiloUtil.trackPp) {
+            SiloUtil.trackWriter.println(String.format(("The class IncomeAdjustment changed the income of person %d" +
+                    " from %d to %d to maintain the average income distribution by age, sex and education."), person.getId(), person.getIncome(), max));
+        }
+        return max;
     }
 
     private float getDesiredShift() {

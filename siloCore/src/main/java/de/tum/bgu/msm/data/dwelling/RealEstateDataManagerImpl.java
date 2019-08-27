@@ -306,7 +306,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
         int distinctDdTypes = dwellingTypes.size();
         int[][] vacOcc = SiloUtil.setArrayToValue(new int[2][distinctDdTypes], 0);
-        long[] price = SiloUtil.setArrayToValue(new long[distinctDdTypes], 0);
+        long[] price = new long[distinctDdTypes];
+        Arrays.fill(price, 0);
 
         for (Dwelling dd : dwellingData.getDwellings()) {
             int dto = dwellingTypes.indexOf(dd.getType());

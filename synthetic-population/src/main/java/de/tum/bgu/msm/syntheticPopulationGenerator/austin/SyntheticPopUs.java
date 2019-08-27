@@ -25,6 +25,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -166,7 +167,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             }
             if (tazByPuma.containsKey(homePuma)) {
                 int[] zones = tazByPuma.get(homePuma);
-                int[] newZones = SiloUtil.expandArrayByOneElement(zones, zone.getZoneId());
+                int[] newZones = ArrayUtils.add(zones, zone.getZoneId());
                 tazByPuma.put(homePuma, newZones);
             } else {
                 int[] zoneArray = {zone.getZoneId()};
@@ -216,7 +217,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             int pumaOfWorkZone =((MstmZone) geoData.getZones().get(taz)).getSimplifiedPuma();
             if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
                 int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
-                int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
+                int[] newList = ArrayUtils.add(list, taz);
                 tazByWorkZonePuma.put(pumaOfWorkZone, newList);
             } else {
                 tazByWorkZonePuma.put(pumaOfWorkZone, new int[]{taz});
@@ -257,7 +258,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 int zone = jj.getZoneId();
                 if (vacantJobsByZone.containsKey(zone)) {
                     int[] vacancies = vacantJobsByZone.get(zone);
-                    int[] newVacancies = SiloUtil.expandArrayByOneElement(vacancies, id);
+                    int[] newVacancies = ArrayUtils.add(vacancies, id);
                     vacantJobsByZone.put(zone, newVacancies);
                 } else {
                     vacantJobsByZone.put(zone, new int[]{id});
@@ -814,7 +815,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         Zone selectedZone = SiloUtil.select(zoneProbabilities);
         int[] jobsInThisZone = vacantJobsByZone.get(selectedZone.getZoneId());
         int selectedJobIndex = SiloUtil.select(jobsInThisZone.length) - 1;
-        int[] newVacancies = SiloUtil.removeOneElementFromZeroBasedArray(jobsInThisZone, selectedJobIndex);
+        int[] newVacancies = ArrayUtils.remove(jobsInThisZone, selectedJobIndex);
         if (newVacancies.length > 0) {
             vacantJobsByZone.put(selectedZone.getZoneId(), newVacancies);
         } else {

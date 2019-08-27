@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.utils;
 
+import com.google.common.math.Quantiles;
 import com.pb.common.datafile.CSVFileWriter;
 import com.pb.common.datafile.TableDataFileReader;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
@@ -41,9 +41,11 @@ public class SiloUtil {
     public static int trackPp;
     public static int trackDd;
     public static int trackJj;
+
     public static PrintWriter trackWriter;
-    public static final String LOG_FILE_NAME = "siloLog.log";
-    public static final String LOG_WARN_FILE_NAME = "siloWarnLog.log";
+
+    private static final String LOG_FILE_NAME = "siloLog.log";
+    private static final String LOG_WARN_FILE_NAME = "siloWarnLog.log";
 
     public static Properties siloInitialization(String propertiesPath) {
         Properties properties = Properties.initializeProperties(propertiesPath);
@@ -193,15 +195,7 @@ public class SiloUtil {
         return list;
     }
 
-
-    public static String[] convertStringArrayListToArray (ArrayList<String> al) {
-        String[] temp = al.toArray(new String[0]);
-        String[] list = new String[temp.length];
-        System.arraycopy(temp, 0, list, 0, temp.length);
-        return list;
-    }
-
-    public static <T> int findPositionInArray (T element, T array[]) {
+    public static <T> int findPositionInArray (T element, T[] array) {
         int ind = -1;
         for (int a = 0; a < array.length; a++) {
             if (array[a].equals(element)) {
@@ -261,9 +255,7 @@ public class SiloUtil {
         if (!exists) {
             final String msg = "File not found: " + fileName;
             logger.error(msg);
-//            System.exit(1);
             throw new RuntimeException(msg) ;
-            // from the perspective of the junit testing infrastructure, a "System.exit(...)" is not a test failure ... and thus not detected.  kai, aug'16
         }
         try {
 //            TableDataFileReader reader = TableDataFileReader.createReader(dataFile);
@@ -451,18 +443,6 @@ public class SiloUtil {
         return sm;
     }
 
-    public static double[] convertProbability (double[] probabilities){
-        //method to return the probability in percentage
-        double sum = 0;
-        for (double probability : probabilities) {
-            sum++;
-        }
-        for (int row = 0; row < probabilities.length; row++) {
-            probabilities[row] = probabilities[row]/sum*1000;
-        }
-        return probabilities;
-    }
-
 
     public static int select (int upperRange) {
         // select item based on equal probabilities between 0 and upperRange
@@ -503,23 +483,19 @@ public class SiloUtil {
 
 
     public static float getSum(float[][][] array) {
-        // return array of three-dimensional double array
         float sm = 0;
         for (float[][] anArray : array) {
-            for (int i = 0; i < array[0][0].length; i++) {
-                for (int j = 0; j < array[0].length; j++) sm += anArray[i][j];
-            }
+            sm += getSum(anArray);
         }
         return sm;
     }
 
-
-    public static float getMean (int[] values) {
-        // calculate mean (average) value
-
+    public static float getSum(float[][] array) {
         float sm = 0;
-        for (int i: values) sm += i;
-        return (sm / values.length);
+        for (float[] anArray : array) {
+            sm += getSum(anArray);
+        }
+        return sm;
     }
 
 
@@ -556,60 +532,22 @@ public class SiloUtil {
         return ws;
     }
 
-
-    public static float getVariance (int[] values) {
-        // calculate sample variance of array values[]
-
-        if (values.length <= 1) {
-            logger.error("Cannot calculate variance for array with length " + values.length);
-            return 0;
-        }
-        double sm = 0;
-        float mean = getMean(values);
-        for (int i: values) {
-            sm += Math.pow((i - mean), 2);
-        }
-        return (float) (sm / (values.length-1));
-    }
-
-
-    public static String[] convertArrayListToStringArray (ArrayList<String> al) {
+    public static String[] convertArrayListToStringArray (List<String> al) {
         String[] list = new String[al.size()];
         for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
         return list;
     }
 
 
-    public static int[] convertArrayListToIntArray (ArrayList<Integer> al) {
+    public static int[] convertArrayListToIntArray (List<Integer> al) {
         int[] list = new int[al.size()];
         for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
         return list;
     }
 
 
-    public static int[] convertIntegerToInt (Integer[] values) {
-        int[] intValues = new int[values.length];
-        for (int i = 0; i < values.length; i++) {
-            intValues[i] = values[i];
-        }
-        return intValues;
-    }
-
-
     public static float getMedian (int[] array) {
-        // return median value
-
-        if (array.length == 0) {
-            return 0;
-        }
-        Arrays.sort(array);
-        float median;
-        if (array.length % 2 == 0) {
-            median = ((float) array[array.length / 2] + (float) array[array.length / 2 - 1]) / 2;
-        } else {
-            median = (float) array[array.length / 2];
-        }
-        return median;
+        return (float) Quantiles.median().compute(array);
     }
 
 
@@ -667,37 +605,10 @@ public class SiloUtil {
         return array;
     }
 
-
-    public static int[] setArrayToValue (int[] anArray, int value) {
-        // fill one-dimensional integer array with value
-        for (int i = 0; i < anArray.length; i++) {
-            anArray[i] = value;
-        }
-        return anArray;
-    }
-
-
-    public static float[] setArrayToValue (float[] anArray, float value) {
-        // fill one-dimensional integer array with value
-
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
-        return anArray;
-    }
-
-
-    public static long[] setArrayToValue (long[] anArray, long value) {
-        // fill one-dimensional integer array with value
-
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
-        return anArray;
-    }
-
-
     public static int[][] setArrayToValue (int[][] anArray, int value) {
         // fill two-dimensional integer array with value
-
-        for (int i = 0; i < anArray.length; i++) {
-            for (int j = 0; j < anArray[i].length; j++)  anArray[i][j] = value;
+        for (int[] ints : anArray) {
+            Arrays.fill(ints, value);
         }
         return anArray;
     }
@@ -705,9 +616,8 @@ public class SiloUtil {
 
     public static float[][] setArrayToValue (float[][] anArray, float value) {
         // fill two-dimensional float array with value
-
-        for (int i = 0; i < anArray.length; i++) {
-            for (int j = 0; j < anArray[i].length; j++) anArray[i][j] = value;
+        for (float[] floats : anArray) {
+            Arrays.fill(floats, value);
         }
         return anArray;
     }
@@ -715,10 +625,9 @@ public class SiloUtil {
 
     public static int[][][] setArrayToValue (int[][][] anArray, int value) {
         // fill three-dimensional integer array with value
-
-        for (int i = 0; i < anArray.length; i++) {
-            for (int j = 0; j < anArray[i].length; j++) {
-                for (int k = 0; k < anArray[i][j].length; k++) anArray[i][j][k] = value;
+        for (int[][] ints : anArray) {
+            for (int[] anInt : ints) {
+                Arrays.fill(anInt, value);
             }
         }
         return anArray;
@@ -727,27 +636,24 @@ public class SiloUtil {
 
     public static boolean[] createArrayWithValue (int arrayLength, boolean value) {
         // fill one-dimensional boolean array with value
-
         boolean[] anArray = new boolean[arrayLength];
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
+        Arrays.fill(anArray, value);
         return anArray;
     }
 
 
     public static float[] createArrayWithValue (int arrayLength, float value) {
         // fill one-dimensional float array with value
-
         float[] anArray = new float[arrayLength];
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
+        Arrays.fill(anArray, value);
         return anArray;
     }
 
 
     public static double[] createArrayWithValue (int arrayLength, double value) {
         // fill one-dimensional double array with value
-
         double[] anArray = new double[arrayLength];
-        for (int i = 0; i < anArray.length; i++) anArray[i] = value;
+        Arrays.fill(anArray, value);
         return anArray;
     }
 
@@ -757,72 +663,6 @@ public class SiloUtil {
         int[] anArray = new int[arrayLength];
         Arrays.fill(anArray, value);
         return anArray;
-    }
-
-
-    public static int[] expandArrayByOneElement (int[] existing, int addElement) {
-        // create new array that has length of existing.length + 1 and copy values into new array
-        int[] expanded = new int[existing.length + 1];
-        System.arraycopy(existing, 0, expanded, 0, existing.length);
-        expanded[expanded.length - 1] = addElement;
-        return expanded;
-    }
-
-
-    public static int[] removeOneElementFromZeroBasedArray(int[] array, int elementIndex) {
-        // remove elementIndex'th element from array
-        if (elementIndex < 0 || elementIndex > array.length-1) logger.error("Cannot remove element "+elementIndex +
-                " from zero-based int array with length " + array.length);
-        int[] reduced = new int[array.length - 1];
-        if (elementIndex == 0) {
-            // remove first element
-            System.arraycopy(array, 1, reduced, 0, reduced.length);
-        } else if (elementIndex == array.length - 1) {
-            // remove last element
-            System.arraycopy(array, 0, reduced, 0, reduced.length);
-        } else {
-            System.arraycopy(array, 0, reduced, 0, elementIndex);
-            System.arraycopy(array, elementIndex + 1, reduced, elementIndex, reduced.length - elementIndex);
-        }
-        return reduced;
-    }
-
-
-    public static String[] removeOneElementFromZeroBasedArray(String[] array, int elementIndex) {
-        // remove elementIndex'th element from array
-        if (elementIndex < 0 || elementIndex > array.length-1) logger.error("Cannot remove element "+elementIndex +
-                " from zero-based int array with length " + array.length);
-        String[] reduced = new String[array.length - 1];
-        if (elementIndex == 0) {
-            // remove first element
-            System.arraycopy(array, 1, reduced, 0, reduced.length);
-        } else if (elementIndex == array.length - 1) {
-            // remove last element
-            System.arraycopy(array, 0, reduced, 0, reduced.length);
-        } else {
-            System.arraycopy(array, 0, reduced, 0, elementIndex);
-            System.arraycopy(array, elementIndex + 1, reduced, elementIndex, reduced.length - elementIndex);
-        }
-        return reduced;
-    }
-
-
-    public static double[] removeOneElementFromZeroBasedArray(double[] array, int elementIndex) {
-        // remove elementIndex'th element from array
-        if (elementIndex < 0 || elementIndex > array.length-1) logger.error("Cannot remove element "+elementIndex +
-                " from zero-based int array with length " + array.length);
-        double[] reduced = new double[array.length - 1];
-        if (elementIndex == 0) {
-            // remove first element
-            System.arraycopy(array, 1, reduced, 0, reduced.length);
-        } else if (elementIndex == array.length - 1) {
-            // remove last element
-            System.arraycopy(array, 0, reduced, 0, reduced.length);
-        } else {
-            System.arraycopy(array, 0, reduced, 0, elementIndex);
-            System.arraycopy(array, elementIndex + 1, reduced, elementIndex, reduced.length - elementIndex);
-        }
-        return reduced;
     }
 
 
@@ -839,21 +679,6 @@ public class SiloUtil {
         return table;
     }
 
-    public static int getHighestVal(int[] array) {
-        // return highest number in int array
-        int high = Integer.MIN_VALUE;
-        for (int num: array) high = Math.max(high, num);
-        return high;
-    }
-
-
-    public static float getHighestVal(float[] array) {
-        // return highest number in float array
-        float high = Float.MIN_VALUE;
-        for (float num: array) high = Math.max(high, num);
-        return high;
-    }
-
 
     public static float getWeightedMean (float[] values, int[] weights) {
         // calculate mean (average) value
@@ -865,56 +690,15 @@ public class SiloUtil {
     }
 
 
-    public static int getHighestVal(String[] array) {
-        // return highest number in String array
-        int high = Integer.MIN_VALUE;
-        for (String num: array) high = Math.max(high, Integer.parseInt(num));
-        return high;
-    }
-
-
-    public static int getLowestVal(String[] array) {
-        // return highest number in String array
-        int low = Integer.MAX_VALUE;
-        for (String num: array) low = Math.min(low, Integer.parseInt(num));
-        return low;
-    }
-
-
-    public static int getLowestVal(int[] array) {
-        // return highest number in String array
-        int low = Integer.MAX_VALUE;
-        for (int num: array) low = Math.min(low, num);
-        return low;
-    }
-
-
-    public static boolean containsElement (int[] array, int value) {
-        // returns true if array contains value, otherwise false
-        boolean found = false;
-        for (int i: array) if (i == value) found = true;
-        return found;
-    }
-
-
-    public static boolean containsElement (ArrayList<Integer> array, int value) {
-        // returns true if array contains value, otherwise false
-        boolean found = false;
-        for (int i: array) if (i == value) found = true;
-        return found;
-    }
-
     public static double sumProduct(double[] a, int[] b){
         double sum = 0;
         for (int i = 0; i < a.length; i++){
-            sum = sum + a[i]*b[i];
+            sum += a[i] * b[i];
         }
-
-
         return sum;
     }
 
-    public static void deleteFile (String fileName) {
+    private static void deleteFile(String fileName) {
         // delete file with name fileName
         File dataFile = new File(fileName);
         boolean couldDelete = dataFile.delete();
@@ -935,28 +719,7 @@ public class SiloUtil {
         }
     }
 
-
-    public static void copyDirectoryAndFiles (String sourceDirectory, String destinationDirectory) {
-        // source: http://www.mkyong.com/java/how-to-copy-directory-in-java/
-        File srcFolder = new File(sourceDirectory);
-        File destFolder = new File(destinationDirectory);
-
-        //make sure source exists
-        if(!srcFolder.exists()) {
-            System.out.println("Directory " + sourceDirectory + " does not exist and could not be copied.");
-            System.exit(0);
-        }else{
-            try {
-                copyFolder(srcFolder,destFolder);
-            } catch(IOException e){
-                e.printStackTrace();
-                System.exit(0);
-            }
-        }
-    }
-
-
-    public static void copyFolder(File src, File dest)
+    private static void copyFolder(File src, File dest)
         // source: http://www.mkyong.com/java/how-to-copy-directory-in-java/
             throws IOException {
         if(src.isDirectory()){
@@ -991,7 +754,6 @@ public class SiloUtil {
 
 
     public static Matrix convertOmxToMatrix (OmxMatrix omxMatrix) {
-        // convert OMX matrix into java matrix
 
         OmxHdf5Datatype.OmxJavaType type = omxMatrix.getOmxJavaType();
         String name = omxMatrix.getName();
@@ -1015,27 +777,6 @@ public class SiloUtil {
             System.exit(1);
             return null;
         }
-    }
-
-
-    public static int[] createIndexArray (int[] array) {
-        // create indexArray for array
-
-        int[] index = new int[getHighestVal(array) + 1];
-        for (int i = 0; i < array.length; i++) {
-            index[array[i]] = i;
-        }
-        return index;
-    }
-
-
-    public static int[] idendifyUniqueValues(int[] array) {
-        // return array of unique values found in array
-        ArrayList<Integer> values = new ArrayList<>();
-        for (int value: array) {
-            if (!values.contains(value)) values.add(value);
-        }
-        return convertIntegerArrayListToArray(values);
     }
 
 
@@ -1073,7 +814,7 @@ public class SiloUtil {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFileSpatial("close");
-        float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
+        float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000.f), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
@@ -1110,7 +851,7 @@ public class SiloUtil {
     }
 
 
-    public static void summarizeMicroData (int year, ModelContainer modelContainer, DataContainer dataContainer) {
+    public static void summarizeMicroData (int year, DataContainer dataContainer) {
         // aggregate micro data
 
         if (trackHh != -1 || trackPp != -1 || trackDd != -1)

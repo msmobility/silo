@@ -11,6 +11,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import omx.OmxFile;
 import omx.OmxLookup;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ReadZonalData {
@@ -52,7 +54,7 @@ public class ReadZonalData {
                 int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ID_city");
                 municipalities.add(city);
                 int county = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ID_county");
-                if (!SiloUtil.containsElement(counties, county)) {
+                if (!((List<Integer>) counties).contains(county)) {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
@@ -131,7 +133,7 @@ public class ReadZonalData {
             }
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
-                previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
+                previousTaz = ArrayUtils.add(previousTaz, taz);
                 cityTAZ.put(city, previousTaz);
                 Map<Integer, Float> probabilities = probabilityZone.get(city);
                 probabilities.put(taz, probability);

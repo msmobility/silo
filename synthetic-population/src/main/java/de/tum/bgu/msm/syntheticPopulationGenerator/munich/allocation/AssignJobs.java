@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -233,7 +234,7 @@ public class AssignJobs {
                 }
                 jobIntTypes.remove(jobStringTypes[w]);
                 jobStringTypes[w] = jobStringTypes[jobStringTypes.length - 1];
-                jobStringTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobStringTypes, jobStringTypes.length - 1);
+                jobStringTypes = ArrayUtils.remove(jobStringTypes, jobStringTypes.length - 1);
             }
         }
     }

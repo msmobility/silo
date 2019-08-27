@@ -14,6 +14,7 @@ import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -119,7 +120,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     continue;
                 }
                 int[] zonesInThisRegion = geoData.getRegions().get(region).getZones().stream().mapToInt(Zone::getZoneId).toArray();
-                double[] prob = new double[SiloUtil.getHighestVal(zonesInThisRegion) + 1];
+                double[] prob = new double[NumberUtils.max(zonesInThisRegion) + 1];
                 // walk through every dwelling to be built
                 for (int i = 1; i <= demand; i++) {
                     double probSum = 0;

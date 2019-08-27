@@ -1752,7 +1752,7 @@
 //        observedODFlow.buildIndex(observedODFlow.getColumnPosition("ID_city"));
 //        //OD matrix for the core cities, obtained from the commuters data
 //        TableDataSet observedCoreODFlow = new TableDataSet();
-//        int [] selectedCounties = SiloUtil.idendifyUniqueValues(allCounties);
+//        int [] selectedCounties = SiloUtil.identifyUniqueValues(allCounties);
 //        observedCoreODFlow.appendColumn(selectedCounties,"smallCenter");
 //        for (int i = 0; i < selectedCounties.length; i++){
 //            int[] dummy = SiloUtil.createArrayWithValue(selectedCounties.length,0);

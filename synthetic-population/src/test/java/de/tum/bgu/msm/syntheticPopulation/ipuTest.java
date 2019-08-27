@@ -1,8 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulation;
 
 import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
+import de.tum.bgu.msm.utils.SiloUtil;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -11,7 +13,7 @@ import javax.script.ScriptException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.apache.log4j.Logger;
+import java.util.List;
 
 public class ipuTest {
 
@@ -52,12 +54,12 @@ public class ipuTest {
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
                 municipalities.add(city);
                 int county = (int) selectedMunicipalities.getValueAt(row,"ID_county");
-                if (!SiloUtil.containsElement(counties, county)) {
+                if (!((List<Integer>) counties).contains(county)) {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
                     int[] citiesInThisCounty = municipalitiesByCounty.get(county);
-                    int[] expandedCityList = SiloUtil.expandArrayByOneElement(citiesInThisCounty, city);
+                    int[] expandedCityList = ArrayUtils.add(citiesInThisCounty, city);
                     municipalitiesByCounty.put(county, expandedCityList);
                 } else {
                     municipalitiesByCounty.put(county, new int[]{city});

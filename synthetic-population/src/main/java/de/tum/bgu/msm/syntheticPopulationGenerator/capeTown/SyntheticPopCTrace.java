@@ -23,6 +23,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import omx.OmxFile;
 import omx.OmxLookup;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
@@ -358,7 +359,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
                 municipalities.add(city);
                 int county = (int) selectedMunicipalities.getValueAt(row,"ID_county");
-                if (!SiloUtil.containsElement(counties, county)) {
+                if (!((List<Integer>) counties).contains(county)) {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
@@ -385,7 +386,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
-                previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
+                previousTaz = ArrayUtils.add(previousTaz, taz);
                 cityTAZ.put(city, previousTaz);
             } else {
                 int[] previousTaz = {taz};
@@ -1835,7 +1836,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                         }
                         jobIntTypes.remove(jobStringTypes[w]);
                         jobStringTypes[w] = jobStringTypes[jobStringTypes.length - 1];
-                        jobStringTypes = SiloUtil.removeOneElementFromZeroBasedArray(jobStringTypes, jobStringTypes.length - 1);
+                        jobStringTypes = ArrayUtils.remove(jobStringTypes, jobStringTypes.length - 1);
 
                     }
                 }

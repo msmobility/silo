@@ -56,7 +56,7 @@ public class ipuTestOpt {
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
                 municipalities.add(city);
                 int county = (int) selectedMunicipalities.getValueAt(row,"ID_county");
-                if (!SiloUtil.containsElement(counties, county)) {
+                if (!((List<Integer>) counties).contains(county)) {
                     counties.add(county);
                 }
                 if (municipalitiesByCounty.containsKey(county)) {
