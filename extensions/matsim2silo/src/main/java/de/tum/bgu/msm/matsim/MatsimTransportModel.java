@@ -144,11 +144,9 @@ public final class MatsimTransportModel implements TransportModel {
         logger.warn("Running MATSim transport model for year " + year + ".");
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
-        String matsimRunId = properties.main.scenarioName + "_" + year;
 
-        Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, matsimRunId, populationScalingFactor);
+        Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, year, populationScalingFactor, properties);
         Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
-
 
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
         scenario.setPopulation(population);

@@ -1,8 +1,17 @@
 package de.tum.bgu.msm.matsim;
 
-import java.util.Collection;
-import java.util.Map;
-
+import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
@@ -22,18 +31,8 @@ import org.matsim.core.utils.collections.Tuple;
 import org.matsim.facilities.ActivityFacilities;
 import org.matsim.facilities.ActivityFacility;
 
-import com.pb.common.matrix.Matrix;
-
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.utils.SiloUtil;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author dziemke
@@ -41,15 +40,15 @@ import de.tum.bgu.msm.utils.SiloUtil;
 public class SiloMatsimUtils {
 	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
 		
-	public static Config createMatsimConfig(Config initialConfig, String runId,	double populationScalingFactor) {
+	static Config createMatsimConfig(Config initialConfig, int year, double populationScalingFactor, Properties properties) {
 		LOG.info("Stating creating a MATSim config.");
 		Config config = ConfigUtils.loadConfig(initialConfig.getContext());
 		config.qsim().setFlowCapFactor(populationScalingFactor);
 		config.qsim().setStorageCapFactor(populationScalingFactor);
-		
-		String outputDirectoryRoot = initialConfig.controler().getOutputDirectory();
-		String outputDirectory = outputDirectoryRoot + "/" + runId + "/";
-		config.controler().setRunId(runId);
+
+		final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+		String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/";
+		config.controler().setRunId(String.valueOf(year));
 		config.controler().setOutputDirectory(outputDirectory);
 		config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
 		config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));

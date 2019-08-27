@@ -103,7 +103,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
 
     }
 
-    public void runTransportModel(int year) {
+    private void runTransportModel(int year) {
         logger.info("  Running travel demand model MITO for the year " + year);
         DataSet dataSet = convertData(year);
         logger.info("  SILO data being sent to MITO");

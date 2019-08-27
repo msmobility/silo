@@ -4,11 +4,10 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilder;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
-import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
@@ -95,7 +94,7 @@ public class SiloMatsimTestMuc {
     private void checkEvents() {
         log.info("Checking MATSim events file ...");
         final String eventsFilenameReference = "./test/muc/refOutput/matsim/test_2013/test_2013.output_events.xml.gz";
-        final String eventsFilenameNew = "./test/muc/matsimOutput/test_2013/test_2013.output_events.xml.gz";
+        final String eventsFilenameNew = "./test/muc/scenOutput/test/matsim/2013/2013.output_events.xml.gz";
         assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
     }
 
@@ -103,7 +102,7 @@ public class SiloMatsimTestMuc {
         log.info("Checking MATSim plans file ...");
 
         final String referenceFilename = "./test/muc/refOutput/matsim/test_2013/test_2013.output_plans.xml.gz";
-        final String outputFilename = "./test/muc/matsimOutput/test_2013/test_2013.output_plans.xml.gz";
+        final String outputFilename = "./test/muc/scenOutput/test/matsim/2013/2013.output_plans.xml.gz";
         Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
         Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 
